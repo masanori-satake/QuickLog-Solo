@@ -5,6 +5,7 @@ const DB_VERSION = 1;
 
 let db;
 let activeTask = null;
+let timerInterval = null;
 
 // --- Database Logic (Raw IndexedDB) ---
 
@@ -89,14 +90,30 @@ async function initDB() {
 
 async function setupInitialData() {
     const initialCategories = [
-        '開発', '会議', '調査', '事務作業',
-        '深い集中(Deep Work)', 'スキルアップ', 'アイデア出し', 'メンタル休憩'
+        { name: '開発', color: 'blue', order: 0 },
+        { name: '会議', color: 'orange', order: 1 },
+        { name: '調査', color: 'green', order: 2 },
+        { name: '事務作業', color: 'gray', order: 3 },
+        { name: '深い集中(Deep Work)', color: 'red', order: 4 },
+        { name: 'スキルアップ', color: 'purple', order: 5 },
+        { name: 'アイデア出し', color: 'teal', order: 6 },
+        { name: 'メンタル休憩', color: 'orange', order: 7 }
     ];
 
-    const existingCategories = await dbGetAll('categories');
+    let existingCategories = await dbGetAll('categories');
     if (existingCategories.length === 0) {
         for (const cat of initialCategories) {
-            await dbPut('categories', { name: cat });
+            await dbPut('categories', cat);
+        }
+    } else {
+        // Migration: Ensure all existing categories have color and order
+        for (let i = 0; i < existingCategories.length; i++) {
+            let cat = existingCategories[i];
+            if (cat.color === undefined || cat.order === undefined) {
+                cat.color = cat.color || 'blue';
+                cat.order = cat.order !== undefined ? cat.order : i;
+                await dbPut('categories', cat);
+            }
         }
     }
 
@@ -141,6 +158,49 @@ async function startTask(categoryName) {
     updateUI();
 }
 
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    if (!activeTask) {
+        if (timerInterval) clearInterval(timerInterval);
+        return;
+    }
+    const elapsed = Date.now() - activeTask.startTime;
+    const hours = Math.floor(elapsed / 3600000);
+    const minutes = Math.floor((elapsed % 3600000) / 60000);
+    const seconds = Math.floor((elapsed % 60000) / 1000);
+    const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    const el = document.getElementById('elapsed-time');
+    const elOverlay = document.getElementById('elapsed-time-overlay');
+    if (el) el.textContent = timeStr;
+    if (elOverlay) elOverlay.textContent = timeStr;
+
+    // Animation logic
+    const msInMinute = elapsed % 60000;
+    const minuteCount = Math.floor(elapsed / 60000);
+    const percent = (msInMinute / 60000) * 100;
+
+    const overlay = document.getElementById('current-task-display-overlay');
+    if (overlay) {
+        if (minuteCount % 2 === 0) {
+            // Even minute: White -> Accent (Right to Left)
+            // Percent 0% (White) -> 100% (Accent)
+            // Clip-path inset(top right bottom left)
+            overlay.style.clipPath = `inset(0 0 0 ${100 - percent}%)`;
+        } else {
+            // Odd minute: Accent -> White (Right to Left)
+            // Percent 0% (Accent) -> 100% (White)
+            // To make White appear from Right, Accent must be clipped from Right.
+            overlay.style.clipPath = `inset(0 ${percent}% 0 0)`;
+        }
+    }
+}
+
 async function stopTask() {
     if (!activeTask) return;
 
@@ -172,13 +232,14 @@ function applyAccent(accent) {
 }
 
 async function renderCategories() {
-    const categories = await dbGetAll('categories');
+    let categories = await dbGetAll('categories');
+    categories.sort((a, b) => a.order - b.order);
     const list = document.getElementById('category-list');
     if (!list) return;
     list.innerHTML = '';
     categories.forEach(cat => {
         const btn = document.createElement('button');
-        btn.className = 'category-btn';
+        btn.className = `category-btn cat-${cat.color || 'blue'}`;
         if (activeTask && activeTask.category === cat.name) {
             btn.classList.add('active');
         }
@@ -190,6 +251,9 @@ async function renderCategories() {
 
 async function renderLogs() {
     const allLogs = await dbGetAll('logs');
+    const categories = await dbGetAll('categories');
+    const categoryMap = new Map(categories.map(c => [c.name, c]));
+
     const completedLogs = allLogs.filter(l => l.endTime).sort((a, b) => b.startTime - a.startTime);
 
     const logList = document.getElementById('log-list');
@@ -198,9 +262,9 @@ async function renderLogs() {
     logList.innerHTML = '';
     extraLogList.innerHTML = '';
 
-    completedLogs.forEach((log, index) => {
-        const li = createLogElement(log);
-        if (index < 5) {
+    completedLogs.forEach((log, i) => {
+        const li = createLogElement(log, categoryMap);
+        if (i < 5) {
             logList.appendChild(li);
         } else {
             extraLogList.appendChild(li);
@@ -211,17 +275,19 @@ async function renderLogs() {
     if (moreBtn) moreBtn.style.display = completedLogs.length > 5 ? 'block' : 'none';
 }
 
-function createLogElement(log) {
+function createLogElement(log, categoryMap) {
     const li = document.createElement('li');
     li.className = 'log-item';
 
     const start = new Date(log.startTime);
-    const end = new Date(log.endTime);
     const durationMin = Math.round((log.endTime - log.startTime) / 60000);
+
+    const cat = categoryMap.get(log.category);
+    const colorClass = cat ? `dot-${cat.color}` : 'dot-gray';
 
     li.innerHTML = `
         <span class="log-time">${start.getHours()}:${String(start.getMinutes()).padStart(2, '0')}</span>
-        <span class="log-name">${log.category}</span>
+        <span class="log-name"><span class="category-dot ${colorClass}"></span>${log.category}</span>
         <span class="log-duration">${durationMin} min</span>
     `;
     return li;
@@ -232,17 +298,35 @@ function updateUI() {
     renderLogs();
 
     const statusLabel = document.getElementById('status-label');
+    const statusLabelOverlay = document.getElementById('status-label-overlay');
     const currentTaskName = document.getElementById('current-task-name');
+    const currentTaskNameOverlay = document.getElementById('current-task-name-overlay');
     const stopBtn = document.getElementById('stop-btn');
+    const elapsedTime = document.getElementById('elapsed-time');
+    const elapsedTimeOverlay = document.getElementById('elapsed-time-overlay');
 
     if (activeTask) {
-        if (statusLabel) statusLabel.textContent = '実行中';
+        const label = '実行中';
+        if (statusLabel) statusLabel.textContent = label;
+        if (statusLabelOverlay) statusLabelOverlay.textContent = label;
         if (currentTaskName) currentTaskName.textContent = activeTask.category;
+        if (currentTaskNameOverlay) currentTaskNameOverlay.textContent = activeTask.category;
         if (stopBtn) stopBtn.disabled = false;
+        if (elapsedTime) elapsedTime.classList.remove('hidden');
+        if (elapsedTimeOverlay) elapsedTimeOverlay.classList.remove('hidden');
+        startTimer();
     } else {
-        if (statusLabel) statusLabel.textContent = '待機中';
+        const label = '待機中';
+        if (statusLabel) statusLabel.textContent = label;
+        if (statusLabelOverlay) statusLabelOverlay.textContent = label;
         if (currentTaskName) currentTaskName.textContent = '-';
+        if (currentTaskNameOverlay) currentTaskNameOverlay.textContent = '-';
         if (stopBtn) stopBtn.disabled = true;
+        if (elapsedTime) elapsedTime.classList.add('hidden');
+        if (elapsedTimeOverlay) elapsedTimeOverlay.classList.add('hidden');
+        if (timerInterval) clearInterval(timerInterval);
+        const overlay = document.getElementById('current-task-display-overlay');
+        if (overlay) overlay.style.clipPath = 'inset(0 0 0 100%)';
     }
 }
 
@@ -291,27 +375,170 @@ function showToast() {
     }
 }
 
+// --- Category Editor & Tab Logic ---
+
+function initTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            btn.classList.add('active');
+            const target = document.getElementById(`${btn.dataset.tab}-tab`);
+            if (target) target.classList.remove('hidden');
+            if (btn.dataset.tab === 'categories') renderCategoryEditor();
+        };
+    });
+}
+
+async function renderCategoryEditor() {
+    const list = document.getElementById('category-editor-list');
+    if (!list) return;
+    let categories = await dbGetAll('categories');
+    categories.sort((a, b) => a.order - b.order);
+    list.innerHTML = '';
+
+    categories.forEach(cat => {
+        const item = document.createElement('div');
+        item.className = 'category-editor-item';
+        item.draggable = true;
+        item.dataset.name = cat.name;
+
+        const colors = ['blue', 'green', 'orange', 'red', 'purple', 'teal', 'gray'];
+        const colorPresetsHtml = colors.map(color => `
+            <button class="color-preset ${color === cat.color ? 'selected' : ''}"
+                    style="background-color: ${getColorCode(color)}"
+                    data-color="${color}"></button>
+        `).join('');
+
+        item.innerHTML = `
+            <div class="cat-editor-row">
+                <span class="drag-handle">☰</span>
+                <input type="text" class="category-edit-name" value="${cat.name}">
+                <button class="delete-cat-btn" title="削除">×</button>
+            </div>
+            <div class="cat-editor-row">
+                <div class="color-presets" style="margin-left: 1.5rem;">
+                    ${colorPresetsHtml}
+                </div>
+            </div>
+        `;
+
+        // Event listeners
+        const input = item.querySelector('.category-edit-name');
+        input.onchange = async () => {
+            const newName = input.value.trim();
+            if (newName && newName !== cat.name) {
+                const oldName = cat.name;
+                const existing = await dbGet('categories', newName);
+                if (existing) {
+                    alert('同名のカテゴリが既に存在します。');
+                    input.value = oldName;
+                    return;
+                }
+                const updatedCat = { ...cat, name: newName };
+                await dbDelete('categories', oldName);
+                await dbPut('categories', updatedCat);
+                cat.name = newName; // Update local ref
+                renderCategories();
+                renderCategoryEditor();
+            }
+        };
+
+        item.querySelectorAll('.color-preset').forEach(btn => {
+            btn.onclick = async () => {
+                cat.color = btn.dataset.color;
+                await dbPut('categories', cat);
+                renderCategoryEditor();
+                renderCategories();
+            };
+        });
+
+        item.querySelector('.delete-cat-btn').onclick = async () => {
+            if (confirm(`カテゴリ「${cat.name}」を削除しますか？`)) {
+                await dbDelete('categories', cat.name);
+                renderCategoryEditor();
+                renderCategories();
+            }
+        };
+
+        // Drag and Drop
+        item.ondragstart = (e) => {
+            e.dataTransfer.setData('text/plain', cat.name);
+            item.classList.add('dragging');
+        };
+        item.ondragend = () => item.classList.remove('dragging');
+
+        list.appendChild(item);
+    });
+
+    // Drag over logic
+    list.ondragover = (e) => {
+        e.preventDefault();
+        const draggingItem = list.querySelector('.dragging');
+        if (!draggingItem) return;
+        const siblings = [...list.querySelectorAll('.category-editor-item:not(.dragging)')];
+        let nextSibling = siblings.find(sibling => {
+            return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
+        });
+        list.insertBefore(draggingItem, nextSibling);
+    };
+
+    list.ondrop = async (e) => {
+        e.preventDefault();
+        const items = [...list.querySelectorAll('.category-editor-item')];
+        for (let i = 0; i < items.length; i++) {
+            const name = items[i].dataset.name;
+            const cat = await dbGet('categories', name);
+            if (cat) {
+                cat.order = i;
+                await dbPut('categories', cat);
+            }
+        }
+        renderCategories();
+        renderCategoryEditor(); // Refresh to update dataset.name and handles
+    };
+}
+
+function getColorCode(color) {
+    const codes = {
+        blue: '#1e40af', green: '#166534', orange: '#9a3412',
+        red: '#991b1b', purple: '#6b21a8', teal: '#115e59', gray: '#374151'
+    };
+    return codes[color] || '#333';
+}
+
 // --- Initialization ---
 
 document.addEventListener('DOMContentLoaded', async () => {
     await initDB();
     updateUI();
+    initTabs();
 
     // Event Listeners
     const stopBtn = document.getElementById('stop-btn');
     if (stopBtn) stopBtn.onclick = stopTask;
 
+    const addCategoryLogic = async (inputId) => {
+        const input = document.getElementById(inputId);
+        const name = input.value.trim();
+        if (name) {
+            const categories = await dbGetAll('categories');
+            const newOrder = categories.length;
+            await dbPut('categories', { name, color: 'blue', order: newOrder });
+            input.value = '';
+            renderCategories();
+            if (inputId === 'new-category-name-settings') renderCategoryEditor();
+        }
+    };
+
     const addCatBtn = document.getElementById('add-category-btn');
     if (addCatBtn) {
-        addCatBtn.onclick = async () => {
-            const input = document.getElementById('new-category-name');
-            const name = input.value.trim();
-            if (name) {
-                await dbPut('categories', { name });
-                input.value = '';
-                renderCategories();
-            }
-        };
+        addCatBtn.onclick = () => addCategoryLogic('new-category-name');
+    }
+
+    const addCatBtnSettings = document.getElementById('add-category-btn-settings');
+    if (addCatBtnSettings) {
+        addCatBtnSettings.onclick = () => addCategoryLogic('new-category-name-settings');
     }
 
     const moreLogsBtn = document.getElementById('more-logs-btn');

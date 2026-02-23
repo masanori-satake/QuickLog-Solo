@@ -131,21 +131,58 @@ input[type="text"] {
 /* Control Section */
 #control-section {
     background-color: var(--panel-bg);
-    padding: 1rem;
+    padding: 0;
     margin-bottom: 1.5rem;
     border: var(--border-width) solid var(--border-color);
     text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
-#status-label {
+#current-task-display, #current-task-display-overlay {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 110px;
+}
+
+#current-task-display {
+    position: relative;
+    z-index: 1;
+}
+
+#current-task-display-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    background-color: var(--accent-color);
+    color: white;
+    clip-path: inset(0 0 0 100%);
+    pointer-events: none;
+}
+
+#status-label, #status-label-overlay {
     font-size: 0.75rem;
     font-weight: 800;
     color: var(--muted-color);
 }
+#status-label-overlay { color: rgba(255,255,255,0.8); }
 
-#current-task-name {
-    margin: 0.25rem 0 1rem 0;
+#current-task-name, #current-task-name-overlay {
+    margin: 0.25rem 0 0.5rem 0;
     word-break: break-all;
+}
+
+#elapsed-time, #elapsed-time-overlay {
+    font-family: monospace;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
 }
 
 #stop-btn {
@@ -187,6 +224,16 @@ input[type="text"] {
 .log-name {
     flex-grow: 1;
     font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .log-duration {
@@ -264,6 +311,123 @@ footer {
 }
 
 .hidden { display: none; }
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab-btn {
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+    background: none;
+}
+
+.tab-btn.active {
+    border-bottom-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.tab-content.hidden {
+    display: none;
+}
+
+/* Category Editor */
+#category-editor-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.category-editor-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 0.5rem;
+    background-color: var(--bg-color);
+}
+
+.category-editor-item.dragging {
+    opacity: 0.5;
+    border-style: dashed;
+}
+
+.cat-editor-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.drag-handle {
+    cursor: grab;
+    user-select: none;
+    color: var(--muted-color);
+    padding: 0 0.25rem;
+}
+
+.category-edit-name {
+    flex-grow: 1;
+    font-size: 0.9rem;
+    padding: 0.25rem;
+    min-width: 0;
+}
+
+.color-presets {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.color-preset {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    padding: 0;
+}
+
+.color-preset.selected {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 1px;
+}
+
+.delete-cat-btn {
+    color: #dc2626;
+    padding: 0.25rem 0.5rem;
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+}
+
+#add-category-box-settings {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Category Color Classes */
+.cat-blue { background-color: #dbeafe; color: #1e40af; border-color: #1e40af; }
+.cat-green { background-color: #dcfce7; color: #166534; border-color: #166534; }
+.cat-orange { background-color: #ffedd5; color: #9a3412; border-color: #9a3412; }
+.cat-red { background-color: #fee2e2; color: #991b1b; border-color: #991b1b; }
+.cat-purple { background-color: #f3e8ff; color: #6b21a8; border-color: #6b21a8; }
+.cat-teal { background-color: #ccfbf1; color: #115e59; border-color: #115e59; }
+.cat-gray { background-color: #f3f4f6; color: #374151; border-color: #374151; }
+
+.dot-blue { background-color: #1e40af; }
+.dot-green { background-color: #166534; }
+.dot-orange { background-color: #9a3412; }
+.dot-red { background-color: #991b1b; }
+.dot-purple { background-color: #6b21a8; }
+.dot-teal { background-color: #115e59; }
+.dot-gray { background-color: #374151; }
 
 /* Settings Popup Items */
 .setting-item {

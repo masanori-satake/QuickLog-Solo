@@ -28,6 +28,12 @@
                 <div id="current-task-display">
                     <span id="status-label">待機中</span>
                     <h2 id="current-task-name">-</h2>
+                    <div id="elapsed-time" class="hidden">00:00:00</div>
+                </div>
+                <div id="current-task-display-overlay">
+                    <span id="status-label-overlay">待機中</span>
+                    <h2 id="current-task-name-overlay">-</h2>
+                    <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
                 </div>
                 <button id="stop-btn" disabled>ストップ</button>
             </section>
@@ -71,27 +77,45 @@
             <div class="modal-content">
                 <span class="close-btn">&times;</span>
                 <h2>設定</h2>
-                <div class="setting-item">
-                    <label>テーマ</label>
-                    <select id="theme-select">
-                        <option value="system">システム設定に従う</option>
-                        <option value="light">ライトモード</option>
-                        <option value="dark">ダークモード</option>
-                    </select>
+
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="general">一般</button>
+                    <button class="tab-btn" data-tab="categories">カテゴリ</button>
                 </div>
-                <div class="setting-item">
-                    <label>アクセントカラー</label>
-                    <div id="accent-colors">
-                        <button class="accent-dot blue" data-accent="blue"></button>
-                        <button class="accent-dot green" data-accent="green"></button>
-                        <button class="accent-dot orange" data-accent="orange"></button>
-                        <button class="accent-dot red" data-accent="red"></button>
+
+                <div id="general-tab" class="tab-content">
+                    <div class="setting-item">
+                        <label>テーマ</label>
+                        <select id="theme-select">
+                            <option value="system">システム設定に従う</option>
+                            <option value="light">ライトモード</option>
+                            <option value="dark">ダークモード</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>アクセントカラー</label>
+                        <div id="accent-colors">
+                            <button class="accent-dot blue" data-accent="blue"></button>
+                            <button class="accent-dot green" data-accent="green"></button>
+                            <button class="accent-dot orange" data-accent="orange"></button>
+                            <button class="accent-dot red" data-accent="red"></button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <button id="export-csv-btn">CSVエクスポート</button>
+                        <button id="import-csv-btn">CSVインポート</button>
+                        <input type="file" id="csv-file-input" style="display:none" accept=".csv">
                     </div>
                 </div>
-                <div class="setting-item">
-                    <button id="export-csv-btn">CSVエクスポート</button>
-                    <button id="import-csv-btn">CSVインポート</button>
-                    <input type="file" id="csv-file-input" style="display:none" accept=".csv">
+
+                <div id="categories-tab" class="tab-content hidden">
+                    <div id="category-editor-list">
+                        <!-- カテゴリ編集アイテムがここに動的に追加される -->
+                    </div>
+                    <div id="add-category-box-settings">
+                        <input type="text" id="new-category-name-settings" placeholder="新しいカテゴリ...">
+                        <button id="add-category-btn-settings">+</button>
+                    </div>
                 </div>
             </div>
         </div>
