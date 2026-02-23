@@ -139,6 +139,11 @@ input[type="text"] {
     overflow: hidden;
 }
 
+#timer-container {
+    position: relative;
+    overflow: hidden;
+}
+
 #current-task-display, #current-task-display-overlay {
     padding: 1rem;
     display: flex;
@@ -183,6 +188,10 @@ input[type="text"] {
     font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
+}
+
+#stop-btn-box {
+    padding: 0 1rem 1rem 1rem;
 }
 
 #stop-btn {
