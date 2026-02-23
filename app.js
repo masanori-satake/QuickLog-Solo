@@ -7,6 +7,19 @@ let db;
 let activeTask = null;
 let timerInterval = null;
 
+const FONTS = [
+    { name: '標準', value: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
+    { name: 'メイリオ', value: '"Meiryo", sans-serif' },
+    { name: '游ゴシック', value: '"Yu Gothic", "YuGothic", sans-serif' },
+    { name: 'ヒラギノ角ゴ', value: '"Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif' },
+    { name: 'MS Pゴシック', value: '"MS PGothic", sans-serif' },
+    { name: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
+    { name: 'Georgia', value: 'Georgia, serif' },
+    { name: 'Courier New', value: '"Courier New", monospace' },
+    { name: 'Impact', value: 'Impact, charcoal, sans-serif' },
+    { name: 'Comic Sans MS', value: '"Comic Sans MS", cursive, sans-serif' }
+];
+
 // --- Database Logic (Raw IndexedDB) ---
 
 function openDatabase() {
@@ -38,6 +51,16 @@ function dbGet(storeName, key) {
         const store = tx.objectStore(storeName);
         const request = store.get(key);
         request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+function dbClear(storeName) {
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        const request = store.clear();
+        request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
     });
 }
@@ -123,6 +146,9 @@ async function setupInitialData() {
 
     const accent = await dbGet('settings', 'accent');
     if (accent) applyAccent(accent.value);
+
+    const font = await dbGet('settings', 'font');
+    if (font) applyFont(font.value);
 
     // Check for active task
     const allLogs = await dbGetAll('logs');
@@ -221,7 +247,7 @@ async function pauseTask() {
 
 async function endTask() {
     if (!activeTask) return;
-    if (confirm('本当に作業を終了しますか？')) {
+    if (await showConfirm('本当に作業を終了しますか？')) {
         await stopTaskInternal();
         updateUI();
     }
@@ -246,6 +272,12 @@ function applyAccent(accent) {
     const body = document.body;
     body.classList.remove('accent-blue', 'accent-green', 'accent-orange', 'accent-red');
     body.classList.add(`accent-${accent}`);
+}
+
+function applyFont(fontValue) {
+    document.body.style.setProperty('--font-family', fontValue);
+    const select = document.getElementById('font-select');
+    if (select) select.value = fontValue;
 }
 
 async function renderCategories() {
@@ -440,7 +472,7 @@ async function copyReport() {
     });
 
     navigator.clipboard.writeText(text);
-    showToast();
+    showToast('コピーしました！');
 }
 
 async function copyAggregation() {
@@ -460,15 +492,38 @@ async function copyAggregation() {
     }
 
     navigator.clipboard.writeText(text);
-    showToast();
+    showToast('コピーしました！');
 }
 
-function showToast() {
+function showToast(message = "完了しました！") {
     const toast = document.getElementById('toast');
     if (toast) {
+        toast.innerText = message;
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 2000);
     }
+}
+
+function showConfirm(message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const msgEl = document.getElementById('confirm-message');
+        const okBtn = document.getElementById('confirm-ok-btn');
+        const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+        msgEl.innerText = message;
+        modal.classList.remove('hidden');
+
+        const cleanup = (result) => {
+            modal.classList.add('hidden');
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+            resolve(result);
+        };
+
+        okBtn.onclick = () => cleanup(true);
+        cancelBtn.onclick = () => cleanup(false);
+    });
 }
 
 // --- Category Editor & Tab Logic ---
@@ -566,7 +621,7 @@ async function renderCategoryEditor() {
         });
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
-            if (confirm(`カテゴリ「${cat.name}」を削除しますか？（過去のログからはカテゴリ色が消えます）`)) {
+            if (await showConfirm(`カテゴリ「${cat.name}」を削除しますか？\n（過去のログからはカテゴリ色が消えます）`)) {
                 await dbDelete('categories', cat.name);
                 updateUI();
                 renderCategoryEditor();
@@ -621,7 +676,19 @@ function getColorCode(color) {
 
 // --- Initialization ---
 
+async function loadVersion() {
+    try {
+        const response = await fetch('version.json');
+        const data = await response.json();
+        const el = document.getElementById('version-display');
+        if (el) el.textContent = `v${data.version}`;
+    } catch (e) {
+        console.error('Failed to load version:', e);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    await loadVersion();
     await initDB();
     updateUI();
     initTabs();
@@ -710,6 +777,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     });
 
+    const fontSelect = document.getElementById('font-select');
+    if (fontSelect) {
+        FONTS.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f.value;
+            opt.textContent = f.name;
+            opt.style.fontFamily = f.value;
+            fontSelect.appendChild(opt);
+        });
+        fontSelect.onchange = async (e) => {
+            const fontValue = e.target.value;
+            await dbPut('settings', { key: 'font', value: fontValue });
+            applyFont(fontValue);
+        };
+        // Initial set if needed (already called in setupInitialData but select might not have been populated)
+        const font = await dbGet('settings', 'font');
+        if (font) fontSelect.value = font.value;
+    }
+
     // CSV Export/Import
     const exportBtn = document.getElementById('export-csv-btn');
     if (exportBtn) {
@@ -730,6 +816,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const importBtn = document.getElementById('import-csv-btn');
     const csvInput = document.getElementById('csv-file-input');
+
+    // Maintenance
+    const clearLogsBtn = document.getElementById('clear-logs-btn');
+    if (clearLogsBtn) {
+        clearLogsBtn.onclick = async () => {
+            if (await showConfirm('全てのログを削除しますか？')) {
+                await dbClear('logs');
+                updateUI();
+                showToast('削除が完了しました');
+            }
+        };
+    }
+
+    const resetCatSettingsBtn = document.getElementById('reset-cat-settings-btn');
+    if (resetCatSettingsBtn) {
+        resetCatSettingsBtn.onclick = async () => {
+            if (await showConfirm('カテゴリと各種設定を初期化しますか？\n（ログは維持されます）')) {
+                await dbClear('categories');
+                await dbClear('settings');
+                location.reload();
+            }
+        };
+    }
+
+    const resetSettingsBtn = document.getElementById('reset-settings-btn');
+    if (resetSettingsBtn) {
+        resetSettingsBtn.onclick = async () => {
+            if (await showConfirm('各種設定を初期化しますか？\n（ログとカテゴリは維持されます）')) {
+                await dbClear('settings');
+                location.reload();
+            }
+        };
+    }
+
     if (importBtn && csvInput) {
         importBtn.onclick = () => csvInput.click();
         csvInput.onchange = async (e) => {
