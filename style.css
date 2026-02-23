@@ -60,6 +60,17 @@ header {
     padding-bottom: 0.5rem;
 }
 
+#settings-toggle {
+    border: none;
+    font-size: 1.5rem;
+    padding: 0.25rem;
+    background: none;
+}
+
+#settings-toggle:hover {
+    background-color: var(--panel-bg);
+}
+
 h1 {
     font-size: 1.25rem;
     font-weight: 800;
@@ -356,10 +367,6 @@ footer {
     max-width: 90%;
     width: 320px;
     position: relative;
-}
-
-.modal-content button {
-    border: none;
 }
 
 .close-btn {
