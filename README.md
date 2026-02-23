@@ -18,10 +18,14 @@
 
 #### 1. Vercel での準備
 1. [Vercel](https://vercel.com/) にログインし、新しいプロジェクトを作成します（GitHub リポジトリをインポート）。
-2. Vercel のプロジェクト設定から以下の情報を取得します：
-   - **Project ID**: Project Settings > General にあります。
-   - **Org ID**: Vercel のアカウント設定、またはチーム設定のページにあります。
-3. Vercel の Account Settings > Tokens で、新しい **Access Token** を発行します。
+   - 「Import Git Repository」から本リポジトリを選択します。
+   - Framework Preset は「Other」を選択（静的HTMLのみのため自動認識されます）。
+2. Vercel のプロジェクト設定およびアカウント設定から以下の情報を取得します：
+   - **Project ID**: プロジェクトの **Settings** > **General** セクションに記載されています。
+   - **Org ID**: アカウントの種類によって項目名が異なります。
+     - **個人アカウント (Hobbyプラン)** の場合: アカウントの **Settings** > **General** にある **Personal Account ID** を使用します。
+     - **チームアカウント** の場合: チームの **Settings** > **General** にある **Team ID** を使用します。
+3. Vercel の **Account Settings** > **Tokens** で、新しい **Access Token** を発行します（名前は任意）。
 
 #### 2. GitHub リポジトリでの設定
 1. GitHub リポジトリの **Settings** > **Secrets and variables** > **Actions** を開きます。
