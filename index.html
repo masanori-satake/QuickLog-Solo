@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickLog-Solo</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="theme-color" content="#2563eb">
 </head>
 <body class="theme-light accent-blue">
     <div id="app">
         <header>
-            <h1>QuickLog-Solo</h1>
+            <h1>QuickLog-Solo <small id="version-display"></small></h1>
             <button id="settings-toggle" title="設定">⚙️</button>
         </header>
 
@@ -26,16 +30,17 @@
                         <span id="status-label">停止中</span>
                         <h2 id="current-task-name">-</h2>
                         <div id="elapsed-time" class="hidden">00:00:00</div>
-                    </div>
-                    <div id="current-task-display-overlay">
-                        <span id="status-label-overlay">停止中</span>
-                        <h2 id="current-task-name-overlay">-</h2>
-                        <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
+
+                        <div id="current-task-display-overlay">
+                            <span id="status-label-overlay">停止中</span>
+                            <h2 id="current-task-name-overlay">-</h2>
+                            <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
+                        </div>
                     </div>
                 </div>
                 <div id="stop-btn-box">
-                    <button id="pause-btn" disabled>一時停止</button>
-                    <button id="end-btn" disabled>終了</button>
+                    <button id="pause-btn" disabled><span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span></button>
+                    <button id="end-btn" disabled><span class="btn-text">終了</span><span class="btn-icon">⏹️</span></button>
                 </div>
             </section>
 
@@ -51,8 +56,8 @@
             </section>
 
             <section id="action-section">
-                <button id="copy-report-btn">日報コピー</button>
-                <button id="copy-aggregation-btn">集計コピー</button>
+                <button id="copy-report-btn"><span class="btn-text">日報コピー</span><span class="btn-icon">📋</span></button>
+                <button id="copy-aggregation-btn"><span class="btn-text">集計コピー</span><span class="btn-icon">📊</span></button>
             </section>
         </main>
 
@@ -80,8 +85,18 @@
                 <h2>設定</h2>
 
                 <div class="tabs">
-                    <button class="tab-btn active" data-tab="general">一般</button>
-                    <button class="tab-btn" data-tab="categories">カテゴリ</button>
+                    <button class="tab-btn active" data-tab="general">
+                        <span class="tab-text">一般</span><span class="tab-icon">⚙️</span>
+                    </button>
+                    <button class="tab-btn" data-tab="categories">
+                        <span class="tab-text">カテゴリ</span><span class="tab-icon">📂</span>
+                    </button>
+                    <button class="tab-btn" data-tab="maintenance">
+                        <span class="tab-text">メンテナンス</span><span class="tab-icon">🛠️</span>
+                    </button>
+                    <button class="tab-btn" data-tab="credits">
+                        <span class="tab-text">クレジット</span><span class="tab-icon">👤</span>
+                    </button>
                 </div>
 
                 <div id="general-tab" class="tab-content">
@@ -103,6 +118,12 @@
                         </div>
                     </div>
                     <div class="setting-item">
+                        <label>表示フォント</label>
+                        <select id="font-select">
+                            <!-- JSで生成 -->
+                        </select>
+                    </div>
+                    <div class="setting-item">
                         <button id="export-csv-btn">CSVエクスポート</button>
                         <button id="import-csv-btn">CSVインポート</button>
                         <input type="file" id="csv-file-input" style="display:none" accept=".csv">
@@ -118,12 +139,57 @@
                         <button id="add-category-btn-settings">+</button>
                     </div>
                 </div>
+
+                <div id="credits-tab" class="tab-content hidden">
+                    <div class="setting-item">
+                        <label>開発者</label>
+                        <p>QuickLog-Solo User</p>
+                    </div>
+                    <div class="setting-item">
+                        <label>技術仕様</label>
+                        <p style="font-size: 0.85rem; line-height: 1.6;">
+                            本アプリは外部のOSSライブラリやフレームワークを一切使用せず、標準的なHTML5、CSS3、およびJavaScript（Vanilla JS）のみで構成されています。
+                            外部コードへの依存を排除することで、セキュリティリスクの低減と透明性の向上を図っています。
+                        </p>
+                    </div>
+                </div>
+
+                <div id="maintenance-tab" class="tab-content hidden">
+                    <div class="setting-item">
+                        <label>ログの削除</label>
+                        <button id="clear-logs-btn" class="danger-btn" style="width: 100%;">ログをすべて削除</button>
+                    </div>
+                    <div class="setting-item">
+                        <label>設定とカテゴリの初期化</label>
+                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);">
+                            ログは維持されます。
+                        </p>
+                        <button id="reset-cat-settings-btn" style="width: 100%;">カテゴリ・設定を初期化</button>
+                    </div>
+                    <div class="setting-item">
+                        <label>設定のみの初期化</label>
+                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);">
+                            ログとカテゴリは維持されます。
+                        </p>
+                        <button id="reset-settings-btn" style="width: 100%;">設定のみを初期化</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="confirm-modal" class="modal hidden">
+            <div class="modal-content">
+                <p id="confirm-message">本当に作業を終了しますか？</p>
+                <div class="confirm-btns">
+                    <button id="confirm-cancel-btn">キャンセル</button>
+                    <button id="confirm-ok-btn">OK</button>
+                </div>
             </div>
         </div>
 
         <div id="toast" class="hidden">コピーしました！</div>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
