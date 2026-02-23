@@ -415,11 +415,11 @@ async function updateUI() {
 
         if (pauseBtn) {
             if (isIdle) {
-                pauseBtn.textContent = '再開';
+                pauseBtn.innerHTML = '<span class="btn-text">再開</span><span class="btn-icon">▶️</span>';
                 pauseBtn.disabled = !activeTask.resumableCategory;
                 pauseBtn.onclick = () => startTask(activeTask.resumableCategory);
             } else {
-                pauseBtn.textContent = '一時停止';
+                pauseBtn.innerHTML = '<span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span>';
                 pauseBtn.disabled = false;
                 pauseBtn.onclick = pauseTask;
             }
@@ -442,7 +442,7 @@ async function updateUI() {
 
         if (pauseBtn) {
             pauseBtn.disabled = true;
-            pauseBtn.textContent = '一時停止';
+            pauseBtn.innerHTML = '<span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span>';
         }
         if (endBtn) endBtn.disabled = true;
 

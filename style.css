@@ -30,14 +30,18 @@
     padding: 0;
 }
 
-body {
+html, body, button, input, select, textarea {
     font-family: var(--font-family);
+}
+
+body {
     background-color: var(--bg-color);
     color: var(--text-color);
     line-height: 1.5;
     display: flex;
     justify-content: center;
     transition: background-color 0.3s, color 0.3s;
+    width: 100%;
 }
 
 #app {
@@ -70,10 +74,26 @@ body {
 }
 
 @media (max-height: 500px) {
-    header { margin-bottom: 0.75rem; }
-    #current-task-display, #current-task-display-overlay { height: 80px; }
-    #control-section { margin-bottom: 0.75rem; }
+    header { margin-bottom: 0.5rem; padding-bottom: 0.25rem; }
+    h1 { font-size: 1rem; }
+    #current-task-display, #current-task-display-overlay { height: 60px; padding: 0.5rem; }
+    #current-task-name, #current-task-name-overlay { font-size: 1rem; margin: 0; }
+    #elapsed-time, #elapsed-time-overlay { font-size: 1rem; margin: 0; }
+    #status-label, #status-label-overlay { display: none; }
+    #control-section { margin-bottom: 0.5rem; }
     #category-section { margin-bottom: 0.5rem; }
+    #category-list { gap: 0.25rem; }
+    .category-btn { padding: 0.4rem 0.25rem; font-size: 0.75rem; }
+    #pause-btn, #end-btn { padding: 0.5rem; }
+    .btn-text { display: none; }
+    .btn-icon { display: inline; font-size: 1.2rem; }
+}
+
+@media (max-height: 350px) {
+    #app { padding: 0.5rem; }
+    header { display: none; }
+    #action-section { display: none; }
+    footer { display: none; }
 }
 
 header {
@@ -409,8 +429,18 @@ footer {
     padding: 2rem;
     border: var(--border-width) solid var(--border-color);
     max-width: 90%;
-    width: 320px;
+    width: 500px; /* Increased from 320px */
     position: relative;
+}
+
+@media (max-width: 400px) {
+    .modal-content {
+        padding: 1rem;
+    }
+    .tab-btn {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
 }
 
 .close-btn {
@@ -442,6 +472,16 @@ footer {
 .tab-btn.active {
     border-bottom-color: var(--accent-color);
     color: var(--accent-color);
+}
+
+.tab-icon, .btn-icon {
+    display: none;
+}
+
+@media (max-width: 450px) {
+    .tab-text { display: none; }
+    .tab-icon { display: inline; font-size: 1.2rem; }
+    .tabs { justify-content: space-around; }
 }
 
 .tab-content.hidden {
