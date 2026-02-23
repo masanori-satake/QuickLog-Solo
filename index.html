@@ -30,16 +30,17 @@
                         <span id="status-label">停止中</span>
                         <h2 id="current-task-name">-</h2>
                         <div id="elapsed-time" class="hidden">00:00:00</div>
-                    </div>
-                    <div id="current-task-display-overlay">
-                        <span id="status-label-overlay">停止中</span>
-                        <h2 id="current-task-name-overlay">-</h2>
-                        <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
+
+                        <div id="current-task-display-overlay">
+                            <span id="status-label-overlay">停止中</span>
+                            <h2 id="current-task-name-overlay">-</h2>
+                            <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
+                        </div>
                     </div>
                 </div>
                 <div id="stop-btn-box">
-                    <button id="pause-btn" disabled>一時停止</button>
-                    <button id="end-btn" disabled>終了</button>
+                    <button id="pause-btn" disabled><span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span></button>
+                    <button id="end-btn" disabled><span class="btn-text">終了</span><span class="btn-icon">⏹️</span></button>
                 </div>
             </section>
 
@@ -55,8 +56,8 @@
             </section>
 
             <section id="action-section">
-                <button id="copy-report-btn">日報コピー</button>
-                <button id="copy-aggregation-btn">集計コピー</button>
+                <button id="copy-report-btn"><span class="btn-text">日報コピー</span><span class="btn-icon">📋</span></button>
+                <button id="copy-aggregation-btn"><span class="btn-text">集計コピー</span><span class="btn-icon">📊</span></button>
             </section>
         </main>
 
