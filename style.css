@@ -358,6 +358,10 @@ footer {
     position: relative;
 }
 
+.modal-content button {
+    border: none;
+}
+
 .close-btn {
     position: absolute;
     top: 0.5rem;

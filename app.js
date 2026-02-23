@@ -207,8 +207,9 @@ function updateTimer() {
 async function stopTaskInternal() {
     if (!activeTask) return;
     activeTask.endTime = Date.now();
-    await dbPut('logs', activeTask);
-    activeTask = null;
+    const taskToSave = activeTask;
+    activeTask = null; // Clear immediately to update UI without lag
+    await dbPut('logs', taskToSave);
 }
 
 async function pauseTask() {
@@ -333,6 +334,9 @@ function createLogElement(log, categoryMap) {
 }
 
 async function updateUI() {
+    // Stop timer while updating UI to prevent concurrent modifications
+    if (timerInterval) clearInterval(timerInterval);
+
     renderCategories();
     renderLogs();
 
@@ -404,10 +408,14 @@ async function updateUI() {
         }
         if (endBtn) endBtn.disabled = true;
 
-        if (elapsedTime) elapsedTime.classList.add('hidden');
-        if (elapsedTimeOverlay) elapsedTimeOverlay.classList.add('hidden');
-        if (timerInterval) clearInterval(timerInterval);
-        const overlay = document.getElementById('current-task-display-overlay');
+        if (elapsedTime) {
+            elapsedTime.classList.add('hidden');
+            elapsedTime.textContent = '00:00:00';
+        }
+        if (elapsedTimeOverlay) {
+            elapsedTimeOverlay.classList.add('hidden');
+            elapsedTimeOverlay.textContent = '00:00:00';
+        }
         if (overlay) overlay.style.clipPath = 'inset(0 0 0 100%)';
     }
 }
