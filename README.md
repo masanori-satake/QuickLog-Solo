@@ -1,0 +1,1 @@
+# QuickLog-Solo
