@@ -1,3 +1,4 @@
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("./sw.js"); }); }
 // QuickLog-Solo: Core Logic (Vanilla JS)
 
 const DB_NAME = 'QuickLogSoloDB';
