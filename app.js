@@ -90,14 +90,14 @@ async function initDB() {
 
 async function setupInitialData() {
     const initialCategories = [
-        { name: '開発', color: 'blue', order: 0 },
-        { name: '会議', color: 'orange', order: 1 },
-        { name: '調査', color: 'green', order: 2 },
-        { name: '事務作業', color: 'gray', order: 3 },
-        { name: '深い集中(Deep Work)', color: 'red', order: 4 },
-        { name: 'スキルアップ', color: 'purple', order: 5 },
-        { name: 'アイデア出し', color: 'teal', order: 6 },
-        { name: 'メンタル休憩', color: 'orange', order: 7 }
+        { name: '💻 開発', color: 'blue', order: 0 },
+        { name: '🤝 会議', color: 'orange', order: 1 },
+        { name: '🔍 調査', color: 'green', order: 2 },
+        { name: '事務作業 📝', color: 'gray', order: 3 },
+        { name: '🔥 深い集中(Deep Work)', color: 'red', order: 4 },
+        { name: '📚 スキルアップ', color: 'purple', order: 5 },
+        { name: '💡 アイデア出し', color: 'teal', order: 6 },
+        { name: '☕ メンタル休憩', color: 'orange', order: 7 }
     ];
 
     let existingCategories = await dbGetAll('categories');
@@ -632,14 +632,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             await dbPut('categories', { name, color: 'blue', order: newOrder });
             input.value = '';
             renderCategories();
-            if (inputId === 'new-category-name-settings') renderCategoryEditor();
+            renderCategoryEditor();
         }
     };
-
-    const addCatBtn = document.getElementById('add-category-btn');
-    if (addCatBtn) {
-        addCatBtn.onclick = () => addCategoryLogic('new-category-name');
-    }
 
     const addCatBtnSettings = document.getElementById('add-category-btn-settings');
     if (addCatBtnSettings) {
