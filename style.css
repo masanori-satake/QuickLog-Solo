@@ -103,6 +103,7 @@ button:disabled {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center; /* Center horizontally */
 }
 
 #current-task-display-overlay {
@@ -115,6 +116,7 @@ button:disabled {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center; /* Center horizontally */
     clip-path: inset(0 100% 0 0);
     z-index: 1;
     background-color: transparent; /* Default */
@@ -133,9 +135,9 @@ button:disabled {
     font-size: 1.2rem;
     font-weight: 800;
     margin-bottom: 0.2rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    text-align: center;
+    width: 100%;
+    word-break: break-all;
 }
 
 #elapsed-time, #elapsed-time-overlay {
@@ -388,9 +390,9 @@ button:disabled {
     body { padding: 0.5rem; }
     header { margin-bottom: 0.5rem; padding-bottom: 0.25rem; }
     h1 { font-size: 1rem; }
-    #current-task-display, #current-task-display-overlay { height: 60px; padding: 0.5rem; }
-    #current-task-name, #current-task-name-overlay { font-size: 1rem; margin: 0; }
-    #elapsed-time, #elapsed-time-overlay { font-size: 1.2rem; margin: 0; }
+    #current-task-display, #current-task-display-overlay { height: 60px; padding: 0.25rem 0.5rem; }
+    #current-task-name, #current-task-name-overlay { font-size: 1rem; margin: 0; line-height: 1.2; }
+    #elapsed-time, #elapsed-time-overlay { font-size: 1.2rem; margin: 0; line-height: 1.2; }
     #status-label, #status-label-overlay { display: none; }
     #control-section { margin-bottom: 0.5rem; gap: 0.5rem; }
     #category-section h2 { display: none; }
