@@ -293,7 +293,7 @@ function createLogElement(log, categoryMap) {
     return li;
 }
 
-function updateUI() {
+async function updateUI() {
     renderCategories();
     renderLogs();
 
@@ -304,8 +304,20 @@ function updateUI() {
     const stopBtn = document.getElementById('stop-btn');
     const elapsedTime = document.getElementById('elapsed-time');
     const elapsedTimeOverlay = document.getElementById('elapsed-time-overlay');
+    const display = document.getElementById('current-task-display');
+    const overlay = document.getElementById('current-task-display-overlay');
 
     if (activeTask) {
+        const cat = await dbGet('categories', activeTask.category);
+        const color = cat ? cat.color : 'blue';
+
+        if (display) {
+            display.className = `cat-${color}`;
+        }
+        if (overlay) {
+            overlay.className = `cat-${color}-full`;
+        }
+
         const label = '実行中';
         if (statusLabel) statusLabel.textContent = label;
         if (statusLabelOverlay) statusLabelOverlay.textContent = label;
@@ -316,6 +328,8 @@ function updateUI() {
         if (elapsedTimeOverlay) elapsedTimeOverlay.classList.remove('hidden');
         startTimer();
     } else {
+        if (display) display.className = '';
+        if (overlay) overlay.className = '';
         const label = '待機中';
         if (statusLabel) statusLabel.textContent = label;
         if (statusLabelOverlay) statusLabelOverlay.textContent = label;

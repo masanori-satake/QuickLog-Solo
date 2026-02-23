@@ -151,6 +151,7 @@ input[type="text"] {
     justify-content: center;
     align-items: center;
     min-height: 110px;
+    border: none !important;
 }
 
 #current-task-display {
@@ -170,6 +171,19 @@ input[type="text"] {
     clip-path: inset(0 0 0 100%);
     pointer-events: none;
 }
+
+#current-task-display.cat-blue, #current-task-display.cat-green, #current-task-display.cat-orange,
+#current-task-display.cat-red, #current-task-display.cat-purple, #current-task-display.cat-teal, #current-task-display.cat-gray {
+    border: none;
+}
+
+.cat-blue-full { background-color: #1e40af; color: #ffffff; }
+.cat-green-full { background-color: #166534; color: #ffffff; }
+.cat-orange-full { background-color: #9a3412; color: #ffffff; }
+.cat-red-full { background-color: #991b1b; color: #ffffff; }
+.cat-purple-full { background-color: #6b21a8; color: #ffffff; }
+.cat-teal-full { background-color: #115e59; color: #ffffff; }
+.cat-gray-full { background-color: #374151; color: #ffffff; }
 
 #status-label, #status-label-overlay {
     font-size: 0.75rem;
