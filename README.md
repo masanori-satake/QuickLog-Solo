@@ -13,12 +13,26 @@
 1. 本リポジトリをクローンまたはダウンロードします。
 2. `index.html` をブラウザ（Chrome, Edge, Firefox等）で直接開くか、ローカルサーバー（Live Server等）を起動してアクセスしてください。
 
-### GitHub Pages へのホスト方法（推奨）
-本アプリは静的ファイルのみで構成されているため、GitHub Pages で簡単にホストできます。
-1. GitHub リポジトリの **Settings** タブを開きます。
-2. 左メニューの **Pages** を選択します。
-3. **Build and deployment** セクションで、Branch に `main`（または現在のブランチ）を選択し、フォルダを `/ (root)` または `/docs`（ファイルを docs フォルダに移動した場合）に設定して **Save** を押します。
-4. 数分後、発行されたURLにアクセスすると PWA として「インストール」が可能になります。
+### Vercel への自動デプロイ方法（推奨）
+本アプリは静的ファイルのみで構成されているため、Vercel の無料プランで簡単にホストできます。GitHub Actions を使用して、プッシュ時に自動デプロイする設定手順は以下の通りです。
+
+#### 1. Vercel での準備
+1. [Vercel](https://vercel.com/) にログインし、新しいプロジェクトを作成します（GitHub リポジトリをインポート）。
+2. Vercel のプロジェクト設定から以下の情報を取得します：
+   - **Project ID**: Project Settings > General にあります。
+   - **Org ID**: Vercel のアカウント設定、またはチーム設定のページにあります。
+3. Vercel の Account Settings > Tokens で、新しい **Access Token** を発行します。
+
+#### 2. GitHub リポジトリでの設定
+1. GitHub リポジトリの **Settings** > **Secrets and variables** > **Actions** を開きます。
+2. **New repository secret** をクリックし、以下の3つを追加します：
+   - `VERCEL_TOKEN`: 発行した Access Token
+   - `VERCEL_ORG_ID`: 取得した Org ID
+   - `VERCEL_PROJECT_ID`: 取得した Project ID
+
+#### 3. 自動デプロイの実行
+- `main` ブランチまたは `feat/quicklog-solo-core` ブランチにプッシュすると、`.github/workflows/deploy.yml` が実行され、自動的に Vercel へデプロイされます。
+- デプロイ完了後、Vercel から提供される URL にアクセスすると PWA として「インストール」が可能になります。
 
 ### データの保存場所
 - Google Chrome/Edge/Firefox 等のブラウザ内ストレージ（IndexedDB）に保存されます。
