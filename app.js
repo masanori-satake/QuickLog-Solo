@@ -141,15 +141,16 @@ async function cleanupOldLogs() {
 
 // --- Punch-in/out Logic ---
 
-async function startTask(categoryName) {
+async function startTask(categoryName, resumableCategory = null) {
     if (activeTask) {
-        await stopTask();
+        await stopTaskInternal();
     }
 
     const newLog = {
         category: categoryName,
         startTime: Date.now(),
-        endTime: null
+        endTime: null,
+        resumableCategory: resumableCategory
     };
 
     const id = await dbAdd('logs', newLog);
@@ -201,13 +202,30 @@ function updateTimer() {
     }
 }
 
-async function stopTask() {
+async function stopTaskInternal() {
     if (!activeTask) return;
-
     activeTask.endTime = Date.now();
     await dbPut('logs', activeTask);
     activeTask = null;
-    updateUI();
+}
+
+async function stopTask() {
+    if (!activeTask) return;
+
+    // If we are in idle mode, "Resume" should be handled by the click listener.
+    // This stopTask function is called by the button.
+    if (activeTask.category === '(待機)') {
+        if (activeTask.resumableCategory) {
+            await startTask(activeTask.resumableCategory);
+        }
+        return;
+    }
+
+    const lastCategory = activeTask.category;
+    await stopTaskInternal();
+
+    // Start idle task
+    await startTask('(待機)', lastCategory);
 }
 
 // --- UI Logic ---
@@ -282,8 +300,13 @@ function createLogElement(log, categoryMap) {
     const start = new Date(log.startTime);
     const durationMin = Math.round((log.endTime - log.startTime) / 60000);
 
-    const cat = categoryMap.get(log.category);
-    const colorClass = cat ? `dot-${cat.color}` : 'dot-gray';
+    let colorClass = 'dot-gray';
+    if (log.category === '(待機)') {
+        colorClass = 'dot-idle';
+    } else {
+        const cat = categoryMap.get(log.category);
+        if (cat) colorClass = `dot-${cat.color}`;
+    }
 
     li.innerHTML = `
         <span class="log-time">${start.getHours()}:${String(start.getMinutes()).padStart(2, '0')}</span>
@@ -308,8 +331,15 @@ async function updateUI() {
     const overlay = document.getElementById('current-task-display-overlay');
 
     if (activeTask) {
-        const cat = await dbGet('categories', activeTask.category);
-        const color = cat ? cat.color : 'blue';
+        let color = 'blue';
+        let isIdle = activeTask.category === '(待機)';
+
+        if (isIdle) {
+            color = 'idle';
+        } else {
+            const cat = await dbGet('categories', activeTask.category);
+            if (cat) color = cat.color;
+        }
 
         if (display) {
             display.className = `cat-${color}`;
@@ -318,7 +348,11 @@ async function updateUI() {
             overlay.className = `cat-${color}-full`;
         }
 
-        const label = '実行中';
+        const label = isIdle ? '待機中' : '実行中';
+        if (stopBtn) {
+            stopBtn.textContent = isIdle ? '再開' : 'ストップ';
+            stopBtn.disabled = false;
+        }
         if (statusLabel) statusLabel.textContent = label;
         if (statusLabelOverlay) statusLabelOverlay.textContent = label;
         if (currentTaskName) currentTaskName.textContent = activeTask.category;
@@ -536,6 +570,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const input = document.getElementById(inputId);
         const name = input.value.trim();
         if (name) {
+            if (name === '(待機)') {
+                alert('「(待機)」はシステム予約済みのカテゴリ名です。');
+                return;
+            }
             const categories = await dbGetAll('categories');
             const newOrder = categories.length;
             await dbPut('categories', { name, color: 'blue', order: newOrder });

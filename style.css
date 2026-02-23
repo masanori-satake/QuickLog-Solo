@@ -177,13 +177,14 @@ input[type="text"] {
     border: none;
 }
 
-.cat-blue-full { background-color: #1e40af; color: #ffffff; }
-.cat-green-full { background-color: #166534; color: #ffffff; }
-.cat-orange-full { background-color: #9a3412; color: #ffffff; }
-.cat-red-full { background-color: #991b1b; color: #ffffff; }
-.cat-purple-full { background-color: #6b21a8; color: #ffffff; }
-.cat-teal-full { background-color: #115e59; color: #ffffff; }
-.cat-gray-full { background-color: #374151; color: #ffffff; }
+.cat-blue-full, #current-task-display-overlay.cat-blue-full { background-color: #1e40af; color: #ffffff; }
+.cat-green-full, #current-task-display-overlay.cat-green-full { background-color: #166534; color: #ffffff; }
+.cat-orange-full, #current-task-display-overlay.cat-orange-full { background-color: #9a3412; color: #ffffff; }
+.cat-red-full, #current-task-display-overlay.cat-red-full { background-color: #991b1b; color: #ffffff; }
+.cat-purple-full, #current-task-display-overlay.cat-purple-full { background-color: #6b21a8; color: #ffffff; }
+.cat-teal-full, #current-task-display-overlay.cat-teal-full { background-color: #115e59; color: #ffffff; }
+.cat-gray-full, #current-task-display-overlay.cat-gray-full { background-color: #374151; color: #ffffff; }
+.cat-idle-full, #current-task-display-overlay.cat-idle-full { background-color: #9ca3af; color: #ffffff; }
 
 #status-label, #status-label-overlay {
     font-size: 0.75rem;
@@ -451,6 +452,11 @@ footer {
 .dot-purple { background-color: #6b21a8; }
 .dot-teal { background-color: #115e59; }
 .dot-gray { background-color: #374151; }
+
+/* Idle category special styling */
+.cat-idle { background-color: #f3f4f6; color: #6b7280; border: none; }
+.cat-idle-full { background-color: #9ca3af; color: #ffffff; }
+.dot-idle { background-color: #9ca3af; }
 
 /* Settings Popup Items */
 .setting-item {
