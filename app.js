@@ -315,7 +315,13 @@ function createLogElement(log, categoryMap) {
     li.className = 'log-item';
 
     const start = new Date(log.startTime);
-    const durationMin = Math.round((log.endTime - log.startTime) / 60000);
+    const durationMs = log.endTime - log.startTime;
+    let durationText = "";
+    if (durationMs < 60000) {
+        durationText = `${Math.round(durationMs / 1000)} sec`;
+    } else {
+        durationText = `${Math.round(durationMs / 60000)} min`;
+    }
 
     let colorClass = 'dot-gray';
     if (log.category === '(待機)') {
@@ -328,7 +334,7 @@ function createLogElement(log, categoryMap) {
     li.innerHTML = `
         <span class="log-time">${start.getHours()}:${String(start.getMinutes()).padStart(2, '0')}</span>
         <span class="log-name"><span class="category-dot ${colorClass}"></span>${log.category}</span>
-        <span class="log-duration">${durationMin} min</span>
+        <span class="log-duration">${durationText}</span>
     `;
     return li;
 }
