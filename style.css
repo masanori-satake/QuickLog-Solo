@@ -87,9 +87,54 @@ button:disabled {
     transform: none;
 }
 
-#settings-toggle {
+#header-btns {
+    display: flex;
+    gap: 0.2rem;
+}
+
+#settings-toggle, #layout-toggle {
     padding: 0.2rem 0.5rem;
     font-size: 1.2rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Layout Classes */
+body.layout-horizontal #app {
+    max-width: 800px;
+}
+body.layout-horizontal main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+body.layout-horizontal #log-section {
+    grid-column: 2; grid-row: 1 / 5;
+    margin-top: 0; border-top: none;
+    border-left: var(--border-width) solid var(--text-color);
+    padding-top: 0; padding-left: 1.5rem;
+    height: calc(100vh - 120px); overflow-y: auto;
+}
+
+body.layout-vertical #app {
+    max-width: 400px;
+}
+body.layout-vertical main {
+    display: flex;
+    flex-direction: column;
+}
+body.layout-vertical #log-section {
+    grid-column: unset;
+    grid-row: unset;
+    margin-top: 1rem;
+    border-top: var(--border-width) solid var(--text-color);
+    border-left: none;
+    padding-top: 1.5rem;
+    padding-left: 0;
+    height: auto;
+    overflow-y: visible;
 }
 
 #current-task-display {
@@ -438,16 +483,16 @@ footer {
 .confirm-btns { display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end; }
 #confirm-ok-btn { background: #fee2e2; color: #b91c1c; border-color: #b91c1c; }
 
-/* Responsive */
+/* Responsive Default (if no class is set) */
 @media (min-width: 650px) {
-    #app { max-width: 800px; }
-    main {
+    body:not(.layout-vertical):not(.layout-horizontal) #app { max-width: 800px; }
+    body:not(.layout-vertical):not(.layout-horizontal) main {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1.5rem;
         align-items: start;
     }
-    #log-section {
+    body:not(.layout-vertical):not(.layout-horizontal) #log-section {
         grid-column: 2; grid-row: 1 / 5;
         margin-top: 0; border-top: none;
         border-left: var(--border-width) solid var(--text-color);

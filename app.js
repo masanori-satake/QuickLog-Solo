@@ -151,6 +151,9 @@ async function setupInitialData() {
     const font = await dbGet('settings', 'font');
     if (font) applyFont(font.value);
 
+    const layout = await dbGet('settings', 'layout');
+    if (layout) applyLayout(layout.value);
+
     // Check for active task
     const allLogs = await dbGetAll('logs');
     activeTask = allLogs.find(log => !log.endTime);
@@ -209,6 +212,8 @@ function updateTimer() {
     const elOverlay = document.getElementById('elapsed-time-overlay');
     if (el) el.textContent = timeStr;
     if (elOverlay) elOverlay.textContent = timeStr;
+
+    document.title = `${timeStr} - ${activeTask.category}`;
 
     // Animation logic
     const msInMinute = elapsed % 60000;
@@ -279,6 +284,24 @@ function applyFont(fontValue) {
     document.body.style.setProperty('--font-family', fontValue);
     const select = document.getElementById('font-select');
     if (select) select.value = fontValue;
+}
+
+function applyLayout(layout) {
+    const body = document.body;
+    body.classList.remove('layout-horizontal', 'layout-vertical');
+    if (layout === 'horizontal' || layout === 'vertical') {
+        body.classList.add(`layout-${layout}`);
+    }
+    const btn = document.getElementById('layout-toggle');
+    if (btn) {
+        if (layout === 'horizontal') {
+            btn.textContent = '↕️';
+            btn.title = '縦長レイアウトに切り替え';
+        } else {
+            btn.textContent = '↔️';
+            btn.title = '横長レイアウトに切り替え';
+        }
+    }
 }
 
 async function renderCategories() {
@@ -456,6 +479,8 @@ async function updateUI() {
             elapsedTimeOverlay.textContent = '00:00:00';
         }
         if (overlay) overlay.style.clipPath = 'inset(0 0 0 100%)';
+
+        document.title = 'QuickLog-Solo';
     }
 }
 
@@ -739,6 +764,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const aggBtn = document.getElementById('copy-aggregation-btn');
     if (aggBtn) aggBtn.onclick = copyAggregation;
 
+    const layoutToggle = document.getElementById('layout-toggle');
+    if (layoutToggle) {
+        layoutToggle.onclick = async () => {
+            const currentLayout = document.body.classList.contains('layout-horizontal') ? 'horizontal' :
+                                 (document.body.classList.contains('layout-vertical') ? 'vertical' :
+                                 (window.innerWidth >= 650 ? 'horizontal' : 'vertical'));
+            const newLayout = currentLayout === 'horizontal' ? 'vertical' : 'horizontal';
+            await dbPut('settings', { key: 'layout', value: newLayout });
+            applyLayout(newLayout);
+        };
+    }
+
     // Modals
     const infoPopup = document.getElementById('info-popup');
     const infoBtn = document.getElementById('info-btn');
@@ -874,6 +911,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateUI();
             alert('インポートが完了しました。');
         };
+    }
+
+    // Shortcut actions
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    if (action === 'settings') {
+        if (settingsPopup) settingsPopup.classList.remove('hidden');
+    } else if (action === 'exit') {
+        setTimeout(async () => {
+            if (await showConfirm('アプリを終了して計測を停止しますか？')) {
+                if (activeTask) {
+                    await stopTaskInternal();
+                    updateUI();
+                }
+                window.close();
+                // If window.close() fails (browsers often block it), notify the user
+                showToast('計測を停止しました。');
+            }
+        }, 500);
     }
 
     console.log('QuickLog-Solo Initialized');
