@@ -142,6 +142,8 @@ async function cleanupOldLogs() {
 // --- Punch-in/out Logic ---
 
 async function startTask(categoryName, resumableCategory = null) {
+    if (activeTask && activeTask.category === categoryName) return;
+
     if (activeTask) {
         await stopTaskInternal();
     }
@@ -209,23 +211,17 @@ async function stopTaskInternal() {
     activeTask = null;
 }
 
-async function stopTask() {
-    if (!activeTask) return;
-
-    // If we are in idle mode, "Resume" should be handled by the click listener.
-    // This stopTask function is called by the button.
-    if (activeTask.category === '(待機)') {
-        if (activeTask.resumableCategory) {
-            await startTask(activeTask.resumableCategory);
-        }
-        return;
-    }
-
+async function pauseTask() {
+    if (!activeTask || activeTask.category === '(待機)') return;
     const lastCategory = activeTask.category;
     await stopTaskInternal();
-
-    // Start idle task
     await startTask('(待機)', lastCategory);
+}
+
+async function endTask() {
+    if (!activeTask) return;
+    await stopTaskInternal();
+    updateUI();
 }
 
 // --- UI Logic ---
@@ -258,8 +254,10 @@ async function renderCategories() {
     categories.forEach(cat => {
         const btn = document.createElement('button');
         btn.className = `category-btn cat-${cat.color || 'blue'}`;
-        if (activeTask && activeTask.category === cat.name) {
+        const isActive = activeTask && activeTask.category === cat.name;
+        if (isActive) {
             btn.classList.add('active');
+            btn.disabled = true;
         }
         btn.textContent = cat.name;
         btn.onclick = () => startTask(cat.name);
@@ -324,7 +322,8 @@ async function updateUI() {
     const statusLabelOverlay = document.getElementById('status-label-overlay');
     const currentTaskName = document.getElementById('current-task-name');
     const currentTaskNameOverlay = document.getElementById('current-task-name-overlay');
-    const stopBtn = document.getElementById('stop-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const endBtn = document.getElementById('end-btn');
     const elapsedTime = document.getElementById('elapsed-time');
     const elapsedTimeOverlay = document.getElementById('elapsed-time-overlay');
     const display = document.getElementById('current-task-display');
@@ -349,15 +348,26 @@ async function updateUI() {
         }
 
         const label = isIdle ? '待機中' : '実行中';
-        if (stopBtn) {
-            stopBtn.textContent = isIdle ? '再開' : 'ストップ';
-            stopBtn.disabled = false;
-        }
         if (statusLabel) statusLabel.textContent = label;
         if (statusLabelOverlay) statusLabelOverlay.textContent = label;
         if (currentTaskName) currentTaskName.textContent = activeTask.category;
         if (currentTaskNameOverlay) currentTaskNameOverlay.textContent = activeTask.category;
-        if (stopBtn) stopBtn.disabled = false;
+
+        if (pauseBtn) {
+            if (isIdle) {
+                pauseBtn.textContent = '再開';
+                pauseBtn.disabled = !activeTask.resumableCategory;
+                pauseBtn.onclick = () => startTask(activeTask.resumableCategory);
+            } else {
+                pauseBtn.textContent = '一時停止';
+                pauseBtn.disabled = false;
+                pauseBtn.onclick = pauseTask;
+            }
+        }
+        if (endBtn) {
+            endBtn.disabled = false;
+        }
+
         if (elapsedTime) elapsedTime.classList.remove('hidden');
         if (elapsedTimeOverlay) elapsedTimeOverlay.classList.remove('hidden');
         startTimer();
@@ -369,7 +379,13 @@ async function updateUI() {
         if (statusLabelOverlay) statusLabelOverlay.textContent = label;
         if (currentTaskName) currentTaskName.textContent = '-';
         if (currentTaskNameOverlay) currentTaskNameOverlay.textContent = '-';
-        if (stopBtn) stopBtn.disabled = true;
+
+        if (pauseBtn) {
+            pauseBtn.disabled = true;
+            pauseBtn.textContent = '一時停止';
+        }
+        if (endBtn) endBtn.disabled = true;
+
         if (elapsedTime) elapsedTime.classList.add('hidden');
         if (elapsedTimeOverlay) elapsedTimeOverlay.classList.add('hidden');
         if (timerInterval) clearInterval(timerInterval);
@@ -442,6 +458,7 @@ async function renderCategoryEditor() {
     const list = document.getElementById('category-editor-list');
     if (!list) return;
     let categories = await dbGetAll('categories');
+    categories = categories.filter(c => c.name !== '(待機)');
     categories.sort((a, b) => a.order - b.order);
     list.innerHTML = '';
 
@@ -476,6 +493,11 @@ async function renderCategoryEditor() {
         input.onchange = async () => {
             const newName = input.value.trim();
             if (newName && newName !== cat.name) {
+                if (newName === '(待機)') {
+                    alert('「(待機)」はシステム予約済みのカテゴリ名です。');
+                    input.value = cat.name;
+                    return;
+                }
                 const oldName = cat.name;
                 const existing = await dbGet('categories', newName);
                 if (existing) {
@@ -486,8 +508,18 @@ async function renderCategoryEditor() {
                 const updatedCat = { ...cat, name: newName };
                 await dbDelete('categories', oldName);
                 await dbPut('categories', updatedCat);
+
+                // Sync logs
+                const allLogs = await dbGetAll('logs');
+                for (const log of allLogs) {
+                    if (log.category === oldName) {
+                        log.category = newName;
+                        await dbPut('logs', log);
+                    }
+                }
+
                 cat.name = newName; // Update local ref
-                renderCategories();
+                updateUI();
                 renderCategoryEditor();
             }
         };
@@ -502,10 +534,10 @@ async function renderCategoryEditor() {
         });
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
-            if (confirm(`カテゴリ「${cat.name}」を削除しますか？`)) {
+            if (confirm(`カテゴリ「${cat.name}」を削除しますか？（過去のログからはカテゴリ色が消えます）`)) {
                 await dbDelete('categories', cat.name);
+                updateUI();
                 renderCategoryEditor();
-                renderCategories();
             }
         };
 
@@ -563,8 +595,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     initTabs();
 
     // Event Listeners
-    const stopBtn = document.getElementById('stop-btn');
-    if (stopBtn) stopBtn.onclick = stopTask;
+    const pauseBtn = document.getElementById('pause-btn');
+    if (pauseBtn) pauseBtn.onclick = pauseTask;
+
+    const endBtn = document.getElementById('end-btn');
+    if (endBtn) endBtn.onclick = endTask;
 
     const addCategoryLogic = async (inputId) => {
         const input = document.getElementById(inputId);
