@@ -29,10 +29,15 @@
 
 #### 2. GitHub リポジトリでの設定
 1. GitHub リポジトリの **Settings** > **Secrets and variables** > **Actions** を開きます。
-2. **New repository secret** をクリックし、以下の3つを追加します：
-   - `VERCEL_TOKEN`: 発行した Access Token
+2. **New repository secret** をクリックし、以下の3つを追加します（**Name** に以下の文字列を、**Secret** に取得した値を入力します）：
+   - `VERCEL_TOKEN`: 発行した Access Token（`vcp_` で始まる文字列。**そのまま全て**入力してください）
    - `VERCEL_ORG_ID`: 取得した Org ID
    - `VERCEL_PROJECT_ID`: 取得した Project ID
+
+   > **注意:**
+   > - トークンの先頭にある `vcp_` は Vercel の新しいトークン形式のプレフィックスであり、正常なものです。削除せずにそのまま入力してください。
+   > - コピー＆ペースト時に前後に**余計なスペースや改行**が入らないようご注意ください。
+   > - シークレットの「Name」にはスペースやハイフン（`-`）は使用できません。必ず上記通りのアンダースコア（`_`）を含んだ名称にしてください。
 
 #### 3. 自動デプロイの実行
 - `main` ブランチまたは `feat/quicklog-solo-core` ブランチにプッシュすると、`.github/workflows/deploy.yml` が実行され、自動的に Vercel へデプロイされます。
