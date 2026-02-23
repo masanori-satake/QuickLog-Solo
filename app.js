@@ -220,8 +220,10 @@ async function pauseTask() {
 
 async function endTask() {
     if (!activeTask) return;
-    await stopTaskInternal();
-    updateUI();
+    if (confirm('本当に作業を終了しますか？')) {
+        await stopTaskInternal();
+        updateUI();
+    }
 }
 
 // --- UI Logic ---
@@ -278,7 +280,23 @@ async function renderLogs() {
     logList.innerHTML = '';
     extraLogList.innerHTML = '';
 
+    let lastDateStr = "";
     completedLogs.forEach((log, i) => {
+        const date = new Date(log.startTime);
+        const dateStr = date.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' });
+
+        if (dateStr !== lastDateStr) {
+            const dateHeader = document.createElement('li');
+            dateHeader.className = 'log-date-header';
+            dateHeader.textContent = dateStr;
+            if (i < 5) {
+                logList.appendChild(dateHeader);
+            } else {
+                extraLogList.appendChild(dateHeader);
+            }
+            lastDateStr = dateStr;
+        }
+
         const li = createLogElement(log, categoryMap);
         if (i < 5) {
             logList.appendChild(li);
@@ -374,7 +392,7 @@ async function updateUI() {
     } else {
         if (display) display.className = '';
         if (overlay) overlay.className = '';
-        const label = '待機中';
+        const label = '停止中';
         if (statusLabel) statusLabel.textContent = label;
         if (statusLabelOverlay) statusLabelOverlay.textContent = label;
         if (currentTaskName) currentTaskName.textContent = '-';
