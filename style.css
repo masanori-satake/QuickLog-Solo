@@ -252,6 +252,30 @@ body.layout-vertical #log-section {
     text-transform: uppercase;
 }
 
+#more-logs-btn {
+    border: none;
+    background: transparent;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    display: block;
+    margin: 0.5rem auto;
+    color: var(--text-color);
+    width: auto;
+    transform: none;
+}
+
+#more-logs-btn:hover {
+    opacity: 1;
+    filter: none;
+}
+
+#more-logs-btn:active {
+    transform: none;
+}
+
 #log-list, #extra-log-list {
     display: flex;
     flex-direction: column;
@@ -301,7 +325,7 @@ body.layout-vertical #log-section {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgb(0 0 0 / 60%);
+    background-color: rgba(0, 0, 0, 0.6);
 }
 
 .modal:not(.hidden) {

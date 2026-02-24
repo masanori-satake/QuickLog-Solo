@@ -3,7 +3,11 @@ import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pause
 
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js");
+        navigator.serviceWorker.register("./sw.js").then((reg) => {
+            console.log('QuickLog-Solo: SW registered', reg);
+        }).catch((err) => {
+            console.error('QuickLog-Solo: SW registration failed', err);
+        });
     });
 }
 
@@ -183,8 +187,15 @@ function applyLayout(layout) {
 }
 
 async function renderCategories() {
-    let categories = await dbGetAll('categories');
-    categories.sort((a, b) => a.order - b.order);
+    console.log('QuickLog-Solo: Rendering categories...');
+    let categories;
+    try {
+        categories = await dbGetAll('categories');
+    } catch (e) {
+        console.error('Failed to get categories:', e);
+        return;
+    }
+    categories.sort((a, b) => (a.order || 0) - (b.order || 0));
     const list = document.getElementById('category-list');
     if (!list) return;
     list.innerHTML = '';
@@ -203,8 +214,16 @@ async function renderCategories() {
 }
 
 async function renderLogs() {
-    const allLogs = await dbGetAll('logs');
-    const categories = await dbGetAll('categories');
+    console.log('QuickLog-Solo: Rendering logs...');
+    let allLogs;
+    let categories;
+    try {
+        allLogs = await dbGetAll('logs');
+        categories = await dbGetAll('categories');
+    } catch (e) {
+        console.error('Failed to get data for logs:', e);
+        return;
+    }
     const categoryMap = new Map(categories.map(c => [c.name, c]));
 
     const completedLogs = allLogs.filter(l => l.endTime).sort((a, b) => b.startTime - a.startTime);
@@ -261,10 +280,20 @@ function createLogElement(log, categoryMap) {
 }
 
 async function updateUI() {
+    console.log('QuickLog-Solo: updateUI called');
     if (timerInterval) clearInterval(timerInterval);
 
-    renderCategories();
-    renderLogs();
+    try {
+        await renderCategories();
+    } catch (e) {
+        console.error('updateUI: Failed to render categories', e);
+    }
+
+    try {
+        await renderLogs();
+    } catch (e) {
+        console.error('updateUI: Failed to render logs', e);
+    }
 
     const elements = {
         statusLabel: document.getElementById('status-label'),
@@ -721,17 +750,30 @@ function setupEventListeners() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadVersion();
-    const settings = await initDB();
-    activeTask = settings.activeTask;
+    console.log('QuickLog-Solo: DOMContentLoaded');
+    try {
+        await loadVersion();
+    } catch (e) {
+        console.error('Failed to load version:', e);
+    }
 
-    applyTheme(settings.theme || 'system');
-    applyAccent(settings.accent || 'blue');
-    applyFont(settings.font || FONTS[0].value);
-    applyLayout(settings.layout);
+    try {
+        console.log('QuickLog-Solo: Initializing DB...');
+        const settings = await initDB();
+        console.log('QuickLog-Solo: DB Initialized', settings);
+        activeTask = settings.activeTask;
 
-    setupEventListeners();
-    updateUI();
+        applyTheme(settings.theme || 'system');
+        applyAccent(settings.accent || 'blue');
+        applyFont(settings.font || FONTS[0].value);
+        applyLayout(settings.layout);
+
+        setupEventListeners();
+        await updateUI();
+    } catch (e) {
+        console.error('Failed to initialize application:', e);
+        alert('アプリの初期化に失敗しました。ページを再読み込みしてください。');
+    }
 
     console.log('QuickLog-Solo Initialized');
 });
