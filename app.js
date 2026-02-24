@@ -8,6 +8,8 @@ let db;
 let activeTask = null;
 let timerInterval = null;
 
+const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
+
 const FONTS = [
     { name: '標準', value: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
     { name: 'メイリオ', value: '"Meiryo", sans-serif' },
@@ -297,9 +299,15 @@ function applyLayout(layout) {
         if (layout === 'horizontal') {
             btn.textContent = '↕️';
             btn.title = '縦長レイアウトに切り替え';
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+                window.resizeTo(950, 800);
+            }
         } else {
             btn.textContent = '↔️';
             btn.title = '横長レイアウトに切り替え';
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+                window.resizeTo(450, 800);
+            }
         }
     }
 }
@@ -481,6 +489,36 @@ async function updateUI() {
         if (overlay) overlay.style.clipPath = 'inset(0 0 0 100%)';
 
         document.title = 'QuickLog-Solo';
+    }
+}
+
+// --- Instance Coordination Logic ---
+
+instanceChannel.onmessage = (event) => {
+    const { type, action } = event.data;
+    if (type === 'PING') {
+        instanceChannel.postMessage({ type: 'PONG' });
+    } else if (type === 'SHORTCUT_ACTION') {
+        handleShortcutAction(action);
+    }
+};
+
+async function handleShortcutAction(action) {
+    if (action === 'settings') {
+        const settingsPopup = document.getElementById('settings-popup');
+        if (settingsPopup) settingsPopup.classList.remove('hidden');
+    } else if (action === 'exit') {
+        // Bring window to focus if possible (though browser support is limited)
+        window.focus();
+        if (await showConfirm('アプリを終了して計測を停止しますか？')) {
+            if (activeTask) {
+                await stopTaskInternal();
+                updateUI();
+            }
+            window.close();
+            // If window.close() is blocked, we still update UI to 'Stopped'
+            showToast('計測を停止しました。');
+        }
     }
 }
 
@@ -913,23 +951,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 
-    // Shortcut actions
+    // Shortcut actions coordination
     const urlParams = new URLSearchParams(window.location.search);
     const action = urlParams.get('action');
-    if (action === 'settings') {
-        if (settingsPopup) settingsPopup.classList.remove('hidden');
-    } else if (action === 'exit') {
-        setTimeout(async () => {
-            if (await showConfirm('アプリを終了して計測を停止しますか？')) {
-                if (activeTask) {
-                    await stopTaskInternal();
-                    updateUI();
+    if (action) {
+        let otherInstanceFound = false;
+        const pingPromise = new Promise(resolve => {
+            const handler = (e) => {
+                if (e.data.type === 'PONG') {
+                    otherInstanceFound = true;
+                    resolve();
                 }
-                window.close();
-                // If window.close() fails (browsers often block it), notify the user
-                showToast('計測を停止しました。');
-            }
-        }, 500);
+            };
+            instanceChannel.addEventListener('message', handler);
+            setTimeout(() => {
+                instanceChannel.removeEventListener('message', handler);
+                resolve();
+        }, 300);
+        });
+
+        instanceChannel.postMessage({ type: 'PING' });
+        await pingPromise;
+
+        if (otherInstanceFound) {
+            instanceChannel.postMessage({ type: 'SHORTCUT_ACTION', action });
+            // Close this temporary instance
+            window.close();
+            // If close is blocked, show a message
+            document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; font-weight:bold;">別ウィンドウで処理を実行中です...</div>';
+            setTimeout(() => window.close(), 1000);
+            return;
+        } else {
+            handleShortcutAction(action);
+        }
     }
 
     console.log('QuickLog-Solo Initialized');
