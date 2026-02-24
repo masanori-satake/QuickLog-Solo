@@ -1,16 +1,37 @@
-if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("./sw.js"); }); }
-// QuickLog-Solo: Core Logic (Vanilla JS)
+import { initDB, dbGet, dbGetAll, dbPut, dbDelete, dbClear } from './js/db.js';
+import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './js/logic.js';
 
-const DB_NAME = 'QuickLogSoloDB';
-const DB_VERSION = 1;
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").then((reg) => {
+            console.log('QuickLog-Solo: SW registered', reg);
+        }).catch((err) => {
+            console.error('QuickLog-Solo: SW registration failed', err);
+        });
+    });
+}
 
-let db;
+// QuickLog-Solo: Main Application Entry
+
 let activeTask = null;
 let timerInterval = null;
 
 const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
 
-// --- Single-Instance Coordination Logic (Run immediately) ---
+const FONTS = [
+    { name: '標準', value: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
+    { name: 'メイリオ', value: '"Meiryo", sans-serif' },
+    { name: '游ゴシック', value: '"Yu Gothic", "YuGothic", sans-serif' },
+    { name: 'ヒラギノ角ゴ', value: '"Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif' },
+    { name: 'MS Pゴシック', value: '"MS PGothic", sans-serif' },
+    { name: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
+    { name: 'Georgia', value: 'Georgia, serif' },
+    { name: 'Courier New', value: '"Courier New", monospace' },
+    { name: 'Impact', value: 'Impact, charcoal, sans-serif' },
+    { name: 'Comic Sans MS', value: '"Comic Sans MS", cursive, sans-serif' }
+];
+
+// --- Single-Instance Coordination ---
 (async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const action = urlParams.get('action');
@@ -27,7 +48,7 @@ const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
         setTimeout(() => {
             instanceChannel.removeEventListener('message', handler);
             resolve();
-        }, 500); // Increased timeout
+        }, 500);
     });
 
     instanceChannel.postMessage({ type: 'PING' });
@@ -36,14 +57,13 @@ const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
     if (otherInstanceFound) {
         instanceChannel.postMessage({ type: 'FOCUS', action });
         window.close();
-        // If window.close() is blocked, display a message and stop execution
         document.addEventListener('DOMContentLoaded', () => {
             document.body.innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-weight:bold; text-align:center; padding:2rem;">' +
                 '<div>既に QuickLog-Solo が起動しています。</div>' +
                 '<div style="font-size:0.8rem; margin-top:1rem; color:gray;">既存のウィンドウを確認してください。</div>' +
                 '</div>';
         });
-        throw new Error('Duplicate instance detected. Execution stopped.');
+        throw new Error('Duplicate instance detected.');
     }
 })();
 
@@ -54,194 +74,36 @@ instanceChannel.onmessage = (event) => {
     } else if (type === 'FOCUS') {
         window.focus();
         if (action === 'settings') {
-            const settingsPopup = document.getElementById('settings-popup');
-            if (settingsPopup) settingsPopup.classList.remove('hidden');
+            document.getElementById('settings-popup')?.classList.remove('hidden');
         }
     }
 };
 
-const FONTS = [
-    { name: '標準', value: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
-    { name: 'メイリオ', value: '"Meiryo", sans-serif' },
-    { name: '游ゴシック', value: '"Yu Gothic", "YuGothic", sans-serif' },
-    { name: 'ヒラギノ角ゴ', value: '"Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif' },
-    { name: 'MS Pゴシック', value: '"MS PGothic", sans-serif' },
-    { name: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
-    { name: 'Georgia', value: 'Georgia, serif' },
-    { name: 'Courier New', value: '"Courier New", monospace' },
-    { name: 'Impact', value: 'Impact, charcoal, sans-serif' },
-    { name: 'Comic Sans MS', value: '"Comic Sans MS", cursive, sans-serif' }
-];
-
-// --- Database Logic (Raw IndexedDB) ---
-
-function openDatabase() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains('logs')) {
-                db.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
-            }
-            if (!db.objectStoreNames.contains('categories')) {
-                db.createObjectStore('categories', { keyPath: 'name' });
-            }
-            if (!db.objectStoreNames.contains('settings')) {
-                db.createObjectStore('settings', { keyPath: 'key' });
-            }
-        };
-        request.onsuccess = (event) => {
-            db = event.target.result;
-            resolve(db);
-        };
-        request.onerror = (event) => reject(event.target.error);
-    });
-}
-
-function dbGet(storeName, key) {
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readonly');
-        const store = tx.objectStore(storeName);
-        const request = store.get(key);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-function dbClear(storeName) {
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
-        const request = store.clear();
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
-}
-
-function dbGetAll(storeName) {
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readonly');
-        const store = tx.objectStore(storeName);
-        const request = store.getAll();
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-function dbPut(storeName, value) {
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
-        const request = store.put(value);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-function dbAdd(storeName, value) {
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
-        const request = store.add(value);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-function dbDelete(storeName, key) {
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
-        const request = store.delete(key);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
-}
-
-async function initDB() {
-    await openDatabase();
-    await setupInitialData();
-    await cleanupOldLogs();
-}
-
-async function setupInitialData() {
-    const initialCategories = [
-        { name: '💻 開発', color: 'blue', order: 0 },
-        { name: '🤝 会議', color: 'orange', order: 1 },
-        { name: '🔍 調査', color: 'green', order: 2 },
-        { name: '事務作業 📝', color: 'gray', order: 3 },
-        { name: '🔥 深い集中(Deep Work)', color: 'red', order: 4 },
-        { name: '📚 スキルアップ', color: 'purple', order: 5 },
-        { name: '💡 アイデア出し', color: 'teal', order: 6 },
-        { name: '☕ メンタル休憩', color: 'orange', order: 7 }
-    ];
-
-    let existingCategories = await dbGetAll('categories');
-    if (existingCategories.length === 0) {
-        for (const cat of initialCategories) {
-            await dbPut('categories', cat);
-        }
-    } else {
-        // Migration: Ensure all existing categories have color and order
-        for (let i = 0; i < existingCategories.length; i++) {
-            let cat = existingCategories[i];
-            if (cat.color === undefined || cat.order === undefined) {
-                cat.color = cat.color || 'blue';
-                cat.order = cat.order !== undefined ? cat.order : i;
-                await dbPut('categories', cat);
-            }
-        }
-    }
-
-    // Load settings
-    const theme = await dbGet('settings', 'theme');
-    if (theme) applyTheme(theme.value);
-
-    const accent = await dbGet('settings', 'accent');
-    if (accent) applyAccent(accent.value);
-
-    const font = await dbGet('settings', 'font');
-    if (font) applyFont(font.value);
-
-    const layout = await dbGet('settings', 'layout');
-    applyLayout(layout ? layout.value : null);
-
-    // Check for active task
-    const allLogs = await dbGetAll('logs');
-    activeTask = allLogs.find(log => !log.endTime);
-}
-
-async function cleanupOldLogs() {
-    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    const logs = await dbGetAll('logs');
-    for (const log of logs) {
-        if (log.startTime < thirtyDaysAgo) {
-            await dbDelete('logs', log.id);
-        }
-    }
-}
-
-// --- Punch-in/out Logic ---
+// --- Task Control ---
 
 async function startTask(categoryName, resumableCategory = null) {
-    if (activeTask && activeTask.category === categoryName) return;
-
-    if (activeTask) {
-        await stopTaskInternal();
-    }
-
-    const newLog = {
-        category: categoryName,
-        startTime: Date.now(),
-        endTime: null,
-        resumableCategory: resumableCategory
-    };
-
-    const id = await dbAdd('logs', newLog);
-    newLog.id = id;
-    activeTask = newLog;
+    activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory);
     updateUI();
 }
+
+async function pauseTask() {
+    activeTask = await pauseTaskLogic(activeTask);
+    updateUI();
+}
+
+async function stopTask() {
+    activeTask = await stopTaskLogic(activeTask);
+}
+
+async function endTask() {
+    if (!activeTask) return;
+    if (await showConfirm('本当に作業を終了しますか？')) {
+        await stopTask();
+        updateUI();
+    }
+}
+
+// --- Timer Management ---
 
 function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
@@ -254,64 +116,26 @@ function updateTimer() {
         if (timerInterval) clearInterval(timerInterval);
         return;
     }
-    const elapsed = Date.now() - activeTask.startTime;
-    const hours = Math.floor(elapsed / 3600000);
-    const minutes = Math.floor((elapsed % 3600000) / 60000);
-    const seconds = Math.floor((elapsed % 60000) / 1000);
-    const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-    const el = document.getElementById('elapsed-time');
-    const elOverlay = document.getElementById('elapsed-time-overlay');
-    if (el) el.textContent = timeStr;
-    if (elOverlay) elOverlay.textContent = timeStr;
+    const elapsed = Date.now() - activeTask.startTime;
+    const timeStr = formatDuration(elapsed).toString();
+
+    const elements = ['elapsed-time', 'elapsed-time-overlay'];
+    elements.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = timeStr;
+    });
 
     document.title = `${timeStr} - ${activeTask.category}`;
 
-    // Animation logic
-    const msInMinute = elapsed % 60000;
-    const minuteCount = Math.floor(elapsed / 60000);
-    const percent = (msInMinute / 60000) * 100;
-
     const overlay = document.getElementById('current-task-display-overlay');
     if (overlay) {
-        if (minuteCount % 2 === 0) {
-            // Even minute: White -> Accent (Right to Left)
-            // Percent 0% (White) -> 100% (Accent)
-            // Clip-path inset(top right bottom left)
-            overlay.style.clipPath = `inset(0 0 0 ${100 - percent}%)`;
-        } else {
-            // Odd minute: Accent -> White (Right to Left)
-            // Percent 0% (Accent) -> 100% (White)
-            // To make White appear from Right, Accent must be clipped from Right.
-            overlay.style.clipPath = `inset(0 ${percent}% 0 0)`;
-        }
+        const anim = getAnimationState(activeTask.startTime);
+        overlay.style.clipPath = anim.inset;
     }
 }
 
-async function stopTaskInternal() {
-    if (!activeTask) return;
-    activeTask.endTime = Date.now();
-    const taskToSave = activeTask;
-    activeTask = null; // Clear immediately to update UI without lag
-    await dbPut('logs', taskToSave);
-}
-
-async function pauseTask() {
-    if (!activeTask || activeTask.category === '(待機)') return;
-    const lastCategory = activeTask.category;
-    await stopTaskInternal();
-    await startTask('(待機)', lastCategory);
-}
-
-async function endTask() {
-    if (!activeTask) return;
-    if (await showConfirm('本当に作業を終了しますか？')) {
-        await stopTaskInternal();
-        updateUI();
-    }
-}
-
-// --- UI Logic ---
+// --- UI Rendering ---
 
 function applyTheme(theme) {
     const body = document.body;
@@ -328,7 +152,8 @@ function applyTheme(theme) {
 
 function applyAccent(accent) {
     const body = document.body;
-    body.classList.remove('accent-blue', 'accent-green', 'accent-orange', 'accent-red');
+    const accentClasses = ['accent-blue', 'accent-green', 'accent-orange', 'accent-red'];
+    body.classList.remove(...accentClasses);
     body.classList.add(`accent-${accent}`);
 }
 
@@ -342,7 +167,6 @@ function applyLayout(layout) {
     const body = document.body;
     body.classList.remove('layout-horizontal', 'layout-vertical');
 
-    // Default cases if layout is not explicitly provided
     if (!layout) {
         layout = localStorage.getItem('quicklog_layout') || (window.innerWidth >= 650 ? 'horizontal' : 'vertical');
     }
@@ -352,25 +176,26 @@ function applyLayout(layout) {
 
     const btn = document.getElementById('layout-toggle');
     if (btn) {
-        if (layout === 'horizontal') {
-            btn.textContent = '↕️';
-            btn.title = '縦長レイアウトに切り替え';
-            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-                window.resizeTo(950, 800);
-            }
-        } else {
-            btn.textContent = '↔️';
-            btn.title = '横長レイアウトに切り替え';
-            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-                window.resizeTo(450, 800);
-            }
+        const isHorizontal = layout === 'horizontal';
+        btn.textContent = isHorizontal ? '↕️' : '↔️';
+        btn.title = isHorizontal ? '縦長レイアウトに切り替え' : '横長レイアウトに切り替え';
+
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            window.resizeTo(isHorizontal ? 950 : 450, 800);
         }
     }
 }
 
 async function renderCategories() {
-    let categories = await dbGetAll('categories');
-    categories.sort((a, b) => a.order - b.order);
+    console.log('QuickLog-Solo: Rendering categories...');
+    let categories;
+    try {
+        categories = await dbGetAll('categories');
+    } catch (e) {
+        console.error('Failed to get categories:', e);
+        return;
+    }
+    categories.sort((a, b) => (a.order || 0) - (b.order || 0));
     const list = document.getElementById('category-list');
     if (!list) return;
     list.innerHTML = '';
@@ -389,8 +214,16 @@ async function renderCategories() {
 }
 
 async function renderLogs() {
-    const allLogs = await dbGetAll('logs');
-    const categories = await dbGetAll('categories');
+    console.log('QuickLog-Solo: Rendering logs...');
+    let allLogs;
+    let categories;
+    try {
+        allLogs = await dbGetAll('logs');
+        categories = await dbGetAll('categories');
+    } catch (e) {
+        console.error('Failed to get data for logs:', e);
+        return;
+    }
     const categoryMap = new Map(categories.map(c => [c.name, c]));
 
     const completedLogs = allLogs.filter(l => l.endTime).sort((a, b) => b.startTime - a.startTime);
@@ -410,20 +243,12 @@ async function renderLogs() {
             const dateHeader = document.createElement('li');
             dateHeader.className = 'log-date-header';
             dateHeader.textContent = dateStr;
-            if (i < 5) {
-                logList.appendChild(dateHeader);
-            } else {
-                extraLogList.appendChild(dateHeader);
-            }
+            (i < 5 ? logList : extraLogList).appendChild(dateHeader);
             lastDateStr = dateStr;
         }
 
         const li = createLogElement(log, categoryMap);
-        if (i < 5) {
-            logList.appendChild(li);
-        } else {
-            extraLogList.appendChild(li);
-        }
+        (i < 5 ? logList : extraLogList).appendChild(li);
     });
 
     const moreBtn = document.getElementById('more-logs-btn');
@@ -436,12 +261,7 @@ function createLogElement(log, categoryMap) {
 
     const start = new Date(log.startTime);
     const durationMs = log.endTime - log.startTime;
-    let durationText = "";
-    if (durationMs < 60000) {
-        durationText = `${Math.round(durationMs / 1000)} sec`;
-    } else {
-        durationText = `${Math.round(durationMs / 60000)} min`;
-    }
+    const durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)} sec` : `${Math.round(durationMs / 60000)} min`;
 
     let colorClass = 'dot-gray';
     if (log.category === '(待機)') {
@@ -460,26 +280,37 @@ function createLogElement(log, categoryMap) {
 }
 
 async function updateUI() {
-    // Stop timer while updating UI to prevent concurrent modifications
+    console.log('QuickLog-Solo: updateUI called');
     if (timerInterval) clearInterval(timerInterval);
 
-    renderCategories();
-    renderLogs();
+    try {
+        await renderCategories();
+    } catch (e) {
+        console.error('updateUI: Failed to render categories', e);
+    }
 
-    const statusLabel = document.getElementById('status-label');
-    const statusLabelOverlay = document.getElementById('status-label-overlay');
-    const currentTaskName = document.getElementById('current-task-name');
-    const currentTaskNameOverlay = document.getElementById('current-task-name-overlay');
-    const pauseBtn = document.getElementById('pause-btn');
-    const endBtn = document.getElementById('end-btn');
-    const elapsedTime = document.getElementById('elapsed-time');
-    const elapsedTimeOverlay = document.getElementById('elapsed-time-overlay');
-    const display = document.getElementById('current-task-display');
-    const overlay = document.getElementById('current-task-display-overlay');
+    try {
+        await renderLogs();
+    } catch (e) {
+        console.error('updateUI: Failed to render logs', e);
+    }
+
+    const elements = {
+        statusLabel: document.getElementById('status-label'),
+        statusLabelOverlay: document.getElementById('status-label-overlay'),
+        currentTaskName: document.getElementById('current-task-name'),
+        currentTaskNameOverlay: document.getElementById('current-task-name-overlay'),
+        pauseBtn: document.getElementById('pause-btn'),
+        endBtn: document.getElementById('end-btn'),
+        elapsedTime: document.getElementById('elapsed-time'),
+        elapsedTimeOverlay: document.getElementById('elapsed-time-overlay'),
+        display: document.getElementById('current-task-display'),
+        overlay: document.getElementById('current-task-display-overlay')
+    };
 
     if (activeTask) {
         let color = 'blue';
-        let isIdle = activeTask.category === '(待機)';
+        const isIdle = activeTask.category === '(待機)';
 
         if (isIdle) {
             color = 'idle';
@@ -488,66 +319,50 @@ async function updateUI() {
             if (cat) color = cat.color;
         }
 
-        if (display) {
-            display.className = `cat-${color}`;
-        }
-        if (overlay) {
-            overlay.className = `cat-${color}-full`;
-        }
+        if (elements.display) elements.display.className = `cat-${color}`;
+        if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
 
         const label = isIdle ? '待機中' : '実行中';
-        if (statusLabel) statusLabel.textContent = label;
-        if (statusLabelOverlay) statusLabelOverlay.textContent = label;
-        if (currentTaskName) currentTaskName.textContent = activeTask.category;
-        if (currentTaskNameOverlay) currentTaskNameOverlay.textContent = activeTask.category;
+        [elements.statusLabel, elements.statusLabelOverlay].forEach(el => { if (el) el.textContent = label; });
+        [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = activeTask.category; });
 
-        if (pauseBtn) {
+        if (elements.pauseBtn) {
             if (isIdle) {
-                pauseBtn.innerHTML = '<span class="btn-text">再開</span><span class="btn-icon">▶️</span>';
-                pauseBtn.disabled = !activeTask.resumableCategory;
-                pauseBtn.onclick = () => startTask(activeTask.resumableCategory);
+                elements.pauseBtn.innerHTML = '<span class="btn-text">再開</span><span class="btn-icon">▶️</span>';
+                elements.pauseBtn.disabled = !activeTask.resumableCategory;
+                elements.pauseBtn.onclick = () => startTask(activeTask.resumableCategory);
             } else {
-                pauseBtn.innerHTML = '<span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span>';
-                pauseBtn.disabled = false;
-                pauseBtn.onclick = pauseTask;
+                elements.pauseBtn.innerHTML = '<span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span>';
+                elements.pauseBtn.disabled = false;
+                elements.pauseBtn.onclick = pauseTask;
             }
         }
-        if (endBtn) {
-            endBtn.disabled = false;
-        }
+        if (elements.endBtn) elements.endBtn.disabled = false;
 
-        if (elapsedTime) elapsedTime.classList.remove('hidden');
-        if (elapsedTimeOverlay) elapsedTimeOverlay.classList.remove('hidden');
+        [elements.elapsedTime, elements.elapsedTimeOverlay].forEach(el => { if (el) el.classList.remove('hidden'); });
         startTimer();
     } else {
-        if (display) display.className = '';
-        if (overlay) overlay.className = '';
-        const label = '停止中';
-        if (statusLabel) statusLabel.textContent = label;
-        if (statusLabelOverlay) statusLabelOverlay.textContent = label;
-        if (currentTaskName) currentTaskName.textContent = '-';
-        if (currentTaskNameOverlay) currentTaskNameOverlay.textContent = '-';
+        if (elements.display) elements.display.className = '';
+        if (elements.overlay) elements.overlay.className = '';
+        [elements.statusLabel, elements.statusLabelOverlay].forEach(el => { if (el) el.textContent = '停止中'; });
+        [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = '-'; });
 
-        if (pauseBtn) {
-            pauseBtn.disabled = true;
-            pauseBtn.innerHTML = '<span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span>';
+        if (elements.pauseBtn) {
+            elements.pauseBtn.disabled = true;
+            elements.pauseBtn.innerHTML = '<span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span>';
         }
-        if (endBtn) endBtn.disabled = true;
+        if (elements.endBtn) elements.endBtn.disabled = true;
 
-        if (elapsedTime) {
-            elapsedTime.classList.add('hidden');
-            elapsedTime.textContent = '00:00:00';
-        }
-        if (elapsedTimeOverlay) {
-            elapsedTimeOverlay.classList.add('hidden');
-            elapsedTimeOverlay.textContent = '00:00:00';
-        }
-        if (overlay) overlay.style.clipPath = 'inset(0 0 0 100%)';
-
+        [elements.elapsedTime, elements.elapsedTimeOverlay].forEach(el => {
+            if (el) {
+                el.classList.add('hidden');
+                el.textContent = '00:00:00';
+            }
+        });
+        if (elements.overlay) elements.overlay.style.clipPath = 'inset(0 0 0 100%)';
         document.title = 'QuickLog-Solo';
     }
 }
-
 
 // --- Action Logic ---
 
@@ -602,6 +417,11 @@ function showConfirm(message) {
         const okBtn = document.getElementById('confirm-ok-btn');
         const cancelBtn = document.getElementById('confirm-cancel-btn');
 
+        if (!modal || !msgEl || !okBtn || !cancelBtn) {
+            resolve(confirm(message));
+            return;
+        }
+
         msgEl.innerText = message;
         modal.classList.remove('hidden');
 
@@ -617,27 +437,21 @@ function showConfirm(message) {
     });
 }
 
-// --- Category Editor & Tab Logic ---
+// --- Category Editor ---
 
-function initTabs() {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            btn.classList.add('active');
-            const target = document.getElementById(`${btn.dataset.tab}-tab`);
-            if (target) target.classList.remove('hidden');
-            if (btn.dataset.tab === 'categories') renderCategoryEditor();
-        };
-    });
+function getColorCode(color) {
+    const codes = {
+        blue: '#1e40af', green: '#166534', orange: '#9a3412',
+        red: '#991b1b', purple: '#6b21a8', teal: '#115e59', gray: '#374151'
+    };
+    return codes[color] || '#333';
 }
 
 async function renderCategoryEditor() {
     const list = document.getElementById('category-editor-list');
     if (!list) return;
     let categories = await dbGetAll('categories');
-    categories = categories.filter(c => c.name !== '(待機)');
-    categories.sort((a, b) => a.order - b.order);
+    categories = categories.filter(c => c.name !== '(待機)').sort((a, b) => a.order - b.order);
     list.innerHTML = '';
 
     categories.forEach(cat => {
@@ -687,7 +501,6 @@ async function renderCategoryEditor() {
                 await dbDelete('categories', oldName);
                 await dbPut('categories', updatedCat);
 
-                // Sync logs
                 const allLogs = await dbGetAll('logs');
                 for (const log of allLogs) {
                     if (log.category === oldName) {
@@ -695,8 +508,6 @@ async function renderCategoryEditor() {
                         await dbPut('logs', log);
                     }
                 }
-
-                cat.name = newName; // Update local ref
                 updateUI();
                 renderCategoryEditor();
             }
@@ -719,7 +530,6 @@ async function renderCategoryEditor() {
             }
         };
 
-        // Drag and Drop
         item.ondragstart = (e) => {
             e.dataTransfer.setData('text/plain', cat.name);
             item.classList.add('dragging');
@@ -729,7 +539,6 @@ async function renderCategoryEditor() {
         list.appendChild(item);
     });
 
-    // Drag over logic
     list.ondragover = (e) => {
         e.preventDefault();
         const draggingItem = list.querySelector('.dragging');
@@ -753,19 +562,11 @@ async function renderCategoryEditor() {
             }
         }
         renderCategories();
-        renderCategoryEditor(); // Refresh to update dataset.name and handles
+        renderCategoryEditor();
     };
 }
 
-function getColorCode(color) {
-    const codes = {
-        blue: '#1e40af', green: '#166534', orange: '#9a3412',
-        red: '#991b1b', purple: '#6b21a8', teal: '#115e59', gray: '#374151'
-    };
-    return codes[color] || '#333';
-}
-
-// --- Initialization ---
+// --- Initialization & Event Listeners ---
 
 async function loadVersion() {
     try {
@@ -778,99 +579,60 @@ async function loadVersion() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadVersion();
-    await initDB();
-    updateUI();
-    initTabs();
+function setupEventListeners() {
+    document.getElementById('pause-btn')?.addEventListener('click', pauseTask);
+    document.getElementById('end-btn')?.addEventListener('click', endTask);
+    document.getElementById('copy-report-btn')?.addEventListener('click', copyReport);
+    document.getElementById('copy-aggregation-btn')?.addEventListener('click', copyAggregation);
 
-    // Event Listeners
-    const pauseBtn = document.getElementById('pause-btn');
-    if (pauseBtn) pauseBtn.onclick = pauseTask;
+    document.getElementById('layout-toggle')?.addEventListener('click', async () => {
+        const currentLayout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
+        const newLayout = currentLayout === 'horizontal' ? 'vertical' : 'horizontal';
+        await dbPut('settings', { key: 'layout', value: newLayout });
+        applyLayout(newLayout);
+    });
 
-    const endBtn = document.getElementById('end-btn');
-    if (endBtn) endBtn.onclick = endTask;
-
-    const addCategoryLogic = async (inputId) => {
-        const input = document.getElementById(inputId);
-        const name = input.value.trim();
-        if (name) {
-            if (name === '(待機)') {
-                alert('「(待機)」はシステム予約済みのカテゴリ名です。');
-                return;
-            }
-            const categories = await dbGetAll('categories');
-            const newOrder = categories.length;
-            await dbPut('categories', { name, color: 'blue', order: newOrder });
-            input.value = '';
-            renderCategories();
-            renderCategoryEditor();
-        }
-    };
-
-    const addCatBtnSettings = document.getElementById('add-category-btn-settings');
-    if (addCatBtnSettings) {
-        addCatBtnSettings.onclick = () => addCategoryLogic('new-category-name-settings');
-    }
-
-    const moreLogsBtn = document.getElementById('more-logs-btn');
-    if (moreLogsBtn) {
-        moreLogsBtn.onclick = () => {
-            const extra = document.getElementById('extra-logs');
-            const isHidden = extra.classList.contains('hidden');
-            extra.classList.toggle('hidden');
-            moreLogsBtn.textContent = isHidden ? 'Less...' : 'More...';
-        };
-    }
-
-    const reportBtn = document.getElementById('copy-report-btn');
-    if (reportBtn) reportBtn.onclick = copyReport;
-
-    const aggBtn = document.getElementById('copy-aggregation-btn');
-    if (aggBtn) aggBtn.onclick = copyAggregation;
-
-    const layoutToggle = document.getElementById('layout-toggle');
-    if (layoutToggle) {
-        layoutToggle.onclick = async () => {
-            const currentLayout = document.body.classList.contains('layout-horizontal') ? 'horizontal' :
-                                 (document.body.classList.contains('layout-vertical') ? 'vertical' :
-                                 (window.innerWidth >= 650 ? 'horizontal' : 'vertical'));
-            const newLayout = currentLayout === 'horizontal' ? 'vertical' : 'horizontal';
-            await dbPut('settings', { key: 'layout', value: newLayout });
-            applyLayout(newLayout);
-        };
-    }
+    document.getElementById('more-logs-btn')?.addEventListener('click', (e) => {
+        const extra = document.getElementById('extra-logs');
+        const isHidden = extra?.classList.toggle('hidden');
+        e.target.textContent = isHidden ? 'More...' : 'Less...';
+    });
 
     // Modals
-    const infoPopup = document.getElementById('info-popup');
-    const infoBtn = document.getElementById('info-btn');
-    if (infoBtn && infoPopup) infoBtn.onclick = () => infoPopup.classList.remove('hidden');
+    const popups = {
+        info: document.getElementById('info-popup'),
+        settings: document.getElementById('settings-popup')
+    };
 
-    const settingsPopup = document.getElementById('settings-popup');
-    const settingsToggle = document.getElementById('settings-toggle');
-    if (settingsToggle && settingsPopup) settingsToggle.onclick = () => settingsPopup.classList.remove('hidden');
+    document.getElementById('info-btn')?.addEventListener('click', () => popups.info?.classList.remove('hidden'));
+    document.getElementById('settings-toggle')?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
     document.querySelectorAll('.close-btn').forEach(btn => {
-        btn.onclick = () => {
-            if (infoPopup) infoPopup.classList.add('hidden');
-            if (settingsPopup) settingsPopup.classList.add('hidden');
-        };
+        btn.onclick = () => Object.values(popups).forEach(p => p?.classList.add('hidden'));
     });
 
     window.onclick = (event) => {
-        if (event.target == infoPopup) infoPopup.classList.add('hidden');
-        if (event.target == settingsPopup) settingsPopup.classList.add('hidden');
+        Object.values(popups).forEach(p => { if (event.target === p) p.classList.add('hidden'); });
     };
 
-    // Settings
-    const themeSelect = document.getElementById('theme-select');
-    if (themeSelect) {
-        themeSelect.onchange = async (e) => {
-            const theme = e.target.value;
-            await dbPut('settings', { key: 'theme', value: theme });
-            applyTheme(theme);
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            btn.classList.add('active');
+            const target = document.getElementById(`${btn.dataset.tab}-tab`);
+            if (target) target.classList.remove('hidden');
+            if (btn.dataset.tab === 'categories') renderCategoryEditor();
         };
-    }
+    });
+
+    // Settings listeners
+    document.getElementById('theme-select')?.addEventListener('change', async (e) => {
+        const theme = e.target.value;
+        await dbPut('settings', { key: 'theme', value: theme });
+        applyTheme(theme);
+    });
 
     document.querySelectorAll('.accent-dot').forEach(dot => {
         dot.onclick = async () => {
@@ -894,117 +656,123 @@ document.addEventListener('DOMContentLoaded', async () => {
             await dbPut('settings', { key: 'font', value: fontValue });
             applyFont(fontValue);
         };
-        // Initial set if needed (already called in setupInitialData but select might not have been populated)
-        const font = await dbGet('settings', 'font');
-        if (font) fontSelect.value = font.value;
     }
 
-    // CSV Export/Import
-    const exportBtn = document.getElementById('export-csv-btn');
-    if (exportBtn) {
-        exportBtn.onclick = async () => {
-            const logs = await dbGetAll('logs');
-            let csv = "id,category,startTime,endTime\n";
-            logs.forEach(l => {
-                csv += `${l.id},${l.category},${l.startTime},${l.endTime}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `quicklog_backup_${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-        };
-    }
-
-    const importBtn = document.getElementById('import-csv-btn');
-    const csvInput = document.getElementById('csv-file-input');
-
-    // Maintenance
-    const clearLogsBtn = document.getElementById('clear-logs-btn');
-    if (clearLogsBtn) {
-        clearLogsBtn.onclick = async () => {
-            if (await showConfirm('全てのログを削除しますか？')) {
-                await dbClear('logs');
-                updateUI();
-                showToast('削除が完了しました');
+    // Category additions
+    document.getElementById('add-category-btn-settings')?.addEventListener('click', async () => {
+        const input = document.getElementById('new-category-name-settings');
+        const name = input?.value.trim();
+        if (name) {
+            if (name === '(待機)') {
+                alert('「(待機)」はシステム予約済みのカテゴリ名です。');
+                return;
             }
-        };
-    }
-
-    const resetCatSettingsBtn = document.getElementById('reset-cat-settings-btn');
-    if (resetCatSettingsBtn) {
-        resetCatSettingsBtn.onclick = async () => {
-            if (await showConfirm('カテゴリと各種設定を初期化しますか？\n（ログは維持されます）')) {
-                await dbClear('categories');
-                await dbClear('settings');
-                location.reload();
-            }
-        };
-    }
-
-    const resetSettingsBtn = document.getElementById('reset-settings-btn');
-    if (resetSettingsBtn) {
-        resetSettingsBtn.onclick = async () => {
-            if (await showConfirm('各種設定を初期化しますか？\n（ログとカテゴリは維持されます）')) {
-                await dbClear('settings');
-                location.reload();
-            }
-        };
-    }
-
-    if (importBtn && csvInput) {
-        importBtn.onclick = () => csvInput.click();
-        csvInput.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const text = await file.text();
-            const lines = text.split('\n').slice(1);
-            for (const line of lines) {
-                const parts = line.split(',');
-                if (parts.length >= 3) {
-                    const [id, category, startTime, endTime] = parts;
-                    if (category && startTime) {
-                        await dbPut('logs', {
-                            category,
-                            startTime: parseInt(startTime),
-                            endTime: endTime ? parseInt(endTime) : null
-                        });
-                    }
-                }
-            }
-            updateUI();
-            alert('インポートが完了しました。');
-        };
-    }
-
-    // Prevent manual resizing
-    window.addEventListener('resize', () => {
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            const layout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
-            const targetWidth = layout === 'horizontal' ? 950 : 450;
-            const targetHeight = 800;
-            if (window.innerWidth !== targetWidth || window.innerHeight !== targetHeight) {
-                window.resizeTo(targetWidth, targetHeight);
-            }
+            const categories = await dbGetAll('categories');
+            await dbPut('categories', { name, color: 'blue', order: categories.length });
+            if (input) input.value = '';
+            renderCategories();
+            renderCategoryEditor();
         }
     });
 
-    // Handle window close as "End Task" confirmation
+    // CSV and Maintenance
+    document.getElementById('export-csv-btn')?.addEventListener('click', async () => {
+        const logs = await dbGetAll('logs');
+        let csv = "id,category,startTime,endTime\n";
+        logs.forEach(l => { csv += `${l.id},${l.category},${l.startTime},${l.endTime}\n`; });
+        const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `quicklog_backup_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    });
+
+    const csvInput = document.getElementById('csv-file-input');
+    document.getElementById('import-csv-btn')?.addEventListener('click', () => csvInput?.click());
+    csvInput?.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const text = await file.text();
+        const lines = text.split('\n').slice(1);
+        for (const line of lines) {
+            const parts = line.split(',');
+            if (parts.length >= 3) {
+                const [, category, startTime, endTime] = parts;
+                if (category && startTime) {
+                    await dbPut('logs', {
+                        category,
+                        startTime: parseInt(startTime),
+                        endTime: endTime ? parseInt(endTime) : null
+                    });
+                }
+            }
+        }
+        updateUI();
+        alert('インポートが完了しました。');
+    });
+
+    document.getElementById('clear-logs-btn')?.addEventListener('click', async () => {
+        if (await showConfirm('全てのログを削除しますか？')) {
+            await dbClear('logs');
+            updateUI();
+            showToast('削除が完了しました');
+        }
+    });
+
+    document.getElementById('reset-cat-settings-btn')?.addEventListener('click', async () => {
+        if (await showConfirm('カテゴリと各種設定を初期化しますか？\n（ログは維持されます）')) {
+            await dbClear('categories');
+            await dbClear('settings');
+            location.reload();
+        }
+    });
+
+    document.getElementById('reset-settings-btn')?.addEventListener('click', async () => {
+        if (await showConfirm('各種設定を初期化しますか？\n（ログとカテゴリは維持されます）')) {
+            await dbClear('settings');
+            location.reload();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            const layout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
+            window.resizeTo(layout === 'horizontal' ? 950 : 450, 800);
+        }
+    });
+
     window.addEventListener('beforeunload', (event) => {
         if (activeTask) {
-            // Note: Custom messages are ignored by modern browsers, but setting returnValue triggers the dialog.
             event.preventDefault();
             event.returnValue = '';
         }
     });
+}
 
-    // Handle specific action for the single instance
-    const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get('action');
-    if (action === 'settings') {
-        const settingsPopup = document.getElementById('settings-popup');
-        if (settingsPopup) settingsPopup.classList.remove('hidden');
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('QuickLog-Solo: DOMContentLoaded');
+    try {
+        await loadVersion();
+    } catch (e) {
+        console.error('Failed to load version:', e);
+    }
+
+    try {
+        console.log('QuickLog-Solo: Initializing DB...');
+        const settings = await initDB();
+        console.log('QuickLog-Solo: DB Initialized', settings);
+        activeTask = settings.activeTask;
+
+        applyTheme(settings.theme || 'system');
+        applyAccent(settings.accent || 'blue');
+        applyFont(settings.font || FONTS[0].value);
+        applyLayout(settings.layout);
+
+        setupEventListeners();
+        await updateUI();
+    } catch (e) {
+        console.error('Failed to initialize application:', e);
+        alert('アプリの初期化に失敗しました。ページを再読み込みしてください。');
     }
 
     console.log('QuickLog-Solo Initialized');

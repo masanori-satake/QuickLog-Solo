@@ -1,9 +1,11 @@
-const CACHE_NAME = 'quicklog-solo-v1.3.0';
+const CACHE_NAME = 'quicklog-solo-v1.4.0';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './js/db.js',
+  './js/logic.js',
   './manifest.json',
   './icon.svg'
 ];

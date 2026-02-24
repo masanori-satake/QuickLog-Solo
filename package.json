@@ -1,0 +1,35 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向け・完結型工数管理ツールです。",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/masanori-satake/QuickLog-Solo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/masanori-satake/QuickLog-Solo/issues"
+  },
+  "homepage": "https://github.com/masanori-satake/QuickLog-Solo#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@jest/globals": "^30.2.0",
+    "eslint": "^10.0.2",
+    "fake-indexeddb": "^6.2.5",
+    "globals": "^17.3.0",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "stylelint": "^17.3.0",
+    "stylelint-config-standard": "^40.0.0"
+  }
+}

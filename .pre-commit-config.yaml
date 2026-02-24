@@ -7,3 +7,21 @@ repos:
         language: python
         pass_filenames: false
         always_run: true
+    -   id: eslint
+        name: eslint
+        entry: npx eslint .
+        language: system
+        pass_filenames: false
+        always_run: true
+    -   id: stylelint
+        name: stylelint
+        entry: npx stylelint "**/*.css"
+        language: system
+        pass_filenames: false
+        always_run: true
+    -   id: jest
+        name: jest
+        entry: node --experimental-vm-modules ./node_modules/.bin/jest
+        language: system
+        pass_filenames: false
+        always_run: true
