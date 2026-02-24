@@ -820,6 +820,7 @@ body.layout-vertical #end-btn {
     #current-task-display {
         height: 60px;
     }
+
     #current-task-display-base,
     #current-task-display-overlay {
         padding: 0.25rem 0.5rem;
@@ -888,6 +889,7 @@ body.layout-vertical #end-btn {
     #current-task-display {
         height: 45px;
     }
+
     #current-task-display-base,
     #current-task-display-overlay {
         align-items: center;
@@ -908,4 +910,153 @@ body.layout-vertical #end-btn {
         display: inline;
         font-size: 1.1rem;
     }
+}
+
+/* --- PiP Layout --- */
+body.layout-pip {
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--bg-color);
+}
+
+body.layout-pip #app {
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+}
+
+body.layout-pip header {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    z-index: 100;
+}
+
+body.layout-pip #header-btns > *:not(#pip-toggle) {
+    display: none;
+}
+
+body.layout-pip #pip-toggle {
+    font-size: 1rem;
+    padding: 0.2rem 0.4rem;
+    opacity: 0.5;
+}
+
+body.layout-pip #pip-toggle:hover {
+    opacity: 1;
+}
+
+body.layout-pip main {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100%;
+    border: none !important;
+}
+
+body.layout-pip #category-section,
+body.layout-pip #log-section {
+    display: none !important;
+}
+
+body.layout-pip #control-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+}
+
+body.layout-pip #timer-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+body.layout-pip #current-task-display {
+    flex: 1;
+    height: 100%;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+}
+
+body.layout-pip #current-task-display-base,
+body.layout-pip #current-task-display-overlay {
+    padding: 0.2rem;
+}
+
+body.layout-pip #current-task-name,
+body.layout-pip #current-task-name-overlay {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+body.layout-pip #elapsed-time,
+body.layout-pip #elapsed-time-overlay {
+    font-size: 1.8rem;
+}
+
+body.layout-pip #status-label,
+body.layout-pip #status-label-overlay {
+    display: none;
+}
+
+body.layout-pip #stop-btn-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    height: 40px;
+}
+
+body.layout-pip #pause-btn,
+body.layout-pip #end-btn {
+    height: 100%;
+    border: var(--border-width) solid var(--text-color);
+    border-bottom: none;
+    padding: 0;
+}
+
+body.layout-pip #pause-btn {
+    border-left: none;
+}
+
+body.layout-pip #end-btn {
+    border-right: none;
+    border-left: none;
+}
+
+body.layout-pip .btn-text {
+    display: none;
+}
+
+body.layout-pip .btn-icon {
+    display: inline;
+    font-size: 1.2rem;
+}
+
+body.layout-pip .modal-content {
+    padding: 0.5rem;
+    width: 95%;
+}
+
+body.layout-pip .confirm-btns {
+    margin-top: 0.5rem;
+    gap: 0.5rem;
+}
+
+body.layout-pip .modal-content p {
+    font-size: 0.8rem;
+}
+
+body.layout-pip .confirm-btns button {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
 }

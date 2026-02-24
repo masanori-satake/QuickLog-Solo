@@ -17,6 +17,12 @@ let activeTask = null;
 let timerInterval = null;
 let currentCategoryPage = 0;
 const ITEMS_PER_PAGE = 8;
+let pipWindow = null;
+
+const getEl = (id) => (pipWindow ? pipWindow.document : document).getElementById(id);
+const queryAll = (selector) => (pipWindow ? pipWindow.document : document).querySelectorAll(selector);
+const getBody = () => (pipWindow ? pipWindow.document : document).body;
+const createEl = (tag) => (pipWindow ? pipWindow.document : document).createElement(tag);
 
 const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
 
@@ -76,7 +82,7 @@ instanceChannel.onmessage = (event) => {
     } else if (type === 'FOCUS') {
         window.focus();
         if (action === 'settings') {
-            document.getElementById('settings-popup')?.classList.remove('hidden');
+            getEl('settings-popup')?.classList.remove('hidden');
         }
     }
 };
@@ -124,13 +130,13 @@ function updateTimer() {
 
     const elements = ['elapsed-time', 'elapsed-time-overlay'];
     elements.forEach(id => {
-        const el = document.getElementById(id);
+        const el = getEl(id);
         if (el) el.textContent = timeStr;
     });
 
     const isPaused = activeTask.category === '(待機)';
 
-    const overlay = document.getElementById('current-task-display-overlay');
+    const overlay = getEl('current-task-display-overlay');
     if (overlay) {
         if (isPaused) {
             overlay.style.clipPath = 'inset(0 100% 0 0)';
@@ -144,7 +150,7 @@ function updateTimer() {
 // --- UI Rendering ---
 
 function applyTheme(theme) {
-    const body = document.body;
+    const body = getBody();
     body.classList.remove('theme-light', 'theme-dark');
     if (theme === 'system') {
         const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -152,25 +158,25 @@ function applyTheme(theme) {
     } else {
         body.classList.add(`theme-${theme}`);
     }
-    const select = document.getElementById('theme-select');
+    const select = getEl('theme-select');
     if (select) select.value = theme;
 }
 
 function applyAccent(accent) {
-    const body = document.body;
+    const body = getBody();
     const accentClasses = ['accent-blue', 'accent-green', 'accent-orange', 'accent-red'];
     body.classList.remove(...accentClasses);
     body.classList.add(`accent-${accent}`);
 }
 
 function applyFont(fontValue) {
-    document.body.style.setProperty('--font-family', fontValue);
-    const select = document.getElementById('font-select');
+    getBody().style.setProperty('--font-family', fontValue);
+    const select = getEl('font-select');
     if (select) select.value = fontValue;
 }
 
 function applyLayout(layout) {
-    const body = document.body;
+    const body = getBody();
     body.classList.remove('layout-horizontal', 'layout-vertical');
 
     if (!layout) {
@@ -178,9 +184,11 @@ function applyLayout(layout) {
     }
 
     localStorage.setItem('quicklog_layout', layout);
-    body.classList.add(`layout-${layout}`);
+    if (!pipWindow) {
+        body.classList.add(`layout-${layout}`);
+    }
 
-    const btn = document.getElementById('layout-toggle');
+    const btn = getEl('layout-toggle');
     if (btn) {
         const isHorizontal = layout === 'horizontal';
         btn.textContent = isHorizontal ? '↕️' : '↔️';
@@ -208,7 +216,7 @@ async function renderCategories() {
         currentCategoryPage = totalPages - 1;
     }
 
-    const list = document.getElementById('category-list');
+    const list = getEl('category-list');
     if (!list) return;
     list.innerHTML = '';
 
@@ -217,7 +225,7 @@ async function renderCategories() {
     const pageItems = categories.slice(start, end);
 
     pageItems.forEach(cat => {
-        const btn = document.createElement('button');
+        const btn = createEl('button');
         btn.className = `category-btn cat-${cat.color || 'blue'}`;
         const isActive = activeTask && activeTask.category === cat.name;
         if (isActive) {
@@ -233,7 +241,7 @@ async function renderCategories() {
 }
 
 function renderPagination(totalPages) {
-    const container = document.getElementById('category-pagination');
+    const container = getEl('category-pagination');
     if (!container) return;
     if (totalPages <= 1) {
         container.classList.add('hidden');
@@ -242,7 +250,7 @@ function renderPagination(totalPages) {
     container.classList.remove('hidden');
     container.innerHTML = '';
     for (let i = 0; i < totalPages; i++) {
-        const dot = document.createElement('div');
+        const dot = createEl('div');
         dot.className = 'page-dot' + (i === currentCategoryPage ? ' active' : '');
         container.appendChild(dot);
     }
@@ -262,7 +270,7 @@ async function renderLogs() {
     const categoryMap = new Map(categories.map(c => [c.name, c]));
     const completedLogs = allLogs.filter(l => l.endTime).sort((a, b) => b.startTime - a.startTime).slice(0, 5);
 
-    const logList = document.getElementById('log-list');
+    const logList = getEl('log-list');
     if (!logList) return;
     logList.innerHTML = '';
 
@@ -274,7 +282,7 @@ async function renderLogs() {
         const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} (${days[d.getDay()]})`;
 
         if (dateStr !== lastDate) {
-            const header = document.createElement('li');
+            const header = createEl('li');
             header.className = 'log-date-header';
             header.textContent = dateStr;
             logList.appendChild(header);
@@ -287,7 +295,7 @@ async function renderLogs() {
 }
 
 function createLogElement(log, categoryMap) {
-    const li = document.createElement('li');
+    const li = createEl('li');
     li.className = 'log-item';
     const startTimeStr = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const durationMs = log.endTime - log.startTime;
@@ -325,16 +333,16 @@ async function updateUI() {
     }
 
     const elements = {
-        statusLabel: document.getElementById('status-label'),
-        statusLabelOverlay: document.getElementById('status-label-overlay'),
-        currentTaskName: document.getElementById('current-task-name'),
-        currentTaskNameOverlay: document.getElementById('current-task-name-overlay'),
-        pauseBtn: document.getElementById('pause-btn'),
-        endBtn: document.getElementById('end-btn'),
-        elapsedTime: document.getElementById('elapsed-time'),
-        elapsedTimeOverlay: document.getElementById('elapsed-time-overlay'),
-        display: document.getElementById('current-task-display'),
-        overlay: document.getElementById('current-task-display-overlay')
+        statusLabel: getEl('status-label'),
+        statusLabelOverlay: getEl('status-label-overlay'),
+        currentTaskName: getEl('current-task-name'),
+        currentTaskNameOverlay: getEl('current-task-name-overlay'),
+        pauseBtn: getEl('pause-btn'),
+        endBtn: getEl('end-btn'),
+        elapsedTime: getEl('elapsed-time'),
+        elapsedTimeOverlay: getEl('elapsed-time-overlay'),
+        display: getEl('current-task-display'),
+        overlay: getEl('current-task-display-overlay')
     };
 
     if (activeTask) {
@@ -411,6 +419,66 @@ async function updateUI() {
 
 // --- Action Logic ---
 
+async function togglePiP() {
+    if (pipWindow) {
+        pipWindow.close();
+        return;
+    }
+
+    if (!('documentPictureInPicture' in window)) {
+        alert('お使いのブラウザは Document Picture-in-Picture API をサポートしていません。');
+        return;
+    }
+
+    try {
+        const app = document.getElementById('app');
+
+        pipWindow = await window.documentPictureInPicture.requestWindow({
+            width: 280,
+            height: 150,
+        });
+
+        // Copy styles
+        [...document.styleSheets].forEach((styleSheet) => {
+            try {
+                if (styleSheet.cssRules) {
+                    const style = createEl('style');
+                    const rules = [...styleSheet.cssRules].map((rule) => rule.cssText).join('');
+                    style.textContent = rules;
+                    pipWindow.document.head.appendChild(style);
+                }
+            } catch {
+                const link = createEl('link');
+                link.rel = 'stylesheet';
+                link.href = styleSheet.href;
+                pipWindow.document.head.appendChild(link);
+            }
+        });
+
+        // Sync body state
+        pipWindow.document.body.className = document.body.className;
+        pipWindow.document.body.classList.add('layout-pip');
+        pipWindow.document.body.style.cssText = document.body.style.cssText;
+
+        // Move app
+        pipWindow.document.body.append(app);
+
+        const closingPipWindow = pipWindow;
+        pipWindow.addEventListener('pagehide', () => {
+            const currentApp = closingPipWindow.document.getElementById('app');
+            pipWindow = null;
+            if (currentApp) {
+                document.body.append(currentApp);
+            }
+            updateUI();
+        });
+
+        updateUI();
+    } catch (err) {
+        console.error('QuickLog-Solo: PiP failed', err);
+    }
+}
+
 async function copyReport() {
     const allLogs = await dbGetAll('logs');
     const today = new Date().setHours(0,0,0,0);
@@ -447,7 +515,7 @@ async function copyAggregation() {
 }
 
 function showToast(message = "完了しました！") {
-    const toast = document.getElementById('toast');
+    const toast = getEl('toast');
     if (toast) {
         toast.innerText = message;
         toast.classList.remove('hidden');
@@ -457,10 +525,10 @@ function showToast(message = "完了しました！") {
 
 function showConfirm(message) {
     return new Promise((resolve) => {
-        const modal = document.getElementById('confirm-modal');
-        const msgEl = document.getElementById('confirm-message');
-        const okBtn = document.getElementById('confirm-ok-btn');
-        const cancelBtn = document.getElementById('confirm-cancel-btn');
+        const modal = getEl('confirm-modal');
+        const msgEl = getEl('confirm-message');
+        const okBtn = getEl('confirm-ok-btn');
+        const cancelBtn = getEl('confirm-cancel-btn');
 
         if (!modal || !msgEl || !okBtn || !cancelBtn) {
             resolve(confirm(message));
@@ -493,14 +561,14 @@ function getColorCode(color) {
 }
 
 async function renderCategoryEditor() {
-    const list = document.getElementById('category-editor-list');
+    const list = getEl('category-editor-list');
     if (!list) return;
     let categories = await dbGetAll('categories');
     categories = categories.filter(c => c.name !== '(待機)').sort((a, b) => a.order - b.order);
     list.innerHTML = '';
 
     categories.forEach(cat => {
-        const item = document.createElement('div');
+        const item = createEl('div');
         item.className = 'category-editor-item';
         item.draggable = true;
         item.dataset.name = cat.name;
@@ -617,7 +685,7 @@ async function loadVersion() {
     try {
         const response = await fetch('version.json');
         const data = await response.json();
-        const el = document.getElementById('version-display');
+        const el = getEl('version-display');
         if (el) el.textContent = `v${data.version}`;
     } catch (e) {
         console.error('Failed to load version:', e);
@@ -625,19 +693,20 @@ async function loadVersion() {
 }
 
 function setupEventListeners() {
-    document.getElementById('pause-btn')?.addEventListener('click', pauseTask);
-    document.getElementById('end-btn')?.addEventListener('click', endTask);
-    document.getElementById('copy-report-btn')?.addEventListener('click', copyReport);
-    document.getElementById('copy-aggregation-btn')?.addEventListener('click', copyAggregation);
+    getEl('pause-btn')?.addEventListener('click', pauseTask);
+    getEl('end-btn')?.addEventListener('click', endTask);
+    getEl('pip-toggle')?.addEventListener('click', togglePiP);
+    getEl('copy-report-btn')?.addEventListener('click', copyReport);
+    getEl('copy-aggregation-btn')?.addEventListener('click', copyAggregation);
 
-    document.getElementById('layout-toggle')?.addEventListener('click', async () => {
-        const currentLayout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
+    getEl('layout-toggle')?.addEventListener('click', async () => {
+        const currentLayout = getBody().classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
         const newLayout = currentLayout === 'horizontal' ? 'vertical' : 'horizontal';
         await dbPut('settings', { key: 'layout', value: newLayout });
         applyLayout(newLayout);
     });
 
-    document.getElementById('category-section')?.addEventListener('wheel', async (e) => {
+    getEl('category-section')?.addEventListener('wheel', async (e) => {
         const categories = await dbGetAll('categories');
         const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
         if (totalPages <= 1) return;
@@ -658,12 +727,12 @@ function setupEventListeners() {
 
     // Modals
     const popups = {
-        settings: document.getElementById('settings-popup')
+        settings: getEl('settings-popup')
     };
 
-    document.getElementById('settings-toggle')?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
+    getEl('settings-toggle')?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
-    document.querySelectorAll('.close-btn').forEach(btn => {
+    queryAll('.close-btn').forEach(btn => {
         btn.onclick = () => Object.values(popups).forEach(p => p?.classList.add('hidden'));
     });
 
@@ -672,25 +741,25 @@ function setupEventListeners() {
     };
 
     // Tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    queryAll('.tab-btn').forEach(btn => {
         btn.onclick = () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            queryAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            queryAll('.tab-content').forEach(c => c.classList.add('hidden'));
             btn.classList.add('active');
-            const target = document.getElementById(`${btn.dataset.tab}-tab`);
+            const target = getEl(`${btn.dataset.tab}-tab`);
             if (target) target.classList.remove('hidden');
             if (btn.dataset.tab === 'categories') renderCategoryEditor();
         };
     });
 
     // Settings listeners
-    document.getElementById('theme-select')?.addEventListener('change', async (e) => {
+    getEl('theme-select')?.addEventListener('change', async (e) => {
         const theme = e.target.value;
         await dbPut('settings', { key: 'theme', value: theme });
         applyTheme(theme);
     });
 
-    document.querySelectorAll('.accent-dot').forEach(dot => {
+    queryAll('.accent-dot').forEach(dot => {
         dot.onclick = async () => {
             const accent = dot.dataset.accent;
             await dbPut('settings', { key: 'accent', value: accent });
@@ -698,10 +767,10 @@ function setupEventListeners() {
         };
     });
 
-    const fontSelect = document.getElementById('font-select');
+    const fontSelect = getEl('font-select');
     if (fontSelect) {
         FONTS.forEach(f => {
-            const opt = document.createElement('option');
+            const opt = createEl('option');
             opt.value = f.value;
             opt.textContent = f.name;
             opt.style.fontFamily = f.value;
@@ -715,8 +784,8 @@ function setupEventListeners() {
     }
 
     // Category additions
-    document.getElementById('add-category-btn-settings')?.addEventListener('click', async () => {
-        const input = document.getElementById('new-category-name-settings');
+    getEl('add-category-btn-settings')?.addEventListener('click', async () => {
+        const input = getEl('new-category-name-settings');
         const name = input?.value.trim();
         if (name) {
             if (name === '(待機)') {
@@ -742,21 +811,21 @@ function setupEventListeners() {
         }
     }
 
-    document.getElementById('export-csv-btn')?.addEventListener('click', () => {
+    getEl('export-csv-btn')?.addEventListener('click', () => {
         performMaintenanceAction('ログデータをCSVとして書き出します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
             const logs = await dbGetAll('logs');
             let csv = "id,category,startTime,endTime\n";
             logs.forEach(l => { csv += `${l.id},${l.category},${l.startTime},${l.endTime}\n`; });
             const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-            const a = document.createElement('a');
+            const a = createEl('a');
             a.href = url;
             a.download = `quicklog_backup_${new Date().toISOString().slice(0,10)}.csv`;
             a.click();
         });
     });
 
-    const csvInput = document.getElementById('csv-file-input');
-    document.getElementById('import-csv-btn')?.addEventListener('click', () => {
+    const csvInput = getEl('csv-file-input');
+    getEl('import-csv-btn')?.addEventListener('click', () => {
         performMaintenanceAction('CSVファイルからログデータを読み込みます。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
             csvInput?.click();
         });
@@ -784,7 +853,7 @@ function setupEventListeners() {
         alert('インポートが完了しました。');
     });
 
-    document.getElementById('clear-logs-btn')?.addEventListener('click', () => {
+    getEl('clear-logs-btn')?.addEventListener('click', () => {
         performMaintenanceAction('全てのログを削除します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
             await dbClear('logs');
             updateUI();
@@ -792,7 +861,7 @@ function setupEventListeners() {
         });
     });
 
-    document.getElementById('reset-cat-settings-btn')?.addEventListener('click', () => {
+    getEl('reset-cat-settings-btn')?.addEventListener('click', () => {
         performMaintenanceAction('カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログは維持されます）', async () => {
             await dbClear('categories');
             await dbClear('settings');
@@ -800,7 +869,7 @@ function setupEventListeners() {
         });
     });
 
-    document.getElementById('reset-settings-btn')?.addEventListener('click', () => {
+    getEl('reset-settings-btn')?.addEventListener('click', () => {
         performMaintenanceAction('各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログとカテゴリは維持されます）', async () => {
             await dbClear('settings');
             location.reload();
@@ -808,8 +877,9 @@ function setupEventListeners() {
     });
 
     window.addEventListener('resize', () => {
+        if (pipWindow) return; // Ignore resize when in PiP
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            const layout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
+            const layout = getBody().classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
             window.resizeTo(layout === 'horizontal' ? 650 : 280, layout === 'horizontal' ? 360 : 500);
         }
     });
