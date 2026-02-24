@@ -10,6 +10,56 @@ let timerInterval = null;
 
 const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
 
+// --- Single-Instance Coordination Logic (Run immediately) ---
+(async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+
+    let otherInstanceFound = false;
+    const pingPromise = new Promise(resolve => {
+        const handler = (e) => {
+            if (e.data.type === 'PONG') {
+                otherInstanceFound = true;
+                resolve();
+            }
+        };
+        instanceChannel.addEventListener('message', handler);
+        setTimeout(() => {
+            instanceChannel.removeEventListener('message', handler);
+            resolve();
+        }, 500); // Increased timeout
+    });
+
+    instanceChannel.postMessage({ type: 'PING' });
+    await pingPromise;
+
+    if (otherInstanceFound) {
+        instanceChannel.postMessage({ type: 'FOCUS', action });
+        window.close();
+        // If window.close() is blocked, display a message and stop execution
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-weight:bold; text-align:center; padding:2rem;">' +
+                '<div>既に QuickLog-Solo が起動しています。</div>' +
+                '<div style="font-size:0.8rem; margin-top:1rem; color:gray;">既存のウィンドウを確認してください。</div>' +
+                '</div>';
+        });
+        throw new Error('Duplicate instance detected. Execution stopped.');
+    }
+})();
+
+instanceChannel.onmessage = (event) => {
+    const { type, action } = event.data;
+    if (type === 'PING') {
+        instanceChannel.postMessage({ type: 'PONG' });
+    } else if (type === 'FOCUS') {
+        window.focus();
+        if (action === 'settings') {
+            const settingsPopup = document.getElementById('settings-popup');
+            if (settingsPopup) settingsPopup.classList.remove('hidden');
+        }
+    }
+};
+
 const FONTS = [
     { name: '標準', value: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
     { name: 'メイリオ', value: '"Meiryo", sans-serif' },
@@ -294,9 +344,10 @@ function applyLayout(layout) {
 
     // Default cases if layout is not explicitly provided
     if (!layout) {
-        layout = window.innerWidth >= 650 ? 'horizontal' : 'vertical';
+        layout = localStorage.getItem('quicklog_layout') || (window.innerWidth >= 650 ? 'horizontal' : 'vertical');
     }
 
+    localStorage.setItem('quicklog_layout', layout);
     body.classList.add(`layout-${layout}`);
 
     const btn = document.getElementById('layout-toggle');
@@ -497,20 +548,6 @@ async function updateUI() {
     }
 }
 
-// --- Instance Coordination Logic ---
-
-instanceChannel.onmessage = (event) => {
-    const { type, action } = event.data;
-    if (type === 'PING') {
-        instanceChannel.postMessage({ type: 'PONG' });
-    } else if (type === 'FOCUS') {
-        window.focus();
-        if (action === 'settings') {
-            const settingsPopup = document.getElementById('settings-popup');
-            if (settingsPopup) settingsPopup.classList.remove('hidden');
-        }
-    }
-};
 
 // --- Action Logic ---
 
@@ -962,35 +999,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Shortcut actions & Single-instance coordination
+    // Handle specific action for the single instance
     const urlParams = new URLSearchParams(window.location.search);
     const action = urlParams.get('action');
-
-    let otherInstanceFound = false;
-    const pingPromise = new Promise(resolve => {
-        const handler = (e) => {
-            if (e.data.type === 'PONG') {
-                otherInstanceFound = true;
-                resolve();
-            }
-        };
-        instanceChannel.addEventListener('message', handler);
-        setTimeout(() => {
-            instanceChannel.removeEventListener('message', handler);
-            resolve();
-        }, 300);
-    });
-
-    instanceChannel.postMessage({ type: 'PING' });
-    await pingPromise;
-
-    if (otherInstanceFound) {
-        instanceChannel.postMessage({ type: 'FOCUS', action });
-        window.close();
-        document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; font-weight:bold;">既に起動しています...</div>';
-        setTimeout(() => window.close(), 1000);
-        return;
-    } else if (action === 'settings') {
+    if (action === 'settings') {
         const settingsPopup = document.getElementById('settings-popup');
         if (settingsPopup) settingsPopup.classList.remove('hidden');
     }
