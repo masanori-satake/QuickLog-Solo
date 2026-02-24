@@ -110,6 +110,8 @@ button:disabled {
     margin-top: 0;
     padding-top: 0;
     border-top: var(--border-width) solid var(--text-color);
+    flex: 1;
+    overflow: hidden;
 }
 
 #log-list {
@@ -117,6 +119,7 @@ button:disabled {
     flex-direction: column;
     list-style: none;
     padding: 0;
+    height: 100%;
 }
 
 .log-date-header {
@@ -186,6 +189,7 @@ body.layout-horizontal main {
     gap: 0;
     align-items: stretch;
     border: var(--border-width) solid var(--text-color);
+    height: 315px;
 }
 
 body.layout-horizontal #category-section,
@@ -206,17 +210,7 @@ body.layout-horizontal #category-list {
 }
 
 body.layout-horizontal #category-list .category-btn {
-    border: none;
-    border-right: var(--border-width) solid var(--text-color);
-    border-bottom: var(--border-width) solid var(--text-color);
-}
-
-body.layout-horizontal #category-list .category-btn:nth-child(2n) {
-    border-right: none;
-}
-
-body.layout-horizontal #category-list .category-btn:nth-last-child(-n+2) {
-    border-bottom: none;
+    border: var(--border-width) solid var(--text-color);
 }
 
 body.layout-horizontal #control-section {
@@ -272,6 +266,7 @@ body.layout-vertical main {
     flex-direction: column;
     gap: 0;
     border: var(--border-width) solid var(--text-color);
+    height: 455px;
 }
 
 body.layout-vertical #category-section {
@@ -283,17 +278,7 @@ body.layout-vertical #control-section {
 }
 
 body.layout-vertical #category-list .category-btn {
-    border: none;
-    border-right: var(--border-width) solid var(--text-color);
-    border-bottom: var(--border-width) solid var(--text-color);
-}
-
-body.layout-vertical #category-list .category-btn:nth-child(2n) {
-    border-right: none;
-}
-
-body.layout-vertical #category-list .category-btn:nth-last-child(-n+2) {
-    border-bottom: none;
+    border: var(--border-width) solid var(--text-color);
 }
 
 body.layout-vertical #current-task-display {
@@ -454,8 +439,9 @@ body.layout-vertical #end-btn {
 #category-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-auto-rows: 36px;
-    gap: 0;
+    grid-auto-rows: 1fr;
+    gap: 4px;
+    padding: 4px;
     overflow: hidden;
 }
 
@@ -467,6 +453,7 @@ body.layout-vertical #end-btn {
     height: 18px;
     background: var(--bg-color);
     border-top: 1px dashed var(--muted-color);
+    flex-shrink: 0;
 }
 
 .page-dot {
