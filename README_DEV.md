@@ -40,6 +40,8 @@ graph TD
     -   時間のフォーマット計算。
     -   アニメーション状態（clip-path）の計算。
     -   DOMに直接触れず、テストが容易な形式で記述。
+-   **app.js (テスト・デバッグ機能):**
+    -   URLパラメータによる状態インジェクション機能（`handleTestParameters`）。
 -   **js/db.js (データ層):**
     -   IndexedDB (Raw API) のカプセル化。
     -   CRUD操作の提供。

@@ -140,7 +140,18 @@ async function setupInitialData() {
     const layout = await dbGet('settings', 'layout');
 
     const allLogs = await dbGetAll('logs');
-    const activeTask = allLogs.find(log => !log.endTime);
+    const openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
+    let activeTask = openTasks[0];
+
+    // 複数の未終了タスクがある場合は、最新以外を強制終了させて整合性を保つ
+    if (openTasks.length > 1) {
+        console.warn('QuickLog-Solo: Found multiple active tasks. Closing orphaned tasks.');
+        for (let i = 1; i < openTasks.length; i++) {
+            const orphaned = openTasks[i];
+            orphaned.endTime = orphaned.startTime + 1000; // 最小限の時間を記録
+            await dbPut('logs', orphaned);
+        }
+    }
 
     return {
         theme: theme ? theme.value : null,

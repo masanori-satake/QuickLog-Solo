@@ -216,6 +216,7 @@ body.layout-horizontal #control-section {
 
 body.layout-horizontal #timer-container {
     flex-grow: 1;
+    min-width: 0;
     border-left: var(--border-width) solid var(--text-color);
 }
 
@@ -309,7 +310,7 @@ body.layout-vertical #end-btn {
 }
 
 
-#current-task-display, #current-task-display-overlay {
+#current-task-display-base, #current-task-display-overlay {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -317,6 +318,8 @@ body.layout-vertical #end-btn {
     padding: 0.5rem;
     text-align: center;
     width: 100%;
+    position: absolute;
+    inset: 0;
 }
 
 #current-task-display {
@@ -324,11 +327,10 @@ body.layout-vertical #end-btn {
     height: 80px;
     border: var(--border-width) solid var(--text-color);
     overflow: hidden;
+    width: 100%;
 }
 
 #current-task-display-overlay {
-    position: absolute;
-    inset: 0;
     clip-path: inset(0 100% 0 0);
     z-index: 1;
     background-color: transparent;
@@ -349,7 +351,10 @@ body.layout-vertical #end-btn {
     margin-bottom: 0.2rem;
     text-align: center;
     width: 100%;
-    word-break: break-all;
+    min-width: 0; /* grid/flex下で省略を機能させるために必要 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #elapsed-time, #elapsed-time-overlay {
@@ -812,9 +817,11 @@ body.layout-vertical #end-btn {
         font-size: 1rem;
     }
 
-    #current-task-display,
-    #current-task-display-overlay {
+    #current-task-display {
         height: 60px;
+    }
+    #current-task-display-base,
+    #current-task-display-overlay {
         padding: 0.25rem 0.5rem;
     }
 
@@ -878,9 +885,11 @@ body.layout-vertical #end-btn {
         display: none;
     }
 
-    #current-task-display,
-    #current-task-display-overlay {
+    #current-task-display {
         height: 45px;
+    }
+    #current-task-display-base,
+    #current-task-display-overlay {
         align-items: center;
         gap: 0;
     }
