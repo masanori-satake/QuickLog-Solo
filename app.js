@@ -154,7 +154,7 @@ async function setupInitialData() {
     if (font) applyFont(font.value);
 
     const layout = await dbGet('settings', 'layout');
-    if (layout) applyLayout(layout.value);
+    applyLayout(layout ? layout.value : null);
 
     // Check for active task
     const allLogs = await dbGetAll('logs');
@@ -291,9 +291,14 @@ function applyFont(fontValue) {
 function applyLayout(layout) {
     const body = document.body;
     body.classList.remove('layout-horizontal', 'layout-vertical');
-    if (layout === 'horizontal' || layout === 'vertical') {
-        body.classList.add(`layout-${layout}`);
+
+    // Default cases if layout is not explicitly provided
+    if (!layout) {
+        layout = window.innerWidth >= 650 ? 'horizontal' : 'vertical';
     }
+
+    body.classList.add(`layout-${layout}`);
+
     const btn = document.getElementById('layout-toggle');
     if (btn) {
         if (layout === 'horizontal') {
@@ -498,29 +503,14 @@ instanceChannel.onmessage = (event) => {
     const { type, action } = event.data;
     if (type === 'PING') {
         instanceChannel.postMessage({ type: 'PONG' });
-    } else if (type === 'SHORTCUT_ACTION') {
-        handleShortcutAction(action);
-    }
-};
-
-async function handleShortcutAction(action) {
-    if (action === 'settings') {
-        const settingsPopup = document.getElementById('settings-popup');
-        if (settingsPopup) settingsPopup.classList.remove('hidden');
-    } else if (action === 'exit') {
-        // Bring window to focus if possible (though browser support is limited)
+    } else if (type === 'FOCUS') {
         window.focus();
-        if (await showConfirm('アプリを終了して計測を停止しますか？')) {
-            if (activeTask) {
-                await stopTaskInternal();
-                updateUI();
-            }
-            window.close();
-            // If window.close() is blocked, we still update UI to 'Stopped'
-            showToast('計測を停止しました。');
+        if (action === 'settings') {
+            const settingsPopup = document.getElementById('settings-popup');
+            if (settingsPopup) settingsPopup.classList.remove('hidden');
         }
     }
-}
+};
 
 // --- Action Logic ---
 
@@ -951,39 +941,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 
-    // Shortcut actions coordination
+    // Prevent manual resizing
+    window.addEventListener('resize', () => {
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            const layout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
+            const targetWidth = layout === 'horizontal' ? 950 : 450;
+            const targetHeight = 800;
+            if (window.innerWidth !== targetWidth || window.innerHeight !== targetHeight) {
+                window.resizeTo(targetWidth, targetHeight);
+            }
+        }
+    });
+
+    // Handle window close as "End Task" confirmation
+    window.addEventListener('beforeunload', (event) => {
+        if (activeTask) {
+            // Note: Custom messages are ignored by modern browsers, but setting returnValue triggers the dialog.
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    // Shortcut actions & Single-instance coordination
     const urlParams = new URLSearchParams(window.location.search);
     const action = urlParams.get('action');
-    if (action) {
-        let otherInstanceFound = false;
-        const pingPromise = new Promise(resolve => {
-            const handler = (e) => {
-                if (e.data.type === 'PONG') {
-                    otherInstanceFound = true;
-                    resolve();
-                }
-            };
-            instanceChannel.addEventListener('message', handler);
-            setTimeout(() => {
-                instanceChannel.removeEventListener('message', handler);
+
+    let otherInstanceFound = false;
+    const pingPromise = new Promise(resolve => {
+        const handler = (e) => {
+            if (e.data.type === 'PONG') {
+                otherInstanceFound = true;
                 resolve();
+            }
+        };
+        instanceChannel.addEventListener('message', handler);
+        setTimeout(() => {
+            instanceChannel.removeEventListener('message', handler);
+            resolve();
         }, 300);
-        });
+    });
 
-        instanceChannel.postMessage({ type: 'PING' });
-        await pingPromise;
+    instanceChannel.postMessage({ type: 'PING' });
+    await pingPromise;
 
-        if (otherInstanceFound) {
-            instanceChannel.postMessage({ type: 'SHORTCUT_ACTION', action });
-            // Close this temporary instance
-            window.close();
-            // If close is blocked, show a message
-            document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; font-weight:bold;">別ウィンドウで処理を実行中です...</div>';
-            setTimeout(() => window.close(), 1000);
-            return;
-        } else {
-            handleShortcutAction(action);
-        }
+    if (otherInstanceFound) {
+        instanceChannel.postMessage({ type: 'FOCUS', action });
+        window.close();
+        document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; font-weight:bold;">既に起動しています...</div>';
+        setTimeout(() => window.close(), 1000);
+        return;
+    } else if (action === 'settings') {
+        const settingsPopup = document.getElementById('settings-popup');
+        if (settingsPopup) settingsPopup.classList.remove('hidden');
     }
 
     console.log('QuickLog-Solo Initialized');

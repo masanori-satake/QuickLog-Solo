@@ -40,13 +40,6 @@
       "description": "アプリの設定画面を開きます",
       "url": "./?action=settings",
       "icons": [{ "src": "icon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "終了",
-      "short_name": "終了",
-      "description": "アプリを終了し、計測を停止します",
-      "url": "./?action=exit",
-      "icons": [{ "src": "icon.svg", "sizes": "any" }]
     }
   ]
 }
