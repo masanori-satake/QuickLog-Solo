@@ -128,11 +128,11 @@ function updateTimer() {
         if (el) el.textContent = timeStr;
     });
 
-    const isIdle = activeTask.category === '(待機)';
+    const isPaused = activeTask.category === '(待機)';
 
     const overlay = document.getElementById('current-task-display-overlay');
     if (overlay) {
-        if (isIdle) {
+        if (isPaused) {
             overlay.style.clipPath = 'inset(0 100% 0 0)';
         } else {
             const anim = getAnimationState(activeTask.startTime);
@@ -187,7 +187,7 @@ function applyLayout(layout) {
         btn.title = isHorizontal ? '縦長レイアウトに切り替え' : '横長レイアウトに切り替え';
 
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            window.resizeTo(isHorizontal ? 950 : 450, 800);
+            window.resizeTo(isHorizontal ? 800 : 280, 700);
         }
     }
 }
@@ -266,7 +266,21 @@ async function renderLogs() {
     if (!logList) return;
     logList.innerHTML = '';
 
+    let lastDate = '';
+    const days = ['日', '月', '火', '水', '木', '金', '土'];
+
     completedLogs.forEach((log) => {
+        const d = new Date(log.startTime);
+        const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} (${days[d.getDay()]})`;
+
+        if (dateStr !== lastDate) {
+            const header = document.createElement('li');
+            header.className = 'log-date-header';
+            header.textContent = dateStr;
+            logList.appendChild(header);
+            lastDate = dateStr;
+        }
+
         const li = createLogElement(log, categoryMap);
         logList.appendChild(li);
     });
@@ -275,8 +289,10 @@ async function renderLogs() {
 function createLogElement(log, categoryMap) {
     const li = document.createElement('li');
     li.className = 'log-item';
+    const startTimeStr = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const durationMs = log.endTime - log.startTime;
     const durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)}s` : `${Math.round(durationMs / 60000)}m`;
+
     let colorClass = 'dot-gray';
     if (log.category === '(待機)') {
         colorClass = 'dot-idle';
@@ -285,6 +301,7 @@ function createLogElement(log, categoryMap) {
         if (cat) colorClass = `dot-${cat.color}`;
     }
     li.innerHTML = `
+        <span class="log-time">${startTimeStr}</span>
         <span class="log-name"><span class="category-dot ${colorClass}"></span>${log.category}</span>
         <span class="log-duration">${durationText}</span>
     `;
@@ -322,9 +339,9 @@ async function updateUI() {
 
     if (activeTask) {
         let color = 'blue';
-        const isIdle = activeTask.category === '(待機)';
+        const isPaused = activeTask.category === '(待機)';
 
-        if (isIdle) {
+        if (isPaused) {
             color = 'idle';
         } else {
             const cat = await dbGet('categories', activeTask.category);
@@ -334,13 +351,13 @@ async function updateUI() {
         if (elements.display) elements.display.className = `cat-${color}`;
         if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
 
-        const label = isIdle ? '⏸' : '▶';
-        const statusClass = isIdle ? 'status-paused' : 'status-running';
+        const label = isPaused ? '⏸' : '▶';
+        const statusClass = isPaused ? 'status-paused' : 'status-running';
         [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
             if (el) {
                 el.textContent = label;
                 el.className = statusClass;
-                if (isIdle) {
+                if (isPaused) {
                     el.classList.add('blink');
                 } else {
                     el.classList.remove('blink');
@@ -350,7 +367,7 @@ async function updateUI() {
         [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = activeTask.category; });
 
         if (elements.pauseBtn) {
-            if (isIdle) {
+            if (isPaused) {
                 elements.pauseBtn.innerHTML = '<span class="btn-text">再開</span><span class="btn-icon">▶️</span>';
                 elements.pauseBtn.disabled = !activeTask.resumableCategory;
                 elements.pauseBtn.onclick = () => startTask(activeTask.resumableCategory);
@@ -776,7 +793,7 @@ function setupEventListeners() {
     window.addEventListener('resize', () => {
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             const layout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
-            window.resizeTo(layout === 'horizontal' ? 950 : 450, 800);
+            window.resizeTo(layout === 'horizontal' ? 800 : 280, 700);
         }
     });
 
