@@ -25,6 +25,9 @@
                 <div id="category-list">
                     <!-- カテゴリボタンがここに動的に追加される -->
                 </div>
+                <div id="category-pagination" class="hidden">
+                    <!-- ページインジケーター -->
+                </div>
             </section>
 
             <section id="control-section">
@@ -64,23 +67,6 @@
             </section>
         </main>
 
-        <footer>
-            <button id="info-btn">?</button>
-        </footer>
-
-        <!-- Info Popup -->
-        <div id="info-popup" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-btn">&times;</span>
-                <h2>QuickLog-Solo について</h2>
-                <p><strong>保存先:</strong> ブラウザ内 IndexedDB (Local Only)</p>
-                <p><strong>通信:</strong> 更新チェック以外、外部通信なし</p>
-                <p><strong>仕組み:</strong> PWA / Service Worker によるオフライン動作</p>
-                <hr>
-                <p>データはあなたのデバイスにのみ保存されます。安心してご利用ください。</p>
-            </div>
-        </div>
-
         <!-- Settings Popup -->
         <div id="settings-popup" class="modal hidden">
             <div class="modal-content">
@@ -97,8 +83,8 @@
                     <button class="tab-btn" data-tab="maintenance">
                         <span class="tab-text">メンテナンス</span><span class="tab-icon">🛠️</span>
                     </button>
-                    <button class="tab-btn" data-tab="credits">
-                        <span class="tab-text">クレジット</span><span class="tab-icon">👤</span>
+                    <button class="tab-btn" data-tab="about">
+                        <span class="tab-text">About</span><span class="tab-icon">ℹ️</span>
                     </button>
                 </div>
 
@@ -143,16 +129,21 @@
                     </div>
                 </div>
 
-                <div id="credits-tab" class="tab-content hidden">
+                <div id="about-tab" class="tab-content hidden">
                     <div class="setting-item">
                         <label>開発者</label>
-                        <p>QuickLog-Solo User</p>
+                        <p>Masanori SATAKE</p>
                     </div>
                     <div class="setting-item">
-                        <label>技術仕様</label>
+                        <label>QuickLog-Solo について</label>
+                        <p style="font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.5rem;">
+                            本アプリは、標準的なウェブ技術（HTML5, CSS3, Vanilla JS）のみで構築された、プライバシー重視のミニマリストな作業ログツールです。
+                        </p>
+                        <p style="font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.5rem;">
+                            すべてのデータはブラウザ内の IndexedDB にのみ保存され、外部サーバーへの送信は行われません。PWAとしてオフラインでも動作します。
+                        </p>
                         <p style="font-size: 0.85rem; line-height: 1.6;">
-                            本アプリは外部のOSSライブラリやフレームワークを一切使用せず、標準的なHTML5、CSS3、およびJavaScript（Vanilla JS）のみで構成されています。
-                            外部コードへの依存を排除することで、セキュリティリスクの低減と透明性の向上を図っています。
+                            外部ライブラリを一切使用せず、セキュアで軽量な動作を実現しています。
                         </p>
                     </div>
                 </div>
