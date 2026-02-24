@@ -731,20 +731,37 @@ function setupEventListeners() {
         }
     });
 
-    // CSV and Maintenance
-    document.getElementById('export-csv-btn')?.addEventListener('click', async () => {
-        const logs = await dbGetAll('logs');
-        let csv = "id,category,startTime,endTime\n";
-        logs.forEach(l => { csv += `${l.id},${l.category},${l.startTime},${l.endTime}\n`; });
-        const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `quicklog_backup_${new Date().toISOString().slice(0,10)}.csv`;
-        a.click();
+    // CSV and Maintenance helpers
+    async function performMaintenanceAction(confirmMessage, action) {
+        if (await showConfirm(confirmMessage)) {
+            if (activeTask) {
+                await stopTask();
+                updateUI();
+            }
+            await action();
+        }
+    }
+
+    document.getElementById('export-csv-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('ログデータをCSVとして書き出します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
+            const logs = await dbGetAll('logs');
+            let csv = "id,category,startTime,endTime\n";
+            logs.forEach(l => { csv += `${l.id},${l.category},${l.startTime},${l.endTime}\n`; });
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quicklog_backup_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        });
     });
 
     const csvInput = document.getElementById('csv-file-input');
-    document.getElementById('import-csv-btn')?.addEventListener('click', () => csvInput?.click());
+    document.getElementById('import-csv-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('CSVファイルからログデータを読み込みます。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
+            csvInput?.click();
+        });
+    });
+
     csvInput?.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -767,27 +784,27 @@ function setupEventListeners() {
         alert('インポートが完了しました。');
     });
 
-    document.getElementById('clear-logs-btn')?.addEventListener('click', async () => {
-        if (await showConfirm('全てのログを削除しますか？')) {
+    document.getElementById('clear-logs-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('全てのログを削除します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
             await dbClear('logs');
             updateUI();
             showToast('削除が完了しました');
-        }
+        });
     });
 
-    document.getElementById('reset-cat-settings-btn')?.addEventListener('click', async () => {
-        if (await showConfirm('カテゴリと各種設定を初期化しますか？\n（ログは維持されます）')) {
+    document.getElementById('reset-cat-settings-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログは維持されます）', async () => {
             await dbClear('categories');
             await dbClear('settings');
             location.reload();
-        }
+        });
     });
 
-    document.getElementById('reset-settings-btn')?.addEventListener('click', async () => {
-        if (await showConfirm('各種設定を初期化しますか？\n（ログとカテゴリは維持されます）')) {
+    document.getElementById('reset-settings-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログとカテゴリは維持されます）', async () => {
             await dbClear('settings');
             location.reload();
-        }
+        });
     });
 
     window.addEventListener('resize', () => {
