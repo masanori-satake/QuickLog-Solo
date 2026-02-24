@@ -128,8 +128,6 @@ function updateTimer() {
         if (el) el.textContent = timeStr;
     });
 
-    document.title = `${timeStr} - ${activeTask.category}`;
-
     const overlay = document.getElementById('current-task-display-overlay');
     if (overlay) {
         const anim = getAnimationState(activeTask.startTime);
@@ -244,71 +242,6 @@ function renderPagination(totalPages) {
     }
 }
 
-async function renderLogs() {
-    console.log('QuickLog-Solo: Rendering logs...');
-    let allLogs;
-    let categories;
-    try {
-        allLogs = await dbGetAll('logs');
-        categories = await dbGetAll('categories');
-    } catch (e) {
-        console.error('Failed to get data for logs:', e);
-        return;
-    }
-    const categoryMap = new Map(categories.map(c => [c.name, c]));
-
-    const completedLogs = allLogs.filter(l => l.endTime).sort((a, b) => b.startTime - a.startTime);
-
-    const logList = document.getElementById('log-list');
-    const extraLogList = document.getElementById('extra-log-list');
-    if (!logList || !extraLogList) return;
-    logList.innerHTML = '';
-    extraLogList.innerHTML = '';
-
-    let lastDateStr = "";
-    completedLogs.forEach((log, i) => {
-        const date = new Date(log.startTime);
-        const dateStr = date.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' });
-
-        if (dateStr !== lastDateStr) {
-            const dateHeader = document.createElement('li');
-            dateHeader.className = 'log-date-header';
-            dateHeader.textContent = dateStr;
-            (i < 5 ? logList : extraLogList).appendChild(dateHeader);
-            lastDateStr = dateStr;
-        }
-
-        const li = createLogElement(log, categoryMap);
-        (i < 5 ? logList : extraLogList).appendChild(li);
-    });
-
-    const moreBtn = document.getElementById('more-logs-btn');
-    if (moreBtn) moreBtn.style.display = completedLogs.length > 5 ? 'block' : 'none';
-}
-
-function createLogElement(log, categoryMap) {
-    const li = document.createElement('li');
-    li.className = 'log-item';
-
-    const start = new Date(log.startTime);
-    const durationMs = log.endTime - log.startTime;
-    const durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)} sec` : `${Math.round(durationMs / 60000)} min`;
-
-    let colorClass = 'dot-gray';
-    if (log.category === '(待機)') {
-        colorClass = 'dot-idle';
-    } else {
-        const cat = categoryMap.get(log.category);
-        if (cat) colorClass = `dot-${cat.color}`;
-    }
-
-    li.innerHTML = `
-        <span class="log-time">${start.getHours()}:${String(start.getMinutes()).padStart(2, '0')}</span>
-        <span class="log-name"><span class="category-dot ${colorClass}"></span>${log.category}</span>
-        <span class="log-duration">${durationText}</span>
-    `;
-    return li;
-}
 
 async function updateUI() {
     console.log('QuickLog-Solo: updateUI called');
@@ -318,12 +251,6 @@ async function updateUI() {
         await renderCategories();
     } catch (e) {
         console.error('updateUI: Failed to render categories', e);
-    }
-
-    try {
-        await renderLogs();
-    } catch (e) {
-        console.error('updateUI: Failed to render logs', e);
     }
 
     const elements = {
@@ -632,12 +559,6 @@ function setupEventListeners() {
         const newLayout = currentLayout === 'horizontal' ? 'vertical' : 'horizontal';
         await dbPut('settings', { key: 'layout', value: newLayout });
         applyLayout(newLayout);
-    });
-
-    document.getElementById('more-logs-btn')?.addEventListener('click', (e) => {
-        const extra = document.getElementById('extra-logs');
-        const isHidden = extra?.classList.toggle('hidden');
-        e.target.textContent = isHidden ? 'More...' : 'Less...';
     });
 
     document.getElementById('category-section')?.addEventListener('wheel', async (e) => {
