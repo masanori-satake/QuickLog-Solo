@@ -70,4 +70,25 @@ describe('DB Module', () => {
         expect(categories.length).toBeGreaterThan(0);
         expect(categories.find(c => c.name === '💻 開発')).toBeDefined();
     });
+
+    test('initDB handles multiple active tasks by closing orphaned ones', async () => {
+        await openDatabase();
+        const now = Date.now();
+        // Create two tasks without endTime
+        await dbAdd('logs', { category: 'Old Task', startTime: now - 10000, endTime: null });
+        await dbAdd('logs', { category: 'New Task', startTime: now - 5000, endTime: null });
+        closeDatabase();
+
+        const settings = await initDB();
+        expect(settings.activeTask.category).toBe('New Task');
+
+        const allLogs = await dbGetAll('logs');
+        const openTasks = allLogs.filter(l => !l.endTime);
+        expect(openTasks.length).toBe(1);
+        expect(openTasks[0].category).toBe('New Task');
+
+        const closedTask = allLogs.find(l => l.category === 'Old Task');
+        expect(closedTask.endTime).toBeDefined();
+        expect(closedTask.endTime).toBe(closedTask.startTime + 1000);
+    });
 });

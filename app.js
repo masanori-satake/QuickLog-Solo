@@ -1,4 +1,4 @@
-import { initDB, dbGet, dbGetAll, dbPut, dbDelete, dbClear } from './js/db.js';
+import { initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear } from './js/db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './js/logic.js';
 
 if ("serviceWorker" in navigator) {
@@ -842,6 +842,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyLayout(settings.layout);
 
         setupEventListeners();
+        await handleTestParameters();
         await updateUI();
     } catch (e) {
         console.error('Failed to initialize application:', e);
@@ -850,3 +851,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     console.log('QuickLog-Solo Initialized');
 });
+
+async function handleTestParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // テスト用のレイアウト指定: ?test_layout=horizontal|vertical
+    const testLayout = urlParams.get('test_layout');
+    if (testLayout === 'horizontal' || testLayout === 'vertical') {
+        await dbPut('settings', { key: 'layout', value: testLayout });
+        applyLayout(testLayout);
+    }
+
+    // テスト用のタスク開始: ?test_cat=Dev&test_elapsed=60000&test_resumable=Dev
+    const testCat = urlParams.get('test_cat');
+    if (testCat) {
+        const elapsed = parseInt(urlParams.get('test_elapsed') || '0');
+        const resumable = urlParams.get('test_resumable');
+        const startTime = Date.now() - elapsed;
+
+        // 既存のタスクを強制終了
+        if (activeTask) {
+            await stopTaskLogic(activeTask);
+        }
+
+        // 指定された状態をDBに直接注入
+        const newLog = {
+            category: testCat,
+            startTime: startTime,
+            endTime: null,
+            resumableCategory: resumable
+        };
+        const id = await dbAdd('logs', newLog);
+        newLog.id = id;
+        activeTask = newLog;
+
+        // URLをクリーンアップして再読み込み時にループしないようにする
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+    }
+}
