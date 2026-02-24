@@ -198,11 +198,19 @@ body.layout-vertical #log-section {
 }
 
 #status-label, #status-label-overlay {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1rem;
+    font-size: 1.2rem;
     font-weight: bold;
     margin-bottom: 0.2rem;
+}
+
+.status-running { color: #22c55e; }
+.status-paused { color: #f59e0b; }
+.status-stopped { color: #ef4444; }
+
+#status-label-overlay.status-running,
+#status-label-overlay.status-paused,
+#status-label-overlay.status-stopped {
+    color: white;
 }
 
 #control-section {
@@ -231,11 +239,38 @@ body.layout-vertical #log-section {
     display: none;
 }
 
+#category-section {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
 #category-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    min-height: 180px;
+}
+
+#category-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    height: 10px;
+}
+
+.page-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--muted-color);
+    opacity: 0.3;
+}
+
+.page-dot.active {
+    opacity: 1;
+    background-color: var(--text-color);
 }
 
 .category-btn {
@@ -431,30 +466,6 @@ body.layout-vertical #log-section {
     background-color: #d32f2f;
 }
 
-footer {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 1rem;
-}
-
-#info-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    cursor: pointer;
-    background: var(--bg-color);
-    color: var(--muted-color);
-    border-color: var(--muted-color);
-}
-
-#info-btn:hover {
-    color: var(--text-color);
-    border-color: var(--text-color);
-}
 
 /* Category Colors & Overlay */
 .cat-blue {

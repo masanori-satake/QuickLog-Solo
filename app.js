@@ -15,6 +15,8 @@ if ("serviceWorker" in navigator) {
 
 let activeTask = null;
 let timerInterval = null;
+let currentCategoryPage = 0;
+const ITEMS_PER_PAGE = 8;
 
 const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
 
@@ -196,10 +198,21 @@ async function renderCategories() {
         return;
     }
     categories.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+    if (currentCategoryPage >= totalPages && totalPages > 0) {
+        currentCategoryPage = totalPages - 1;
+    }
+
     const list = document.getElementById('category-list');
     if (!list) return;
     list.innerHTML = '';
-    categories.forEach(cat => {
+
+    const start = currentCategoryPage * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const pageItems = categories.slice(start, end);
+
+    pageItems.forEach(cat => {
         const btn = document.createElement('button');
         btn.className = `category-btn cat-${cat.color || 'blue'}`;
         const isActive = activeTask && activeTask.category === cat.name;
@@ -211,6 +224,24 @@ async function renderCategories() {
         btn.onclick = () => startTask(cat.name);
         list.appendChild(btn);
     });
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const container = document.getElementById('category-pagination');
+    if (!container) return;
+    if (totalPages <= 1) {
+        container.classList.add('hidden');
+        return;
+    }
+    container.classList.remove('hidden');
+    container.innerHTML = '';
+    for (let i = 0; i < totalPages; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'page-dot' + (i === currentCategoryPage ? ' active' : '');
+        container.appendChild(dot);
+    }
 }
 
 async function renderLogs() {
@@ -322,8 +353,14 @@ async function updateUI() {
         if (elements.display) elements.display.className = `cat-${color}`;
         if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
 
-        const label = isIdle ? '待機中' : '実行中';
-        [elements.statusLabel, elements.statusLabelOverlay].forEach(el => { if (el) el.textContent = label; });
+        const label = isIdle ? '⏸' : '▶';
+        const statusClass = isIdle ? 'status-paused' : 'status-running';
+        [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
+            if (el) {
+                el.textContent = label;
+                el.className = statusClass;
+            }
+        });
         [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = activeTask.category; });
 
         if (elements.pauseBtn) {
@@ -344,7 +381,12 @@ async function updateUI() {
     } else {
         if (elements.display) elements.display.className = '';
         if (elements.overlay) elements.overlay.className = '';
-        [elements.statusLabel, elements.statusLabelOverlay].forEach(el => { if (el) el.textContent = '停止中'; });
+        [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
+            if (el) {
+                el.textContent = '⏹';
+                el.className = 'status-stopped';
+            }
+        });
         [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = '-'; });
 
         if (elements.pauseBtn) {
@@ -598,13 +640,30 @@ function setupEventListeners() {
         e.target.textContent = isHidden ? 'More...' : 'Less...';
     });
 
+    document.getElementById('category-section')?.addEventListener('wheel', async (e) => {
+        const categories = await dbGetAll('categories');
+        const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+        if (totalPages <= 1) return;
+
+        if (e.deltaY > 0) {
+            if (currentCategoryPage < totalPages - 1) {
+                currentCategoryPage++;
+                renderCategories();
+            }
+        } else if (e.deltaY < 0) {
+            if (currentCategoryPage > 0) {
+                currentCategoryPage--;
+                renderCategories();
+            }
+        }
+        e.preventDefault();
+    }, { passive: false });
+
     // Modals
     const popups = {
-        info: document.getElementById('info-popup'),
         settings: document.getElementById('settings-popup')
     };
 
-    document.getElementById('info-btn')?.addEventListener('click', () => popups.info?.classList.remove('hidden'));
     document.getElementById('settings-toggle')?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
     document.querySelectorAll('.close-btn').forEach(btn => {
