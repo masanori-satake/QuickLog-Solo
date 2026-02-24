@@ -128,10 +128,16 @@ function updateTimer() {
         if (el) el.textContent = timeStr;
     });
 
+    const isIdle = activeTask.category === '(待機)';
+
     const overlay = document.getElementById('current-task-display-overlay');
     if (overlay) {
-        const anim = getAnimationState(activeTask.startTime);
-        overlay.style.clipPath = anim.inset;
+        if (isIdle) {
+            overlay.style.clipPath = 'inset(0 100% 0 0)';
+        } else {
+            const anim = getAnimationState(activeTask.startTime);
+            overlay.style.clipPath = anim.inset;
+        }
     }
 }
 
@@ -243,6 +249,48 @@ function renderPagination(totalPages) {
 }
 
 
+async function renderLogs() {
+    let allLogs;
+    let categories;
+    try {
+        allLogs = await dbGetAll('logs');
+        categories = await dbGetAll('categories');
+    } catch (e) {
+        console.error('Failed to get data for logs:', e);
+        return;
+    }
+    const categoryMap = new Map(categories.map(c => [c.name, c]));
+    const completedLogs = allLogs.filter(l => l.endTime).sort((a, b) => b.startTime - a.startTime).slice(0, 5);
+
+    const logList = document.getElementById('log-list');
+    if (!logList) return;
+    logList.innerHTML = '';
+
+    completedLogs.forEach((log) => {
+        const li = createLogElement(log, categoryMap);
+        logList.appendChild(li);
+    });
+}
+
+function createLogElement(log, categoryMap) {
+    const li = document.createElement('li');
+    li.className = 'log-item';
+    const durationMs = log.endTime - log.startTime;
+    const durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)}s` : `${Math.round(durationMs / 60000)}m`;
+    let colorClass = 'dot-gray';
+    if (log.category === '(待機)') {
+        colorClass = 'dot-idle';
+    } else {
+        const cat = categoryMap.get(log.category);
+        if (cat) colorClass = `dot-${cat.color}`;
+    }
+    li.innerHTML = `
+        <span class="log-name"><span class="category-dot ${colorClass}"></span>${log.category}</span>
+        <span class="log-duration">${durationText}</span>
+    `;
+    return li;
+}
+
 async function updateUI() {
     console.log('QuickLog-Solo: updateUI called');
     if (timerInterval) clearInterval(timerInterval);
@@ -251,6 +299,12 @@ async function updateUI() {
         await renderCategories();
     } catch (e) {
         console.error('updateUI: Failed to render categories', e);
+    }
+
+    try {
+        await renderLogs();
+    } catch (e) {
+        console.error('updateUI: Failed to render logs', e);
     }
 
     const elements = {
@@ -286,6 +340,11 @@ async function updateUI() {
             if (el) {
                 el.textContent = label;
                 el.className = statusClass;
+                if (isIdle) {
+                    el.classList.add('blink');
+                } else {
+                    el.classList.remove('blink');
+                }
             }
         });
         [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = activeTask.category; });
