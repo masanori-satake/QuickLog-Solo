@@ -959,8 +959,33 @@ body.layout-pip main {
     border: none !important;
 }
 
-body.layout-pip #category-section,
 body.layout-pip #log-section {
+    display: none !important;
+}
+
+body.layout-pip #category-section {
+    display: block !important;
+    padding: 2px;
+    border-bottom: 1px solid var(--text-color);
+    background: var(--bg-color);
+}
+
+body.layout-pip #category-list {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    min-height: auto;
+    max-height: 52px;
+    overflow-y: auto;
+}
+
+body.layout-pip .category-btn {
+    height: 24px;
+    font-size: 0.7rem;
+    padding: 0;
+}
+
+body.layout-pip #category-pagination {
     display: none !important;
 }
 

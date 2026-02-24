@@ -435,7 +435,7 @@ async function togglePiP() {
 
         pipWindow = await window.documentPictureInPicture.requestWindow({
             width: 280,
-            height: 150,
+            height: 200,
         });
 
         // Copy styles
