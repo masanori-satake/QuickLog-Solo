@@ -15,8 +15,12 @@ if ("serviceWorker" in navigator) {
 
 let activeTask = null;
 let timerInterval = null;
-let currentCategoryPage = 0;
-const ITEMS_PER_PAGE = 8;
+export let currentCategoryPage = 0;
+export const getItemsPerPage = () => {
+    return document.body.classList.contains('layout-horizontal') ? 4 : 8;
+};
+
+export const setCurrentCategoryPage = (page) => { currentCategoryPage = page; };
 
 const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
 
@@ -169,7 +173,7 @@ function applyFont(fontValue) {
     if (select) select.value = fontValue;
 }
 
-function applyLayout(layout) {
+export function applyLayout(layout) {
     const body = document.body;
     body.classList.remove('layout-horizontal', 'layout-vertical');
 
@@ -190,9 +194,10 @@ function applyLayout(layout) {
             window.resizeTo(isHorizontal ? 650 : 280, isHorizontal ? 360 : 500);
         }
     }
+    updateUI();
 }
 
-async function renderCategories() {
+export async function renderCategories() {
     console.log('QuickLog-Solo: Rendering categories...');
     let categories;
     try {
@@ -203,7 +208,8 @@ async function renderCategories() {
     }
     categories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+    const itemsPerPage = getItemsPerPage();
+    const totalPages = Math.ceil(categories.length / itemsPerPage);
     if (currentCategoryPage >= totalPages && totalPages > 0) {
         currentCategoryPage = totalPages - 1;
     }
@@ -212,8 +218,8 @@ async function renderCategories() {
     if (!list) return;
     list.innerHTML = '';
 
-    const start = currentCategoryPage * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
+    const start = currentCategoryPage * itemsPerPage;
+    const end = start + itemsPerPage;
     const pageItems = categories.slice(start, end);
 
     pageItems.forEach(cat => {
@@ -225,6 +231,7 @@ async function renderCategories() {
             btn.disabled = true;
         }
         btn.textContent = cat.name;
+        btn.title = cat.name; // Tooltip
         btn.onclick = () => startTask(cat.name);
         list.appendChild(btn);
     });
@@ -232,16 +239,14 @@ async function renderCategories() {
     renderPagination(totalPages);
 }
 
-function renderPagination(totalPages) {
+export function renderPagination(totalPages) {
     const container = document.getElementById('category-pagination');
     if (!container) return;
-    if (totalPages <= 1) {
-        container.classList.add('hidden');
-        return;
-    }
+    // 1ページのみでも表示してレイアウトを安定させる
     container.classList.remove('hidden');
     container.innerHTML = '';
-    for (let i = 0; i < totalPages; i++) {
+    const pages = Math.max(1, totalPages);
+    for (let i = 0; i < pages; i++) {
         const dot = document.createElement('div');
         dot.className = 'page-dot' + (i === currentCategoryPage ? ' active' : '');
         container.appendChild(dot);
@@ -308,7 +313,7 @@ function createLogElement(log, categoryMap) {
     return li;
 }
 
-async function updateUI() {
+export async function updateUI() {
     console.log('QuickLog-Solo: updateUI called');
     if (timerInterval) clearInterval(timerInterval);
 
@@ -639,7 +644,8 @@ function setupEventListeners() {
 
     document.getElementById('category-section')?.addEventListener('wheel', async (e) => {
         const categories = await dbGetAll('categories');
-        const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+        const itemsPerPage = getItemsPerPage();
+        const totalPages = Math.ceil(categories.length / itemsPerPage);
         if (totalPages <= 1) return;
 
         if (e.deltaY > 0) {
