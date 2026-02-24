@@ -413,7 +413,7 @@ async function updateUI() {
             }
         });
         if (elements.overlay) elements.overlay.style.clipPath = 'inset(0 0 0 100%)';
-        document.title = 'QuickLog-Solo';
+        if (!pipWindow) document.title = 'QuickLog-Solo';
     }
 }
 
@@ -442,7 +442,7 @@ async function togglePiP() {
         [...document.styleSheets].forEach((styleSheet) => {
             try {
                 if (styleSheet.cssRules) {
-                    const style = createEl('style');
+                    const style = document.createElement('style');
                     const rules = [...styleSheet.cssRules].map((rule) => rule.cssText).join('');
                     style.textContent = rules;
                     pipWindow.document.head.appendChild(style);
