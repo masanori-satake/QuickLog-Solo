@@ -8,6 +8,58 @@ let db;
 let activeTask = null;
 let timerInterval = null;
 
+const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
+
+// --- Single-Instance Coordination Logic (Run immediately) ---
+(async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+
+    let otherInstanceFound = false;
+    const pingPromise = new Promise(resolve => {
+        const handler = (e) => {
+            if (e.data.type === 'PONG') {
+                otherInstanceFound = true;
+                resolve();
+            }
+        };
+        instanceChannel.addEventListener('message', handler);
+        setTimeout(() => {
+            instanceChannel.removeEventListener('message', handler);
+            resolve();
+        }, 500); // Increased timeout
+    });
+
+    instanceChannel.postMessage({ type: 'PING' });
+    await pingPromise;
+
+    if (otherInstanceFound) {
+        instanceChannel.postMessage({ type: 'FOCUS', action });
+        window.close();
+        // If window.close() is blocked, display a message and stop execution
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-weight:bold; text-align:center; padding:2rem;">' +
+                '<div>既に QuickLog-Solo が起動しています。</div>' +
+                '<div style="font-size:0.8rem; margin-top:1rem; color:gray;">既存のウィンドウを確認してください。</div>' +
+                '</div>';
+        });
+        throw new Error('Duplicate instance detected. Execution stopped.');
+    }
+})();
+
+instanceChannel.onmessage = (event) => {
+    const { type, action } = event.data;
+    if (type === 'PING') {
+        instanceChannel.postMessage({ type: 'PONG' });
+    } else if (type === 'FOCUS') {
+        window.focus();
+        if (action === 'settings') {
+            const settingsPopup = document.getElementById('settings-popup');
+            if (settingsPopup) settingsPopup.classList.remove('hidden');
+        }
+    }
+};
+
 const FONTS = [
     { name: '標準', value: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
     { name: 'メイリオ', value: '"Meiryo", sans-serif' },
@@ -151,6 +203,9 @@ async function setupInitialData() {
     const font = await dbGet('settings', 'font');
     if (font) applyFont(font.value);
 
+    const layout = await dbGet('settings', 'layout');
+    applyLayout(layout ? layout.value : null);
+
     // Check for active task
     const allLogs = await dbGetAll('logs');
     activeTask = allLogs.find(log => !log.endTime);
@@ -209,6 +264,8 @@ function updateTimer() {
     const elOverlay = document.getElementById('elapsed-time-overlay');
     if (el) el.textContent = timeStr;
     if (elOverlay) elOverlay.textContent = timeStr;
+
+    document.title = `${timeStr} - ${activeTask.category}`;
 
     // Animation logic
     const msInMinute = elapsed % 60000;
@@ -279,6 +336,36 @@ function applyFont(fontValue) {
     document.body.style.setProperty('--font-family', fontValue);
     const select = document.getElementById('font-select');
     if (select) select.value = fontValue;
+}
+
+function applyLayout(layout) {
+    const body = document.body;
+    body.classList.remove('layout-horizontal', 'layout-vertical');
+
+    // Default cases if layout is not explicitly provided
+    if (!layout) {
+        layout = localStorage.getItem('quicklog_layout') || (window.innerWidth >= 650 ? 'horizontal' : 'vertical');
+    }
+
+    localStorage.setItem('quicklog_layout', layout);
+    body.classList.add(`layout-${layout}`);
+
+    const btn = document.getElementById('layout-toggle');
+    if (btn) {
+        if (layout === 'horizontal') {
+            btn.textContent = '↕️';
+            btn.title = '縦長レイアウトに切り替え';
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+                window.resizeTo(950, 800);
+            }
+        } else {
+            btn.textContent = '↔️';
+            btn.title = '横長レイアウトに切り替え';
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+                window.resizeTo(450, 800);
+            }
+        }
+    }
 }
 
 async function renderCategories() {
@@ -456,8 +543,11 @@ async function updateUI() {
             elapsedTimeOverlay.textContent = '00:00:00';
         }
         if (overlay) overlay.style.clipPath = 'inset(0 0 0 100%)';
+
+        document.title = 'QuickLog-Solo';
     }
 }
+
 
 // --- Action Logic ---
 
@@ -739,6 +829,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const aggBtn = document.getElementById('copy-aggregation-btn');
     if (aggBtn) aggBtn.onclick = copyAggregation;
 
+    const layoutToggle = document.getElementById('layout-toggle');
+    if (layoutToggle) {
+        layoutToggle.onclick = async () => {
+            const currentLayout = document.body.classList.contains('layout-horizontal') ? 'horizontal' :
+                                 (document.body.classList.contains('layout-vertical') ? 'vertical' :
+                                 (window.innerWidth >= 650 ? 'horizontal' : 'vertical'));
+            const newLayout = currentLayout === 'horizontal' ? 'vertical' : 'horizontal';
+            await dbPut('settings', { key: 'layout', value: newLayout });
+            applyLayout(newLayout);
+        };
+    }
+
     // Modals
     const infoPopup = document.getElementById('info-popup');
     const infoBtn = document.getElementById('info-btn');
@@ -874,6 +976,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateUI();
             alert('インポートが完了しました。');
         };
+    }
+
+    // Prevent manual resizing
+    window.addEventListener('resize', () => {
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            const layout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
+            const targetWidth = layout === 'horizontal' ? 950 : 450;
+            const targetHeight = 800;
+            if (window.innerWidth !== targetWidth || window.innerHeight !== targetHeight) {
+                window.resizeTo(targetWidth, targetHeight);
+            }
+        }
+    });
+
+    // Handle window close as "End Task" confirmation
+    window.addEventListener('beforeunload', (event) => {
+        if (activeTask) {
+            // Note: Custom messages are ignored by modern browsers, but setting returnValue triggers the dialog.
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    // Handle specific action for the single instance
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    if (action === 'settings') {
+        const settingsPopup = document.getElementById('settings-popup');
+        if (settingsPopup) settingsPopup.classList.remove('hidden');
     }
 
     console.log('QuickLog-Solo Initialized');

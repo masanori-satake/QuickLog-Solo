@@ -2,6 +2,7 @@
   "name": "QuickLog-Solo",
   "short_name": "QuickLog",
   "description": "Minimalist Work Logger",
+  "id": "quicklog-solo",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -11,7 +12,34 @@
       "src": "icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ウィンドウを開く",
+      "short_name": "開く",
+      "description": "QuickLog-Soloのメインウィンドウを開きます",
+      "url": ".",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "設定を開く",
+      "short_name": "設定",
+      "description": "アプリの設定画面を開きます",
+      "url": "./?action=settings",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
     }
   ]
 }
