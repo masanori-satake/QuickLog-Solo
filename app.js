@@ -128,12 +128,16 @@ function updateTimer() {
         if (el) el.textContent = timeStr;
     });
 
-    document.title = `${timeStr} - ${activeTask.category}`;
+    const isPaused = activeTask.category === '(待機)';
 
     const overlay = document.getElementById('current-task-display-overlay');
     if (overlay) {
-        const anim = getAnimationState(activeTask.startTime);
-        overlay.style.clipPath = anim.inset;
+        if (isPaused) {
+            overlay.style.clipPath = 'inset(0 100% 0 0)';
+        } else {
+            const anim = getAnimationState(activeTask.startTime);
+            overlay.style.clipPath = anim.inset;
+        }
     }
 }
 
@@ -183,7 +187,7 @@ function applyLayout(layout) {
         btn.title = isHorizontal ? '縦長レイアウトに切り替え' : '横長レイアウトに切り替え';
 
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            window.resizeTo(isHorizontal ? 950 : 450, 800);
+            window.resizeTo(isHorizontal ? 650 : 280, isHorizontal ? 360 : 500);
         }
     }
 }
@@ -244,8 +248,8 @@ function renderPagination(totalPages) {
     }
 }
 
+
 async function renderLogs() {
-    console.log('QuickLog-Solo: Rendering logs...');
     let allLogs;
     let categories;
     try {
@@ -256,43 +260,38 @@ async function renderLogs() {
         return;
     }
     const categoryMap = new Map(categories.map(c => [c.name, c]));
-
-    const completedLogs = allLogs.filter(l => l.endTime).sort((a, b) => b.startTime - a.startTime);
+    const completedLogs = allLogs.filter(l => l.endTime).sort((a, b) => b.startTime - a.startTime).slice(0, 5);
 
     const logList = document.getElementById('log-list');
-    const extraLogList = document.getElementById('extra-log-list');
-    if (!logList || !extraLogList) return;
+    if (!logList) return;
     logList.innerHTML = '';
-    extraLogList.innerHTML = '';
 
-    let lastDateStr = "";
-    completedLogs.forEach((log, i) => {
-        const date = new Date(log.startTime);
-        const dateStr = date.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' });
+    let lastDate = '';
+    const days = ['日', '月', '火', '水', '木', '金', '土'];
 
-        if (dateStr !== lastDateStr) {
-            const dateHeader = document.createElement('li');
-            dateHeader.className = 'log-date-header';
-            dateHeader.textContent = dateStr;
-            (i < 5 ? logList : extraLogList).appendChild(dateHeader);
-            lastDateStr = dateStr;
+    completedLogs.forEach((log) => {
+        const d = new Date(log.startTime);
+        const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} (${days[d.getDay()]})`;
+
+        if (dateStr !== lastDate) {
+            const header = document.createElement('li');
+            header.className = 'log-date-header';
+            header.textContent = dateStr;
+            logList.appendChild(header);
+            lastDate = dateStr;
         }
 
         const li = createLogElement(log, categoryMap);
-        (i < 5 ? logList : extraLogList).appendChild(li);
+        logList.appendChild(li);
     });
-
-    const moreBtn = document.getElementById('more-logs-btn');
-    if (moreBtn) moreBtn.style.display = completedLogs.length > 5 ? 'block' : 'none';
 }
 
 function createLogElement(log, categoryMap) {
     const li = document.createElement('li');
     li.className = 'log-item';
-
-    const start = new Date(log.startTime);
+    const startTimeStr = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const durationMs = log.endTime - log.startTime;
-    const durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)} sec` : `${Math.round(durationMs / 60000)} min`;
+    const durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)}s` : `${Math.round(durationMs / 60000)}m`;
 
     let colorClass = 'dot-gray';
     if (log.category === '(待機)') {
@@ -301,9 +300,8 @@ function createLogElement(log, categoryMap) {
         const cat = categoryMap.get(log.category);
         if (cat) colorClass = `dot-${cat.color}`;
     }
-
     li.innerHTML = `
-        <span class="log-time">${start.getHours()}:${String(start.getMinutes()).padStart(2, '0')}</span>
+        <span class="log-time">${startTimeStr}</span>
         <span class="log-name"><span class="category-dot ${colorClass}"></span>${log.category}</span>
         <span class="log-duration">${durationText}</span>
     `;
@@ -341,9 +339,9 @@ async function updateUI() {
 
     if (activeTask) {
         let color = 'blue';
-        const isIdle = activeTask.category === '(待機)';
+        const isPaused = activeTask.category === '(待機)';
 
-        if (isIdle) {
+        if (isPaused) {
             color = 'idle';
         } else {
             const cat = await dbGet('categories', activeTask.category);
@@ -353,18 +351,23 @@ async function updateUI() {
         if (elements.display) elements.display.className = `cat-${color}`;
         if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
 
-        const label = isIdle ? '⏸' : '▶';
-        const statusClass = isIdle ? 'status-paused' : 'status-running';
+        const label = isPaused ? '⏸' : '▶';
+        const statusClass = isPaused ? 'status-paused' : 'status-running';
         [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
             if (el) {
                 el.textContent = label;
                 el.className = statusClass;
+                if (isPaused) {
+                    el.classList.add('blink');
+                } else {
+                    el.classList.remove('blink');
+                }
             }
         });
         [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = activeTask.category; });
 
         if (elements.pauseBtn) {
-            if (isIdle) {
+            if (isPaused) {
                 elements.pauseBtn.innerHTML = '<span class="btn-text">再開</span><span class="btn-icon">▶️</span>';
                 elements.pauseBtn.disabled = !activeTask.resumableCategory;
                 elements.pauseBtn.onclick = () => startTask(activeTask.resumableCategory);
@@ -634,12 +637,6 @@ function setupEventListeners() {
         applyLayout(newLayout);
     });
 
-    document.getElementById('more-logs-btn')?.addEventListener('click', (e) => {
-        const extra = document.getElementById('extra-logs');
-        const isHidden = extra?.classList.toggle('hidden');
-        e.target.textContent = isHidden ? 'More...' : 'Less...';
-    });
-
     document.getElementById('category-section')?.addEventListener('wheel', async (e) => {
         const categories = await dbGetAll('categories');
         const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
@@ -734,20 +731,37 @@ function setupEventListeners() {
         }
     });
 
-    // CSV and Maintenance
-    document.getElementById('export-csv-btn')?.addEventListener('click', async () => {
-        const logs = await dbGetAll('logs');
-        let csv = "id,category,startTime,endTime\n";
-        logs.forEach(l => { csv += `${l.id},${l.category},${l.startTime},${l.endTime}\n`; });
-        const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `quicklog_backup_${new Date().toISOString().slice(0,10)}.csv`;
-        a.click();
+    // CSV and Maintenance helpers
+    async function performMaintenanceAction(confirmMessage, action) {
+        if (await showConfirm(confirmMessage)) {
+            if (activeTask) {
+                await stopTask();
+                updateUI();
+            }
+            await action();
+        }
+    }
+
+    document.getElementById('export-csv-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('ログデータをCSVとして書き出します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
+            const logs = await dbGetAll('logs');
+            let csv = "id,category,startTime,endTime\n";
+            logs.forEach(l => { csv += `${l.id},${l.category},${l.startTime},${l.endTime}\n`; });
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quicklog_backup_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        });
     });
 
     const csvInput = document.getElementById('csv-file-input');
-    document.getElementById('import-csv-btn')?.addEventListener('click', () => csvInput?.click());
+    document.getElementById('import-csv-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('CSVファイルからログデータを読み込みます。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
+            csvInput?.click();
+        });
+    });
+
     csvInput?.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -770,33 +784,33 @@ function setupEventListeners() {
         alert('インポートが完了しました。');
     });
 
-    document.getElementById('clear-logs-btn')?.addEventListener('click', async () => {
-        if (await showConfirm('全てのログを削除しますか？')) {
+    document.getElementById('clear-logs-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('全てのログを削除します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
             await dbClear('logs');
             updateUI();
             showToast('削除が完了しました');
-        }
+        });
     });
 
-    document.getElementById('reset-cat-settings-btn')?.addEventListener('click', async () => {
-        if (await showConfirm('カテゴリと各種設定を初期化しますか？\n（ログは維持されます）')) {
+    document.getElementById('reset-cat-settings-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログは維持されます）', async () => {
             await dbClear('categories');
             await dbClear('settings');
             location.reload();
-        }
+        });
     });
 
-    document.getElementById('reset-settings-btn')?.addEventListener('click', async () => {
-        if (await showConfirm('各種設定を初期化しますか？\n（ログとカテゴリは維持されます）')) {
+    document.getElementById('reset-settings-btn')?.addEventListener('click', () => {
+        performMaintenanceAction('各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログとカテゴリは維持されます）', async () => {
             await dbClear('settings');
             location.reload();
-        }
+        });
     });
 
     window.addEventListener('resize', () => {
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             const layout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
-            window.resizeTo(layout === 'horizontal' ? 950 : 450, 800);
+            window.resizeTo(layout === 'horizontal' ? 650 : 280, layout === 'horizontal' ? 360 : 500);
         }
     });
 

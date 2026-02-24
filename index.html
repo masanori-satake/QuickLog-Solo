@@ -13,10 +13,11 @@
 <body class="theme-light accent-blue">
     <div id="app">
         <header>
-            <h1>QuickLog-Solo <small id="version-display"></small></h1>
             <div id="header-btns">
-                <button id="layout-toggle" title="レイアウト切替">↕️</button>
+                <button id="copy-report-btn" title="日報コピー">📋</button>
+                <button id="copy-aggregation-btn" title="集計コピー">📊</button>
                 <button id="settings-toggle" title="設定">⚙️</button>
+                <button id="layout-toggle" title="レイアウト切替">↕️</button>
             </div>
         </header>
 
@@ -33,14 +34,18 @@
             <section id="control-section">
                 <div id="timer-container">
                     <div id="current-task-display">
-                        <span id="status-label">停止中</span>
                         <h2 id="current-task-name">-</h2>
-                        <div id="elapsed-time" class="hidden">00:00:00</div>
+                        <div class="timer-box">
+                            <span id="status-label">⏹</span>
+                            <div id="elapsed-time" class="hidden">00:00:00</div>
+                        </div>
 
                         <div id="current-task-display-overlay">
-                            <span id="status-label-overlay">停止中</span>
                             <h2 id="current-task-name-overlay">-</h2>
-                            <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
+                            <div class="timer-box">
+                                <span id="status-label-overlay">⏹</span>
+                                <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -51,19 +56,9 @@
             </section>
 
             <section id="log-section">
-                <h3>最近のログ</h3>
                 <ul id="log-list">
                     <!-- ログアイテムがここに動的に追加される -->
                 </ul>
-                <button id="more-logs-btn">More...</button>
-                <div id="extra-logs" class="hidden">
-                    <ul id="extra-log-list"></ul>
-                </div>
-            </section>
-
-            <section id="action-section">
-                <button id="copy-report-btn"><span class="btn-text">日報コピー</span><span class="btn-icon">📋</span></button>
-                <button id="copy-aggregation-btn"><span class="btn-text">集計コピー</span><span class="btn-icon">📊</span></button>
             </section>
         </main>
 
@@ -130,6 +125,10 @@
                 </div>
 
                 <div id="about-tab" class="tab-content hidden">
+                    <div class="setting-item">
+                        <label>バージョン</label>
+                        <p id="version-display"></p>
+                    </div>
                     <div class="setting-item">
                         <label>開発者</label>
                         <p>Masanori SATAKE</p>
