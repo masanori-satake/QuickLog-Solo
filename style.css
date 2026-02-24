@@ -189,7 +189,7 @@ body.layout-horizontal main {
     gap: 0;
     align-items: stretch;
     border: var(--border-width) solid var(--text-color);
-    height: 315px;
+    height: 145px;
 }
 
 body.layout-horizontal #category-section,
@@ -439,7 +439,7 @@ body.layout-vertical #end-btn {
 #category-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-auto-rows: 1fr;
+    grid-auto-rows: 36px;
     gap: 4px;
     padding: 4px;
     overflow: hidden;
