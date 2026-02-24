@@ -175,7 +175,7 @@ body.layout-horizontal #app {
 
 body.layout-horizontal main {
     display: grid;
-    grid-template-columns: 150px 1fr 200px;
+    grid-template-columns: 150px 200px 1fr;
     gap: 0;
     align-items: stretch;
     border: var(--border-width) solid var(--text-color);
@@ -216,13 +216,12 @@ body.layout-horizontal #control-section {
 
 body.layout-horizontal #timer-container {
     flex-grow: 1;
+    border-left: var(--border-width) solid var(--text-color);
 }
 
 body.layout-horizontal #current-task-display {
     height: 100%;
-    border-top: none;
-    border-bottom: none;
-    border-left: var(--border-width) solid var(--text-color);
+    border: none;
 }
 
 body.layout-horizontal #stop-btn-box {
@@ -288,6 +287,7 @@ body.layout-vertical #current-task-display {
     border-top: none;
     border-left: none;
     border-right: none;
+    border-bottom: none;
 }
 
 body.layout-vertical #stop-btn-box {
@@ -309,26 +309,26 @@ body.layout-vertical #end-btn {
 }
 
 
-#current-task-display {
-    position: relative;
-    height: 80px;
-    border: var(--border-width) solid var(--text-color);
-    padding: 0.5rem;
-    overflow: hidden;
+#current-task-display, #current-task-display-overlay {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 0.5rem;
+    text-align: center;
+    width: 100%;
+}
+
+#current-task-display {
+    position: relative;
+    height: 80px;
+    border: var(--border-width) solid var(--text-color);
+    overflow: hidden;
 }
 
 #current-task-display-overlay {
     position: absolute;
     inset: 0;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     clip-path: inset(0 100% 0 0);
     z-index: 1;
     background-color: transparent;
@@ -873,7 +873,7 @@ body.layout-vertical #end-btn {
     }
 }
 
-@media (height <= 350px) {
+@media (height <= 300px) {
     header {
         display: none;
     }
@@ -881,10 +881,8 @@ body.layout-vertical #end-btn {
     #current-task-display,
     #current-task-display-overlay {
         height: 45px;
-        flex-direction: row;
-        justify-content: space-between;
         align-items: center;
-        gap: 1rem;
+        gap: 0;
     }
 
     #category-list {
