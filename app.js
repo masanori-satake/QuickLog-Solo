@@ -187,7 +187,7 @@ function applyLayout(layout) {
         btn.title = isHorizontal ? '縦長レイアウトに切り替え' : '横長レイアウトに切り替え';
 
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            window.resizeTo(isHorizontal ? 800 : 280, 700);
+            window.resizeTo(isHorizontal ? 800 : 280, isHorizontal ? 350 : 500);
         }
     }
 }
@@ -810,7 +810,7 @@ function setupEventListeners() {
     window.addEventListener('resize', () => {
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             const layout = document.body.classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
-            window.resizeTo(layout === 'horizontal' ? 800 : 280, 700);
+            window.resizeTo(layout === 'horizontal' ? 800 : 280, layout === 'horizontal' ? 350 : 500);
         }
     });
 
