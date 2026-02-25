@@ -1,4 +1,4 @@
-import { dbAdd, dbPut, dbDelete } from './db.js';
+import { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
 import { SYSTEM_CATEGORY_IDLE } from './utils.js';
 
 export function formatDuration(ms) {
@@ -38,7 +38,7 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
         resumableCategory: resumableCategory
     };
 
-    const id = await dbAdd('logs', newLog);
+    const id = await dbAdd(STORE_LOGS, newLog);
     newLog.id = id;
     return newLog;
 }
@@ -56,17 +56,17 @@ export async function stopTaskLogic(activeTask, isManualStop = false) {
         delete idleLog.isPaused;
 
         if (idleLog.id) {
-            await dbPut('logs', idleLog);
+            await dbPut(STORE_LOGS, idleLog);
         } else {
-            await dbAdd('logs', idleLog);
+            await dbAdd(STORE_LOGS, idleLog);
         }
 
-        await dbDelete('settings', 'pauseState');
+        await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         return null;
     }
 
     const taskToSave = { ...activeTask, endTime: Date.now(), isManualStop: isManualStop };
-    await dbPut('logs', taskToSave);
+    await dbPut(STORE_LOGS, taskToSave);
     return null;
 }
 
@@ -81,8 +81,8 @@ export async function pauseTaskLogic(activeTask) {
         resumableCategory: lastCategory,
         isPaused: true
     };
-    const id = await dbAdd('logs', pauseState);
+    const id = await dbAdd(STORE_LOGS, pauseState);
     pauseState.id = id;
-    await dbPut('settings', { key: 'pauseState', value: pauseState });
+    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
     return pauseState;
 }

@@ -3,6 +3,19 @@ import { SYSTEM_CATEGORY_IDLE } from './utils.js';
 export const DB_NAME = 'QuickLogSoloDB';
 export const DB_VERSION = 1;
 
+export const STORE_LOGS = 'logs';
+export const STORE_CATEGORIES = 'categories';
+export const STORE_SETTINGS = 'settings';
+
+export const SETTING_KEY_THEME = 'theme';
+export const SETTING_KEY_ACCENT = 'accent';
+export const SETTING_KEY_FONT = 'font';
+export const SETTING_KEY_LAYOUT = 'layout';
+export const SETTING_KEY_PAUSE_STATE = 'pauseState';
+
+const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
+const ORPHANED_TASK_MIN_DURATION_MS = 1000;
+
 let db;
 
 export function openDatabase() {
@@ -10,14 +23,14 @@ export function openDatabase() {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
-            if (!db.objectStoreNames.contains('logs')) {
-                db.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
+            if (!db.objectStoreNames.contains(STORE_LOGS)) {
+                db.createObjectStore(STORE_LOGS, { keyPath: 'id', autoIncrement: true });
             }
-            if (!db.objectStoreNames.contains('categories')) {
-                db.createObjectStore('categories', { keyPath: 'name' });
+            if (!db.objectStoreNames.contains(STORE_CATEGORIES)) {
+                db.createObjectStore(STORE_CATEGORIES, { keyPath: 'name' });
             }
-            if (!db.objectStoreNames.contains('settings')) {
-                db.createObjectStore('settings', { keyPath: 'key' });
+            if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
+                db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
             }
         };
         request.onsuccess = (event) => {
@@ -120,10 +133,10 @@ async function setupInitialData() {
         { name: '☕ メンタル休憩', color: 'orange', order: 7 }
     ];
 
-    let existingCategories = await dbGetAll('categories');
+    let existingCategories = await dbGetAll(STORE_CATEGORIES);
     if (existingCategories.length === 0) {
         for (const cat of initialCategories) {
-            await dbPut('categories', cat);
+            await dbPut(STORE_CATEGORIES, cat);
         }
     } else {
         for (let i = 0; i < existingCategories.length; i++) {
@@ -131,17 +144,17 @@ async function setupInitialData() {
             if (cat.color === undefined || cat.order === undefined) {
                 cat.color = cat.color || 'blue';
                 cat.order = cat.order !== undefined ? cat.order : i;
-                await dbPut('categories', cat);
+                await dbPut(STORE_CATEGORIES, cat);
             }
         }
     }
 
-    const theme = await dbGet('settings', 'theme');
-    const accent = await dbGet('settings', 'accent');
-    const font = await dbGet('settings', 'font');
-    const layout = await dbGet('settings', 'layout');
+    const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
+    const accent = await dbGet(STORE_SETTINGS, SETTING_KEY_ACCENT);
+    const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
+    const layout = await dbGet(STORE_SETTINGS, SETTING_KEY_LAYOUT);
 
-    const allLogs = await dbGetAll('logs');
+    const allLogs = await dbGetAll(STORE_LOGS);
     const openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
     let activeTask = openTasks[0];
 
@@ -155,11 +168,11 @@ async function setupInitialData() {
             resumableCategory: activeTask.resumableCategory,
             isPaused: true
         };
-        await dbPut('settings', { key: 'pauseState', value: pauseState });
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
         // DO NOT delete from logs to preserve history
         activeTask = pauseState;
     } else {
-        const pauseStateSetting = await dbGet('settings', 'pauseState');
+        const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         if (pauseStateSetting) {
             activeTask = pauseStateSetting.value;
         }
@@ -176,8 +189,8 @@ async function setupInitialData() {
             // すでにmigrationで削除済みの場合はスキップ
             if (hasPauseState && orphaned.category === SYSTEM_CATEGORY_IDLE && orphaned.startTime === activeTask.startTime) continue;
 
-            orphaned.endTime = orphaned.startTime + 1000; // 最小限の時間を記録
-            await dbPut('logs', orphaned);
+            orphaned.endTime = orphaned.startTime + ORPHANED_TASK_MIN_DURATION_MS; // 最小限の時間を記録
+            await dbPut(STORE_LOGS, orphaned);
         }
     }
 
@@ -191,11 +204,11 @@ async function setupInitialData() {
 }
 
 async function cleanupOldLogs() {
-    const fortyDaysAgo = Date.now() - (40 * 24 * 60 * 60 * 1000);
-    const logs = await dbGetAll('logs');
+    const cleanupThresholdTime = Date.now() - LOG_CLEANUP_THRESHOLD_MS;
+    const logs = await dbGetAll(STORE_LOGS);
     for (const log of logs) {
-        if (log.startTime < fortyDaysAgo) {
-            await dbDelete('logs', log.id);
+        if (log.startTime < cleanupThresholdTime) {
+            await dbDelete(STORE_LOGS, log.id);
         }
     }
 }

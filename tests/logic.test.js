@@ -8,11 +8,19 @@ jest.unstable_mockModule('../js/db.js', () => ({
     dbGetAll: jest.fn(),
     dbDelete: jest.fn(),
     dbClear: jest.fn(),
-    initDB: jest.fn()
+    initDB: jest.fn(),
+    STORE_LOGS: 'logs',
+    STORE_CATEGORIES: 'categories',
+    STORE_SETTINGS: 'settings',
+    SETTING_KEY_THEME: 'theme',
+    SETTING_KEY_ACCENT: 'accent',
+    SETTING_KEY_FONT: 'font',
+    SETTING_KEY_LAYOUT: 'layout',
+    SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
 const { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } = await import('../js/logic.js');
-const { dbAdd, dbPut, dbDelete } = await import('../js/db.js');
+const { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../js/db.js');
 
 describe('Logic Module', () => {
     describe('formatDuration', () => {
@@ -71,7 +79,7 @@ describe('Logic Module', () => {
             const activeTask = { id: 1, category: 'Work', startTime: Date.now() };
             const result = await stopTaskLogic(activeTask, true);
             expect(result).toBeNull();
-            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
                 id: 1,
                 category: 'Work',
                 endTime: expect.any(Number),
@@ -83,13 +91,13 @@ describe('Logic Module', () => {
             const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
             const result = await stopTaskLogic(pauseState);
             expect(result).toBeNull();
-            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
                 id: 2,
                 category: SYSTEM_CATEGORY_IDLE,
                 endTime: expect.any(Number),
                 isManualStop: false
             }));
-            expect(dbDelete).toHaveBeenCalledWith('settings', 'pauseState');
+            expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
 
         test('pauseTaskLogic transitions to pause state and adds to logs', async () => {
@@ -98,18 +106,18 @@ describe('Logic Module', () => {
             expect(newTask.category).toBe(SYSTEM_CATEGORY_IDLE);
             expect(newTask.resumableCategory).toBe('Work');
             expect(newTask.isPaused).toBe(true);
-            expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: SYSTEM_CATEGORY_IDLE }));
-            expect(dbPut).toHaveBeenCalledWith('settings', expect.objectContaining({ key: 'pauseState', value: expect.objectContaining({ id: 123 }) }));
-            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({ id: 1, category: 'Work', endTime: expect.any(Number) }));
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ category: SYSTEM_CATEGORY_IDLE }));
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({ key: SETTING_KEY_PAUSE_STATE, value: expect.objectContaining({ id: 123 }) }));
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 1, category: 'Work', endTime: expect.any(Number) }));
         });
 
         test('startTaskLogic stops pause state and updates log entry before starting new task', async () => {
             const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
             const newTask = await startTaskLogic('Meeting', pauseState);
             expect(newTask.category).toBe('Meeting');
-            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({ id: 2, category: SYSTEM_CATEGORY_IDLE, endTime: expect.any(Number) }));
-            expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: 'Meeting' }));
-            expect(dbDelete).toHaveBeenCalledWith('settings', 'pauseState');
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, category: SYSTEM_CATEGORY_IDLE, endTime: expect.any(Number) }));
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ category: 'Meeting' }));
+            expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
     });
 });
