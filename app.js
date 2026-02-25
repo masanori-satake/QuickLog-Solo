@@ -248,7 +248,10 @@ function renderPagination(totalPages) {
     const displayPages = Math.max(1, totalPages);
     for (let i = 0; i < displayPages; i++) {
         const dot = createEl('div');
-        dot.className = 'page-dot' + (i === currentCategoryPage ? (totalPages > 0 ? ' active' : '') : '');
+        dot.className = 'page-dot';
+        if (i === currentCategoryPage) {
+            dot.classList.add('active');
+        }
         container.appendChild(dot);
     }
 }

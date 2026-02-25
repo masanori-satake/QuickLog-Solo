@@ -31,10 +31,11 @@ graph TD
 ### 各モジュールの役割
 
 -   **app.js (UI層):**
-    -   DOM要素の取得と操作。
+    -   DOM要素の取得と操作（マルチウィンドウ対応）。
     -   イベントリスナーの設定。
     -   UI状態の同期（`updateUI`）。
     -   ユーザーへの通知（トースト、確認ダイアログ）。
+    -   Document Picture-in-Picture (PiP) の制御。
 -   **js/logic.js (ロジック層):**
     -   タスクの開始・停止・一時停止の純粋な状態遷移ロジック。
     -   時間のフォーマット計算。
@@ -69,6 +70,12 @@ sequenceDiagram
     A->>A: updateUI()
     A->>A: startTimer()
 ```
+
+### マルチウィンドウ (Picture-in-Picture) 対応
+
+Document Picture-in-Picture API を使用して、メインウィンドウと PiP ウィンドウ間で DOM 要素を移動させます。
+- **実装上の工夫:** DOM 要素がどちらのウィンドウにあるかを意識せず操作できるよう、`getEl`, `queryAll`, `getBody`, `createEl` といったヘルパー関数を `app.js` 内に定義しています。
+- **状態の維持:** DOM 要素を再生成せず `append` で移動させているため、タイマーの状態やアニメーションの進行状況が途切れることなく維持されます。
 
 ### カテゴリのページネーション
 
