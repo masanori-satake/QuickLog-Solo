@@ -43,22 +43,29 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
     return newLog;
 }
 
-export async function stopTaskLogic(activeTask) {
+export async function stopTaskLogic(activeTask, isManualStop = false) {
     if (!activeTask) return null;
 
     if (activeTask.isPaused) {
         const idleLog = {
+            ...activeTask,
             category: SYSTEM_CATEGORY_IDLE,
-            startTime: activeTask.startTime,
             endTime: Date.now(),
-            resumableCategory: activeTask.resumableCategory
+            isManualStop: isManualStop
         };
-        await dbAdd('logs', idleLog);
+        delete idleLog.isPaused;
+
+        if (idleLog.id) {
+            await dbPut('logs', idleLog);
+        } else {
+            await dbAdd('logs', idleLog);
+        }
+
         await dbDelete('settings', 'pauseState');
         return null;
     }
 
-    const taskToSave = { ...activeTask, endTime: Date.now() };
+    const taskToSave = { ...activeTask, endTime: Date.now(), isManualStop: isManualStop };
     await dbPut('logs', taskToSave);
     return null;
 }
@@ -74,6 +81,8 @@ export async function pauseTaskLogic(activeTask) {
         resumableCategory: lastCategory,
         isPaused: true
     };
+    const id = await dbAdd('logs', pauseState);
+    pauseState.id = id;
     await dbPut('settings', { key: 'pauseState', value: pauseState });
     return pauseState;
 }

@@ -116,7 +116,8 @@ describe('DB Module', () => {
 
         const allLogs = await dbGetAll('logs');
         const openLogs = allLogs.filter(l => !l.endTime);
-        expect(openLogs.length).toBe(0);
+        expect(openLogs.length).toBe(1);
+        expect(openLogs[0].category).toBe(SYSTEM_CATEGORY_IDLE);
 
         const savedPauseState = await dbGet('settings', 'pauseState');
         expect(savedPauseState).toBeDefined();

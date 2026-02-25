@@ -68,35 +68,46 @@ describe('Logic Module', () => {
         });
 
         test('stopTaskLogic stops active task', async () => {
-            const activeTask = { category: 'Work', startTime: Date.now() };
-            const result = await stopTaskLogic(activeTask);
+            const activeTask = { id: 1, category: 'Work', startTime: Date.now() };
+            const result = await stopTaskLogic(activeTask, true);
             expect(result).toBeNull();
-            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({ category: 'Work', endTime: expect.any(Number) }));
+            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({
+                id: 1,
+                category: 'Work',
+                endTime: expect.any(Number),
+                isManualStop: true
+            }));
         });
 
-        test('stopTaskLogic handles pause state', async () => {
-            const pauseState = { category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
+        test('stopTaskLogic handles pause state with id', async () => {
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
             const result = await stopTaskLogic(pauseState);
             expect(result).toBeNull();
-            expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: SYSTEM_CATEGORY_IDLE, endTime: expect.any(Number) }));
+            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({
+                id: 2,
+                category: SYSTEM_CATEGORY_IDLE,
+                endTime: expect.any(Number),
+                isManualStop: false
+            }));
             expect(dbDelete).toHaveBeenCalledWith('settings', 'pauseState');
         });
 
-        test('pauseTaskLogic transitions to pause state', async () => {
-            const activeTask = { category: 'Work', startTime: Date.now() };
+        test('pauseTaskLogic transitions to pause state and adds to logs', async () => {
+            const activeTask = { id: 1, category: 'Work', startTime: Date.now() };
             const newTask = await pauseTaskLogic(activeTask);
             expect(newTask.category).toBe(SYSTEM_CATEGORY_IDLE);
             expect(newTask.resumableCategory).toBe('Work');
             expect(newTask.isPaused).toBe(true);
-            expect(dbPut).toHaveBeenCalledWith('settings', expect.objectContaining({ key: 'pauseState', value: newTask }));
-            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({ category: 'Work', endTime: expect.any(Number) }));
+            expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: SYSTEM_CATEGORY_IDLE }));
+            expect(dbPut).toHaveBeenCalledWith('settings', expect.objectContaining({ key: 'pauseState', value: expect.objectContaining({ id: 123 }) }));
+            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({ id: 1, category: 'Work', endTime: expect.any(Number) }));
         });
 
-        test('startTaskLogic stops pause state before starting new task', async () => {
-            const pauseState = { category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
+        test('startTaskLogic stops pause state and updates log entry before starting new task', async () => {
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
             const newTask = await startTaskLogic('Meeting', pauseState);
             expect(newTask.category).toBe('Meeting');
-            expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: SYSTEM_CATEGORY_IDLE }));
+            expect(dbPut).toHaveBeenCalledWith('logs', expect.objectContaining({ id: 2, category: SYSTEM_CATEGORY_IDLE, endTime: expect.any(Number) }));
             expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: 'Meeting' }));
             expect(dbDelete).toHaveBeenCalledWith('settings', 'pauseState');
         });
