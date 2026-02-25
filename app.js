@@ -345,6 +345,7 @@ function createLogElement(log, categoryMap) {
     const li = createEl('li');
     li.className = 'log-item';
     const startTimeStr = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const endTimeStr = new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const durationMs = log.endTime - log.startTime;
     const durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)}s` : `${Math.round(durationMs / 60000)}m`;
 
@@ -356,7 +357,7 @@ function createLogElement(log, categoryMap) {
         if (cat) colorClass = `dot-${cat.color}`;
     }
     li.innerHTML = `
-        <span class="log-time">${startTimeStr}</span>
+        <span class="log-time">${startTimeStr}-${endTimeStr}</span>
         <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(log.category)}</span>
         <span class="log-duration">${durationText}</span>
     `;
