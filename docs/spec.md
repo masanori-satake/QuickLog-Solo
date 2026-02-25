@@ -99,12 +99,14 @@
 ### モジュール構造
 ```mermaid
 graph LR
-    A[app.js] --> B[js/logic.js]
+    A[js/app.js] --> B[js/logic.js]
     A --> C[js/db.js]
     B --> C
 ```
 
 ### 品質保証
+- **デザインシステム:** Google の Material 3 に完全準拠。`css/m3-theme.css` でデザイントークンを一元管理。
+- **UIコンポーネント管理:** Storybook による視覚的・アクセシビリティ検証を実施。
 - **自動テスト:** Jest + fake-indexeddb を使用し、ロジック層とDB層の品質を担保する。
 - **リンター:** ESLint (JS) および Stylelint (CSS) を導入。
 - **pre-commit:** コミット前に「テスト実行」「リンター実行」「バージョン整合性チェック」を強制する。

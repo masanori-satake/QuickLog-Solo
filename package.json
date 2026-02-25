@@ -2,12 +2,14 @@
   "name": "app",
   "version": "0.2.1",
   "description": "「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向け・完結型工数管理ツールです。",
-  "main": "app.js",
+  "main": "js/app.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "repository": {
     "type": "git",
@@ -24,13 +26,23 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.2.0",
+    "@storybook/addon-a11y": "^8.6.14",
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/addon-interactions": "^8.6.14",
+    "@storybook/addon-links": "^8.6.14",
+    "@storybook/builder-vite": "^8.6.14",
+    "@storybook/html": "^8.6.14",
+    "@storybook/html-vite": "^8.6.14",
+    "@storybook/test": "^8.6.14",
     "eslint": "^10.0.2",
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.3.0",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
+    "storybook": "^8.6.14",
     "stylelint": "^17.3.0",
-    "stylelint-config-standard": "^40.0.0"
+    "stylelint-config-standard": "^40.0.0",
+    "vite": "^5.4.14"
   },
   "dependencies": {
     "@playwright/test": "^1.58.2"

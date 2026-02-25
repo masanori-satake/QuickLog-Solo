@@ -2,12 +2,15 @@ const CACHE_NAME = 'quicklog-solo-v0.2.1';
 const ASSETS = [
   './',
   './index.html',
-  './style.css',
-  './app.js',
+  './css/style.css',
+  './css/m3-theme.css',
+  './js/app.js',
   './js/db.js',
   './js/logic.js',
+  './js/utils.js',
   './manifest.json',
-  './icon.svg'
+  './assets/icon.svg',
+  './version.json'
 ];
 
 self.addEventListener('install', (event) => {

@@ -16,7 +16,7 @@ graph TD
     end
 
     subgraph Application
-        App[app.js <br/>UI Orchestrator]
+        App[js/app.js <br/>UI Orchestrator]
         Logic[js/logic.js <br/>Business Logic]
         DB[js/db.js <br/>Data Access Layer]
     end
@@ -30,7 +30,7 @@ graph TD
 
 ### 各モジュールの役割
 
--   **app.js (UI層):**
+-   **js/app.js (UI層):**
     -   DOM要素の取得と操作。
     -   イベントリスナーの設定。
     -   UI状態の同期（`updateUI`）。
@@ -40,7 +40,7 @@ graph TD
     -   時間のフォーマット計算。
     -   アニメーション状態（clip-path）の計算。
     -   DOMに直接触れず、テストが容易な形式で記述。
--   **app.js (テスト・デバッグ機能):**
+-   **js/app.js (テスト・デバッグ機能):**
     -   URLパラメータによる状態インジェクション機能（`handleTestParameters`）。
 -   **js/db.js (データ層):**
     -   IndexedDB (Raw API) のカプセル化。
@@ -56,7 +56,7 @@ graph TD
 ```mermaid
 sequenceDiagram
     participant U as ユーザー
-    participant A as app.js
+    participant A as js/app.js
     participant L as js/logic.js
     participant D as js/db.js
 
@@ -73,7 +73,7 @@ sequenceDiagram
 ### カテゴリのページネーション
 
 カテゴリ数が増えた場合（9個以上）、1ページあたり8個のボタンを表示するページネーションが自動的に適用されます。
-- **実装方法:** `app.js` 内の `currentCategoryPage` 変数で現在のページを管理。
+- **実装方法:** `js/app.js` 内の `currentCategoryPage` 変数で現在のページを管理。
 - **操作:** `category-section` 上でのマウスホイール操作を検知し、ページを切り替え。
 - **UI:** 下部に非活性なページインジケーター（ドット）を表示。
 
@@ -92,7 +92,7 @@ sequenceDiagram
 本プロジェクトでは以下の原則を遵守し、シンプルで保守性の高いコードを維持します。
 
 -   **SLAP (Single Level of Abstraction Principle):**
-    -   `app.js` の関数内では、詳細な DOM 操作と高度なビジネスロジックを混在させず、適切なモジュールに委譲します。
+    -   `js/app.js` の関数内では、詳細な DOM 操作と高度なビジネスロジックを混在させず、適切なモジュールに委譲します。
 -   **DRY (Don't Repeat Yourself):**
     -   繰り返される UI 更新やデータ取得パターンを共通関数化しています。
 -   **KISS (Keep It Simple, Stupid):**
