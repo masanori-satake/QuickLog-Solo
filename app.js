@@ -66,7 +66,7 @@ const FONTS = [
         instanceChannel.postMessage({ type: 'FOCUS', action });
         window.close();
         document.addEventListener('DOMContentLoaded', () => {
-            document.body.innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-weight:bold; text-align:center; padding:2rem;">' +
+            getBody().innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-weight:bold; text-align:center; padding:2rem;">' +
                 '<div>既に QuickLog-Solo が起動しています。</div>' +
                 '<div style="font-size:0.8rem; margin-top:1rem; color:gray;">既存のウィンドウを確認してください。</div>' +
                 '</div>';
@@ -88,6 +88,57 @@ instanceChannel.onmessage = (event) => {
 };
 
 // --- Task Control ---
+
+async function togglePiP() {
+    if (pipWindow) {
+        pipWindow.close();
+        return;
+    }
+
+    if (!('documentPictureInPicture' in window)) {
+        alert('お使いのブラウザは Document Picture-in-Picture API をサポートしていません。');
+        return;
+    }
+
+    try {
+        const app = getEl('app');
+
+        pipWindow = await window.documentPictureInPicture.requestWindow({
+            width: 280,
+            height: 200,
+        });
+
+        // Copy styles
+        [...document.styleSheets].forEach((styleSheet) => {
+            try {
+                if (styleSheet.cssRules) {
+                    const style = pipWindow.document.createElement('style');
+                    const rules = [...styleSheet.cssRules].map((rule) => rule.cssText).join('');
+                    style.textContent = rules;
+                    pipWindow.document.head.appendChild(style);
+                }
+            } catch (e) {
+                const link = pipWindow.document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = styleSheet.href;
+                pipWindow.document.head.appendChild(link);
+            }
+        });
+
+        pipWindow.document.body.append(app);
+
+        pipWindow.addEventListener("pagehide", (event) => {
+            document.body.append(app);
+            pipWindow = null;
+            updateUI();
+        });
+
+        updateUI();
+
+    } catch (e) {
+        console.error('Failed to enter PiP mode:', e);
+    }
+}
 
 async function startTask(categoryName, resumableCategory = null) {
     activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory);
@@ -184,9 +235,7 @@ function applyLayout(layout) {
     }
 
     localStorage.setItem('quicklog_layout', layout);
-    if (!pipWindow) {
-        body.classList.add(`layout-${layout}`);
-    }
+    body.classList.add(`layout-${layout}`);
 
     const btn = getEl('layout-toggle');
     if (btn) {
@@ -198,10 +247,9 @@ function applyLayout(layout) {
             window.resizeTo(isHorizontal ? 650 : 280, isHorizontal ? 360 : 500);
         }
     }
-    updateUI();
 }
 
-export async function renderCategories() {
+async function renderCategories() {
     console.log('QuickLog-Solo: Rendering categories...');
     let categories;
     try {
@@ -212,8 +260,7 @@ export async function renderCategories() {
     }
     categories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    const itemsPerPage = getItemsPerPage();
-    const totalPages = Math.ceil(categories.length / itemsPerPage);
+    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
     if (currentCategoryPage >= totalPages && totalPages > 0) {
         currentCategoryPage = totalPages - 1;
     }
@@ -222,8 +269,8 @@ export async function renderCategories() {
     if (!list) return;
     list.innerHTML = '';
 
-    const start = currentCategoryPage * itemsPerPage;
-    const end = start + itemsPerPage;
+    const start = currentCategoryPage * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
     const pageItems = categories.slice(start, end);
 
     pageItems.forEach(cat => {
@@ -235,7 +282,6 @@ export async function renderCategories() {
             btn.disabled = true;
         }
         btn.textContent = cat.name;
-        btn.title = cat.name; // Tooltip
         btn.onclick = () => startTask(cat.name);
         list.appendChild(btn);
     });
@@ -251,10 +297,7 @@ function renderPagination(totalPages) {
     const displayPages = Math.max(1, totalPages);
     for (let i = 0; i < displayPages; i++) {
         const dot = createEl('div');
-        dot.className = 'page-dot';
-        if (i === currentCategoryPage) {
-            dot.classList.add('active');
-        }
+        dot.className = 'page-dot' + (i === currentCategoryPage ? ' active' : '');
         container.appendChild(dot);
     }
 }
@@ -319,7 +362,7 @@ function createLogElement(log, categoryMap) {
     return li;
 }
 
-export async function updateUI() {
+async function updateUI() {
     console.log('QuickLog-Solo: updateUI called');
     if (timerInterval) clearInterval(timerInterval);
 
@@ -421,66 +464,6 @@ export async function updateUI() {
 }
 
 // --- Action Logic ---
-
-async function togglePiP() {
-    if (pipWindow) {
-        pipWindow.close();
-        return;
-    }
-
-    if (!('documentPictureInPicture' in window)) {
-        alert('お使いのブラウザは Document Picture-in-Picture API をサポートしていません。');
-        return;
-    }
-
-    try {
-        const app = document.getElementById('app');
-
-        pipWindow = await window.documentPictureInPicture.requestWindow({
-            width: 280,
-            height: 200,
-        });
-
-        // Copy styles
-        [...document.styleSheets].forEach((styleSheet) => {
-            try {
-                if (styleSheet.cssRules) {
-                    const style = document.createElement('style');
-                    const rules = [...styleSheet.cssRules].map((rule) => rule.cssText).join('');
-                    style.textContent = rules;
-                    pipWindow.document.head.appendChild(style);
-                }
-            } catch {
-                const link = createEl('link');
-                link.rel = 'stylesheet';
-                link.href = styleSheet.href;
-                pipWindow.document.head.appendChild(link);
-            }
-        });
-
-        // Sync body state
-        pipWindow.document.body.className = document.body.className;
-        pipWindow.document.body.classList.add('layout-pip');
-        pipWindow.document.body.style.cssText = document.body.style.cssText;
-
-        // Move app
-        pipWindow.document.body.append(app);
-
-        const closingPipWindow = pipWindow;
-        pipWindow.addEventListener('pagehide', () => {
-            const currentApp = closingPipWindow.document.getElementById('app');
-            pipWindow = null;
-            if (currentApp) {
-                document.body.append(currentApp);
-            }
-            updateUI();
-        });
-
-        updateUI();
-    } catch (err) {
-        console.error('QuickLog-Solo: PiP failed', err);
-    }
-}
 
 async function copyReport() {
     const allLogs = await dbGetAll('logs');
@@ -711,8 +694,7 @@ function setupEventListeners() {
 
     getEl('category-section')?.addEventListener('wheel', async (e) => {
         const categories = await dbGetAll('categories');
-        const itemsPerPage = getItemsPerPage();
-        const totalPages = Math.ceil(categories.length / itemsPerPage);
+        const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
         if (totalPages <= 1) return;
 
         if (e.deltaY > 0) {
@@ -881,7 +863,6 @@ function setupEventListeners() {
     });
 
     window.addEventListener('resize', () => {
-        if (pipWindow) return; // Ignore resize when in PiP
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             const layout = getBody().classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
             window.resizeTo(layout === 'horizontal' ? 650 : 280, layout === 'horizontal' ? 360 : 500);
