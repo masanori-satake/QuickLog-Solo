@@ -1,5 +1,6 @@
 import { initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear } from './js/db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './js/logic.js';
+import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName } from './js/utils.js';
 
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -356,7 +357,7 @@ function createLogElement(log, categoryMap) {
     }
     li.innerHTML = `
         <span class="log-time">${startTimeStr}</span>
-        <span class="log-name"><span class="category-dot ${colorClass}"></span>${log.category}</span>
+        <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(log.category)}</span>
         <span class="log-duration">${durationText}</span>
     `;
     return li;
@@ -569,7 +570,7 @@ async function renderCategoryEditor() {
         item.innerHTML = `
             <div class="cat-editor-row">
                 <span class="drag-handle">☰</span>
-                <input type="text" class="category-edit-name" value="${cat.name}">
+                <input type="text" class="category-edit-name">
                 <button class="delete-cat-btn" title="削除">×</button>
             </div>
             <div class="cat-editor-row">
@@ -581,11 +582,12 @@ async function renderCategoryEditor() {
 
         // Event listeners
         const input = item.querySelector('.category-edit-name');
+        input.value = cat.name;
         input.onchange = async () => {
             const newName = input.value.trim();
             if (newName && newName !== cat.name) {
-                if (newName === '(待機)') {
-                    alert('「(待機)」はシステム予約済みのカテゴリ名です。');
+                if (!isValidCategoryName(newName)) {
+                    alert('無効なカテゴリ名です。（50文字以内、「(待機)」は使用不可）');
                     input.value = cat.name;
                     return;
                 }
@@ -774,8 +776,8 @@ function setupEventListeners() {
         const input = getEl('new-category-name-settings');
         const name = input?.value.trim();
         if (name) {
-            if (name === '(待機)') {
-                alert('「(待機)」はシステム予約済みのカテゴリ名です。');
+            if (!isValidCategoryName(name)) {
+                alert('無効なカテゴリ名です。（50文字以内、「(待機)」は使用不可）');
                 return;
             }
             const categories = await dbGetAll('categories');
@@ -801,7 +803,7 @@ function setupEventListeners() {
         performMaintenanceAction('ログデータをCSVとして書き出します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
             const logs = await dbGetAll('logs');
             let csv = "id,category,startTime,endTime\n";
-            logs.forEach(l => { csv += `${l.id},${l.category},${l.startTime},${l.endTime}\n`; });
+            logs.forEach(l => { csv += `${l.id},${escapeCsv(l.category)},${l.startTime},${l.endTime}\n`; });
             const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
             const a = createEl('a');
             a.href = url;
@@ -821,9 +823,9 @@ function setupEventListeners() {
         const file = e.target.files?.[0];
         if (!file) return;
         const text = await file.text();
-        const lines = text.split('\n').slice(1);
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '').slice(1);
         for (const line of lines) {
-            const parts = line.split(',');
+            const parts = parseCsvLine(line);
             if (parts.length >= 3) {
                 const [, category, startTime, endTime] = parts;
                 if (category && startTime) {
@@ -918,8 +920,9 @@ async function handleTestParameters() {
     }
 
     // テスト用のタスク開始: ?test_cat=Dev&test_elapsed=60000&test_resumable=Dev
-    const testCat = urlParams.get('test_cat');
+    let testCat = urlParams.get('test_cat');
     if (testCat) {
+        if (testCat.length > 50) testCat = testCat.substring(0, 50);
         const elapsed = parseInt(urlParams.get('test_elapsed') || '0');
         const resumable = urlParams.get('test_resumable');
         const startTime = Date.now() - elapsed;
