@@ -91,4 +91,34 @@ describe('DB Module', () => {
         expect(closedTask.endTime).toBeDefined();
         expect(closedTask.endTime).toBe(closedTask.startTime + 1000);
     });
+
+    test('initDB handles pauseState correctly', async () => {
+        await openDatabase();
+        const pauseState = { category: '(待機)', startTime: Date.now(), isPaused: true };
+        await dbPut('settings', { key: 'pauseState', value: pauseState });
+        closeDatabase();
+
+        const settings = await initDB();
+        expect(settings.activeTask.isPaused).toBe(true);
+        expect(settings.activeTask.category).toBe('(待機)');
+    });
+
+    test('initDB migrates open (待機) log to pauseState', async () => {
+        await openDatabase();
+        const startTime = Date.now();
+        await dbAdd('logs', { category: '(待機)', startTime: startTime, endTime: null });
+        closeDatabase();
+
+        const settings = await initDB();
+        expect(settings.activeTask.isPaused).toBe(true);
+        expect(settings.activeTask.startTime).toBe(startTime);
+
+        const allLogs = await dbGetAll('logs');
+        const openLogs = allLogs.filter(l => !l.endTime);
+        expect(openLogs.length).toBe(0);
+
+        const savedPauseState = await dbGet('settings', 'pauseState');
+        expect(savedPauseState).toBeDefined();
+        expect(savedPauseState.value.startTime).toBe(startTime);
+    });
 });

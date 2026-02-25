@@ -1,4 +1,4 @@
-import { dbAdd, dbPut } from './db.js';
+import { dbAdd, dbPut, dbDelete } from './db.js';
 
 export function formatDuration(ms) {
     const hours = Math.floor(ms / 3600000);
@@ -26,7 +26,7 @@ export function getAnimationState(startTime, now = Date.now()) {
 }
 
 export async function startTaskLogic(categoryName, activeTask, resumableCategory = null) {
-    if (activeTask && activeTask.category === categoryName) return activeTask;
+    if (activeTask && activeTask.category === categoryName && !activeTask.isPaused) return activeTask;
 
     await stopTaskLogic(activeTask);
 
@@ -44,14 +44,35 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
 
 export async function stopTaskLogic(activeTask) {
     if (!activeTask) return null;
+
+    if (activeTask.isPaused) {
+        const idleLog = {
+            category: '(待機)',
+            startTime: activeTask.startTime,
+            endTime: Date.now(),
+            resumableCategory: activeTask.resumableCategory
+        };
+        await dbAdd('logs', idleLog);
+        await dbDelete('settings', 'pauseState');
+        return null;
+    }
+
     const taskToSave = { ...activeTask, endTime: Date.now() };
     await dbPut('logs', taskToSave);
     return null;
 }
 
 export async function pauseTaskLogic(activeTask) {
-    if (!activeTask || activeTask.category === '(待機)') return activeTask;
+    if (!activeTask || activeTask.category === '(待機)' || activeTask.isPaused) return activeTask;
     const lastCategory = activeTask.category;
     await stopTaskLogic(activeTask);
-    return await startTaskLogic('(待機)', null, lastCategory);
+
+    const pauseState = {
+        category: '(待機)',
+        startTime: Date.now(),
+        resumableCategory: lastCategory,
+        isPaused: true
+    };
+    await dbPut('settings', { key: 'pauseState', value: pauseState });
+    return pauseState;
 }

@@ -434,7 +434,12 @@ async function updateUI() {
         }
         if (elements.endBtn) elements.endBtn.disabled = false;
 
-        [elements.elapsedTime, elements.elapsedTimeOverlay].forEach(el => { if (el) el.classList.remove('hidden'); });
+        [elements.elapsedTime, elements.elapsedTimeOverlay].forEach(el => {
+            if (el) {
+                el.classList.remove('hidden');
+                el.style.visibility = isPaused ? 'hidden' : 'visible';
+            }
+        });
         startTimer();
     } else {
         if (elements.display) elements.display.className = '';
@@ -457,6 +462,7 @@ async function updateUI() {
             if (el) {
                 el.classList.add('hidden');
                 el.textContent = '00:00:00';
+                el.style.visibility = 'visible';
             }
         });
         if (elements.overlay) elements.overlay.style.clipPath = 'inset(0 0 0 100%)';

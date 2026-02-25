@@ -143,11 +143,36 @@ async function setupInitialData() {
     const openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
     let activeTask = openTasks[0];
 
+    // Migration / Auto-repair for (待機) tasks in logs
+    if (activeTask && activeTask.category === '(待機)') {
+        console.log('QuickLog-Solo: Migrating open (待機) task to pauseState');
+        const pauseState = {
+            category: '(待機)',
+            startTime: activeTask.startTime,
+            resumableCategory: activeTask.resumableCategory,
+            isPaused: true
+        };
+        await dbPut('settings', { key: 'pauseState', value: pauseState });
+        await dbDelete('logs', activeTask.id);
+        activeTask = pauseState;
+    } else {
+        const pauseStateSetting = await dbGet('settings', 'pauseState');
+        if (pauseStateSetting) {
+            activeTask = pauseStateSetting.value;
+        }
+    }
+
     // 複数の未終了タスクがある場合は、最新以外を強制終了させて整合性を保つ
-    if (openTasks.length > 1) {
-        console.warn('QuickLog-Solo: Found multiple active tasks. Closing orphaned tasks.');
-        for (let i = 1; i < openTasks.length; i++) {
+    // ただし、activeTaskがpauseStateの場合は、全てのopenTasksを強制終了すべき
+    const hasPauseState = activeTask && activeTask.isPaused;
+    const startIndex = hasPauseState ? 0 : 1;
+    if (openTasks.length > startIndex) {
+        console.warn('QuickLog-Solo: Found orphaned active tasks. Closing them.');
+        for (let i = startIndex; i < openTasks.length; i++) {
             const orphaned = openTasks[i];
+            // すでにmigrationで削除済みの場合はスキップ
+            if (hasPauseState && orphaned.category === '(待機)' && orphaned.startTime === activeTask.startTime) continue;
+
             orphaned.endTime = orphaned.startTime + 1000; // 最小限の時間を記録
             await dbPut('logs', orphaned);
         }
