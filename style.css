@@ -421,6 +421,31 @@ body.layout-vertical #end-btn {
     background-color: var(--text-color);
 }
 
+#pause-btn, #end-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem;
+    font-size: 1rem;
+}
+
+#pause-btn {
+    background-color: #fbbf24;
+    color: #451a03;
+}
+
+#end-btn {
+    background-color: #f87171;
+    color: #450a0a;
+}
+
+.danger-btn {
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+    border-color: #b91c1c !important;
+}
+
 .modal {
     display: none;
     position: fixed;
