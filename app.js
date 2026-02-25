@@ -243,15 +243,12 @@ async function renderCategories() {
 function renderPagination(totalPages) {
     const container = getEl('category-pagination');
     if (!container) return;
-    if (totalPages <= 1) {
-        container.classList.add('hidden');
-        return;
-    }
     container.classList.remove('hidden');
     container.innerHTML = '';
-    for (let i = 0; i < totalPages; i++) {
+    const displayPages = Math.max(1, totalPages);
+    for (let i = 0; i < displayPages; i++) {
         const dot = createEl('div');
-        dot.className = 'page-dot' + (i === currentCategoryPage ? ' active' : '');
+        dot.className = 'page-dot' + (i === currentCategoryPage ? (totalPages > 0 ? ' active' : '') : '');
         container.appendChild(dot);
     }
 }

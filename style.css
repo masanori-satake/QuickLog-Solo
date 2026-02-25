@@ -910,6 +910,7 @@ body.layout-vertical #end-btn {
     }
 }
 
+
 /* --- PiP Layout --- */
 body.layout-pip {
     padding: 0;
@@ -924,16 +925,18 @@ body.layout-pip #app {
     width: 100%;
     max-width: none;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 body.layout-pip header {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 0;
-    margin: 0;
-    background: transparent;
-    z-index: 100;
+    display: flex;
+    justify-content: flex-end;
+    padding: 2px;
+    background: var(--bg-color);
+    border-bottom: 1px solid var(--text-color);
+    flex-shrink: 0;
+    position: relative; /* Ensure it is not absolute */
 }
 
 body.layout-pip #header-btns > *:not(#pip-toggle) {
@@ -942,18 +945,15 @@ body.layout-pip #header-btns > *:not(#pip-toggle) {
 
 body.layout-pip #pip-toggle {
     font-size: 1rem;
-    padding: 0.2rem 0.4rem;
-    opacity: 0.5;
-}
-
-body.layout-pip #pip-toggle:hover {
-    opacity: 1;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--text-color);
 }
 
 body.layout-pip main {
     display: flex !important;
     flex-direction: column !important;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     border: none !important;
 }
 
@@ -962,29 +962,39 @@ body.layout-pip #log-section {
 }
 
 body.layout-pip #category-section {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column;
     padding: 2px;
     border-bottom: 1px solid var(--text-color);
     background: var(--bg-color);
+    flex-shrink: 0;
 }
 
 body.layout-pip #category-list {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 24px);
     gap: 2px;
-    min-height: auto;
-    max-height: 52px;
-    overflow-y: auto;
+    min-height: 50px;
+    height: 50px;
+    overflow: hidden;
 }
 
 body.layout-pip .category-btn {
     height: 24px;
     font-size: 0.7rem;
     padding: 0;
+    margin: 0;
 }
 
 body.layout-pip #category-pagination {
-    display: none !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+    height: 10px;
+    flex-shrink: 0;
 }
 
 body.layout-pip #control-section {
@@ -995,12 +1005,14 @@ body.layout-pip #control-section {
     gap: 0;
     padding: 0;
     margin: 0;
+    min-height: 0;
 }
 
 body.layout-pip #timer-container {
     flex: 1;
     display: flex;
     align-items: center;
+    min-height: 0;
 }
 
 body.layout-pip #current-task-display {
@@ -1037,6 +1049,7 @@ body.layout-pip #stop-btn-box {
     grid-template-columns: 1fr 1fr;
     gap: 0;
     height: 40px;
+    flex-shrink: 0;
 }
 
 body.layout-pip #pause-btn,
