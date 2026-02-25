@@ -52,6 +52,12 @@ button, input, select, textarea {
     max-width: 400px;
     display: flex;
     flex-direction: column;
+    align-self: flex-start;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
 }
 
 header {
@@ -105,6 +111,8 @@ button:disabled {
     margin-top: 0;
     padding-top: 0;
     border-top: var(--border-width) solid var(--text-color);
+    flex: 1;
+    overflow: hidden;
 }
 
 #log-list {
@@ -112,6 +120,7 @@ button:disabled {
     flex-direction: column;
     list-style: none;
     padding: 0;
+    height: 100%;
 }
 
 .log-date-header {
@@ -172,7 +181,7 @@ button:disabled {
 
 /* Layout Classes */
 body.layout-horizontal #app {
-    max-width: 750px;
+    max-width: 650px;
 }
 
 main {
@@ -183,7 +192,7 @@ main {
 
 body.layout-horizontal main {
     display: grid;
-    grid-template-columns: 150px 200px 1fr;
+    grid-template-columns: 180px 220px 1fr;
     gap: 0;
     align-items: stretch;
 }
@@ -194,8 +203,12 @@ body.layout-horizontal #log-section {
     margin-bottom: 0;
 }
 
+body.layout-horizontal #category-section {
+    height: 100%;
+}
+
 body.layout-horizontal #category-list {
-    min-height: unset;
+    min-height: 0;
     height: 100%;
     grid-template-columns: 1fr 1fr;
 }
@@ -261,7 +274,7 @@ body.layout-horizontal #log-section {
 
 
 body.layout-vertical #app {
-    max-width: 250px;
+    max-width: 280px;
 }
 
 body.layout-vertical main {
@@ -270,8 +283,7 @@ body.layout-vertical main {
     gap: 0;
 }
 
-body.layout-vertical #category-section,
-body.layout-vertical #control-section {
+body.layout-vertical #category-section {
     margin-bottom: 0;
 }
 

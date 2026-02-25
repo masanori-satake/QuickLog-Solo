@@ -198,9 +198,10 @@ function applyLayout(layout) {
             window.resizeTo(isHorizontal ? 650 : 280, isHorizontal ? 360 : 500);
         }
     }
+    updateUI();
 }
 
-async function renderCategories() {
+export async function renderCategories() {
     console.log('QuickLog-Solo: Rendering categories...');
     let categories;
     try {
@@ -211,7 +212,8 @@ async function renderCategories() {
     }
     categories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+    const itemsPerPage = getItemsPerPage();
+    const totalPages = Math.ceil(categories.length / itemsPerPage);
     if (currentCategoryPage >= totalPages && totalPages > 0) {
         currentCategoryPage = totalPages - 1;
     }
@@ -220,8 +222,8 @@ async function renderCategories() {
     if (!list) return;
     list.innerHTML = '';
 
-    const start = currentCategoryPage * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
+    const start = currentCategoryPage * itemsPerPage;
+    const end = start + itemsPerPage;
     const pageItems = categories.slice(start, end);
 
     pageItems.forEach(cat => {
@@ -233,6 +235,7 @@ async function renderCategories() {
             btn.disabled = true;
         }
         btn.textContent = cat.name;
+        btn.title = cat.name; // Tooltip
         btn.onclick = () => startTask(cat.name);
         list.appendChild(btn);
     });
@@ -316,7 +319,7 @@ function createLogElement(log, categoryMap) {
     return li;
 }
 
-async function updateUI() {
+export async function updateUI() {
     console.log('QuickLog-Solo: updateUI called');
     if (timerInterval) clearInterval(timerInterval);
 
@@ -708,7 +711,8 @@ function setupEventListeners() {
 
     getEl('category-section')?.addEventListener('wheel', async (e) => {
         const categories = await dbGetAll('categories');
-        const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+        const itemsPerPage = getItemsPerPage();
+        const totalPages = Math.ceil(categories.length / itemsPerPage);
         if (totalPages <= 1) return;
 
         if (e.deltaY > 0) {
