@@ -2,9 +2,9 @@ import {
     initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_ACCENT, SETTING_KEY_FONT, SETTING_KEY_LAYOUT
-} from './js/db.js';
-import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './js/logic.js';
-import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, isStoragePersisted, requestStoragePersistence } from './js/utils.js';
+} from './db.js';
+import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
+import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, isStoragePersisted, requestStoragePersistence } from './utils.js';
 
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

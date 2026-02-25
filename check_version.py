@@ -8,7 +8,7 @@ def check_version():
             v_data = json.load(f)
             version = v_data.get('version')
 
-        with open('app.js', 'r') as f:
+        with open('js/app.js', 'r') as f:
             app_js = f.read()
 
         with open('sw.js', 'r') as f:

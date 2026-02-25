@@ -55,7 +55,16 @@
 - **メンテナンス:** 設定パネルからログの一括削除や設定の初期化が簡単に行えます。
 
 ## 開発者向け情報
-- **技術スタック:** Vanilla JS, HTML5, CSS3 (No external libraries).
+- **技術スタック:** Vanilla JS, HTML5, CSS3 (Material 3).
+- **デザインシステム:** Google の Material 3 に準拠。`css/m3-theme.css` にデザイントークンを定義しています。
+- **UI管理:** Storybook を導入し、コンポーネント単位で視覚的な検証が可能です。
+  - `npm run storybook`: ローカルで Storybook を起動。
+  - `npm run build-storybook`: Storybook をビルド。
+- **ディレクトリ構成:**
+  - `js/`: アプリケーションロジック (`app.js`, `logic.js` 等)。
+  - `css/`: スタイルシート (`style.css`, `m3-theme.css`)。
+  - `assets/`: アイコン等の静的アセット。
+  - `stories/`: Storybook 用のストーリーファイル。
 - **バージョン管理:** `version.json` で管理されています。
 - **プレコミットチェック:** `check_version.py` を使用して、コミット前にバージョンの整合性を確認することを推奨します。
 - **仕様書:** `docs/spec.md` を参照してください。
