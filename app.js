@@ -1,4 +1,8 @@
-import { initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear } from './js/db.js';
+import {
+    initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
+    SETTING_KEY_THEME, SETTING_KEY_ACCENT, SETTING_KEY_FONT, SETTING_KEY_LAYOUT, SETTING_KEY_PAUSE_STATE
+} from './js/db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './js/logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, isStoragePersisted, requestStoragePersistence } from './js/utils.js';
 
@@ -14,10 +18,83 @@ if ("serviceWorker" in navigator) {
 
 // QuickLog-Solo: Main Application Entry
 
+// Constants
+const LAYOUT_HORIZONTAL = 'horizontal';
+const LAYOUT_VERTICAL = 'vertical';
+
+const THEME_LIGHT = 'light';
+const THEME_DARK = 'dark';
+const THEME_SYSTEM = 'system';
+
+const MSG_TYPE_PING = 'PING';
+const MSG_TYPE_PONG = 'PONG';
+const MSG_TYPE_FOCUS = 'FOCUS';
+
+const URL_PARAM_ACTION = 'action';
+const URL_PARAM_TEST_LAYOUT = 'test_layout';
+const URL_PARAM_TEST_CAT = 'test_cat';
+const URL_PARAM_TEST_ELAPSED = 'test_elapsed';
+const URL_PARAM_TEST_RESUMABLE = 'test_resumable';
+
+const ACTION_SETTINGS = 'settings';
+
+const LOCAL_STORAGE_KEY_LAYOUT = 'quicklog_layout';
+const CHANNEL_NAME = 'quicklog_instance_coordination';
+
+const ITEMS_PER_PAGE = 8;
+const MAX_LOGS_DISPLAY = 5;
+const TOAST_DURATION_MS = 2000;
+
+const WINDOW_WIDTH_HORIZONTAL = 650;
+const WINDOW_HEIGHT_HORIZONTAL = 360;
+const WINDOW_WIDTH_VERTICAL = 280;
+const WINDOW_HEIGHT_VERTICAL = 500;
+
+const CSV_HEADER = "id,category,startTime,endTime\n";
+
+const ID_APP = 'app';
+const ID_SETTINGS_POPUP = 'settings-popup';
+const ID_SETTINGS_TOGGLE = 'settings-toggle';
+const ID_THEME_SELECT = 'theme-select';
+const ID_FONT_SELECT = 'font-select';
+const ID_LAYOUT_TOGGLE = 'layout-toggle';
+const ID_CATEGORY_LIST = 'category-list';
+const ID_CATEGORY_PAGINATION = 'category-pagination';
+const ID_LOG_LIST = 'log-list';
+const ID_ELAPSED_TIME = 'elapsed-time';
+const ID_ELAPSED_TIME_OVERLAY = 'elapsed-time-overlay';
+const ID_STATUS_LABEL = 'status-label';
+const ID_STATUS_LABEL_OVERLAY = 'status-label-overlay';
+const ID_CURRENT_TASK_NAME = 'current-task-name';
+const ID_CURRENT_TASK_NAME_OVERLAY = 'current-task-name-overlay';
+const ID_PAUSE_BTN = 'pause-btn';
+const ID_END_BTN = 'end-btn';
+const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
+const ID_CURRENT_TASK_DISPLAY_OVERLAY = 'current-task-display-overlay';
+const ID_TOAST = 'toast';
+const ID_CONFIRM_MODAL = 'confirm-modal';
+const ID_CONFIRM_MESSAGE = 'confirm-message';
+const ID_CONFIRM_OK_BTN = 'confirm-ok-btn';
+const ID_CONFIRM_CANCEL_BTN = 'confirm-cancel-btn';
+const ID_VERSION_DISPLAY = 'version-display';
+const ID_STORAGE_PERSISTENCE_DISPLAY = 'storage-persistence-display';
+const ID_CATEGORY_EDITOR_LIST = 'category-editor-list';
+const ID_NEW_CATEGORY_NAME_SETTINGS = 'new-category-name-settings';
+const ID_PIP_TOGGLE = 'pip-toggle';
+const ID_COPY_REPORT_BTN = 'copy-report-btn';
+const ID_COPY_AGGREGATION_BTN = 'copy-aggregation-btn';
+const ID_CATEGORY_SECTION = 'category-section';
+const ID_ADD_CATEGORY_BTN_SETTINGS = 'add-category-btn-settings';
+const ID_EXPORT_CSV_BTN = 'export-csv-btn';
+const ID_IMPORT_CSV_BTN = 'import-csv-btn';
+const ID_CSV_FILE_INPUT = 'csv-file-input';
+const ID_CLEAR_LOGS_BTN = 'clear-logs-btn';
+const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
+const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
+
 let activeTask = null;
 let timerInterval = null;
 let currentCategoryPage = 0;
-const ITEMS_PER_PAGE = 8;
 let pipWindow = null;
 
 const getEl = (id) => (pipWindow ? pipWindow.document : document).getElementById(id);
@@ -25,7 +102,7 @@ const queryAll = (selector) => (pipWindow ? pipWindow.document : document).query
 const getBody = () => (pipWindow ? pipWindow.document : document).body;
 const createEl = (tag) => (pipWindow ? pipWindow.document : document).createElement(tag);
 
-const instanceChannel = new BroadcastChannel('quicklog_instance_coordination');
+const instanceChannel = new BroadcastChannel(CHANNEL_NAME);
 
 const FONTS = [
     { name: '標準', value: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
@@ -43,12 +120,12 @@ const FONTS = [
 // --- Single-Instance Coordination ---
 (async () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get('action');
+    const action = urlParams.get(URL_PARAM_ACTION);
 
     let otherInstanceFound = false;
     const pingPromise = new Promise(resolve => {
         const handler = (e) => {
-            if (e.data.type === 'PONG') {
+            if (e.data.type === MSG_TYPE_PONG) {
                 otherInstanceFound = true;
                 resolve();
             }
@@ -60,11 +137,11 @@ const FONTS = [
         }, 500);
     });
 
-    instanceChannel.postMessage({ type: 'PING' });
+    instanceChannel.postMessage({ type: MSG_TYPE_PING });
     await pingPromise;
 
     if (otherInstanceFound) {
-        instanceChannel.postMessage({ type: 'FOCUS', action });
+        instanceChannel.postMessage({ type: MSG_TYPE_FOCUS, action });
         window.close();
         document.addEventListener('DOMContentLoaded', () => {
             getBody().innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-weight:bold; text-align:center; padding:2rem;">' +
@@ -78,12 +155,12 @@ const FONTS = [
 
 instanceChannel.onmessage = (event) => {
     const { type, action } = event.data;
-    if (type === 'PING') {
-        instanceChannel.postMessage({ type: 'PONG' });
-    } else if (type === 'FOCUS') {
+    if (type === MSG_TYPE_PING) {
+        instanceChannel.postMessage({ type: MSG_TYPE_PONG });
+    } else if (type === MSG_TYPE_FOCUS) {
         window.focus();
-        if (action === 'settings') {
-            getEl('settings-popup')?.classList.remove('hidden');
+        if (action === ACTION_SETTINGS) {
+            getEl(ID_SETTINGS_POPUP)?.classList.remove('hidden');
         }
     }
 };
@@ -102,7 +179,7 @@ async function togglePiP() {
     }
 
     try {
-        const app = getEl('app');
+        const app = getEl(ID_APP);
 
         pipWindow = await window.documentPictureInPicture.requestWindow({
             width: 280,
@@ -180,7 +257,7 @@ function updateTimer() {
     const elapsed = Date.now() - activeTask.startTime;
     const timeStr = formatDuration(elapsed).toString();
 
-    const elements = ['elapsed-time', 'elapsed-time-overlay'];
+    const elements = [ID_ELAPSED_TIME, ID_ELAPSED_TIME_OVERLAY];
     elements.forEach(id => {
         const el = getEl(id);
         if (el) el.textContent = timeStr;
@@ -188,7 +265,7 @@ function updateTimer() {
 
     const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
-    const overlay = getEl('current-task-display-overlay');
+    const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
     if (overlay) {
         if (isPaused) {
             overlay.style.clipPath = 'inset(0 100% 0 0)';
@@ -204,13 +281,13 @@ function updateTimer() {
 function applyTheme(theme) {
     const body = getBody();
     body.classList.remove('theme-light', 'theme-dark');
-    if (theme === 'system') {
+    if (theme === THEME_SYSTEM) {
         const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         body.classList.add(isDark ? 'theme-dark' : 'theme-light');
     } else {
         body.classList.add(`theme-${theme}`);
     }
-    const select = getEl('theme-select');
+    const select = getEl(ID_THEME_SELECT);
     if (select) select.value = theme;
 }
 
@@ -223,7 +300,7 @@ function applyAccent(accent) {
 
 function applyFont(fontValue) {
     getBody().style.setProperty('--font-family', fontValue);
-    const select = getEl('font-select');
+    const select = getEl(ID_FONT_SELECT);
     if (select) select.value = fontValue;
 }
 
@@ -232,20 +309,20 @@ function applyLayout(layout) {
     body.classList.remove('layout-horizontal', 'layout-vertical');
 
     if (!layout) {
-        layout = localStorage.getItem('quicklog_layout') || (window.innerWidth >= 650 ? 'horizontal' : 'vertical');
+        layout = localStorage.getItem(LOCAL_STORAGE_KEY_LAYOUT) || (window.innerWidth >= WINDOW_WIDTH_HORIZONTAL ? LAYOUT_HORIZONTAL : LAYOUT_VERTICAL);
     }
 
-    localStorage.setItem('quicklog_layout', layout);
+    localStorage.setItem(LOCAL_STORAGE_KEY_LAYOUT, layout);
     body.classList.add(`layout-${layout}`);
 
-    const btn = getEl('layout-toggle');
+    const btn = getEl(ID_LAYOUT_TOGGLE);
     if (btn) {
-        const isHorizontal = layout === 'horizontal';
+        const isHorizontal = layout === LAYOUT_HORIZONTAL;
         btn.textContent = isHorizontal ? '↕️' : '↔️';
         btn.title = isHorizontal ? '縦長レイアウトに切り替え' : '横長レイアウトに切り替え';
 
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            window.resizeTo(isHorizontal ? 650 : 280, isHorizontal ? 360 : 500);
+            window.resizeTo(isHorizontal ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, isHorizontal ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
         }
     }
 }
@@ -254,7 +331,7 @@ async function renderCategories() {
     console.log('QuickLog-Solo: Rendering categories...');
     let categories;
     try {
-        categories = await dbGetAll('categories');
+        categories = await dbGetAll(STORE_CATEGORIES);
     } catch (e) {
         console.error('Failed to get categories:', e);
         return;
@@ -266,7 +343,7 @@ async function renderCategories() {
         currentCategoryPage = totalPages - 1;
     }
 
-    const list = getEl('category-list');
+    const list = getEl(ID_CATEGORY_LIST);
     if (!list) return;
     list.innerHTML = '';
 
@@ -291,7 +368,7 @@ async function renderCategories() {
 }
 
 function renderPagination(totalPages) {
-    const container = getEl('category-pagination');
+    const container = getEl(ID_CATEGORY_PAGINATION);
     if (!container) return;
     container.classList.remove('hidden');
     container.innerHTML = '';
@@ -308,16 +385,16 @@ async function renderLogs() {
     let allLogs;
     let categories;
     try {
-        allLogs = await dbGetAll('logs');
-        categories = await dbGetAll('categories');
+        allLogs = await dbGetAll(STORE_LOGS);
+        categories = await dbGetAll(STORE_CATEGORIES);
     } catch (e) {
         console.error('Failed to get data for logs:', e);
         return;
     }
     const categoryMap = new Map(categories.map(c => [c.name, c]));
-    const visibleLogs = allLogs.sort((a, b) => b.startTime - a.startTime).slice(0, 5);
+    const visibleLogs = allLogs.sort((a, b) => b.startTime - a.startTime).slice(0, MAX_LOGS_DISPLAY);
 
-    const logList = getEl('log-list');
+    const logList = getEl(ID_LOG_LIST);
     if (!logList) return;
     logList.innerHTML = '';
 
@@ -403,16 +480,16 @@ async function updateUI() {
     }
 
     const elements = {
-        statusLabel: getEl('status-label'),
-        statusLabelOverlay: getEl('status-label-overlay'),
-        currentTaskName: getEl('current-task-name'),
-        currentTaskNameOverlay: getEl('current-task-name-overlay'),
-        pauseBtn: getEl('pause-btn'),
-        endBtn: getEl('end-btn'),
-        elapsedTime: getEl('elapsed-time'),
-        elapsedTimeOverlay: getEl('elapsed-time-overlay'),
-        display: getEl('current-task-display'),
-        overlay: getEl('current-task-display-overlay')
+        statusLabel: getEl(ID_STATUS_LABEL),
+        statusLabelOverlay: getEl(ID_STATUS_LABEL_OVERLAY),
+        currentTaskName: getEl(ID_CURRENT_TASK_NAME),
+        currentTaskNameOverlay: getEl(ID_CURRENT_TASK_NAME_OVERLAY),
+        pauseBtn: getEl(ID_PAUSE_BTN),
+        endBtn: getEl(ID_END_BTN),
+        elapsedTime: getEl(ID_ELAPSED_TIME),
+        elapsedTimeOverlay: getEl(ID_ELAPSED_TIME_OVERLAY),
+        display: getEl(ID_CURRENT_TASK_DISPLAY),
+        overlay: getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY)
     };
 
     if (activeTask) {
@@ -422,7 +499,7 @@ async function updateUI() {
         if (isPaused) {
             color = 'idle';
         } else {
-            const cat = await dbGet('categories', activeTask.category);
+            const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
             if (cat) color = cat.color;
         }
 
@@ -494,7 +571,7 @@ async function updateUI() {
 // --- Action Logic ---
 
 async function copyReport() {
-    const allLogs = await dbGetAll('logs');
+    const allLogs = await dbGetAll(STORE_LOGS);
     const today = new Date().setHours(0,0,0,0);
     const todayLogs = allLogs.filter(l => l.startTime >= today && l.endTime);
 
@@ -509,7 +586,7 @@ async function copyReport() {
 }
 
 async function copyAggregation() {
-    const allLogs = await dbGetAll('logs');
+    const allLogs = await dbGetAll(STORE_LOGS);
     const today = new Date().setHours(0,0,0,0);
     const todayLogs = allLogs.filter(l => l.startTime >= today && l.endTime);
 
@@ -529,20 +606,20 @@ async function copyAggregation() {
 }
 
 function showToast(message = "完了しました！") {
-    const toast = getEl('toast');
+    const toast = getEl(ID_TOAST);
     if (toast) {
         toast.innerText = message;
         toast.classList.remove('hidden');
-        setTimeout(() => toast.classList.add('hidden'), 2000);
+        setTimeout(() => toast.classList.add('hidden'), TOAST_DURATION_MS);
     }
 }
 
 function showConfirm(message) {
     return new Promise((resolve) => {
-        const modal = getEl('confirm-modal');
-        const msgEl = getEl('confirm-message');
-        const okBtn = getEl('confirm-ok-btn');
-        const cancelBtn = getEl('confirm-cancel-btn');
+        const modal = getEl(ID_CONFIRM_MODAL);
+        const msgEl = getEl(ID_CONFIRM_MESSAGE);
+        const okBtn = getEl(ID_CONFIRM_OK_BTN);
+        const cancelBtn = getEl(ID_CONFIRM_CANCEL_BTN);
 
         if (!modal || !msgEl || !okBtn || !cancelBtn) {
             resolve(confirm(message));
@@ -575,9 +652,9 @@ function getColorCode(color) {
 }
 
 async function renderCategoryEditor() {
-    const list = getEl('category-editor-list');
+    const list = getEl(ID_CATEGORY_EDITOR_LIST);
     if (!list) return;
-    let categories = await dbGetAll('categories');
+    let categories = await dbGetAll(STORE_CATEGORIES);
     categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => a.order - b.order);
     list.innerHTML = '';
 
@@ -619,21 +696,21 @@ async function renderCategoryEditor() {
                     return;
                 }
                 const oldName = cat.name;
-                const existing = await dbGet('categories', newName);
+                const existing = await dbGet(STORE_CATEGORIES, newName);
                 if (existing) {
                     alert('同名のカテゴリが既に存在します。');
                     input.value = oldName;
                     return;
                 }
                 const updatedCat = { ...cat, name: newName };
-                await dbDelete('categories', oldName);
-                await dbPut('categories', updatedCat);
+                await dbDelete(STORE_CATEGORIES, oldName);
+                await dbPut(STORE_CATEGORIES, updatedCat);
 
-                const allLogs = await dbGetAll('logs');
+                const allLogs = await dbGetAll(STORE_LOGS);
                 for (const log of allLogs) {
                     if (log.category === oldName) {
                         log.category = newName;
-                        await dbPut('logs', log);
+                        await dbPut(STORE_LOGS, log);
                     }
                 }
                 updateUI();
@@ -644,7 +721,7 @@ async function renderCategoryEditor() {
         item.querySelectorAll('.color-preset').forEach(btn => {
             btn.onclick = async () => {
                 cat.color = btn.dataset.color;
-                await dbPut('categories', cat);
+                await dbPut(STORE_CATEGORIES, cat);
                 renderCategoryEditor();
                 renderCategories();
             };
@@ -652,7 +729,7 @@ async function renderCategoryEditor() {
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
             if (await showConfirm(`カテゴリ「${cat.name}」を削除しますか？\n（過去のログからはカテゴリ色が消えます）`)) {
-                await dbDelete('categories', cat.name);
+                await dbDelete(STORE_CATEGORIES, cat.name);
                 updateUI();
                 renderCategoryEditor();
             }
@@ -683,10 +760,10 @@ async function renderCategoryEditor() {
         const items = [...list.querySelectorAll('.category-editor-item')];
         for (let i = 0; i < items.length; i++) {
             const name = items[i].dataset.name;
-            const cat = await dbGet('categories', name);
+            const cat = await dbGet(STORE_CATEGORIES, name);
             if (cat) {
                 cat.order = i;
-                await dbPut('categories', cat);
+                await dbPut(STORE_CATEGORIES, cat);
             }
         }
         renderCategories();
@@ -700,7 +777,7 @@ async function loadVersion() {
     try {
         const response = await fetch('version.json');
         const data = await response.json();
-        const el = getEl('version-display');
+        const el = getEl(ID_VERSION_DISPLAY);
         if (el) el.textContent = `v${data.version}`;
     } catch (e) {
         console.error('Failed to load version:', e);
@@ -724,7 +801,7 @@ async function initStoragePersistence() {
 }
 
 function updatePersistenceUI(isPersisted) {
-    const el = getEl('storage-persistence-display');
+    const el = getEl(ID_STORAGE_PERSISTENCE_DISPLAY);
     if (el) {
         el.textContent = isPersisted ? '✅ 保護されています' : '⚠️ 一時的（自動削除の可能性あり）';
         el.style.color = isPersisted ? '#166534' : '#b91c1c';
@@ -732,7 +809,7 @@ function updatePersistenceUI(isPersisted) {
 }
 
 function setupEventListeners() {
-    getEl('pause-btn')?.addEventListener('click', () => {
+    getEl(ID_PAUSE_BTN)?.addEventListener('click', () => {
         if (!activeTask) return;
         if (activeTask.category === SYSTEM_CATEGORY_IDLE) {
             startTask(activeTask.resumableCategory);
@@ -740,20 +817,20 @@ function setupEventListeners() {
             pauseTask();
         }
     });
-    getEl('end-btn')?.addEventListener('click', endTask);
-    getEl('pip-toggle')?.addEventListener('click', togglePiP);
-    getEl('copy-report-btn')?.addEventListener('click', copyReport);
-    getEl('copy-aggregation-btn')?.addEventListener('click', copyAggregation);
+    getEl(ID_END_BTN)?.addEventListener('click', endTask);
+    getEl(ID_PIP_TOGGLE)?.addEventListener('click', togglePiP);
+    getEl(ID_COPY_REPORT_BTN)?.addEventListener('click', copyReport);
+    getEl(ID_COPY_AGGREGATION_BTN)?.addEventListener('click', copyAggregation);
 
-    getEl('layout-toggle')?.addEventListener('click', async () => {
-        const currentLayout = getBody().classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
-        const newLayout = currentLayout === 'horizontal' ? 'vertical' : 'horizontal';
-        await dbPut('settings', { key: 'layout', value: newLayout });
+    getEl(ID_LAYOUT_TOGGLE)?.addEventListener('click', async () => {
+        const currentLayout = getBody().classList.contains('layout-horizontal') ? LAYOUT_HORIZONTAL : LAYOUT_VERTICAL;
+        const newLayout = currentLayout === LAYOUT_HORIZONTAL ? LAYOUT_VERTICAL : LAYOUT_HORIZONTAL;
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAYOUT, value: newLayout });
         applyLayout(newLayout);
     });
 
-    getEl('category-section')?.addEventListener('wheel', async (e) => {
-        const categories = await dbGetAll('categories');
+    getEl(ID_CATEGORY_SECTION)?.addEventListener('wheel', async (e) => {
+        const categories = await dbGetAll(STORE_CATEGORIES);
         const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
         if (totalPages <= 1) return;
 
@@ -773,10 +850,10 @@ function setupEventListeners() {
 
     // Modals
     const popups = {
-        settings: getEl('settings-popup')
+        settings: getEl(ID_SETTINGS_POPUP)
     };
 
-    getEl('settings-toggle')?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
+    getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
     queryAll('.close-btn').forEach(btn => {
         btn.onclick = () => Object.values(popups).forEach(p => p?.classList.add('hidden'));
@@ -799,21 +876,21 @@ function setupEventListeners() {
     });
 
     // Settings listeners
-    getEl('theme-select')?.addEventListener('change', async (e) => {
+    getEl(ID_THEME_SELECT)?.addEventListener('change', async (e) => {
         const theme = e.target.value;
-        await dbPut('settings', { key: 'theme', value: theme });
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_THEME, value: theme });
         applyTheme(theme);
     });
 
     queryAll('.accent-dot').forEach(dot => {
         dot.onclick = async () => {
             const accent = dot.dataset.accent;
-            await dbPut('settings', { key: 'accent', value: accent });
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ACCENT, value: accent });
             applyAccent(accent);
         };
     });
 
-    const fontSelect = getEl('font-select');
+    const fontSelect = getEl(ID_FONT_SELECT);
     if (fontSelect) {
         FONTS.forEach(f => {
             const opt = createEl('option');
@@ -824,22 +901,22 @@ function setupEventListeners() {
         });
         fontSelect.onchange = async (e) => {
             const fontValue = e.target.value;
-            await dbPut('settings', { key: 'font', value: fontValue });
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_FONT, value: fontValue });
             applyFont(fontValue);
         };
     }
 
     // Category additions
-    getEl('add-category-btn-settings')?.addEventListener('click', async () => {
-        const input = getEl('new-category-name-settings');
+    getEl(ID_ADD_CATEGORY_BTN_SETTINGS)?.addEventListener('click', async () => {
+        const input = getEl(ID_NEW_CATEGORY_NAME_SETTINGS);
         const name = input?.value.trim();
         if (name) {
             if (!isValidCategoryName(name)) {
                 alert(`無効なカテゴリ名です。（50文字以内、「${SYSTEM_CATEGORY_IDLE}」は使用不可）`);
                 return;
             }
-            const categories = await dbGetAll('categories');
-            await dbPut('categories', { name, color: 'blue', order: categories.length });
+            const categories = await dbGetAll(STORE_CATEGORIES);
+            await dbPut(STORE_CATEGORIES, { name, color: 'blue', order: categories.length });
             if (input) input.value = '';
             renderCategories();
             renderCategoryEditor();
@@ -857,10 +934,10 @@ function setupEventListeners() {
         }
     }
 
-    getEl('export-csv-btn')?.addEventListener('click', () => {
+    getEl(ID_EXPORT_CSV_BTN)?.addEventListener('click', () => {
         performMaintenanceAction('ログデータをCSVとして書き出します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
-            const logs = await dbGetAll('logs');
-            let csv = "id,category,startTime,endTime\n";
+            const logs = await dbGetAll(STORE_LOGS);
+            let csv = CSV_HEADER;
             logs.forEach(l => { csv += `${l.id},${escapeCsv(l.category)},${l.startTime},${l.endTime}\n`; });
             const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
             const a = createEl('a');
@@ -870,8 +947,8 @@ function setupEventListeners() {
         });
     });
 
-    const csvInput = getEl('csv-file-input');
-    getEl('import-csv-btn')?.addEventListener('click', () => {
+    const csvInput = getEl(ID_CSV_FILE_INPUT);
+    getEl(ID_IMPORT_CSV_BTN)?.addEventListener('click', () => {
         performMaintenanceAction('CSVファイルからログデータを読み込みます。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
             csvInput?.click();
         });
@@ -887,7 +964,7 @@ function setupEventListeners() {
             if (parts.length >= 3) {
                 const [, category, startTime, endTime] = parts;
                 if (category && startTime) {
-                    await dbPut('logs', {
+                    await dbPut(STORE_LOGS, {
                         category,
                         startTime: parseInt(startTime),
                         endTime: endTime ? parseInt(endTime) : null
@@ -899,33 +976,33 @@ function setupEventListeners() {
         alert('インポートが完了しました。');
     });
 
-    getEl('clear-logs-btn')?.addEventListener('click', () => {
+    getEl(ID_CLEAR_LOGS_BTN)?.addEventListener('click', () => {
         performMaintenanceAction('全てのログを削除します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
-            await dbClear('logs');
+            await dbClear(STORE_LOGS);
             updateUI();
             showToast('削除が完了しました');
         });
     });
 
-    getEl('reset-cat-settings-btn')?.addEventListener('click', () => {
+    getEl(ID_RESET_CAT_SETTINGS_BTN)?.addEventListener('click', () => {
         performMaintenanceAction('カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログは維持されます）', async () => {
-            await dbClear('categories');
-            await dbClear('settings');
+            await dbClear(STORE_CATEGORIES);
+            await dbClear(STORE_SETTINGS);
             location.reload();
         });
     });
 
-    getEl('reset-settings-btn')?.addEventListener('click', () => {
+    getEl(ID_RESET_SETTINGS_BTN)?.addEventListener('click', () => {
         performMaintenanceAction('各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログとカテゴリは維持されます）', async () => {
-            await dbClear('settings');
+            await dbClear(STORE_SETTINGS);
             location.reload();
         });
     });
 
     window.addEventListener('resize', () => {
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            const layout = getBody().classList.contains('layout-horizontal') ? 'horizontal' : 'vertical';
-            window.resizeTo(layout === 'horizontal' ? 650 : 280, layout === 'horizontal' ? 360 : 500);
+            const layout = getBody().classList.contains('layout-horizontal') ? LAYOUT_HORIZONTAL : LAYOUT_VERTICAL;
+            window.resizeTo(layout === LAYOUT_HORIZONTAL ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, layout === LAYOUT_HORIZONTAL ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
         }
     });
 
@@ -952,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('QuickLog-Solo: DB Initialized', settings);
         activeTask = settings.activeTask;
 
-        applyTheme(settings.theme || 'system');
+        applyTheme(settings.theme || THEME_SYSTEM);
         applyAccent(settings.accent || 'blue');
         applyFont(settings.font || FONTS[0].value);
         applyLayout(settings.layout);
@@ -972,18 +1049,18 @@ async function handleTestParameters() {
     const urlParams = new URLSearchParams(window.location.search);
 
     // テスト用のレイアウト指定: ?test_layout=horizontal|vertical
-    const testLayout = urlParams.get('test_layout');
-    if (testLayout === 'horizontal' || testLayout === 'vertical') {
-        await dbPut('settings', { key: 'layout', value: testLayout });
+    const testLayout = urlParams.get(URL_PARAM_TEST_LAYOUT);
+    if (testLayout === LAYOUT_HORIZONTAL || testLayout === LAYOUT_VERTICAL) {
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAYOUT, value: testLayout });
         applyLayout(testLayout);
     }
 
     // テスト用のタスク開始: ?test_cat=Dev&test_elapsed=60000&test_resumable=Dev
-    let testCat = urlParams.get('test_cat');
+    let testCat = urlParams.get(URL_PARAM_TEST_CAT);
     if (testCat) {
         if (testCat.length > 50) testCat = testCat.substring(0, 50);
-        const elapsed = parseInt(urlParams.get('test_elapsed') || '0');
-        const resumable = urlParams.get('test_resumable');
+        const elapsed = parseInt(urlParams.get(URL_PARAM_TEST_ELAPSED) || '0');
+        const resumable = urlParams.get(URL_PARAM_TEST_RESUMABLE);
         const startTime = Date.now() - elapsed;
 
         // 既存のタスクを強制終了
@@ -998,7 +1075,7 @@ async function handleTestParameters() {
             endTime: null,
             resumableCategory: resumable
         };
-        const id = await dbAdd('logs', newLog);
+        const id = await dbAdd(STORE_LOGS, newLog);
         newLog.id = id;
         activeTask = newLog;
 

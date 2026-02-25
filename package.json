@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向け・完結型工数管理ツールです。",
   "main": "app.js",
   "directories": {
