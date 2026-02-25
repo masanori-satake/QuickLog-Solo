@@ -1,7 +1,7 @@
 import {
     initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
-    SETTING_KEY_THEME, SETTING_KEY_ACCENT, SETTING_KEY_FONT, SETTING_KEY_LAYOUT, SETTING_KEY_PAUSE_STATE
+    SETTING_KEY_THEME, SETTING_KEY_ACCENT, SETTING_KEY_FONT, SETTING_KEY_LAYOUT
 } from './js/db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './js/logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, isStoragePersisted, requestStoragePersistence } from './js/utils.js';
@@ -22,8 +22,6 @@ if ("serviceWorker" in navigator) {
 const LAYOUT_HORIZONTAL = 'horizontal';
 const LAYOUT_VERTICAL = 'vertical';
 
-const THEME_LIGHT = 'light';
-const THEME_DARK = 'dark';
 const THEME_SYSTEM = 'system';
 
 const MSG_TYPE_PING = 'PING';
@@ -96,6 +94,7 @@ let activeTask = null;
 let timerInterval = null;
 let currentCategoryPage = 0;
 let pipWindow = null;
+let originalBounds = null;
 
 const getEl = (id) => (pipWindow ? pipWindow.document : document).getElementById(id);
 const queryAll = (selector) => (pipWindow ? pipWindow.document : document).querySelectorAll(selector);
@@ -174,17 +173,27 @@ async function togglePiP() {
     }
 
     if (!('documentPictureInPicture' in window)) {
-        alert('お使いのブラウザは Document Picture-in-Picture API をサポートしていません。');
         return;
     }
 
     try {
         const app = getEl(ID_APP);
 
+        // Record original window state
+        originalBounds = {
+            width: window.outerWidth,
+            height: window.outerHeight,
+            left: window.screenX,
+            top: window.screenY
+        };
+
         pipWindow = await window.documentPictureInPicture.requestWindow({
             width: 280,
             height: 200,
         });
+
+        // Apply compact layout to PiP window
+        pipWindow.document.body.classList.add('layout-pip');
 
         // Copy styles
         [...document.styleSheets].forEach((styleSheet) => {
@@ -195,7 +204,7 @@ async function togglePiP() {
                     style.textContent = rules;
                     pipWindow.document.head.appendChild(style);
                 }
-            } catch (e) {
+            } catch {
                 const link = pipWindow.document.createElement('link');
                 link.rel = 'stylesheet';
                 link.href = styleSheet.href;
@@ -205,16 +214,43 @@ async function togglePiP() {
 
         pipWindow.document.body.append(app);
 
-        pipWindow.addEventListener("pagehide", (event) => {
+        // Shrink parent window
+        window.resizeTo(200, 100);
+
+        pipWindow.addEventListener('pagehide', () => {
             document.body.append(app);
             pipWindow = null;
+
+            // Restore parent window
+            if (originalBounds) {
+                window.resizeTo(originalBounds.width, originalBounds.height);
+                window.moveTo(originalBounds.left, originalBounds.top);
+                originalBounds = null;
+            }
+
             updateUI();
         });
 
         updateUI();
 
-    } catch (e) {
-        console.error('Failed to enter PiP mode:', e);
+    } catch (err) {
+        console.error('Failed to enter PiP mode:', err);
+    }
+}
+
+function initPipSupport() {
+    const pipBtn = getEl(ID_PIP_TOGGLE);
+    if (!pipBtn) return;
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isSupported = 'documentPictureInPicture' in window;
+
+    if (!isSupported) {
+        pipBtn.disabled = true;
+        pipBtn.title = 'お使いのブラウザはピン留め機能をサポートしていません。';
+    } else if (!isStandalone) {
+        pipBtn.disabled = true;
+        pipBtn.title = 'ピン留め機能はPWAとしてインストール後に利用可能です。';
     }
 }
 
@@ -1019,6 +1055,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await loadVersion();
         await initStoragePersistence();
+        initPipSupport();
     } catch (e) {
         console.error('Failed to load version:', e);
     }

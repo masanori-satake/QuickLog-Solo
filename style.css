@@ -83,6 +83,7 @@ button:active {
 
 button:disabled {
     opacity: 0.3;
+    filter: grayscale(1);
     cursor: not-allowed;
     transform: none;
 }
@@ -169,6 +170,8 @@ button:disabled {
 .dot-gray { background-color: #374151; }
 .dot-idle { background-color: #64748b; }
 
+/* stylelint-disable no-descending-specificity */
+
 /* Layout Classes */
 body.layout-horizontal #app {
     max-width: 750px;
@@ -243,9 +246,6 @@ body.layout-horizontal #end-btn {
 
 body.layout-horizontal #end-btn {
     border-left: var(--border-width) solid var(--text-color);
-}
-
-body.layout-horizontal #end-btn {
     border-top: var(--border-width) solid var(--text-color);
 }
 
@@ -678,37 +678,7 @@ body.layout-vertical #end-btn {
     background-color: #64748b !important;
 }
 
-.dot-blue {
-    background-color: #0369a1;
-}
 
-.dot-green {
-    background-color: #15803d;
-}
-
-.dot-orange {
-    background-color: #c2410c;
-}
-
-.dot-red {
-    background-color: #b91c1c;
-}
-
-.dot-purple {
-    background-color: #7e22ce;
-}
-
-.dot-teal {
-    background-color: #0f766e;
-}
-
-.dot-gray {
-    background-color: #374151;
-}
-
-.dot-idle {
-    background-color: #64748b;
-}
 
 .hidden {
     display: none !important;
@@ -1097,3 +1067,4 @@ body.layout-pip .confirm-btns button {
     padding: 0.2rem 0.5rem;
     font-size: 0.8rem;
 }
+/* stylelint-enable no-descending-specificity */
