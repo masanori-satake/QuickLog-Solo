@@ -149,13 +149,14 @@ async function setupInitialData() {
     if (activeTask && activeTask.category === SYSTEM_CATEGORY_IDLE) {
         console.log(`QuickLog-Solo: Migrating open ${SYSTEM_CATEGORY_IDLE} task to pauseState`);
         const pauseState = {
+            id: activeTask.id,
             category: SYSTEM_CATEGORY_IDLE,
             startTime: activeTask.startTime,
             resumableCategory: activeTask.resumableCategory,
             isPaused: true
         };
         await dbPut('settings', { key: 'pauseState', value: pauseState });
-        await dbDelete('logs', activeTask.id);
+        // DO NOT delete from logs to preserve history
         activeTask = pauseState;
     } else {
         const pauseStateSetting = await dbGet('settings', 'pauseState');

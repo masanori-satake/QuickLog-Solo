@@ -824,6 +824,7 @@ body.layout-vertical #end-btn {
     #current-task-display {
         height: 60px;
     }
+
     #current-task-display-base,
     #current-task-display-overlay {
         padding: 0.25rem 0.5rem;
@@ -892,6 +893,7 @@ body.layout-vertical #end-btn {
     #current-task-display {
         height: 45px;
     }
+
     #current-task-display-base,
     #current-task-display-overlay {
         align-items: center;

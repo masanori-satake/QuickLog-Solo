@@ -152,7 +152,7 @@ async function pauseTask() {
 }
 
 async function stopTask() {
-    activeTask = await stopTaskLogic(activeTask);
+    activeTask = await stopTaskLogic(activeTask, true);
 }
 
 async function endTask() {
@@ -315,7 +315,7 @@ async function renderLogs() {
         return;
     }
     const categoryMap = new Map(categories.map(c => [c.name, c]));
-    const completedLogs = allLogs.filter(l => l.endTime).sort((a, b) => b.startTime - a.startTime).slice(0, 5);
+    const visibleLogs = allLogs.sort((a, b) => b.startTime - a.startTime).slice(0, 5);
 
     const logList = getEl('log-list');
     if (!logList) return;
@@ -324,7 +324,7 @@ async function renderLogs() {
     let lastDate = '';
     const days = ['日', '月', '火', '水', '木', '金', '土'];
 
-    completedLogs.forEach((log) => {
+    visibleLogs.forEach((log) => {
         const d = new Date(log.startTime);
         const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} (${days[d.getDay()]})`;
 
@@ -345,9 +345,22 @@ function createLogElement(log, categoryMap) {
     const li = createEl('li');
     li.className = 'log-item';
     const startTimeStr = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const endTimeStr = new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const durationMs = log.endTime - log.startTime;
-    const durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)}s` : `${Math.round(durationMs / 60000)}m`;
+    const endTimeStr = log.endTime ? new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+    let timeRangeHtml;
+    if (log.isManualStop) {
+        timeRangeHtml = `<span class="log-time"><span style="visibility:hidden">${startTimeStr}</span>-${endTimeStr}</span>`;
+    } else if (log.endTime) {
+        timeRangeHtml = `<span class="log-time">${startTimeStr}-${endTimeStr}</span>`;
+    } else {
+        timeRangeHtml = `<span class="log-time">${startTimeStr}-</span>`;
+    }
+
+    const durationMs = log.endTime ? log.endTime - log.startTime : 0;
+    let durationText = '';
+    if (log.endTime && !log.isManualStop) {
+        durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)}s` : `${Math.round(durationMs / 60000)}m`;
+    }
 
     let colorClass = 'dot-gray';
     if (log.category === SYSTEM_CATEGORY_IDLE) {
@@ -357,7 +370,7 @@ function createLogElement(log, categoryMap) {
         if (cat) colorClass = `dot-${cat.color}`;
     }
     li.innerHTML = `
-        <span class="log-time">${startTimeStr}-${endTimeStr}</span>
+        ${timeRangeHtml}
         <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(log.category)}</span>
         <span class="log-duration">${durationText}</span>
     `;
@@ -426,11 +439,9 @@ async function updateUI() {
             if (isPaused) {
                 elements.pauseBtn.innerHTML = '<span class="btn-text">再開</span><span class="btn-icon">▶️</span>';
                 elements.pauseBtn.disabled = !activeTask.resumableCategory;
-                elements.pauseBtn.onclick = () => startTask(activeTask.resumableCategory);
             } else {
                 elements.pauseBtn.innerHTML = '<span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span>';
                 elements.pauseBtn.disabled = false;
-                elements.pauseBtn.onclick = pauseTask;
             }
         }
         if (elements.endBtn) elements.endBtn.disabled = false;
@@ -712,7 +723,14 @@ function updatePersistenceUI(isPersisted) {
 }
 
 function setupEventListeners() {
-    getEl('pause-btn')?.addEventListener('click', pauseTask);
+    getEl('pause-btn')?.addEventListener('click', () => {
+        if (!activeTask) return;
+        if (activeTask.category === SYSTEM_CATEGORY_IDLE) {
+            startTask(activeTask.resumableCategory);
+        } else {
+            pauseTask();
+        }
+    });
     getEl('end-btn')?.addEventListener('click', endTask);
     getEl('pip-toggle')?.addEventListener('click', togglePiP);
     getEl('copy-report-btn')?.addEventListener('click', copyReport);
