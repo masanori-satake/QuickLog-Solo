@@ -86,3 +86,21 @@ export function isValidCategoryName(name) {
     if (trimmed === SYSTEM_CATEGORY_IDLE) return false;
     return true;
 }
+
+/**
+ * Checks if the current storage is persistent.
+ * @returns {Promise<boolean>}
+ */
+export async function isStoragePersisted() {
+    if (!navigator.storage || !navigator.storage.persisted) return false;
+    return await navigator.storage.persisted();
+}
+
+/**
+ * Requests to make the storage persistent.
+ * @returns {Promise<boolean>} - Returns true if granted, false if denied.
+ */
+export async function requestStoragePersistence() {
+    if (!navigator.storage || !navigator.storage.persist) return false;
+    return await navigator.storage.persist();
+}
