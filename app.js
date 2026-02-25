@@ -1,6 +1,6 @@
 import { initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear } from './js/db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './js/logic.js';
-import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './js/utils.js';
+import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, isStoragePersisted, requestStoragePersistence } from './js/utils.js';
 
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -687,6 +687,30 @@ async function loadVersion() {
     }
 }
 
+async function initStoragePersistence() {
+    const isPersisted = await isStoragePersisted();
+    if (isPersisted) {
+        updatePersistenceUI(true);
+        return;
+    }
+
+    const granted = await requestStoragePersistence();
+    updatePersistenceUI(granted);
+
+    if (!granted) {
+        console.warn('QuickLog-Solo: Storage persistence was denied.');
+        showConfirm('ストレージの保護（永続化）が拒否されました。ブラウザの空き容量が不足すると、古いデータが自動的に削除される可能性があります。PWAとしてインストールするか、アプリを頻繁に使用することで改善される場合があります。').then(() => {});
+    }
+}
+
+function updatePersistenceUI(isPersisted) {
+    const el = getEl('storage-persistence-display');
+    if (el) {
+        el.textContent = isPersisted ? '✅ 保護されています' : '⚠️ 一時的（自動削除の可能性あり）';
+        el.style.color = isPersisted ? '#166534' : '#b91c1c';
+    }
+}
+
 function setupEventListeners() {
     getEl('pause-btn')?.addEventListener('click', pauseTask);
     getEl('end-btn')?.addEventListener('click', endTask);
@@ -890,6 +914,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('QuickLog-Solo: DOMContentLoaded');
     try {
         await loadVersion();
+        await initStoragePersistence();
     } catch (e) {
         console.error('Failed to load version:', e);
     }
