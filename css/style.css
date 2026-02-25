@@ -71,17 +71,9 @@ button:hover {
     background-color: rgba(0, 0, 0, 0.08);
 }
 
-body.theme-dark button:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-}
-
 button:active {
     background-color: rgba(0, 0, 0, 0.12);
     transform: scale(0.98);
-}
-
-body.theme-dark button:active {
-    background-color: rgba(255, 255, 255, 0.12);
 }
 
 button:disabled {
@@ -89,6 +81,14 @@ button:disabled {
     filter: grayscale(1);
     cursor: not-allowed;
     transform: none;
+}
+
+body.theme-dark button:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark button:active {
+    background-color: rgba(255, 255, 255, 0.12);
 }
 
 #header-btns {
