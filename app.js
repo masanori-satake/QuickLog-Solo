@@ -349,11 +349,14 @@ function createLogElement(log, categoryMap) {
 
     let timeRangeHtml;
     if (log.isManualStop) {
+        // 停止時は開始時刻を隠し、終了時刻のみを表示
         timeRangeHtml = `<span class="log-time"><span style="visibility:hidden">${startTimeStr}</span>-${endTimeStr}</span>`;
     } else if (log.endTime) {
+        // 通常の完了
         timeRangeHtml = `<span class="log-time">${startTimeStr}-${endTimeStr}</span>`;
     } else {
-        timeRangeHtml = `<span class="log-time">${startTimeStr}-</span>`;
+        // 実行中（終了時刻の場所に開始時刻と同じ長さの空白を確保してレイアウトを揃える）
+        timeRangeHtml = `<span class="log-time">${startTimeStr}-<span style="visibility:hidden">${startTimeStr}</span></span>`;
     }
 
     const durationMs = log.endTime ? log.endTime - log.startTime : 0;
@@ -363,15 +366,21 @@ function createLogElement(log, categoryMap) {
     }
 
     let colorClass = 'dot-gray';
-    if (log.category === SYSTEM_CATEGORY_IDLE) {
+    let displayName = log.category;
+
+    if (log.isManualStop) {
+        colorClass = 'dot-red';
+        displayName = '終了';
+    } else if (log.category === SYSTEM_CATEGORY_IDLE) {
         colorClass = 'dot-idle';
     } else {
         const cat = categoryMap.get(log.category);
         if (cat) colorClass = `dot-${cat.color}`;
     }
+
     li.innerHTML = `
         ${timeRangeHtml}
-        <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(log.category)}</span>
+        <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(displayName)}</span>
         <span class="log-duration">${durationText}</span>
     `;
     return li;
