@@ -1,3 +1,5 @@
+import { SYSTEM_CATEGORY_IDLE } from './utils.js';
+
 export const DB_NAME = 'QuickLogSoloDB';
 export const DB_VERSION = 1;
 
@@ -144,10 +146,10 @@ async function setupInitialData() {
     let activeTask = openTasks[0];
 
     // Migration / Auto-repair for (待機) tasks in logs
-    if (activeTask && activeTask.category === '(待機)') {
-        console.log('QuickLog-Solo: Migrating open (待機) task to pauseState');
+    if (activeTask && activeTask.category === SYSTEM_CATEGORY_IDLE) {
+        console.log(`QuickLog-Solo: Migrating open ${SYSTEM_CATEGORY_IDLE} task to pauseState`);
         const pauseState = {
-            category: '(待機)',
+            category: SYSTEM_CATEGORY_IDLE,
             startTime: activeTask.startTime,
             resumableCategory: activeTask.resumableCategory,
             isPaused: true
@@ -171,7 +173,7 @@ async function setupInitialData() {
         for (let i = startIndex; i < openTasks.length; i++) {
             const orphaned = openTasks[i];
             // すでにmigrationで削除済みの場合はスキップ
-            if (hasPauseState && orphaned.category === '(待機)' && orphaned.startTime === activeTask.startTime) continue;
+            if (hasPauseState && orphaned.category === SYSTEM_CATEGORY_IDLE && orphaned.startTime === activeTask.startTime) continue;
 
             orphaned.endTime = orphaned.startTime + 1000; // 最小限の時間を記録
             await dbPut('logs', orphaned);

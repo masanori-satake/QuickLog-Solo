@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { SYSTEM_CATEGORY_IDLE } from '../js/utils.js';
 
 jest.unstable_mockModule('../js/db.js', () => ({
     dbAdd: jest.fn().mockResolvedValue(123),
@@ -74,17 +75,17 @@ describe('Logic Module', () => {
         });
 
         test('stopTaskLogic handles pause state', async () => {
-            const pauseState = { category: '(待機)', startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
+            const pauseState = { category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
             const result = await stopTaskLogic(pauseState);
             expect(result).toBeNull();
-            expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: '(待機)', endTime: expect.any(Number) }));
+            expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: SYSTEM_CATEGORY_IDLE, endTime: expect.any(Number) }));
             expect(dbDelete).toHaveBeenCalledWith('settings', 'pauseState');
         });
 
         test('pauseTaskLogic transitions to pause state', async () => {
             const activeTask = { category: 'Work', startTime: Date.now() };
             const newTask = await pauseTaskLogic(activeTask);
-            expect(newTask.category).toBe('(待機)');
+            expect(newTask.category).toBe(SYSTEM_CATEGORY_IDLE);
             expect(newTask.resumableCategory).toBe('Work');
             expect(newTask.isPaused).toBe(true);
             expect(dbPut).toHaveBeenCalledWith('settings', expect.objectContaining({ key: 'pauseState', value: newTask }));
@@ -92,10 +93,10 @@ describe('Logic Module', () => {
         });
 
         test('startTaskLogic stops pause state before starting new task', async () => {
-            const pauseState = { category: '(待機)', startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
+            const pauseState = { category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
             const newTask = await startTaskLogic('Meeting', pauseState);
             expect(newTask.category).toBe('Meeting');
-            expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: '(待機)' }));
+            expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: SYSTEM_CATEGORY_IDLE }));
             expect(dbAdd).toHaveBeenCalledWith('logs', expect.objectContaining({ category: 'Meeting' }));
             expect(dbDelete).toHaveBeenCalledWith('settings', 'pauseState');
         });

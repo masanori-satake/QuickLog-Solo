@@ -1,4 +1,5 @@
 import { dbAdd, dbPut, dbDelete } from './db.js';
+import { SYSTEM_CATEGORY_IDLE } from './utils.js';
 
 export function formatDuration(ms) {
     const hours = Math.floor(ms / 3600000);
@@ -47,7 +48,7 @@ export async function stopTaskLogic(activeTask) {
 
     if (activeTask.isPaused) {
         const idleLog = {
-            category: '(待機)',
+            category: SYSTEM_CATEGORY_IDLE,
             startTime: activeTask.startTime,
             endTime: Date.now(),
             resumableCategory: activeTask.resumableCategory
@@ -63,12 +64,12 @@ export async function stopTaskLogic(activeTask) {
 }
 
 export async function pauseTaskLogic(activeTask) {
-    if (!activeTask || activeTask.category === '(待機)' || activeTask.isPaused) return activeTask;
+    if (!activeTask || activeTask.category === SYSTEM_CATEGORY_IDLE || activeTask.isPaused) return activeTask;
     const lastCategory = activeTask.category;
     await stopTaskLogic(activeTask);
 
     const pauseState = {
-        category: '(待機)',
+        category: SYSTEM_CATEGORY_IDLE,
         startTime: Date.now(),
         resumableCategory: lastCategory,
         isPaused: true

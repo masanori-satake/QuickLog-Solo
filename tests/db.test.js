@@ -1,4 +1,5 @@
 import { openDatabase, dbAdd, dbGet, dbGetAll, dbPut, dbDelete, initDB, closeDatabase } from '../js/db.js';
+import { SYSTEM_CATEGORY_IDLE } from '../js/utils.js';
 
 describe('DB Module', () => {
     const DB_NAME = 'QuickLogSoloDB';
@@ -94,19 +95,19 @@ describe('DB Module', () => {
 
     test('initDB handles pauseState correctly', async () => {
         await openDatabase();
-        const pauseState = { category: '(待機)', startTime: Date.now(), isPaused: true };
+        const pauseState = { category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), isPaused: true };
         await dbPut('settings', { key: 'pauseState', value: pauseState });
         closeDatabase();
 
         const settings = await initDB();
         expect(settings.activeTask.isPaused).toBe(true);
-        expect(settings.activeTask.category).toBe('(待機)');
+        expect(settings.activeTask.category).toBe(SYSTEM_CATEGORY_IDLE);
     });
 
     test('initDB migrates open (待機) log to pauseState', async () => {
         await openDatabase();
         const startTime = Date.now();
-        await dbAdd('logs', { category: '(待機)', startTime: startTime, endTime: null });
+        await dbAdd('logs', { category: SYSTEM_CATEGORY_IDLE, startTime: startTime, endTime: null });
         closeDatabase();
 
         const settings = await initDB();

@@ -56,6 +56,6 @@ describe('Validation', () => {
         expect(utils.isValidCategoryName('')).toBe(false);
         expect(utils.isValidCategoryName('A'.repeat(50))).toBe(true);
         expect(utils.isValidCategoryName('A'.repeat(51))).toBe(false);
-        expect(utils.isValidCategoryName('(待機)')).toBe(false);
+        expect(utils.isValidCategoryName(utils.SYSTEM_CATEGORY_IDLE)).toBe(false);
     });
 });
