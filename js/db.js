@@ -190,10 +190,10 @@ async function setupInitialData() {
 }
 
 async function cleanupOldLogs() {
-    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const fortyDaysAgo = Date.now() - (40 * 24 * 60 * 60 * 1000);
     const logs = await dbGetAll('logs');
     for (const log of logs) {
-        if (log.startTime < thirtyDaysAgo) {
+        if (log.startTime < fortyDaysAgo) {
             await dbDelete('logs', log.id);
         }
     }
