@@ -1,3 +1,5 @@
+import { SYSTEM_CATEGORY_IDLE } from './utils.js';
+
 export const DB_NAME = 'QuickLogSoloDB';
 export const DB_VERSION = 1;
 
@@ -143,11 +145,36 @@ async function setupInitialData() {
     const openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
     let activeTask = openTasks[0];
 
+    // Migration / Auto-repair for (待機) tasks in logs
+    if (activeTask && activeTask.category === SYSTEM_CATEGORY_IDLE) {
+        console.log(`QuickLog-Solo: Migrating open ${SYSTEM_CATEGORY_IDLE} task to pauseState`);
+        const pauseState = {
+            category: SYSTEM_CATEGORY_IDLE,
+            startTime: activeTask.startTime,
+            resumableCategory: activeTask.resumableCategory,
+            isPaused: true
+        };
+        await dbPut('settings', { key: 'pauseState', value: pauseState });
+        await dbDelete('logs', activeTask.id);
+        activeTask = pauseState;
+    } else {
+        const pauseStateSetting = await dbGet('settings', 'pauseState');
+        if (pauseStateSetting) {
+            activeTask = pauseStateSetting.value;
+        }
+    }
+
     // 複数の未終了タスクがある場合は、最新以外を強制終了させて整合性を保つ
-    if (openTasks.length > 1) {
-        console.warn('QuickLog-Solo: Found multiple active tasks. Closing orphaned tasks.');
-        for (let i = 1; i < openTasks.length; i++) {
+    // ただし、activeTaskがpauseStateの場合は、全てのopenTasksを強制終了すべき
+    const hasPauseState = activeTask && activeTask.isPaused;
+    const startIndex = hasPauseState ? 0 : 1;
+    if (openTasks.length > startIndex) {
+        console.warn('QuickLog-Solo: Found orphaned active tasks. Closing them.');
+        for (let i = startIndex; i < openTasks.length; i++) {
             const orphaned = openTasks[i];
+            // すでにmigrationで削除済みの場合はスキップ
+            if (hasPauseState && orphaned.category === SYSTEM_CATEGORY_IDLE && orphaned.startTime === activeTask.startTime) continue;
+
             orphaned.endTime = orphaned.startTime + 1000; // 最小限の時間を記録
             await dbPut('logs', orphaned);
         }
@@ -163,10 +190,10 @@ async function setupInitialData() {
 }
 
 async function cleanupOldLogs() {
-    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const fortyDaysAgo = Date.now() - (40 * 24 * 60 * 60 * 1000);
     const logs = await dbGetAll('logs');
     for (const log of logs) {
-        if (log.startTime < thirtyDaysAgo) {
+        if (log.startTime < fortyDaysAgo) {
             await dbDelete('logs', log.id);
         }
     }

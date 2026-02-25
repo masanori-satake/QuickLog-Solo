@@ -1,6 +1,6 @@
 import { initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear } from './js/db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './js/logic.js';
-import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName } from './js/utils.js';
+import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './js/utils.js';
 
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -186,7 +186,7 @@ function updateTimer() {
         if (el) el.textContent = timeStr;
     });
 
-    const isPaused = activeTask.category === '(待機)';
+    const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
     const overlay = getEl('current-task-display-overlay');
     if (overlay) {
@@ -345,18 +345,19 @@ function createLogElement(log, categoryMap) {
     const li = createEl('li');
     li.className = 'log-item';
     const startTimeStr = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const endTimeStr = new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const durationMs = log.endTime - log.startTime;
     const durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)}s` : `${Math.round(durationMs / 60000)}m`;
 
     let colorClass = 'dot-gray';
-    if (log.category === '(待機)') {
+    if (log.category === SYSTEM_CATEGORY_IDLE) {
         colorClass = 'dot-idle';
     } else {
         const cat = categoryMap.get(log.category);
         if (cat) colorClass = `dot-${cat.color}`;
     }
     li.innerHTML = `
-        <span class="log-time">${startTimeStr}</span>
+        <span class="log-time">${startTimeStr}-${endTimeStr}</span>
         <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(log.category)}</span>
         <span class="log-duration">${durationText}</span>
     `;
@@ -394,7 +395,7 @@ async function updateUI() {
 
     if (activeTask) {
         let color = 'blue';
-        const isPaused = activeTask.category === '(待機)';
+        const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
         if (isPaused) {
             color = 'idle';
@@ -434,7 +435,12 @@ async function updateUI() {
         }
         if (elements.endBtn) elements.endBtn.disabled = false;
 
-        [elements.elapsedTime, elements.elapsedTimeOverlay].forEach(el => { if (el) el.classList.remove('hidden'); });
+        [elements.elapsedTime, elements.elapsedTimeOverlay].forEach(el => {
+            if (el) {
+                el.classList.remove('hidden');
+                el.style.visibility = isPaused ? 'hidden' : 'visible';
+            }
+        });
         startTimer();
     } else {
         if (elements.display) elements.display.className = '';
@@ -457,6 +463,7 @@ async function updateUI() {
             if (el) {
                 el.classList.add('hidden');
                 el.textContent = '00:00:00';
+                el.style.visibility = 'visible';
             }
         });
         if (elements.overlay) elements.overlay.style.clipPath = 'inset(0 0 0 100%)';
@@ -551,7 +558,7 @@ async function renderCategoryEditor() {
     const list = getEl('category-editor-list');
     if (!list) return;
     let categories = await dbGetAll('categories');
-    categories = categories.filter(c => c.name !== '(待機)').sort((a, b) => a.order - b.order);
+    categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => a.order - b.order);
     list.innerHTML = '';
 
     categories.forEach(cat => {
@@ -587,7 +594,7 @@ async function renderCategoryEditor() {
             const newName = input.value.trim();
             if (newName && newName !== cat.name) {
                 if (!isValidCategoryName(newName)) {
-                    alert('無効なカテゴリ名です。（50文字以内、「(待機)」は使用不可）');
+                    alert(`無効なカテゴリ名です。（50文字以内、「${SYSTEM_CATEGORY_IDLE}」は使用不可）`);
                     input.value = cat.name;
                     return;
                 }
@@ -777,7 +784,7 @@ function setupEventListeners() {
         const name = input?.value.trim();
         if (name) {
             if (!isValidCategoryName(name)) {
-                alert('無効なカテゴリ名です。（50文字以内、「(待機)」は使用不可）');
+                alert(`無効なカテゴリ名です。（50文字以内、「${SYSTEM_CATEGORY_IDLE}」は使用不可）`);
                 return;
             }
             const categories = await dbGetAll('categories');

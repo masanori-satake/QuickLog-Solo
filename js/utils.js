@@ -2,6 +2,8 @@
  * QuickLog-Solo: Security and Validation Utilities
  */
 
+export const SYSTEM_CATEGORY_IDLE = '(待機)';
+
 /**
  * Escapes HTML special characters to prevent XSS.
  * @param {string} str
@@ -81,6 +83,6 @@ export function isValidCategoryName(name) {
     if (!name) return false;
     const trimmed = name.trim();
     if (trimmed.length === 0 || trimmed.length > 50) return false;
-    if (trimmed === '(待機)') return false;
+    if (trimmed === SYSTEM_CATEGORY_IDLE) return false;
     return true;
 }
