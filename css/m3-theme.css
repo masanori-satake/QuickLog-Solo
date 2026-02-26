@@ -108,7 +108,7 @@
   --custom-cat-purple: #7e22ce;
   --custom-cat-teal: #0f766e;
   --custom-cat-gray: #374151;
-  --custom-cat-on-main: #ffffff;
+  --custom-cat-on-main: #fff;
 }
 
 body.theme-dark {
@@ -168,5 +168,5 @@ body.theme-dark {
   --custom-cat-purple: #a855f7;
   --custom-cat-teal: #14b8a6;
   --custom-cat-gray: #9ca3af;
-  --custom-cat-on-main: #ffffff;
+  --custom-cat-on-main: #fff;
 }
