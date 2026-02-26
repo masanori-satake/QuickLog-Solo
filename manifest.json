@@ -1,34 +1,24 @@
 {
+  "manifest_version": 3,
   "name": "QuickLog-Solo",
-  "short_name": "QuickLog",
-  "description": "Minimalist Work Logger",
-  "id": "quicklog-solo",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "icons": [
-    {
-      "src": "assets/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
-    },
-    {
-      "src": "assets/icon.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "assets/icon.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
-    }
-  ]
+  "version": "0.4.1",
+  "description": "1秒で記録、1秒で集計、1秒で安心 - ミニマリスト向けサイドパネル工数管理ツール",
+  "permissions": [
+    "sidePanel"
+  ],
+  "action": {
+    "default_title": "QuickLog-Soloを開く",
+    "default_icon": "assets/icon.svg"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "icons": {
+    "192": "assets/icon.svg",
+    "512": "assets/icon.svg"
+  },
+  "background": {
+    "service_worker": "js/background.js",
+    "type": "module"
+  }
 }

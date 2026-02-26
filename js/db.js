@@ -10,7 +10,6 @@ export const STORE_SETTINGS = 'settings';
 export const SETTING_KEY_THEME = 'theme';
 export const SETTING_KEY_ACCENT = 'accent';
 export const SETTING_KEY_FONT = 'font';
-export const SETTING_KEY_LAYOUT = 'layout';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
@@ -152,7 +151,6 @@ async function setupInitialData() {
     const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
     const accent = await dbGet(STORE_SETTINGS, SETTING_KEY_ACCENT);
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
-    const layout = await dbGet(STORE_SETTINGS, SETTING_KEY_LAYOUT);
 
     const allLogs = await dbGetAll(STORE_LOGS);
     const openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
@@ -198,7 +196,6 @@ async function setupInitialData() {
         theme: theme ? theme.value : null,
         accent: accent ? accent.value : null,
         font: font ? font.value : null,
-        layout: layout ? layout.value : null,
         activeTask
     };
 }

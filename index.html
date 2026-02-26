@@ -6,7 +6,6 @@
     <title>QuickLog-Solo</title>
     <link rel="stylesheet" href="css/m3-theme.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="manifest" href="manifest.json">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icon.svg">
     <meta name="theme-color" content="#2563eb">
@@ -17,9 +16,7 @@
             <div id="header-btns">
                 <button id="copy-report-btn" title="日報コピー">📋</button>
                 <button id="copy-aggregation-btn" title="集計コピー">📊</button>
-                <button id="pip-toggle" title="常に前面に表示">📌</button>
                 <button id="settings-toggle" title="設定">⚙️</button>
-                <button id="layout-toggle" title="レイアウト切替">↕️</button>
             </div>
         </header>
 
@@ -27,9 +24,6 @@
             <section id="category-section">
                 <div id="category-list">
                     <!-- カテゴリボタンがここに動的に追加される -->
-                </div>
-                <div id="category-pagination" class="hidden">
-                    <!-- ページインジケーター -->
                 </div>
             </section>
 
@@ -134,10 +128,6 @@
                         <p id="version-display"></p>
                     </div>
                     <div class="setting-item">
-                        <label>ストレージ保護</label>
-                        <p id="storage-persistence-display">-</p>
-                    </div>
-                    <div class="setting-item">
                         <label>開発者</label>
                         <p>Masanori SATAKE</p>
                     </div>
@@ -147,7 +137,7 @@
                             本アプリは、標準的なウェブ技術（HTML5, CSS3, Vanilla JS）のみで構築された、プライバシー重視のミニマリストな作業ログツールです。
                         </p>
                         <p style="font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.5rem;">
-                            すべてのデータはブラウザ内の IndexedDB にのみ保存され、外部サーバーへの送信は行われません。PWAとしてオフラインでも動作します。
+                            すべてのデータはブラウザ内の IndexedDB にのみ保存され、外部サーバーへの送信は行われません。サイドパネルで常に作業の傍らに。
                         </p>
                         <p style="font-size: 0.85rem; line-height: 1.6;">
                             外部ライブラリを一切使用せず、セキュアで軽量な動作を実現しています。
