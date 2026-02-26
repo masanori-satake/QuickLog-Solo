@@ -1,63 +1,30 @@
 import {
     initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
-    SETTING_KEY_THEME, SETTING_KEY_ACCENT, SETTING_KEY_FONT, SETTING_KEY_LAYOUT
+    SETTING_KEY_THEME, SETTING_KEY_ACCENT, SETTING_KEY_FONT
 } from './db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
-import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, isStoragePersisted, requestStoragePersistence } from './utils.js';
-
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").then((reg) => {
-            console.log('QuickLog-Solo: SW registered', reg);
-        }).catch((err) => {
-            console.error('QuickLog-Solo: SW registration failed', err);
-        });
-    });
-}
+import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
 
 // QuickLog-Solo: Main Application Entry
 
 // Constants
-const LAYOUT_HORIZONTAL = 'horizontal';
-const LAYOUT_VERTICAL = 'vertical';
-
 const THEME_SYSTEM = 'system';
 
-const MSG_TYPE_PING = 'PING';
-const MSG_TYPE_PONG = 'PONG';
-const MSG_TYPE_FOCUS = 'FOCUS';
-
-const URL_PARAM_ACTION = 'action';
-const URL_PARAM_TEST_LAYOUT = 'test_layout';
 const URL_PARAM_TEST_CAT = 'test_cat';
 const URL_PARAM_TEST_ELAPSED = 'test_elapsed';
 const URL_PARAM_TEST_RESUMABLE = 'test_resumable';
-
-const ACTION_SETTINGS = 'settings';
-
-const LOCAL_STORAGE_KEY_LAYOUT = 'quicklog_layout';
-const LOCAL_STORAGE_KEY_PIP_ACTIVE = 'quicklog_pip_active';
-const LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS = 'quicklog_original_bounds';
-const CHANNEL_NAME = 'quicklog_instance_coordination';
 
 const ITEMS_PER_PAGE = 8;
 const MAX_LOGS_DISPLAY = 5;
 const TOAST_DURATION_MS = 2000;
 
-const WINDOW_WIDTH_HORIZONTAL = 650;
-const WINDOW_HEIGHT_HORIZONTAL = 360;
-const WINDOW_WIDTH_VERTICAL = 280;
-const WINDOW_HEIGHT_VERTICAL = 500;
-
 const CSV_HEADER = "id,category,startTime,endTime\n";
 
-const ID_APP = 'app';
 const ID_SETTINGS_POPUP = 'settings-popup';
 const ID_SETTINGS_TOGGLE = 'settings-toggle';
 const ID_THEME_SELECT = 'theme-select';
 const ID_FONT_SELECT = 'font-select';
-const ID_LAYOUT_TOGGLE = 'layout-toggle';
 const ID_CATEGORY_LIST = 'category-list';
 const ID_CATEGORY_PAGINATION = 'category-pagination';
 const ID_LOG_LIST = 'log-list';
@@ -77,10 +44,8 @@ const ID_CONFIRM_MESSAGE = 'confirm-message';
 const ID_CONFIRM_OK_BTN = 'confirm-ok-btn';
 const ID_CONFIRM_CANCEL_BTN = 'confirm-cancel-btn';
 const ID_VERSION_DISPLAY = 'version-display';
-const ID_STORAGE_PERSISTENCE_DISPLAY = 'storage-persistence-display';
 const ID_CATEGORY_EDITOR_LIST = 'category-editor-list';
 const ID_NEW_CATEGORY_NAME_SETTINGS = 'new-category-name-settings';
-const ID_PIP_TOGGLE = 'pip-toggle';
 const ID_COPY_REPORT_BTN = 'copy-report-btn';
 const ID_COPY_AGGREGATION_BTN = 'copy-aggregation-btn';
 const ID_CATEGORY_SECTION = 'category-section';
@@ -95,15 +60,11 @@ const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 let activeTask = null;
 let timerInterval = null;
 let currentCategoryPage = 0;
-let pipWindow = null;
-let originalBounds = null;
 
-const getEl = (id) => (pipWindow ? pipWindow.document : document).getElementById(id);
-const queryAll = (selector) => (pipWindow ? pipWindow.document : document).querySelectorAll(selector);
-const getBody = () => (pipWindow ? pipWindow.document : document).body;
-const createEl = (tag) => (pipWindow ? pipWindow.document : document).createElement(tag);
-
-const instanceChannel = new BroadcastChannel(CHANNEL_NAME);
+const getEl = (id) => document.getElementById(id);
+const queryAll = (selector) => document.querySelectorAll(selector);
+const getBody = () => document.body;
+const createEl = (tag) => document.createElement(tag);
 
 const FONTS = [
     { name: '標準', value: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
@@ -118,249 +79,7 @@ const FONTS = [
     { name: 'Comic Sans MS', value: '"Comic Sans MS", cursive, sans-serif' }
 ];
 
-// --- Single-Instance Coordination ---
-(async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get(URL_PARAM_ACTION);
-
-    let otherInstanceFound = false;
-    const pingPromise = new Promise(resolve => {
-        const handler = (e) => {
-            if (e.data.type === MSG_TYPE_PONG) {
-                otherInstanceFound = true;
-                resolve();
-            }
-        };
-        instanceChannel.addEventListener('message', handler);
-        setTimeout(() => {
-            instanceChannel.removeEventListener('message', handler);
-            resolve();
-        }, 500);
-    });
-
-    instanceChannel.postMessage({ type: MSG_TYPE_PING });
-    await pingPromise;
-
-    if (otherInstanceFound) {
-        instanceChannel.postMessage({ type: MSG_TYPE_FOCUS, action });
-        window.close();
-        document.addEventListener('DOMContentLoaded', () => {
-            getBody().innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-weight:bold; text-align:center; padding:2rem;">' +
-                '<div>既に QuickLog-Solo が起動しています。</div>' +
-                '<div style="font-size:0.8rem; margin-top:1rem; color:gray;">既存のウィンドウを確認してください。</div>' +
-                '</div>';
-        });
-        throw new Error('Duplicate instance detected.');
-    }
-})();
-
-instanceChannel.onmessage = (event) => {
-    const { type, action } = event.data;
-    if (type === MSG_TYPE_PING) {
-        instanceChannel.postMessage({ type: MSG_TYPE_PONG });
-    } else if (type === MSG_TYPE_FOCUS) {
-        window.focus();
-        if (action === ACTION_SETTINGS) {
-            getEl(ID_SETTINGS_POPUP)?.classList.remove('hidden');
-        }
-    }
-};
-
 // --- Task Control ---
-
-async function togglePiP() {
-    if (pipWindow) {
-        pipWindow.close();
-        return;
-    }
-
-    if (!('documentPictureInPicture' in window)) {
-        return;
-    }
-
-    try {
-        const app = getEl(ID_APP);
-
-        // Record original window state
-        originalBounds = {
-            width: window.outerWidth,
-            height: window.outerHeight,
-            left: window.screenX,
-            top: window.screenY
-        };
-        localStorage.setItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS, JSON.stringify(originalBounds));
-        localStorage.setItem(LOCAL_STORAGE_KEY_PIP_ACTIVE, 'true');
-
-        pipWindow = await window.documentPictureInPicture.requestWindow({
-            width: 280,
-            height: 200,
-        });
-
-        // Apply classes and styles from main body to PiP body
-        const mainBody = document.body;
-        pipWindow.document.body.className = mainBody.className;
-        pipWindow.document.body.classList.remove('layout-horizontal', 'layout-vertical');
-        pipWindow.document.body.classList.add('layout-pip');
-
-        // Copy font family CSS variable
-        const mainStyle = window.getComputedStyle(mainBody);
-        pipWindow.document.body.style.setProperty('--font-family', mainStyle.getPropertyValue('--font-family'));
-
-        // Copy styles
-        [...document.styleSheets].forEach((styleSheet) => {
-            try {
-                if (styleSheet.cssRules) {
-                    const style = pipWindow.document.createElement('style');
-                    const rules = [...styleSheet.cssRules].map((rule) => rule.cssText).join('');
-                    style.textContent = rules;
-                    pipWindow.document.head.appendChild(style);
-                }
-            } catch {
-                const link = pipWindow.document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = styleSheet.href;
-                pipWindow.document.head.appendChild(link);
-            }
-        });
-
-        // Set PiP window title early
-        const setPipTitle = () => {
-            if (!pipWindow) return;
-            let titleEl = pipWindow.document.querySelector('title');
-            if (!titleEl) {
-                titleEl = pipWindow.document.createElement('title');
-                pipWindow.document.head.prepend(titleEl);
-            }
-            titleEl.textContent = 'QuickLog-Solo';
-            pipWindow.document.title = 'QuickLog-Solo';
-        };
-        setPipTitle();
-
-        pipWindow.document.body.append(app);
-
-        // Multiple attempts for title setting
-        setTimeout(setPipTitle, 100);
-        setTimeout(setPipTitle, 500);
-        setTimeout(setPipTitle, 2000);
-
-        // Hide parent window content completely and minimize it
-        document.documentElement.style.visibility = 'hidden';
-        document.documentElement.style.opacity = '0';
-        document.body.style.pointerEvents = 'none';
-        const originalTitle = document.title;
-        // Use a space to minimize title bar text while keeping it valid
-        document.title = " ";
-
-        // Shrink and move parent window far off-screen to minimize obstruction.
-        // Using screen coordinates for better hiding across OSs.
-        setTimeout(() => {
-            window.resizeTo(1, 1);
-            // Move to the very corner of the screen
-            window.moveTo(window.screen.width, window.screen.height);
-        }, 150);
-
-        pipWindow.addEventListener('pagehide', () => {
-            // Restore parent window properties immediately
-            document.documentElement.style.visibility = 'visible';
-            document.documentElement.style.opacity = '1';
-            document.body.style.pointerEvents = 'auto';
-            document.title = originalTitle;
-
-            document.body.append(app);
-            pipWindow = null;
-            localStorage.removeItem(LOCAL_STORAGE_KEY_PIP_ACTIVE);
-
-            // Restore parent window bounds
-            if (originalBounds) {
-                window.resizeTo(originalBounds.width, originalBounds.height);
-                window.moveTo(originalBounds.left, originalBounds.top);
-                originalBounds = null;
-            } else {
-                // Fallback restoration from localStorage
-                const savedBounds = localStorage.getItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS);
-                if (savedBounds) {
-                    try {
-                        const bounds = JSON.parse(savedBounds);
-                        window.resizeTo(bounds.width, bounds.height);
-                        window.moveTo(bounds.left, bounds.top);
-                    } catch (e) {
-                        console.error('Failed to parse saved bounds:', e);
-                    }
-                }
-            }
-
-            // Ensure window is focused and visible.
-            // Multiple attempts with increasing delays to ensure it comes to front.
-            window.focus();
-            setTimeout(() => {
-                window.focus();
-                updateUI();
-            }, 150);
-            setTimeout(() => window.focus(), 500);
-            setTimeout(() => window.focus(), 1000);
-        });
-
-        updateUI();
-
-    } catch (err) {
-        console.error('Failed to enter PiP mode:', err);
-    }
-}
-
-/**
- * Safety check to recover window position if it starts off-screen
- * (e.g., after a crash while in PiP mode)
- */
-function recoverWindowPosition() {
-    const isPipActive = localStorage.getItem(LOCAL_STORAGE_KEY_PIP_ACTIVE) === 'true';
-    const isOffScreen = window.screenX < -5000 || window.screenY < -5000 ||
-                        window.screenX >= window.screen.availWidth || window.screenY >= window.screen.availHeight;
-
-    if (isPipActive || isOffScreen) {
-        // Ensure styles are restored if crashed
-        document.documentElement.style.visibility = 'visible';
-        document.documentElement.style.opacity = '1';
-        document.body.style.pointerEvents = 'auto';
-        if (document.title === "") {
-            document.title = "QuickLog-Solo";
-        }
-
-        const savedBounds = localStorage.getItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS);
-        if (savedBounds) {
-            try {
-                const bounds = JSON.parse(savedBounds);
-                window.resizeTo(bounds.width, bounds.height);
-                window.moveTo(bounds.left, bounds.top);
-            } catch (e) {
-                console.error('Failed to parse original bounds:', e);
-                window.moveTo(100, 100);
-            }
-        } else {
-            // Default recovery
-            window.moveTo(100, 100);
-            const layout = localStorage.getItem(LOCAL_STORAGE_KEY_LAYOUT) || LAYOUT_HORIZONTAL;
-            const isHorizontal = layout === LAYOUT_HORIZONTAL;
-            window.resizeTo(isHorizontal ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, isHorizontal ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
-        }
-        localStorage.removeItem(LOCAL_STORAGE_KEY_PIP_ACTIVE);
-    }
-}
-
-function initPipSupport() {
-    const pipBtn = getEl(ID_PIP_TOGGLE);
-    if (!pipBtn) return;
-
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    const isSupported = 'documentPictureInPicture' in window;
-
-    if (!isSupported) {
-        pipBtn.disabled = true;
-        pipBtn.title = 'お使いのブラウザはピン留め機能をサポートしていません。';
-    } else if (!isStandalone) {
-        pipBtn.disabled = true;
-        pipBtn.title = 'ピン留め機能はPWAとしてインストール後に利用可能です。';
-    }
-}
 
 async function startTask(categoryName, resumableCategory = null) {
     activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory);
@@ -446,29 +165,6 @@ function applyFont(fontValue) {
     getBody().style.setProperty('--font-family', fontValue);
     const select = getEl(ID_FONT_SELECT);
     if (select) select.value = fontValue;
-}
-
-function applyLayout(layout) {
-    const body = getBody();
-    body.classList.remove('layout-horizontal', 'layout-vertical');
-
-    if (!layout) {
-        layout = localStorage.getItem(LOCAL_STORAGE_KEY_LAYOUT) || (window.innerWidth >= WINDOW_WIDTH_HORIZONTAL ? LAYOUT_HORIZONTAL : LAYOUT_VERTICAL);
-    }
-
-    localStorage.setItem(LOCAL_STORAGE_KEY_LAYOUT, layout);
-    body.classList.add(`layout-${layout}`);
-
-    const btn = getEl(ID_LAYOUT_TOGGLE);
-    if (btn) {
-        const isHorizontal = layout === LAYOUT_HORIZONTAL;
-        btn.textContent = isHorizontal ? '↕️' : '↔️';
-        btn.title = isHorizontal ? '縦長レイアウトに切り替え' : '横長レイアウトに切り替え';
-
-        if (!pipWindow && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone)) {
-            window.resizeTo(isHorizontal ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, isHorizontal ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
-        }
-    }
 }
 
 async function renderCategories() {
@@ -708,7 +404,7 @@ async function updateUI() {
             }
         });
         if (elements.overlay) elements.overlay.style.clipPath = 'inset(0 0 0 100%)';
-        if (!pipWindow) document.title = 'QuickLog-Solo';
+        document.title = 'QuickLog-Solo';
     }
 }
 
@@ -928,30 +624,6 @@ async function loadVersion() {
     }
 }
 
-async function initStoragePersistence() {
-    const isPersisted = await isStoragePersisted();
-    if (isPersisted) {
-        updatePersistenceUI(true);
-        return;
-    }
-
-    const granted = await requestStoragePersistence();
-    updatePersistenceUI(granted);
-
-    if (!granted) {
-        console.warn('QuickLog-Solo: Storage persistence was denied.');
-        showConfirm('ストレージの保護（永続化）が拒否されました。ブラウザの空き容量が不足すると、古いデータが自動的に削除される可能性があります。PWAとしてインストールするか、アプリを頻繁に使用することで改善される場合があります。').then(() => {});
-    }
-}
-
-function updatePersistenceUI(isPersisted) {
-    const el = getEl(ID_STORAGE_PERSISTENCE_DISPLAY);
-    if (el) {
-        el.textContent = isPersisted ? '✅ 保護されています' : '⚠️ 一時的（自動削除の可能性あり）';
-        el.style.color = isPersisted ? '#166534' : '#b91c1c';
-    }
-}
-
 function setupEventListeners() {
     getEl(ID_PAUSE_BTN)?.addEventListener('click', () => {
         if (!activeTask) return;
@@ -962,16 +634,8 @@ function setupEventListeners() {
         }
     });
     getEl(ID_END_BTN)?.addEventListener('click', endTask);
-    getEl(ID_PIP_TOGGLE)?.addEventListener('click', togglePiP);
     getEl(ID_COPY_REPORT_BTN)?.addEventListener('click', copyReport);
     getEl(ID_COPY_AGGREGATION_BTN)?.addEventListener('click', copyAggregation);
-
-    getEl(ID_LAYOUT_TOGGLE)?.addEventListener('click', async () => {
-        const currentLayout = getBody().classList.contains('layout-horizontal') ? LAYOUT_HORIZONTAL : LAYOUT_VERTICAL;
-        const newLayout = currentLayout === LAYOUT_HORIZONTAL ? LAYOUT_VERTICAL : LAYOUT_HORIZONTAL;
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAYOUT, value: newLayout });
-        applyLayout(newLayout);
-    });
 
     getEl(ID_CATEGORY_SECTION)?.addEventListener('wheel', async (e) => {
         const categories = await dbGetAll(STORE_CATEGORIES);
@@ -1142,30 +806,12 @@ function setupEventListeners() {
             location.reload();
         });
     });
-
-    window.addEventListener('resize', () => {
-        if (pipWindow) return; // Ignore resize events while in PiP mode
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            const layout = getBody().classList.contains('layout-horizontal') ? LAYOUT_HORIZONTAL : LAYOUT_VERTICAL;
-            window.resizeTo(layout === LAYOUT_HORIZONTAL ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, layout === LAYOUT_HORIZONTAL ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
-        }
-    });
-
-    window.addEventListener('beforeunload', (event) => {
-        if (activeTask) {
-            event.preventDefault();
-            event.returnValue = '';
-        }
-    });
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('QuickLog-Solo: DOMContentLoaded');
     try {
-        recoverWindowPosition();
         await loadVersion();
-        await initStoragePersistence();
-        initPipSupport();
     } catch (e) {
         console.error('Failed to load version:', e);
     }
@@ -1179,7 +825,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyTheme(settings.theme || THEME_SYSTEM);
         applyAccent(settings.accent || 'blue');
         applyFont(settings.font || FONTS[0].value);
-        applyLayout(settings.layout);
 
         setupEventListeners();
         await handleTestParameters();
@@ -1194,13 +839,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function handleTestParameters() {
     const urlParams = new URLSearchParams(window.location.search);
-
-    // テスト用のレイアウト指定: ?test_layout=horizontal|vertical
-    const testLayout = urlParams.get(URL_PARAM_TEST_LAYOUT);
-    if (testLayout === LAYOUT_HORIZONTAL || testLayout === LAYOUT_VERTICAL) {
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAYOUT, value: testLayout });
-        applyLayout(testLayout);
-    }
 
     // テスト用のタスク開始: ?test_cat=Dev&test_elapsed=60000&test_resumable=Dev
     let testCat = urlParams.get(URL_PARAM_TEST_CAT);
