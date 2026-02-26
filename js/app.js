@@ -196,16 +196,6 @@ async function togglePiP() {
             height: 200,
         });
 
-        // Set PiP window title
-        pipWindow.document.title = 'QuickLog-Solo';
-
-        // Prevent resizing (as much as possible by forcing size back)
-        pipWindow.addEventListener('resize', () => {
-            if (pipWindow) {
-                pipWindow.resizeTo(280, 200);
-            }
-        });
-
         // Apply classes and styles from main body to PiP body
         const mainBody = document.body;
         pipWindow.document.body.className = mainBody.className;
@@ -234,6 +224,20 @@ async function togglePiP() {
         });
 
         pipWindow.document.body.append(app);
+
+        // Set PiP window title (after appending content for some browsers to pick it up)
+        pipWindow.document.title = 'QuickLog-Solo';
+
+        // Best effort to force window back to requested size if user resizes
+        pipWindow.addEventListener('resize', () => {
+            if (pipWindow && (pipWindow.outerWidth !== 280 || pipWindow.outerHeight !== 200)) {
+                try {
+                    pipWindow.resizeTo(280, 200);
+                } catch (e) {
+                    // resizeTo might be blocked for Document PiP in some browsers
+                }
+            }
+        });
 
         // Shrink and move parent window to the edge/off-screen to minimize obstruction.
         // We use a large positive coordinate as a fallback if negative ones are clamped to (0,0).
