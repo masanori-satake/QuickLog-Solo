@@ -2,6 +2,9 @@ import js from "@eslint/js";
 import globals from "globals";
 
 export default [
+  {
+    ignores: ["node_modules/", "storybook-static/", "test-results/"],
+  },
   js.configs.recommended,
   {
     languageOptions: {

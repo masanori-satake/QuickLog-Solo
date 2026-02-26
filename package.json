@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向け・完結型工数管理ツールです。",
   "main": "js/app.js",
   "directories": {
@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
+    "test:e2e": "playwright test",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.2.0",
+    "@playwright/test": "^1.58.2",
     "@storybook/addon-a11y": "^8.6.14",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-interactions": "^8.6.14",
@@ -44,7 +46,5 @@
     "stylelint-config-standard": "^40.0.0",
     "vite": "^5.4.14"
   },
-  "dependencies": {
-    "@playwright/test": "^1.58.2"
-  }
+  "dependencies": {}
 }
