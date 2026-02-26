@@ -993,9 +993,8 @@ body.layout-pip {
     overflow: hidden;
     height: 100vh;
     width: 100vw;
-    /* Semi-transparent background to blend with parent window if visible,
-       but standard M3 surface container is better for clarity. */
-    background-color: var(--md-sys-color-surface-container-low);
+    /* Use background color that matches the theme for a seamless look */
+    background-color: var(--bg-color);
     display: flex !important;
     justify-content: center;
     align-items: center;
@@ -1004,6 +1003,7 @@ body.layout-pip {
 body.layout-pip #app {
     width: 100%;
     height: 100%;
+    max-width: none !important; /* Allow app to fill any window size */
     display: flex;
     flex-direction: column;
     background-color: var(--bg-color);

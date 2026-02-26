@@ -223,9 +223,7 @@ async function togglePiP() {
             }
         });
 
-        pipWindow.document.body.append(app);
-
-        // Set PiP window title (multiple attempts for browser compatibility)
+        // Set PiP window title early
         const setPipTitle = () => {
             if (!pipWindow) return;
             let titleEl = pipWindow.document.querySelector('title');
@@ -237,6 +235,10 @@ async function togglePiP() {
             pipWindow.document.title = 'QuickLog-Solo';
         };
         setPipTitle();
+
+        pipWindow.document.body.append(app);
+
+        // Multiple attempts for title setting
         setTimeout(setPipTitle, 100);
         setTimeout(setPipTitle, 500);
         setTimeout(setPipTitle, 2000);
@@ -246,14 +248,15 @@ async function togglePiP() {
         document.documentElement.style.opacity = '0';
         document.body.style.pointerEvents = 'none';
         const originalTitle = document.title;
-        document.title = "";
+        // Use a space to minimize title bar text while keeping it valid
+        document.title = " ";
 
         // Shrink and move parent window far off-screen to minimize obstruction.
-        // Using setTimeout to ensure it runs after PiP window setup.
+        // Using screen coordinates for better hiding across OSs.
         setTimeout(() => {
             window.resizeTo(1, 1);
-            // Moving far away (coordinates clamped by OS, but usually moves out of sight)
-            window.moveTo(-10000, -10000);
+            // Move to the very corner of the screen
+            window.moveTo(window.screen.width, window.screen.height);
         }, 150);
 
         pipWindow.addEventListener('pagehide', () => {
@@ -287,13 +290,14 @@ async function togglePiP() {
             }
 
             // Ensure window is focused and visible.
-            // Multiple attempts to ensure it comes to front.
+            // Multiple attempts with increasing delays to ensure it comes to front.
             window.focus();
             setTimeout(() => {
                 window.focus();
                 updateUI();
-            }, 100);
+            }, 150);
             setTimeout(() => window.focus(), 500);
+            setTimeout(() => window.focus(), 1000);
         });
 
         updateUI();
