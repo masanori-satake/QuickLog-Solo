@@ -8,8 +8,8 @@ export const STORE_CATEGORIES = 'categories';
 export const STORE_SETTINGS = 'settings';
 
 export const SETTING_KEY_THEME = 'theme';
-export const SETTING_KEY_ACCENT = 'accent';
 export const SETTING_KEY_FONT = 'font';
+export const SETTING_KEY_ANIMATION = 'animation';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
@@ -122,14 +122,30 @@ export async function initDB() {
 
 async function setupInitialData() {
     const initialCategories = [
-        { name: '💻 開発', color: 'blue', order: 0 },
-        { name: '🤝 会議', color: 'orange', order: 1 },
-        { name: '🔍 調査', color: 'green', order: 2 },
-        { name: '事務作業 📝', color: 'gray', order: 3 },
-        { name: '🔥 深い集中(Deep Work)', color: 'red', order: 4 },
-        { name: '📚 スキルアップ', color: 'purple', order: 5 },
-        { name: '💡 アイデア出し', color: 'teal', order: 6 },
-        { name: '☕ メンタル休憩', color: 'orange', order: 7 }
+        { name: '💻 開発・プログラミング', color: 'primary', order: 0 },
+        { name: '🤝 チームミーティング・定例会', color: 'secondary', order: 1 },
+        { name: '🔍 調査・リサーチ・技術検証', color: 'tertiary', order: 2 },
+        { name: '事務作業・メール対応 📝', color: 'neutral', order: 3 },
+        { name: '🔥 深い集中が必要なタスク', color: 'error', order: 4 },
+        { name: '📚 自己研鑽・スキルアップ', color: 'tertiary', order: 5 },
+        { name: '💡 アイデア出し・企画立案', color: 'secondary', order: 6 },
+        { name: '☕ メンタル休憩・リフレッシュ', color: 'outline', order: 7 },
+        { name: '📞 クライアント連絡・電話', color: 'primary', order: 8 },
+        { name: '📝 資料作成・レポート', color: 'secondary', order: 9 },
+        { name: '🎨 デザイン・UI/UX検討', color: 'tertiary', order: 10 },
+        { name: '🐛 バグ修正・品質改善', color: 'error', order: 11 },
+        { name: '🚀 リリース・デプロイ作業', color: 'teal', order: 12 },
+        { name: '🛠 ツール整備・自動化', color: 'green', order: 13 },
+        { name: '🗓 スケジュール調整・タスク管理', color: 'yellow', order: 14 },
+        { name: '💬 チャット対応・Slack/Teams', color: 'orange', order: 15 },
+        { name: '📖 ドキュメント整備・Wiki更新', color: 'pink', order: 16 },
+        { name: '🧪 テスト・QA作業', color: 'indigo', order: 17 },
+        { name: '💼 営業・提案活動', color: 'brown', order: 18 },
+        { name: '🏗 アーキテクチャ設計', color: 'cyan', order: 19 },
+        { name: '🔐 セキュリティ対応・監査', color: 'error', order: 20 },
+        { name: '📊 データ分析・SQL', color: 'teal', order: 21 },
+        { name: '🏠 在宅ワーク環境整備', color: 'neutral', order: 22 },
+        { name: '🚶 移動・外出', color: 'outline', order: 23 }
     ];
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
@@ -141,7 +157,7 @@ async function setupInitialData() {
         for (let i = 0; i < existingCategories.length; i++) {
             let cat = existingCategories[i];
             if (cat.color === undefined || cat.order === undefined) {
-                cat.color = cat.color || 'blue';
+                cat.color = cat.color || 'primary';
                 cat.order = cat.order !== undefined ? cat.order : i;
                 await dbPut(STORE_CATEGORIES, cat);
             }
@@ -149,7 +165,6 @@ async function setupInitialData() {
     }
 
     const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
-    const accent = await dbGet(STORE_SETTINGS, SETTING_KEY_ACCENT);
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
 
     const allLogs = await dbGetAll(STORE_LOGS);
@@ -194,7 +209,6 @@ async function setupInitialData() {
 
     return {
         theme: theme ? theme.value : null,
-        accent: accent ? accent.value : null,
         font: font ? font.value : null,
         activeTask
     };

@@ -32,14 +32,6 @@
   --md-sys-color-inverse-surface: #313033;
   --md-sys-color-inverse-on-surface: #f4eff4;
 
-  /* --- Dark Theme Tokens (Optionally used via body.theme-dark) --- */
-  --md-sys-color-primary-dark: #b1c5ff;
-  --md-sys-color-on-primary-dark: #002c72;
-  --md-sys-color-primary-container-dark: #0040a1;
-  --md-sys-color-on-primary-container-dark: #dae2ff;
-
-  /* ... simplified dark roles ... */
-
   /* --- Spacing --- */
   --md-sys-spacing-0: 0px;
   --md-sys-spacing-0-5: 4px;
@@ -84,30 +76,53 @@
   --md-sys-typescale-label-large-line-height: 20px;
   --md-sys-typescale-label-large-weight: 500;
 
-  /* Custom Category Tonal Presets */
-  --custom-cat-blue-container: #d7e2ff;
-  --custom-cat-on-blue-container: #001a40;
-  --custom-cat-green-container: #d2e8d1;
-  --custom-cat-on-green-container: #0b200f;
-  --custom-cat-orange-container: #ffdab9;
-  --custom-cat-on-orange-container: #2e1500;
-  --custom-cat-red-container: #ffdad6;
-  --custom-cat-on-red-container: #410002;
-  --custom-cat-purple-container: #f2daff;
-  --custom-cat-on-purple-container: #250040;
+  /* Custom Category Tonal Presets (Mapped to M3 Roles) */
+  --custom-cat-primary-container: var(--md-sys-color-primary-container);
+  --custom-cat-on-primary-container: var(--md-sys-color-on-primary-container);
+  --custom-cat-secondary-container: var(--md-sys-color-secondary-container);
+  --custom-cat-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --custom-cat-tertiary-container: var(--md-sys-color-tertiary-container);
+  --custom-cat-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+  --custom-cat-error-container: var(--md-sys-color-error-container);
+  --custom-cat-on-error-container: var(--md-sys-color-on-error-container);
+  --custom-cat-neutral-container: var(--md-sys-color-surface-variant);
+  --custom-cat-on-neutral-container: var(--md-sys-color-on-surface-variant);
+  --custom-cat-outline-container: var(--md-sys-color-surface);
+  --custom-cat-on-outline-container: var(--md-sys-color-on-surface);
+
+  /* Additional M3-like Tonal Presets */
   --custom-cat-teal-container: #bcebe2;
   --custom-cat-on-teal-container: #00201a;
-  --custom-cat-gray-container: #e2e2e6;
-  --custom-cat-on-gray-container: #1a1b1f;
+  --custom-cat-green-container: #d2e8d1;
+  --custom-cat-on-green-container: #0b200f;
+  --custom-cat-yellow-container: #f9e264;
+  --custom-cat-on-yellow-container: #211b00;
+  --custom-cat-orange-container: #ffdab9;
+  --custom-cat-on-orange-container: #2e1500;
+  --custom-cat-pink-container: #ffd9e2;
+  --custom-cat-on-pink-container: #3e001d;
+  --custom-cat-indigo-container: #e0e0ff;
+  --custom-cat-on-indigo-container: #00006e;
+  --custom-cat-brown-container: #f5e0d3;
+  --custom-cat-on-brown-container: #2b170a;
+  --custom-cat-cyan-container: #c1f1ff;
+  --custom-cat-on-cyan-container: #001f28;
 
   /* Custom Category Main Colors (for dots and overlays) */
-  --custom-cat-blue: #0369a1;
+  --custom-cat-primary: var(--md-sys-color-primary);
+  --custom-cat-secondary: var(--md-sys-color-secondary);
+  --custom-cat-tertiary: var(--md-sys-color-tertiary);
+  --custom-cat-error: var(--md-sys-color-error);
+  --custom-cat-neutral: var(--md-sys-color-outline);
+  --custom-cat-outline: var(--md-sys-color-outline-variant);
+  --custom-cat-teal: #006a60;
   --custom-cat-green: #15803d;
+  --custom-cat-yellow: #a28900;
   --custom-cat-orange: #c2410c;
-  --custom-cat-red: #b91c1c;
-  --custom-cat-purple: #7e22ce;
-  --custom-cat-teal: #0f766e;
-  --custom-cat-gray: #374151;
+  --custom-cat-pink: #b90063;
+  --custom-cat-indigo: #4343d9;
+  --custom-cat-brown: #8d4f29;
+  --custom-cat-cyan: #00687b;
   --custom-cat-on-main: #fff;
 }
 
@@ -144,29 +159,52 @@ body.theme-dark {
   --md-sys-color-inverse-surface: #e5e1e6;
   --md-sys-color-inverse-on-surface: #313033;
 
-  /* Custom Category Tonal Presets (Dark) */
-  --custom-cat-blue-container: #0040a1;
-  --custom-cat-on-blue-container: #dae2ff;
-  --custom-cat-green-container: #00531b;
-  --custom-cat-on-green-container: #ade3a8;
-  --custom-cat-orange-container: #663d00;
-  --custom-cat-on-orange-container: #ffdcbe;
-  --custom-cat-red-container: #93000a;
-  --custom-cat-on-red-container: #ffdad6;
-  --custom-cat-purple-container: #593d59;
-  --custom-cat-on-purple-container: #fed7f9;
+  /* Custom Category Tonal Presets (Dark - Mapped to M3 Roles) */
+  --custom-cat-primary-container: var(--md-sys-color-primary-container);
+  --custom-cat-on-primary-container: var(--md-sys-color-on-primary-container);
+  --custom-cat-secondary-container: var(--md-sys-color-secondary-container);
+  --custom-cat-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --custom-cat-tertiary-container: var(--md-sys-color-tertiary-container);
+  --custom-cat-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+  --custom-cat-error-container: var(--md-sys-color-error-container);
+  --custom-cat-on-error-container: var(--md-sys-color-on-error-container);
+  --custom-cat-neutral-container: var(--md-sys-color-surface-variant);
+  --custom-cat-on-neutral-container: var(--md-sys-color-on-surface-variant);
+  --custom-cat-outline-container: var(--md-sys-color-surface);
+  --custom-cat-on-outline-container: var(--md-sys-color-on-surface);
+
+  /* Additional M3-like Tonal Presets (Dark) */
   --custom-cat-teal-container: #005047;
   --custom-cat-on-teal-container: #bcebe2;
-  --custom-cat-gray-container: #44474f;
-  --custom-cat-on-gray-container: #c5c6d0;
+  --custom-cat-green-container: #00531b;
+  --custom-cat-on-green-container: #ade3a8;
+  --custom-cat-yellow-container: #4e4000;
+  --custom-cat-on-yellow-container: #f9e264;
+  --custom-cat-orange-container: #663d00;
+  --custom-cat-on-orange-container: #ffdcbe;
+  --custom-cat-pink-container: #92004d;
+  --custom-cat-on-pink-container: #ffd9e2;
+  --custom-cat-indigo-container: #2626b9;
+  --custom-cat-on-indigo-container: #e0e0ff;
+  --custom-cat-brown-container: #5d3f2e;
+  --custom-cat-on-brown-container: #f5e0d3;
+  --custom-cat-cyan-container: #004e5d;
+  --custom-cat-on-cyan-container: #c1f1ff;
 
-  /* Custom Category Main Colors (for dots and overlays - slightly lighter for dark mode) */
-  --custom-cat-blue: #3b82f6;
+  /* Custom Category Main Colors (Dark) */
+  --custom-cat-primary: var(--md-sys-color-primary);
+  --custom-cat-secondary: var(--md-sys-color-secondary);
+  --custom-cat-tertiary: var(--md-sys-color-tertiary);
+  --custom-cat-error: var(--md-sys-color-error);
+  --custom-cat-neutral: var(--md-sys-color-outline);
+  --custom-cat-outline: var(--md-sys-color-outline-variant);
+  --custom-cat-teal: #4dbfae;
   --custom-cat-green: #22c55e;
+  --custom-cat-yellow: #d9c44d;
   --custom-cat-orange: #f97316;
-  --custom-cat-red: #ef4444;
-  --custom-cat-purple: #a855f7;
-  --custom-cat-teal: #14b8a6;
-  --custom-cat-gray: #9ca3af;
-  --custom-cat-on-main: #fff;
+  --custom-cat-pink: #f451a4;
+  --custom-cat-indigo: #8a8aff;
+  --custom-cat-brown: #f5e0d3;
+  --custom-cat-cyan: #56d6f5;
+  --custom-cat-on-main: #000;
 }

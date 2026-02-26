@@ -4,19 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickLog-Solo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Open+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="css/m3-theme.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icon.svg">
     <meta name="theme-color" content="#2563eb">
 </head>
-<body class="theme-light accent-blue">
+<body class="theme-light">
     <div id="app">
         <header>
             <div id="header-btns">
-                <button id="copy-report-btn" title="日報コピー">📋</button>
-                <button id="copy-aggregation-btn" title="集計コピー">📊</button>
-                <button id="settings-toggle" title="設定">⚙️</button>
+                <button id="copy-report-btn" title="日報コピー"><span class="material-symbols-outlined">content_paste</span></button>
+                <button id="copy-aggregation-btn" title="集計コピー"><span class="material-symbols-outlined">assessment</span></button>
+                <button id="settings-toggle" title="設定"><span class="material-symbols-outlined">settings</span></button>
             </div>
         </header>
 
@@ -24,6 +28,9 @@
             <section id="category-section">
                 <div id="category-list">
                     <!-- カテゴリボタンがここに動的に追加される -->
+                </div>
+                <div id="category-pagination">
+                    <!-- ページインジケーター（点）がここに動的に追加される -->
                 </div>
             </section>
 
@@ -33,7 +40,7 @@
                         <div id="current-task-display-base">
                             <h2 id="current-task-name">-</h2>
                             <div class="timer-box">
-                                <span id="status-label">⏹</span>
+                                <span id="status-label" class="material-symbols-outlined">stop</span>
                                 <div id="elapsed-time" class="hidden">00:00:00</div>
                             </div>
                         </div>
@@ -41,15 +48,27 @@
                         <div id="current-task-display-overlay">
                             <h2 id="current-task-name-overlay">-</h2>
                             <div class="timer-box">
-                                <span id="status-label-overlay">⏹</span>
+                                <span id="status-label-overlay" class="material-symbols-outlined">stop</span>
                                 <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
+                            </div>
+                        </div>
+
+                        <div id="clock-container" class="hidden">
+                            <div id="clock-face">
+                                <div id="clock-hand"></div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div id="stop-btn-box">
-                    <button id="pause-btn" disabled><span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span></button>
-                    <button id="end-btn" disabled><span class="btn-text">終了</span><span class="btn-icon">⏹️</span></button>
+                    <button id="pause-btn" disabled>
+                        <span class="material-symbols-outlined btn-icon">pause</span>
+                        <span class="btn-text">一時停止</span>
+                    </button>
+                    <button id="end-btn" disabled>
+                        <span class="material-symbols-outlined btn-icon">stop</span>
+                        <span class="btn-text">終了</span>
+                    </button>
                 </div>
             </section>
 
@@ -67,18 +86,10 @@
                 <h2>設定</h2>
 
                 <div class="tabs">
-                    <button class="tab-btn active" data-tab="general">
-                        <span class="tab-text">一般</span><span class="tab-icon">⚙️</span>
-                    </button>
-                    <button class="tab-btn" data-tab="categories">
-                        <span class="tab-text">カテゴリ</span><span class="tab-icon">📂</span>
-                    </button>
-                    <button class="tab-btn" data-tab="maintenance">
-                        <span class="tab-text">メンテナンス</span><span class="tab-icon">🛠️</span>
-                    </button>
-                    <button class="tab-btn" data-tab="about">
-                        <span class="tab-text">About</span><span class="tab-icon">ℹ️</span>
-                    </button>
+                    <button class="tab-btn active" data-tab="general">一般</button>
+                    <button class="tab-btn" data-tab="categories">カテゴリ</button>
+                    <button class="tab-btn" data-tab="maintenance">メンテナンス</button>
+                    <button class="tab-btn" data-tab="about">About</button>
                 </div>
 
                 <div id="general-tab" class="tab-content">
@@ -91,18 +102,17 @@
                         </select>
                     </div>
                     <div class="setting-item">
-                        <label>アクセントカラー</label>
-                        <div id="accent-colors">
-                            <button class="accent-dot blue" data-accent="blue"></button>
-                            <button class="accent-dot green" data-accent="green"></button>
-                            <button class="accent-dot orange" data-accent="orange"></button>
-                            <button class="accent-dot red" data-accent="red"></button>
-                        </div>
-                    </div>
-                    <div class="setting-item">
                         <label>表示フォント</label>
                         <select id="font-select">
                             <!-- JSで生成 -->
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>背景アニメーション</label>
+                        <select id="animation-select">
+                            <option value="left-to-right">左から右 (標準)</option>
+                            <option value="right-to-left">右から左</option>
+                            <option value="clock">クロック</option>
                         </select>
                     </div>
                     <div class="setting-item">
@@ -133,14 +143,8 @@
                     </div>
                     <div class="setting-item">
                         <label>QuickLog-Solo について</label>
-                        <p style="font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.5rem;">
-                            本アプリは、標準的なウェブ技術（HTML5, CSS3, Vanilla JS）のみで構築された、プライバシー重視のミニマリストな作業ログツールです。
-                        </p>
-                        <p style="font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.5rem;">
-                            すべてのデータはブラウザ内の IndexedDB にのみ保存され、外部サーバーへの送信は行われません。サイドパネルで常に作業の傍らに。
-                        </p>
                         <p style="font-size: 0.85rem; line-height: 1.6;">
-                            外部ライブラリを一切使用せず、セキュアで軽量な動作を実現しています。
+                            QuickLog-Solo は、プライバシー重視のミニマリストな作業ログツールです。データはブラウザ内の IndexedDB にのみ保存され、外部送信は一切行われません。外部ライブラリを使用しない軽量・セキュアな設計で、サイドパネルからいつでも素早く記録できます。
                         </p>
                     </div>
                 </div>

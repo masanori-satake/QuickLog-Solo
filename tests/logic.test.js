@@ -13,9 +13,8 @@ jest.unstable_mockModule('../js/db.js', () => ({
     STORE_CATEGORIES: 'categories',
     STORE_SETTINGS: 'settings',
     SETTING_KEY_THEME: 'theme',
-    SETTING_KEY_ACCENT: 'accent',
     SETTING_KEY_FONT: 'font',
-    SETTING_KEY_LAYOUT: 'layout',
+    SETTING_KEY_ANIMATION: 'animation',
     SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
@@ -40,20 +39,34 @@ describe('Logic Module', () => {
     });
 
     describe('getAnimationState', () => {
-        test('returns even minute state', () => {
+        test('returns left-to-right state', () => {
             const startTime = 1000000;
-            const now = 1000000 + 15000;
-            const state = getAnimationState(startTime, now);
-            expect(state.type).toBe('even');
+            const now = 1000000 + 15000; // 15s elapsed (25%)
+            const state = getAnimationState(startTime, 'left-to-right', now);
+            expect(state.inset).toBe('inset(0 75% 0 0)');
+        });
+
+        test('returns right-to-left state', () => {
+            const startTime = 1000000;
+            const now = 1000000 + 15000; // 15s elapsed (25%)
+            const state = getAnimationState(startTime, 'right-to-left', now);
             expect(state.inset).toBe('inset(0 0 0 75%)');
         });
 
-        test('returns odd minute state', () => {
+        test('returns clock state', () => {
             const startTime = 1000000;
-            const now = 1000000 + 75000;
-            const state = getAnimationState(startTime, now);
-            expect(state.type).toBe('odd');
-            expect(state.inset).toBe('inset(0 25% 0 0)');
+            const now = 1000000 + 15000; // 15s elapsed (25%)
+            const state = getAnimationState(startTime, 'clock', now);
+            expect(state.angle).toBe(90);
+            expect(state.isPhase2).toBe(false);
+        });
+
+        test('returns clock state in phase 2', () => {
+            const startTime = 1000000;
+            const now = 1000000 + 75000; // 75s elapsed
+            const state = getAnimationState(startTime, 'clock', now);
+            expect(state.angle).toBe(90); // (15s % 60s) * 360 / 60
+            expect(state.isPhase2).toBe(true);
         });
     });
 
