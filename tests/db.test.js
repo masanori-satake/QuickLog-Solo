@@ -72,7 +72,7 @@ describe('DB Module', () => {
 
         const categories = await dbGetAll(STORE_CATEGORIES);
         expect(categories.length).toBeGreaterThan(0);
-        expect(categories.find(c => c.name === '💻 開発')).toBeDefined();
+        expect(categories.find(c => c.name === '開発')).toBeDefined();
     });
 
     test('initDB handles multiple active tasks by closing orphaned ones', async () => {

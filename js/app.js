@@ -1,7 +1,7 @@
 import {
     initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
-    SETTING_KEY_THEME, SETTING_KEY_ACCENT, SETTING_KEY_FONT
+    SETTING_KEY_THEME, SETTING_KEY_FONT
 } from './db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
@@ -17,6 +17,7 @@ const URL_PARAM_TEST_RESUMABLE = 'test_resumable';
 
 const MAX_LOGS_DISPLAY = 20; // Increased from 5 to allow scrolling history
 const TOAST_DURATION_MS = 2000;
+const ITEMS_PER_PAGE = 16;
 
 const CSV_HEADER = "id,category,startTime,endTime\n";
 
@@ -58,6 +59,7 @@ const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 
 let activeTask = null;
 let timerInterval = null;
+let currentCategoryPage = 0;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -65,16 +67,12 @@ const getBody = () => document.body;
 const createEl = (tag) => document.createElement(tag);
 
 const FONTS = [
-    { name: '標準', value: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
-    { name: 'メイリオ', value: '"Meiryo", sans-serif' },
-    { name: '游ゴシック', value: '"Yu Gothic", "YuGothic", sans-serif' },
-    { name: 'ヒラギノ角ゴ', value: '"Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif' },
-    { name: 'MS Pゴシック', value: '"MS PGothic", sans-serif' },
-    { name: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
-    { name: 'Georgia', value: 'Georgia, serif' },
-    { name: 'Courier New', value: '"Courier New", monospace' },
-    { name: 'Impact', value: 'Impact, charcoal, sans-serif' },
-    { name: 'Comic Sans MS', value: '"Comic Sans MS", cursive, sans-serif' }
+    { name: 'Roboto / Noto Sans JP', value: "'Roboto', 'Noto Sans JP', sans-serif" },
+    { name: 'Inter', value: "'Inter', sans-serif" },
+    { name: 'Montserrat', value: "'Montserrat', sans-serif" },
+    { name: 'Open Sans', value: "'Open Sans', sans-serif" },
+    { name: 'Ubuntu', value: "'Ubuntu', sans-serif" },
+    { name: 'System Default', value: 'system-ui, -apple-system, sans-serif' }
 ];
 
 // --- Task Control ---
@@ -152,12 +150,6 @@ function applyTheme(theme) {
     if (select) select.value = theme;
 }
 
-function applyAccent(accent) {
-    const body = getBody();
-    const accentClasses = ['accent-blue', 'accent-green', 'accent-orange', 'accent-red'];
-    body.classList.remove(...accentClasses);
-    body.classList.add(`accent-${accent}`);
-}
 
 function applyFont(fontValue) {
     getBody().style.setProperty('--font-family', fontValue);
@@ -176,13 +168,19 @@ async function renderCategories() {
     }
     categories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
+    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE) || 1;
+    if (currentCategoryPage >= totalPages) currentCategoryPage = totalPages - 1;
+
+    const start = currentCategoryPage * ITEMS_PER_PAGE;
+    const pageCategories = categories.slice(start, start + ITEMS_PER_PAGE);
+
     const list = getEl(ID_CATEGORY_LIST);
     if (!list) return;
     list.innerHTML = '';
 
-    categories.forEach(cat => {
+    pageCategories.forEach(cat => {
         const btn = createEl('button');
-        btn.className = `category-btn cat-${cat.color || 'blue'}`;
+        btn.className = `category-btn cat-${cat.color || 'primary'}`;
         const isActive = activeTask && activeTask.category === cat.name;
         if (isActive) {
             btn.classList.add('active');
@@ -193,6 +191,20 @@ async function renderCategories() {
         btn.onclick = () => startTask(cat.name);
         list.appendChild(btn);
     });
+
+    renderPaginationDots(totalPages);
+}
+
+function renderPaginationDots(totalPages) {
+    const container = getEl(ID_CATEGORY_PAGINATION);
+    if (!container) return;
+    container.innerHTML = '';
+
+    for (let i = 0; i < totalPages; i++) {
+        const dot = createEl('div');
+        dot.className = 'pagination-dot' + (i === currentCategoryPage ? ' active' : '');
+        container.appendChild(dot);
+    }
 }
 
 async function renderLogs() {
@@ -257,10 +269,10 @@ function createLogElement(log, categoryMap) {
     let displayName = log.category;
 
     if (log.isManualStop) {
-        colorClass = 'dot-red';
+        colorClass = 'dot-error';
         displayName = '終了';
     } else if (log.category === SYSTEM_CATEGORY_IDLE) {
-        colorClass = 'dot-idle';
+        colorClass = 'dot-neutral';
     } else {
         const cat = categoryMap.get(log.category);
         if (cat) colorClass = `dot-${cat.color}`;
@@ -304,11 +316,11 @@ async function updateUI() {
     };
 
     if (activeTask) {
-        let color = 'blue';
+        let color = 'primary';
         const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
         if (isPaused) {
-            color = 'idle';
+            color = 'neutral';
         } else {
             const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
             if (cat) color = cat.color;
@@ -317,12 +329,12 @@ async function updateUI() {
         if (elements.display) elements.display.className = `cat-${color}`;
         if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
 
-        const label = isPaused ? '⏸' : '▶';
+        const iconName = isPaused ? 'pause' : 'play_arrow';
         const statusClass = isPaused ? 'status-paused' : 'status-running';
         [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
             if (el) {
-                el.textContent = label;
-                el.className = statusClass;
+                el.textContent = iconName;
+                el.className = `material-symbols-outlined ${statusClass}`;
                 if (isPaused) {
                     el.classList.add('blink');
                 } else {
@@ -334,10 +346,10 @@ async function updateUI() {
 
         if (elements.pauseBtn) {
             if (isPaused) {
-                elements.pauseBtn.innerHTML = '<span class="btn-text">再開</span><span class="btn-icon">▶️</span>';
+                elements.pauseBtn.innerHTML = '<span class="material-symbols-outlined btn-icon">play_arrow</span><span class="btn-text">再開</span>';
                 elements.pauseBtn.disabled = !activeTask.resumableCategory;
             } else {
-                elements.pauseBtn.innerHTML = '<span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span>';
+                elements.pauseBtn.innerHTML = '<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">一時停止</span>';
                 elements.pauseBtn.disabled = false;
             }
         }
@@ -355,15 +367,15 @@ async function updateUI() {
         if (elements.overlay) elements.overlay.className = '';
         [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
             if (el) {
-                el.textContent = '⏹';
-                el.className = 'status-stopped';
+                el.textContent = 'stop';
+                el.className = 'material-symbols-outlined status-stopped';
             }
         });
         [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = '-'; });
 
         if (elements.pauseBtn) {
             elements.pauseBtn.disabled = true;
-            elements.pauseBtn.innerHTML = '<span class="btn-text">一時停止</span><span class="btn-icon">⏸️</span>';
+            elements.pauseBtn.innerHTML = '<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">一時停止</span>';
         }
         if (elements.endBtn) elements.endBtn.disabled = true;
 
@@ -455,9 +467,15 @@ function showConfirm(message) {
 // --- Category Editor ---
 
 function getColorCode(color) {
+    // These are fallback codes for the editor, but we should use CSS variables mostly.
+    // Updated to match M3 Baseline Light colors roughly.
     const codes = {
-        blue: '#1e40af', green: '#166534', orange: '#9a3412',
-        red: '#991b1b', purple: '#6b21a8', teal: '#115e59', gray: '#374151'
+        primary: '#0056d2',
+        secondary: '#585e71',
+        tertiary: '#735572',
+        error: '#ba1a1a',
+        neutral: '#757780',
+        outline: '#c5c6d0'
     };
     return codes[color] || '#333';
 }
@@ -475,7 +493,7 @@ async function renderCategoryEditor() {
         item.draggable = true;
         item.dataset.name = cat.name;
 
-        const colors = ['blue', 'green', 'orange', 'red', 'purple', 'teal', 'gray'];
+        const colors = ['primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline'];
         const colorPresetsHtml = colors.map(color => `
             <button class="color-preset ${color === cat.color ? 'selected' : ''}"
                     style="background-color: ${getColorCode(color)}"
@@ -484,12 +502,14 @@ async function renderCategoryEditor() {
 
         item.innerHTML = `
             <div class="cat-editor-row">
-                <span class="drag-handle">☰</span>
+                <span class="material-symbols-outlined drag-handle" style="cursor: grab;">drag_indicator</span>
                 <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
-                <button class="delete-cat-btn" title="削除">×</button>
+                <button class="delete-cat-btn" title="削除" style="border:none; background:none; padding:0; display:flex; align-items:center; justify-content:center;">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
             </div>
             <div class="cat-editor-row" style="margin-top: 0.5rem;">
-                <div class="color-presets" style="margin-left: 1.5rem;">
+                <div class="color-presets" style="margin-left: 2rem;">
                     ${colorPresetsHtml}
                 </div>
             </div>
@@ -607,6 +627,28 @@ function setupEventListeners() {
     getEl(ID_COPY_REPORT_BTN)?.addEventListener('click', copyReport);
     getEl(ID_COPY_AGGREGATION_BTN)?.addEventListener('click', copyAggregation);
 
+    // Category Wheel Pagination
+    const categorySection = getEl(ID_CATEGORY_SECTION);
+    categorySection?.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        dbGetAll(STORE_CATEGORIES).then(categories => {
+            const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE) || 1;
+            if (e.deltaY > 0) {
+                // Scroll down -> next page
+                if (currentCategoryPage < totalPages - 1) {
+                    currentCategoryPage++;
+                    renderCategories();
+                }
+            } else {
+                // Scroll up -> prev page
+                if (currentCategoryPage > 0) {
+                    currentCategoryPage--;
+                    renderCategories();
+                }
+            }
+        });
+    }, { passive: false });
+
     // Modals
     const popups = {
         settings: getEl(ID_SETTINGS_POPUP)
@@ -641,13 +683,6 @@ function setupEventListeners() {
         applyTheme(theme);
     });
 
-    queryAll('.accent-dot').forEach(dot => {
-        dot.onclick = async () => {
-            const accent = dot.dataset.accent;
-            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ACCENT, value: accent });
-            applyAccent(accent);
-        };
-    });
 
     const fontSelect = getEl(ID_FONT_SELECT);
     if (fontSelect) {
@@ -675,7 +710,7 @@ function setupEventListeners() {
                 return;
             }
             const categories = await dbGetAll(STORE_CATEGORIES);
-            await dbPut(STORE_CATEGORIES, { name, color: 'blue', order: categories.length });
+            await dbPut(STORE_CATEGORIES, { name, color: 'primary', order: categories.length });
             if (input) input.value = '';
             renderCategories();
             renderCategoryEditor();
@@ -774,7 +809,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         activeTask = settings.activeTask;
 
         applyTheme(settings.theme || THEME_SYSTEM);
-        applyAccent(settings.accent || 'blue');
         applyFont(settings.font || FONTS[0].value);
 
         setupEventListeners();

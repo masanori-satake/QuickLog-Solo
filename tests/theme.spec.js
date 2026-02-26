@@ -63,10 +63,10 @@ test.describe('Theme switching', () => {
     await page.selectOption('#theme-select', 'dark');
     await page.click('.close-btn');
 
-    const blueBtn = page.locator('.category-btn.cat-blue').first();
-    // --custom-cat-blue-container: #0040a1 -> rgb(0, 64, 161)
-    // --custom-cat-on-blue-container: #dae2ff -> rgb(218, 226, 255)
-    await expect(blueBtn).toHaveCSS('background-color', 'rgb(0, 64, 161)');
-    await expect(blueBtn).toHaveCSS('color', 'rgb(218, 226, 255)');
+    const primaryBtn = page.locator('.category-btn.cat-primary').first();
+    // --custom-cat-primary-container (dark): #0040a1 -> rgb(0, 64, 161)
+    // --custom-cat-on-primary-container (dark): #dae2ff -> rgb(218, 226, 255)
+    await expect(primaryBtn).toHaveCSS('background-color', 'rgb(0, 64, 161)');
+    await expect(primaryBtn).toHaveCSS('color', 'rgb(218, 226, 255)');
   });
 });

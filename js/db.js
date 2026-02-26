@@ -8,7 +8,6 @@ export const STORE_CATEGORIES = 'categories';
 export const STORE_SETTINGS = 'settings';
 
 export const SETTING_KEY_THEME = 'theme';
-export const SETTING_KEY_ACCENT = 'accent';
 export const SETTING_KEY_FONT = 'font';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 
@@ -122,14 +121,14 @@ export async function initDB() {
 
 async function setupInitialData() {
     const initialCategories = [
-        { name: '💻 開発', color: 'blue', order: 0 },
-        { name: '🤝 会議', color: 'orange', order: 1 },
-        { name: '🔍 調査', color: 'green', order: 2 },
-        { name: '事務作業 📝', color: 'gray', order: 3 },
-        { name: '🔥 深い集中(Deep Work)', color: 'red', order: 4 },
-        { name: '📚 スキルアップ', color: 'purple', order: 5 },
-        { name: '💡 アイデア出し', color: 'teal', order: 6 },
-        { name: '☕ メンタル休憩', color: 'orange', order: 7 }
+        { name: '開発', color: 'primary', order: 0 },
+        { name: '会議', color: 'secondary', order: 1 },
+        { name: '調査', color: 'tertiary', order: 2 },
+        { name: '事務', color: 'neutral', order: 3 },
+        { name: '集中', color: 'error', order: 4 },
+        { name: '学習', color: 'tertiary', order: 5 },
+        { name: '企画', color: 'secondary', order: 6 },
+        { name: '休憩', color: 'outline', order: 7 }
     ];
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
@@ -141,7 +140,7 @@ async function setupInitialData() {
         for (let i = 0; i < existingCategories.length; i++) {
             let cat = existingCategories[i];
             if (cat.color === undefined || cat.order === undefined) {
-                cat.color = cat.color || 'blue';
+                cat.color = cat.color || 'primary';
                 cat.order = cat.order !== undefined ? cat.order : i;
                 await dbPut(STORE_CATEGORIES, cat);
             }
@@ -149,7 +148,6 @@ async function setupInitialData() {
     }
 
     const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
-    const accent = await dbGet(STORE_SETTINGS, SETTING_KEY_ACCENT);
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
 
     const allLogs = await dbGetAll(STORE_LOGS);
@@ -194,7 +192,6 @@ async function setupInitialData() {
 
     return {
         theme: theme ? theme.value : null,
-        accent: accent ? accent.value : null,
         font: font ? font.value : null,
         activeTask
     };
