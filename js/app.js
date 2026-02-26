@@ -196,6 +196,16 @@ async function togglePiP() {
             height: 200,
         });
 
+        // Set PiP window title
+        pipWindow.document.title = 'QuickLog-Solo';
+
+        // Prevent resizing (as much as possible by forcing size back)
+        pipWindow.addEventListener('resize', () => {
+            if (pipWindow) {
+                pipWindow.resizeTo(280, 200);
+            }
+        });
+
         // Apply classes and styles from main body to PiP body
         const mainBody = document.body;
         pipWindow.document.body.className = mainBody.className;
