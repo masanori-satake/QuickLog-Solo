@@ -993,15 +993,21 @@ body.layout-pip {
     overflow: hidden;
     height: 100vh;
     width: 100vw;
+    /* Use background color that matches the theme for a seamless look */
     background-color: var(--bg-color);
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
 }
 
 body.layout-pip #app {
     width: 100%;
-    max-width: none;
-    height: 100vh;
+    height: 100%;
+    max-width: none !important; /* Allow app to fill any window size */
     display: flex;
     flex-direction: column;
+    background-color: var(--bg-color);
+    overflow: hidden;
 }
 
 body.layout-pip header {
@@ -1029,6 +1035,7 @@ body.layout-pip main {
     flex: 1;
     min-height: 0;
     border: none !important;
+    margin: 0 !important; /* Remove margin from normal layouts */
 }
 
 body.layout-pip #log-section {

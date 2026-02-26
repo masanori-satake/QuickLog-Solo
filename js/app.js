@@ -37,6 +37,8 @@ const URL_PARAM_TEST_RESUMABLE = 'test_resumable';
 const ACTION_SETTINGS = 'settings';
 
 const LOCAL_STORAGE_KEY_LAYOUT = 'quicklog_layout';
+const LOCAL_STORAGE_KEY_PIP_ACTIVE = 'quicklog_pip_active';
+const LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS = 'quicklog_original_bounds';
 const CHANNEL_NAME = 'quicklog_instance_coordination';
 
 const ITEMS_PER_PAGE = 8;
@@ -186,6 +188,8 @@ async function togglePiP() {
             left: window.screenX,
             top: window.screenY
         };
+        localStorage.setItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS, JSON.stringify(originalBounds));
+        localStorage.setItem(LOCAL_STORAGE_KEY_PIP_ACTIVE, 'true');
 
         pipWindow = await window.documentPictureInPicture.requestWindow({
             width: 280,
@@ -219,29 +223,126 @@ async function togglePiP() {
             }
         });
 
+        // Set PiP window title early
+        const setPipTitle = () => {
+            if (!pipWindow) return;
+            let titleEl = pipWindow.document.querySelector('title');
+            if (!titleEl) {
+                titleEl = pipWindow.document.createElement('title');
+                pipWindow.document.head.prepend(titleEl);
+            }
+            titleEl.textContent = 'QuickLog-Solo';
+            pipWindow.document.title = 'QuickLog-Solo';
+        };
+        setPipTitle();
+
         pipWindow.document.body.append(app);
 
-        // Shrink parent window
-        window.resizeTo(200, 100);
+        // Multiple attempts for title setting
+        setTimeout(setPipTitle, 100);
+        setTimeout(setPipTitle, 500);
+        setTimeout(setPipTitle, 2000);
+
+        // Hide parent window content completely and minimize it
+        document.documentElement.style.visibility = 'hidden';
+        document.documentElement.style.opacity = '0';
+        document.body.style.pointerEvents = 'none';
+        const originalTitle = document.title;
+        // Use a space to minimize title bar text while keeping it valid
+        document.title = " ";
+
+        // Shrink and move parent window far off-screen to minimize obstruction.
+        // Using screen coordinates for better hiding across OSs.
+        setTimeout(() => {
+            window.resizeTo(1, 1);
+            // Move to the very corner of the screen
+            window.moveTo(window.screen.width, window.screen.height);
+        }, 150);
 
         pipWindow.addEventListener('pagehide', () => {
+            // Restore parent window properties immediately
+            document.documentElement.style.visibility = 'visible';
+            document.documentElement.style.opacity = '1';
+            document.body.style.pointerEvents = 'auto';
+            document.title = originalTitle;
+
             document.body.append(app);
             pipWindow = null;
+            localStorage.removeItem(LOCAL_STORAGE_KEY_PIP_ACTIVE);
 
-            // Restore parent window
+            // Restore parent window bounds
             if (originalBounds) {
                 window.resizeTo(originalBounds.width, originalBounds.height);
                 window.moveTo(originalBounds.left, originalBounds.top);
                 originalBounds = null;
+            } else {
+                // Fallback restoration from localStorage
+                const savedBounds = localStorage.getItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS);
+                if (savedBounds) {
+                    try {
+                        const bounds = JSON.parse(savedBounds);
+                        window.resizeTo(bounds.width, bounds.height);
+                        window.moveTo(bounds.left, bounds.top);
+                    } catch (e) {
+                        console.error('Failed to parse saved bounds:', e);
+                    }
+                }
             }
 
-            updateUI();
+            // Ensure window is focused and visible.
+            // Multiple attempts with increasing delays to ensure it comes to front.
+            window.focus();
+            setTimeout(() => {
+                window.focus();
+                updateUI();
+            }, 150);
+            setTimeout(() => window.focus(), 500);
+            setTimeout(() => window.focus(), 1000);
         });
 
         updateUI();
 
     } catch (err) {
         console.error('Failed to enter PiP mode:', err);
+    }
+}
+
+/**
+ * Safety check to recover window position if it starts off-screen
+ * (e.g., after a crash while in PiP mode)
+ */
+function recoverWindowPosition() {
+    const isPipActive = localStorage.getItem(LOCAL_STORAGE_KEY_PIP_ACTIVE) === 'true';
+    const isOffScreen = window.screenX < -5000 || window.screenY < -5000 ||
+                        window.screenX >= window.screen.availWidth || window.screenY >= window.screen.availHeight;
+
+    if (isPipActive || isOffScreen) {
+        // Ensure styles are restored if crashed
+        document.documentElement.style.visibility = 'visible';
+        document.documentElement.style.opacity = '1';
+        document.body.style.pointerEvents = 'auto';
+        if (document.title === "") {
+            document.title = "QuickLog-Solo";
+        }
+
+        const savedBounds = localStorage.getItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS);
+        if (savedBounds) {
+            try {
+                const bounds = JSON.parse(savedBounds);
+                window.resizeTo(bounds.width, bounds.height);
+                window.moveTo(bounds.left, bounds.top);
+            } catch (e) {
+                console.error('Failed to parse original bounds:', e);
+                window.moveTo(100, 100);
+            }
+        } else {
+            // Default recovery
+            window.moveTo(100, 100);
+            const layout = localStorage.getItem(LOCAL_STORAGE_KEY_LAYOUT) || LAYOUT_HORIZONTAL;
+            const isHorizontal = layout === LAYOUT_HORIZONTAL;
+            window.resizeTo(isHorizontal ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, isHorizontal ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
+        }
+        localStorage.removeItem(LOCAL_STORAGE_KEY_PIP_ACTIVE);
     }
 }
 
@@ -364,7 +465,7 @@ function applyLayout(layout) {
         btn.textContent = isHorizontal ? '↕️' : '↔️';
         btn.title = isHorizontal ? '縦長レイアウトに切り替え' : '横長レイアウトに切り替え';
 
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+        if (!pipWindow && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone)) {
             window.resizeTo(isHorizontal ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, isHorizontal ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
         }
     }
@@ -1043,6 +1144,7 @@ function setupEventListeners() {
     });
 
     window.addEventListener('resize', () => {
+        if (pipWindow) return; // Ignore resize events while in PiP mode
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             const layout = getBody().classList.contains('layout-horizontal') ? LAYOUT_HORIZONTAL : LAYOUT_VERTICAL;
             window.resizeTo(layout === LAYOUT_HORIZONTAL ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, layout === LAYOUT_HORIZONTAL ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
@@ -1060,6 +1162,7 @@ function setupEventListeners() {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('QuickLog-Solo: DOMContentLoaded');
     try {
+        recoverWindowPosition();
         await loadVersion();
         await initStoragePersistence();
         initPipSupport();
