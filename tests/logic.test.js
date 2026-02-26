@@ -75,13 +75,20 @@ describe('Logic Module', () => {
             expect(dbAdd).not.toHaveBeenCalled();
         });
 
-        test('stopTaskLogic stops active task', async () => {
+        test('stopTaskLogic stops active task and adds stop marker if manual', async () => {
             const activeTask = { id: 1, category: 'Work', startTime: Date.now() };
             const result = await stopTaskLogic(activeTask, true);
             expect(result).toBeNull();
+            // Original task should be completed with isManualStop: false
             expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
                 id: 1,
                 category: 'Work',
+                endTime: expect.any(Number),
+                isManualStop: false
+            }));
+            // A new stop marker should be added
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE,
                 endTime: expect.any(Number),
                 isManualStop: true
             }));
