@@ -32,7 +32,7 @@ export function getAnimationState(startTime, animationType = 'left-to-right', no
     }
 }
 
-export async function startTaskLogic(categoryName, activeTask, resumableCategory = null) {
+export async function startTaskLogic(categoryName, activeTask, resumableCategory = null, color = null) {
     if (activeTask && activeTask.category === categoryName && !activeTask.isPaused) return activeTask;
 
     await stopTaskLogic(activeTask);
@@ -41,7 +41,8 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
         category: categoryName,
         startTime: Date.now(),
         endTime: null,
-        resumableCategory: resumableCategory
+        resumableCategory: resumableCategory,
+        color: color
     };
 
     const id = await dbAdd(STORE_LOGS, newLog);

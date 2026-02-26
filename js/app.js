@@ -82,7 +82,9 @@ const FONTS = [
 // --- Task Control ---
 
 async function startTask(categoryName, resumableCategory = null) {
-    activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory);
+    const cat = await dbGet(STORE_CATEGORIES, categoryName);
+    const color = cat ? cat.color : null;
+    activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color);
     updateUI();
 }
 
@@ -308,8 +310,8 @@ function createLogElement(log, categoryMap) {
     } else if (log.category === SYSTEM_CATEGORY_IDLE) {
         colorClass = 'dot-neutral';
     } else {
-        const cat = categoryMap.get(log.category);
-        if (cat) colorClass = `dot-${cat.color}`;
+        const color = log.color || (categoryMap.get(log.category) ? categoryMap.get(log.category).color : 'primary');
+        colorClass = `dot-${color}`;
     }
 
     li.innerHTML = `
@@ -360,7 +362,7 @@ async function updateUI() {
             color = 'neutral';
         } else {
             const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
-            if (cat) color = cat.color;
+            color = cat ? cat.color : (activeTask.color || 'primary');
         }
 
         if (elements.display) elements.display.className = `cat-${color}`;
@@ -504,23 +506,22 @@ function showConfirm(message) {
 // --- Category Editor ---
 
 function getColorCode(color) {
-    // These are fallback codes for the editor, but we should use CSS variables mostly.
-    // Updated to match M3 Baseline Light colors roughly.
+    // These are fallback codes for the editor, matching the refined palette in css/m3-theme.css.
     const codes = {
-        primary: '#0056d2',
-        secondary: '#585e71',
-        tertiary: '#735572',
-        error: '#ba1a1a',
-        neutral: '#757780',
-        outline: '#c5c6d0',
-        teal: '#006a60',
-        green: '#15803d',
-        yellow: '#a28900',
-        orange: '#c2410c',
-        pink: '#b90063',
-        indigo: '#4343d9',
-        brown: '#8d4f29',
-        cyan: '#00687b'
+        primary: '#1976d2',
+        secondary: '#7cb342',
+        tertiary: '#8e24aa',
+        error: '#d32f2f',
+        neutral: '#546e7a',
+        outline: '#9e9e9e',
+        teal: '#0097a7',
+        green: '#388e3c',
+        yellow: '#fbc02d',
+        orange: '#ffa000',
+        pink: '#d81b60',
+        indigo: '#5e35b1',
+        brown: '#6d4c41',
+        cyan: '#039be5'
     };
     return codes[color] || '#333';
 }
