@@ -40,20 +40,25 @@ describe('Logic Module', () => {
     });
 
     describe('getAnimationState', () => {
-        test('returns even minute state', () => {
+        test('returns left-to-right state', () => {
             const startTime = 1000000;
-            const now = 1000000 + 15000;
-            const state = getAnimationState(startTime, now);
-            expect(state.type).toBe('even');
+            const now = 1000000 + 15000; // 15s elapsed (25%)
+            const state = getAnimationState(startTime, 'left-to-right', now);
+            expect(state.inset).toBe('inset(0 75% 0 0)');
+        });
+
+        test('returns right-to-left state', () => {
+            const startTime = 1000000;
+            const now = 1000000 + 15000; // 15s elapsed (25%)
+            const state = getAnimationState(startTime, 'right-to-left', now);
             expect(state.inset).toBe('inset(0 0 0 75%)');
         });
 
-        test('returns odd minute state', () => {
+        test('returns clock state', () => {
             const startTime = 1000000;
-            const now = 1000000 + 75000;
-            const state = getAnimationState(startTime, now);
-            expect(state.type).toBe('odd');
-            expect(state.inset).toBe('inset(0 25% 0 0)');
+            const now = 1000000 + 15000; // 15s elapsed (25%)
+            const state = getAnimationState(startTime, 'clock', now);
+            expect(state.rotation).toBe('90deg');
         });
     });
 

@@ -103,6 +103,10 @@
   --custom-cat-on-pink-container: #3e001d;
   --custom-cat-indigo-container: #e0e0ff;
   --custom-cat-on-indigo-container: #00006e;
+  --custom-cat-brown-container: #f5e0d3;
+  --custom-cat-on-brown-container: #2b170a;
+  --custom-cat-cyan-container: #c1f1ff;
+  --custom-cat-on-cyan-container: #001f28;
 
   /* Custom Category Main Colors (for dots and overlays) */
   --custom-cat-primary: var(--md-sys-color-primary);
@@ -117,6 +121,8 @@
   --custom-cat-orange: #c2410c;
   --custom-cat-pink: #b90063;
   --custom-cat-indigo: #4343d9;
+  --custom-cat-brown: #8d4f29;
+  --custom-cat-cyan: #00687b;
   --custom-cat-on-main: #fff;
 }
 
@@ -180,6 +186,10 @@ body.theme-dark {
   --custom-cat-on-pink-container: #ffd9e2;
   --custom-cat-indigo-container: #2626b9;
   --custom-cat-on-indigo-container: #e0e0ff;
+  --custom-cat-brown-container: #5d3f2e;
+  --custom-cat-on-brown-container: #f5e0d3;
+  --custom-cat-cyan-container: #004e5d;
+  --custom-cat-on-cyan-container: #c1f1ff;
 
   /* Custom Category Main Colors (Dark) */
   --custom-cat-primary: var(--md-sys-color-primary);
@@ -194,5 +204,7 @@ body.theme-dark {
   --custom-cat-orange: #f97316;
   --custom-cat-pink: #f451a4;
   --custom-cat-indigo: #8a8aff;
+  --custom-cat-brown: #f5e0d3;
+  --custom-cat-cyan: #56d6f5;
   --custom-cat-on-main: #000;
 }

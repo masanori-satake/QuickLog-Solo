@@ -1,7 +1,7 @@
 import {
     initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT
+    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION
 } from './db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
@@ -15,7 +15,7 @@ const URL_PARAM_TEST_CAT = 'test_cat';
 const URL_PARAM_TEST_ELAPSED = 'test_elapsed';
 const URL_PARAM_TEST_RESUMABLE = 'test_resumable';
 
-const MAX_LOGS_DISPLAY = 20; // Increased from 5 to allow scrolling history
+const MAX_LOGS_DISPLAY = 100;
 const TOAST_DURATION_MS = 2000;
 const ITEMS_PER_PAGE = 16;
 
@@ -25,6 +25,7 @@ const ID_SETTINGS_POPUP = 'settings-popup';
 const ID_SETTINGS_TOGGLE = 'settings-toggle';
 const ID_THEME_SELECT = 'theme-select';
 const ID_FONT_SELECT = 'font-select';
+const ID_ANIMATION_SELECT = 'animation-select';
 const ID_CATEGORY_LIST = 'category-list';
 const ID_CATEGORY_PAGINATION = 'category-pagination';
 const ID_LOG_LIST = 'log-list';
@@ -38,6 +39,8 @@ const ID_PAUSE_BTN = 'pause-btn';
 const ID_END_BTN = 'end-btn';
 const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
 const ID_CURRENT_TASK_DISPLAY_OVERLAY = 'current-task-display-overlay';
+const ID_CLOCK_CONTAINER = 'clock-container';
+const ID_CLOCK_HAND = 'clock-hand';
 const ID_TOAST = 'toast';
 const ID_CONFIRM_MODAL = 'confirm-modal';
 const ID_CONFIRM_MESSAGE = 'confirm-message';
@@ -60,6 +63,7 @@ const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 let activeTask = null;
 let timerInterval = null;
 let currentCategoryPage = 0;
+let currentAnimationType = 'left-to-right';
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -125,12 +129,17 @@ function updateTimer() {
     const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
     const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
-    if (overlay) {
-        if (isPaused) {
-            overlay.style.clipPath = 'inset(0 100% 0 0)';
+    const clockHand = getEl(ID_CLOCK_HAND);
+
+    if (isPaused) {
+        if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
+    } else {
+        const anim = getAnimationState(activeTask.startTime, currentAnimationType);
+        if (currentAnimationType === 'clock') {
+            if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
+            if (clockHand) clockHand.style.transform = `rotate(${anim.rotation})`;
         } else {
-            const anim = getAnimationState(activeTask.startTime);
-            overlay.style.clipPath = anim.inset;
+            if (overlay) overlay.style.clipPath = anim.inset;
         }
     }
 }
@@ -155,6 +164,22 @@ function applyFont(fontValue) {
     getBody().style.setProperty('--font-family', fontValue);
     const select = getEl(ID_FONT_SELECT);
     if (select) select.value = fontValue;
+}
+
+function applyAnimation(animationType) {
+    currentAnimationType = animationType;
+    const select = getEl(ID_ANIMATION_SELECT);
+    if (select) select.value = animationType;
+
+    const clockContainer = getEl(ID_CLOCK_CONTAINER);
+    const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
+
+    if (animationType === 'clock') {
+        clockContainer?.classList.remove('hidden');
+        if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
+    } else {
+        clockContainer?.classList.add('hidden');
+    }
 }
 
 async function renderCategories() {
@@ -319,6 +344,9 @@ async function updateUI() {
         let color = 'primary';
         const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
+        // Ensure proper animation/clock visibility
+        applyAnimation(currentAnimationType);
+
         if (isPaused) {
             color = 'neutral';
         } else {
@@ -481,7 +509,9 @@ function getColorCode(color) {
         yellow: '#a28900',
         orange: '#c2410c',
         pink: '#b90063',
-        indigo: '#4343d9'
+        indigo: '#4343d9',
+        brown: '#8d4f29',
+        cyan: '#00687b'
     };
     return codes[color] || '#333';
 }
@@ -501,7 +531,7 @@ async function renderCategoryEditor() {
 
         const colors = [
             'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
-            'teal', 'green', 'yellow', 'orange', 'pink', 'indigo'
+            'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
         ];
         const colorPresetsHtml = colors.map(color => `
             <button class="color-preset ${color === cat.color ? 'selected' : ''}"
@@ -709,6 +739,15 @@ function setupEventListeners() {
         };
     }
 
+    const animSelect = getEl(ID_ANIMATION_SELECT);
+    if (animSelect) {
+        animSelect.onchange = async (e) => {
+            const animType = e.target.value;
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: animType });
+            applyAnimation(animType);
+        };
+    }
+
     // Category additions
     getEl(ID_ADD_CATEGORY_BTN_SETTINGS)?.addEventListener('click', async () => {
         const input = getEl(ID_NEW_CATEGORY_NAME_SETTINGS);
@@ -819,6 +858,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         applyTheme(settings.theme || THEME_SYSTEM);
         applyFont(settings.font || FONTS[0].value);
+        applyAnimation(settings.animation || 'left-to-right');
 
         setupEventListeners();
         await handleTestParameters();

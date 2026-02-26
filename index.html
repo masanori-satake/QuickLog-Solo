@@ -52,6 +52,12 @@
                                 <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
                             </div>
                         </div>
+
+                        <div id="clock-container" class="hidden">
+                            <div id="clock-face">
+                                <div id="clock-hand"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="stop-btn-box">
@@ -99,6 +105,14 @@
                         <label>表示フォント</label>
                         <select id="font-select">
                             <!-- JSで生成 -->
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>背景アニメーション</label>
+                        <select id="animation-select">
+                            <option value="left-to-right">左から右 (標準)</option>
+                            <option value="right-to-left">右から左</option>
+                            <option value="clock">クロック</option>
                         </select>
                     </div>
                     <div class="setting-item">

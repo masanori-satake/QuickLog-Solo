@@ -9,6 +9,7 @@ export const STORE_SETTINGS = 'settings';
 
 export const SETTING_KEY_THEME = 'theme';
 export const SETTING_KEY_FONT = 'font';
+export const SETTING_KEY_ANIMATION = 'animation';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
@@ -121,14 +122,14 @@ export async function initDB() {
 
 async function setupInitialData() {
     const initialCategories = [
-        { name: '💻 開発', color: 'primary', order: 0 },
-        { name: '🤝 会議', color: 'secondary', order: 1 },
-        { name: '🔍 調査', color: 'tertiary', order: 2 },
-        { name: '事務作業 📝', color: 'neutral', order: 3 },
-        { name: '🔥 集中', color: 'error', order: 4 },
-        { name: '📚 学習', color: 'tertiary', order: 5 },
-        { name: '💡 企画', color: 'secondary', order: 6 },
-        { name: '☕ 休憩', color: 'outline', order: 7 }
+        { name: '💻 開発・プログラミング', color: 'primary', order: 0 },
+        { name: '🤝 チームミーティング・定例会', color: 'secondary', order: 1 },
+        { name: '🔍 調査・リサーチ・技術検証', color: 'tertiary', order: 2 },
+        { name: '事務作業・メール対応 📝', color: 'neutral', order: 3 },
+        { name: '🔥 深い集中が必要なタスク', color: 'error', order: 4 },
+        { name: '📚 自己研鑽・スキルアップ', color: 'tertiary', order: 5 },
+        { name: '💡 アイデア出し・企画立案', color: 'secondary', order: 6 },
+        { name: '☕ メンタル休憩・リフレッシュ', color: 'outline', order: 7 }
     ];
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
