@@ -408,16 +408,16 @@ body.theme-light #current-task-display-base #clock-face {
 }
 
 .category-btn {
-    padding: 2px 8px;
+    padding: 0 8px;
     font-size: 0.8rem;
     font-weight: var(--md-sys-typescale-label-large-weight);
+    height: 30px;
     min-height: 30px;
+    line-height: 30px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    display: block;
     width: 100%;
     border-radius: var(--md-sys-shape-small);
     border: none;
