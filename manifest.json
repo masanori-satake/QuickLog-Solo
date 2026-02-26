@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "QuickLog-Solo",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "1秒で記録、1秒で集計、1秒で安心 - ミニマリスト向けサイドパネル工数管理ツール",
   "permissions": [
     "sidePanel"

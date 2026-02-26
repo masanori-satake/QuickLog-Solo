@@ -15,8 +15,7 @@ const URL_PARAM_TEST_CAT = 'test_cat';
 const URL_PARAM_TEST_ELAPSED = 'test_elapsed';
 const URL_PARAM_TEST_RESUMABLE = 'test_resumable';
 
-const ITEMS_PER_PAGE = 8;
-const MAX_LOGS_DISPLAY = 5;
+const MAX_LOGS_DISPLAY = 20; // Increased from 5 to allow scrolling history
 const TOAST_DURATION_MS = 2000;
 
 const CSV_HEADER = "id,category,startTime,endTime\n";
@@ -59,7 +58,6 @@ const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 
 let activeTask = null;
 let timerInterval = null;
-let currentCategoryPage = 0;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -178,20 +176,11 @@ async function renderCategories() {
     }
     categories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
-    if (currentCategoryPage >= totalPages && totalPages > 0) {
-        currentCategoryPage = totalPages - 1;
-    }
-
     const list = getEl(ID_CATEGORY_LIST);
     if (!list) return;
     list.innerHTML = '';
 
-    const start = currentCategoryPage * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    const pageItems = categories.slice(start, end);
-
-    pageItems.forEach(cat => {
+    categories.forEach(cat => {
         const btn = createEl('button');
         btn.className = `category-btn cat-${cat.color || 'blue'}`;
         const isActive = activeTask && activeTask.category === cat.name;
@@ -200,26 +189,11 @@ async function renderCategories() {
             btn.disabled = true;
         }
         btn.textContent = cat.name;
+        btn.title = cat.name;
         btn.onclick = () => startTask(cat.name);
         list.appendChild(btn);
     });
-
-    renderPagination(totalPages);
 }
-
-function renderPagination(totalPages) {
-    const container = getEl(ID_CATEGORY_PAGINATION);
-    if (!container) return;
-    container.classList.remove('hidden');
-    container.innerHTML = '';
-    const displayPages = Math.max(1, totalPages);
-    for (let i = 0; i < displayPages; i++) {
-        const dot = createEl('div');
-        dot.className = 'page-dot' + (i === currentCategoryPage ? ' active' : '');
-        container.appendChild(dot);
-    }
-}
-
 
 async function renderLogs() {
     let allLogs;
@@ -266,13 +240,10 @@ function createLogElement(log, categoryMap) {
 
     let timeRangeHtml;
     if (log.isManualStop) {
-        // 停止時は開始時刻を隠し、終了時刻のみを表示
         timeRangeHtml = `<span class="log-time"><span style="visibility:hidden">${startTimeStr}</span>-${endTimeStr}</span>`;
     } else if (log.endTime) {
-        // 通常の完了
         timeRangeHtml = `<span class="log-time">${startTimeStr}-${endTimeStr}</span>`;
     } else {
-        // 実行中（終了時刻の場所に開始時刻と同じ長さの空白を確保してレイアウトを揃える）
         timeRangeHtml = `<span class="log-time">${startTimeStr}-<span style="visibility:hidden">${startTimeStr}</span></span>`;
     }
 
@@ -514,10 +485,10 @@ async function renderCategoryEditor() {
         item.innerHTML = `
             <div class="cat-editor-row">
                 <span class="drag-handle">☰</span>
-                <input type="text" class="category-edit-name">
+                <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
                 <button class="delete-cat-btn" title="削除">×</button>
             </div>
-            <div class="cat-editor-row">
+            <div class="cat-editor-row" style="margin-top: 0.5rem;">
                 <div class="color-presets" style="margin-left: 1.5rem;">
                     ${colorPresetsHtml}
                 </div>
@@ -526,7 +497,6 @@ async function renderCategoryEditor() {
 
         // Event listeners
         const input = item.querySelector('.category-edit-name');
-        input.value = cat.name;
         input.onchange = async () => {
             const newName = input.value.trim();
             if (newName && newName !== cat.name) {
@@ -636,25 +606,6 @@ function setupEventListeners() {
     getEl(ID_END_BTN)?.addEventListener('click', endTask);
     getEl(ID_COPY_REPORT_BTN)?.addEventListener('click', copyReport);
     getEl(ID_COPY_AGGREGATION_BTN)?.addEventListener('click', copyAggregation);
-
-    getEl(ID_CATEGORY_SECTION)?.addEventListener('wheel', async (e) => {
-        const categories = await dbGetAll(STORE_CATEGORIES);
-        const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
-        if (totalPages <= 1) return;
-
-        if (e.deltaY > 0) {
-            if (currentCategoryPage < totalPages - 1) {
-                currentCategoryPage++;
-                renderCategories();
-            }
-        } else if (e.deltaY < 0) {
-            if (currentCategoryPage > 0) {
-                currentCategoryPage--;
-                renderCategories();
-            }
-        }
-        e.preventDefault();
-    }, { passive: false });
 
     // Modals
     const popups = {
