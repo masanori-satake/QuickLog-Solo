@@ -226,6 +226,13 @@ async function togglePiP() {
         pipWindow.document.body.append(app);
 
         // Set PiP window title (after appending content for some browsers to pick it up)
+        // Ensure <title> tag exists in the head
+        let titleEl = pipWindow.document.querySelector('title');
+        if (!titleEl) {
+            titleEl = pipWindow.document.createElement('title');
+            pipWindow.document.head.appendChild(titleEl);
+        }
+        titleEl.textContent = 'QuickLog-Solo';
         pipWindow.document.title = 'QuickLog-Solo';
 
         // Best effort to force window back to requested size if user resizes
@@ -239,10 +246,13 @@ async function togglePiP() {
             }
         });
 
-        // Shrink and move parent window to the edge/off-screen to minimize obstruction.
-        // We use a large positive coordinate as a fallback if negative ones are clamped to (0,0).
-        window.resizeTo(0, 0);
-        window.moveTo(window.screen.availWidth + 5000, window.screen.availHeight + 5000);
+        // Shrink and move parent window to the corner to minimize obstruction.
+        // We use a small size (100x100) and move it to the extreme corner.
+        // Using setTimeout to ensure it runs after PiP window setup.
+        setTimeout(() => {
+            window.resizeTo(100, 100);
+            window.moveTo(window.screen.availWidth - 100, window.screen.availHeight - 100);
+        }, 100);
 
         pipWindow.addEventListener('pagehide', () => {
             document.body.append(app);
@@ -264,6 +274,7 @@ async function togglePiP() {
                 }
             }
 
+            window.focus();
             updateUI();
         });
 
