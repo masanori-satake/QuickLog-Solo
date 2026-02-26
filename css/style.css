@@ -1002,15 +1002,10 @@ body.layout-pip {
 }
 
 body.layout-pip #app {
-    width: 280px;
-    height: 200px;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    /* Force fixed size and add a border to define the app area
-       if the window is resized by the user. */
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-medium);
-    box-shadow: var(--md-sys-elevation-3);
     background-color: var(--bg-color);
     overflow: hidden;
 }

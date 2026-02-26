@@ -231,7 +231,7 @@ async function togglePiP() {
             let titleEl = pipWindow.document.querySelector('title');
             if (!titleEl) {
                 titleEl = pipWindow.document.createElement('title');
-                pipWindow.document.head.appendChild(titleEl);
+                pipWindow.document.head.prepend(titleEl);
             }
             titleEl.textContent = 'QuickLog-Solo';
             pipWindow.document.title = 'QuickLog-Solo';
@@ -239,33 +239,29 @@ async function togglePiP() {
         setPipTitle();
         setTimeout(setPipTitle, 100);
         setTimeout(setPipTitle, 500);
+        setTimeout(setPipTitle, 2000);
 
-        // Best effort to force window back to requested size if user resizes
-        pipWindow.addEventListener('resize', () => {
-            if (pipWindow && (pipWindow.outerWidth !== 280 || pipWindow.outerHeight !== 200)) {
-                try {
-                    pipWindow.resizeTo(280, 200);
-                } catch (e) {
-                    // resizeTo might be blocked for Document PiP in some browsers
-                }
-            }
-        });
-
-        // Hide parent window content and move it to the extreme corner
-        document.body.style.opacity = '0';
+        // Hide parent window content completely and minimize it
+        document.documentElement.style.visibility = 'hidden';
+        document.documentElement.style.opacity = '0';
         document.body.style.pointerEvents = 'none';
+        const originalTitle = document.title;
+        document.title = "";
 
-        // Shrink and move parent window to the extreme corner to minimize obstruction.
+        // Shrink and move parent window far off-screen to minimize obstruction.
         // Using setTimeout to ensure it runs after PiP window setup.
         setTimeout(() => {
             window.resizeTo(1, 1);
-            window.moveTo(window.screen.availWidth, window.screen.availHeight);
+            // Moving far away (coordinates clamped by OS, but usually moves out of sight)
+            window.moveTo(-10000, -10000);
         }, 150);
 
         pipWindow.addEventListener('pagehide', () => {
-            // Restore parent window styles immediately
-            document.body.style.opacity = '1';
+            // Restore parent window properties immediately
+            document.documentElement.style.visibility = 'visible';
+            document.documentElement.style.opacity = '1';
             document.body.style.pointerEvents = 'auto';
+            document.title = originalTitle;
 
             document.body.append(app);
             pipWindow = null;
@@ -290,11 +286,14 @@ async function togglePiP() {
                 }
             }
 
-            // Ensure window is focused and visible
+            // Ensure window is focused and visible.
+            // Multiple attempts to ensure it comes to front.
+            window.focus();
             setTimeout(() => {
                 window.focus();
                 updateUI();
-            }, 50);
+            }, 100);
+            setTimeout(() => window.focus(), 500);
         });
 
         updateUI();
@@ -315,8 +314,12 @@ function recoverWindowPosition() {
 
     if (isPipActive || isOffScreen) {
         // Ensure styles are restored if crashed
-        document.body.style.opacity = '1';
+        document.documentElement.style.visibility = 'visible';
+        document.documentElement.style.opacity = '1';
         document.body.style.pointerEvents = 'auto';
+        if (document.title === "") {
+            document.title = "QuickLog-Solo";
+        }
 
         const savedBounds = localStorage.getItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS);
         if (savedBounds) {
