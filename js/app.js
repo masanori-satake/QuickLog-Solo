@@ -225,15 +225,20 @@ async function togglePiP() {
 
         pipWindow.document.body.append(app);
 
-        // Set PiP window title (after appending content for some browsers to pick it up)
-        // Ensure <title> tag exists in the head
-        let titleEl = pipWindow.document.querySelector('title');
-        if (!titleEl) {
-            titleEl = pipWindow.document.createElement('title');
-            pipWindow.document.head.appendChild(titleEl);
-        }
-        titleEl.textContent = 'QuickLog-Solo';
-        pipWindow.document.title = 'QuickLog-Solo';
+        // Set PiP window title (multiple attempts for browser compatibility)
+        const setPipTitle = () => {
+            if (!pipWindow) return;
+            let titleEl = pipWindow.document.querySelector('title');
+            if (!titleEl) {
+                titleEl = pipWindow.document.createElement('title');
+                pipWindow.document.head.appendChild(titleEl);
+            }
+            titleEl.textContent = 'QuickLog-Solo';
+            pipWindow.document.title = 'QuickLog-Solo';
+        };
+        setPipTitle();
+        setTimeout(setPipTitle, 100);
+        setTimeout(setPipTitle, 500);
 
         // Best effort to force window back to requested size if user resizes
         pipWindow.addEventListener('resize', () => {
@@ -246,20 +251,27 @@ async function togglePiP() {
             }
         });
 
-        // Shrink and move parent window to the corner to minimize obstruction.
-        // We use a small size (100x100) and move it to the extreme corner.
+        // Hide parent window content and move it to the extreme corner
+        document.body.style.opacity = '0';
+        document.body.style.pointerEvents = 'none';
+
+        // Shrink and move parent window to the extreme corner to minimize obstruction.
         // Using setTimeout to ensure it runs after PiP window setup.
         setTimeout(() => {
-            window.resizeTo(100, 100);
-            window.moveTo(window.screen.availWidth - 100, window.screen.availHeight - 100);
-        }, 100);
+            window.resizeTo(1, 1);
+            window.moveTo(window.screen.availWidth, window.screen.availHeight);
+        }, 150);
 
         pipWindow.addEventListener('pagehide', () => {
+            // Restore parent window styles immediately
+            document.body.style.opacity = '1';
+            document.body.style.pointerEvents = 'auto';
+
             document.body.append(app);
             pipWindow = null;
             localStorage.removeItem(LOCAL_STORAGE_KEY_PIP_ACTIVE);
 
-            // Restore parent window
+            // Restore parent window bounds
             if (originalBounds) {
                 window.resizeTo(originalBounds.width, originalBounds.height);
                 window.moveTo(originalBounds.left, originalBounds.top);
@@ -268,14 +280,21 @@ async function togglePiP() {
                 // Fallback restoration from localStorage
                 const savedBounds = localStorage.getItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS);
                 if (savedBounds) {
-                    const bounds = JSON.parse(savedBounds);
-                    window.resizeTo(bounds.width, bounds.height);
-                    window.moveTo(bounds.left, bounds.top);
+                    try {
+                        const bounds = JSON.parse(savedBounds);
+                        window.resizeTo(bounds.width, bounds.height);
+                        window.moveTo(bounds.left, bounds.top);
+                    } catch (e) {
+                        console.error('Failed to parse saved bounds:', e);
+                    }
                 }
             }
 
-            window.focus();
-            updateUI();
+            // Ensure window is focused and visible
+            setTimeout(() => {
+                window.focus();
+                updateUI();
+            }, 50);
         });
 
         updateUI();
@@ -292,9 +311,13 @@ async function togglePiP() {
 function recoverWindowPosition() {
     const isPipActive = localStorage.getItem(LOCAL_STORAGE_KEY_PIP_ACTIVE) === 'true';
     const isOffScreen = window.screenX < -5000 || window.screenY < -5000 ||
-                        window.screenX > window.screen.width || window.screenY > window.screen.height;
+                        window.screenX >= window.screen.availWidth || window.screenY >= window.screen.availHeight;
 
     if (isPipActive || isOffScreen) {
+        // Ensure styles are restored if crashed
+        document.body.style.opacity = '1';
+        document.body.style.pointerEvents = 'auto';
+
         const savedBounds = localStorage.getItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS);
         if (savedBounds) {
             try {

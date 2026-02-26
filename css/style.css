@@ -993,7 +993,9 @@ body.layout-pip {
     overflow: hidden;
     height: 100vh;
     width: 100vw;
-    background-color: var(--bg-color);
+    /* Semi-transparent background to blend with parent window if visible,
+       but standard M3 surface container is better for clarity. */
+    background-color: var(--md-sys-color-surface-container-low);
     display: flex !important;
     justify-content: center;
     align-items: center;
@@ -1004,6 +1006,13 @@ body.layout-pip #app {
     height: 200px;
     display: flex;
     flex-direction: column;
+    /* Force fixed size and add a border to define the app area
+       if the window is resized by the user. */
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-medium);
+    box-shadow: var(--md-sys-elevation-3);
+    background-color: var(--bg-color);
+    overflow: hidden;
 }
 
 body.layout-pip header {
@@ -1031,6 +1040,7 @@ body.layout-pip main {
     flex: 1;
     min-height: 0;
     border: none !important;
+    margin: 0 !important; /* Remove margin from normal layouts */
 }
 
 body.layout-pip #log-section {
