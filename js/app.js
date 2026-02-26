@@ -192,8 +192,15 @@ async function togglePiP() {
             height: 200,
         });
 
-        // Apply compact layout to PiP window
+        // Apply classes and styles from main body to PiP body
+        const mainBody = document.body;
+        pipWindow.document.body.className = mainBody.className;
+        pipWindow.document.body.classList.remove('layout-horizontal', 'layout-vertical');
         pipWindow.document.body.classList.add('layout-pip');
+
+        // Copy font family CSS variable
+        const mainStyle = window.getComputedStyle(mainBody);
+        pipWindow.document.body.style.setProperty('--font-family', mainStyle.getPropertyValue('--font-family'));
 
         // Copy styles
         [...document.styleSheets].forEach((styleSheet) => {
