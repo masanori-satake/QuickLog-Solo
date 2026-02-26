@@ -137,7 +137,16 @@ function updateTimer() {
         const anim = getAnimationState(activeTask.startTime, currentAnimationType);
         if (currentAnimationType === 'clock') {
             if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
-            if (clockHand) clockHand.style.transform = `rotate(${anim.rotation})`;
+            const clockFace = getEl('clock-face');
+            if (clockFace) {
+                const activeColor = 'var(--custom-cat-on-main)';
+                const bgColor = 'transparent';
+                if (!anim.isPhase2) {
+                    clockFace.style.background = `conic-gradient(${activeColor} 0deg ${anim.angle}deg, ${bgColor} ${anim.angle}deg 360deg)`;
+                } else {
+                    clockFace.style.background = `conic-gradient(${bgColor} 0deg ${anim.angle}deg, ${activeColor} ${anim.angle}deg 360deg)`;
+                }
+            }
         } else {
             if (overlay) overlay.style.clipPath = anim.inset;
         }

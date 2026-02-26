@@ -256,23 +256,15 @@ main {
     border: 2px solid var(--custom-cat-on-main);
     border-radius: 50%;
     position: relative;
+    background: transparent;
 }
 
 #clock-hand {
-    position: absolute;
-    width: 2px;
-    height: 10px;
-    background-color: var(--custom-cat-on-main);
-    bottom: 50%;
-    left: calc(50% - 1px);
-    transform-origin: bottom center;
+    display: none;
 }
 
 body.theme-light #current-task-display-base #clock-face {
     border-color: var(--md-sys-color-on-surface-variant);
-}
-body.theme-light #current-task-display-base #clock-hand {
-    background-color: var(--md-sys-color-on-surface-variant);
 }
 
 #current-task-name, #elapsed-time, #status-label {
@@ -416,7 +408,7 @@ body.theme-light #current-task-display-base #clock-hand {
 }
 
 .category-btn {
-    padding: 2px 4px;
+    padding: 2px 8px;
     font-size: 0.8rem;
     font-weight: var(--md-sys-typescale-label-large-weight);
     min-height: 30px;
@@ -425,13 +417,14 @@ body.theme-light #current-task-display-base #clock-hand {
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 100%;
     border-radius: var(--md-sys-shape-small);
     border: none;
     background-color: var(--md-sys-color-surface-container);
     color: var(--md-sys-color-on-surface);
     box-shadow: var(--md-sys-elevation-1);
+    text-align: left;
 }
 
 .category-btn:hover {
@@ -480,6 +473,11 @@ body.theme-light #current-task-display-base #clock-hand {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+}
+
+#confirm-modal .modal-content {
+    height: auto;
+    max-height: 300px;
 }
 
 .modal-content h2 {
@@ -625,7 +623,7 @@ body.theme-light #current-task-display-base #clock-hand {
 
 /* Category Editor */
 #category-editor-list {
-    max-height: 200px;
+    max-height: 500px;
     overflow-y: auto;
     margin-bottom: 0.5rem;
 }

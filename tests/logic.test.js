@@ -13,9 +13,8 @@ jest.unstable_mockModule('../js/db.js', () => ({
     STORE_CATEGORIES: 'categories',
     STORE_SETTINGS: 'settings',
     SETTING_KEY_THEME: 'theme',
-    SETTING_KEY_ACCENT: 'accent',
     SETTING_KEY_FONT: 'font',
-    SETTING_KEY_LAYOUT: 'layout',
+    SETTING_KEY_ANIMATION: 'animation',
     SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
@@ -58,7 +57,16 @@ describe('Logic Module', () => {
             const startTime = 1000000;
             const now = 1000000 + 15000; // 15s elapsed (25%)
             const state = getAnimationState(startTime, 'clock', now);
-            expect(state.rotation).toBe('90deg');
+            expect(state.angle).toBe(90);
+            expect(state.isPhase2).toBe(false);
+        });
+
+        test('returns clock state in phase 2', () => {
+            const startTime = 1000000;
+            const now = 1000000 + 75000; // 75s elapsed
+            const state = getAnimationState(startTime, 'clock', now);
+            expect(state.angle).toBe(90); // (15s % 60s) * 360 / 60
+            expect(state.isPhase2).toBe(true);
         });
     });
 
