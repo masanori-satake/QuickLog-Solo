@@ -475,7 +475,13 @@ function getColorCode(color) {
         tertiary: '#735572',
         error: '#ba1a1a',
         neutral: '#757780',
-        outline: '#c5c6d0'
+        outline: '#c5c6d0',
+        teal: '#006a60',
+        green: '#15803d',
+        yellow: '#a28900',
+        orange: '#c2410c',
+        pink: '#b90063',
+        indigo: '#4343d9'
     };
     return codes[color] || '#333';
 }
@@ -493,7 +499,10 @@ async function renderCategoryEditor() {
         item.draggable = true;
         item.dataset.name = cat.name;
 
-        const colors = ['primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline'];
+        const colors = [
+            'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
+            'teal', 'green', 'yellow', 'orange', 'pink', 'indigo'
+        ];
         const colorPresetsHtml = colors.map(color => `
             <button class="color-preset ${color === cat.color ? 'selected' : ''}"
                     style="background-color: ${getColorCode(color)}"

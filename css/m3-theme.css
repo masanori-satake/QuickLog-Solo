@@ -90,6 +90,20 @@
   --custom-cat-outline-container: var(--md-sys-color-surface);
   --custom-cat-on-outline-container: var(--md-sys-color-on-surface);
 
+  /* Additional M3-like Tonal Presets */
+  --custom-cat-teal-container: #bcebe2;
+  --custom-cat-on-teal-container: #00201a;
+  --custom-cat-green-container: #d2e8d1;
+  --custom-cat-on-green-container: #0b200f;
+  --custom-cat-yellow-container: #f9e264;
+  --custom-cat-on-yellow-container: #211b00;
+  --custom-cat-orange-container: #ffdab9;
+  --custom-cat-on-orange-container: #2e1500;
+  --custom-cat-pink-container: #ffd9e2;
+  --custom-cat-on-pink-container: #3e001d;
+  --custom-cat-indigo-container: #e0e0ff;
+  --custom-cat-on-indigo-container: #00006e;
+
   /* Custom Category Main Colors (for dots and overlays) */
   --custom-cat-primary: var(--md-sys-color-primary);
   --custom-cat-secondary: var(--md-sys-color-secondary);
@@ -97,6 +111,12 @@
   --custom-cat-error: var(--md-sys-color-error);
   --custom-cat-neutral: var(--md-sys-color-outline);
   --custom-cat-outline: var(--md-sys-color-outline-variant);
+  --custom-cat-teal: #006a60;
+  --custom-cat-green: #15803d;
+  --custom-cat-yellow: #a28900;
+  --custom-cat-orange: #c2410c;
+  --custom-cat-pink: #b90063;
+  --custom-cat-indigo: #4343d9;
   --custom-cat-on-main: #fff;
 }
 
@@ -147,6 +167,20 @@ body.theme-dark {
   --custom-cat-outline-container: var(--md-sys-color-surface);
   --custom-cat-on-outline-container: var(--md-sys-color-on-surface);
 
+  /* Additional M3-like Tonal Presets (Dark) */
+  --custom-cat-teal-container: #005047;
+  --custom-cat-on-teal-container: #bcebe2;
+  --custom-cat-green-container: #00531b;
+  --custom-cat-on-green-container: #ade3a8;
+  --custom-cat-yellow-container: #4e4000;
+  --custom-cat-on-yellow-container: #f9e264;
+  --custom-cat-orange-container: #663d00;
+  --custom-cat-on-orange-container: #ffdcbe;
+  --custom-cat-pink-container: #92004d;
+  --custom-cat-on-pink-container: #ffd9e2;
+  --custom-cat-indigo-container: #2626b9;
+  --custom-cat-on-indigo-container: #e0e0ff;
+
   /* Custom Category Main Colors (Dark) */
   --custom-cat-primary: var(--md-sys-color-primary);
   --custom-cat-secondary: var(--md-sys-color-secondary);
@@ -154,5 +188,11 @@ body.theme-dark {
   --custom-cat-error: var(--md-sys-color-error);
   --custom-cat-neutral: var(--md-sys-color-outline);
   --custom-cat-outline: var(--md-sys-color-outline-variant);
+  --custom-cat-teal: #4dbfae;
+  --custom-cat-green: #22c55e;
+  --custom-cat-yellow: #d9c44d;
+  --custom-cat-orange: #f97316;
+  --custom-cat-pink: #f451a4;
+  --custom-cat-indigo: #8a8aff;
   --custom-cat-on-main: #000;
 }

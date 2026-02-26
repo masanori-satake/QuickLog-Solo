@@ -121,14 +121,14 @@ export async function initDB() {
 
 async function setupInitialData() {
     const initialCategories = [
-        { name: '開発', color: 'primary', order: 0 },
-        { name: '会議', color: 'secondary', order: 1 },
-        { name: '調査', color: 'tertiary', order: 2 },
-        { name: '事務', color: 'neutral', order: 3 },
-        { name: '集中', color: 'error', order: 4 },
-        { name: '学習', color: 'tertiary', order: 5 },
-        { name: '企画', color: 'secondary', order: 6 },
-        { name: '休憩', color: 'outline', order: 7 }
+        { name: '💻 開発', color: 'primary', order: 0 },
+        { name: '🤝 会議', color: 'secondary', order: 1 },
+        { name: '🔍 調査', color: 'tertiary', order: 2 },
+        { name: '事務作業 📝', color: 'neutral', order: 3 },
+        { name: '🔥 集中', color: 'error', order: 4 },
+        { name: '📚 学習', color: 'tertiary', order: 5 },
+        { name: '💡 企画', color: 'secondary', order: 6 },
+        { name: '☕ 休憩', color: 'outline', order: 7 }
     ];
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
