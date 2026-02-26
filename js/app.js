@@ -37,6 +37,8 @@ const URL_PARAM_TEST_RESUMABLE = 'test_resumable';
 const ACTION_SETTINGS = 'settings';
 
 const LOCAL_STORAGE_KEY_LAYOUT = 'quicklog_layout';
+const LOCAL_STORAGE_KEY_PIP_ACTIVE = 'quicklog_pip_active';
+const LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS = 'quicklog_original_bounds';
 const CHANNEL_NAME = 'quicklog_instance_coordination';
 
 const ITEMS_PER_PAGE = 8;
@@ -186,6 +188,8 @@ async function togglePiP() {
             left: window.screenX,
             top: window.screenY
         };
+        localStorage.setItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS, JSON.stringify(originalBounds));
+        localStorage.setItem(LOCAL_STORAGE_KEY_PIP_ACTIVE, 'true');
 
         pipWindow = await window.documentPictureInPicture.requestWindow({
             width: 280,
@@ -221,19 +225,29 @@ async function togglePiP() {
 
         pipWindow.document.body.append(app);
 
-        // Shrink and move parent window off-screen to minimize obstruction
-        window.resizeTo(1, 1);
-        window.moveTo(-10000, -10000);
+        // Shrink and move parent window to the edge/off-screen to minimize obstruction.
+        // We use a large positive coordinate as a fallback if negative ones are clamped to (0,0).
+        window.resizeTo(0, 0);
+        window.moveTo(window.screen.availWidth + 5000, window.screen.availHeight + 5000);
 
         pipWindow.addEventListener('pagehide', () => {
             document.body.append(app);
             pipWindow = null;
+            localStorage.removeItem(LOCAL_STORAGE_KEY_PIP_ACTIVE);
 
             // Restore parent window
             if (originalBounds) {
                 window.resizeTo(originalBounds.width, originalBounds.height);
                 window.moveTo(originalBounds.left, originalBounds.top);
                 originalBounds = null;
+            } else {
+                // Fallback restoration from localStorage
+                const savedBounds = localStorage.getItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS);
+                if (savedBounds) {
+                    const bounds = JSON.parse(savedBounds);
+                    window.resizeTo(bounds.width, bounds.height);
+                    window.moveTo(bounds.left, bounds.top);
+                }
             }
 
             updateUI();
@@ -251,10 +265,29 @@ async function togglePiP() {
  * (e.g., after a crash while in PiP mode)
  */
 function recoverWindowPosition() {
-    // If the window is positioned far off-screen (like -10000 set during PiP),
-    // move it back to a visible area.
-    if (window.screenX < -5000 || window.screenY < -5000) {
-        window.moveTo(100, 100);
+    const isPipActive = localStorage.getItem(LOCAL_STORAGE_KEY_PIP_ACTIVE) === 'true';
+    const isOffScreen = window.screenX < -5000 || window.screenY < -5000 ||
+                        window.screenX > window.screen.width || window.screenY > window.screen.height;
+
+    if (isPipActive || isOffScreen) {
+        const savedBounds = localStorage.getItem(LOCAL_STORAGE_KEY_ORIGINAL_BOUNDS);
+        if (savedBounds) {
+            try {
+                const bounds = JSON.parse(savedBounds);
+                window.resizeTo(bounds.width, bounds.height);
+                window.moveTo(bounds.left, bounds.top);
+            } catch (e) {
+                console.error('Failed to parse original bounds:', e);
+                window.moveTo(100, 100);
+            }
+        } else {
+            // Default recovery
+            window.moveTo(100, 100);
+            const layout = localStorage.getItem(LOCAL_STORAGE_KEY_LAYOUT) || LAYOUT_HORIZONTAL;
+            const isHorizontal = layout === LAYOUT_HORIZONTAL;
+            window.resizeTo(isHorizontal ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, isHorizontal ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
+        }
+        localStorage.removeItem(LOCAL_STORAGE_KEY_PIP_ACTIVE);
     }
 }
 
