@@ -77,52 +77,52 @@
   --md-sys-typescale-label-large-weight: 500;
 
   /* Custom Category Tonal Presets (Mapped to M3 Roles) */
-  --custom-cat-primary-container: var(--md-sys-color-primary-container);
-  --custom-cat-on-primary-container: var(--md-sys-color-on-primary-container);
-  --custom-cat-secondary-container: var(--md-sys-color-secondary-container);
-  --custom-cat-on-secondary-container: var(--md-sys-color-on-secondary-container);
-  --custom-cat-tertiary-container: var(--md-sys-color-tertiary-container);
-  --custom-cat-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
-  --custom-cat-error-container: var(--md-sys-color-error-container);
-  --custom-cat-on-error-container: var(--md-sys-color-on-error-container);
-  --custom-cat-neutral-container: var(--md-sys-color-surface-variant);
-  --custom-cat-on-neutral-container: var(--md-sys-color-on-surface-variant);
-  --custom-cat-outline-container: var(--md-sys-color-surface);
-  --custom-cat-on-outline-container: var(--md-sys-color-on-surface);
+  --custom-cat-primary-container: #bbdefb; /* Blue 100 */
+  --custom-cat-on-primary-container: #0d47a1;
+  --custom-cat-secondary-container: #dcedc8; /* Light Green 100 */
+  --custom-cat-on-secondary-container: #1b5e20;
+  --custom-cat-tertiary-container: #e1bee7; /* Purple 100 */
+  --custom-cat-on-tertiary-container: #4a148c;
+  --custom-cat-error-container: #ffcdd2; /* Red 100 */
+  --custom-cat-on-error-container: #b71c1c;
+  --custom-cat-neutral-container: #cfd8dc; /* Blue Gray 100 */
+  --custom-cat-on-neutral-container: #263238;
+  --custom-cat-outline-container: #f5f5f5; /* Gray 100 */
+  --custom-cat-on-outline-container: #212121;
 
   /* Additional M3-like Tonal Presets */
-  --custom-cat-teal-container: #bcebe2;
-  --custom-cat-on-teal-container: #00201a;
-  --custom-cat-green-container: #d2e8d1;
-  --custom-cat-on-green-container: #0b200f;
-  --custom-cat-yellow-container: #f9e264;
-  --custom-cat-on-yellow-container: #211b00;
-  --custom-cat-orange-container: #ffdab9;
-  --custom-cat-on-orange-container: #2e1500;
-  --custom-cat-pink-container: #ffd9e2;
-  --custom-cat-on-pink-container: #3e001d;
-  --custom-cat-indigo-container: #e0e0ff;
-  --custom-cat-on-indigo-container: #00006e;
-  --custom-cat-brown-container: #f5e0d3;
-  --custom-cat-on-brown-container: #2b170a;
-  --custom-cat-cyan-container: #c1f1ff;
-  --custom-cat-on-cyan-container: #001f28;
+  --custom-cat-teal-container: #b2ebf2; /* Cyan 100 */
+  --custom-cat-on-teal-container: #006064;
+  --custom-cat-green-container: #c8e6c9; /* Green 100 */
+  --custom-cat-on-green-container: #1b5e20;
+  --custom-cat-yellow-container: #fff9c4; /* Yellow 100 */
+  --custom-cat-on-yellow-container: #f57f17;
+  --custom-cat-orange-container: #ffecb3; /* Amber 100 */
+  --custom-cat-on-orange-container: #ff6f00;
+  --custom-cat-pink-container: #f8bbd0; /* Pink 100 */
+  --custom-cat-on-pink-container: #880e4f;
+  --custom-cat-indigo-container: #d1c4e9; /* Deep Purple 100 */
+  --custom-cat-on-indigo-container: #311b92;
+  --custom-cat-brown-container: #d7ccc8; /* Brown 100 */
+  --custom-cat-on-brown-container: #3e2723;
+  --custom-cat-cyan-container: #b3e5fc; /* Light Blue 100 */
+  --custom-cat-on-cyan-container: #01579b;
 
   /* Custom Category Main Colors (for dots and overlays) */
-  --custom-cat-primary: var(--md-sys-color-primary);
-  --custom-cat-secondary: var(--md-sys-color-secondary);
-  --custom-cat-tertiary: var(--md-sys-color-tertiary);
-  --custom-cat-error: var(--md-sys-color-error);
-  --custom-cat-neutral: var(--md-sys-color-outline);
-  --custom-cat-outline: var(--md-sys-color-outline-variant);
-  --custom-cat-teal: #006a60;
-  --custom-cat-green: #15803d;
-  --custom-cat-yellow: #a28900;
-  --custom-cat-orange: #c2410c;
-  --custom-cat-pink: #b90063;
-  --custom-cat-indigo: #4343d9;
-  --custom-cat-brown: #8d4f29;
-  --custom-cat-cyan: #00687b;
+  --custom-cat-primary: #1976d2;
+  --custom-cat-secondary: #7cb342;
+  --custom-cat-tertiary: #8e24aa;
+  --custom-cat-error: #d32f2f;
+  --custom-cat-neutral: #546e7a;
+  --custom-cat-outline: #9e9e9e;
+  --custom-cat-teal: #0097a7;
+  --custom-cat-green: #388e3c;
+  --custom-cat-yellow: #fbc02d;
+  --custom-cat-orange: #ffa000;
+  --custom-cat-pink: #d81b60;
+  --custom-cat-indigo: #5e35b1;
+  --custom-cat-brown: #6d4c41;
+  --custom-cat-cyan: #039be5;
   --custom-cat-on-main: #fff;
 }
 
@@ -160,51 +160,51 @@ body.theme-dark {
   --md-sys-color-inverse-on-surface: #313033;
 
   /* Custom Category Tonal Presets (Dark - Mapped to M3 Roles) */
-  --custom-cat-primary-container: var(--md-sys-color-primary-container);
-  --custom-cat-on-primary-container: var(--md-sys-color-on-primary-container);
-  --custom-cat-secondary-container: var(--md-sys-color-secondary-container);
-  --custom-cat-on-secondary-container: var(--md-sys-color-on-secondary-container);
-  --custom-cat-tertiary-container: var(--md-sys-color-tertiary-container);
-  --custom-cat-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
-  --custom-cat-error-container: var(--md-sys-color-error-container);
-  --custom-cat-on-error-container: var(--md-sys-color-on-error-container);
-  --custom-cat-neutral-container: var(--md-sys-color-surface-variant);
-  --custom-cat-on-neutral-container: var(--md-sys-color-on-surface-variant);
-  --custom-cat-outline-container: var(--md-sys-color-surface);
-  --custom-cat-on-outline-container: var(--md-sys-color-on-surface);
+  --custom-cat-primary-container: #0d47a1;
+  --custom-cat-on-primary-container: #bbdefb;
+  --custom-cat-secondary-container: #1b5e20;
+  --custom-cat-on-secondary-container: #dcedc8;
+  --custom-cat-tertiary-container: #4a148c;
+  --custom-cat-on-tertiary-container: #e1bee7;
+  --custom-cat-error-container: #b71c1c;
+  --custom-cat-on-error-container: #ffcdd2;
+  --custom-cat-neutral-container: #263238;
+  --custom-cat-on-neutral-container: #cfd8dc;
+  --custom-cat-outline-container: #212121;
+  --custom-cat-on-outline-container: #f5f5f5;
 
   /* Additional M3-like Tonal Presets (Dark) */
-  --custom-cat-teal-container: #005047;
-  --custom-cat-on-teal-container: #bcebe2;
-  --custom-cat-green-container: #00531b;
-  --custom-cat-on-green-container: #ade3a8;
-  --custom-cat-yellow-container: #4e4000;
-  --custom-cat-on-yellow-container: #f9e264;
-  --custom-cat-orange-container: #663d00;
-  --custom-cat-on-orange-container: #ffdcbe;
-  --custom-cat-pink-container: #92004d;
-  --custom-cat-on-pink-container: #ffd9e2;
-  --custom-cat-indigo-container: #2626b9;
-  --custom-cat-on-indigo-container: #e0e0ff;
-  --custom-cat-brown-container: #5d3f2e;
-  --custom-cat-on-brown-container: #f5e0d3;
-  --custom-cat-cyan-container: #004e5d;
-  --custom-cat-on-cyan-container: #c1f1ff;
+  --custom-cat-teal-container: #006064;
+  --custom-cat-on-teal-container: #b2ebf2;
+  --custom-cat-green-container: #1b5e20;
+  --custom-cat-on-green-container: #c8e6c9;
+  --custom-cat-yellow-container: #f57f17;
+  --custom-cat-on-yellow-container: #fff9c4;
+  --custom-cat-orange-container: #ff6f00;
+  --custom-cat-on-orange-container: #ffecb3;
+  --custom-cat-pink-container: #880e4f;
+  --custom-cat-on-pink-container: #f8bbd0;
+  --custom-cat-indigo-container: #311b92;
+  --custom-cat-on-indigo-container: #d1c4e9;
+  --custom-cat-brown-container: #3e2723;
+  --custom-cat-on-brown-container: #d7ccc8;
+  --custom-cat-cyan-container: #01579b;
+  --custom-cat-on-cyan-container: #b3e5fc;
 
   /* Custom Category Main Colors (Dark) */
-  --custom-cat-primary: var(--md-sys-color-primary);
-  --custom-cat-secondary: var(--md-sys-color-secondary);
-  --custom-cat-tertiary: var(--md-sys-color-tertiary);
-  --custom-cat-error: var(--md-sys-color-error);
-  --custom-cat-neutral: var(--md-sys-color-outline);
-  --custom-cat-outline: var(--md-sys-color-outline-variant);
-  --custom-cat-teal: #4dbfae;
-  --custom-cat-green: #22c55e;
-  --custom-cat-yellow: #d9c44d;
-  --custom-cat-orange: #f97316;
-  --custom-cat-pink: #f451a4;
-  --custom-cat-indigo: #8a8aff;
-  --custom-cat-brown: #f5e0d3;
-  --custom-cat-cyan: #56d6f5;
+  --custom-cat-primary: #90caf9;
+  --custom-cat-secondary: #aed581;
+  --custom-cat-tertiary: #ce93d8;
+  --custom-cat-error: #ef9a9a;
+  --custom-cat-neutral: #90a4ae;
+  --custom-cat-outline: #bdbdbd;
+  --custom-cat-teal: #80deea;
+  --custom-cat-green: #a5d6a7;
+  --custom-cat-yellow: #fff59d;
+  --custom-cat-orange: #ffcc80;
+  --custom-cat-pink: #f48fb1;
+  --custom-cat-indigo: #b39ddb;
+  --custom-cat-brown: #bcaaa4;
+  --custom-cat-cyan: #81d4fa;
   --custom-cat-on-main: #000;
 }
