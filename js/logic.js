@@ -65,8 +65,21 @@ export async function stopTaskLogic(activeTask, isManualStop = false) {
         return null;
     }
 
-    const taskToSave = { ...activeTask, endTime: Date.now(), isManualStop: isManualStop };
+    const now = Date.now();
+    // 通常の作業中の場合は、その作業を正常終了させる
+    const taskToSave = { ...activeTask, endTime: now, isManualStop: false };
     await dbPut(STORE_LOGS, taskToSave);
+
+    if (isManualStop) {
+        // 停止ボタンが押された場合は、追加で停止マーカーを記録する
+        const stopLog = {
+            category: SYSTEM_CATEGORY_IDLE,
+            startTime: now,
+            endTime: now,
+            isManualStop: true
+        };
+        await dbAdd(STORE_LOGS, stopLog);
+    }
     return null;
 }
 
