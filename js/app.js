@@ -221,8 +221,9 @@ async function togglePiP() {
 
         pipWindow.document.body.append(app);
 
-        // Shrink parent window
-        window.resizeTo(200, 100);
+        // Shrink and move parent window off-screen to minimize obstruction
+        window.resizeTo(1, 1);
+        window.moveTo(-10000, -10000);
 
         pipWindow.addEventListener('pagehide', () => {
             document.body.append(app);
@@ -242,6 +243,18 @@ async function togglePiP() {
 
     } catch (err) {
         console.error('Failed to enter PiP mode:', err);
+    }
+}
+
+/**
+ * Safety check to recover window position if it starts off-screen
+ * (e.g., after a crash while in PiP mode)
+ */
+function recoverWindowPosition() {
+    // If the window is positioned far off-screen (like -10000 set during PiP),
+    // move it back to a visible area.
+    if (window.screenX < -5000 || window.screenY < -5000) {
+        window.moveTo(100, 100);
     }
 }
 
@@ -364,7 +377,7 @@ function applyLayout(layout) {
         btn.textContent = isHorizontal ? '↕️' : '↔️';
         btn.title = isHorizontal ? '縦長レイアウトに切り替え' : '横長レイアウトに切り替え';
 
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+        if (!pipWindow && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone)) {
             window.resizeTo(isHorizontal ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, isHorizontal ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
         }
     }
@@ -1043,6 +1056,7 @@ function setupEventListeners() {
     });
 
     window.addEventListener('resize', () => {
+        if (pipWindow) return; // Ignore resize events while in PiP mode
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             const layout = getBody().classList.contains('layout-horizontal') ? LAYOUT_HORIZONTAL : LAYOUT_VERTICAL;
             window.resizeTo(layout === LAYOUT_HORIZONTAL ? WINDOW_WIDTH_HORIZONTAL : WINDOW_WIDTH_VERTICAL, layout === LAYOUT_HORIZONTAL ? WINDOW_HEIGHT_HORIZONTAL : WINDOW_HEIGHT_VERTICAL);
@@ -1060,6 +1074,7 @@ function setupEventListeners() {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('QuickLog-Solo: DOMContentLoaded');
     try {
+        recoverWindowPosition();
         await loadVersion();
         await initStoragePersistence();
         initPipSupport();
