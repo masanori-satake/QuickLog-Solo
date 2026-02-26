@@ -29,6 +29,8 @@
   --md-sys-color-surface-container: #f1edf3;
   --md-sys-color-surface-container-high: #ebe7ed;
   --md-sys-color-surface-container-highest: #e5e1e7;
+  --md-sys-color-inverse-surface: #313033;
+  --md-sys-color-inverse-on-surface: #f4eff4;
 
   /* --- Dark Theme Tokens (Optionally used via body.theme-dark) --- */
   --md-sys-color-primary-dark: #b1c5ff;
@@ -95,6 +97,18 @@
   --custom-cat-on-purple-container: #250040;
   --custom-cat-teal-container: #bcebe2;
   --custom-cat-on-teal-container: #00201a;
+  --custom-cat-gray-container: #e2e2e6;
+  --custom-cat-on-gray-container: #1a1b1f;
+
+  /* Custom Category Main Colors (for dots and overlays) */
+  --custom-cat-blue: #0369a1;
+  --custom-cat-green: #15803d;
+  --custom-cat-orange: #c2410c;
+  --custom-cat-red: #b91c1c;
+  --custom-cat-purple: #7e22ce;
+  --custom-cat-teal: #0f766e;
+  --custom-cat-gray: #374151;
+  --custom-cat-on-main: #ffffff;
 }
 
 body.theme-dark {
@@ -127,4 +141,32 @@ body.theme-dark {
   --md-sys-color-surface-container: #1f1f23;
   --md-sys-color-surface-container-high: #2a292f;
   --md-sys-color-surface-container-highest: #35343a;
+  --md-sys-color-inverse-surface: #e5e1e6;
+  --md-sys-color-inverse-on-surface: #313033;
+
+  /* Custom Category Tonal Presets (Dark) */
+  --custom-cat-blue-container: #0040a1;
+  --custom-cat-on-blue-container: #dae2ff;
+  --custom-cat-green-container: #00531b;
+  --custom-cat-on-green-container: #ade3a8;
+  --custom-cat-orange-container: #663d00;
+  --custom-cat-on-orange-container: #ffdcbe;
+  --custom-cat-red-container: #93000a;
+  --custom-cat-on-red-container: #ffdad6;
+  --custom-cat-purple-container: #593d59;
+  --custom-cat-on-purple-container: #fed7f9;
+  --custom-cat-teal-container: #005047;
+  --custom-cat-on-teal-container: #bcebe2;
+  --custom-cat-gray-container: #44474f;
+  --custom-cat-on-gray-container: #c5c6d0;
+
+  /* Custom Category Main Colors (for dots and overlays - slightly lighter for dark mode) */
+  --custom-cat-blue: #3b82f6;
+  --custom-cat-green: #22c55e;
+  --custom-cat-orange: #f97316;
+  --custom-cat-red: #ef4444;
+  --custom-cat-purple: #a855f7;
+  --custom-cat-teal: #14b8a6;
+  --custom-cat-gray: #9ca3af;
+  --custom-cat-on-main: #ffffff;
 }

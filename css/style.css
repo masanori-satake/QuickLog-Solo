@@ -1,10 +1,4 @@
 :root {
-    --bg-color: var(--md-sys-color-background);
-    --text-color: var(--md-sys-color-on-background);
-    --muted-color: var(--md-sys-color-on-surface-variant);
-    --accent-blue: var(--md-sys-color-primary);
-    --accent-green: #28a745; /* Temporary until mapped */
-    --accent-orange: #e67e22;
     --border-width: 1px; /* M3 uses thinner outlines */
     --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
@@ -16,6 +10,13 @@
 }
 
 body {
+    --bg-color: var(--md-sys-color-background);
+    --text-color: var(--md-sys-color-on-background);
+    --muted-color: var(--md-sys-color-on-surface-variant);
+    --accent-blue: var(--md-sys-color-primary);
+    --accent-green: var(--md-sys-color-tertiary); /* Mapped to tertiary */
+    --accent-orange: var(--custom-cat-orange);
+
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: var(--font-family), sans-serif;
@@ -77,10 +78,14 @@ button:active {
 }
 
 button:disabled {
-    opacity: 0.3;
-    filter: grayscale(1);
+    opacity: 0.38;
+    filter: grayscale(0.8);
     cursor: not-allowed;
     transform: none;
+}
+
+body.theme-dark button:disabled {
+    opacity: 0.5;
 }
 
 body.theme-dark button:hover {
@@ -179,14 +184,14 @@ body.theme-dark button:active {
     flex-shrink: 0;
 }
 
-.dot-blue { background-color: #0369a1; }
-.dot-green { background-color: #15803d; }
-.dot-orange { background-color: #c2410c; }
-.dot-red { background-color: #b91c1c; }
-.dot-purple { background-color: #7e22ce; }
-.dot-teal { background-color: #0f766e; }
-.dot-gray { background-color: #374151; }
-.dot-idle { background-color: #64748b; }
+.dot-blue { background-color: var(--custom-cat-blue); }
+.dot-green { background-color: var(--custom-cat-green); }
+.dot-orange { background-color: var(--custom-cat-orange); }
+.dot-red { background-color: var(--custom-cat-red); }
+.dot-purple { background-color: var(--custom-cat-purple); }
+.dot-teal { background-color: var(--custom-cat-teal); }
+.dot-gray { background-color: var(--custom-cat-gray); }
+.dot-idle { background-color: var(--md-sys-color-outline); }
 
 /* stylelint-disable no-descending-specificity */
 
@@ -373,7 +378,7 @@ body.layout-vertical #end-btn {
 }
 
 #current-task-name-overlay, #elapsed-time-overlay, #status-label-overlay {
-    color: white;
+    color: var(--custom-cat-on-main);
 }
 
 #current-task-name, #current-task-name-overlay {
@@ -423,7 +428,7 @@ body.layout-vertical #end-btn {
 #status-label-overlay.status-running,
 #status-label-overlay.status-paused,
 #status-label-overlay.status-stopped {
-    color: white;
+    color: var(--custom-cat-on-main);
 }
 
 #control-section {
@@ -714,8 +719,8 @@ body.layout-vertical #end-btn {
 }
 
 .cat-gray {
-    background-color: #e2e2e6 !important;
-    color: #1a1b1f !important;
+    background-color: var(--custom-cat-gray-container) !important;
+    color: var(--custom-cat-on-gray-container) !important;
 }
 
 .cat-idle {
@@ -724,35 +729,35 @@ body.layout-vertical #end-btn {
 }
 
 .cat-blue-full {
-    background-color: #0369a1 !important;
+    background-color: var(--custom-cat-blue) !important;
 }
 
 .cat-green-full {
-    background-color: #15803d !important;
+    background-color: var(--custom-cat-green) !important;
 }
 
 .cat-orange-full {
-    background-color: #c2410c !important;
+    background-color: var(--custom-cat-orange) !important;
 }
 
 .cat-red-full {
-    background-color: #b91c1c !important;
+    background-color: var(--custom-cat-red) !important;
 }
 
 .cat-purple-full {
-    background-color: #7e22ce !important;
+    background-color: var(--custom-cat-purple) !important;
 }
 
 .cat-teal-full {
-    background-color: #0f766e !important;
+    background-color: var(--custom-cat-teal) !important;
 }
 
 .cat-gray-full {
-    background-color: #374151 !important;
+    background-color: var(--custom-cat-gray) !important;
 }
 
 .cat-idle-full {
-    background-color: #64748b !important;
+    background-color: var(--md-sys-color-outline) !important;
 }
 
 
@@ -766,12 +771,14 @@ body.layout-vertical #end-btn {
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--text-color);
-    color: var(--bg-color);
+    background: var(--md-sys-color-inverse-surface);
+    color: var(--md-sys-color-inverse-on-surface);
     padding: 0.5rem 1.5rem;
+    border-radius: var(--md-sys-shape-extra-small);
     font-weight: bold;
-    border: var(--border-width) solid var(--bg-color);
+    border: none;
     z-index: 200;
+    box-shadow: var(--md-sys-elevation-2);
 }
 
 /* Category Editor */
