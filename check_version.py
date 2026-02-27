@@ -1,22 +1,30 @@
 import json
-import re
 import sys
 
 def check_version():
     try:
+        # Load version from version.json
         with open('version.json', 'r') as f:
-            v_data = json.load(f)
-            version = v_data.get('version')
+            version = json.load(f).get('version')
 
-        with open('js/app.js', 'r') as f:
-            app_js = f.read()
+        # Load version from package.json
+        with open('package.json', 'r') as f:
+            package_version = json.load(f).get('version')
 
-        with open('sw.js', 'r') as f:
-            sw_js = f.read()
+        # Load version from manifest.json
+        with open('manifest.json', 'r') as f:
+            manifest_version = json.load(f).get('version')
 
-        # Check sw.js
-        if f"quicklog-solo-v{version}" not in sw_js:
-            print(f"Error: sw.js CACHE_NAME does not match version {version}")
+        if not version:
+            print("Error: version.json is missing version field.")
+            return False
+
+        if version != package_version:
+            print(f"Error: package.json version ({package_version}) does not match version.json ({version})")
+            return False
+
+        if version != manifest_version:
+            print(f"Error: manifest.json version ({manifest_version}) does not match version.json ({version})")
             return False
 
         print(f"Version check passed (v{version}).")
