@@ -11,7 +11,7 @@
     "default_icon": "assets/icon.svg"
   },
   "side_panel": {
-    "default_path": "index.html"
+    "default_path": "app.html"
   },
   "icons": {
     "192": "assets/icon.svg",
