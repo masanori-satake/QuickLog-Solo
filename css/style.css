@@ -259,6 +259,37 @@ main {
     background: transparent;
 }
 
+#sand-clock-face {
+    width: 24px;
+    height: 32px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#sand-clock-face.hidden {
+    display: none !important;
+}
+
+#sand-top, #sand-bottom {
+    width: 24px;
+    height: 15px;
+    border: 2px solid var(--custom-cat-on-main);
+    position: relative;
+    overflow: hidden;
+}
+
+#sand-top {
+    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+    border-bottom: none;
+}
+
+#sand-bottom {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    border-top: none;
+}
+
 #clock-hand {
     display: none;
 }

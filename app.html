@@ -57,6 +57,10 @@
                             <div id="clock-face">
                                 <div id="clock-hand"></div>
                             </div>
+                            <div id="sand-clock-face" class="hidden">
+                                <div id="sand-top"></div>
+                                <div id="sand-bottom"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -110,9 +114,10 @@
                     <div class="setting-item">
                         <label>背景アニメーション</label>
                         <select id="animation-select">
-                            <option value="left-to-right">左から右 (標準)</option>
+                            <option value="left-to-right">左から右</option>
                             <option value="right-to-left">右から左</option>
-                            <option value="clock">クロック</option>
+                            <option value="clock">クロック (標準)</option>
+                            <option value="sand-clock">サンドクロック</option>
                         </select>
                     </div>
                     <div class="setting-item">
@@ -129,6 +134,26 @@
                     <div id="add-category-box-settings">
                         <input type="text" id="new-category-name-settings" placeholder="新しいカテゴリ...">
                         <button id="add-category-btn-settings">+</button>
+                    </div>
+
+                    <div class="category-maintenance-box" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--md-sys-color-outline-variant);">
+                        <div class="setting-item">
+                            <label>カテゴリーのバックアップ</label>
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <button id="export-categories-btn" style="flex: 1;">エクスポート (JSON)</button>
+                                <button id="import-categories-btn" style="flex: 1;">インポート (JSON)</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.8rem;">
+                                <span>インポート設定:</span>
+                                <label style="display: flex; align-items: center; gap: 4px; margin: 0; cursor: pointer;">
+                                    <input type="radio" name="import-mode" value="append" checked style="width: auto;"> 追記
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px; margin: 0; cursor: pointer;">
+                                    <input type="radio" name="import-mode" value="overwrite" style="width: auto;"> 上書き
+                                </label>
+                            </div>
+                            <input type="file" id="category-file-input" style="display:none" accept=".json">
+                        </div>
                     </div>
                 </div>
 

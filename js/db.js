@@ -141,7 +141,7 @@ export async function getCurrentAppState() {
     return {
         theme: theme ? theme.value : null,
         font: font ? font.value : null,
-        animation: animation ? animation.value : null,
+        animation: animation ? animation.value : 'clock',
         categories,
         activeTask
     };
