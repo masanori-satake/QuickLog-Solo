@@ -26,6 +26,12 @@ export function getAnimationState(startTime, animationType = 'left-to-right', no
         const isPhase2 = secondsIn2Min >= 60;
         const angle = ((elapsed % 60000) / 60000) * 360;
         return { angle, isPhase2 };
+    } else if (animationType === 'sand-clock') {
+        const totalSeconds = Math.floor(elapsed / 1000);
+        const secondsIn2Min = totalSeconds % 120;
+        const isPhase2 = secondsIn2Min >= 60;
+        const percent = ((elapsed % 60000) / 60000) * 100;
+        return { percent, isPhase2 };
     } else {
         // Default: left-to-right
         return { inset: `inset(0 ${100 - percent}% 0 0)` };

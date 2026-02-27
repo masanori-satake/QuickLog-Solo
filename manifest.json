@@ -8,14 +8,21 @@
   ],
   "action": {
     "default_title": "QuickLog-Soloを開く",
-    "default_icon": "assets/icon.svg"
+    "default_icon": {
+      "16": "assets/icon.svg",
+      "32": "assets/icon.svg",
+      "48": "assets/icon.svg",
+      "128": "assets/icon.svg"
+    }
   },
   "side_panel": {
     "default_path": "app.html"
   },
   "icons": {
-    "192": "assets/icon.svg",
-    "512": "assets/icon.svg"
+    "16": "assets/icon.svg",
+    "32": "assets/icon.svg",
+    "48": "assets/icon.svg",
+    "128": "assets/icon.svg"
   },
   "background": {
     "service_worker": "js/background.js",

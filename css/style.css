@@ -259,6 +259,49 @@ main {
     background: transparent;
 }
 
+#sand-clock-face {
+    width: 24px;
+    height: 32px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#sand-clock-face.hidden {
+    display: none !important;
+}
+
+#sand-clock-face::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-top: 2px solid var(--custom-cat-on-main);
+    border-bottom: 2px solid var(--custom-cat-on-main);
+    background:
+        linear-gradient(to bottom right, transparent calc(50% - 1px), var(--custom-cat-on-main) calc(50% - 1px), var(--custom-cat-on-main) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(to bottom left, transparent calc(50% - 1px), var(--custom-cat-on-main) calc(50% - 1px), var(--custom-cat-on-main) calc(50% + 1px), transparent calc(50% + 1px));
+    z-index: 2;
+}
+
+#sand-top, #sand-bottom {
+    width: 24px;
+    height: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+#sand-top {
+    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+    border-bottom: none;
+}
+
+#sand-bottom {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    border-top: none;
+}
+
 #clock-hand {
     display: none;
 }

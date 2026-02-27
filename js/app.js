@@ -57,6 +57,9 @@ const ID_ADD_CATEGORY_BTN_SETTINGS = 'add-category-btn-settings';
 const ID_EXPORT_CSV_BTN = 'export-csv-btn';
 const ID_IMPORT_CSV_BTN = 'import-csv-btn';
 const ID_CSV_FILE_INPUT = 'csv-file-input';
+const ID_EXPORT_CATEGORIES_BTN = 'export-categories-btn';
+const ID_IMPORT_CATEGORIES_BTN = 'import-categories-btn';
+const ID_CATEGORY_FILE_INPUT = 'category-file-input';
 const ID_CLEAR_LOGS_BTN = 'clear-logs-btn';
 const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
 const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
@@ -141,7 +144,6 @@ function updateTimer() {
     const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
     const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
-    const clockHand = getEl(ID_CLOCK_HAND);
 
     if (isPaused) {
         if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
@@ -157,6 +159,30 @@ function updateTimer() {
                     clockFace.style.background = `conic-gradient(${activeColor} 0deg ${anim.angle}deg, ${bgColor} ${anim.angle}deg 360deg)`;
                 } else {
                     clockFace.style.background = `conic-gradient(${bgColor} 0deg ${anim.angle}deg, ${activeColor} ${anim.angle}deg 360deg)`;
+                }
+            }
+        } else if (currentAnimationType === 'sand-clock') {
+            if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
+            const sandTop = getEl('sand-top');
+            const sandBottom = getEl('sand-bottom');
+            if (sandTop && sandBottom) {
+                const activeColor = 'var(--custom-cat-on-main)';
+                const bgColor = 'transparent';
+                const p = anim.percent;
+                if (!anim.isPhase2) {
+                    // Top: active decreases (filled from top, but we use linear-gradient to show "decreasing")
+                    // Actually, sand falling means the top level goes down.
+                    // For top part: 0% is full, 100% is empty.
+                    // linear-gradient(to bottom, transparent p%, activeColor p%) -> This is wrong if p increases.
+                    // If p increases (0->100), we want activeColor to go from 100% to 0%.
+                    sandTop.style.background = `linear-gradient(to bottom, ${bgColor} ${p}%, ${activeColor} ${p}%)`;
+                    // Bottom: active increases (filled from bottom)
+                    // linear-gradient(to top, activeColor p%, bgColor p%)
+                    sandBottom.style.background = `linear-gradient(to top, ${activeColor} ${p}%, ${bgColor} ${p}%)`;
+                } else {
+                    // Phase 2: Inverse colors
+                    sandTop.style.background = `linear-gradient(to bottom, ${activeColor} ${p}%, ${bgColor} ${p}%)`;
+                    sandBottom.style.background = `linear-gradient(to top, ${bgColor} ${p}%, ${activeColor} ${p}%)`;
                 }
             }
         } else {
@@ -193,11 +219,22 @@ function applyAnimation(animationType) {
     if (select) select.value = animationType;
 
     const clockContainer = getEl(ID_CLOCK_CONTAINER);
+    const clockFace = getEl('clock-face');
+    const sandClockFace = getEl('sand-clock-face');
     const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
 
-    if (animationType === 'clock') {
+    if (animationType === 'clock' || animationType === 'sand-clock') {
         clockContainer?.classList.remove('hidden');
         if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
+
+        if (animationType === 'clock') {
+            clockFace?.classList.remove('hidden');
+            sandClockFace?.classList.add('hidden');
+        } else {
+            clockFace?.classList.add('hidden');
+            sandClockFace?.classList.remove('hidden');
+            if (sandClockFace) sandClockFace.style.display = 'flex'; // Ensure display flex for sand clock
+        }
     } else {
         clockContainer?.classList.add('hidden');
     }
@@ -373,7 +410,7 @@ async function syncState() {
 
     applyTheme(state.theme || THEME_SYSTEM);
     applyFont(state.font || FONTS[0].value);
-    applyAnimation(state.animation || 'left-to-right');
+    applyAnimation(state.animation || 'clock');
 
     await updateUI();
 
@@ -848,6 +885,78 @@ function setupEventListeners() {
         }
     });
 
+    // Category Import/Export
+    getEl(ID_EXPORT_CATEGORIES_BTN)?.addEventListener('click', async () => {
+        const categories = await dbGetAll(STORE_CATEGORIES);
+        // Exclude system idle category from export just in case it's in the store (it shouldn't be, but good to be safe)
+        const exportData = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE);
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = createEl('a');
+        a.href = url;
+        a.download = `quicklog_categories_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+    });
+
+    const categoryFileInput = getEl(ID_CATEGORY_FILE_INPUT);
+    getEl(ID_IMPORT_CATEGORIES_BTN)?.addEventListener('click', () => {
+        categoryFileInput?.click();
+    });
+
+    categoryFileInput?.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const importedCategories = JSON.parse(text);
+
+            if (!Array.isArray(importedCategories)) {
+                throw new Error('Invalid format: expected an array of categories.');
+            }
+
+            const importMode = document.querySelector('input[name="import-mode"]:checked')?.value || 'append';
+
+            if (importMode === 'overwrite') {
+                if (await showConfirm('既存のカテゴリーをすべて削除して上書きしますか？')) {
+                    await dbClear(STORE_CATEGORIES);
+                } else {
+                    categoryFileInput.value = '';
+                    return;
+                }
+            }
+
+            const currentCategories = await dbGetAll(STORE_CATEGORIES);
+            let maxOrder = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
+
+            for (const cat of importedCategories) {
+                if (cat.name && isValidCategoryName(cat.name)) {
+                    // Check for duplicates in append mode
+                    if (importMode === 'append') {
+                        const existing = await dbGet(STORE_CATEGORIES, cat.name);
+                        if (existing) continue;
+                    }
+
+                    await dbPut(STORE_CATEGORIES, {
+                        name: cat.name,
+                        color: cat.color || 'primary',
+                        order: cat.order !== undefined ? cat.order : ++maxOrder
+                    });
+                }
+            }
+
+            categoryFileInput.value = '';
+            showToast('カテゴリーをインポートしました');
+            renderCategories();
+            renderCategoryEditor();
+            broadcastSync();
+        } catch (err) {
+            console.error('Failed to import categories:', err);
+            alert('カテゴリーのインポートに失敗しました。ファイル形式を確認してください。');
+            categoryFileInput.value = '';
+        }
+    });
+
     // CSV and Maintenance helpers
     async function performMaintenanceAction(confirmMessage, action) {
         if (await showConfirm(confirmMessage)) {
@@ -945,7 +1054,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         applyTheme(settings.theme || THEME_SYSTEM);
         applyFont(settings.font || FONTS[0].value);
-        applyAnimation(settings.animation || 'left-to-right');
+        applyAnimation(settings.animation || 'clock');
 
         setupBroadcastChannel();
         setupEventListeners();
