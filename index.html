@@ -3,188 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickLog-Solo</title>
+    <title>QuickLog-Solo - ミニマリスト向け工数管理ツール</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Open+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="css/m3-theme.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/landing.css">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="assets/icon.svg">
-    <meta name="theme-color" content="#2563eb">
 </head>
 <body class="theme-light">
-    <div id="app">
-        <header>
-            <div id="header-btns">
-                <button id="copy-report-btn" title="日報コピー"><span class="material-symbols-outlined">content_paste</span></button>
-                <button id="copy-aggregation-btn" title="集計コピー"><span class="material-symbols-outlined">assessment</span></button>
-                <button id="settings-toggle" title="設定"><span class="material-symbols-outlined">settings</span></button>
+    <div id="landing-container">
+        <header class="landing-header">
+            <div class="header-content">
+                <img src="assets/icon.svg" alt="QuickLog-Solo Icon" class="app-icon">
+                <h1>QuickLog-Solo</h1>
             </div>
         </header>
 
-        <main>
-            <section id="category-section">
-                <div id="category-list">
-                    <!-- カテゴリボタンがここに動的に追加される -->
-                </div>
-                <div id="category-pagination">
-                    <!-- ページインジケーター（点）がここに動的に追加される -->
+        <main class="landing-main">
+            <section class="hero-section">
+                <h2 class="display-large">1秒で記録、1秒で集計、1秒で安心。</h2>
+                <p class="body-large">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドパネル型工数管理ツールです。</p>
+                <div class="cta-buttons">
+                    <a href="app.html" class="btn-primary">ブラウザで試す</a>
+                    <a href="dist/QuickLog-Solo.zip" class="btn-secondary" download>拡張機能をダウンロード</a>
                 </div>
             </section>
 
-            <section id="control-section">
-                <div id="timer-container">
-                    <div id="current-task-display">
-                        <div id="current-task-display-base">
-                            <h2 id="current-task-name">-</h2>
-                            <div class="timer-box">
-                                <span id="status-label" class="material-symbols-outlined">stop</span>
-                                <div id="elapsed-time" class="hidden">00:00:00</div>
-                            </div>
-                        </div>
-
-                        <div id="current-task-display-overlay">
-                            <h2 id="current-task-name-overlay">-</h2>
-                            <div class="timer-box">
-                                <span id="status-label-overlay" class="material-symbols-outlined">stop</span>
-                                <div id="elapsed-time-overlay" class="hidden">00:00:00</div>
-                            </div>
-                        </div>
-
-                        <div id="clock-container" class="hidden">
-                            <div id="clock-face">
-                                <div id="clock-hand"></div>
-                            </div>
-                        </div>
+            <section class="feature-section card">
+                <h3 class="headline-medium">大事なポリシー</h3>
+                <div class="policy-grid">
+                    <div class="policy-item">
+                        <span class="material-symbols-outlined icon-large">lock</span>
+                        <h4>Local Only</h4>
+                        <p>データはブラウザ内の IndexedDB にのみ保存。外部サーバーへの送信は一切行いません。</p>
+                    </div>
+                    <div class="policy-item">
+                        <span class="material-symbols-outlined icon-large">visibility_off</span>
+                        <h4>No Tracking</h4>
+                        <p>アクセス解析やトラッキングコードは一切含みません。あなたの作業を誰も監視しません。</p>
+                    </div>
+                    <div class="policy-item">
+                        <span class="material-symbols-outlined icon-large">speed</span>
+                        <h4>Zero Friction</h4>
+                        <p>「Less is More」。過剰な機能を削ぎ落とし、1秒で打刻できる軽快さを追求しました。</p>
                     </div>
                 </div>
-                <div id="stop-btn-box">
-                    <button id="pause-btn" disabled>
-                        <span class="material-symbols-outlined btn-icon">pause</span>
-                        <span class="btn-text">一時停止</span>
-                    </button>
-                    <button id="end-btn" disabled>
-                        <span class="material-symbols-outlined btn-icon">stop</span>
-                        <span class="btn-text">終了</span>
-                    </button>
+            </section>
+
+            <section class="feature-section">
+                <h3 class="headline-medium">主な機能</h3>
+                <ul class="feature-list">
+                    <li>
+                        <span class="material-symbols-outlined">bolt</span>
+                        <div>
+                            <h4>ワンクリック打刻</h4>
+                            <p>カテゴリを選んで開始するだけ。前のタスクは自動的に終了処理されます。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="material-symbols-outlined">side_navigation</span>
+                        <div>
+                            <h4>サイドパネル常駐</h4>
+                            <p>Chromeのサイドパネルで動作。ブラウザの横でいつでも素早くアクセスできます。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="material-symbols-outlined">content_paste</span>
+                        <div>
+                            <h4>一瞬で集計</h4>
+                            <p>日報形式やカテゴリ別集計をワンクリックでクリップボードにコピーできます。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="material-symbols-outlined">palette</span>
+                        <div>
+                            <h4>Material 3 デザイン</h4>
+                            <p>Googleの最新デザインシステムを採用。美しく、直感的な操作感を提供します。</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="setup-section card">
+                <h3 class="headline-medium">インストール / アンインストール</h3>
+                <div class="setup-content">
+                    <div class="setup-step">
+                        <h4>インストール方法</h4>
+                        <ol>
+                            <li>「拡張機能をダウンロード」からZIPファイルを保存し、解凍します。</li>
+                            <li>Chromeで <code>chrome://extensions/</code> を開きます。</li>
+                            <li>右上の「デベロッパーモード」をONにします。</li>
+                            <li>「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。</li>
+                        </ol>
+                        <p class="note">※ 外部サーバーを介さないため、安心してお使いいただけます。</p>
+                    </div>
+                    <div class="setup-step">
+                        <h4>アンインストール方法</h4>
+                        <ol>
+                            <li>拡張機能アイコンを右クリックし、「Chromeから削除」を選択するだけです。</li>
+                        </ol>
+                    </div>
                 </div>
             </section>
 
-            <section id="log-section">
-                <ul id="log-list">
-                    <!-- ログアイテムがここに動的に追加される -->
-                </ul>
+            <section class="faq-section">
+                <h3 class="headline-medium">FAQ / トラブルシューティング</h3>
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <h4>Q. データはどこに保存されますか？</h4>
+                        <p>A. あなたのPC内のGoogle Chromeが管理する領域（IndexedDB）にのみ保存されます。</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>Q. PCを再起動してもデータは消えませんか？</h4>
+                        <p>A. はい、消えません。ブラウザのストレージ機能により、永続的に保存されます。ただし、ブラウザの「閲覧履歴の消去」でデータを削除した場合は消去される可能性があります。</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>Q. 動作が重くなった場合は？</h4>
+                        <p>A. 設定の「メンテナンス」タブからログをクリアするか、CSVエクスポートでバックアップを取ってからリセットをお試しください。</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="scene-section card">
+                <div class="scene-content">
+                    <span class="material-symbols-outlined icon-extra-large">task_alt</span>
+                    <h3 class="headline-small">一日の終わりに、スッキリとした解放感を。</h3>
+                    <p>
+                        「今日、何してたっけ？」と思い出す時間はもう不要です。<br>
+                        QuickLog-Soloを開いて集計ボタンを押すだけ。正確な記録が、あなたの誠実な仕事を証明します。
+                    </p>
+                </div>
             </section>
         </main>
 
-        <!-- Settings Popup -->
-        <div id="settings-popup" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-btn">&times;</span>
-                <h2>設定</h2>
-
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="general">一般</button>
-                    <button class="tab-btn" data-tab="categories">カテゴリ</button>
-                    <button class="tab-btn" data-tab="maintenance">メンテナンス</button>
-                    <button class="tab-btn" data-tab="about">About</button>
-                </div>
-
-                <div id="general-tab" class="tab-content">
-                    <div class="setting-item">
-                        <label>テーマ</label>
-                        <select id="theme-select">
-                            <option value="system">システム設定に従う</option>
-                            <option value="light">ライトモード</option>
-                            <option value="dark">ダークモード</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>表示フォント</label>
-                        <select id="font-select">
-                            <!-- JSで生成 -->
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>背景アニメーション</label>
-                        <select id="animation-select">
-                            <option value="left-to-right">左から右 (標準)</option>
-                            <option value="right-to-left">右から左</option>
-                            <option value="clock">クロック</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <button id="export-csv-btn">CSVエクスポート</button>
-                        <button id="import-csv-btn">CSVインポート</button>
-                        <input type="file" id="csv-file-input" style="display:none" accept=".csv">
-                    </div>
-                </div>
-
-                <div id="categories-tab" class="tab-content hidden">
-                    <div id="category-editor-list">
-                        <!-- カテゴリ編集アイテムがここに動的に追加される -->
-                    </div>
-                    <div id="add-category-box-settings">
-                        <input type="text" id="new-category-name-settings" placeholder="新しいカテゴリ...">
-                        <button id="add-category-btn-settings">+</button>
-                    </div>
-                </div>
-
-                <div id="about-tab" class="tab-content hidden">
-                    <div class="setting-item">
-                        <label>バージョン</label>
-                        <p id="version-display"></p>
-                    </div>
-                    <div class="setting-item">
-                        <label>開発者</label>
-                        <p>Masanori SATAKE</p>
-                    </div>
-                    <div class="setting-item">
-                        <label>QuickLog-Solo について</label>
-                        <p style="font-size: 0.85rem; line-height: 1.6;">
-                            QuickLog-Solo は、プライバシー重視のミニマリストな作業ログツールです。データはブラウザ内の IndexedDB にのみ保存され、外部送信は一切行われません。外部ライブラリを使用しない軽量・セキュアな設計で、サイドパネルからいつでも素早く記録できます。
-                        </p>
-                    </div>
-                </div>
-
-                <div id="maintenance-tab" class="tab-content hidden">
-                    <div class="setting-item">
-                        <label>ログの削除</label>
-                        <button id="clear-logs-btn" class="danger-btn" style="width: 100%;">ログをすべて削除</button>
-                    </div>
-                    <div class="setting-item">
-                        <label>設定とカテゴリの初期化</label>
-                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);">
-                            ログは維持されます。
-                        </p>
-                        <button id="reset-cat-settings-btn" style="width: 100%;">カテゴリ・設定を初期化</button>
-                    </div>
-                    <div class="setting-item">
-                        <label>設定のみの初期化</label>
-                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);">
-                            ログとカテゴリは維持されます。
-                        </p>
-                        <button id="reset-settings-btn" style="width: 100%;">設定のみを初期化</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="confirm-modal" class="modal hidden">
-            <div class="modal-content">
-                <p id="confirm-message">本当に作業を終了しますか？</p>
-                <div class="confirm-btns">
-                    <button id="confirm-cancel-btn">キャンセル</button>
-                    <button id="confirm-ok-btn">OK</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="toast" class="hidden">コピーしました！</div>
+        <footer class="landing-footer">
+            <p>&copy; 2024 Masanori SATAKE. Built with Material 3.</p>
+        </footer>
     </div>
-
-    <script type="module" src="js/app.js"></script>
 </body>
 </html>

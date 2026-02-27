@@ -12,7 +12,7 @@
 graph TD
     subgraph Browser
         SW[sw.js]
-        Index[index.html]
+        App[app.html]
     end
 
     subgraph Application

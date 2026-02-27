@@ -12,7 +12,7 @@ def create_package():
     # Files and directories to include in the package
     includes = [
         "manifest.json",
-        "index.html",
+        "app.html",
         "version.json",
         "js",
         "css",

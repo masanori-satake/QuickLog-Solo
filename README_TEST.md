@@ -56,7 +56,7 @@ UIの確認や特定の状態（長時間経過など）のテストを容易に
 -   **タスクの強制開始:** `?test_cat=[カテゴリ名]&test_elapsed=[経過ミリ秒]`
 -   **一時停止状態の再現:** `?test_cat=(待機)&test_resumable=[再開カテゴリ名]`
 
-例: `index.html?test_cat=🤝 会議&test_elapsed=3600000&test_layout=horizontal` (1時間経過した会議を横長レイアウトで表示)
+例: `app.html?test_cat=🤝 会議&test_elapsed=3600000&test_layout=horizontal` (1時間経過した会議を横長レイアウトで表示)
 
 ## 4. テストの実行方法
 
