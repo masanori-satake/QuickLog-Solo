@@ -64,9 +64,9 @@ test.describe('Theme switching', () => {
     await page.click('.close-btn');
 
     const primaryBtn = page.locator('.category-btn.cat-primary').first();
-    // --custom-cat-primary-container (dark): #0040a1 -> rgb(0, 64, 161)
-    // --custom-cat-on-primary-container (dark): #dae2ff -> rgb(218, 226, 255)
-    await expect(primaryBtn).toHaveCSS('background-color', 'rgb(0, 64, 161)');
-    await expect(primaryBtn).toHaveCSS('color', 'rgb(218, 226, 255)');
+    // --custom-cat-primary-container (dark): #0d47a1 -> rgb(13, 71, 161)
+    // --custom-cat-on-primary-container (dark): #bbdefb -> rgb(187, 222, 251)
+    await expect(primaryBtn).toHaveCSS('background-color', 'rgb(13, 71, 161)');
+    await expect(primaryBtn).toHaveCSS('color', 'rgb(187, 222, 251)');
   });
 });

@@ -115,9 +115,34 @@ export function closeDatabase() {
 
 export async function initDB() {
     await openDatabase();
-    const settings = await setupInitialData();
+    await setupInitialData();
+    const settings = await getCurrentAppState();
     await cleanupOldLogs();
     return settings;
+}
+
+export async function getCurrentAppState() {
+    const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
+    const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
+    const animation = await dbGet(STORE_SETTINGS, SETTING_KEY_ANIMATION);
+
+    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    let activeTask = null;
+
+    if (pauseStateSetting) {
+        activeTask = pauseStateSetting.value;
+    } else {
+        const allLogs = await dbGetAll(STORE_LOGS);
+        const openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
+        activeTask = openTasks[0];
+    }
+
+    return {
+        theme: theme ? theme.value : null,
+        font: font ? font.value : null,
+        animation: animation ? animation.value : null,
+        activeTask
+    };
 }
 
 async function setupInitialData() {
@@ -164,32 +189,25 @@ async function setupInitialData() {
         }
     }
 
-    const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
-    const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
-
     const allLogs = await dbGetAll(STORE_LOGS);
     const openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
-    let activeTask = openTasks[0];
+    const activeTaskFromLogs = openTasks[0];
 
     // Migration / Auto-repair for (待機) tasks in logs
-    if (activeTask && activeTask.category === SYSTEM_CATEGORY_IDLE) {
+    if (activeTaskFromLogs && activeTaskFromLogs.category === SYSTEM_CATEGORY_IDLE) {
         console.log(`QuickLog-Solo: Migrating open ${SYSTEM_CATEGORY_IDLE} task to pauseState`);
         const pauseState = {
-            id: activeTask.id,
+            id: activeTaskFromLogs.id,
             category: SYSTEM_CATEGORY_IDLE,
-            startTime: activeTask.startTime,
-            resumableCategory: activeTask.resumableCategory,
+            startTime: activeTaskFromLogs.startTime,
+            resumableCategory: activeTaskFromLogs.resumableCategory,
             isPaused: true
         };
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
-        // DO NOT delete from logs to preserve history
-        activeTask = pauseState;
-    } else {
-        const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-        if (pauseStateSetting) {
-            activeTask = pauseStateSetting.value;
-        }
     }
+
+    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    const activeTask = pauseStateSetting ? pauseStateSetting.value : activeTaskFromLogs;
 
     // 複数の未終了タスクがある場合は、最新以外を強制終了させて整合性を保つ
     // ただし、activeTaskがpauseStateの場合は、全てのopenTasksを強制終了すべき
@@ -206,12 +224,6 @@ async function setupInitialData() {
             await dbPut(STORE_LOGS, orphaned);
         }
     }
-
-    return {
-        theme: theme ? theme.value : null,
-        font: font ? font.value : null,
-        activeTask
-    };
 }
 
 async function cleanupOldLogs() {
