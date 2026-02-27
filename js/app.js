@@ -64,8 +64,10 @@ const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 let activeTask = null;
 let timerInterval = null;
 let syncChannel = null;
+let syncTimeout = null;
 let currentCategoryPage = 0;
 let currentAnimationType = 'left-to-right';
+let lastCategoryRenderData = null;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -84,6 +86,7 @@ const FONTS = [
 // --- Task Control ---
 
 async function startTask(categoryName, resumableCategory = null) {
+    if (syncTimeout) clearTimeout(syncTimeout);
     const cat = await dbGet(STORE_CATEGORIES, categoryName);
     const color = cat ? cat.color : null;
     activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color);
@@ -92,12 +95,14 @@ async function startTask(categoryName, resumableCategory = null) {
 }
 
 async function pauseTask() {
+    if (syncTimeout) clearTimeout(syncTimeout);
     activeTask = await pauseTaskLogic(activeTask);
     updateUI();
     broadcastSync();
 }
 
 async function stopTask() {
+    if (syncTimeout) clearTimeout(syncTimeout);
     activeTask = await stopTaskLogic(activeTask, true);
     broadcastSync();
 }
@@ -199,7 +204,6 @@ function applyAnimation(animationType) {
 }
 
 async function renderCategories() {
-    console.log('QuickLog-Solo: Rendering categories...');
     let categories;
     try {
         categories = await dbGetAll(STORE_CATEGORIES);
@@ -215,6 +219,21 @@ async function renderCategories() {
     const start = currentCategoryPage * ITEMS_PER_PAGE;
     const pageCategories = categories.slice(start, start + ITEMS_PER_PAGE);
 
+    const activeTaskCatName = activeTask ? activeTask.category : null;
+
+    // Check if we actually need to re-render
+    const currentRenderData = JSON.stringify({
+        page: currentCategoryPage,
+        activeTask: activeTaskCatName,
+        categories: pageCategories.map(c => ({ name: c.name, color: c.color }))
+    });
+
+    if (lastCategoryRenderData === currentRenderData) {
+        return;
+    }
+    lastCategoryRenderData = currentRenderData;
+
+    console.log('QuickLog-Solo: Rendering categories...');
     const list = getEl(ID_CATEGORY_LIST);
     if (!list) return;
     list.innerHTML = '';
@@ -334,7 +353,10 @@ function setupBroadcastChannel() {
         if (event.data.type === 'reload') {
             location.reload();
         } else if (event.data.type === 'sync') {
-            syncState();
+            // Only sync if visible to reduce CPU load as requested
+            if (document.visibilityState === 'visible') {
+                syncState();
+            }
         }
     };
 }
@@ -937,12 +959,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('QuickLog-Solo Initialized');
 
     // State Synchronization: Sync when tab becomes visible or window gets focus
+    const delayedSync = () => {
+        if (syncTimeout) clearTimeout(syncTimeout);
+        // Delay sync slightly to allow local interactions (like clicks) to take precedence
+        syncTimeout = setTimeout(() => {
+            if (document.visibilityState === 'visible') {
+                syncState();
+            }
+        }, 100);
+    };
+
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-            syncState();
+            delayedSync();
         }
     });
-    window.addEventListener('focus', syncState);
+    window.addEventListener('focus', delayedSync);
 });
 
 async function handleTestParameters() {

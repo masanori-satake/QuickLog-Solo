@@ -125,6 +125,7 @@ export async function getCurrentAppState() {
     const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
     const animation = await dbGet(STORE_SETTINGS, SETTING_KEY_ANIMATION);
+    const categories = await dbGetAll(STORE_CATEGORIES);
 
     const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
     let activeTask = null;
@@ -141,6 +142,7 @@ export async function getCurrentAppState() {
         theme: theme ? theme.value : null,
         font: font ? font.value : null,
         animation: animation ? animation.value : null,
+        categories,
         activeTask
     };
 }
