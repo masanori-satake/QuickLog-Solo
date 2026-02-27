@@ -1,5 +1,5 @@
 import {
-    initDB, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
+    initDB, getCurrentAppState, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION
 } from './db.js';
@@ -20,6 +20,7 @@ const TOAST_DURATION_MS = 2000;
 const ITEMS_PER_PAGE = 16;
 
 const CSV_HEADER = "id,category,startTime,endTime\n";
+const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
 
 const ID_SETTINGS_POPUP = 'settings-popup';
 const ID_SETTINGS_TOGGLE = 'settings-toggle';
@@ -62,8 +63,11 @@ const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 
 let activeTask = null;
 let timerInterval = null;
+let syncChannel = null;
+let syncTimeout = null;
 let currentCategoryPage = 0;
 let currentAnimationType = 'left-to-right';
+let lastCategoryRenderData = null;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -82,19 +86,25 @@ const FONTS = [
 // --- Task Control ---
 
 async function startTask(categoryName, resumableCategory = null) {
+    if (syncTimeout) clearTimeout(syncTimeout);
     const cat = await dbGet(STORE_CATEGORIES, categoryName);
     const color = cat ? cat.color : null;
     activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color);
     updateUI();
+    broadcastSync();
 }
 
 async function pauseTask() {
+    if (syncTimeout) clearTimeout(syncTimeout);
     activeTask = await pauseTaskLogic(activeTask);
     updateUI();
+    broadcastSync();
 }
 
 async function stopTask() {
+    if (syncTimeout) clearTimeout(syncTimeout);
     activeTask = await stopTaskLogic(activeTask, true);
+    broadcastSync();
 }
 
 async function endTask() {
@@ -194,7 +204,6 @@ function applyAnimation(animationType) {
 }
 
 async function renderCategories() {
-    console.log('QuickLog-Solo: Rendering categories...');
     let categories;
     try {
         categories = await dbGetAll(STORE_CATEGORIES);
@@ -210,6 +219,21 @@ async function renderCategories() {
     const start = currentCategoryPage * ITEMS_PER_PAGE;
     const pageCategories = categories.slice(start, start + ITEMS_PER_PAGE);
 
+    const activeTaskCatName = activeTask ? activeTask.category : null;
+
+    // Check if we actually need to re-render
+    const currentRenderData = JSON.stringify({
+        page: currentCategoryPage,
+        activeTask: activeTaskCatName,
+        categories: pageCategories.map(c => ({ name: c.name, color: c.color }))
+    });
+
+    if (lastCategoryRenderData === currentRenderData) {
+        return;
+    }
+    lastCategoryRenderData = currentRenderData;
+
+    console.log('QuickLog-Solo: Rendering categories...');
     const list = getEl(ID_CATEGORY_LIST);
     if (!list) return;
     list.innerHTML = '';
@@ -320,6 +344,47 @@ function createLogElement(log, categoryMap) {
         <span class="log-duration">${durationText}</span>
     `;
     return li;
+}
+
+function setupBroadcastChannel() {
+    syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
+    syncChannel.onmessage = (event) => {
+        console.log('QuickLog-Solo: Received sync message', event.data);
+        if (event.data.type === 'reload') {
+            location.reload();
+        } else if (event.data.type === 'sync') {
+            // Only sync if visible to reduce CPU load as requested
+            if (document.visibilityState === 'visible') {
+                syncState();
+            }
+        }
+    };
+}
+
+function broadcastSync(type = 'sync') {
+    if (syncChannel) {
+        syncChannel.postMessage({ type });
+    }
+}
+
+async function syncState() {
+    const state = await getCurrentAppState();
+    activeTask = state.activeTask;
+
+    applyTheme(state.theme || THEME_SYSTEM);
+    applyFont(state.font || FONTS[0].value);
+    applyAnimation(state.animation || 'left-to-right');
+
+    await updateUI();
+
+    // Settings popup logic: Refresh category editor if the categories tab is active
+    const settingsPopup = getEl(ID_SETTINGS_POPUP);
+    if (settingsPopup && !settingsPopup.classList.contains('hidden')) {
+        const categoriesTab = getEl('categories-tab');
+        if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
+            await renderCategoryEditor();
+        }
+    }
 }
 
 async function updateUI() {
@@ -594,6 +659,7 @@ async function renderCategoryEditor() {
                 }
                 updateUI();
                 renderCategoryEditor();
+                broadcastSync();
             }
         };
 
@@ -603,6 +669,7 @@ async function renderCategoryEditor() {
                 await dbPut(STORE_CATEGORIES, cat);
                 renderCategoryEditor();
                 renderCategories();
+                broadcastSync();
             };
         });
 
@@ -611,6 +678,7 @@ async function renderCategoryEditor() {
                 await dbDelete(STORE_CATEGORIES, cat.name);
                 updateUI();
                 renderCategoryEditor();
+                broadcastSync();
             }
         };
 
@@ -647,6 +715,7 @@ async function renderCategoryEditor() {
         }
         renderCategories();
         renderCategoryEditor();
+        broadcastSync();
     };
 }
 
@@ -730,6 +799,7 @@ function setupEventListeners() {
         const theme = e.target.value;
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_THEME, value: theme });
         applyTheme(theme);
+        broadcastSync();
     });
 
 
@@ -746,6 +816,7 @@ function setupEventListeners() {
             const fontValue = e.target.value;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_FONT, value: fontValue });
             applyFont(fontValue);
+            broadcastSync();
         };
     }
 
@@ -755,6 +826,7 @@ function setupEventListeners() {
             const animType = e.target.value;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: animType });
             applyAnimation(animType);
+            broadcastSync();
         };
     }
 
@@ -772,6 +844,7 @@ function setupEventListeners() {
             if (input) input.value = '';
             renderCategories();
             renderCategoryEditor();
+            broadcastSync();
         }
     });
 
@@ -825,6 +898,7 @@ function setupEventListeners() {
             }
         }
         updateUI();
+        broadcastSync('reload');
         alert('インポートが完了しました。');
     });
 
@@ -832,6 +906,7 @@ function setupEventListeners() {
         performMaintenanceAction('全てのログを削除します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
             await dbClear(STORE_LOGS);
             updateUI();
+            broadcastSync('reload');
             showToast('削除が完了しました');
         });
     });
@@ -840,6 +915,7 @@ function setupEventListeners() {
         performMaintenanceAction('カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログは維持されます）', async () => {
             await dbClear(STORE_CATEGORIES);
             await dbClear(STORE_SETTINGS);
+            broadcastSync('reload');
             location.reload();
         });
     });
@@ -847,6 +923,7 @@ function setupEventListeners() {
     getEl(ID_RESET_SETTINGS_BTN)?.addEventListener('click', () => {
         performMaintenanceAction('各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログとカテゴリは維持されます）', async () => {
             await dbClear(STORE_SETTINGS);
+            broadcastSync('reload');
             location.reload();
         });
     });
@@ -870,6 +947,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyFont(settings.font || FONTS[0].value);
         applyAnimation(settings.animation || 'left-to-right');
 
+        setupBroadcastChannel();
         setupEventListeners();
         await handleTestParameters();
         await updateUI();
@@ -879,6 +957,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     console.log('QuickLog-Solo Initialized');
+
+    // State Synchronization: Sync when tab becomes visible or window gets focus
+    const delayedSync = () => {
+        if (syncTimeout) clearTimeout(syncTimeout);
+        // Delay sync slightly to allow local interactions (like clicks) to take precedence
+        syncTimeout = setTimeout(() => {
+            if (document.visibilityState === 'visible') {
+                syncState();
+            }
+        }, 100);
+    };
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            delayedSync();
+        }
+    });
+    window.addEventListener('focus', delayedSync);
 });
 
 async function handleTestParameters() {
