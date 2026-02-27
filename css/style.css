@@ -265,17 +265,29 @@ main {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    align-items: center;
 }
 
 #sand-clock-face.hidden {
     display: none !important;
 }
 
+#sand-clock-face::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-top: 2px solid var(--custom-cat-on-main);
+    border-bottom: 2px solid var(--custom-cat-on-main);
+    background:
+        linear-gradient(to bottom right, transparent calc(50% - 1px), var(--custom-cat-on-main) calc(50% - 1px), var(--custom-cat-on-main) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(to bottom left, transparent calc(50% - 1px), var(--custom-cat-on-main) calc(50% - 1px), var(--custom-cat-on-main) calc(50% + 1px), transparent calc(50% + 1px));
+    z-index: 2;
+}
+
 #sand-top, #sand-bottom {
     width: 24px;
-    height: 15px;
-    border: 2px solid var(--custom-cat-on-main);
+    height: 16px;
     position: relative;
     overflow: hidden;
 }
