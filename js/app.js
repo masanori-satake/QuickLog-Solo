@@ -233,7 +233,7 @@ function applyAnimation(animationType) {
         } else {
             clockFace?.classList.add('hidden');
             sandClockFace?.classList.remove('hidden');
-                sandClockFace?.style.display = 'flex'; // Ensure display flex for sand clock
+            if (sandClockFace) sandClockFace.style.display = 'flex'; // Ensure display flex for sand clock
         }
     } else {
         clockContainer?.classList.add('hidden');
