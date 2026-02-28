@@ -407,7 +407,7 @@ body.theme-light #current-task-display-base #clock-face {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 80px; /* Match timer display height, avoiding buttons as requested in feedback */
     z-index: 0;
     pointer-events: none;
     border-radius: var(--md-sys-shape-medium);
