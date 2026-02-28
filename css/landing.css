@@ -100,13 +100,17 @@ h1 {
     background-color: var(--md-sys-color-surface-variant);
 }
 
-.download-dropdown:hover .dropdown-content {
+.download-dropdown.show .dropdown-content {
     display: block;
+}
+
+.btn-secondary .material-symbols-outlined {
+    vertical-align: middle;
+    font-size: 20px;
 }
 
 .btn-secondary span {
     vertical-align: middle;
-    font-size: 20px;
 }
 
 .btn-primary, .btn-secondary {

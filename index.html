@@ -36,8 +36,8 @@
                 <p class="body-large" data-i18n="hero-desc">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型工数管理ツールです。</p>
                 <div class="cta-buttons">
                     <button class="btn-primary" onclick="openPreview()" data-i18n="cta-test">ブラウザで試す</button>
-                    <div class="download-dropdown">
-                        <button class="btn-secondary"><span data-i18n="cta-download">拡張機能をダウンロード</span> <span class="material-symbols-outlined">expand_more</span></button>
+                    <div class="download-dropdown" id="download-dropdown">
+                        <button class="btn-secondary" onclick="toggleDownloadDropdown(event)"><span data-i18n="cta-download">拡張機能をダウンロード</span> <span class="material-symbols-outlined">expand_more</span></button>
                         <div class="dropdown-content">
                             <a href="dist/QuickLog-Solo-Chrome.zip" download><span data-i18n="dl-chrome">Chrome / Edge 用</span> (.zip)</a>
                             <a href="dist/QuickLog-Solo-Firefox.zip" download><span data-i18n="dl-firefox">Firefox 用</span> (.zip)</a>
@@ -389,10 +389,21 @@
             document.body.style.overflow = '';
         }
 
+        function toggleDownloadDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('download-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
         window.onclick = function(event) {
             const modal = document.getElementById('preview-modal');
             if (event.target == modal) {
                 closePreview();
+            }
+
+            const dropdown = document.getElementById('download-dropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
             }
         }
     </script>
