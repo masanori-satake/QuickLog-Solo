@@ -5,7 +5,7 @@
 export class AnimationEngine {
     constructor(canvas) {
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
+        this.ctx = canvas.getContext('2d', { willReadFrequently: true });
         this.activeAnimation = null;
         this.startTime = 0;
         this.color = '#1976d2';
@@ -71,7 +71,7 @@ export class AnimationEngine {
             this.offscreen.width = w;
             this.offscreen.height = h;
         }
-        const octx = this.offscreen.getContext('2d');
+        const octx = this.offscreen.getContext('2d', { willReadFrequently: true });
         octx.clearRect(0, 0, w, h);
 
         // Draw the monochromatic animation to offscreen

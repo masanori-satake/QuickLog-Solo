@@ -693,7 +693,7 @@ function getColorCode(color) {
         brown: '#6d4c41',
         cyan: '#039be5'
     };
-    return codes[color] || '#333';
+    return codes[color] || '#1976d2';
 }
 
 async function renderCategoryEditor() {
@@ -720,23 +720,23 @@ async function renderCategoryEditor() {
         `).join('');
 
         const animOptions = [
-            { value: 'default', label: '標準設定を使用' },
-            { value: 'left-to-right', label: '左から右' },
-            { value: 'right-to-left', label: '右から左' },
-            { value: 'clock', label: 'クロック' },
-            { value: 'sand-clock', label: 'サンドクロック' },
-            { value: 'tetris-building', label: 'テトリス' },
-            { value: 'plant-growth', label: '植物の成長' },
-            { value: 'dot-typing', label: 'ドットタイピング' },
-            { value: 'newtons-cradle', label: 'ニュートン' },
-            { value: 'ripple', label: '波紋' },
-            { value: 'lissajous-pendulum', label: '振り子' },
-            { value: 'migrating-birds', label: '渡り鳥' },
-            { value: 'coffee-drip', label: 'コーヒー' },
-            { value: 'night-sky', label: '夜空' },
-            { value: 'kaleidoscope', label: '万華鏡' },
-            { value: 'contour-lines', label: '等高線' },
-            { value: 'matrix-code', label: 'Matrix' }
+            { value: 'default', label: 'Use Default' },
+            { value: 'left-to-right', label: 'Left to Right' },
+            { value: 'right-to-left', label: 'Right to Left' },
+            { value: 'clock', label: 'Clock' },
+            { value: 'sand-clock', label: 'Sand Clock' },
+            { value: 'tetris-building', label: 'Tetris Building' },
+            { value: 'plant-growth', label: 'Plant Growth' },
+            { value: 'dot-typing', label: 'Dot Typing' },
+            { value: 'newtons-cradle', label: 'Newton\'s Cradle' },
+            { value: 'ripple', label: 'Ripple' },
+            { value: 'lissajous-pendulum', label: 'Lissajous Pendulum' },
+            { value: 'migrating-birds', label: 'Migrating Birds' },
+            { value: 'coffee-drip', label: 'Coffee Drip' },
+            { value: 'night-sky', label: 'Night Sky' },
+            { value: 'kaleidoscope', label: 'Kaleidoscope' },
+            { value: 'contour-lines', label: 'Contour Lines' },
+            { value: 'matrix-code', label: 'Matrix Code' }
         ];
 
         const animSelectHtml = `
@@ -963,6 +963,7 @@ function setupEventListeners() {
     if (animSelect) {
         animSelect.onchange = async (e) => {
             const animType = e.target.value;
+            currentAnimationType = animType;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: animType });
             await updateUI();
             broadcastSync();
