@@ -1,3 +1,5 @@
+[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) [![Build and Deploy Storybook](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/storybook.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/storybook.yml) ![Version](https://img.shields.io/badge/version-0.4.1-blue) ![License](https://img.shields.io/badge/license-ISC-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
+
 # QuickLog-Solo
 
 「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向け・サイドパネル型工数管理ツールです。設計思想や行動指針については [AGENTS.md](AGENTS.md) を参照してください。

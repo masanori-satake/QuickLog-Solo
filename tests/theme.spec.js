@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Theme switching', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await page.goto('http://localhost:8080/src/app.html');
     await page.waitForSelector('#app');
 
     // Handle persistence modal if it appears
@@ -48,13 +48,14 @@ test.describe('Theme switching', () => {
     // Check Pause button (secondary container)
     // --md-sys-color-secondary-container: #404659 -> rgb(64, 70, 89)
     // --md-sys-color-on-secondary-container: #dce2f9 -> rgb(220, 226, 249)
-    await expect(pauseBtn).toHaveCSS('background-color', 'rgb(64, 70, 89)');
+    // Note: Buttons use semi-transparent background (alpha 0.6) during animations
+    await expect(pauseBtn).toHaveCSS('background-color', /rgba?\(64, 70, 89(, 0\.6)?\)|color\(srgb 0\.25098\d* 0\.27451\d* 0\.34902\d* \/ 0\.6\)/);
     await expect(pauseBtn).toHaveCSS('color', 'rgb(220, 226, 249)');
 
     // Check End button (error container)
     // --md-sys-color-error-container: #93000a -> rgb(147, 0, 10)
     // --md-sys-color-on-error-container: #ffdad6 -> rgb(255, 218, 214)
-    await expect(endBtn).toHaveCSS('background-color', 'rgb(147, 0, 10)');
+    await expect(endBtn).toHaveCSS('background-color', /rgba?\(147, 0, 10(, 0\.6)?\)|color\(srgb 0\.57647\d* 0 0\.03921\d* \/ 0\.6\)/);
     await expect(endBtn).toHaveCSS('color', 'rgb(255, 218, 214)');
   });
 
