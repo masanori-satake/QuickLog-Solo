@@ -1,6 +1,6 @@
 :root {
     --border-width: 1px;
-    --font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+    --font-family: 'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
 }
 
 * {

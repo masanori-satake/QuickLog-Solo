@@ -3,7 +3,7 @@ import {
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE
 } from './db.js';
-import { t, setLanguage, applyLanguage } from './i18n.js';
+import { t, setLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
 import {
@@ -90,12 +90,14 @@ const getBody = () => document.body;
 const createEl = (tag) => document.createElement(tag);
 
 const FONTS = [
-    { name: 'Roboto / Noto Sans JP', value: "'Roboto', 'Noto Sans JP', sans-serif" },
-    { name: 'Inter', value: "'Inter', sans-serif" },
-    { name: 'Montserrat', value: "'Montserrat', sans-serif" },
-    { name: 'Open Sans', value: "'Open Sans', sans-serif" },
-    { name: 'Ubuntu', value: "'Ubuntu', sans-serif" },
-    { name: 'font-system', value: 'system-ui, -apple-system, sans-serif' }
+    { name: 'Roboto / Noto Sans JP', value: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt'] },
+    { name: 'Roboto / Noto Sans KR', value: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ko'] },
+    { name: 'Roboto / Noto Sans SC', value: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['zh'] },
+    { name: 'Inter', value: "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['en', 'de', 'es', 'fr', 'pt'] },
+    { name: 'Montserrat', value: "'Montserrat', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['en', 'de', 'es', 'fr', 'pt'] },
+    { name: 'Open Sans', value: "'Open Sans', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['en', 'de', 'es', 'fr', 'pt'] },
+    { name: 'Ubuntu', value: "'Ubuntu', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['en', 'de', 'es', 'fr', 'pt'] },
+    { name: 'font-system', value: 'system-ui, -apple-system, "Noto Sans Symbols", "Noto Color Emoji", sans-serif', lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] }
 ];
 
 // --- Task Control ---
@@ -427,17 +429,23 @@ async function syncState() {
     const state = await getCurrentAppState();
     activeTask = state.activeTask;
 
-    setLanguage(state.language || 'auto');
+    const lang = state.language || 'auto';
+    setLanguage(lang);
     applyLanguage();
 
     applyTheme(state.theme || THEME_SYSTEM);
-    applyFont(state.font || FONTS[0].value);
 
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
 
-    // Update Font labels
+    // Update Font options first. This filters the available fonts based on language.
     updateFontSelect();
+
+    // Ensure the selected font is valid for the current language, or fallback
+    const currentLang = (lang === 'auto') ? detectBrowserLanguage() : lang;
+    const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
+    const fontToApply = filteredFonts.some(f => f.value === state.font) ? state.font : filteredFonts[0].value;
+    applyFont(fontToApply);
 
     // Determine active animation type
     let color = 'primary';
@@ -465,15 +473,31 @@ function updateFontSelect() {
     const fontSelect = getEl(ID_FONT_SELECT);
     if (fontSelect) {
         const currentFont = fontSelect.value;
+        const currentLang = (getEl(ID_LANGUAGE_SELECT)?.value === 'auto' || !getEl(ID_LANGUAGE_SELECT)?.value)
+            ? detectBrowserLanguage()
+            : getEl(ID_LANGUAGE_SELECT).value;
+
         fontSelect.innerHTML = '';
-        FONTS.forEach(f => {
+        const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
+
+        filteredFonts.forEach(f => {
             const opt = createEl('option');
             opt.value = f.value;
             opt.textContent = (f.name === 'font-system') ? t('font-system') : f.name;
             opt.style.fontFamily = f.value;
             fontSelect.appendChild(opt);
         });
-        fontSelect.value = currentFont;
+
+        // If the previously selected font is not in the filtered list, select the first available one
+        if (!filteredFonts.some(f => f.value === currentFont)) {
+            if (filteredFonts.length > 0) {
+                fontSelect.value = filteredFonts[0].value;
+                // We should also update the style since the value changed
+                getBody().style.setProperty('--font-family', filteredFonts[0].value);
+            }
+        } else {
+            fontSelect.value = currentFont;
+        }
     }
 }
 
@@ -934,8 +958,13 @@ function setupEventListeners() {
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LANGUAGE, value: lang });
         setLanguage(lang);
         applyLanguage();
-        // Update font selector because labels might have changed
+
+        // Update font selector based on the new language
         updateFontSelect();
+        // Save the font change if updateFontSelect had to fallback
+        const newFontValue = getEl(ID_FONT_SELECT).value;
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_FONT, value: newFontValue });
+
         await updateUI();
         broadcastSync();
     });
@@ -950,13 +979,7 @@ function setupEventListeners() {
 
     const fontSelect = getEl(ID_FONT_SELECT);
     if (fontSelect) {
-        FONTS.forEach(f => {
-            const opt = createEl('option');
-            opt.value = f.value;
-            opt.textContent = (f.name === 'font-system') ? t('font-system') : f.name;
-            opt.style.fontFamily = f.value;
-            fontSelect.appendChild(opt);
-        });
+        updateFontSelect();
         fontSelect.onchange = async (e) => {
             const fontValue = e.target.value;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_FONT, value: fontValue });
@@ -1165,7 +1188,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyLanguage();
 
         applyTheme(settings.theme || THEME_SYSTEM);
-        applyFont(settings.font || FONTS[0].value);
+
+        // Update font select options based on language
+        updateFontSelect();
+        const currentLang = (settings.language || 'auto') === 'auto' ? detectBrowserLanguage() : settings.language;
+        const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
+        const fontToApply = filteredFonts.some(f => f.value === settings.font) ? settings.font : filteredFonts[0].value;
+        applyFont(fontToApply);
+
         applyAnimation(settings.animation || 'clock');
 
         initAnimationEngine();
