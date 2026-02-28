@@ -19,7 +19,11 @@ export function detectBrowserLanguage() {
     }
 
     const lang = navigator.language || navigator.userLanguage;
-    return lang.startsWith('ja') ? 'ja' : 'en';
+    const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+    for (const prefix of prefixes) {
+        if (lang.startsWith(prefix)) return prefix;
+    }
+    return 'en';
 }
 
 /**

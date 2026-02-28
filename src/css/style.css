@@ -183,6 +183,7 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 0 var(--md-sys-spacing-0-5);
+    min-width: 0;
 }
 
 .log-duration {
@@ -438,8 +439,8 @@ body.theme-light #current-task-display-base #clock-face {
 }
 
 #pause-btn, #end-btn {
-    padding: var(--md-sys-spacing-1);
-    font-size: 0.875rem;
+    padding: var(--md-sys-spacing-0-5) var(--md-sys-spacing-1);
+    font-size: 0.8125rem;
     font-weight: var(--md-sys-typescale-label-large-weight);
     display: flex;
     align-items: center;
@@ -448,6 +449,14 @@ body.theme-light #current-task-display-base #clock-face {
     border-radius: var(--md-sys-shape-full);
     border: none;
     min-height: 40px;
+    min-width: 0;
+}
+
+.btn-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 #pause-btn {
@@ -506,7 +515,7 @@ body.theme-light #current-task-display-base #clock-face {
 
 .category-btn {
     padding: 0 8px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: var(--md-sys-typescale-label-large-weight);
     height: 30px;
     min-height: 30px;
