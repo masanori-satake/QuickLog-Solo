@@ -19,7 +19,8 @@ body {
 .landing-header {
     padding: var(--md-sys-spacing-4) 0;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .header-content {
@@ -400,6 +401,28 @@ code {
 
 .internal-link .material-symbols-outlined {
     font-size: 16px;
+}
+
+.lang-switcher {
+    display: flex;
+    gap: 8px;
+}
+
+.lang-btn {
+    padding: 4px 8px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 4px;
+    background: none;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.lang-btn.active {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
 }
 
 @media (max-width: 600px) {
