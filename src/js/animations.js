@@ -84,16 +84,26 @@ export class AnimationEngine {
 
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
-                // Sample center of cell
-                const x = c * cellSize + cellSize / 2;
-                const y = r * cellSize + cellSize / 2;
-                const idx = (Math.floor(y) * w + Math.floor(x)) * 4;
-                const brightness = imgData[idx]; // Just R channel for mono
+                // Average brightness of the cell
+                let totalBrightness = 0;
+                let count = 0;
+                for (let dy = 0; dy < cellSize; dy++) {
+                    for (let dx = 0; dx < cellSize; dx++) {
+                        const x = c * cellSize + dx;
+                        const y = r * cellSize + dy;
+                        if (x < w && y < h) {
+                            const idx = (y * w + x) * 4;
+                            totalBrightness += imgData[idx];
+                            count++;
+                        }
+                    }
+                }
+                const brightness = totalBrightness / count;
 
                 let dotSize = 0;
-                if (brightness > 200) dotSize = 4;      // 大ドット
-                else if (brightness > 120) dotSize = 3; // 中ドット
-                else if (brightness > 40) dotSize = 2;  // 小ドット
+                if (brightness > 120) dotSize = 4;      // 大ドット
+                else if (brightness > 60) dotSize = 3;  // 中ドット
+                else if (brightness > 10) dotSize = 2;  // 小ドット
 
                 if (dotSize > 0) {
                     this.ctx.fillRect(
@@ -196,7 +206,7 @@ export class TetrisBuilding {
         const blocksToDraw = Math.floor(p * totalBlocks);
 
         ctx.fillStyle = color;
-        ctx.globalAlpha = 0.3;
+        ctx.globalAlpha = 0.6;
 
         for (let i = 0; i < blocksToDraw; i++) {
             const r = rows - 1 - Math.floor(i / cols);
@@ -269,7 +279,7 @@ export class DotTyping {
     draw(ctx, w, h, p, color) {
         ctx.fillStyle = color;
         ctx.font = "12px monospace";
-        ctx.globalAlpha = 0.4;
+        ctx.globalAlpha = 0.7;
 
         const rows = 5;
         const cols = 15;

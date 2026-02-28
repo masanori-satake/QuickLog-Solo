@@ -161,47 +161,6 @@ function updateTimer() {
             animationEngine?.stop();
             currentActiveAnimation = null;
         }
-    } else {
-        const anim = getAnimationState(activeTask.startTime, currentAnimationType);
-        if (currentAnimationType === 'clock') {
-            if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
-            const clockFace = getEl('clock-face');
-            if (clockFace) {
-                const activeColor = 'var(--custom-cat-on-main)';
-                const bgColor = 'transparent';
-                if (!anim.isPhase2) {
-                    clockFace.style.background = `conic-gradient(${activeColor} 0deg ${anim.angle}deg, ${bgColor} ${anim.angle}deg 360deg)`;
-                } else {
-                    clockFace.style.background = `conic-gradient(${bgColor} 0deg ${anim.angle}deg, ${activeColor} ${anim.angle}deg 360deg)`;
-                }
-            }
-        } else if (currentAnimationType === 'sand-clock') {
-            if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
-            const sandTop = getEl('sand-top');
-            const sandBottom = getEl('sand-bottom');
-            if (sandTop && sandBottom) {
-                const activeColor = 'var(--custom-cat-on-main)';
-                const bgColor = 'transparent';
-                const p = anim.percent;
-                if (!anim.isPhase2) {
-                    // Top: active decreases (filled from top, but we use linear-gradient to show "decreasing")
-                    // Actually, sand falling means the top level goes down.
-                    // For top part: 0% is full, 100% is empty.
-                    // linear-gradient(to bottom, transparent p%, activeColor p%) -> This is wrong if p increases.
-                    // If p increases (0->100), we want activeColor to go from 100% to 0%.
-                    sandTop.style.background = `linear-gradient(to bottom, ${bgColor} ${p}%, ${activeColor} ${p}%)`;
-                    // Bottom: active increases (filled from bottom)
-                    // linear-gradient(to top, activeColor p%, bgColor p%)
-                    sandBottom.style.background = `linear-gradient(to top, ${activeColor} ${p}%, ${bgColor} ${p}%)`;
-                } else {
-                    // Phase 2: Inverse colors
-                    sandTop.style.background = `linear-gradient(to bottom, ${activeColor} ${p}%, ${bgColor} ${p}%)`;
-                    sandBottom.style.background = `linear-gradient(to top, ${bgColor} ${p}%, ${activeColor} ${p}%)`;
-                }
-            }
-        } else {
-            if (overlay) overlay.style.clipPath = anim.inset;
-        }
     }
 }
 
@@ -252,6 +211,9 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
             currentActiveAnimation = animStateKey;
         }
         display?.classList.add('anim-active');
+        const base = getEl('current-task-display-base');
+        base?.classList.add('anim-active');
+        base?.classList.add(`cat-${color}`);
         getEl(ID_PAUSE_BTN)?.classList.add('anim-active');
         getEl(ID_END_BTN)?.classList.add('anim-active');
     } else {
@@ -260,6 +222,10 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
             currentActiveAnimation = null;
         }
         display?.classList.remove('anim-active');
+        const base = getEl('current-task-display-base');
+        base?.classList.remove('anim-active');
+        const colorClasses = Array.from(base?.classList || []).filter(c => c.startsWith('cat-'));
+        colorClasses.forEach(c => base.classList.remove(c));
         getEl(ID_PAUSE_BTN)?.classList.remove('anim-active');
         getEl(ID_END_BTN)?.classList.remove('anim-active');
     }
