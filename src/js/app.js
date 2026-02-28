@@ -1,8 +1,9 @@
 import {
     initDB, getCurrentAppState, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION
+    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE
 } from './db.js';
+import { t, setLanguage, applyLanguage } from './i18n.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
 import {
@@ -35,6 +36,7 @@ const ID_SETTINGS_TOGGLE = 'settings-toggle';
 const ID_THEME_SELECT = 'theme-select';
 const ID_FONT_SELECT = 'font-select';
 const ID_ANIMATION_SELECT = 'animation-select';
+const ID_LANGUAGE_SELECT = 'language-select';
 const ID_CATEGORY_LIST = 'category-list';
 const ID_CATEGORY_PAGINATION = 'category-pagination';
 const ID_LOG_LIST = 'log-list';
@@ -93,7 +95,7 @@ const FONTS = [
     { name: 'Montserrat', value: "'Montserrat', sans-serif" },
     { name: 'Open Sans', value: "'Open Sans', sans-serif" },
     { name: 'Ubuntu', value: "'Ubuntu', sans-serif" },
-    { name: 'System Default', value: 'system-ui, -apple-system, sans-serif' }
+    { name: 'font-system', value: 'system-ui, -apple-system, sans-serif' }
 ];
 
 // --- Task Control ---
@@ -122,7 +124,7 @@ async function stopTask() {
 
 async function endTask() {
     if (!activeTask) return;
-    if (await showConfirm('本当に作業を終了しますか？')) {
+    if (await showConfirm(t('confirm-end-task'))) {
         await stopTask();
         updateUI();
     }
@@ -313,7 +315,7 @@ async function renderLogs() {
     logList.innerHTML = '';
 
     let lastDate = '';
-    const days = ['日', '月', '火', '水', '木', '金', '土'];
+    const days = t('day-names');
 
     visibleLogs.forEach((log) => {
         const d = new Date(log.startTime);
@@ -358,9 +360,10 @@ function createLogElement(log, categoryMap) {
 
     if (log.isManualStop) {
         colorClass = 'dot-error';
-        displayName = '終了';
+        displayName = t('stop');
     } else if (log.category === SYSTEM_CATEGORY_IDLE) {
         colorClass = 'dot-neutral';
+        displayName = t('idle-category');
     } else {
         const color = log.color || (categoryMap.get(log.category) ? categoryMap.get(log.category).color : 'primary');
         colorClass = `dot-${color}`;
@@ -424,8 +427,17 @@ async function syncState() {
     const state = await getCurrentAppState();
     activeTask = state.activeTask;
 
+    setLanguage(state.language || 'auto');
+    applyLanguage();
+
     applyTheme(state.theme || THEME_SYSTEM);
     applyFont(state.font || FONTS[0].value);
+
+    const langSelect = getEl(ID_LANGUAGE_SELECT);
+    if (langSelect) langSelect.value = state.language || 'auto';
+
+    // Update Font labels
+    updateFontSelect();
 
     // Determine active animation type
     let color = 'primary';
@@ -446,6 +458,22 @@ async function syncState() {
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
             await renderCategoryEditor();
         }
+    }
+}
+
+function updateFontSelect() {
+    const fontSelect = getEl(ID_FONT_SELECT);
+    if (fontSelect) {
+        const currentFont = fontSelect.value;
+        fontSelect.innerHTML = '';
+        FONTS.forEach(f => {
+            const opt = createEl('option');
+            opt.value = f.value;
+            opt.textContent = (f.name === 'font-system') ? t('font-system') : f.name;
+            opt.style.fontFamily = f.value;
+            fontSelect.appendChild(opt);
+        });
+        fontSelect.value = currentFont;
     }
 }
 
@@ -510,14 +538,15 @@ async function updateUI() {
                 }
             }
         });
-        [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = activeTask.category; });
+        const displayCategoryName = isPaused ? t('idle-category') : activeTask.category;
+        [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = displayCategoryName; });
 
         if (elements.pauseBtn) {
             if (isPaused) {
-                elements.pauseBtn.innerHTML = '<span class="material-symbols-outlined btn-icon">play_arrow</span><span class="btn-text">再開</span>';
+                elements.pauseBtn.innerHTML = `<span class="material-symbols-outlined btn-icon">play_arrow</span><span class="btn-text">${t('resume')}</span>`;
                 elements.pauseBtn.disabled = !activeTask.resumableCategory;
             } else {
-                elements.pauseBtn.innerHTML = '<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">一時停止</span>';
+                elements.pauseBtn.innerHTML = `<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">${t('pause')}</span>`;
                 elements.pauseBtn.disabled = false;
             }
         }
@@ -550,7 +579,7 @@ async function updateUI() {
 
         if (elements.pauseBtn) {
             elements.pauseBtn.disabled = true;
-            elements.pauseBtn.innerHTML = '<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">一時停止</span>';
+            elements.pauseBtn.innerHTML = `<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">${t('pause')}</span>`;
         }
         if (elements.endBtn) elements.endBtn.disabled = true;
 
@@ -580,7 +609,7 @@ async function copyReport() {
     });
 
     navigator.clipboard.writeText(text);
-    showToast('コピーしました！');
+    showToast(t('toast-copied'));
 }
 
 async function copyAggregation() {
@@ -600,10 +629,10 @@ async function copyAggregation() {
     }
 
     navigator.clipboard.writeText(text);
-    showToast('コピーしました！');
+    showToast(t('toast-copied'));
 }
 
-function showToast(message = "完了しました！") {
+function showToast(message = t('toast-done')) {
     const toast = getEl(ID_TOAST);
     if (toast) {
         toast.innerText = message;
@@ -686,7 +715,7 @@ async function renderCategoryEditor() {
         `).join('');
 
         const animOptions = [
-            { value: 'default', label: 'Use Default' },
+            { value: 'default', label: t('anim-default') },
             { value: 'left-to-right', label: 'Left to Right' },
             { value: 'right-to-left', label: 'Right to Left' },
             { value: 'clock', label: 'Clock' },
@@ -715,7 +744,7 @@ async function renderCategoryEditor() {
             <div class="cat-editor-row">
                 <span class="material-symbols-outlined drag-handle" style="cursor: grab;">drag_indicator</span>
                 <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
-                <button class="delete-cat-btn" title="削除" style="border:none; background:none; padding:0; display:flex; align-items:center; justify-content:center;">
+                <button class="delete-cat-btn" title="${t('delete')}" style="border:none; background:none; padding:0; display:flex; align-items:center; justify-content:center;">
                     <span class="material-symbols-outlined">delete</span>
                 </button>
             </div>
@@ -733,14 +762,14 @@ async function renderCategoryEditor() {
             const newName = input.value.trim();
             if (newName && newName !== cat.name) {
                 if (!isValidCategoryName(newName)) {
-                    alert(`無効なカテゴリ名です。（50文字以内、「${SYSTEM_CATEGORY_IDLE}」は使用不可）`);
+                    alert(t('alert-invalid-category', { idle: t('idle-category') }));
                     input.value = cat.name;
                     return;
                 }
                 const oldName = cat.name;
                 const existing = await dbGet(STORE_CATEGORIES, newName);
                 if (existing) {
-                    alert('同名のカテゴリが既に存在します。');
+                    alert(t('alert-duplicate-category'));
                     input.value = oldName;
                     return;
                 }
@@ -779,7 +808,7 @@ async function renderCategoryEditor() {
         };
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
-            if (await showConfirm(`カテゴリ「${cat.name}」を削除しますか？\n（過去のログからはカテゴリ色が消えます）`)) {
+            if (await showConfirm(t('confirm-delete-category', { name: cat.name }))) {
                 await dbDelete(STORE_CATEGORIES, cat.name);
                 updateUI();
                 renderCategoryEditor();
@@ -900,6 +929,17 @@ function setupEventListeners() {
     });
 
     // Settings listeners
+    getEl(ID_LANGUAGE_SELECT)?.addEventListener('change', async (e) => {
+        const lang = e.target.value;
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LANGUAGE, value: lang });
+        setLanguage(lang);
+        applyLanguage();
+        // Update font selector because labels might have changed
+        updateFontSelect();
+        await updateUI();
+        broadcastSync();
+    });
+
     getEl(ID_THEME_SELECT)?.addEventListener('change', async (e) => {
         const theme = e.target.value;
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_THEME, value: theme });
@@ -913,7 +953,7 @@ function setupEventListeners() {
         FONTS.forEach(f => {
             const opt = createEl('option');
             opt.value = f.value;
-            opt.textContent = f.name;
+            opt.textContent = (f.name === 'font-system') ? t('font-system') : f.name;
             opt.style.fontFamily = f.value;
             fontSelect.appendChild(opt);
         });
@@ -942,7 +982,7 @@ function setupEventListeners() {
         const name = input?.value.trim();
         if (name) {
             if (!isValidCategoryName(name)) {
-                alert(`無効なカテゴリ名です。（50文字以内、「${SYSTEM_CATEGORY_IDLE}」は使用不可）`);
+                alert(t('alert-invalid-category', { idle: t('idle-category') }));
                 return;
             }
             const categories = await dbGetAll(STORE_CATEGORIES);
@@ -987,7 +1027,7 @@ function setupEventListeners() {
             const importMode = document.querySelector('input[name="import-mode"]:checked')?.value || 'append';
 
             if (importMode === 'overwrite') {
-                if (await showConfirm('既存のカテゴリーをすべて削除して上書きしますか？')) {
+                if (await showConfirm(t('confirm-import-overwrite'))) {
                     await dbClear(STORE_CATEGORIES);
                 } else {
                     categoryFileInput.value = '';
@@ -1015,13 +1055,13 @@ function setupEventListeners() {
             }
 
             categoryFileInput.value = '';
-            showToast('カテゴリーをインポートしました');
+            showToast(t('toast-cat-imported'));
             renderCategories();
             renderCategoryEditor();
             broadcastSync();
         } catch (err) {
             console.error('Failed to import categories:', err);
-            alert('カテゴリーのインポートに失敗しました。ファイル形式を確認してください。');
+            alert(t('alert-import-error'));
             categoryFileInput.value = '';
         }
     });
@@ -1038,7 +1078,7 @@ function setupEventListeners() {
     }
 
     getEl(ID_EXPORT_CSV_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction('ログデータをCSVとして書き出します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
+        performMaintenanceAction(t('confirm-export-csv'), async () => {
             const logs = await dbGetAll(STORE_LOGS);
             let csv = CSV_HEADER;
             logs.forEach(l => { csv += `${l.id},${escapeCsv(l.category)},${l.startTime},${l.endTime}\n`; });
@@ -1052,7 +1092,7 @@ function setupEventListeners() {
 
     const csvInput = getEl(ID_CSV_FILE_INPUT);
     getEl(ID_IMPORT_CSV_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction('CSVファイルからログデータを読み込みます。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
+        performMaintenanceAction(t('confirm-import-csv'), async () => {
             csvInput?.click();
         });
     });
@@ -1077,20 +1117,20 @@ function setupEventListeners() {
         }
         updateUI();
         broadcastSync('reload');
-        alert('インポートが完了しました。');
+        alert(t('toast-imported'));
     });
 
     getEl(ID_CLEAR_LOGS_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction('全てのログを削除します。実行中の作業がある場合は終了されます。よろしいですか？', async () => {
+        performMaintenanceAction(t('confirm-clear-logs'), async () => {
             await dbClear(STORE_LOGS);
             updateUI();
             broadcastSync('reload');
-            showToast('削除が完了しました');
+            showToast(t('toast-deleted'));
         });
     });
 
     getEl(ID_RESET_CAT_SETTINGS_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction('カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログは維持されます）', async () => {
+        performMaintenanceAction(t('confirm-reset-all'), async () => {
             await dbClear(STORE_CATEGORIES);
             await dbClear(STORE_SETTINGS);
             broadcastSync('reload');
@@ -1099,7 +1139,7 @@ function setupEventListeners() {
     });
 
     getEl(ID_RESET_SETTINGS_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction('各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログとカテゴリは維持されます）', async () => {
+        performMaintenanceAction(t('confirm-reset-settings'), async () => {
             await dbClear(STORE_SETTINGS);
             broadcastSync('reload');
             location.reload();
@@ -1121,6 +1161,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('QuickLog-Solo: DB Initialized', settings);
         activeTask = settings.activeTask;
 
+        setLanguage(settings.language || 'auto');
+        applyLanguage();
+
         applyTheme(settings.theme || THEME_SYSTEM);
         applyFont(settings.font || FONTS[0].value);
         applyAnimation(settings.animation || 'clock');
@@ -1132,7 +1175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await updateUI();
     } catch (e) {
         console.error('Failed to initialize application:', e);
-        alert('アプリの初期化に失敗しました。ページを再読み込みしてください。');
+        alert(t('alert-init-error'));
     }
 
     console.log('QuickLog-Solo Initialized');
