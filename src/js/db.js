@@ -1,4 +1,5 @@
 import { SYSTEM_CATEGORY_IDLE } from './utils.js';
+import { t, setLanguage } from './i18n.js';
 
 export const DB_NAME = 'QuickLogSoloDB';
 export const DB_VERSION = 1;
@@ -150,8 +151,6 @@ export async function getCurrentAppState() {
         activeTask
     };
 }
-
-import { t, setLanguage } from './i18n.js';
 
 async function setupInitialData(languageSetting) {
     setLanguage(languageSetting);

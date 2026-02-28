@@ -437,19 +437,7 @@ async function syncState() {
     if (langSelect) langSelect.value = state.language || 'auto';
 
     // Update Font labels
-    const fontSelect = getEl(ID_FONT_SELECT);
-    if (fontSelect) {
-        const currentFont = fontSelect.value;
-        fontSelect.innerHTML = '';
-        FONTS.forEach(f => {
-            const opt = createEl('option');
-            opt.value = f.value;
-            opt.textContent = (f.name === 'font-system') ? t('font-system') : f.name;
-            opt.style.fontFamily = f.value;
-            fontSelect.appendChild(opt);
-        });
-        fontSelect.value = currentFont;
-    }
+    updateFontSelect();
 
     // Determine active animation type
     let color = 'primary';
@@ -470,6 +458,22 @@ async function syncState() {
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
             await renderCategoryEditor();
         }
+    }
+}
+
+function updateFontSelect() {
+    const fontSelect = getEl(ID_FONT_SELECT);
+    if (fontSelect) {
+        const currentFont = fontSelect.value;
+        fontSelect.innerHTML = '';
+        FONTS.forEach(f => {
+            const opt = createEl('option');
+            opt.value = f.value;
+            opt.textContent = (f.name === 'font-system') ? t('font-system') : f.name;
+            opt.style.fontFamily = f.value;
+            fontSelect.appendChild(opt);
+        });
+        fontSelect.value = currentFont;
     }
 }
 
@@ -931,19 +935,7 @@ function setupEventListeners() {
         setLanguage(lang);
         applyLanguage();
         // Update font selector because labels might have changed
-        const fontSelect = getEl(ID_FONT_SELECT);
-        if (fontSelect) {
-            const currentFont = fontSelect.value;
-            fontSelect.innerHTML = '';
-            FONTS.forEach(f => {
-                const opt = createEl('option');
-                opt.value = f.value;
-                opt.textContent = (f.name === 'font-system') ? t('font-system') : f.name;
-                opt.style.fontFamily = f.value;
-                fontSelect.appendChild(opt);
-            });
-            fontSelect.value = currentFont;
-        }
+        updateFontSelect();
         await updateUI();
         broadcastSync();
     });
