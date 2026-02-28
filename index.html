@@ -376,7 +376,7 @@
 
         function loadPreview(iframe) {
             if (iframe.src === 'about:blank' || !iframe.src) {
-                iframe.src = 'src/app.html';
+                iframe.src = 'src/app.html?lang=' + currentLang;
             }
             document.getElementById('preview-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';

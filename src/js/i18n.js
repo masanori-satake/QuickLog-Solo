@@ -8,9 +8,16 @@ let currentLanguage = 'en';
 
 /**
  * Detects the browser language and returns 'ja' if Japanese, otherwise 'en'.
+ * Supports 'lang' query parameter as a hint.
  * @returns {string}
  */
 export function detectBrowserLanguage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+    if (langParam && messages[langParam]) {
+        return langParam;
+    }
+
     const lang = navigator.language || navigator.userLanguage;
     return lang.startsWith('ja') ? 'ja' : 'en';
 }
