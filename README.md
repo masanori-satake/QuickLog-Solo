@@ -13,14 +13,14 @@
 現在、本拡張機能は各ブラウザのストアには公開されていません。以下の手順でインストールしてください。
 
 ### Chrome / Edge の場合
-1. `dist/QuickLog-Solo-Chrome.zip` をダウンロードして解凍します。
+1. `releases/QuickLog-Solo-Chrome.zip` をダウンロードして解凍します。
 2. ブラウザで拡張機能管理ページを開きます（Chrome: `chrome://extensions` / Edge: `edge://extensions`）。
 3. 「デベロッパー モード」をオンにします。
 4. 「パッケージ化されていない拡張機能を読み込む」ボタンをクリックし、解凍したフォルダを選択します。
 5. ツールバーの拡張機能アイコンをクリックし、QuickLog-Solo をピン留めして使用します。
 
 ### Firefox の場合
-1. `dist/QuickLog-Solo-Firefox.zip` をダウンロードして解凍します。
+1. `releases/QuickLog-Solo-Firefox.zip` をダウンロードして解凍します。
 2. Firefox で `about:debugging#/runtime/this-firefox` を開きます。
 3. 「一時的な拡張機能を読み込む...」をクリックし、解凍したフォルダ内の `manifest.json` を選択します。
 

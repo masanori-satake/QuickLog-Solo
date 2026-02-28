@@ -10,7 +10,8 @@
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
     "test:e2e": "playwright test",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "build": "python3 scripts/check_version.py"
   },
   "repository": {
     "type": "git",

@@ -51,7 +51,7 @@ def create_zip(zip_filepath, includes, manifest_src):
 
 def create_packages():
     package_name = "QuickLog-Solo"
-    dist_dir = "dist"
+    dist_dir = "releases"
 
     if not os.path.exists(dist_dir):
         os.makedirs(dist_dir)
