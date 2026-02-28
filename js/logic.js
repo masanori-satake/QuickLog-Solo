@@ -59,12 +59,14 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
 export async function stopTaskLogic(activeTask, isManualStop = false) {
     if (!activeTask) return null;
 
+    const now = Date.now();
+
     if (activeTask.isPaused) {
         const idleLog = {
             ...activeTask,
             category: SYSTEM_CATEGORY_IDLE,
-            endTime: Date.now(),
-            isManualStop: isManualStop
+            endTime: now,
+            isManualStop: false
         };
         delete idleLog.isPaused;
 
@@ -75,13 +77,11 @@ export async function stopTaskLogic(activeTask, isManualStop = false) {
         }
 
         await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-        return null;
+    } else {
+        // 通常の作業中の場合は、その作業を正常終了させる
+        const taskToSave = { ...activeTask, endTime: now, isManualStop: false };
+        await dbPut(STORE_LOGS, taskToSave);
     }
-
-    const now = Date.now();
-    // 通常の作業中の場合は、その作業を正常終了させる
-    const taskToSave = { ...activeTask, endTime: now, isManualStop: false };
-    await dbPut(STORE_LOGS, taskToSave);
 
     if (isManualStop) {
         // 停止ボタンが押された場合は、追加で停止マーカーを記録する
