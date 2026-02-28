@@ -3,10 +3,10 @@ describe('Security Utilities', () => {
 
     beforeAll(async () => {
         try {
-            utils = await import('../js/utils.js');
+            utils = await import('../src/js/utils.js');
         } catch {
             // If file doesn't exist yet, we'll mock it or just fail the tests
-            console.error('js/utils.js not found. Implementation step may be required.');
+            console.error('src/js/utils.js not found. Implementation step may be required.');
         }
     });
 
@@ -44,9 +44,9 @@ describe('Validation', () => {
     let utils;
     beforeAll(async () => {
         try {
-            utils = await import('../js/utils.js');
+            utils = await import('../src/js/utils.js');
         } catch {
-            console.warn('js/utils.js not loaded in Validation block');
+            console.warn('src/js/utils.js not loaded in Validation block');
         }
     });
 

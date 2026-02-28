@@ -4,16 +4,20 @@ import sys
 def check_version():
     try:
         # Load version from version.json
-        with open('version.json', 'r') as f:
+        with open('src/version.json', 'r') as f:
             version = json.load(f).get('version')
 
         # Load version from package.json
         with open('package.json', 'r') as f:
             package_version = json.load(f).get('version')
 
-        # Load version from manifest.json
-        with open('manifest.json', 'r') as f:
-            manifest_version = json.load(f).get('version')
+        # Load version from manifest.chrome.json
+        with open('src/manifest.chrome.json', 'r') as f:
+            chrome_version = json.load(f).get('version')
+
+        # Load version from manifest.firefox.json
+        with open('src/manifest.firefox.json', 'r') as f:
+            firefox_version = json.load(f).get('version')
 
         if not version:
             print("Error: version.json is missing version field.")
@@ -23,8 +27,12 @@ def check_version():
             print(f"Error: package.json version ({package_version}) does not match version.json ({version})")
             return False
 
-        if version != manifest_version:
-            print(f"Error: manifest.json version ({manifest_version}) does not match version.json ({version})")
+        if version != chrome_version:
+            print(f"Error: manifest.chrome.json version ({chrome_version}) does not match version.json ({version})")
+            return False
+
+        if version != firefox_version:
+            print(f"Error: manifest.firefox.json version ({firefox_version}) does not match version.json ({version})")
             return False
 
         print(f"Version check passed (v{version}).")

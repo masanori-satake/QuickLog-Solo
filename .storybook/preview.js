@@ -1,6 +1,6 @@
 /** @type { import('@storybook/html').Preview } */
-import '../css/m3-theme.css';
-import '../css/style.css';
+import '../src/css/m3-theme.css';
+import '../src/css/style.css';
 
 const preview = {
   parameters: {
