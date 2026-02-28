@@ -72,7 +72,10 @@ describe('DB Module', () => {
 
         const categories = await dbGetAll(STORE_CATEGORIES);
         expect(categories.length).toBeGreaterThan(0);
-        expect(categories.find(c => c.name === '💻 開発・プログラミング')).toBeDefined();
+        // Expect either Japanese or English name depending on environment
+        const nameJA = '💻 開発・プログラミング';
+        const nameEN = '💻 Development/Coding';
+        expect(categories.find(c => c.name === nameJA || c.name === nameEN)).toBeDefined();
     });
 
     test('initDB handles multiple active tasks by closing orphaned ones', async () => {

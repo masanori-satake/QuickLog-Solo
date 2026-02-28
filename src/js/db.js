@@ -11,6 +11,7 @@ export const SETTING_KEY_THEME = 'theme';
 export const SETTING_KEY_FONT = 'font';
 export const SETTING_KEY_ANIMATION = 'animation';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
+export const SETTING_KEY_LANGUAGE = 'language';
 
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
@@ -115,7 +116,8 @@ export function closeDatabase() {
 
 export async function initDB() {
     await openDatabase();
-    await setupInitialData();
+    const language = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
+    await setupInitialData(language ? language.value : 'auto');
     const settings = await getCurrentAppState();
     await cleanupOldLogs();
     return settings;
@@ -125,6 +127,7 @@ export async function getCurrentAppState() {
     const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
     const animation = await dbGet(STORE_SETTINGS, SETTING_KEY_ANIMATION);
+    const language = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
     const categories = await dbGetAll(STORE_CATEGORIES);
 
     const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
@@ -142,37 +145,42 @@ export async function getCurrentAppState() {
         theme: theme ? theme.value : null,
         font: font ? font.value : null,
         animation: animation ? animation.value : 'clock',
+        language: language ? language.value : 'auto',
         categories,
         activeTask
     };
 }
 
-async function setupInitialData() {
+import { t, setLanguage } from './i18n.js';
+
+async function setupInitialData(languageSetting) {
+    setLanguage(languageSetting);
+
     const initialCategories = [
-        { name: '💻 開発・プログラミング', color: 'primary', order: 0, animation: 'matrix-code' },
-        { name: '🤝 チームミーティング・定例会', color: 'secondary', order: 1, animation: 'migrating-birds' },
-        { name: '🔍 調査・リサーチ・技術検証', color: 'tertiary', order: 2, animation: 'contour-lines' },
-        { name: '事務作業・メール対応 📝', color: 'neutral', order: 3, animation: 'default' },
-        { name: '🔥 深い集中が必要なタスク', color: 'error', order: 4, animation: 'ripple' },
-        { name: '📚 自己研鑽・スキルアップ', color: 'tertiary', order: 5, animation: 'plant-growth' },
-        { name: '💡 アイデア出し・企画立案', color: 'secondary', order: 6, animation: 'kaleidoscope' },
-        { name: '☕ メンタル休憩・リフレッシュ', color: 'outline', order: 7, animation: 'coffee-drip' },
-        { name: '📞 クライアント連絡・電話', color: 'primary', order: 8, animation: 'default' },
-        { name: '📝 資料作成・レポート', color: 'secondary', order: 9, animation: 'dot-typing' },
-        { name: '🎨 デザイン・UI/UX検討', color: 'tertiary', order: 10, animation: 'lissajous-pendulum' },
-        { name: '🐛 バグ修正・品質改善', color: 'error', order: 11, animation: 'tetris-building' },
-        { name: '🚀 リリース・デプロイ作業', color: 'teal', order: 12, animation: 'night-sky' },
-        { name: '🛠 ツール整備・自動化', color: 'green', order: 13, animation: 'matrix-code' },
-        { name: '🗓 スケジュール調整・タスク管理', color: 'yellow', order: 14, animation: 'default' },
-        { name: '💬 チャット対応・Slack/Teams', color: 'orange', order: 15, animation: 'default' },
-        { name: '📖 ドキュメント整備・Wiki更新', color: 'pink', order: 16, animation: 'dot-typing' },
-        { name: '🧪 テスト・QA作業', color: 'indigo', order: 17, animation: 'tetris-building' },
-        { name: '💼 営業・提案活動', color: 'brown', order: 18, animation: 'migrating-birds' },
-        { name: '🏗 アーキテクチャ設計', color: 'cyan', order: 19, animation: 'contour-lines' },
-        { name: '🔐 セキュリティ対応・監査', color: 'error', order: 20, animation: 'matrix-code' },
-        { name: '📊 データ分析・SQL', color: 'teal', order: 21, animation: 'matrix-code' },
-        { name: '🏠 在宅ワーク環境整備', color: 'neutral', order: 22, animation: 'default' },
-        { name: '🚶 移動・外出', color: 'outline', order: 23, animation: 'migrating-birds' }
+        { name: t('init-cat-dev'), color: 'primary', order: 0, animation: 'matrix-code' },
+        { name: t('init-cat-meeting'), color: 'secondary', order: 1, animation: 'migrating-birds' },
+        { name: t('init-cat-research'), color: 'tertiary', order: 2, animation: 'contour-lines' },
+        { name: t('init-cat-admin'), color: 'neutral', order: 3, animation: 'default' },
+        { name: t('init-cat-focus'), color: 'error', order: 4, animation: 'ripple' },
+        { name: t('init-cat-skill'), color: 'tertiary', order: 5, animation: 'plant-growth' },
+        { name: t('init-cat-idea'), color: 'secondary', order: 6, animation: 'kaleidoscope' },
+        { name: t('init-cat-break'), color: 'outline', order: 7, animation: 'coffee-drip' },
+        { name: t('init-cat-client'), color: 'primary', order: 8, animation: 'default' },
+        { name: t('init-cat-doc'), color: 'secondary', order: 9, animation: 'dot-typing' },
+        { name: t('init-cat-design'), color: 'tertiary', order: 10, animation: 'lissajous-pendulum' },
+        { name: t('init-cat-bug'), color: 'error', order: 11, animation: 'tetris-building' },
+        { name: t('init-cat-release'), color: 'teal', order: 12, animation: 'night-sky' },
+        { name: t('init-cat-tool'), color: 'green', order: 13, animation: 'matrix-code' },
+        { name: t('init-cat-schedule'), color: 'yellow', order: 14, animation: 'default' },
+        { name: t('init-cat-chat'), color: 'orange', order: 15, animation: 'default' },
+        { name: t('init-cat-wiki'), color: 'pink', order: 16, animation: 'dot-typing' },
+        { name: t('init-cat-qa'), color: 'indigo', order: 17, animation: 'tetris-building' },
+        { name: t('init-cat-sales'), color: 'brown', order: 18, animation: 'migrating-birds' },
+        { name: t('init-cat-arch'), color: 'cyan', order: 19, animation: 'contour-lines' },
+        { name: t('init-cat-sec'), color: 'error', order: 20, animation: 'matrix-code' },
+        { name: t('init-cat-data'), color: 'teal', order: 21, animation: 'matrix-code' },
+        { name: t('init-cat-wfh'), color: 'neutral', order: 22, animation: 'default' },
+        { name: t('init-cat-move'), color: 'outline', order: 23, animation: 'migrating-birds' }
     ];
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
