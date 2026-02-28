@@ -35,6 +35,7 @@
             </section>
 
             <section id="control-section">
+                <canvas id="animation-canvas"></canvas>
                 <div id="timer-container">
                     <div id="current-task-display">
                         <div id="current-task-display-base">
@@ -114,10 +115,32 @@
                     <div class="setting-item">
                         <label>背景アニメーション</label>
                         <select id="animation-select">
-                            <option value="left-to-right">左から右</option>
-                            <option value="right-to-left">右から左</option>
-                            <option value="clock">クロック (標準)</option>
-                            <option value="sand-clock">サンドクロック</option>
+                            <optgroup label="Basic">
+                                <option value="left-to-right">左から右</option>
+                                <option value="right-to-left">右から左</option>
+                                <option value="clock">クロック (標準)</option>
+                                <option value="sand-clock">サンドクロック</option>
+                            </optgroup>
+                            <optgroup label="A. 積み上げ・成長">
+                                <option value="tetris-building">テトリス・ビルディング</option>
+                                <option value="plant-growth">植物の成長</option>
+                                <option value="dot-typing">ドット絵のタイピング</option>
+                            </optgroup>
+                            <optgroup label="B. 物理的な心地よさ">
+                                <option value="newtons-cradle">ニュートンのゆりかご</option>
+                                <option value="ripple">波紋 (Ripple)</option>
+                                <option value="lissajous-pendulum">振り子時計 (円形)</option>
+                            </optgroup>
+                            <optgroup label="C. 物語・旅">
+                                <option value="migrating-birds">渡り鳥の列</option>
+                                <option value="coffee-drip">コーヒードリップ</option>
+                                <option value="night-sky">夜空の星</option>
+                            </optgroup>
+                            <optgroup label="D. 抽象的・幾何学的">
+                                <option value="kaleidoscope">万華鏡 (カレイドスコープ)</option>
+                                <option value="contour-lines">等高線の変化</option>
+                                <option value="matrix-code">コードのタイピング (Matrix風)</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="setting-item">

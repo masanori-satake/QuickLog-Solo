@@ -236,6 +236,29 @@ main {
     flex-shrink: 0;
 }
 
+#current-task-display.anim-active {
+    background-color: rgba(var(--md-sys-color-surface-container-high-rgb), 0.7);
+    backdrop-filter: blur(4px);
+}
+
+#current-task-display.cat-primary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 30%) !important; }
+#current-task-display.cat-secondary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 30%) !important; }
+#current-task-display.cat-tertiary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 30%) !important; }
+#current-task-display.cat-error.anim-active { background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 30%) !important; }
+#current-task-display.cat-neutral.anim-active { background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 30%) !important; }
+#current-task-display.cat-outline.anim-active { background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 30%) !important; }
+#current-task-display.cat-teal.anim-active { background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 30%) !important; }
+#current-task-display.cat-green.anim-active { background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 30%) !important; }
+#current-task-display.cat-yellow.anim-active { background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 30%) !important; }
+#current-task-display.cat-orange.anim-active { background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 30%) !important; }
+#current-task-display.cat-pink.anim-active { background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 30%) !important; }
+#current-task-display.cat-indigo.anim-active { background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 30%) !important; }
+#current-task-display.cat-brown.anim-active { background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 30%) !important; }
+#current-task-display.cat-cyan.anim-active { background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 30%) !important; }
+
+#pause-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-secondary-container), transparent 40%) !important; }
+#end-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-error-container), transparent 40%) !important; }
+
 #current-task-display-overlay {
     clip-path: inset(0 100% 0 0);
     z-index: 1;
@@ -375,6 +398,22 @@ body.theme-light #current-task-display-base #clock-face {
     flex-direction: column;
     gap: var(--md-sys-spacing-1);
     flex-shrink: 0;
+    position: relative;
+}
+
+#animation-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+#timer-container, #stop-btn-box {
+    position: relative;
+    z-index: 1;
 }
 
 #stop-btn-box {

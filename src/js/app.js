@@ -5,6 +5,13 @@ import {
 } from './db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
+import {
+    AnimationEngine,
+    TetrisBuilding, PlantGrowth, DotTyping,
+    NewtonsCradle, Ripple, LissajousPendulum,
+    MigratingBirds, CoffeeDrip, NightSky,
+    Kaleidoscope, ContourLines, MatrixCode
+} from './animations.js';
 
 // QuickLog-Solo: Main Application Entry
 
@@ -71,6 +78,8 @@ let syncTimeout = null;
 let currentCategoryPage = 0;
 let currentAnimationType = 'left-to-right';
 let lastCategoryRenderData = null;
+let animationEngine = null;
+let currentActiveAnimation = null;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -147,6 +156,10 @@ function updateTimer() {
 
     if (isPaused) {
         if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
+        if (currentActiveAnimation !== null) {
+            animationEngine?.stop();
+            currentActiveAnimation = null;
+        }
     } else {
         const anim = getAnimationState(activeTask.startTime, currentAnimationType);
         if (currentAnimationType === 'clock') {
@@ -213,30 +226,55 @@ function applyFont(fontValue) {
     if (select) select.value = fontValue;
 }
 
-function applyAnimation(animationType) {
+function applyAnimation(animationType, categoryAnimation = 'default', color = 'primary') {
     currentAnimationType = animationType;
+    const activeAnimation = (categoryAnimation && categoryAnimation !== 'default') ? categoryAnimation : animationType;
+
     const select = getEl(ID_ANIMATION_SELECT);
-    if (select) select.value = animationType;
+    if (select && select.value !== animationType) select.value = animationType;
 
     const clockContainer = getEl(ID_CLOCK_CONTAINER);
     const clockFace = getEl('clock-face');
     const sandClockFace = getEl('sand-clock-face');
     const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
+    const display = getEl(ID_CURRENT_TASK_DISPLAY);
 
-    if (animationType === 'clock' || animationType === 'sand-clock') {
+    const isBasic = ['left-to-right', 'right-to-left', 'clock', 'sand-clock'].includes(activeAnimation);
+
+    if (activeAnimation === 'clock' || activeAnimation === 'sand-clock') {
         clockContainer?.classList.remove('hidden');
         if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
 
-        if (animationType === 'clock') {
+        if (activeAnimation === 'clock') {
             clockFace?.classList.remove('hidden');
             sandClockFace?.classList.add('hidden');
         } else {
             clockFace?.classList.add('hidden');
             sandClockFace?.classList.remove('hidden');
-            if (sandClockFace) sandClockFace.style.display = 'flex'; // Ensure display flex for sand clock
+            if (sandClockFace) sandClockFace.style.display = 'flex';
         }
     } else {
         clockContainer?.classList.add('hidden');
+    }
+
+    if (!isBasic && animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
+        const colorCode = getColorCode(color);
+        const animStateKey = `${activeAnimation}-${activeTask.startTime}-${colorCode}`;
+        if (currentActiveAnimation !== animStateKey) {
+            animationEngine.start(activeAnimation, activeTask.startTime, colorCode);
+            currentActiveAnimation = animStateKey;
+        }
+        display?.classList.add('anim-active');
+        getEl(ID_PAUSE_BTN)?.classList.add('anim-active');
+        getEl(ID_END_BTN)?.classList.add('anim-active');
+    } else {
+        if (currentActiveAnimation !== null) {
+            animationEngine?.stop();
+            currentActiveAnimation = null;
+        }
+        display?.classList.remove('anim-active');
+        getEl(ID_PAUSE_BTN)?.classList.remove('anim-active');
+        getEl(ID_END_BTN)?.classList.remove('anim-active');
     }
 }
 
@@ -383,6 +421,27 @@ function createLogElement(log, categoryMap) {
     return li;
 }
 
+function initAnimationEngine() {
+    const canvas = getEl('animation-canvas');
+    if (canvas) {
+        animationEngine = new AnimationEngine(canvas);
+        animationEngine.register('tetris-building', TetrisBuilding);
+        animationEngine.register('plant-growth', PlantGrowth);
+        animationEngine.register('dot-typing', DotTyping);
+        animationEngine.register('newtons-cradle', NewtonsCradle);
+        animationEngine.register('ripple', Ripple);
+        animationEngine.register('lissajous-pendulum', LissajousPendulum);
+        animationEngine.register('migrating-birds', MigratingBirds);
+        animationEngine.register('coffee-drip', CoffeeDrip);
+        animationEngine.register('night-sky', NightSky);
+        animationEngine.register('kaleidoscope', Kaleidoscope);
+        animationEngine.register('contour-lines', ContourLines);
+        animationEngine.register('matrix-code', MatrixCode);
+        animationEngine.resize();
+        window.addEventListener('resize', () => animationEngine.resize());
+    }
+}
+
 function setupBroadcastChannel() {
     syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
     syncChannel.onmessage = (event) => {
@@ -455,17 +514,19 @@ async function updateUI() {
 
     if (activeTask) {
         let color = 'primary';
+        let categoryAnimation = 'default';
         const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
-
-        // Ensure proper animation/clock visibility
-        applyAnimation(currentAnimationType);
 
         if (isPaused) {
             color = 'neutral';
         } else {
             const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
             color = cat ? cat.color : (activeTask.color || 'primary');
+            categoryAnimation = cat ? cat.animation : 'default';
         }
+
+        // Ensure proper animation/clock visibility
+        applyAnimation(currentAnimationType, categoryAnimation, color);
 
         if (elements.display) elements.display.className = `cat-${color}`;
         if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
@@ -504,6 +565,12 @@ async function updateUI() {
         });
         startTimer();
     } else {
+        if (currentActiveAnimation !== null) {
+            animationEngine?.stop();
+            currentActiveAnimation = null;
+        }
+        applyAnimation(currentAnimationType);
+
         if (elements.display) elements.display.className = '';
         if (elements.overlay) elements.overlay.className = '';
         [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
@@ -651,6 +718,32 @@ async function renderCategoryEditor() {
                     data-color="${color}"></button>
         `).join('');
 
+        const animOptions = [
+            { value: 'default', label: '標準設定を使用' },
+            { value: 'left-to-right', label: '左から右' },
+            { value: 'right-to-left', label: '右から左' },
+            { value: 'clock', label: 'クロック' },
+            { value: 'sand-clock', label: 'サンドクロック' },
+            { value: 'tetris-building', label: 'テトリス' },
+            { value: 'plant-growth', label: '植物の成長' },
+            { value: 'dot-typing', label: 'ドットタイピング' },
+            { value: 'newtons-cradle', label: 'ニュートン' },
+            { value: 'ripple', label: '波紋' },
+            { value: 'lissajous-pendulum', label: '振り子' },
+            { value: 'migrating-birds', label: '渡り鳥' },
+            { value: 'coffee-drip', label: 'コーヒー' },
+            { value: 'night-sky', label: '夜空' },
+            { value: 'kaleidoscope', label: '万華鏡' },
+            { value: 'contour-lines', label: '等高線' },
+            { value: 'matrix-code', label: 'Matrix' }
+        ];
+
+        const animSelectHtml = `
+            <select class="category-edit-animation" style="flex: 1; font-size: 0.75rem; padding: 2px 4px; border-radius: 4px;">
+                ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+            </select>
+        `;
+
         item.innerHTML = `
             <div class="cat-editor-row">
                 <span class="material-symbols-outlined drag-handle" style="cursor: grab;">drag_indicator</span>
@@ -659,10 +752,11 @@ async function renderCategoryEditor() {
                     <span class="material-symbols-outlined">delete</span>
                 </button>
             </div>
-            <div class="cat-editor-row" style="margin-top: 0.5rem;">
-                <div class="color-presets" style="margin-left: 2rem;">
+            <div class="cat-editor-row" style="margin-top: 0.5rem; align-items: center;">
+                <div class="color-presets" style="margin-left: 2rem; flex: 1;">
                     ${colorPresetsHtml}
                 </div>
+                ${animSelectHtml}
             </div>
         `;
 
@@ -709,6 +803,13 @@ async function renderCategoryEditor() {
                 broadcastSync();
             };
         });
+
+        const animSelect = item.querySelector('.category-edit-animation');
+        animSelect.onchange = async () => {
+            cat.animation = animSelect.value;
+            await dbPut(STORE_CATEGORIES, cat);
+            broadcastSync();
+        };
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
             if (await showConfirm(`カテゴリ「${cat.name}」を削除しますか？\n（過去のログからはカテゴリ色が消えます）`)) {
@@ -862,7 +963,7 @@ function setupEventListeners() {
         animSelect.onchange = async (e) => {
             const animType = e.target.value;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: animType });
-            applyAnimation(animType);
+            await updateUI();
             broadcastSync();
         };
     }
@@ -1056,6 +1157,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyFont(settings.font || FONTS[0].value);
         applyAnimation(settings.animation || 'clock');
 
+        initAnimationEngine();
         setupBroadcastChannel();
         setupEventListeners();
         await handleTestParameters();
