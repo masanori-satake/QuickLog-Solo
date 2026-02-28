@@ -222,6 +222,7 @@ main {
     width: 100%;
     position: absolute;
     inset: 0;
+    z-index: 1;
 }
 
 #current-task-display {
@@ -236,10 +237,39 @@ main {
     flex-shrink: 0;
 }
 
+#current-task-display.anim-active {
+    background-color: transparent !important;
+    box-shadow: none;
+}
+
+#current-task-display-base.anim-active {
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+}
+
+#current-task-display-base.cat-primary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%) !important; }
+#current-task-display-base.cat-secondary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%) !important; }
+#current-task-display-base.cat-tertiary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%) !important; }
+#current-task-display-base.cat-error.anim-active { background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 95%) !important; }
+#current-task-display-base.cat-neutral.anim-active { background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 95%) !important; }
+#current-task-display-base.cat-outline.anim-active { background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 95%) !important; }
+#current-task-display-base.cat-teal.anim-active { background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 95%) !important; }
+#current-task-display-base.cat-green.anim-active { background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 95%) !important; }
+#current-task-display-base.cat-yellow.anim-active { background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 95%) !important; }
+#current-task-display-base.cat-orange.anim-active { background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 95%) !important; }
+#current-task-display-base.cat-pink.anim-active { background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 95%) !important; }
+#current-task-display-base.cat-indigo.anim-active { background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 95%) !important; }
+#current-task-display-base.cat-brown.anim-active { background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%) !important; }
+#current-task-display-base.cat-cyan.anim-active { background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%) !important; }
+
+#pause-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-secondary-container), transparent 40%) !important; }
+#end-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-error-container), transparent 40%) !important; }
+
 #current-task-display-overlay {
     clip-path: inset(0 100% 0 0);
     z-index: 1;
     background-color: transparent;
+    display: none; /* Deactivate overlay mechanism as we moved to canvas */
 }
 
 #clock-container {
@@ -375,6 +405,30 @@ body.theme-light #current-task-display-base #clock-face {
     flex-direction: column;
     gap: var(--md-sys-spacing-1);
     flex-shrink: 0;
+    position: relative;
+}
+
+#animation-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px; /* Match timer display height, avoiding buttons as requested in feedback */
+    z-index: 0;
+    pointer-events: none;
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-medium);
+    box-shadow: var(--md-sys-elevation-1);
+}
+
+#timer-container {
+    position: relative;
+    z-index: 1;
+}
+
+#stop-btn-box {
+    position: relative;
+    z-index: 2; /* Ensure buttons are above potential background effects but below modals */
 }
 
 #stop-btn-box {

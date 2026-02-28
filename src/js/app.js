@@ -5,6 +5,14 @@ import {
 } from './db.js';
 import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
+import {
+    AnimationEngine,
+    LeftToRight, RightToLeft, Clock, SandClock,
+    TetrisBuilding, PlantGrowth, DotTyping,
+    NewtonsCradle, Ripple, LissajousPendulum,
+    MigratingBirds, CoffeeDrip, NightSky,
+    Kaleidoscope, ContourLines, MatrixCode
+} from './animations.js';
 
 // QuickLog-Solo: Main Application Entry
 
@@ -71,6 +79,8 @@ let syncTimeout = null;
 let currentCategoryPage = 0;
 let currentAnimationType = 'left-to-right';
 let lastCategoryRenderData = null;
+let animationEngine = null;
+let currentActiveAnimation = null;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -147,46 +157,9 @@ function updateTimer() {
 
     if (isPaused) {
         if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
-    } else {
-        const anim = getAnimationState(activeTask.startTime, currentAnimationType);
-        if (currentAnimationType === 'clock') {
-            if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
-            const clockFace = getEl('clock-face');
-            if (clockFace) {
-                const activeColor = 'var(--custom-cat-on-main)';
-                const bgColor = 'transparent';
-                if (!anim.isPhase2) {
-                    clockFace.style.background = `conic-gradient(${activeColor} 0deg ${anim.angle}deg, ${bgColor} ${anim.angle}deg 360deg)`;
-                } else {
-                    clockFace.style.background = `conic-gradient(${bgColor} 0deg ${anim.angle}deg, ${activeColor} ${anim.angle}deg 360deg)`;
-                }
-            }
-        } else if (currentAnimationType === 'sand-clock') {
-            if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
-            const sandTop = getEl('sand-top');
-            const sandBottom = getEl('sand-bottom');
-            if (sandTop && sandBottom) {
-                const activeColor = 'var(--custom-cat-on-main)';
-                const bgColor = 'transparent';
-                const p = anim.percent;
-                if (!anim.isPhase2) {
-                    // Top: active decreases (filled from top, but we use linear-gradient to show "decreasing")
-                    // Actually, sand falling means the top level goes down.
-                    // For top part: 0% is full, 100% is empty.
-                    // linear-gradient(to bottom, transparent p%, activeColor p%) -> This is wrong if p increases.
-                    // If p increases (0->100), we want activeColor to go from 100% to 0%.
-                    sandTop.style.background = `linear-gradient(to bottom, ${bgColor} ${p}%, ${activeColor} ${p}%)`;
-                    // Bottom: active increases (filled from bottom)
-                    // linear-gradient(to top, activeColor p%, bgColor p%)
-                    sandBottom.style.background = `linear-gradient(to top, ${activeColor} ${p}%, ${bgColor} ${p}%)`;
-                } else {
-                    // Phase 2: Inverse colors
-                    sandTop.style.background = `linear-gradient(to bottom, ${activeColor} ${p}%, ${bgColor} ${p}%)`;
-                    sandBottom.style.background = `linear-gradient(to top, ${bgColor} ${p}%, ${activeColor} ${p}%)`;
-                }
-            }
-        } else {
-            if (overlay) overlay.style.clipPath = anim.inset;
+        if (currentActiveAnimation !== null) {
+            animationEngine?.stop();
+            currentActiveAnimation = null;
         }
     }
 }
@@ -213,30 +186,48 @@ function applyFont(fontValue) {
     if (select) select.value = fontValue;
 }
 
-function applyAnimation(animationType) {
+function applyAnimation(animationType, categoryAnimation = 'default', color = 'primary') {
     currentAnimationType = animationType;
+    const activeAnimation = (categoryAnimation && categoryAnimation !== 'default') ? categoryAnimation : animationType;
+
     const select = getEl(ID_ANIMATION_SELECT);
-    if (select) select.value = animationType;
+    if (select && select.value !== animationType) select.value = animationType;
 
     const clockContainer = getEl(ID_CLOCK_CONTAINER);
     const clockFace = getEl('clock-face');
     const sandClockFace = getEl('sand-clock-face');
     const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
+    const display = getEl(ID_CURRENT_TASK_DISPLAY);
 
-    if (animationType === 'clock' || animationType === 'sand-clock') {
-        clockContainer?.classList.remove('hidden');
-        if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
+    // All animations are now canvas-based for consistency
+    clockContainer?.classList.add('hidden');
+    if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
 
-        if (animationType === 'clock') {
-            clockFace?.classList.remove('hidden');
-            sandClockFace?.classList.add('hidden');
-        } else {
-            clockFace?.classList.add('hidden');
-            sandClockFace?.classList.remove('hidden');
-            if (sandClockFace) sandClockFace.style.display = 'flex'; // Ensure display flex for sand clock
+    if (animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
+        const colorCode = getColorCode(color);
+        const animStateKey = `${activeAnimation}-${activeTask.startTime}-${colorCode}`;
+        if (currentActiveAnimation !== animStateKey) {
+            animationEngine.start(activeAnimation, activeTask.startTime, colorCode);
+            currentActiveAnimation = animStateKey;
         }
+        display?.classList.add('anim-active');
+        const base = getEl('current-task-display-base');
+        base?.classList.add('anim-active');
+        base?.classList.add(`cat-${color}`);
+        getEl(ID_PAUSE_BTN)?.classList.add('anim-active');
+        getEl(ID_END_BTN)?.classList.add('anim-active');
     } else {
-        clockContainer?.classList.add('hidden');
+        if (currentActiveAnimation !== null) {
+            animationEngine?.stop();
+            currentActiveAnimation = null;
+        }
+        display?.classList.remove('anim-active');
+        const base = getEl('current-task-display-base');
+        base?.classList.remove('anim-active');
+        const colorClasses = Array.from(base?.classList || []).filter(c => c.startsWith('cat-'));
+        colorClasses.forEach(c => base.classList.remove(c));
+        getEl(ID_PAUSE_BTN)?.classList.remove('anim-active');
+        getEl(ID_END_BTN)?.classList.remove('anim-active');
     }
 }
 
@@ -383,6 +374,31 @@ function createLogElement(log, categoryMap) {
     return li;
 }
 
+function initAnimationEngine() {
+    const canvas = getEl('animation-canvas');
+    if (canvas) {
+        animationEngine = new AnimationEngine(canvas);
+        animationEngine.register('left-to-right', LeftToRight);
+        animationEngine.register('right-to-left', RightToLeft);
+        animationEngine.register('clock', Clock);
+        animationEngine.register('sand-clock', SandClock);
+        animationEngine.register('tetris-building', TetrisBuilding);
+        animationEngine.register('plant-growth', PlantGrowth);
+        animationEngine.register('dot-typing', DotTyping);
+        animationEngine.register('newtons-cradle', NewtonsCradle);
+        animationEngine.register('ripple', Ripple);
+        animationEngine.register('lissajous-pendulum', LissajousPendulum);
+        animationEngine.register('migrating-birds', MigratingBirds);
+        animationEngine.register('coffee-drip', CoffeeDrip);
+        animationEngine.register('night-sky', NightSky);
+        animationEngine.register('kaleidoscope', Kaleidoscope);
+        animationEngine.register('contour-lines', ContourLines);
+        animationEngine.register('matrix-code', MatrixCode);
+        animationEngine.resize();
+        window.addEventListener('resize', () => animationEngine.resize());
+    }
+}
+
 function setupBroadcastChannel() {
     syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
     syncChannel.onmessage = (event) => {
@@ -410,7 +426,16 @@ async function syncState() {
 
     applyTheme(state.theme || THEME_SYSTEM);
     applyFont(state.font || FONTS[0].value);
-    applyAnimation(state.animation || 'clock');
+
+    // Determine active animation type
+    let color = 'primary';
+    let categoryAnimation = 'default';
+    if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
+        const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
+        color = cat ? cat.color : (activeTask.color || 'primary');
+        categoryAnimation = cat ? (cat.animation || 'default') : 'default';
+    }
+    applyAnimation(state.animation || 'clock', categoryAnimation, color);
 
     await updateUI();
 
@@ -455,17 +480,19 @@ async function updateUI() {
 
     if (activeTask) {
         let color = 'primary';
+        let categoryAnimation = 'default';
         const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
-
-        // Ensure proper animation/clock visibility
-        applyAnimation(currentAnimationType);
 
         if (isPaused) {
             color = 'neutral';
         } else {
             const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
             color = cat ? cat.color : (activeTask.color || 'primary');
+            categoryAnimation = cat ? cat.animation : 'default';
         }
+
+        // Ensure proper animation/clock visibility
+        applyAnimation(currentAnimationType, categoryAnimation, color);
 
         if (elements.display) elements.display.className = `cat-${color}`;
         if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
@@ -504,6 +531,13 @@ async function updateUI() {
         });
         startTimer();
     } else {
+        if (currentActiveAnimation !== null) {
+            animationEngine?.stop();
+            currentActiveAnimation = null;
+        }
+        // Do not call applyAnimation with global setting here, it resets currentAnimationType potentially
+        // instead, just ensure engine is stopped.
+
         if (elements.display) elements.display.className = '';
         if (elements.overlay) elements.overlay.className = '';
         [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
@@ -625,7 +659,7 @@ function getColorCode(color) {
         brown: '#6d4c41',
         cyan: '#039be5'
     };
-    return codes[color] || '#333';
+    return codes[color] || '#1976d2';
 }
 
 async function renderCategoryEditor() {
@@ -651,6 +685,32 @@ async function renderCategoryEditor() {
                     data-color="${color}"></button>
         `).join('');
 
+        const animOptions = [
+            { value: 'default', label: 'Use Default' },
+            { value: 'left-to-right', label: 'Left to Right' },
+            { value: 'right-to-left', label: 'Right to Left' },
+            { value: 'clock', label: 'Clock' },
+            { value: 'sand-clock', label: 'Sand Clock' },
+            { value: 'tetris-building', label: 'Tetris Building' },
+            { value: 'plant-growth', label: 'Plant Growth' },
+            { value: 'dot-typing', label: 'Dot Typing' },
+            { value: 'newtons-cradle', label: 'Newton\'s Cradle' },
+            { value: 'ripple', label: 'Ripple' },
+            { value: 'lissajous-pendulum', label: 'Lissajous Pendulum' },
+            { value: 'migrating-birds', label: 'Migrating Birds' },
+            { value: 'coffee-drip', label: 'Coffee Drip' },
+            { value: 'night-sky', label: 'Night Sky' },
+            { value: 'kaleidoscope', label: 'Kaleidoscope' },
+            { value: 'contour-lines', label: 'Contour Lines' },
+            { value: 'matrix-code', label: 'Matrix Code' }
+        ];
+
+        const animSelectHtml = `
+            <select class="category-edit-animation" style="flex: 1; font-size: 0.75rem; padding: 2px 4px; border-radius: 4px;">
+                ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+            </select>
+        `;
+
         item.innerHTML = `
             <div class="cat-editor-row">
                 <span class="material-symbols-outlined drag-handle" style="cursor: grab;">drag_indicator</span>
@@ -659,10 +719,11 @@ async function renderCategoryEditor() {
                     <span class="material-symbols-outlined">delete</span>
                 </button>
             </div>
-            <div class="cat-editor-row" style="margin-top: 0.5rem;">
-                <div class="color-presets" style="margin-left: 2rem;">
+            <div class="cat-editor-row" style="margin-top: 0.5rem; align-items: center;">
+                <div class="color-presets" style="margin-left: 2rem; flex: 1;">
                     ${colorPresetsHtml}
                 </div>
+                ${animSelectHtml}
             </div>
         `;
 
@@ -709,6 +770,13 @@ async function renderCategoryEditor() {
                 broadcastSync();
             };
         });
+
+        const animSelect = item.querySelector('.category-edit-animation');
+        animSelect.onchange = async () => {
+            cat.animation = animSelect.value;
+            await dbPut(STORE_CATEGORIES, cat);
+            broadcastSync();
+        };
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
             if (await showConfirm(`カテゴリ「${cat.name}」を削除しますか？\n（過去のログからはカテゴリ色が消えます）`)) {
@@ -861,8 +929,9 @@ function setupEventListeners() {
     if (animSelect) {
         animSelect.onchange = async (e) => {
             const animType = e.target.value;
+            currentAnimationType = animType;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: animType });
-            applyAnimation(animType);
+            await updateUI();
             broadcastSync();
         };
     }
@@ -1056,6 +1125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyFont(settings.font || FONTS[0].value);
         applyAnimation(settings.animation || 'clock');
 
+        initAnimationEngine();
         setupBroadcastChannel();
         setupEventListeners();
         await handleTestParameters();
