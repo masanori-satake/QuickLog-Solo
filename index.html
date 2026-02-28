@@ -181,7 +181,7 @@
                 <button class="close-btn" onclick="closePreview()"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="preview-body">
-                <iframe src="app.html" frameborder="0" class="preview-iframe"></iframe>
+                <iframe src="about:blank" frameborder="0" class="preview-iframe"></iframe>
             </div>
             <div class="modal-footer">
                 <p>※ プレビュー版ではサイドパネルでの動作をシミュレートしています。</p>
@@ -200,25 +200,34 @@
 
         function copyUrl(url, event) {
             event.preventDefault();
+            const target = event.currentTarget;
             navigator.clipboard.writeText(url).then(() => {
-                const target = event.currentTarget;
                 const originalHtml = target.innerHTML;
-                target.innerHTML = 'URLをコピーしました！';
+                target.innerHTML = '<span style="font-size: 0.8em; font-weight: bold;">URLをコピーしました！</span>';
+                const originalColor = target.style.color;
                 target.style.color = 'var(--md-sys-color-tertiary)';
 
                 setTimeout(() => {
                     target.innerHTML = originalHtml;
-                    target.style.color = '';
+                    target.style.color = originalColor;
                 }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
             });
         }
 
         function openPreview() {
+            const iframe = document.querySelector('.preview-iframe');
+            if (iframe.src === 'about:blank' || !iframe.src) {
+                iframe.src = 'app.html';
+            }
             document.getElementById('preview-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
         function closePreview() {
+            const iframe = document.querySelector('.preview-iframe');
+            iframe.src = 'about:blank'; // Stop all processes in iframe
             document.getElementById('preview-modal').classList.add('hidden');
             document.body.style.overflow = '';
         }
