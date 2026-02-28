@@ -23,10 +23,15 @@
 
         <main class="landing-main">
             <section class="hero-section">
-                <h2 class="display-large">1秒で記録、1秒で集計、1秒で安心。</h2>
+                <div class="browser-support-icons">
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" alt="Chrome" title="Chrome Support">
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt="Edge" title="Edge Support">
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" title="Firefox Support">
+                </div>
+                <h2 class="display-large">1秒で記録、1秒で集計。</h2>
                 <p class="body-large">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型工数管理ツールです。</p>
                 <div class="cta-buttons">
-                    <a href="app.html" class="btn-primary">ブラウザで試す</a>
+                    <button class="btn-primary" onclick="openPreview()">ブラウザで試す</button>
                     <div class="download-dropdown">
                         <button class="btn-secondary">拡張機能をダウンロード <span class="material-symbols-outlined">expand_more</span></button>
                         <div class="dropdown-content">
@@ -105,7 +110,10 @@
                             <div id="setup-chrome" class="setup-tab-content">
                                 <ol>
                                     <li>ZIPファイルをダウンロードして解凍します。</li>
-                                    <li>ブラウザで拡張機能管理ページを開きます。<br>(Chrome: <code>chrome://extensions/</code> / Edge: <code>edge://extensions/</code>)</li>
+                                    <li>ブラウザで拡張機能管理ページを開きます。<br>
+                                        (Chrome: <a href="chrome://extensions/" class="internal-link" onclick="copyUrl('chrome://extensions/', event)"><code>chrome://extensions/</code> <span class="material-symbols-outlined">open_in_new</span></a> /
+                                         Edge: <a href="edge://extensions/" class="internal-link" onclick="copyUrl('edge://extensions/', event)"><code>edge://extensions/</code> <span class="material-symbols-outlined">open_in_new</span></a>)
+                                    </li>
                                     <li>「デベロッパーモード」をONにします。</li>
                                     <li>「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。</li>
                                 </ol>
@@ -113,7 +121,7 @@
                             <div id="setup-firefox" class="setup-tab-content hidden">
                                 <ol>
                                     <li>ZIPファイルをダウンロードして解凍します。</li>
-                                    <li>Firefoxで <code>about:debugging#/runtime/this-firefox</code> を開きます。</li>
+                                    <li>Firefoxで <a href="about:debugging#/runtime/this-firefox" class="internal-link" onclick="copyUrl('about:debugging#/runtime/this-firefox', event)"><code>about:debugging</code> <span class="material-symbols-outlined">open_in_new</span></a> を開きます。</li>
                                     <li>「一時的な拡張機能を読み込む...」をクリックします。</li>
                                     <li>解凍したフォルダ内の <code>manifest.json</code> を選択します。</li>
                                 </ol>
@@ -164,6 +172,21 @@
         </footer>
     </div>
 
+    <div id="preview-modal" class="modal hidden">
+        <div class="modal-content preview-content">
+            <div class="modal-header">
+                <h3>アプリ プレビュー</h3>
+                <button class="close-btn" onclick="closePreview()"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="preview-body">
+                <iframe src="app.html" frameborder="0" class="preview-iframe"></iframe>
+            </div>
+            <div class="modal-footer">
+                <p>※ プレビュー版ではサイドパネルでの動作をシミュレートしています。</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         function showSetup(browser, event) {
             document.querySelectorAll('.setup-tab-content').forEach(el => el.classList.add('hidden'));
@@ -171,6 +194,33 @@
 
             document.getElementById('setup-' + browser).classList.remove('hidden');
             event.currentTarget.classList.add('active');
+        }
+
+        function copyUrl(url, event) {
+            // Browser security prevents direct navigation to chrome:// or about: URLs.
+            // We try to open it, but also copy it to the clipboard as a fallback.
+            event.preventDefault();
+            navigator.clipboard.writeText(url).then(() => {
+                alert('ブラウザのセキュリティ制限により直接開けない場合があります。URLをクリップボードにコピーしました。アドレスバーに貼り付けて開いてください。\n\n' + url);
+                window.open(url, '_blank');
+            });
+        }
+
+        function openPreview() {
+            document.getElementById('preview-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePreview() {
+            document.getElementById('preview-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('preview-modal');
+            if (event.target == modal) {
+                closePreview();
+            }
         }
     </script>
 </body>

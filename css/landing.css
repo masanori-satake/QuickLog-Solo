@@ -157,6 +157,27 @@ h1 {
     padding: var(--md-sys-spacing-2);
 }
 
+.browser-support-icons {
+    display: flex;
+    justify-content: center;
+    gap: var(--md-sys-spacing-2);
+    margin-bottom: var(--md-sys-spacing-2);
+}
+
+.browser-support-icons img {
+    width: 32px;
+    height: 32px;
+    opacity: 0.8;
+    filter: grayscale(0.2);
+    transition: all 0.2s ease;
+}
+
+.browser-support-icons img:hover {
+    opacity: 1;
+    filter: grayscale(0);
+    transform: scale(1.1);
+}
+
 .icon-large {
     font-size: 40px !important;
     color: var(--md-sys-color-tertiary);
@@ -230,7 +251,74 @@ h1 {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
+}
+
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-large);
+    width: 90%;
+    max-width: 450px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--md-sys-elevation-3);
+}
+
+.modal-header {
+    padding: var(--md-sys-spacing-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: var(--md-sys-typescale-title-medium-size);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.preview-body {
+    flex: 1;
+    overflow: hidden;
+    height: 600px;
+}
+
+.preview-iframe {
+    width: 100%;
+    height: 100%;
+}
+
+.modal-footer {
+    padding: var(--md-sys-spacing-1-5);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    text-align: center;
+}
+
+.modal-footer p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--md-sys-color-on-surface-variant);
 }
 
 .setup-step h4 {
@@ -296,6 +384,22 @@ code {
     padding: 2px 4px;
     border-radius: 4px;
     font-family: 'Roboto Mono', monospace;
+}
+
+.internal-link {
+    color: var(--md-sys-color-primary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.internal-link:hover {
+    text-decoration: underline;
+}
+
+.internal-link .material-symbols-outlined {
+    font-size: 16px;
 }
 
 @media (max-width: 600px) {
