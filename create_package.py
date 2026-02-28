@@ -2,57 +2,93 @@ import os
 import zipfile
 import json
 import subprocess
+import shutil
 
-def create_package():
+def create_zip(zip_filepath, includes, manifest_src):
+    print(f"Creating package: {zip_filepath}")
+    try:
+        # Create a temporary directory to assemble the package
+        temp_dir = "temp_package"
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        os.makedirs(temp_dir)
+
+        # Copy all includes to temp_dir
+        for item in includes:
+            if item == "manifest.json":
+                shutil.copy2(manifest_src, os.path.join(temp_dir, "manifest.json"))
+                print(f"  Added: manifest.json (from {manifest_src})")
+                continue
+
+            if os.path.isdir(item):
+                shutil.copytree(item, os.path.join(temp_dir, item))
+                print(f"  Added: {item}/")
+            elif os.path.isfile(item):
+                shutil.copy2(item, os.path.join(temp_dir, item))
+                print(f"  Added: {item}")
+            else:
+                print(f"  Warning: {item} not found.")
+
+        # Create zip from temp_dir
+        with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(temp_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, temp_dir)
+                    zipf.write(file_path, arcname)
+
+        # Cleanup temp_dir
+        shutil.rmtree(temp_dir)
+
+        print(f"Successfully created {zip_filepath}")
+        return True
+    except Exception as e:
+        print(f"Error creating package {zip_filepath}: {e}")
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        return False
+
+def create_packages():
     package_name = "QuickLog-Solo"
     dist_dir = "dist"
-    zip_filename = f"{package_name}.zip"
-    zip_filepath = os.path.join(dist_dir, zip_filename)
-
-    # Files and directories to include in the package
-    includes = [
-        "manifest.json",
-        "app.html",
-        "version.json",
-        "js",
-        "css",
-        "assets"
-    ]
 
     if not os.path.exists(dist_dir):
         os.makedirs(dist_dir)
 
-    print(f"Creating package: {zip_filepath}")
+    common_includes = [
+        "app.html",
+        "version.json",
+        "js",
+        "css",
+        "assets",
+        "manifest.json"
+    ]
 
-    try:
-        with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for item in includes:
-                if os.path.isdir(item):
-                    for root, dirs, files in os.walk(item):
-                        for file in files:
-                            file_path = os.path.join(root, file)
-                            arcname = os.path.relpath(file_path, os.getcwd())
-                            zipf.write(file_path, arcname)
-                            print(f"  Added: {arcname}")
-                elif os.path.isfile(item):
-                    zipf.write(item, item)
-                    print(f"  Added: {item}")
-                else:
-                    print(f"  Warning: {item} not found.")
+    # Chrome/Edge Package
+    chrome_zip = os.path.join(dist_dir, f"{package_name}-Chrome.zip")
+    success_chrome = create_zip(chrome_zip, common_includes, "manifest.chrome.json")
 
-        print(f"Successfully created {zip_filepath}")
+    # Firefox Package
+    firefox_zip = os.path.join(dist_dir, f"{package_name}-Firefox.zip")
+    success_firefox = create_zip(firefox_zip, common_includes, "manifest.firefox.json")
 
-        # Add the created zip to git as requested (Choice A)
-        print(f"Adding {zip_filepath} to git...")
-        subprocess.run(["git", "add", zip_filepath], check=True)
+    if success_chrome and success_firefox:
+        # Add the created zips to git
+        print("Adding zip files to git...")
+        subprocess.run(["git", "add", chrome_zip, firefox_zip], check=True)
+
+        # Maintain a legacy QuickLog-Solo.zip for backward compatibility if needed,
+        # or just use the Chrome one as default.
+        # Here we copy Chrome one to the legacy name.
+        legacy_zip = os.path.join(dist_dir, f"{package_name}.zip")
+        shutil.copy2(chrome_zip, legacy_zip)
+        subprocess.run(["git", "add", legacy_zip], check=True)
+
         return True
-
-    except Exception as e:
-        print(f"Error creating package: {e}")
-        return False
+    return False
 
 if __name__ == "__main__":
-    if create_package():
+    if create_packages():
         exit(0)
     else:
         exit(1)

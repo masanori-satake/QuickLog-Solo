@@ -19,109 +19,148 @@
                 <img src="assets/icon.svg" alt="QuickLog-Solo Icon" class="app-icon">
                 <h1>QuickLog-Solo</h1>
             </div>
+            <div class="lang-switcher">
+                <button onclick="setLanguage('ja')" id="lang-ja" class="lang-btn">JP</button>
+                <button onclick="setLanguage('en')" id="lang-en" class="lang-btn">EN</button>
+            </div>
         </header>
 
         <main class="landing-main">
             <section class="hero-section">
-                <h2 class="display-large">1秒で記録、1秒で集計、1秒で安心。</h2>
-                <p class="body-large">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドパネル型工数管理ツールです。</p>
+                <div class="browser-support-icons">
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" alt="Chrome" title="Chrome Support">
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt="Edge" title="Edge Support">
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" title="Firefox Support">
+                </div>
+                <h2 class="display-large" data-i18n="hero-title">1秒で記録、1秒で集計。</h2>
+                <p class="body-large" data-i18n="hero-desc">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型工数管理ツールです。</p>
                 <div class="cta-buttons">
-                    <a href="app.html" class="btn-primary">ブラウザで試す</a>
-                    <a href="dist/QuickLog-Solo.zip" class="btn-secondary" download>拡張機能をダウンロード</a>
+                    <button class="btn-primary" onclick="openPreview()" data-i18n="cta-test">ブラウザで試す</button>
+                    <div class="download-dropdown" id="download-dropdown">
+                        <button class="btn-secondary" onclick="toggleDownloadDropdown(event)"><span data-i18n="cta-download">拡張機能をダウンロード</span> <span class="material-symbols-outlined">expand_more</span></button>
+                        <div class="dropdown-content">
+                            <a href="dist/QuickLog-Solo-Chrome.zip" download><span data-i18n="dl-chrome">Chrome / Edge 用</span> (.zip)</a>
+                            <a href="dist/QuickLog-Solo-Firefox.zip" download><span data-i18n="dl-firefox">Firefox 用</span> (.zip)</a>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <section class="feature-section card">
-                <h3 class="headline-medium">大事なポリシー</h3>
+                <h3 class="headline-medium" data-i18n="policy-title">大事なポリシー</h3>
                 <div class="policy-grid">
                     <div class="policy-item">
                         <span class="material-symbols-outlined icon-large">lock</span>
                         <h4>Local Only</h4>
-                        <p>データはブラウザ内の IndexedDB にのみ保存。外部サーバーへの送信は一切行いません。</p>
+                        <p data-i18n="policy-local-desc">データはブラウザ内の IndexedDB にのみ保存。外部サーバーへの送信は一切行いません。</p>
                     </div>
                     <div class="policy-item">
                         <span class="material-symbols-outlined icon-large">visibility_off</span>
                         <h4>No Tracking</h4>
-                        <p>アクセス解析やトラッキングコードは一切含みません。あなたの作業を誰も監視しません。</p>
+                        <p data-i18n="policy-tracking-desc">アクセス解析やトラッキングコードは一切含みません。あなたの作業を誰も監視しません。</p>
                     </div>
                     <div class="policy-item">
                         <span class="material-symbols-outlined icon-large">speed</span>
                         <h4>Zero Friction</h4>
-                        <p>「Less is More」。過剰な機能を削ぎ落とし、1秒で打刻できる軽快さを追求しました。</p>
+                        <p data-i18n="policy-friction-desc">「Less is More」。過剰な機能を削ぎ落とし、1秒で打刻できる軽快さを追求しました。</p>
                     </div>
                 </div>
             </section>
 
             <section class="feature-section">
-                <h3 class="headline-medium">主な機能</h3>
+                <h3 class="headline-medium" data-i18n="features-title">主な機能</h3>
                 <ul class="feature-list">
                     <li>
                         <span class="material-symbols-outlined">bolt</span>
                         <div>
-                            <h4>ワンクリック打刻</h4>
-                            <p>カテゴリを選んで開始するだけ。前のタスクは自動的に終了処理されます。</p>
+                            <h4 data-i18n="feature-1-title">ワンクリック打刻</h4>
+                            <p data-i18n="feature-1-desc">カテゴリを選んで開始するだけ。前のタスクは自動的に終了処理されます。</p>
                         </div>
                     </li>
                     <li>
                         <span class="material-symbols-outlined">side_navigation</span>
                         <div>
-                            <h4>サイドパネル常駐</h4>
-                            <p>Chromeのサイドパネルで動作。ブラウザの横でいつでも素早くアクセスできます。</p>
+                            <h4 data-i18n="feature-2-title">サイドバー常駐</h4>
+                            <p data-i18n="feature-2-desc">ブラウザのサイドバー（サイドパネル）で動作。ブラウザの横でいつでも素早くアクセスできます。</p>
                         </div>
                     </li>
                     <li>
                         <span class="material-symbols-outlined">content_paste</span>
                         <div>
-                            <h4>一瞬で集計</h4>
-                            <p>日報形式やカテゴリ別集計をワンクリックでクリップボードにコピーできます。</p>
+                            <h4 data-i18n="feature-3-title">一瞬で集計</h4>
+                            <p data-i18n="feature-3-desc">日報形式やカテゴリ別集計をワンクリックでクリップボードにコピーできます。</p>
                         </div>
                     </li>
                     <li>
                         <span class="material-symbols-outlined">palette</span>
                         <div>
-                            <h4>Material 3 デザイン</h4>
-                            <p>Googleの最新デザインシステムを採用。美しく、直感的な操作感を提供します。</p>
+                            <h4 data-i18n="feature-4-title">Material 3 デザイン</h4>
+                            <p data-i18n="feature-4-desc">Googleの最新デザインシステムを採用。美しく、直感的な操作感を提供します。</p>
                         </div>
                     </li>
                 </ul>
             </section>
 
             <section class="setup-section card">
-                <h3 class="headline-medium">インストール / アンインストール</h3>
+                <h3 class="headline-medium" data-i18n="setup-title">インストール / アンインストール</h3>
                 <div class="setup-content">
                     <div class="setup-step">
-                        <h4>インストール方法</h4>
-                        <ol>
-                            <li>「拡張機能をダウンロード」からZIPファイルを保存し、解凍します。</li>
-                            <li>Chromeで <code>chrome://extensions/</code> を開きます。</li>
-                            <li>右上の「デベロッパーモード」をONにします。</li>
-                            <li>「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。</li>
-                        </ol>
-                        <p class="note">※ 外部サーバーを介さないため、安心してお使いいただけます。</p>
+                        <h4 data-i18n="setup-install-title">インストール方法</h4>
+                        <div class="tab-container">
+                            <div class="setup-tabs">
+                                <button class="setup-tab-btn active" onclick="showSetup('chrome', event)">Chrome / Edge</button>
+                                <button class="setup-tab-btn" onclick="showSetup('firefox', event)">Firefox</button>
+                            </div>
+                            <div id="setup-chrome" class="setup-tab-content">
+                                <ol>
+                                    <li data-i18n="setup-chrome-step-1">ZIPファイルをダウンロードして解凍します。</li>
+                                    <li data-i18n="setup-chrome-step-2">ブラウザの拡張機能管理ページのURLをコピーして開きます。</li>
+                                    <div style="margin: 4px 0 12px 20px;">
+                                        (Chrome: <a href="chrome://extensions/" class="internal-link" onclick="copyUrl('chrome://extensions/', event)"><code>chrome://extensions/</code> <span class="material-symbols-outlined">content_copy</span></a> /
+                                         Edge: <a href="edge://extensions/" class="internal-link" onclick="copyUrl('edge://extensions/', event)"><code>edge://extensions/</code> <span class="material-symbols-outlined">content_copy</span></a>)
+                                    </div>
+                                    <li data-i18n="setup-chrome-step-3">「デベロッパーモード」をONにします。</li>
+                                    <li data-i18n="setup-chrome-step-4">「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。</li>
+                                </ol>
+                            </div>
+                            <div id="setup-firefox" class="setup-tab-content hidden">
+                                <ol>
+                                    <li data-i18n="setup-firefox-step-1">ZIPファイルをダウンロードして解凍します。</li>
+                                    <li>
+                                        <span data-i18n="setup-firefox-step-2">FirefoxのデバッグページのURLをコピーして開きます。</span><br>
+                                        <a href="about:debugging#/runtime/this-firefox" class="internal-link" onclick="copyUrl('about:debugging#/runtime/this-firefox', event)"><code>about:debugging</code> <span class="material-symbols-outlined">content_copy</span></a>
+                                    </li>
+                                    <li data-i18n="setup-firefox-step-3">「一時的な拡張機能を読み込む...」をクリックします。</li>
+                                    <li>
+                                        <span data-i18n="setup-firefox-step-4">解凍したフォルダ内の manifest.json を選択します。</span>
+                                    </li>
+                                </ol>
+                                <p class="note" data-i18n="setup-firefox-note">※ Firefoxの「一時的な拡張機能」はブラウザ再起動時にリセットされるため、継続利用にはアドオンストアからの配布（今後予定）または開発者設定が必要です。</p>
+                            </div>
+                        </div>
+                        <p class="note" data-i18n="setup-install-note">※ 外部サーバーを介さないため、安心してお使いいただけます。</p>
                     </div>
                     <div class="setup-step">
-                        <h4>アンインストール方法</h4>
-                        <ol>
-                            <li>拡張機能アイコンを右クリックし、「Chromeから削除」を選択するだけです。</li>
-                        </ol>
+                        <h4 data-i18n="setup-uninstall-title">アンインストール方法</h4>
+                        <p data-i18n="setup-uninstall-desc">拡張機能管理画面から「削除」を選択するだけです。IndexedDBに保存されたデータもブラウザの仕様に従い削除されます。</p>
                     </div>
                 </div>
             </section>
 
             <section class="faq-section">
-                <h3 class="headline-medium">FAQ / トラブルシューティング</h3>
+                <h3 class="headline-medium" data-i18n="faq-title">FAQ / トラブルシューティング</h3>
                 <div class="faq-list">
                     <div class="faq-item">
-                        <h4>Q. データはどこに保存されますか？</h4>
-                        <p>A. あなたのPC内のGoogle Chromeが管理する領域（IndexedDB）にのみ保存されます。</p>
+                        <h4 data-i18n="faq-1-q">Q. データはどこに保存されますか？</h4>
+                        <p data-i18n="faq-1-a">A. あなたのPC内のブラウザが管理する領域（IndexedDB）にのみ保存されます。</p>
                     </div>
                     <div class="faq-item">
-                        <h4>Q. PCを再起動してもデータは消えませんか？</h4>
-                        <p>A. はい、消えません。ブラウザのストレージ機能により、永続的に保存されます。ただし、ブラウザの「閲覧履歴の消去」でデータを削除した場合は消去される可能性があります。</p>
+                        <h4 data-i18n="faq-2-q">Q. PCを再起動してもデータは消えませんか？</h4>
+                        <p data-i18n="faq-2-a">A. はい、消えません。ブラウザのストレージ機能により、永続的に保存されます。ただし、ブラウザの「閲覧履歴の消去」でデータを削除した場合は消去される可能性があります。</p>
                     </div>
                     <div class="faq-item">
-                        <h4>Q. 動作が重くなった場合は？</h4>
-                        <p>A. 設定の「メンテナンス」タブからログをクリアするか、CSVエクスポートでバックアップを取ってからリセットをお試しください。</p>
+                        <h4 data-i18n="faq-3-q">Q. 動作が重くなった場合は？</h4>
+                        <p data-i18n="faq-3-a">A. 設定の「メンテナンス」タブからログをクリアするか、CSVエクスポートでバックアップを取ってからリセットをお試しください。</p>
                     </div>
                 </div>
             </section>
@@ -129,8 +168,8 @@
             <section class="scene-section card">
                 <div class="scene-content">
                     <span class="material-symbols-outlined icon-extra-large">task_alt</span>
-                    <h3 class="headline-small">一日の終わりに、スッキリとした解放感を。</h3>
-                    <p>
+                    <h3 class="headline-small" data-i18n="scene-title">一日の終わりに、スッキリとした解放感を。</h3>
+                    <p data-i18n="scene-desc">
                         「今日、何してたっけ？」と思い出す時間はもう不要です。<br>
                         QuickLog-Soloを開いて集計ボタンを押すだけ。正確な記録が、あなたの誠実な仕事を証明します。
                     </p>
@@ -142,5 +181,231 @@
             <p>&copy; 2024 Masanori SATAKE. Built with Material 3.</p>
         </footer>
     </div>
+
+    <div id="preview-modal" class="modal hidden">
+        <div class="modal-content preview-content">
+            <div class="modal-header">
+                <h3 data-i18n="preview-title">アプリ プレビュー</h3>
+                <button class="close-btn" onclick="closePreview()"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="preview-body">
+                <iframe src="about:blank" frameborder="0" class="preview-iframe"></iframe>
+            </div>
+            <div class="modal-footer">
+                <p data-i18n="preview-note">※ プレビュー版ではサイドパネルでの動作をシミュレートしています。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            ja: {
+                "hero-title": "1秒で記録、1秒で集計。",
+                "hero-desc": "QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型工数管理ツールです。",
+                "cta-test": "ブラウザで試す",
+                "cta-download": "拡張機能をダウンロード",
+                "policy-title": "大事なポリシー",
+                "policy-local-desc": "データはブラウザ内の IndexedDB にのみ保存。外部サーバーへの送信は一切行いません。",
+                "policy-tracking-desc": "アクセス解析やトラッキングコードは一切含みません。あなたの作業を誰も監視しません。",
+                "policy-friction-desc": "「Less is More」。過剰な機能を削ぎ落とし、1秒で打刻できる軽快さを追求しました。",
+                "features-title": "主な機能",
+                "feature-1-title": "ワンクリック打刻",
+                "feature-1-desc": "カテゴリを選んで開始するだけ。前のタスクは自動的に終了処理されます。",
+                "feature-2-title": "サイドバー常駐",
+                "feature-2-desc": "ブラウザのサイドバー（サイドパネル）で動作。ブラウザの横でいつでも素早くアクセスできます。",
+                "feature-3-title": "一瞬で集計",
+                "feature-3-desc": "日報形式やカテゴリ別集計をワンクリックでクリップボードにコピーできます。",
+                "feature-4-title": "Material 3 デザイン",
+                "feature-4-desc": "Googleの最新デザインシステムを採用。美しく、直感的な操作感を提供します。",
+                "setup-title": "インストール / アンインストール",
+                "setup-install-title": "インストール方法",
+                "setup-chrome-step-1": "ZIPファイルをダウンロードして解凍します。",
+                "setup-chrome-step-2": "ブラウザの拡張機能管理ページのURLをコピーして開きます。",
+                "setup-chrome-step-3": "「デベロッパーモード」をONにします。",
+                "setup-chrome-step-4": "「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。",
+                "setup-firefox-step-1": "ZIPファイルをダウンロードして解凍します。",
+                "setup-firefox-step-2": "FirefoxのデバッグページのURLをコピーして開きます。",
+                "setup-firefox-step-3": "「一時的な拡張機能を読み込む...」をクリックします。",
+                "setup-firefox-step-4": "解凍したフォルダ内の manifest.json を選択します。",
+                "setup-firefox-note": "※ Firefoxの「一時的な拡張機能」はブラウザ再起動時にリセットされるため、継続利用にはアドオンストアからの配布（今後予定）または開発者設定が必要です。",
+                "setup-install-note": "※ 外部サーバーを介さないため、安心してお使いいただけます。",
+                "setup-uninstall-title": "アンインストール方法",
+                "setup-uninstall-desc": "拡張機能管理画面から「削除」を選択するだけです。IndexedDBに保存されたデータもブラウザの仕様に従い削除されます。",
+                "faq-title": "FAQ / トラブルシューティング",
+                "faq-1-q": "Q. データはどこに保存されますか？",
+                "faq-1-a": "A. あなたのPC内のブラウザが管理する領域（IndexedDB）にのみ保存されます。",
+                "faq-2-q": "Q. PCを再起動してもデータは消えませんか？",
+                "faq-2-a": "A. はい、消えません。ブラウザのストレージ機能により、永続的に保存されます。ただし、ブラウザの「閲覧履歴の消去」でデータを削除した場合は消去される可能性があります。",
+                "faq-3-q": "Q. 動作が重くなった場合は？",
+                "faq-3-a": "A. 設定の「メンテナンス」タブからログをクリアするか、CSVエクスポートでバックアップを取ってからリセットをお試しください。",
+                "scene-title": "一日の終わりに、スッキリとした解放感を。",
+                "scene-desc": "「今日、何してたっけ？」と思い出す時間はもう不要です。QuickLog-Soloを開いて集計ボタンを押すだけ。正確な記録が、あなたの誠実な仕事を証明します。",
+                "preview-title": "アプリ プレビュー",
+                "preview-note": "※ プレビュー版ではサイドパネルでの動作をシミュレートしています。",
+                "copy-success": "URLをコピーしました！",
+                "dl-chrome": "Chrome / Edge 用",
+                "dl-firefox": "Firefox 用"
+            },
+            en: {
+                "hero-title": "Record in 1s, Total in 1s.",
+                "hero-desc": "QuickLog-Solo is a minimalist sidebar-style productivity tool designed for engineers who find tracking work a burden but demand transparency and security.",
+                "cta-test": "Try in Browser",
+                "cta-download": "Download Extension",
+                "policy-title": "Key Policies",
+                "policy-local-desc": "Data is saved only in IndexedDB within your browser. No server uploads, ever.",
+                "policy-tracking-desc": "Zero analytics or tracking code. Your work remains private and unmonitored.",
+                "policy-friction-desc": "Based on 'Less is More'. We've stripped away the clutter for lightning-fast tracking.",
+                "features-title": "Key Features",
+                "feature-1-title": "One-Click Tracking",
+                "feature-1-desc": "Just pick a category and start. Previous tasks are automatically finalized.",
+                "feature-2-title": "Sidebar Resident",
+                "feature-2-desc": "Lives in your browser sidebar (side panel) for instant access anytime.",
+                "feature-3-title": "Instant Totaling",
+                "feature-3-desc": "Copy daily logs or category totals to your clipboard with a single click.",
+                "feature-4-title": "Material 3 Design",
+                "feature-4-desc": "Beautiful and intuitive UI powered by Google's latest design system.",
+                "setup-title": "Install / Uninstall",
+                "setup-install-title": "Installation",
+                "setup-chrome-step-1": "Download and extract the ZIP file.",
+                "setup-chrome-step-2": "Copy and open the extension management URL in your browser.",
+                "setup-chrome-step-3": "Turn on 'Developer mode'.",
+                "setup-chrome-step-4": "Click 'Load unpacked' and select the extracted folder.",
+                "setup-firefox-step-1": "Download and extract the ZIP file.",
+                "setup-firefox-step-2": "Copy and open the Firefox debugging page URL.",
+                "setup-firefox-step-3": "Click 'Load Temporary Add-on...'.",
+                "setup-firefox-step-4": "Select manifest.json in the extracted folder.",
+                "setup-firefox-note": "* Firefox 'Temporary Add-ons' reset on browser restart. Continued use requires developer settings or the upcoming Add-on Store release.",
+                "setup-install-note": "* Privacy-first: All operations are local, no external servers involved.",
+                "setup-uninstall-title": "Uninstallation",
+                "setup-uninstall-desc": "Simply remove it from the extension management screen. IndexedDB data will be deleted per browser rules.",
+                "faq-title": "FAQ / Troubleshooting",
+                "faq-1-q": "Q. Where is my data stored?",
+                "faq-1-a": "A. Only in your browser's local storage (IndexedDB).",
+                "faq-2-q": "Q. Will I lose data if I restart my PC?",
+                "faq-2-a": "A. No, data is persisted. However, it may be lost if you manually clear 'Browsing Data' (Cookies and other site data).",
+                "faq-3-q": "Q. What if the app becomes slow?",
+                "faq-3-a": "A. Export a CSV backup, then use 'Reset' or clear old logs in the 'Maintenance' tab.",
+                "scene-title": "End your day with a sense of relief.",
+                "scene-desc": "No more struggling to remember what you did. Open QuickLog-Solo and click 'Total'. Accurate records that prove your hard work.",
+                "preview-title": "App Preview",
+                "preview-note": "* The preview version simulates behavior in the sidebar.",
+                "copy-success": "URL Copied!",
+                "dl-chrome": "For Chrome / Edge",
+                "dl-firefox": "For Firefox"
+            }
+        };
+
+        let currentLang = 'ja';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+
+            // Update active state of buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('lang-' + lang).classList.add('active');
+
+            // Update page title
+            const titles = {
+                ja: "QuickLog-Solo - ミニマリスト向け工数管理ツール",
+                en: "QuickLog-Solo - Productivity tool for minimalists"
+            };
+            document.title = titles[lang];
+        }
+
+        // Initialize language
+        const userLang = navigator.language || navigator.userLanguage;
+        if (userLang.startsWith('ja')) {
+            setLanguage('ja');
+        } else {
+            setLanguage('en');
+        }
+
+        function showSetup(browser, event) {
+            document.querySelectorAll('.setup-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.setup-tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('setup-' + browser).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+        }
+
+        function copyUrl(url, event) {
+            event.preventDefault();
+            const target = event.currentTarget;
+            navigator.clipboard.writeText(url).then(() => {
+                const originalHtml = target.innerHTML;
+                const feedbackText = translations[currentLang]["copy-success"];
+                target.innerHTML = '<span style="font-size: 0.8em; font-weight: bold;">' + feedbackText + '</span>';
+                const originalColor = target.style.color;
+                target.style.color = 'var(--md-sys-color-tertiary)';
+
+                setTimeout(() => {
+                    target.innerHTML = originalHtml;
+                    target.style.color = originalColor;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function openPreview() {
+            const iframe = document.querySelector('.preview-iframe');
+
+            // Delete IndexedDB to ensure fresh state for preview
+            const DB_NAME = 'QuickLogSoloDB';
+            const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
+
+            deleteRequest.onsuccess = () => {
+                console.log('IndexedDB deleted successfully for preview.');
+                loadPreview(iframe);
+            };
+            deleteRequest.onerror = () => {
+                console.warn('Failed to delete IndexedDB, loading preview anyway.');
+                loadPreview(iframe);
+            };
+            deleteRequest.onblocked = () => {
+                console.warn('IndexedDB deletion blocked, loading preview anyway.');
+                loadPreview(iframe);
+            };
+        }
+
+        function loadPreview(iframe) {
+            if (iframe.src === 'about:blank' || !iframe.src) {
+                iframe.src = 'app.html';
+            }
+            document.getElementById('preview-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePreview() {
+            const iframe = document.querySelector('.preview-iframe');
+            iframe.src = 'about:blank'; // Stop all processes in iframe
+            document.getElementById('preview-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function toggleDownloadDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('download-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('preview-modal');
+            if (event.target == modal) {
+                closePreview();
+            }
+
+            const dropdown = document.getElementById('download-dropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        }
+    </script>
 </body>
 </html>
