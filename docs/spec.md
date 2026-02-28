@@ -40,7 +40,7 @@
 
 ## 4. UI/UX デザイン・透明性設計
 - **レイアウト:** サイドパネルに最適化された垂直レスポンシブデザイン。
-- **Material 3:** Google の Material 3 に完全準拠したデザイントークン管理。
+- **Material 3:** Google の Material 3 に完全準拠したデザイントークン管理。ヘッダーの操作ボタン等は Material 3 IconButtons (Material Symbols 使用) として実装される。
 - **透明性:** 設定内の「About」タブにて、保存先や通信仕様（Local Only）を明示。
 
 ## 5. 運用上の制約
@@ -61,14 +61,13 @@
 - **ビジュアル:** 表現力を補うためにグリフ文字（Material Symbols）を活用し、画像を使用する場合はシルエットなどのシンプルなものに限定する。
 
 ## 8. 追加合意事項
-### デザイン・UI
+### 背景アニメーション (Canvas-based LCD Style)
 - **経過時間表示:** リアルタイム表示（HH:MM:SS）。`Date.now()`を使用し精度を確保。
-- **背景アニメーション:** 実行中エリアの背景がアニメーション。以下のバリエーションを持つ。
-  - 左から右 (標準)
-  - 右から左
-  - クロック (1分周期の扇形、2分で1周) - **デフォルト**
-  - サンドクロック (1分周期で砂が移動、2分で1周)
-- **確認ダイアログ:** アプリ内カスタムダイアログを実装。
+- **背景アニメーション:** 実行中エリア（`#control-section`）の背景に `<canvas>` を使用してアニメーションを描画。
+  - **スタイル:** LCD ドットマトリクス・スタイル。4段階（なし、小、中、大）のドットサイズで monochromatic な低解像度表現を行う。
+  - **周期:** 120秒（2分）サイクル。
+  - **バリエーション:** 標準（左から右、右から左、クロック、サンドクロック）に加え、抽象的・幾何学的な全16種類（Tetris, Ripple, Matrix 等）をサポート。
+- **確認ダイアログ:** アプリ内カスタムダイアログを実装。ボタン（OK/キャンセル）は M3 ガイドラインに従い、等幅のグリッドレイアウトで配置される。
 - **色の判別性向上:** Material 3 Tonal Palette に基づき、14色のカラーバリエーションを提供。
 - **履歴の再現性:** ログに打刻時点のカテゴリ色を保存し、カテゴリ削除後も当時の色で履歴を表示可能にする。
 - **履歴表示制限:** 直近100件まで表示。
@@ -83,18 +82,33 @@
 - **DoS対策:** 入力文字列（カテゴリ名等）の最大長を50文字に制限。
 
 ### バージョニングポリシー
-- `[メジャー].[マイナー].[パッチ]` 形式で `version.json`, `package.json`, `manifest.json` で管理。
+- `[メジャー].[マイナー].[パッチ]` 形式で `src/version.json`, `package.json`, `src/manifest.*.json` で管理。`scripts/check_version.py` によって整合性がチェックされる。
+
+### 静的デプロイメント (Vercel)
+- **vercel.json:** `outputDirectory: "."` および `cleanUrls: true` を設定し、ルートの `index.html` および `src/` 配下のアセットが正しく参照されるように構成する。
 
 ## 9. 開発・品質管理ポリシー
 ### 設計原則・行動指針
 AI エージェントとしての詳細な行動指針および設計原則の適用については [AGENTS.md](../AGENTS.md) を遵守すること。
 
-### モジュール構造
+### ディレクトリ構造・モジュール構造
+- **src/:** 拡張機能のソースコード一式。
+    - **js/:** アプリケーションロジック (`app.js`, `logic.js`, `db.js`, `utils.js`, `animations.js`, `i18n.js`, `messages.js` 等)。
+    - **css/:** アプリ用スタイルシート (`style.css`, `m3-theme.css`, `landing.css`)。
+    - **assets/:** アイコン等の静的アセット。
+    - **app.html:** アプリ本体のHTML。
+- **scripts/:** ビルド、パッケージング、整合性チェック用のスクリプト。
+- **releases/:** 各ブラウザ向けの配布用パッケージ（ZIP）の出力先。
+- **docs/:** 仕様書、開発ガイドライン等のドキュメント。
+- **tests/:** Jest による単体テストおよび Playwright による E2E テスト。
+
 ```mermaid
 graph LR
     A[src/js/app.js] --> B[src/js/logic.js]
     A --> C[src/js/db.js]
     A --> D[src/js/utils.js]
+    A --> F[src/js/animations.js]
+    A --> G[src/js/i18n.js]
     E[src/js/background.js] --> SidePanel[Chrome SidePanel API / Firefox Sidebar]
 ```
 
@@ -102,3 +116,4 @@ graph LR
 - **Jest:** ロジック層とDB層の単体テスト。
 - **Playwright:** E2E/視覚的検証。
 - **リンター:** ESLint & Stylelint。
+- **データ整合性の自動修復:** `initDB` 実行時に、終了時刻のない「孤立したタスク」や古い「待機ログ」を自動的にクリーンアップ・修復する。
