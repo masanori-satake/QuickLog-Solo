@@ -39,8 +39,8 @@
                     <div class="download-dropdown">
                         <button class="btn-secondary"><span data-i18n="cta-download">拡張機能をダウンロード</span> <span class="material-symbols-outlined">expand_more</span></button>
                         <div class="dropdown-content">
-                            <a href="dist/QuickLog-Solo-Chrome.zip" download>Chrome / Edge 用 (.zip)</a>
-                            <a href="dist/QuickLog-Solo-Firefox.zip" download>Firefox 用 (.zip)</a>
+                            <a href="dist/QuickLog-Solo-Chrome.zip" download><span data-i18n="dl-chrome">Chrome / Edge 用</span> (.zip)</a>
+                            <a href="dist/QuickLog-Solo-Firefox.zip" download><span data-i18n="dl-firefox">Firefox 用</span> (.zip)</a>
                         </div>
                     </div>
                 </div>
@@ -126,11 +126,14 @@
                             <div id="setup-firefox" class="setup-tab-content hidden">
                                 <ol>
                                     <li data-i18n="setup-firefox-step-1">ZIPファイルをダウンロードして解凍します。</li>
-                                    <li data-i18n="setup-firefox-step-2">FirefoxのデバッグページのURLをコピーして開きます。<br>
+                                    <li>
+                                        <span data-i18n="setup-firefox-step-2">FirefoxのデバッグページのURLをコピーして開きます。</span><br>
                                         <a href="about:debugging#/runtime/this-firefox" class="internal-link" onclick="copyUrl('about:debugging#/runtime/this-firefox', event)"><code>about:debugging</code> <span class="material-symbols-outlined">content_copy</span></a>
                                     </li>
                                     <li data-i18n="setup-firefox-step-3">「一時的な拡張機能を読み込む...」をクリックします。</li>
-                                    <li data-i18n="setup-firefox-step-4">解凍したフォルダ内の <code>manifest.json</code> を選択します。</li>
+                                    <li>
+                                        <span data-i18n="setup-firefox-step-4">解凍したフォルダ内の manifest.json を選択します。</span>
+                                    </li>
                                 </ol>
                                 <p class="note" data-i18n="setup-firefox-note">※ Firefoxの「一時的な拡張機能」はブラウザ再起動時にリセットされるため、継続利用にはアドオンストアからの配布（今後予定）または開発者設定が必要です。</p>
                             </div>
@@ -239,7 +242,9 @@
                 "scene-desc": "「今日、何してたっけ？」と思い出す時間はもう不要です。QuickLog-Soloを開いて集計ボタンを押すだけ。正確な記録が、あなたの誠実な仕事を証明します。",
                 "preview-title": "アプリ プレビュー",
                 "preview-note": "※ プレビュー版ではサイドパネルでの動作をシミュレートしています。",
-                "copy-success": "URLをコピーしました！"
+                "copy-success": "URLをコピーしました！",
+                "dl-chrome": "Chrome / Edge 用",
+                "dl-firefox": "Firefox 用"
             },
             en: {
                 "hero-title": "Record in 1s, Total in 1s.",
@@ -284,7 +289,9 @@
                 "scene-desc": "No more struggling to remember what you did. Open QuickLog-Solo and click 'Total'. Accurate records that prove your hard work.",
                 "preview-title": "App Preview",
                 "preview-note": "* The preview version simulates behavior in the sidebar.",
-                "copy-success": "URL Copied!"
+                "copy-success": "URL Copied!",
+                "dl-chrome": "For Chrome / Edge",
+                "dl-firefox": "For Firefox"
             }
         };
 
@@ -332,7 +339,8 @@
             const target = event.currentTarget;
             navigator.clipboard.writeText(url).then(() => {
                 const originalHtml = target.innerHTML;
-                target.innerHTML = '<span style="font-size: 0.8em; font-weight: bold;">URLをコピーしました！</span>';
+                const feedbackText = translations[currentLang]["copy-success"];
+                target.innerHTML = '<span style="font-size: 0.8em; font-weight: bold;">' + feedbackText + '</span>';
                 const originalColor = target.style.color;
                 target.style.color = 'var(--md-sys-color-tertiary)';
 

@@ -114,8 +114,11 @@ h1 {
     border-radius: var(--md-sys-shape-full);
     text-decoration: none;
     font-weight: 500;
+    font-size: var(--md-sys-typescale-label-large-size);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-block;
+    border: none;
+    cursor: pointer;
 }
 
 .btn-primary {
