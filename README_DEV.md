@@ -1,6 +1,6 @@
 # QuickLog-Solo: 開発者ガイド
 
-このドキュメントでは、QuickLog-Solo の内部構造、設計思想、および開発ワークフローについて詳細に説明します。
+このドキュメントでは、QuickLog-Solo の内部構造、開発ワークフロー、および技術的な実装詳細について説明します。設計思想については [AGENTS.md](AGENTS.md) を参照してください。
 
 ## 1. アーキテクチャ概要
 
@@ -95,20 +95,9 @@ sequenceDiagram
 
 ---
 
-## 3. 採用している設計原則
+## 3. 設計原則と行動指針
 
-本プロジェクトでは以下の原則を遵守し、シンプルで保守性の高いコードを維持します。
-
--   **SLAP (Single Level of Abstraction Principle):**
-    -   `js/app.js` の関数内では、詳細な DOM 操作と高度なビジネスロジックを混在させず、適切なモジュールに委譲します。
--   **DRY (Don't Repeat Yourself):**
-    -   繰り返される UI 更新やデータ取得パターンを共通関数化しています。
--   **KISS (Keep It Simple, Stupid):**
-    -   過剰なフレームワークや複雑なデザインパターンを避け、標準 Web API を最大限に活用します。
--   **YAGNI (You Ain't Gonna Need It):**
-    -   現時点で必要のない拡張機能や抽象化は行いません。
--   **OCP (Open-Closed Principle):**
-    -   カテゴリや設定項目をデータ駆動で処理し、コード本体を変更せずに設定の追加・変更が可能な構造にしています。
+本プロジェクトで採用している設計原則（SLAP, DRY, KISS, YAGNI, OCP）の詳細および具体的な行動指針については、[AGENTS.md](AGENTS.md) を参照してください。
 
 ---
 
