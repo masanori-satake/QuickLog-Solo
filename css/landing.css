@@ -272,7 +272,8 @@ h1 {
     border-radius: var(--md-sys-shape-large);
     width: 90%;
     max-width: 450px;
-    max-height: 90vh;
+    height: 80vh; /* Set a substantial height */
+    max-height: 800px;
     display: flex;
     flex-direction: column;
     box-shadow: var(--md-sys-elevation-3);
@@ -301,7 +302,6 @@ h1 {
 .preview-body {
     flex: 1;
     overflow: hidden;
-    height: 600px;
 }
 
 .preview-iframe {
