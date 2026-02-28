@@ -7,6 +7,7 @@ import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pause
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
 import {
     AnimationEngine,
+    LeftToRight, RightToLeft, Clock, SandClock,
     TetrisBuilding, PlantGrowth, DotTyping,
     NewtonsCradle, Ripple, LissajousPendulum,
     MigratingBirds, CoffeeDrip, NightSky,
@@ -239,25 +240,11 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
     const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
     const display = getEl(ID_CURRENT_TASK_DISPLAY);
 
-    const isBasic = ['left-to-right', 'right-to-left', 'clock', 'sand-clock'].includes(activeAnimation);
+    // All animations are now canvas-based for consistency
+    clockContainer?.classList.add('hidden');
+    if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
 
-    if (activeAnimation === 'clock' || activeAnimation === 'sand-clock') {
-        clockContainer?.classList.remove('hidden');
-        if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
-
-        if (activeAnimation === 'clock') {
-            clockFace?.classList.remove('hidden');
-            sandClockFace?.classList.add('hidden');
-        } else {
-            clockFace?.classList.add('hidden');
-            sandClockFace?.classList.remove('hidden');
-            if (sandClockFace) sandClockFace.style.display = 'flex';
-        }
-    } else {
-        clockContainer?.classList.add('hidden');
-    }
-
-    if (!isBasic && animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
+    if (animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
         const colorCode = getColorCode(color);
         const animStateKey = `${activeAnimation}-${activeTask.startTime}-${colorCode}`;
         if (currentActiveAnimation !== animStateKey) {
@@ -425,6 +412,10 @@ function initAnimationEngine() {
     const canvas = getEl('animation-canvas');
     if (canvas) {
         animationEngine = new AnimationEngine(canvas);
+        animationEngine.register('left-to-right', LeftToRight);
+        animationEngine.register('right-to-left', RightToLeft);
+        animationEngine.register('clock', Clock);
+        animationEngine.register('sand-clock', SandClock);
         animationEngine.register('tetris-building', TetrisBuilding);
         animationEngine.register('plant-growth', PlantGrowth);
         animationEngine.register('dot-typing', DotTyping);
@@ -469,7 +460,16 @@ async function syncState() {
 
     applyTheme(state.theme || THEME_SYSTEM);
     applyFont(state.font || FONTS[0].value);
-    applyAnimation(state.animation || 'clock');
+
+    // Determine active animation type
+    let color = 'primary';
+    let categoryAnimation = 'default';
+    if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
+        const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
+        color = cat ? cat.color : (activeTask.color || 'primary');
+        categoryAnimation = cat ? (cat.animation || 'default') : 'default';
+    }
+    applyAnimation(state.animation || 'clock', categoryAnimation, color);
 
     await updateUI();
 
@@ -569,7 +569,8 @@ async function updateUI() {
             animationEngine?.stop();
             currentActiveAnimation = null;
         }
-        applyAnimation(currentAnimationType);
+        // Do not call applyAnimation with global setting here, it resets currentAnimationType potentially
+        // instead, just ensure engine is stopped.
 
         if (elements.display) elements.display.className = '';
         if (elements.overlay) elements.overlay.className = '';

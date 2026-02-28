@@ -53,7 +53,57 @@ export class AnimationEngine {
         const progress = (elapsed % this.cycleMs) / this.cycleMs;
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.activeAnimation.draw(this.ctx, this.canvas.width, this.canvas.height, progress, this.color);
+        this.drawLCD(progress);
+    }
+
+    drawLCD(progress) {
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        const cellSize = 6;
+        const cols = Math.ceil(w / cellSize);
+        const rows = Math.ceil(h / cellSize);
+
+        // Offscreen canvas for actual animation drawing
+        if (!this.offscreen) {
+            this.offscreen = document.createElement('canvas');
+        }
+        if (this.offscreen.width !== w || this.offscreen.height !== h) {
+            this.offscreen.width = w;
+            this.offscreen.height = h;
+        }
+        const octx = this.offscreen.getContext('2d');
+        octx.clearRect(0, 0, w, h);
+
+        // Draw the monochromatic animation to offscreen
+        // We use white as the base "on" color, then map brightness to dot size
+        this.activeAnimation.draw(octx, w, h, progress, '#fff');
+
+        const imgData = octx.getImageData(0, 0, w, h).data;
+
+        this.ctx.fillStyle = this.color;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                // Sample center of cell
+                const x = c * cellSize + cellSize / 2;
+                const y = r * cellSize + cellSize / 2;
+                const idx = (Math.floor(y) * w + Math.floor(x)) * 4;
+                const brightness = imgData[idx]; // Just R channel for mono
+
+                let dotSize = 0;
+                if (brightness > 200) dotSize = 4;      // 大ドット
+                else if (brightness > 120) dotSize = 3; // 中ドット
+                else if (brightness > 40) dotSize = 2;  // 小ドット
+
+                if (dotSize > 0) {
+                    this.ctx.fillRect(
+                        c * cellSize + (cellSize - dotSize) / 2,
+                        r * cellSize + (cellSize - dotSize) / 2,
+                        dotSize, dotSize
+                    );
+                }
+            }
+        }
     }
 
     resize() {
@@ -63,6 +113,72 @@ export class AnimationEngine {
         if (this.activeAnimation) {
             this.draw();
         }
+    }
+}
+
+// Basic Animations
+
+export class LeftToRight {
+    draw(ctx, w, h, p, color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, w * p, h);
+    }
+}
+
+export class RightToLeft {
+    draw(ctx, w, h, p, color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(w * (1 - p), 0, w * p, h);
+    }
+}
+
+export class Clock {
+    draw(ctx, w, h, p, color) {
+        const centerX = w / 2;
+        const centerY = h / 2;
+        const radius = Math.min(w, h) * 0.4;
+        const angle = p * Math.PI * 2;
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + angle);
+        ctx.closePath();
+        ctx.fill();
+    }
+}
+
+export class SandClock {
+    draw(ctx, w, h, p, color) {
+        const centerX = w / 2;
+        const centerY = h / 2;
+        const size = Math.min(w, h) * 0.4;
+
+        ctx.fillStyle = color;
+
+        // Top triangle (emptying)
+        ctx.beginPath();
+        ctx.moveTo(centerX - size, centerY - size);
+        ctx.lineTo(centerX + size, centerY - size);
+        ctx.lineTo(centerX, centerY);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillRect(centerX - size, centerY - size, size * 2, size * p);
+        ctx.globalCompositeOperation = 'source-over';
+
+        // Bottom triangle (filling)
+        ctx.beginPath();
+        ctx.moveTo(centerX - size, centerY + size);
+        ctx.lineTo(centerX + size, centerY + size);
+        ctx.lineTo(centerX, centerY);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.fillRect(centerX - size, centerY + size - size * p, size * 2, size * p);
+        ctx.globalCompositeOperation = 'source-over';
     }
 }
 

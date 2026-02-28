@@ -263,6 +263,7 @@ main {
     clip-path: inset(0 100% 0 0);
     z-index: 1;
     background-color: transparent;
+    display: none; /* Deactivate overlay mechanism as we moved to canvas */
 }
 
 #clock-container {
@@ -406,9 +407,10 @@ body.theme-light #current-task-display-base #clock-face {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 80px; /* Limit to current-task-display height */
     z-index: 0;
     pointer-events: none;
+    border-radius: var(--md-sys-shape-medium);
 }
 
 #timer-container, #stop-btn-box {
