@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "QuickLog-Solo",
+  "version": "0.4.1",
+  "description": "1秒で記録、1秒で集計、1秒で安心 - ミニマリスト向けサイドパネル工数管理ツール",
+  "permissions": [
+    "sidebars"
+  ],
+  "action": {
+    "default_title": "QuickLog-Soloを開く",
+    "default_icon": {
+      "16": "assets/icon.svg",
+      "32": "assets/icon.svg",
+      "48": "assets/icon.svg",
+      "128": "assets/icon.svg"
+    }
+  },
+  "sidebar_action": {
+    "default_panel": "app.html",
+    "default_icon": "assets/icon.svg",
+    "default_title": "QuickLog-Solo"
+  },
+  "icons": {
+    "16": "assets/icon.svg",
+    "32": "assets/icon.svg",
+    "48": "assets/icon.svg",
+    "128": "assets/icon.svg"
+  },
+  "background": {
+    "scripts": ["js/background.js"],
+    "type": "module"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "quicklog-solo@masanori.satake",
+      "strict_min_version": "109.0"
+    }
+  }
+}

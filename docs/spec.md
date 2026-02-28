@@ -7,10 +7,10 @@
 - **透明性:** データの保存先や通信仕様を明示し、ユーザー（技術者）の不安を解消する。
 
 ## 2. システム構成
-- **形態:** Chrome 拡張機能 (Manifest V3) / サイドパネル
+- **形態:** ブラウザ拡張機能 (Chrome/Edge: サイドパネル, Firefox: サイドバー)
 - **技術:** HTML5, CSS3, JavaScript (Vanilla JSのみ、フレームワーク禁止)。
 - **ストレージ:** ブラウザ内 IndexedDB (Local Only)。外部送信は一切行わない。
-- **配布:** Chrome ウェブストアまたはデベロッパーモードによるインストール。
+- **配布:** 各ブラウザストアまたはデベロッパーモードによるインストール。
 
 ## 3. 主要機能 (MVP)
 ### A. 打刻・記録ロジック
@@ -34,9 +34,10 @@
 - **自動削除:** 起動時に40日を超えたデータを自動消去し、メンテナンスフリーを実現。
 - **手動保守:** ログデータのCSVエクスポート/インポート、およびカテゴリーデータのJSONインポート/エクスポート機能を備える。
 
-### E. サイドパネル機能 (Chrome Extension)
-- アイコンクリックによりサイドパネルを起動。
-- `side_panel` API を利用し、常にブラウザの横で動作。
+### E. サイドバー・サイドパネル機能
+- 各ブラウザのサイドバー（またはサイドパネル）APIを利用し、常にブラウザの横で動作。
+- Chrome/Edge: `side_panel` API
+- Firefox: `sidebar_action` API
 
 ## 4. UI/UX デザイン・透明性設計
 - **レイアウト:** サイドパネルに最適化された垂直レスポンシブデザイン。
@@ -96,7 +97,7 @@ graph LR
     A[js/app.js] --> B[js/logic.js]
     A --> C[js/db.js]
     A --> D[js/utils.js]
-    E[js/background.js] --> SidePanel[Chrome SidePanel API]
+    E[js/background.js] --> SidePanel[Chrome SidePanel API / Firefox Sidebar]
 ```
 
 ### 品質保証

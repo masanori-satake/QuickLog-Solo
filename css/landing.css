@@ -67,6 +67,45 @@ h1 {
     display: flex;
     gap: var(--md-sys-spacing-2);
     margin-bottom: var(--md-sys-spacing-6);
+    position: relative;
+}
+
+.download-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--md-sys-color-surface-container);
+    min-width: 220px;
+    box-shadow: var(--md-sys-elevation-2);
+    border-radius: var(--md-sys-shape-medium);
+    z-index: 100;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+.dropdown-content a {
+    color: var(--md-sys-color-on-surface);
+    padding: var(--md-sys-spacing-1-5) var(--md-sys-spacing-2);
+    text-decoration: none;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.download-dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.btn-secondary span {
+    vertical-align: middle;
+    font-size: 20px;
 }
 
 .btn-primary, .btn-secondary {
@@ -166,6 +205,32 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: var(--md-sys-spacing-3);
+}
+
+.setup-tabs {
+    display: flex;
+    gap: var(--md-sys-spacing-1);
+    margin-bottom: var(--md-sys-spacing-2);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.setup-tab-btn {
+    padding: var(--md-sys-spacing-1) var(--md-sys-spacing-2);
+    border: none;
+    background: none;
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+}
+
+.setup-tab-btn.active {
+    color: var(--md-sys-color-primary);
+    border-bottom-color: var(--md-sys-color-primary);
+}
+
+.hidden {
+    display: none;
 }
 
 .setup-step h4 {

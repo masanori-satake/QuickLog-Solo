@@ -24,10 +24,16 @@
         <main class="landing-main">
             <section class="hero-section">
                 <h2 class="display-large">1秒で記録、1秒で集計、1秒で安心。</h2>
-                <p class="body-large">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドパネル型工数管理ツールです。</p>
+                <p class="body-large">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型工数管理ツールです。</p>
                 <div class="cta-buttons">
                     <a href="app.html" class="btn-primary">ブラウザで試す</a>
-                    <a href="dist/QuickLog-Solo.zip" class="btn-secondary" download>拡張機能をダウンロード</a>
+                    <div class="download-dropdown">
+                        <button class="btn-secondary">拡張機能をダウンロード <span class="material-symbols-outlined">expand_more</span></button>
+                        <div class="dropdown-content">
+                            <a href="dist/QuickLog-Solo-Chrome.zip" download>Chrome / Edge 用 (.zip)</a>
+                            <a href="dist/QuickLog-Solo-Firefox.zip" download>Firefox 用 (.zip)</a>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -65,8 +71,8 @@
                     <li>
                         <span class="material-symbols-outlined">side_navigation</span>
                         <div>
-                            <h4>サイドパネル常駐</h4>
-                            <p>Chromeのサイドパネルで動作。ブラウザの横でいつでも素早くアクセスできます。</p>
+                            <h4>サイドバー常駐</h4>
+                            <p>ブラウザのサイドバー（サイドパネル）で動作。ブラウザの横でいつでも素早くアクセスできます。</p>
                         </div>
                     </li>
                     <li>
@@ -91,19 +97,34 @@
                 <div class="setup-content">
                     <div class="setup-step">
                         <h4>インストール方法</h4>
-                        <ol>
-                            <li>「拡張機能をダウンロード」からZIPファイルを保存し、解凍します。</li>
-                            <li>Chromeで <code>chrome://extensions/</code> を開きます。</li>
-                            <li>右上の「デベロッパーモード」をONにします。</li>
-                            <li>「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。</li>
-                        </ol>
+                        <div class="tab-container">
+                            <div class="setup-tabs">
+                                <button class="setup-tab-btn active" onclick="showSetup('chrome', event)">Chrome / Edge</button>
+                                <button class="setup-tab-btn" onclick="showSetup('firefox', event)">Firefox</button>
+                            </div>
+                            <div id="setup-chrome" class="setup-tab-content">
+                                <ol>
+                                    <li>ZIPファイルをダウンロードして解凍します。</li>
+                                    <li>ブラウザで拡張機能管理ページを開きます。<br>(Chrome: <code>chrome://extensions/</code> / Edge: <code>edge://extensions/</code>)</li>
+                                    <li>「デベロッパーモード」をONにします。</li>
+                                    <li>「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。</li>
+                                </ol>
+                            </div>
+                            <div id="setup-firefox" class="setup-tab-content hidden">
+                                <ol>
+                                    <li>ZIPファイルをダウンロードして解凍します。</li>
+                                    <li>Firefoxで <code>about:debugging#/runtime/this-firefox</code> を開きます。</li>
+                                    <li>「一時的な拡張機能を読み込む...」をクリックします。</li>
+                                    <li>解凍したフォルダ内の <code>manifest.json</code> を選択します。</li>
+                                </ol>
+                                <p class="note">※ Firefoxの「一時的な拡張機能」はブラウザ再起動時にリセットされるため、継続利用にはアドオンストアからの配布（今後予定）または開発者設定が必要です。</p>
+                            </div>
+                        </div>
                         <p class="note">※ 外部サーバーを介さないため、安心してお使いいただけます。</p>
                     </div>
                     <div class="setup-step">
                         <h4>アンインストール方法</h4>
-                        <ol>
-                            <li>拡張機能アイコンを右クリックし、「Chromeから削除」を選択するだけです。</li>
-                        </ol>
+                        <p>拡張機能管理画面から「削除」を選択するだけです。IndexedDBに保存されたデータもブラウザの仕様に従い削除されます。</p>
                     </div>
                 </div>
             </section>
@@ -113,7 +134,7 @@
                 <div class="faq-list">
                     <div class="faq-item">
                         <h4>Q. データはどこに保存されますか？</h4>
-                        <p>A. あなたのPC内のGoogle Chromeが管理する領域（IndexedDB）にのみ保存されます。</p>
+                        <p>A. あなたのPC内のブラウザが管理する領域（IndexedDB）にのみ保存されます。</p>
                     </div>
                     <div class="faq-item">
                         <h4>Q. PCを再起動してもデータは消えませんか？</h4>
@@ -142,5 +163,15 @@
             <p>&copy; 2024 Masanori SATAKE. Built with Material 3.</p>
         </footer>
     </div>
+
+    <script>
+        function showSetup(browser, event) {
+            document.querySelectorAll('.setup-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.setup-tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('setup-' + browser).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
 </body>
 </html>
