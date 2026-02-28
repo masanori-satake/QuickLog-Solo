@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
-import { SYSTEM_CATEGORY_IDLE } from '../js/utils.js';
+import { SYSTEM_CATEGORY_IDLE } from '../src/js/utils.js';
 
-jest.unstable_mockModule('../js/db.js', () => ({
+jest.unstable_mockModule('../src/js/db.js', () => ({
     dbAdd: jest.fn().mockResolvedValue(123),
     dbPut: jest.fn().mockResolvedValue(true),
     dbGet: jest.fn(),
@@ -18,8 +18,8 @@ jest.unstable_mockModule('../js/db.js', () => ({
     SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
-const { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } = await import('../js/logic.js');
-const { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../js/db.js');
+const { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } = await import('../src/js/logic.js');
+const { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../src/js/db.js');
 
 describe('Logic Module', () => {
     describe('formatDuration', () => {

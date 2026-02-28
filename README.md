@@ -13,14 +13,14 @@
 現在、本拡張機能は各ブラウザのストアには公開されていません。以下の手順でインストールしてください。
 
 ### Chrome / Edge の場合
-1. [Chrome用 ZIP ファイル](dist/QuickLog-Solo-Chrome.zip) をダウンロードして解凍します。
+1. `releases/QuickLog-Solo-Chrome.zip` をダウンロードして解凍します。
 2. ブラウザで拡張機能管理ページを開きます（Chrome: `chrome://extensions` / Edge: `edge://extensions`）。
 3. 「デベロッパー モード」をオンにします。
 4. 「パッケージ化されていない拡張機能を読み込む」ボタンをクリックし、解凍したフォルダを選択します。
 5. ツールバーの拡張機能アイコンをクリックし、QuickLog-Solo をピン留めして使用します。
 
 ### Firefox の場合
-1. [Firefox用 ZIP ファイル](dist/QuickLog-Solo-Firefox.zip) をダウンロードして解凍します。
+1. `releases/QuickLog-Solo-Firefox.zip` をダウンロードして解凍します。
 2. Firefox で `about:debugging#/runtime/this-firefox` を開きます。
 3. 「一時的な拡張機能を読み込む...」をクリックし、解凍したフォルダ内の `manifest.json` を選択します。
 
@@ -47,9 +47,15 @@
 - **技術スタック:** Vanilla JS, HTML5, CSS3 (Material 3).
 - **マニフェスト:** Chrome Extension Manifest V3 準拠（Firefox対応版を含む）。
 - **ディレクトリ構成:**
-  - `js/`: アプリケーションロジック (`app.js`, `logic.js`, `background.js` 等)。
-  - `css/`: スタイルシート (`style.css`, `m3-theme.css`)。
-  - `assets/`: アイコン等の静的アセット。
+  - `src/`: 拡張機能のソースコード一式。
+    - `js/`: アプリケーションロジック (`app.js`, `logic.js` 等)。
+    - `css/`: アプリ用スタイルシート。
+    - `assets/`: アイコン等の静的アセット。
+    - `app.html`: アプリ本体のHTML。
+  - `public/`: ランディングページ用の静的ファイル。
+  - `scripts/`: ビルドや管理用のスクリプト。
+  - `tests/`: テストコード。
+  - `docs/`: 仕様書などのドキュメント。
 - **バージョン管理:** `version.json` および `package.json`, `manifest.json` で管理されています。
 - **テスト:** `npm test` で単体テストを実行できます。
 - **仕様書:** `docs/spec.md` を参照してください。

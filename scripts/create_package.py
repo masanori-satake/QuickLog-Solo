@@ -16,18 +16,19 @@ def create_zip(zip_filepath, includes, manifest_src):
         # Copy all includes to temp_dir
         for item in includes:
             if item == "manifest.json":
-                shutil.copy2(manifest_src, os.path.join(temp_dir, "manifest.json"))
-                print(f"  Added: manifest.json (from {manifest_src})")
+                shutil.copy2(os.path.join("src", manifest_src), os.path.join(temp_dir, "manifest.json"))
+                print(f"  Added: manifest.json (from src/{manifest_src})")
                 continue
 
-            if os.path.isdir(item):
-                shutil.copytree(item, os.path.join(temp_dir, item))
-                print(f"  Added: {item}/")
-            elif os.path.isfile(item):
-                shutil.copy2(item, os.path.join(temp_dir, item))
-                print(f"  Added: {item}")
+            src_path = os.path.join("src", item)
+            if os.path.isdir(src_path):
+                shutil.copytree(src_path, os.path.join(temp_dir, item))
+                print(f"  Added: {item}/ (from src/{item})")
+            elif os.path.isfile(src_path):
+                shutil.copy2(src_path, os.path.join(temp_dir, item))
+                print(f"  Added: {item} (from src/{item})")
             else:
-                print(f"  Warning: {item} not found.")
+                print(f"  Warning: {src_path} not found.")
 
         # Create zip from temp_dir
         with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -50,7 +51,7 @@ def create_zip(zip_filepath, includes, manifest_src):
 
 def create_packages():
     package_name = "QuickLog-Solo"
-    dist_dir = "dist"
+    dist_dir = "releases"
 
     if not os.path.exists(dist_dir):
         os.makedirs(dist_dir)
