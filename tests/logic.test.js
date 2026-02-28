@@ -120,6 +120,25 @@ describe('Logic Module', () => {
             expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
 
+        test('stopTaskLogic handles manual stop during pause state by adding separate marker', async () => {
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
+            const result = await stopTaskLogic(pauseState, true);
+            expect(result).toBeNull();
+            // The idle log should be completed normally
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                category: SYSTEM_CATEGORY_IDLE,
+                endTime: expect.any(Number),
+                isManualStop: false
+            }));
+            // A separate manual stop marker should be added
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE,
+                isManualStop: true
+            }));
+            expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+        });
+
         test('pauseTaskLogic transitions to pause state and adds to logs', async () => {
             const activeTask = { id: 1, category: 'Work', startTime: Date.now() };
             const newTask = await pauseTaskLogic(activeTask);
