@@ -4,7 +4,7 @@ import {
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE
 } from './db.js';
 import { t, setLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
-import { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
+import { formatDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
 import {
     AnimationEngine,
@@ -51,7 +51,6 @@ const ID_END_BTN = 'end-btn';
 const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
 const ID_CURRENT_TASK_DISPLAY_OVERLAY = 'current-task-display-overlay';
 const ID_CLOCK_CONTAINER = 'clock-container';
-const ID_CLOCK_HAND = 'clock-hand';
 const ID_TOAST = 'toast';
 const ID_CONFIRM_MODAL = 'confirm-modal';
 const ID_CONFIRM_MESSAGE = 'confirm-message';
@@ -198,8 +197,6 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
     if (select && select.value !== animationType) select.value = animationType;
 
     const clockContainer = getEl(ID_CLOCK_CONTAINER);
-    const clockFace = getEl('clock-face');
-    const sandClockFace = getEl('sand-clock-face');
     const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
     const display = getEl(ID_CURRENT_TASK_DISPLAY);
 

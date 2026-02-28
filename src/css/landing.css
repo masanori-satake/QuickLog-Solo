@@ -394,6 +394,10 @@ code {
     font-family: 'Roboto Mono', monospace;
 }
 
+button, input, select, textarea {
+    font-family: inherit;
+}
+
 .internal-link {
     color: var(--md-sys-color-primary);
     text-decoration: none;
