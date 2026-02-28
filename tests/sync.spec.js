@@ -5,8 +5,8 @@ test.describe('Multi-tab Synchronization', () => {
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
-    await page1.goto('http://localhost:8080/src/app.html');
-    await page2.goto('http://localhost:8080/src/app.html');
+    await page1.goto('');
+    await page2.goto('');
 
     // Open settings on page 1 and change theme
     await page1.click('#settings-toggle');
@@ -22,8 +22,8 @@ test.describe('Multi-tab Synchronization', () => {
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
-    await page1.goto('http://localhost:8080/src/app.html');
-    await page2.goto('http://localhost:8080/src/app.html');
+    await page1.goto('');
+    await page2.goto('');
 
     // Start a task on page 1
     const catBtn = page1.locator('.category-btn').first();
@@ -40,8 +40,8 @@ test.describe('Multi-tab Synchronization', () => {
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
-    await page1.goto('http://localhost:8080/src/app.html');
-    await page2.goto('http://localhost:8080/src/app.html');
+    await page1.goto('');
+    await page2.goto('');
 
     // Add a log entry (by starting and ending a task)
     await page1.locator('.category-btn').first().click();
