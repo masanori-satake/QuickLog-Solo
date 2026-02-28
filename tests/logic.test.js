@@ -18,7 +18,7 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
     SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
-const { formatDuration, getAnimationState, startTaskLogic, stopTaskLogic, pauseTaskLogic } = await import('../src/js/logic.js');
+const { formatDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } = await import('../src/js/logic.js');
 const { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../src/js/db.js');
 
 describe('Logic Module', () => {
@@ -35,38 +35,6 @@ describe('Logic Module', () => {
         test('handles single digits with padding', () => {
             const ms = (1 * 3600000) + (5 * 60000) + 9000;
             expect(formatDuration(ms).toString()).toBe('01:05:09');
-        });
-    });
-
-    describe('getAnimationState', () => {
-        test('returns left-to-right state', () => {
-            const startTime = 1000000;
-            const now = 1000000 + 15000; // 15s elapsed (25%)
-            const state = getAnimationState(startTime, 'left-to-right', now);
-            expect(state.inset).toBe('inset(0 75% 0 0)');
-        });
-
-        test('returns right-to-left state', () => {
-            const startTime = 1000000;
-            const now = 1000000 + 15000; // 15s elapsed (25%)
-            const state = getAnimationState(startTime, 'right-to-left', now);
-            expect(state.inset).toBe('inset(0 0 0 75%)');
-        });
-
-        test('returns clock state', () => {
-            const startTime = 1000000;
-            const now = 1000000 + 15000; // 15s elapsed (25%)
-            const state = getAnimationState(startTime, 'clock', now);
-            expect(state.angle).toBe(90);
-            expect(state.isPhase2).toBe(false);
-        });
-
-        test('returns clock state in phase 2', () => {
-            const startTime = 1000000;
-            const now = 1000000 + 75000; // 75s elapsed
-            const state = getAnimationState(startTime, 'clock', now);
-            expect(state.angle).toBe(90); // (15s % 60s) * 360 / 60
-            expect(state.isPhase2).toBe(true);
         });
     });
 
