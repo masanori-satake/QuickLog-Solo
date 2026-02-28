@@ -7,7 +7,7 @@ import { messages } from './messages.js';
 let currentLanguage = 'en';
 
 /**
- * Detects the browser language and returns 'ja' if Japanese, otherwise 'en'.
+ * Detects the browser language and returns the best matching language code.
  * Supports 'lang' query parameter as a hint.
  * @returns {string}
  */
@@ -19,12 +19,16 @@ export function detectBrowserLanguage() {
     }
 
     const lang = navigator.language || navigator.userLanguage;
-    return lang.startsWith('ja') ? 'ja' : 'en';
+    const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+    for (const prefix of prefixes) {
+        if (lang.startsWith(prefix)) return prefix;
+    }
+    return 'en';
 }
 
 /**
  * Sets the current language.
- * @param {string} lang - 'ja', 'en', or 'auto'
+ * @param {string} lang - 'ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh' or 'auto'
  */
 export function setLanguage(lang) {
     if (lang === 'auto') {
