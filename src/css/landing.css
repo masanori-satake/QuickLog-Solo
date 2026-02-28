@@ -415,28 +415,20 @@ code {
     gap: 8px;
 }
 
-.lang-select {
-    padding: 6px 12px;
+.lang-btn {
+    padding: 4px 8px;
     border: 1px solid var(--md-sys-color-outline);
-    border-radius: 20px;
-    background-color: var(--md-sys-color-surface-container-low);
+    border-radius: 4px;
+    background: none;
     color: var(--md-sys-color-on-surface);
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-weight: 500;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24'%3E%3Cpath d='M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    padding-right: 32px;
 }
 
-.lang-select:hover {
-    background-color: var(--md-sys-color-surface-container-high);
-}
-
-.lang-select:focus {
-    outline: none;
+.lang-btn.active {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
     border-color: var(--md-sys-color-primary);
 }
 

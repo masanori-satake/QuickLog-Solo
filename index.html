@@ -20,16 +20,8 @@
                 <h1>QuickLog-Solo</h1>
             </div>
             <div class="lang-switcher">
-                <select onchange="setLanguage(this.value)" id="lang-select-landing" class="lang-select">
-                    <option value="en">🇺🇸 English</option>
-                    <option value="ja">🇯🇵 日本語</option>
-                    <option value="de">🇩🇪 Deutsch</option>
-                    <option value="es">🇪🇸 Español</option>
-                    <option value="fr">🇫🇷 Français</option>
-                    <option value="pt">🇧🇷 Português</option>
-                    <option value="ko">🇰🇷 한국어</option>
-                    <option value="zh">🇨🇳 简体中文</option>
-                </select>
+                <button onclick="setLanguage('ja')" id="lang-ja" class="lang-btn">JP</button>
+                <button onclick="setLanguage('en')" id="lang-en" class="lang-btn">EN</button>
             </div>
         </header>
 
@@ -300,292 +292,10 @@
                 "copy-success": "URL Copied!",
                 "dl-chrome": "For Chrome / Edge",
                 "dl-firefox": "For Firefox"
-            },
-            de: {
-                "hero-title": "Protokoll in 1s, Bilanz in 1s.",
-                "hero-desc": "QuickLog-Solo ist ein minimalistisches Produktivitätstool für die Sidebar, entwickelt für Ingenieure, die Transparenz und Sicherheit fordern.",
-                "cta-test": "Im Browser testen",
-                "cta-download": "Erweiterung herunterladen",
-                "policy-title": "Wichtige Richtlinien",
-                "policy-local-desc": "Daten werden nur in der IndexedDB Ihres Browsers gespeichert. Keine Server-Uploads.",
-                "policy-tracking-desc": "Keine Analyse- oder Tracking-Codes. Ihre Arbeit bleibt privat.",
-                "policy-friction-desc": "Nach dem Prinzip 'Weniger ist mehr'. Konzipiert für blitzschnelles Tracking.",
-                "features-title": "Hauptmerkmale",
-                "feature-1-title": "Ein-Klick-Tracking",
-                "feature-1-desc": "Kategorie wählen und starten. Vorherige Aufgaben werden automatisch beendet.",
-                "feature-2-title": "Sidebar-Resident",
-                "feature-2-desc": "Läuft in der Sidebar Ihres Browsers für sofortigen Zugriff.",
-                "feature-3-title": "Sofortige Auswertung",
-                "feature-3-desc": "Tagesprotokolle oder Summen mit einem Klick in die Zwischenablage kopieren.",
-                "feature-4-title": "Material 3 Design",
-                "feature-4-desc": "Schöne und intuitive Benutzeroberfläche basierend auf Google's neuestem Designsystem.",
-                "setup-title": "Installation / Deinstallation",
-                "setup-install-title": "Installation",
-                "setup-chrome-step-1": "ZIP-Datei herunterladen und entpacken.",
-                "setup-chrome-step-2": "URL zur Erweiterungsverwaltung kopieren und öffnen.",
-                "setup-chrome-step-3": "'Entwicklermodus' aktivieren.",
-                "setup-chrome-step-4": "'Entpackte Erweiterung laden' und Ordner auswählen.",
-                "setup-firefox-step-1": "ZIP-Datei herunterladen und entpacken.",
-                "setup-firefox-step-2": "Firefox-Debugging-Seite öffnen.",
-                "setup-firefox-step-3": "'Temporäres Add-on laden...' klicken.",
-                "setup-firefox-step-4": "manifest.json im Ordner auswählen.",
-                "setup-firefox-note": "* Temporäre Add-ons in Firefox werden beim Neustart zurückgesetzt.",
-                "setup-install-note": "* Datenschutz an erster Stelle: Alle Operationen erfolgen lokal.",
-                "setup-uninstall-title": "Deinstallation",
-                "setup-uninstall-desc": "Einfach aus der Erweiterungsverwaltung entfernen.",
-                "faq-title": "FAQ / Fehlersuche",
-                "faq-1-q": "Q. Wo werden meine Daten gespeichert?",
-                "faq-1-a": "A. Nur im lokalen Speicher Ihres Browsers (IndexedDB).",
-                "faq-2-q": "Q. Gehen Daten bei einem PC-Neustart verloren?",
-                "faq-2-a": "A. Nein, Daten bleiben erhalten.",
-                "faq-3-q": "Q. Was, wenn die App langsam wird?",
-                "faq-3-a": "A. CSV-Backup exportieren, dann Protokolle in der Wartung löschen.",
-                "scene-title": "Beenden Sie Ihren Tag mit Erleichterung.",
-                "scene-desc": "Nie mehr mühsam erinnern, was Sie getan haben. QuickLog-Solo öffnen und 'Bilanz' klicken.",
-                "preview-title": "App-Vorschau",
-                "preview-note": "* Die Vorschau simuliert das Verhalten in der Sidebar.",
-                "copy-success": "URL kopiert!",
-                "dl-chrome": "Für Chrome / Edge",
-                "dl-firefox": "Für Firefox"
-            },
-            es: {
-                "hero-title": "Registro en 1s, Total en 1s.",
-                "hero-desc": "QuickLog-Solo es una herramienta minimalista de productividad diseñada para ingenieros que demandan transparencia y seguridad.",
-                "cta-test": "Probar en navegador",
-                "cta-download": "Descargar extensión",
-                "policy-title": "Políticas clave",
-                "policy-local-desc": "Los datos se guardan solo en IndexedDB dentro de su navegador. Sin cargas al servidor.",
-                "policy-tracking-desc": "Cero analíticas o rastreo. Su trabajo sigue siendo privado.",
-                "policy-friction-desc": "Basado en 'Menos es más'. Eliminamos lo innecesario para un seguimiento veloz.",
-                "features-title": "Características",
-                "feature-1-title": "Registro en un clic",
-                "feature-1-desc": "Elija una categoría y comience. Las tareas previas se finalizan automáticamente.",
-                "feature-2-title": "Residente en la barra lateral",
-                "feature-2-desc": "Vive en la barra lateral de su navegador para un acceso instantáneo.",
-                "feature-3-title": "Totales instantáneos",
-                "feature-3-desc": "Copie registros diarios o totales al portapapeles con un solo clic.",
-                "feature-4-title": "Diseño Material 3",
-                "feature-4-desc": "Interfaz hermosa e intuitiva impulsada por el sistema de diseño de Google.",
-                "setup-title": "Instalar / Desinstalar",
-                "setup-install-title": "Instalación",
-                "setup-chrome-step-1": "Descargue y extraiga el archivo ZIP.",
-                "setup-chrome-step-2": "Copie y abra la URL de gestión de extensiones.",
-                "setup-chrome-step-3": "Active el 'Modo de desarrollador'.",
-                "setup-chrome-step-4": "Haga clic en 'Cargar descomprimida' y seleccione la carpeta.",
-                "setup-firefox-step-1": "Descargue y extraiga el archivo ZIP.",
-                "setup-firefox-step-2": "Copie y abra la página de depuración de Firefox.",
-                "setup-firefox-step-3": "Haga clic en 'Cargar complemento temporal...'.",
-                "setup-firefox-step-4": "Seleccione el archivo manifest.json.",
-                "setup-firefox-note": "* Los complementos temporales de Firefox se eliminan al reiniciar.",
-                "setup-install-note": "* Privacidad primero: Todo es local, sin servidores externos.",
-                "setup-uninstall-title": "Desinstalación",
-                "setup-uninstall-desc": "Simplemente elimínela de la pantalla de extensiones.",
-                "faq-title": "FAQ / Resolución de problemas",
-                "faq-1-q": "¿Dónde se guardan mis datos?",
-                "faq-1-a": "Solo en el almacenamiento local de su navegador (IndexedDB).",
-                "faq-2-q": "¿Perderé datos si reinicio mi PC?",
-                "faq-2-a": "No, los datos persisten.",
-                "faq-3-q": "¿Qué pasa si la app se vuelve lenta?",
-                "faq-3-a": "Exporte un respaldo CSV y luego borre registros antiguos.",
-                "scene-title": "Termine su día con una sensación de alivio.",
-                "scene-desc": "No más esfuerzos para recordar qué hizo. Abra QuickLog-Solo y haga clic en 'Total'.",
-                "preview-title": "Vista previa",
-                "preview-note": "* La versión de vista previa simula el comportamiento en la barra lateral.",
-                "copy-success": "¡URL copiada!",
-                "dl-chrome": "Para Chrome / Edge",
-                "dl-firefox": "Para Firefox"
-            },
-            fr: {
-                "hero-title": "Saisie en 1s, Bilan en 1s.",
-                "hero-desc": "QuickLog-Solo est un outil de productivité minimaliste conçu pour les ingénieurs exigeant transparence et sécurité.",
-                "cta-test": "Essayer en ligne",
-                "cta-download": "Télécharger l'extension",
-                "policy-title": "Politiques clés",
-                "policy-local-desc": "Les données sont sauvées dans l'IndexedDB de votre navigateur. Pas d'upload serveur.",
-                "policy-tracking-desc": "Zéro analyse ou tracking. Votre travail reste privé.",
-                "policy-friction-desc": "Basé sur 'Less is More'. Épuré pour un suivi ultra-rapide.",
-                "features-title": "Fonctions clés",
-                "feature-1-title": "Suivi en un clic",
-                "feature-1-desc": "Choisissez une catégorie et lancez. Les tâches précédentes sont closes.",
-                "feature-2-title": "Barre latérale",
-                "feature-2-desc": "Réside dans la barre latérale de votre navigateur pour un accès immédiat.",
-                "feature-3-title": "Bilan instantané",
-                "feature-3-desc": "Copiez vos logs ou totaux en un clic dans le presse-papier.",
-                "feature-4-title": "Design Material 3",
-                "feature-4-desc": "Interface intuitive et élégante via le dernier design système de Google.",
-                "setup-title": "Installer / Désinstaller",
-                "setup-install-title": "Installation",
-                "setup-chrome-step-1": "Téléchargez et extrayez le ZIP.",
-                "setup-chrome-step-2": "Ouvrez la page de gestion des extensions.",
-                "setup-chrome-step-3": "Activez le 'Mode développeur'.",
-                "setup-chrome-step-4": "Cliquez sur 'Charger l'extension non empaquetée'.",
-                "setup-firefox-step-1": "Téléchargez et extrayez le ZIP.",
-                "setup-firefox-step-2": "Ouvrez la page de débogage de Firefox.",
-                "setup-firefox-step-3": "Cliquez sur 'Charger un module temporaire...'.",
-                "setup-firefox-step-4": "Sélectionnez le manifest.json.",
-                "setup-firefox-note": "* Les modules temporaires Firefox reset au redémarrage.",
-                "setup-install-note": "* Confidentialité : Opérations locales, sans serveurs externes.",
-                "setup-uninstall-title": "Désinstallation",
-                "setup-uninstall-desc": "Supprimez-la simplement de la page des extensions.",
-                "faq-title": "FAQ / Support",
-                "faq-1-q": "Où sont mes données ?",
-                "faq-1-a": "Uniquement dans le stockage local de votre navigateur (IndexedDB).",
-                "faq-2-q": "Vais-je perdre mes données au redémarrage ?",
-                "faq-2-a": "Non, les données sont persistantes.",
-                "faq-3-q": "L'app devient lente ?",
-                "faq-3-a": "Exportez un CSV puis nettoyez les logs dans l'onglet Maintenance.",
-                "scene-title": "Finissez votre journée l'esprit tranquille.",
-                "scene-desc": "Plus besoin de chercher ce que vous avez fait. Cliquez sur 'Bilan'.",
-                "preview-title": "Aperçu de l'app",
-                "preview-note": "* L'aperçu simule le comportement dans la barre latérale.",
-                "copy-success": "URL copiée !",
-                "dl-chrome": "Pour Chrome / Edge",
-                "dl-firefox": "Pour Firefox"
-            },
-            pt: {
-                "hero-title": "Registro em 1s, Total em 1s.",
-                "hero-desc": "QuickLog-Solo é uma ferramenta de produtividade minimalista projetada para engenheiros que exigem transparência e segurança.",
-                "cta-test": "Testar no Navegador",
-                "cta-download": "Baixar Extensão",
-                "policy-title": "Políticas Principais",
-                "policy-local-desc": "Dados salvos apenas no IndexedDB do navegador. Sem uploads para servidores.",
-                "policy-tracking-desc": "Zero códigos de análise ou rastreamento. Seu trabalho é privado.",
-                "policy-friction-desc": "Baseado em 'Menos é Mais'. Simplicidade para um rastreamento veloz.",
-                "features-title": "Recursos",
-                "feature-1-title": "Rastreio Num Clique",
-                "feature-1-desc": "Escolha a categoria e comece. Tarefas anteriores são finalizadas.",
-                "feature-2-title": "Barra Lateral",
-                "feature-2-desc": "Vive na barra lateral do navegador para acesso instantâneo.",
-                "feature-3-title": "Totais Instantâneos",
-                "feature-3-desc": "Copie logs ou totais para a área de transferência com um clique.",
-                "feature-4-title": "Design Material 3",
-                "feature-4-desc": "Interface intuitiva movida pelo último design system do Google.",
-                "setup-title": "Instalar / Desinstalar",
-                "setup-install-title": "Instalação",
-                "setup-chrome-step-1": "Baixe e extraia o arquivo ZIP.",
-                "setup-chrome-step-2": "Abra a URL de gestão de extensões.",
-                "setup-chrome-step-3": "Ative o 'Modo do desenvolvedor'.",
-                "setup-chrome-step-4": "Clique em 'Carregar sem pacote' e escolha a pasta.",
-                "setup-firefox-step-1": "Baixe e extraia o arquivo ZIP.",
-                "setup-firefox-step-2": "Abra a página de depuração do Firefox.",
-                "setup-firefox-step-3": "Clique em 'Carregar extensão temporária...'.",
-                "setup-firefox-step-4": "Selecione o manifest.json na pasta.",
-                "setup-firefox-note": "* Extensões temporárias do Firefox resetam ao reiniciar.",
-                "setup-install-note": "* Privacidade: Operações locais, sem servidores externos.",
-                "setup-uninstall-title": "Desinstalação",
-                "setup-uninstall-desc": "Basta remover da tela de gestão de extensões.",
-                "faq-title": "FAQ",
-                "faq-1-q": "Onde meus dados ficam salvos?",
-                "faq-1-a": "Apenas no armazenamento local do seu navegador (IndexedDB).",
-                "faq-2-q": "Perco dados ao reiniciar o PC?",
-                "faq-2-a": "Não, os dados são persistentes.",
-                "faq-3-q": "E se o app ficar lento?",
-                "faq-3-a": "Exporte um CSV e limpe logs antigos na aba Manutenção.",
-                "scene-title": "Termine o dia com sensação de alívio.",
-                "scene-desc": "Não sofra tentando lembrar o que fez. Clique em 'Total'.",
-                "preview-title": "Prévia do App",
-                "preview-note": "* A versão de prévia simula o comportamento na barra lateral.",
-                "copy-success": "URL Copiada!",
-                "dl-chrome": "Para Chrome / Edge",
-                "dl-firefox": "Para Firefox"
-            },
-            ko: {
-                "hero-title": "1초 기록, 1초 집계.",
-                "hero-desc": "QuickLog-Solo는 업무 기록을 부담스럽게 느끼지만 투명성과 보안을 중시하는 엔지니어를 위해 설계된 미니멀리스트 생산성 도구입니다.",
-                "cta-test": "브라우저에서 체험하기",
-                "cta-download": "확장 프로그램 다운로드",
-                "policy-title": "핵심 정책",
-                "policy-local-desc": "데이터는 브라우저의 IndexedDB에만 저장됩니다. 서버 업로드는 절대 없습니다.",
-                "policy-tracking-desc": "분석이나 추적 코드가 없습니다. 당신의 작업은 비공개로 유지됩니다.",
-                "policy-friction-desc": "'Less is More' 철학 기반. 빠른 기록을 위해 불필요한 요소를 제거했습니다.",
-                "features-title": "주요 기능",
-                "feature-1-title": "원클릭 기록",
-                "feature-1-desc": "카테고리를 선택하고 시작하세요. 이전 작업은 자동으로 종료됩니다.",
-                "feature-2-title": "사이드바 상주",
-                "feature-2-desc": "브라우저 사이드바에서 작동하여 언제든지 즉시 액세스할 수 있습니다.",
-                "feature-3-title": "즉각적인 집계",
-                "feature-3-desc": "클릭 한 번으로 일일 로그나 카테고리별 합계를 클립보드에 복사하세요.",
-                "feature-4-title": "Material 3 디자인",
-                "feature-4-desc": "Google의 최신 디자인 시스템으로 구현된 아름답고 직관적인 UI.",
-                "setup-title": "설치 / 제거",
-                "setup-install-title": "설치 방법",
-                "setup-chrome-step-1": "ZIP 파일을 다운로드하고 압축을 풉니다.",
-                "setup-chrome-step-2": "확장 프로그램 관리 페이지 URL을 복사하여 엽니다.",
-                "setup-chrome-step-3": "'개발자 모드'를 켭니다.",
-                "setup-chrome-step-4": "'압축해제된 확장 프로그램을 로드합니다'를 클릭하고 폴더를 선택합니다.",
-                "setup-firefox-step-1": "ZIP 파일을 다운로드하고 압축을 풉니다.",
-                "setup-firefox-step-2": "Firefox 디버깅 페이지 URL을 엽니다.",
-                "setup-firefox-step-3": "'일시적인 부가 기능 로드...'를 클릭합니다.",
-                "setup-firefox-step-4": "폴더 내의 manifest.json을 선택합니다.",
-                "setup-firefox-note": "* Firefox의 일시적 부가 기능은 재시작 시 초기화됩니다.",
-                "setup-install-note": "* 프라이버시 우선: 모든 작업은 로컬에서 이루어지며 외부 서버를 거치지 않습니다.",
-                "setup-uninstall-title": "제거 방법",
-                "setup-uninstall-desc": "확장 프로그램 관리 화면에서 삭제하기만 하면 됩니다.",
-                "faq-title": "자주 묻는 질문",
-                "faq-1-q": "데이터는 어디에 저장되나요?",
-                "faq-1-a": "오직 사용자의 브라우저 로컬 저장소(IndexedDB)에만 저장됩니다.",
-                "faq-2-q": "PC를 재부팅하면 데이터가 사라지나요?",
-                "faq-2-a": "아니요, 데이터는 영구적으로 저장됩니다.",
-                "faq-3-q": "앱이 느려지면 어떻게 하나요?",
-                "faq-3-a": "CSV 백업을 내보낸 후 유지 관리 탭에서 이전 로그를 삭제하세요.",
-                "scene-title": "하루의 끝에 가벼운 해방감을.",
-                "scene-desc": "오늘 무엇을 했는지 기억해내려 애쓸 필요 없습니다. '집계' 버튼만 누르세요.",
-                "preview-title": "앱 미리보기",
-                "preview-note": "* 미리보기 버전은 사이드바에서의 동작을 시뮬레이션합니다.",
-                "copy-success": "URL 복사됨!",
-                "dl-chrome": "Chrome / Edge 용",
-                "dl-firefox": "Firefox 용"
-            },
-            zh: {
-                "hero-title": "1秒记录，1秒统计。",
-                "hero-desc": "QuickLog-Solo 是一款专为追求透明度与安全性的工程师设计的极简侧边栏工数管理工具。",
-                "cta-test": "浏览器试用",
-                "cta-download": "下载扩展程序",
-                "policy-title": "核心政策",
-                "policy-local-desc": "数据仅保存在浏览器的 IndexedDB 中。绝不上传服务器。",
-                "policy-tracking-desc": "无分析或追踪代码。您的工作状态完全私密。",
-                "policy-friction-desc": "秉承“少即是多”的原则。为极致快捷的记录而精简。",
-                "features-title": "主要功能",
-                "feature-1-title": "一键记录",
-                "feature-1-desc": "选择分类即可开始。前一任务会自动结算。",
-                "feature-2-title": "侧边栏常驻",
-                "feature-2-desc": "在浏览器侧边栏运行，随时随地快速访问。",
-                "feature-3-title": "瞬间统计",
-                "feature-3-desc": "一键复制当日日志或分类统计到剪贴板。",
-                "feature-4-title": "Material 3 设计",
-                "feature-4-desc": "采用 Google 最新设计系统，界面美观且直观。",
-                "setup-title": "安装 / 卸载",
-                "setup-install-title": "安装方法",
-                "setup-chrome-step-1": "下载并解压 ZIP 文件。",
-                "setup-chrome-step-2": "复制并打开扩展程序管理页面。",
-                "setup-chrome-step-3": "开启“开发者模式”。",
-                "setup-chrome-step-4": "点击“加载已解压的扩展程序”并选择文件夹。",
-                "setup-firefox-step-1": "下载并解压 ZIP 文件。",
-                "setup-firefox-step-2": "打开 Firefox 调试页面。",
-                "setup-firefox-step-3": "点击“临时载入附加组件...”。",
-                "setup-firefox-step-4": "选择文件夹中的 manifest.json。",
-                "setup-firefox-note": "* Firefox 临时附加组件会在重启时重置。",
-                "setup-install-note": "* 隐私至上：所有操作均为本地，无需外部服务器。",
-                "setup-uninstall-title": "卸载方法",
-                "setup-uninstall-desc": "只需在扩展程序管理页面中删除即可。",
-                "faq-title": "常见问题",
-                "faq-1-q": "数据保存在哪里？",
-                "faq-1-a": "仅保存在您本地浏览器的 IndexedDB 中。",
-                "faq-2-q": "重启电脑后数据会丢失吗？",
-                "faq-2-a": "不会，数据是持久化保存的。",
-                "faq-3-q": "如果应用变慢怎么办？",
-                "faq-3-a": "导出 CSV 备份，然后在维护选项卡中清理旧日志。",
-                "scene-title": "在一天结束时，享受轻松与成就。",
-                "scene-desc": "不再需要苦苦回忆做了什么。只需点击“统计”。",
-                "preview-title": "应用预览",
-                "preview-note": "* 预览版模拟了在侧边栏中的运行状态。",
-                "copy-success": "URL 已复制！",
-                "dl-chrome": "适用于 Chrome / Edge",
-                "dl-firefox": "适用于 Firefox"
             }
         };
 
-        let currentLang = 'en';
+        let currentLang = 'ja';
 
         function setLanguage(lang) {
             currentLang = lang;
@@ -596,35 +306,25 @@
                 }
             });
 
-            // Update dropdown value
-            const select = document.getElementById('lang-select-landing');
-            if (select) select.value = lang;
+            // Update active state of buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('lang-' + lang).classList.add('active');
 
             // Update page title
             const titles = {
-                en: "QuickLog-Solo - Productivity tool for minimalists",
                 ja: "QuickLog-Solo - ミニマリスト向け工数管理ツール",
-                de: "QuickLog-Solo - Produktivitätstool für Minimalisten",
-                es: "QuickLog-Solo - Herramienta de productividad minimalista",
-                fr: "QuickLog-Solo - Outil de productivité minimaliste",
-                pt: "QuickLog-Solo - Ferramenta de produtividade minimalista",
-                ko: "QuickLog-Solo - 미니멀리스트를 위한 생산성 도구",
-                zh: "QuickLog-Solo - 极简主义者的生产力工具"
+                en: "QuickLog-Solo - Productivity tool for minimalists"
             };
-            document.title = titles[lang] || titles['en'];
+            document.title = titles[lang];
         }
 
         // Initialize language
         const userLang = navigator.language || navigator.userLanguage;
-        const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-        let matched = 'en';
-        for (const prefix of prefixes) {
-            if (userLang.startsWith(prefix)) {
-                matched = prefix;
-                break;
-            }
+        if (userLang.startsWith('ja')) {
+            setLanguage('ja');
+        } else {
+            setLanguage('en');
         }
-        setLanguage(matched);
 
         function showSetup(browser, event) {
             document.querySelectorAll('.setup-tab-content').forEach(el => el.classList.add('hidden'));
@@ -675,7 +375,7 @@
         }
 
         function loadPreview(iframe) {
-            if (iframe.src === 'about:blank' || !iframe.src || iframe.src.indexOf('lang=' + currentLang) === -1) {
+            if (iframe.src === 'about:blank' || !iframe.src) {
                 iframe.src = 'src/app.html?lang=' + currentLang;
             }
             document.getElementById('preview-modal').classList.remove('hidden');
