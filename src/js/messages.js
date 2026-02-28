@@ -3,6 +3,11 @@
  */
 
 export const messages = {
+    _common: {
+        'lang-ja-native': '日本語',
+        'lang-en-native': 'English',
+        'glyph-language': 'translate'
+    },
     ja: {
         // UI Header & Sections
         'title': 'QuickLog-Solo',

@@ -44,7 +44,7 @@ export function getLanguage() {
  * @returns {string}
  */
 export function t(key, params = {}) {
-    let message = messages[currentLanguage][key] || messages['en'][key] || key;
+    let message = messages[currentLanguage][key] || messages['_common']?.[key] || messages['en'][key] || key;
 
     // Simple placeholder replacement
     Object.keys(params).forEach(param => {
