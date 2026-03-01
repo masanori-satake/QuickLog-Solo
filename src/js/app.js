@@ -1,5 +1,6 @@
 import {
     initDB, getCurrentAppState, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
+    setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE
 } from './db.js';
@@ -75,10 +76,11 @@ let timerInterval = null;
 let syncChannel = null;
 let syncTimeout = null;
 let currentCategoryPage = 0;
-let currentAnimationType = 'left-to-right';
+let currentAnimationType = 'matrix_code';
 let lastCategoryRenderData = null;
 let animationEngine = null;
 let currentActiveAnimation = null;
+let isAppInitialized = false;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -440,7 +442,7 @@ function initAnimationEngine() {
 }
 
 function setupBroadcastChannel() {
-    syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
+    syncChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
     syncChannel.onmessage = (event) => {
         console.log('QuickLog-Solo: Received sync message', event.data);
         if (event.data.type === 'reload') {
@@ -461,6 +463,7 @@ function broadcastSync(type = 'sync') {
 }
 
 async function syncState() {
+    if (!isAppInitialized) return;
     const state = await getCurrentAppState();
     activeTask = state.activeTask;
 
@@ -474,7 +477,7 @@ async function syncState() {
     if (langSelect) langSelect.value = state.language || 'auto';
 
     // Update Animation options
-    currentAnimationType = state.animation || 'clock';
+    currentAnimationType = state.animation || 'matrix_code';
     updateAnimationSelect();
 
     // Update Font options first. This filters the available fonts based on language.
@@ -494,7 +497,7 @@ async function syncState() {
         color = cat ? cat.color : (activeTask.color || 'primary');
         categoryAnimation = cat ? (cat.animation || 'default') : 'default';
     }
-    applyAnimation(state.animation || 'clock', categoryAnimation, color);
+    applyAnimation(state.animation || 'matrix_code', categoryAnimation, color);
 
     await updateUI();
 
@@ -1240,6 +1243,13 @@ function setupEventListeners() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('QuickLog-Solo: DOMContentLoaded');
+    const urlParams = new URLSearchParams(window.location.search);
+    const dbParam = urlParams.get('db');
+    if (dbParam) {
+        console.log(`QuickLog-Solo: Using custom database: ${dbParam}`);
+        setDatabaseName(dbParam);
+    }
+
     try {
         await loadVersion();
     } catch (e) {
@@ -1248,36 +1258,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         console.log('QuickLog-Solo: Initializing DB...');
-        const settings = await initDB();
-        console.log('QuickLog-Solo: DB Initialized', settings);
-        activeTask = settings.activeTask;
-
-        const lang = settings.language || 'auto';
-        setLanguage(lang);
-        applyLanguage();
-
-        const langSelect = getEl(ID_LANGUAGE_SELECT);
-        if (langSelect) langSelect.value = lang;
-
-        applyTheme(settings.theme || THEME_SYSTEM);
-
-        // Update font select options based on language
-        updateFontSelect();
-        const currentLang = (settings.language || 'auto') === 'auto' ? detectBrowserLanguage() : settings.language;
-        const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
-        const fontToApply = filteredFonts.some(f => f.value === settings.font) ? settings.font : filteredFonts[0].value;
-        applyFont(fontToApply);
-
-        applyAnimation(settings.animation || 'clock');
+        await initDB();
+        console.log('QuickLog-Solo: DB Initialized');
 
         initAnimationEngine();
         setupBroadcastChannel();
         setupEventListeners();
         await handleTestParameters();
-        await updateUI();
+
+        isAppInitialized = true;
+        await syncState();
     } catch (e) {
         console.error('Failed to initialize application:', e);
-        alert(t('alert-init-error'));
+        alert(`${t('alert-init-error')}\n\nDetails: ${e.message || e}`);
     }
 
     console.log('QuickLog-Solo Initialized');

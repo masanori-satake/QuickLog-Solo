@@ -10,13 +10,12 @@ export default class CoffeeDrip extends AnimationBase {
         this.width = width;
     }
 
-    draw(ctx, { width, height, progress, exclusionAreas }) {
+    draw(ctx, { width, progress, exclusionAreas }) {
         this.width = width;
         let centerX = width / 2;
 
         // Offset if overlapping with exclusionAreas
         if (exclusionAreas && exclusionAreas.length > 0) {
-            const margin = 50;
             const spots = [width * 0.25, width * 0.75, width * 0.5];
             for (const spot of spots) {
                 const overlap = exclusionAreas.some(area => {

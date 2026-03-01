@@ -67,9 +67,15 @@
   --md-sys-typescale-headline-large-size: 32px;
   --md-sys-typescale-headline-large-line-height: 40px;
   --md-sys-typescale-headline-large-weight: 400;
+  --md-sys-typescale-headline-medium-size: 28px;
+  --md-sys-typescale-headline-medium-line-height: 36px;
+  --md-sys-typescale-headline-medium-weight: 400;
   --md-sys-typescale-title-large-size: 22px;
   --md-sys-typescale-title-large-line-height: 28px;
   --md-sys-typescale-title-large-weight: 400;
+  --md-sys-typescale-title-medium-size: 16px;
+  --md-sys-typescale-title-medium-line-height: 24px;
+  --md-sys-typescale-title-medium-weight: 500;
   --md-sys-typescale-body-large-size: 16px;
   --md-sys-typescale-body-large-line-height: 24px;
   --md-sys-typescale-body-large-weight: 400;

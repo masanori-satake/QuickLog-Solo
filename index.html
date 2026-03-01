@@ -193,7 +193,10 @@
     <div id="preview-modal" class="modal hidden">
         <div class="modal-content preview-content">
             <div class="modal-header">
-                <h3 data-i18n="preview-title">アプリ プレビュー</h3>
+                <div style="display: flex; align-items: baseline; gap: 8px;">
+                    <h3 data-i18n="preview-title">アプリ プレビュー</h3>
+                    <span id="preview-version" style="font-size: 0.85rem; opacity: 0.7; font-weight: normal;"></span>
+                </div>
                 <button class="close-btn" onclick="closePreview()"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="preview-body">
@@ -687,6 +690,15 @@
             document.title = titles[lang] || titles['en'];
         }
 
+        // Initialize version display
+        fetch('src/version.json')
+            .then(response => response.json())
+            .then(data => {
+                const el = document.getElementById('preview-version');
+                if (el) el.textContent = `v${data.version}`;
+            })
+            .catch(err => console.error('Failed to load version:', err));
+
         // Initialize language
         const userLang = navigator.language || navigator.userLanguage;
         const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
@@ -729,27 +741,28 @@
         function openPreview() {
             const iframe = document.querySelector('.preview-iframe');
 
-            // Delete IndexedDB to ensure fresh state for preview
-            const DB_NAME = 'QuickLogSoloDB';
-            const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
+            // Use a separate database for preview to avoid conflict with the actual extension
+            const DB_NAME_PREVIEW = 'QuickLogSoloDB_Preview';
+            const deleteRequest = indexedDB.deleteDatabase(DB_NAME_PREVIEW);
 
             deleteRequest.onsuccess = () => {
-                console.log('IndexedDB deleted successfully for preview.');
+                console.log('Preview IndexedDB deleted successfully.');
                 loadPreview(iframe);
             };
             deleteRequest.onerror = () => {
-                console.warn('Failed to delete IndexedDB, loading preview anyway.');
+                console.warn('Failed to delete preview IndexedDB, loading preview anyway.');
                 loadPreview(iframe);
             };
             deleteRequest.onblocked = () => {
-                console.warn('IndexedDB deletion blocked, loading preview anyway.');
+                console.warn('Preview IndexedDB deletion blocked. Please close other preview tabs.');
                 loadPreview(iframe);
             };
         }
 
         function loadPreview(iframe) {
-            if (iframe.src === 'about:blank' || !iframe.src || iframe.src.indexOf('lang=' + currentLang) === -1) {
-                iframe.src = 'src/app.html?lang=' + currentLang;
+            const previewUrl = 'src/app.html?lang=' + currentLang + '&db=QuickLogSoloDB_Preview';
+            if (iframe.src !== previewUrl) {
+                iframe.src = previewUrl;
             }
             document.getElementById('preview-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';

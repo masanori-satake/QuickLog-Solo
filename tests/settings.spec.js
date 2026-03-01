@@ -10,7 +10,7 @@ test.describe('Settings Persistence', () => {
     try {
       await okBtn.waitFor({ state: 'visible', timeout: 2000 });
       await okBtn.click();
-    } catch (e) {
+    } catch {
       // Modal didn't appear, ignore
     }
 

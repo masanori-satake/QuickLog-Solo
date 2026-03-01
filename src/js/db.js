@@ -1,8 +1,12 @@
 import { SYSTEM_CATEGORY_IDLE } from './utils.js';
 import { t, setLanguage } from './i18n.js';
 
-export const DB_NAME = 'QuickLogSoloDB';
+export let DB_NAME = 'QuickLogSoloDB';
 export const DB_VERSION = 1;
+
+export function setDatabaseName(name) {
+    DB_NAME = name;
+}
 
 export const STORE_LOGS = 'logs';
 export const STORE_CATEGORIES = 'categories';
@@ -36,9 +40,18 @@ export function openDatabase() {
         };
         request.onsuccess = (event) => {
             db = event.target.result;
+            db.onversionchange = () => {
+                db.close();
+                db = null;
+                console.warn('Database version changed or deletion requested. Closing connection.');
+            };
             resolve(db);
         };
         request.onerror = (event) => reject(event.target.error);
+        request.onblocked = () => {
+            console.warn('Database connection blocked. Please close other tabs of this app.');
+            // We don't reject here because onsuccess might still fire if the user closes other tabs
+        };
     });
 }
 
@@ -145,7 +158,7 @@ export async function getCurrentAppState() {
     return {
         theme: theme ? theme.value : null,
         font: font ? font.value : null,
-        animation: animation ? animation.value : 'clock',
+        animation: animation ? animation.value : 'matrix_code',
         language: language ? language.value : 'auto',
         categories,
         activeTask
@@ -159,7 +172,7 @@ async function setupInitialData(languageSetting) {
         { name: t('init-cat-dev'), color: 'primary', order: 0, animation: 'matrix_code' },
         { name: t('init-cat-meeting'), color: 'secondary', order: 1, animation: 'migrating_birds' },
         { name: t('init-cat-research'), color: 'tertiary', order: 2, animation: 'contour_lines' },
-        { name: t('init-cat-admin'), color: 'neutral', order: 3, animation: 'clock' },
+        { name: t('init-cat-admin'), color: 'neutral', order: 3, animation: 'matrix_code' },
         { name: t('init-cat-focus'), color: 'error', order: 4, animation: 'ripple' },
         { name: t('init-cat-skill'), color: 'tertiary', order: 5, animation: 'plant_growth' },
         { name: t('init-cat-idea'), color: 'secondary', order: 6, animation: 'kaleidoscope' },
