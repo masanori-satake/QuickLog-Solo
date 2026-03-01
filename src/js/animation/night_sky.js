@@ -2,8 +2,26 @@ import { AnimationBase } from '../animations.js';
 
 export default class NightSky extends AnimationBase {
     static metadata = {
-        name: { en: "Night Sky", ja: "夜空" },
-        description: { en: "A peaceful night sky where twinkling stars and a moon slowly form a constellation.", ja: "きらめく星々と月がゆっくりと繋がり、星座を描き出す静かな夜空です。" },
+        name: {
+            en: "Night Sky",
+            ja: "夜空",
+            de: "Nachthimmel",
+            es: "Cielo nocturno",
+            fr: "Ciel nocturne",
+            pt: "Céu noturno",
+            ko: "밤하늘",
+            zh: "星空"
+        },
+        description: {
+            en: "A peaceful night sky where twinkling stars and a moon slowly form a constellation.",
+            ja: "きらめく星々と月がゆっくりと繋がり、星座を描き出す静かな夜空です。",
+            de: "Ein friedlicher Nachthimmel, an dem funkelnde Sterne und ein Mond langsam ein Sternbild bilden.",
+            es: "Un cielo nocturno tranquilo donde las estrellas centelleantes y la luna forman lentamente una constelación.",
+            fr: "Un ciel nocturne paisible où les étoiles scintillantes et la lune forment lentement une constellation.",
+            pt: "Um céu noturno tranquilo onde estrelas cintilantes e a lua formam lentamente uma constelação.",
+            ko: "반짝이는 별들과 달이 천천히 별자리를 형성하는 평화로운 밤하늘입니다.",
+            zh: "宁静的夜空，闪烁的星星和月亮慢慢形成一个星座。"
+        },
         author: "QuickLog-Solo"
     };
 

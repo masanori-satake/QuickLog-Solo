@@ -2,8 +2,26 @@ import { AnimationBase } from '../animations.js';
 
 export default class Kaleidoscope extends AnimationBase {
     static metadata = {
-        name: { en: "Kaleidoscope", ja: "万華鏡" },
-        description: { en: "Hypnotic, symmetrical geometric patterns that shift and rotate.", ja: "変化しながら回転する、催眠的で対称的な幾何学模様です。" },
+        name: {
+            en: "Kaleidoscope",
+            ja: "万華鏡",
+            de: "Kaleidoskop",
+            es: "Caleidoscopio",
+            fr: "Kaléidoscope",
+            pt: "Caleidoscópio",
+            ko: "만화경",
+            zh: "万花筒"
+        },
+        description: {
+            en: "Hypnotic, symmetrical geometric patterns that shift and rotate.",
+            ja: "変化しながら回転する、催眠的で対称的な幾何学模様です。",
+            de: "Hypnotische, symmetrische geometrische Muster, die sich verschieben und rotieren.",
+            es: "Patrones geométricos simétricos e hipnóticos que se desplazan y rotan.",
+            fr: "Motifs géométriques symétriques et hypnotiques qui se déplacent et tournent.",
+            pt: "Padrões geométricos simétricos e hipnóticos que se deslocam e giram.",
+            ko: "변화하고 회전하는 최면적이고 대칭적인 기하학적 패턴입니다.",
+            zh: "催眠、对称的几何图案，不断移动和旋转。"
+        },
         author: "QuickLog-Solo"
     };
     setup(width, height) {

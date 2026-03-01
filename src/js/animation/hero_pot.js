@@ -2,8 +2,26 @@ import { AnimationBase } from '../animations.js';
 
 export default class HeroPot extends AnimationBase {
     static metadata = {
-        name: { en: "Hero Pot", ja: "勇者と壺" },
-        description: { en: "An RPG hero lifts pots and throws them to break them, avoiding UI elements.", ja: "RPGの勇者が壺を持ち上げて、UIを避けながら投げ壊します。" },
+        name: {
+            en: "Hero Pot",
+            ja: "勇者と壺",
+            de: "Helden-Topf",
+            es: "Héroe y vasija",
+            fr: "Le héros et le pot",
+            pt: "Herói e o vaso",
+            ko: "용사와 항아리",
+            zh: "勇者与壶"
+        },
+        description: {
+            en: "An RPG hero lifts pots and throws them to break them, avoiding UI elements.",
+            ja: "RPGの勇者が壺を持ち上げて、UIを避けながら投げ壊します。",
+            de: "Ein RPG-Held hebt Töpfe hoch und wirft sie, um sie zu zerbrechen, wobei er UI-Elemente vermeidet.",
+            es: "Un héroe de RPG levanta vasijas y las lanza para romperlas, evitando los elementos de la interfaz.",
+            fr: "Un héros de RPG soulève des pots et les lance pour les briser, en évitant les éléments de l'interface.",
+            pt: "Um herói de RPG levanta vasos e os joga para quebrá-los, evitando os elementos da interface.",
+            ko: "RPG 용사가 항아리를 들어 올려 UI 요소를 피하면서 던져서 깨뜨립니다.",
+            zh: "一位RPG英雄举起壶并扔向它们以打破它们，同时避开UI元素。"
+        },
         author: "QuickLog-Solo"
     };
 
