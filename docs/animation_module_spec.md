@@ -12,8 +12,9 @@ QuickLog-Solo の背景アニメーション機能をモジュール化し、外
 - **リソース管理:** アニメーションの開始・停止・リサイズ制御。
 
 ### 2.2. アニメーションモジュール（ロジック）の役割
-- **パターン生成:** 本体から提供される計時サイクル（0～239）または総経過時間（ミリ秒）に応じたドットの配置パターンの計算。
-- **データ提供:** 指定されたタイミングにおける、各座標のドットの大きさ（0～3）を本体に返す。提供方法は「マトリックス形式（2次元配列）」または「キャンバス描画（オフスクリーンキャンバスへの描画）」のいずれかを選択可能とする。
+- **初期化:** `init` メソッドを通じて、キャンバスのサイズ（width/height）などの静的な情報を一度だけ受け取り、内部状態を初期化する。
+- **パターン生成:** `update`（または `draw`）メソッドを通じて提供される情報に応じたドットの配置パターンの計算。
+- **データ提供:** 指定されたタイミングにおける各座標のドットの大きさ（0～3）を本体に返す。提供方法は「マトリックス形式（2次元配列）」または「キャンバス描画」のいずれかを選択可能とする。
 
 ## 3. インターフェース仕様
 
@@ -21,32 +22,31 @@ QuickLog-Solo の背景アニメーション機能をモジュール化し、外
 アニメーションはブラウザの `requestAnimationFrame` に同期して描画される。
 - **1ステップの間隔:** 500ms（計時ステップ算出用）
 - **標準周期:** 120,000ms (120秒) / 240ステップ
-※モジュールは、標準周期に基づいた `progress` だけでなく、`elapsedMs` を用いることで 2分を超える長期的な変化を実装することも可能。
 
 ### 3.2. 提供される情報 (Input)
-本体からアニメーションロジックへ提供される情報の例：
+
+#### A. 初期化時 (`init`)
 - `width`: 描画領域の幅 (px)
 - `height`: 描画領域の高さ (px)
+
+#### B. 更新時 (`update` / `draw`)
 - `elapsedMs`: タスク開始時からの経過時間 (ms)
 - `progress`: 現在の周期（120秒）の進捗率 (0.0 ～ 1.0)
 - `step`: 現在の計時ステップ (0 ～ 239)
 - `color`: カテゴリに設定された基本色 (Hex/RGB)
+- `exclusionAreas`: テキスト等が表示されている遮蔽領域の配列。
+    - 形式: `Array<{x: number, y: number, width: number, height: number}>`
+    - 用途: アニメーション内のオブジェクト（ボールなど）がテキストを避ける、または反射するようなインタラクティブな表現に利用可能。
 
 ### 3.3. 出力データ形式 (Output)
 ロジックは以下のいずれかの形式でデータを返却または描画する：
 
 #### A. マトリックス形式 (Matrix Mode)
-各セルのドットサイズを直接指定する方式。数学的な計算や単純なパターンに向いている。
 - **データ構造:** `Array<Array<number>>` (rows x cols)
-- **値の内容:**
-    - `0`: ドットなし (None)
-    - `1`: 小ドット (Small)
-    - `2`: 中ドット (Medium)
-    - `3`: 大ドット (Large)
+- **値:** `0` (なし), `1` (小), `2` (中), `3` (大)
 
 #### B. キャンバス描画形式 (Canvas Mode)
-提供された 2D コンテキストに対して描画を行う方式。複雑な図形やパス描画、既存の描画ロジックの流用に向いている。
-- **描画内容:** モノクロ（白または特定の色）で描画。
+- **描画内容:** 2Dコンテキストに対してモノクロで描画。
 - **変換処理:** 本体側でピクセルの明度を読み取り、自動的に 4段階の LCD ドットに変換する。
 
 ## 4. 実装イメージ（クラス構造）
@@ -54,25 +54,40 @@ QuickLog-Solo の背景アニメーション機能をモジュール化し、外
 ```javascript
 class MyCustomAnimation {
     /**
+     * キャンバスサイズ変更時やアニメーション開始時に呼ばれる
+     * @param {number} width
+     * @param {number} height
+     */
+    init(width, height) {
+        this.w = width;
+        this.h = height;
+        // 内部状態（パーティクルの初期位置など）の初期化
+    }
+
+    /**
+     * 描画フレームごとに呼ばれる
+     * @param {CanvasRenderingContext2D} ctx オフスクリーンキャンバスのコンテキスト
      * @param {Object} params
-     * @param {number} params.width 幅
-     * @param {number} params.height 高さ
-     * @param {number} params.elapsedMs 総経過時間 (ms)
+     * @param {number} params.elapsedMs タスク開始時からの経過時間 (ms)
      * @param {number} params.progress 120秒周期の進捗 (0.0 - 1.0)
-     * @param {string} params.color カラーコード
-     * @param {CanvasRenderingContext2D} [ctx] (Canvas Mode の場合のみ)
+     * @param {number} params.step 現在の計時ステップ (0 - 239)
+     * @param {string} params.color 描画色 (通常は '#fff')
+     * @param {Array} params.exclusionAreas 遮蔽領域の配列
      * @returns {Array<Array<number>>|void} Matrix Mode の場合は配列を返し、Canvas Mode の場合は ctx に直接描画する
      */
-    update({ width, height, elapsedMs, progress, color }, ctx) {
-        // 例: Matrix Mode
-        // return [ [3,0,1], [0,2,0], ... ];
-
+    draw(ctx, { elapsedMs, progress, step, color, exclusionAreas }) {
         // 例: Canvas Mode
-        // ctx.fillStyle = color;
-        // ctx.fillRect(0, 0, width * progress, height);
+        ctx.fillStyle = color;
+
+        // exclusionAreas を使って、テキストを避けるような動きを実装可能
+        exclusionAreas.forEach(area => {
+            // テキスト領域の周囲に枠を描くなどの処理
+        });
+
+        ctx.fillRect(0, 0, this.w * progress, this.h);
     }
 }
 ```
 
 ## 5. 視認性の担保について
-開発者が作成するアニメーションロジックは、画面上のテキスト位置（業務カテゴリやタイマー）を考慮する必要はない。QuickLog-Solo 本体のレンダリングエンジンが、モジュールから受け取ったデータの描画直前に、テキスト領域と重なるドットを自動的に間引くため、どのような複雑なアニメーションであっても常に視認性が確保される。
+本体側のレンダリングエンジンが、モジュールから受け取ったデータの描画直前に、テキスト領域と重なるドットを**強制的に**非表示にします。そのため、モジュール側で `exclusionAreas` を無視して描画しても視認性は損なわれませんが、`exclusionAreas` を活用することで、より自然で洗練された「避けるアニメーション」を構築できます。
