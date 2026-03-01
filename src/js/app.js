@@ -217,6 +217,7 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
         base?.classList.add(`cat-${color}`);
         getEl(ID_PAUSE_BTN)?.classList.add('anim-active');
         getEl(ID_END_BTN)?.classList.add('anim-active');
+        updateAnimationExclusionAreas();
     } else {
         if (currentActiveAnimation !== null) {
             animationEngine?.stop();
@@ -373,6 +374,33 @@ function createLogElement(log, categoryMap) {
     return li;
 }
 
+function updateAnimationExclusionAreas() {
+    if (!animationEngine) return;
+    const canvas = getEl('animation-canvas');
+    if (!canvas) return;
+    const canvasRect = canvas.getBoundingClientRect();
+
+    const elementsToAvoid = [
+        getEl(ID_CURRENT_TASK_NAME),
+        getEl(ID_ELAPSED_TIME),
+        getEl(ID_STATUS_LABEL)
+    ];
+
+    const exclusionAreas = elementsToAvoid
+        .filter(el => el && !el.classList.contains('hidden'))
+        .map(el => {
+            const rect = el.getBoundingClientRect();
+            return {
+                x: rect.left - canvasRect.left - 4, // Padding
+                y: rect.top - canvasRect.top - 2,
+                width: rect.width + 8,
+                height: rect.height + 4
+            };
+        });
+
+    animationEngine.setExclusionAreas(exclusionAreas);
+}
+
 function initAnimationEngine() {
     const canvas = getEl('animation-canvas');
     if (canvas) {
@@ -394,7 +422,11 @@ function initAnimationEngine() {
         animationEngine.register('contour-lines', ContourLines);
         animationEngine.register('matrix-code', MatrixCode);
         animationEngine.resize();
-        window.addEventListener('resize', () => animationEngine.resize());
+        updateAnimationExclusionAreas();
+        window.addEventListener('resize', () => {
+            animationEngine.resize();
+            updateAnimationExclusionAreas();
+        });
     }
 }
 
@@ -537,11 +569,11 @@ async function updateUI() {
             categoryAnimation = cat ? cat.animation : 'default';
         }
 
-        // Ensure proper animation/clock visibility
-        applyAnimation(currentAnimationType, categoryAnimation, color);
-
         if (elements.display) elements.display.className = `cat-${color}`;
         if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
+
+        // Ensure proper animation/clock visibility
+        applyAnimation(currentAnimationType, categoryAnimation, color);
 
         const iconName = isPaused ? 'pause' : 'play_arrow';
         const statusClass = isPaused ? 'status-paused' : 'status-running';

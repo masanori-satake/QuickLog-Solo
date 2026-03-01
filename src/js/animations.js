@@ -12,6 +12,7 @@ export class AnimationEngine {
         this.requestId = null;
         this.registry = new Map();
         this.cycleMs = 120000; // 2 minutes cycle
+        this.exclusionAreas = [];
     }
 
     register(name, animationClass) {
@@ -54,6 +55,10 @@ export class AnimationEngine {
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawLCD(progress);
+    }
+
+    setExclusionAreas(areas) {
+        this.exclusionAreas = areas;
     }
 
     drawLCD(progress) {
@@ -106,11 +111,18 @@ export class AnimationEngine {
                 else if (brightness > 10) dotSize = 2;  // 小ドット
 
                 if (dotSize > 0) {
-                    this.ctx.fillRect(
-                        c * cellSize + (cellSize - dotSize) / 2,
-                        r * cellSize + (cellSize - dotSize) / 2,
-                        dotSize, dotSize
+                    const x = c * cellSize + (cellSize - dotSize) / 2;
+                    const y = r * cellSize + (cellSize - dotSize) / 2;
+
+                    // Skip drawing if the dot is in an exclusion area
+                    const inExclusion = this.exclusionAreas.some(area =>
+                        x >= area.x && x < area.x + area.width &&
+                        y >= area.y && y < area.y + area.height
                     );
+
+                    if (!inExclusion) {
+                        this.ctx.fillRect(x, y, dotSize, dotSize);
+                    }
                 }
             }
         }
