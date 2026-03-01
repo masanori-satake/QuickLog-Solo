@@ -7,9 +7,9 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
-    "test:e2e": "playwright test",
-    "build": "python3 scripts/check_version.py"
+    "test": "python3 scripts/generate_animation_registry.py && node --experimental-vm-modules ./node_modules/.bin/jest",
+    "test:e2e": "python3 scripts/generate_animation_registry.py && playwright test",
+    "build": "python3 scripts/generate_animation_registry.py && python3 scripts/check_version.py"
   },
   "repository": {
     "type": "git",

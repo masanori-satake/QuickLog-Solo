@@ -1,0 +1,61 @@
+import { AnimationBase } from '../animations.js';
+
+export default class CoffeeDrip extends AnimationBase {
+    static metadata = {
+        name: { en: "Coffee Drip", ja: "コーヒードリップ" },
+        description: { en: "A relaxing coffee brewing animation that fills the pot.", ja: "ポットにコーヒーが溜まっていく、リラックスできるドリップアニメーションです。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width) {
+        this.width = width;
+    }
+
+    draw(ctx, { width, height, progress, exclusionAreas }) {
+        this.width = width;
+        let centerX = width / 2;
+
+        // Offset if overlapping with exclusionAreas
+        if (exclusionAreas && exclusionAreas.length > 0) {
+            const margin = 50;
+            const spots = [width * 0.25, width * 0.75, width * 0.5];
+            for (const spot of spots) {
+                const overlap = exclusionAreas.some(area => {
+                    return spot + 30 > area.x && spot - 30 < area.x + area.width;
+                });
+                if (!overlap) {
+                    centerX = spot;
+                    break;
+                }
+            }
+        }
+
+        ctx.fillStyle = '#fff';
+
+        // Filter/Dripper shape
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.moveTo(centerX - 30, 20);
+        ctx.lineTo(centerX + 30, 20);
+        ctx.lineTo(centerX + 5, 50);
+        ctx.lineTo(centerX - 5, 50);
+        ctx.closePath();
+        ctx.fill();
+
+        // Server/Pot shape
+        ctx.beginPath();
+        ctx.rect(centerX - 25, 60, 50, 40);
+        ctx.stroke();
+
+        // Drip droplets
+        const dropP = (Date.now() / 1000) % 1;
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        ctx.arc(centerX, 50 + dropP * 30, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Filling coffee
+        ctx.globalAlpha = 0.6;
+        const fillHeight = 40 * progress;
+        ctx.fillRect(centerX - 24, 100 - fillHeight, 48, fillHeight);
+    }
+}
