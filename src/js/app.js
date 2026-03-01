@@ -349,12 +349,9 @@ function createLogElement(log, categoryMap) {
     }
 
     const durationMs = log.endTime ? log.endTime - log.startTime : 0;
-    let durationText = '';
-    if (log.endTime && !log.isManualStop) {
-        durationText = formatLogDuration(durationMs);
-    }
+    const durationText = (log.endTime && !log.isManualStop) ? formatLogDuration(durationMs) : '';
 
-    let colorClass = 'dot-gray';
+    let colorClass;
     let displayName = log.category;
 
     if (log.isManualStop) {
@@ -528,8 +525,8 @@ async function updateUI() {
     };
 
     if (activeTask) {
-        let color = 'primary';
-        let categoryAnimation = 'default';
+        let color;
+        let categoryAnimation;
         const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
         if (isPaused) {

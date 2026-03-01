@@ -132,7 +132,7 @@ export async function getCurrentAppState() {
     const categories = await dbGetAll(STORE_CATEGORIES);
 
     const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-    let activeTask = null;
+    let activeTask;
 
     if (pauseStateSetting) {
         activeTask = pauseStateSetting.value;
