@@ -96,6 +96,7 @@ export const messages = {
         // Dynamic Elements
         'day-names': ['日', '月', '火', '水', '木', '金', '土'],
         'idle-category': '待機中',
+        'idle-category-log': '待機',
         'font-system': 'システムフォント',
         'anim-default': 'デフォルトを使用',
 
@@ -207,6 +208,7 @@ export const messages = {
         // Dynamic Elements
         'day-names': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
         'idle-category': '(Idle)',
+        'idle-category-log': 'Idle',
         'font-system': 'System Default',
         'anim-default': 'Use Default',
 
@@ -299,6 +301,7 @@ export const messages = {
         'toast-deleted': 'Löschen abgeschlossen',
         'day-names': ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
         'idle-category': '(Leerlauf)',
+        'idle-category-log': 'Leerlauf',
         'font-system': 'System-Schriftart',
         'anim-default': 'Standard verwenden',
         'init-cat-dev': '💻 Entwicklung/Programmierung',
@@ -389,6 +392,7 @@ export const messages = {
         'toast-deleted': 'Eliminación completada',
         'day-names': ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
         'idle-category': '(En espera)',
+        'idle-category-log': 'En espera',
         'font-system': 'Fuente del sistema',
         'anim-default': 'Usar predeterminado',
         'init-cat-dev': '💻 Desarrollo/Programación',
@@ -479,6 +483,7 @@ export const messages = {
         'toast-deleted': 'Suppression terminée',
         'day-names': ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
         'idle-category': '(En attente)',
+        'idle-category-log': 'En attente',
         'font-system': 'Police système',
         'anim-default': 'Utiliser défaut',
         'init-cat-dev': '💻 Développement/Code',
@@ -569,6 +574,7 @@ export const messages = {
         'toast-deleted': 'Exclusão concluída',
         'day-names': ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
         'idle-category': '(Inativo)',
+        'idle-category-log': 'Inativo',
         'font-system': 'Fonte do sistema',
         'anim-default': 'Usar padrão',
         'init-cat-dev': '💻 Desenvolvimento/Código',
@@ -659,6 +665,7 @@ export const messages = {
         'toast-deleted': '삭제가 완료되었습니다',
         'day-names': ['일', '월', '화', '수', '목', '금', '토'],
         'idle-category': '(대기)',
+        'idle-category-log': '대기',
         'font-system': '시스템 글꼴',
         'anim-default': '기본값 사용',
         'init-cat-dev': '💻 개발/프로그래밍',
@@ -749,6 +756,7 @@ export const messages = {
         'toast-deleted': '删除完成',
         'day-names': ['日', '一', '二', '三', '四', '五', '六'],
         'idle-category': '(闲置)',
+        'idle-category-log': '闲置',
         'font-system': '系统字体',
         'anim-default': '使用默认',
         'init-cat-dev': '💻 开发与编程',

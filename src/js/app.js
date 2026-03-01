@@ -356,7 +356,7 @@ function createLogElement(log, categoryMap) {
         displayName = t('stop');
     } else if (log.category === SYSTEM_CATEGORY_IDLE) {
         colorClass = 'dot-neutral';
-        displayName = t('idle-category');
+        displayName = t('idle-category-log');
     } else {
         const color = log.color || (categoryMap.get(log.category) ? categoryMap.get(log.category).color : 'primary');
         colorClass = `dot-${color}`;
