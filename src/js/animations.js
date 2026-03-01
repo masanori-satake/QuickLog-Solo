@@ -10,6 +10,38 @@ const DOT_SIZE_LARGE = 4;
 const DOT_SIZE_MID = 3;
 const DOT_SIZE_SMALL = 2;
 
+/**
+ * Animation Module Base Class
+ * Developers should extend this class to create custom animations.
+ */
+export class AnimationBase {
+    /**
+     * Static metadata for the animation.
+     * name: Display name (can be a string or an object for i18n)
+     * description: Short description (can be a string or an object for i18n)
+     * author: Author's name
+     */
+    static metadata = {
+        name: 'Base Animation',
+        description: 'Template for animations',
+        author: 'QuickLog-Solo'
+    };
+
+    /**
+     * Called when the animation starts or the viewport is resized.
+     * Use this to initialize internal state or setup coordinates.
+     */
+    setup() {}
+
+    /**
+     * Called every frame to draw the animation.
+     * @param {CanvasRenderingContext2D} ctx - Offscreen context for monotone drawing.
+     * @param {Object} params - Animation parameters.
+     * @returns {number[][]|void} - Return a 2D matrix of dot sizes (0-3) or draw directly to ctx.
+     */
+    draw() {}
+}
+
 export class AnimationEngine {
     constructor(canvas) {
         this.canvas = canvas;
@@ -35,7 +67,10 @@ export class AnimationEngine {
             return;
         }
         this.activeAnimation = new AnimClass();
-        if (typeof this.activeAnimation.init === 'function') {
+        if (typeof this.activeAnimation.setup === 'function') {
+            this.activeAnimation.setup(this.canvas.width, this.canvas.height);
+        } else if (typeof this.activeAnimation.init === 'function') {
+            // Backward compatibility for temporary init method
             this.activeAnimation.init(this.canvas.width, this.canvas.height);
         }
         this.startTime = startTime;
@@ -48,6 +83,7 @@ export class AnimationEngine {
             cancelAnimationFrame(this.requestId);
             this.requestId = null;
         }
+        // Explicitly clear reference to avoid memory leaks as requested
         this.activeAnimation = null;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
@@ -91,7 +127,6 @@ export class AnimationEngine {
 
         // Draw the monochromatic animation to offscreen
         // We use white as the base "on" color, then map brightness to dot size
-        // Passing both static and dynamic parameters in params for convenience
         const params = {
             width: w,
             height: h,
@@ -178,10 +213,12 @@ export class AnimationEngine {
         const rect = this.canvas.parentElement.getBoundingClientRect();
         this.canvas.width = rect.width;
         this.canvas.height = rect.height;
-        if (this.activeAnimation && typeof this.activeAnimation.init === 'function') {
-            this.activeAnimation.init(this.canvas.width, this.canvas.height);
-        }
         if (this.activeAnimation) {
+            if (typeof this.activeAnimation.setup === 'function') {
+                this.activeAnimation.setup(this.canvas.width, this.canvas.height);
+            } else if (typeof this.activeAnimation.init === 'function') {
+                this.activeAnimation.init(this.canvas.width, this.canvas.height);
+            }
             this.draw();
         }
     }
@@ -189,28 +226,37 @@ export class AnimationEngine {
 
 // Basic Animations
 
-export class LeftToRight {
-    static name = "Left to Right";
-    static description = "Fills the background from left to right.";
+export class LeftToRight extends AnimationBase {
+    static metadata = {
+        name: { en: "Left to Right", ja: "左から右へ" },
+        description: { en: "Fills the background from left to right.", ja: "背景を左から右へ塗りつぶします。" },
+        author: "QuickLog-Solo"
+    };
     draw(ctx, { width, height, progress }) {
         ctx.fillStyle = '#fff';
         ctx.fillRect(0, 0, width * progress, height);
     }
 }
 
-export class RightToLeft {
-    static name = "Right to Left";
-    static description = "Fills the background from right to left.";
+export class RightToLeft extends AnimationBase {
+    static metadata = {
+        name: { en: "Right to Left", ja: "右から左へ" },
+        description: { en: "Fills the background from right to left.", ja: "背景を右から左へ塗りつぶします。" },
+        author: "QuickLog-Solo"
+    };
     draw(ctx, { width, height, progress }) {
         ctx.fillStyle = '#fff';
         ctx.fillRect(width * (1 - progress), 0, width * progress, height);
     }
 }
 
-export class Clock {
-    static name = "Clock";
-    static description = "A circular progress indicator.";
-    init(width, height) {
+export class Clock extends AnimationBase {
+    static metadata = {
+        name: { en: "Clock", ja: "時計" },
+        description: { en: "A circular progress indicator.", ja: "円形の進捗インジケーターです。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.radius = Math.min(width, height) * 0.4;
@@ -226,10 +272,13 @@ export class Clock {
     }
 }
 
-export class SandClock {
-    static name = "Sand Clock";
-    static description = "An hourglass that fills over time.";
-    init(width, height) {
+export class SandClock extends AnimationBase {
+    static metadata = {
+        name: { en: "Sand Clock", ja: "砂時計" },
+        description: { en: "An hourglass that fills over time.", ja: "時間とともに砂が落ちる砂時計です。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.size = Math.min(width, height) * 0.4;
@@ -265,10 +314,13 @@ export class SandClock {
 
 // Group A: 「積み上げ・成長」を感じるアイデア
 
-export class TetrisBuilding {
-    static name = "Tetris Building";
-    static description = "Blocks stack up to fill the screen.";
-    init(width, height) {
+export class TetrisBuilding extends AnimationBase {
+    static metadata = {
+        name: { en: "Tetris Building", ja: "テトリス・ビルディング" },
+        description: { en: "Blocks stack up to fill the screen.", ja: "ブロックが積み上がり画面を満たします。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.rows = 10;
         this.cols = 6;
         this.cellSize = Math.min(width / this.cols, height / this.rows);
@@ -299,10 +351,13 @@ export class TetrisBuilding {
     }
 }
 
-export class PlantGrowth {
-    static name = "Plant Growth";
-    static description = "A plant that grows and blooms.";
-    init(width, height) {
+export class PlantGrowth extends AnimationBase {
+    static metadata = {
+        name: { en: "Plant Growth", ja: "植物の成長" },
+        description: { en: "A plant that grows and blooms.", ja: "植物が成長し、花を咲かせます。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.centerX = width / 2;
         this.bottomY = height - 20;
         this.maxHeight = height * 0.6;
@@ -351,10 +406,14 @@ export class PlantGrowth {
     }
 }
 
-export class DotTyping {
-    static name = "Dot Typing";
-    static description = "Random characters being typed out.";
+export class DotTyping extends AnimationBase {
+    static metadata = {
+        name: { en: "Dot Typing", ja: "ドット・タイピング" },
+        description: { en: "Random characters being typed out.", ja: "ランダムな文字がタイピングされます。" },
+        author: "QuickLog-Solo"
+    };
     constructor() {
+        super();
         this.chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
         this.rows = 5;
         this.cols = 15;
@@ -386,10 +445,13 @@ export class DotTyping {
 
 // Group B: 「物理的な心地よさ」を感じるアイデア
 
-export class NewtonsCradle {
-    static name = "Newton's Cradle";
-    static description = "A classic physics toy simulation.";
-    init(width, height) {
+export class NewtonsCradle extends AnimationBase {
+    static metadata = {
+        name: { en: "Newton's Cradle", ja: "ニュートンのゆりかご" },
+        description: { en: "A classic physics toy simulation.", ja: "古典的な物理学の玩具のシミュレーションです。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 3;
         this.ballCount = 5;
@@ -439,10 +501,13 @@ export class NewtonsCradle {
     }
 }
 
-export class Ripple {
-    static name = "Ripple";
-    static description = "Expanding concentric circles.";
-    init(width, height) {
+export class Ripple extends AnimationBase {
+    static metadata = {
+        name: { en: "Ripple", ja: "波紋" },
+        description: { en: "Expanding concentric circles.", ja: "同心円状に広がる波紋です。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.maxRadius = Math.sqrt(width * width + height * height) / 2;
@@ -474,10 +539,13 @@ export class Ripple {
     }
 }
 
-export class LissajousPendulum {
-    static name = "Lissajous Pendulum";
-    static description = "Elegant harmonic motion curves.";
-    init(width, height) {
+export class LissajousPendulum extends AnimationBase {
+    static metadata = {
+        name: { en: "Lissajous Pendulum", ja: "リサージュ振り子" },
+        description: { en: "Elegant harmonic motion curves.", ja: "優雅な調和振動の曲線です。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.size = Math.min(width, height) * 0.4;
@@ -515,10 +583,13 @@ export class LissajousPendulum {
 
 // Group C: 「物語・旅」を感じるアイデア
 
-export class MigratingBirds {
-    static name = "Migrating Birds";
-    static description = "Birds flying in a V-formation.";
-    init(width, height) {
+export class MigratingBirds extends AnimationBase {
+    static metadata = {
+        name: { en: "Migrating Birds", ja: "渡り鳥" },
+        description: { en: "Birds flying in a V-formation.", ja: "V字型で飛ぶ鳥の群れです。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.w = width;
         this.h = height;
         this.yBase = height / 2;
@@ -552,10 +623,13 @@ export class MigratingBirds {
     }
 }
 
-export class CoffeeDrip {
-    static name = "Coffee Drip";
-    static description = "A relaxing coffee brewing animation.";
-    init(width) {
+export class CoffeeDrip extends AnimationBase {
+    static metadata = {
+        name: { en: "Coffee Drip", ja: "コーヒードリップ" },
+        description: { en: "A relaxing coffee brewing animation.", ja: "ゆったりとしたコーヒー抽出のアニメーションです。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width) {
         this.centerX = width / 2;
     }
 
@@ -591,17 +665,21 @@ export class CoffeeDrip {
     }
 }
 
-export class NightSky {
-    static name = "Night Sky";
-    static description = "Twinkling stars forming a constellation.";
+export class NightSky extends AnimationBase {
+    static metadata = {
+        name: { en: "Night Sky", ja: "夜空" },
+        description: { en: "Twinkling stars forming a constellation.", ja: "星座を作る、きらめく星々です。" },
+        author: "QuickLog-Solo"
+    };
     constructor() {
+        super();
         this.points = [
             {x: 0.2, y: 0.2}, {x: 0.3, y: 0.4}, {x: 0.5, y: 0.3},
             {x: 0.7, y: 0.5}, {x: 0.8, y: 0.2}, {x: 0.6, y: 0.7},
             {x: 0.4, y: 0.8}, {x: 0.2, y: 0.6}
         ];
     }
-    init(width, height) {
+    setup(width, height) {
         this.w = width;
         this.h = height;
     }
@@ -644,10 +722,13 @@ export class NightSky {
 
 // Group D: 「抽象的・幾何学的」なアイデア
 
-export class Kaleidoscope {
-    static name = "Kaleidoscope";
-    static description = "Symmetrical patterns in motion.";
-    init(width, height) {
+export class Kaleidoscope extends AnimationBase {
+    static metadata = {
+        name: { en: "Kaleidoscope", ja: "万華鏡" },
+        description: { en: "Symmetrical patterns in motion.", ja: "動く対称的なパターンです。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.segments = 8;
@@ -676,10 +757,13 @@ export class Kaleidoscope {
     }
 }
 
-export class ContourLines {
-    static name = "Contour Lines";
-    static description = "Flowing topological-style lines.";
-    init(width, height) {
+export class ContourLines extends AnimationBase {
+    static metadata = {
+        name: { en: "Contour Lines", ja: "等高線" },
+        description: { en: "Flowing topological-style lines.", ja: "流れるような等高線スタイルの曲線です。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
         this.width = width;
         this.height = height;
         this.lineCount = 10;
@@ -709,13 +793,17 @@ export class ContourLines {
     }
 }
 
-export class MatrixCode {
-    static name = "Matrix Code";
-    static description = "Falling digital rain effect.";
+export class MatrixCode extends AnimationBase {
+    static metadata = {
+        name: { en: "Matrix Code", ja: "マトリックス・コード" },
+        description: { en: "Falling digital rain effect.", ja: "降り注ぐデジタル・レインの効果です。" },
+        author: "QuickLog-Solo"
+    };
     constructor() {
+        super();
         this.columns = [];
     }
-    init(width, height) {
+    setup(width, height) {
         const fontSize = 14;
         const cols = Math.floor(width / fontSize);
         if (this.columns.length !== cols) {
