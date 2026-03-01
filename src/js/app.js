@@ -28,6 +28,9 @@ const MAX_LOGS_DISPLAY = 100;
 const TOAST_DURATION_MS = 2000;
 const ITEMS_PER_PAGE = 16;
 
+const EXCLUSION_PADDING_X = 4;
+const EXCLUSION_PADDING_Y = 2;
+
 const CSV_HEADER = "id,category,startTime,endTime\n";
 const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
 
@@ -92,10 +95,10 @@ const FONTS = [
     { name: 'Roboto / Noto Sans JP', value: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt'] },
     { name: 'Roboto / Noto Sans KR', value: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ko'] },
     { name: 'Roboto / Noto Sans SC', value: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['zh'] },
-    { name: 'Inter', value: "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['en', 'de', 'es', 'fr', 'pt'] },
-    { name: 'Montserrat', value: "'Montserrat', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['en', 'de', 'es', 'fr', 'pt'] },
-    { name: 'Open Sans', value: "'Open Sans', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['en', 'de', 'es', 'fr', 'pt'] },
-    { name: 'Ubuntu', value: "'Ubuntu', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['en', 'de', 'es', 'fr', 'pt'] },
+    { name: 'Inter', value: "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] },
+    { name: 'Montserrat', value: "'Montserrat', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] },
+    { name: 'Open Sans', value: "'Open Sans', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] },
+    { name: 'Ubuntu', value: "'Ubuntu', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] },
     { name: 'font-system', value: 'system-ui, -apple-system, "Noto Sans Symbols", "Noto Color Emoji", sans-serif', lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] }
 ];
 
@@ -217,6 +220,7 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
         base?.classList.add(`cat-${color}`);
         getEl(ID_PAUSE_BTN)?.classList.add('anim-active');
         getEl(ID_END_BTN)?.classList.add('anim-active');
+        updateAnimationExclusionAreas();
     } else {
         if (currentActiveAnimation !== null) {
             animationEngine?.stop();
@@ -373,6 +377,58 @@ function createLogElement(log, categoryMap) {
     return li;
 }
 
+function updateAnimationExclusionAreas() {
+    if (!animationEngine) return;
+    const canvas = getEl('animation-canvas');
+    if (!canvas) return;
+    const canvasRect = canvas.getBoundingClientRect();
+
+    // Grouping related elements into separate logical areas for cleaner exclusion
+    const taskNameText = getEl('current-task-name-text');
+    const statusLabel = getEl(ID_STATUS_LABEL);
+    const elapsedTime = getEl(ID_ELAPSED_TIME);
+
+    const exclusionAreas = [];
+
+    if (taskNameText && taskNameText.textContent !== '-') {
+        const rect = taskNameText.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            exclusionAreas.push({
+                x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
+                y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
+                width: rect.width + (EXCLUSION_PADDING_X * 2),
+                height: rect.height + (EXCLUSION_PADDING_Y * 2)
+            });
+        }
+    }
+
+    if (statusLabel) {
+        const rect = statusLabel.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            exclusionAreas.push({
+                x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
+                y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
+                width: rect.width + (EXCLUSION_PADDING_X * 2),
+                height: rect.height + (EXCLUSION_PADDING_Y * 2)
+            });
+        }
+    }
+
+    if (elapsedTime && !elapsedTime.classList.contains('hidden')) {
+        const rect = elapsedTime.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            exclusionAreas.push({
+                x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
+                y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
+                width: rect.width + (EXCLUSION_PADDING_X * 2),
+                height: rect.height + (EXCLUSION_PADDING_Y * 2)
+            });
+        }
+    }
+
+    animationEngine.setExclusionAreas(exclusionAreas);
+}
+
 function initAnimationEngine() {
     const canvas = getEl('animation-canvas');
     if (canvas) {
@@ -394,7 +450,11 @@ function initAnimationEngine() {
         animationEngine.register('contour-lines', ContourLines);
         animationEngine.register('matrix-code', MatrixCode);
         animationEngine.resize();
-        window.addEventListener('resize', () => animationEngine.resize());
+        updateAnimationExclusionAreas();
+        window.addEventListener('resize', () => {
+            animationEngine.resize();
+            updateAnimationExclusionAreas();
+        });
     }
 }
 
@@ -537,9 +597,6 @@ async function updateUI() {
             categoryAnimation = cat ? cat.animation : 'default';
         }
 
-        // Ensure proper animation/clock visibility
-        applyAnimation(currentAnimationType, categoryAnimation, color);
-
         if (elements.display) elements.display.className = `cat-${color}`;
         if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
 
@@ -557,7 +614,8 @@ async function updateUI() {
             }
         });
         const displayCategoryName = isPaused ? t('idle-category') : activeTask.category;
-        [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = displayCategoryName; });
+        const nameElements = [getEl('current-task-name-text'), getEl('current-task-name-text-overlay')];
+        nameElements.forEach(el => { if (el) el.textContent = displayCategoryName; });
 
         if (elements.pauseBtn) {
             if (isPaused) {
@@ -577,6 +635,8 @@ async function updateUI() {
             }
         });
         startTimer();
+        // Ensure proper animation/clock visibility (called after text content is updated for accurate exclusion)
+        applyAnimation(currentAnimationType, categoryAnimation, color);
     } else {
         if (currentActiveAnimation !== null) {
             animationEngine?.stop();
@@ -593,7 +653,8 @@ async function updateUI() {
                 el.className = 'material-symbols-outlined status-stopped';
             }
         });
-        [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = '-'; });
+        const nameElements = [getEl('current-task-name-text'), getEl('current-task-name-text-overlay')];
+        nameElements.forEach(el => { if (el) el.textContent = '-'; });
 
         if (elements.pauseBtn) {
             elements.pauseBtn.disabled = true;
