@@ -66,7 +66,8 @@
 - **背景アニメーション:** 実行中エリア（`#control-section`）の背景に `<canvas>` を使用してアニメーションを描画。
   - **スタイル:** LCD ドットマトリクス・スタイル。4段階（なし、小、中、大）のドットサイズで monochromatic な低解像度表現を行う。
   - **周期:** 120秒（2分）サイクル。
-  - **バリエーション:** 標準（左から右、右から左、クロック、サンドクロック）に加え、抽象的・幾何学的な全16種類（Tetris, Ripple, Matrix 等）をサポート。
+  - **バリエーション:** 標準的な進捗表示に加え、ゲーム（Tennis, Car Drive）、生き物（Cats, Migrating Birds）、RPG風演出（Hero Pot）、オーディオビジュアル（Spectrum）など、インタラクティブで多様な全21種類をサポート。
+  - **拡張性:** アニメーションはモジュール化されており、`src/js/animation/` 配下にファイルを追加するだけで自動的にレジストリに登録されるプラグイン形式を採用。
 - **確認ダイアログ:** アプリ内カスタムダイアログを実装。ボタン（OK/キャンセル）は M3 ガイドラインに従い、等幅のグリッドレイアウトで配置される。
 - **色の判別性向上:** Material 3 Tonal Palette に基づき、14色のカラーバリエーションを提供。
 - **履歴の再現性:** ログに打刻時点のカテゴリ色を保存し、カテゴリ削除後も当時の色で履歴を表示可能にする。
@@ -108,6 +109,8 @@ graph LR
     A --> C[src/js/db.js]
     A --> D[src/js/utils.js]
     A --> F[src/js/animations.js]
+    F --> Registry[src/js/animation_registry.js]
+    Registry --> Modules[src/js/animation/*.js]
     A --> G[src/js/i18n.js]
     E[src/js/background.js] --> SidePanel[Chrome SidePanel API / Firefox Sidebar]
 ```
