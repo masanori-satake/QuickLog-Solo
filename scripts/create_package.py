@@ -74,17 +74,6 @@ def create_packages():
     success_firefox = create_zip(firefox_zip, common_includes, "manifest.firefox.json")
 
     if success_chrome and success_firefox:
-        # Add the created zips to git
-        print("Adding zip files to git...")
-        subprocess.run(["git", "add", chrome_zip, firefox_zip], check=True)
-
-        # Maintain a legacy QuickLog-Solo.zip for backward compatibility if needed,
-        # or just use the Chrome one as default.
-        # Here we copy Chrome one to the legacy name.
-        legacy_zip = os.path.join(dist_dir, f"{package_name}.zip")
-        shutil.copy2(chrome_zip, legacy_zip)
-        subprocess.run(["git", "add", legacy_zip], check=True)
-
         return True
     return False
 

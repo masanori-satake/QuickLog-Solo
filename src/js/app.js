@@ -75,7 +75,7 @@ let timerInterval = null;
 let syncChannel = null;
 let syncTimeout = null;
 let currentCategoryPage = 0;
-let currentAnimationType = 'left-to-right';
+let currentAnimationType = 'matrix_code';
 let lastCategoryRenderData = null;
 let animationEngine = null;
 let currentActiveAnimation = null;
@@ -474,7 +474,7 @@ async function syncState() {
     if (langSelect) langSelect.value = state.language || 'auto';
 
     // Update Animation options
-    currentAnimationType = state.animation || 'clock';
+    currentAnimationType = state.animation || 'matrix_code';
     updateAnimationSelect();
 
     // Update Font options first. This filters the available fonts based on language.
@@ -1268,7 +1268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const fontToApply = filteredFonts.some(f => f.value === settings.font) ? settings.font : filteredFonts[0].value;
         applyFont(fontToApply);
 
-        applyAnimation(settings.animation || 'clock');
+        applyAnimation(settings.animation || 'matrix_code');
 
         initAnimationEngine();
         setupBroadcastChannel();
