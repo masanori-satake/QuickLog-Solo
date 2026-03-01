@@ -1,5 +1,6 @@
 import {
     initDB, getCurrentAppState, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
+    setDatabaseName,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE
 } from './db.js';
@@ -79,6 +80,7 @@ let currentAnimationType = 'matrix_code';
 let lastCategoryRenderData = null;
 let animationEngine = null;
 let currentActiveAnimation = null;
+let isAppInitialized = false;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -461,6 +463,7 @@ function broadcastSync(type = 'sync') {
 }
 
 async function syncState() {
+    if (!isAppInitialized) return;
     const state = await getCurrentAppState();
     activeTask = state.activeTask;
 
@@ -1240,6 +1243,13 @@ function setupEventListeners() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('QuickLog-Solo: DOMContentLoaded');
+    const urlParams = new URLSearchParams(window.location.search);
+    const dbParam = urlParams.get('db');
+    if (dbParam) {
+        console.log(`QuickLog-Solo: Using custom database: ${dbParam}`);
+        setDatabaseName(dbParam);
+    }
+
     try {
         await loadVersion();
     } catch (e) {
@@ -1275,9 +1285,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupEventListeners();
         await handleTestParameters();
         await updateUI();
+        isAppInitialized = true;
     } catch (e) {
         console.error('Failed to initialize application:', e);
-        alert(t('alert-init-error'));
+        alert(`${t('alert-init-error')}\n\nDetails: ${e.message || e}`);
     }
 
     console.log('QuickLog-Solo Initialized');

@@ -1,8 +1,12 @@
 import { SYSTEM_CATEGORY_IDLE } from './utils.js';
 import { t, setLanguage } from './i18n.js';
 
-export const DB_NAME = 'QuickLogSoloDB';
+export let DB_NAME = 'QuickLogSoloDB';
 export const DB_VERSION = 1;
+
+export function setDatabaseName(name) {
+    DB_NAME = name;
+}
 
 export const STORE_LOGS = 'logs';
 export const STORE_CATEGORIES = 'categories';
@@ -36,9 +40,18 @@ export function openDatabase() {
         };
         request.onsuccess = (event) => {
             db = event.target.result;
+            db.onversionchange = () => {
+                db.close();
+                db = null;
+                console.warn('Database version changed or deletion requested. Closing connection.');
+            };
             resolve(db);
         };
         request.onerror = (event) => reject(event.target.error);
+        request.onblocked = (event) => {
+            console.warn('Database connection blocked. Please close other tabs of this app.');
+            // We don't reject here because onsuccess might still fire if the user closes other tabs
+        };
     });
 }
 

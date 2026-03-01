@@ -741,27 +741,28 @@
         function openPreview() {
             const iframe = document.querySelector('.preview-iframe');
 
-            // Delete IndexedDB to ensure fresh state for preview
-            const DB_NAME = 'QuickLogSoloDB';
-            const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
+            // Use a separate database for preview to avoid conflict with the actual extension
+            const DB_NAME_PREVIEW = 'QuickLogSoloDB_Preview';
+            const deleteRequest = indexedDB.deleteDatabase(DB_NAME_PREVIEW);
 
             deleteRequest.onsuccess = () => {
-                console.log('IndexedDB deleted successfully for preview.');
+                console.log('Preview IndexedDB deleted successfully.');
                 loadPreview(iframe);
             };
             deleteRequest.onerror = () => {
-                console.warn('Failed to delete IndexedDB, loading preview anyway.');
+                console.warn('Failed to delete preview IndexedDB, loading preview anyway.');
                 loadPreview(iframe);
             };
             deleteRequest.onblocked = () => {
-                console.warn('IndexedDB deletion blocked, loading preview anyway.');
+                console.warn('Preview IndexedDB deletion blocked. Please close other preview tabs.');
                 loadPreview(iframe);
             };
         }
 
         function loadPreview(iframe) {
-            if (iframe.src === 'about:blank' || !iframe.src || iframe.src.indexOf('lang=' + currentLang) === -1) {
-                iframe.src = 'src/app.html?lang=' + currentLang;
+            const previewUrl = 'src/app.html?lang=' + currentLang + '&db=QuickLogSoloDB_Preview';
+            if (iframe.src !== previewUrl) {
+                iframe.src = previewUrl;
             }
             document.getElementById('preview-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
