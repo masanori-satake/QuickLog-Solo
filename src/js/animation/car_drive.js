@@ -16,7 +16,7 @@ export default class CarDrive extends AnimationBase {
         this.carY = height - 20;
     }
 
-    draw(ctx, { width, height, progress, exclusionAreas }) {
+    draw(ctx, { width, height, exclusionAreas }) {
         this.width = width;
         this.height = height;
         this.horizonY = height * 0.4;
@@ -55,7 +55,7 @@ export default class CarDrive extends AnimationBase {
         ctx.setLineDash([]);
 
         // Exclusion Areas as Billboards
-        exclusionAreas.forEach((area, i) => {
+        exclusionAreas.forEach((area) => {
             // Calculate a pseudo-depth based on the exclusion area position
             // But they are fixed, so we just add visual cues around them
             ctx.strokeStyle = '#fff';

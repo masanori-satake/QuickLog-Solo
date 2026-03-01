@@ -21,7 +21,7 @@ export default class Cats extends AnimationBase {
         this.width = width;
         this.height = height;
 
-        this.cats.forEach((cat, i) => {
+        this.cats.forEach((cat) => {
             cat.timer--;
 
             // Determine ground or platforms
@@ -29,7 +29,7 @@ export default class Cats extends AnimationBase {
             const platforms = exclusionAreas.map(area => ({ y: area.y - 10, xStart: area.x, xEnd: area.x + area.width }));
 
             // Find current platform
-            let currentPlatform = null;
+            let currentPlatform;
             if (Math.abs(cat.y - groundY) < 5) {
                 currentPlatform = { y: groundY, xStart: 0, xEnd: width };
             } else {
