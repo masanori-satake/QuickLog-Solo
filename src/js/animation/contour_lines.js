@@ -3,16 +3,31 @@ import { AnimationBase } from '../animations.js';
 export default class ContourLines extends AnimationBase {
     static metadata = {
         name: { en: "Contour Lines", ja: "等高線" },
-        description: { en: "Flowing topological-style lines.", ja: "流れるような等高線スタイルの曲線です。" },
+        description: { en: "Abstract, organic topographic-style lines that flow smoothly.", ja: "抽象的で有機的な、流れるような等高線スタイルの曲線です。" },
         author: "QuickLog-Solo"
     };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
         this.lineCount = 10;
     }
 
-    draw(ctx, { progress }) {
+    draw(ctx, { progress, exclusionAreas }) {
+        ctx.save();
+        if (exclusionAreas && exclusionAreas.length > 0) {
+            ctx.beginPath();
+            ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            exclusionAreas.forEach(area => {
+                ctx.moveTo(area.x, area.y);
+                ctx.lineTo(area.x, area.y + area.height);
+                ctx.lineTo(area.x + area.width, area.y + area.height);
+                ctx.lineTo(area.x + area.width, area.y);
+                ctx.closePath();
+            });
+            ctx.clip("evenodd");
+        }
+
         ctx.strokeStyle = '#fff';
         ctx.globalAlpha = 0.3;
         ctx.lineWidth = 1;
@@ -33,5 +48,6 @@ export default class ContourLines extends AnimationBase {
             ctx.closePath();
             ctx.stroke();
         }
+        ctx.restore();
     }
 }

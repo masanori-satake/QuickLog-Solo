@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class Spectrum extends AnimationBase {
     static metadata = {
         name: { en: "Spectrum", ja: "スペクトラム" },
-        description: { en: "Audio spectrum analyzer bars that respect UI boundaries.", ja: "UIの境界に配慮したオーディオ・スペクトラムアナライザです。" },
+        description: { en: "A dynamic audio spectrum analyzer where bars bounce to a rhythm, avoiding UI elements.", ja: "リズムに合わせて上下する、UI要素を避けるオーディオ・スペクトラムアナライザです。" },
         author: "QuickLog-Solo"
     };
 

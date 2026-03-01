@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class Kaleidoscope extends AnimationBase {
     static metadata = {
         name: { en: "Kaleidoscope", ja: "万華鏡" },
-        description: { en: "Symmetrical patterns in motion.", ja: "動く対称的なパターンです。" },
+        description: { en: "Hypnotic, symmetrical geometric patterns that shift and rotate.", ja: "変化しながら回転する、催眠的で対称的な幾何学模様です。" },
         author: "QuickLog-Solo"
     };
     setup(width, height) {

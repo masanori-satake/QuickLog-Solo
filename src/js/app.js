@@ -486,6 +486,13 @@ async function syncState() {
             } else {
                 opt.textContent = anim.metadata.name;
             }
+            if (anim.metadata.description) {
+                if (typeof anim.metadata.description === 'object') {
+                    opt.title = anim.metadata.description[currentLang] || anim.metadata.description['en'] || '';
+                } else {
+                    opt.title = anim.metadata.description;
+                }
+            }
             animSelect.appendChild(opt);
         });
         animSelect.value = state.animation || 'clock';
@@ -801,13 +808,21 @@ async function renderCategoryEditor() {
         };
 
         const animOptions = [
-            { value: 'default', label: t('anim-default') },
-            ...animations.map(anim => ({ value: anim.id, label: getAnimLabel(anim) }))
+            { value: 'default', label: t('anim-default'), description: '' },
+            ...animations.map(anim => {
+                let desc = '';
+                if (anim.metadata.description) {
+                    desc = (typeof anim.metadata.description === 'object')
+                        ? (anim.metadata.description[lang] || anim.metadata.description['en'] || '')
+                        : anim.metadata.description;
+                }
+                return { value: anim.id, label: getAnimLabel(anim), description: desc };
+            })
         ];
 
         const animSelectHtml = `
             <select class="category-edit-animation" style="flex: 1; font-size: 0.75rem; padding: 2px 4px; border-radius: 4px;">
-                ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${opt.label}</option>`).join('')}
             </select>
         `;
 
@@ -1046,6 +1061,13 @@ function setupEventListeners() {
                 opt.textContent = anim.metadata.name[currentLang] || anim.metadata.name['en'] || anim.id;
             } else {
                 opt.textContent = anim.metadata.name;
+            }
+            if (anim.metadata.description) {
+                if (typeof anim.metadata.description === 'object') {
+                    opt.title = anim.metadata.description[currentLang] || anim.metadata.description['en'] || '';
+                } else {
+                    opt.title = anim.metadata.description;
+                }
             }
             animSelect.appendChild(opt);
         });

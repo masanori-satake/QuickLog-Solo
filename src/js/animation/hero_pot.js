@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class HeroPot extends AnimationBase {
     static metadata = {
         name: { en: "Hero Pot", ja: "勇者と壺" },
-        description: { en: "RPG hero lifting and breaking pots against UI elements.", ja: "RPGの勇者が壺を持ち上げて、UI要素にぶつけて壊します。" },
+        description: { en: "An RPG hero lifts pots and throws them against UI elements to break them.", ja: "RPGの勇者が壺を持ち上げて、UIの文字やボタンにぶつけて壊します。" },
         author: "QuickLog-Solo"
     };
 

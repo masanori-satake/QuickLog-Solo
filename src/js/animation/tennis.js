@@ -3,18 +3,20 @@ import { AnimationBase } from '../animations.js';
 export default class Tennis extends AnimationBase {
     static metadata = {
         name: { en: "Tennis", ja: "テニス" },
-        description: { en: "80s style tennis game. Ball bounces off paddles and text.", ja: "80年代風テニスゲーム。ボールがパドルやテキストで跳ね返ります。" },
+        description: { en: "An 80s-inspired tennis game where the ball bounces off paddles and UI elements.", ja: "80年代のテニスゲームをイメージした、パドルやUI要素でボールが跳ね返るアニメーションです。" },
         author: "QuickLog-Solo"
     };
 
     setup(width, height) {
         this.width = width;
         this.height = height;
-        this.ball = { x: width / 2, y: height / 2, vx: 3, vy: 2, radius: 4 };
+        this.ball = { x: width / 2, y: height / 2, vx: 2, vy: 1.5, radius: 4 };
         this.paddleWidth = 6;
         this.paddleHeight = 30;
-        this.paddleL = { y: height / 2 - 15 };
-        this.paddleR = { y: height / 2 - 15 };
+        this.paddleL = { y: height / 2 - 15, targetY: height / 2 - 15 };
+        this.paddleR = { y: height / 2 - 15, targetY: height / 2 - 15 };
+        this.scoreL = 0;
+        this.scoreR = 0;
     }
 
     draw(ctx, { width, height, exclusionAreas }) {
@@ -26,15 +28,23 @@ export default class Tennis extends AnimationBase {
         this.ball.y += this.ball.vy;
 
         // Bounce off top/bottom
-        if (this.ball.y - this.ball.radius < 0 || this.ball.y + this.ball.radius > height) {
-            this.ball.vy *= -1;
+        if (this.ball.y - this.ball.radius < 0) {
+            this.ball.y = this.ball.radius;
+            this.ball.vy = Math.abs(this.ball.vy);
+        } else if (this.ball.y + this.ball.radius > height) {
+            this.ball.y = height - this.ball.radius;
+            this.ball.vy = -Math.abs(this.ball.vy);
         }
 
-        // AI Paddles
-        const targetL = this.ball.y - this.paddleHeight / 2;
-        this.paddleL.y += (targetL - this.paddleL.y) * 0.1;
-        const targetR = this.ball.y - this.paddleHeight / 2;
-        this.paddleR.y += (targetR - this.paddleR.y) * 0.1;
+        // AI Paddles - only move when ball is approaching
+        if (this.ball.vx < 0) {
+            this.paddleL.targetY = this.ball.y - this.paddleHeight / 2;
+        } else {
+            this.paddleR.targetY = this.ball.y - this.paddleHeight / 2;
+        }
+
+        this.paddleL.y += (this.paddleL.targetY - this.paddleL.y) * 0.1;
+        this.paddleR.y += (this.paddleR.targetY - this.paddleR.y) * 0.1;
 
         // Constraint paddles
         this.paddleL.y = Math.max(0, Math.min(height - this.paddleHeight, this.paddleL.y));
@@ -42,17 +52,20 @@ export default class Tennis extends AnimationBase {
 
         // Bounce off paddles
         if (this.ball.x - this.ball.radius < this.paddleWidth) {
-            if (this.ball.y > this.paddleL.y && this.ball.y < this.paddleL.y + this.paddleHeight) {
+            if (this.ball.y > this.paddleL.y - 5 && this.ball.y < this.paddleL.y + this.paddleHeight + 5) {
                 this.ball.vx = Math.abs(this.ball.vx);
-            } else if (this.ball.x < 0) {
-                this.ball.x = width / 2; // Reset
+                this.ball.x = this.paddleWidth + this.ball.radius;
+            } else if (this.ball.x < -20) {
+                this.scoreR++;
+                this.resetBall(width, height);
             }
-        }
-        if (this.ball.x + this.ball.radius > width - this.paddleWidth) {
-            if (this.ball.y > this.paddleR.y && this.ball.y < this.paddleR.y + this.paddleHeight) {
+        } else if (this.ball.x + this.ball.radius > width - this.paddleWidth) {
+            if (this.ball.y > this.paddleR.y - 5 && this.ball.y < this.paddleR.y + this.paddleHeight + 5) {
                 this.ball.vx = -Math.abs(this.ball.vx);
-            } else if (this.ball.x > width) {
-                this.ball.x = width / 2; // Reset
+                this.ball.x = width - this.paddleWidth - this.ball.radius;
+            } else if (this.ball.x > width + 20) {
+                this.scoreL++;
+                this.resetBall(width, height);
             }
         }
 
@@ -69,29 +82,44 @@ export default class Tennis extends AnimationBase {
 
                 if (overlapX < overlapY) {
                     this.ball.vx *= -1;
-                    this.ball.x += this.ball.vx * 2;
+                    this.ball.x += (this.ball.vx > 0 ? 1 : -1) * (overlapX + 2);
                 } else {
                     this.ball.vy *= -1;
-                    this.ball.y += this.ball.vy * 2;
+                    this.ball.y += (this.ball.vy > 0 ? 1 : -1) * (overlapY + 2);
                 }
             }
         });
 
         // Draw everything
         ctx.fillStyle = '#fff';
-        // Ball
-        ctx.fillRect(this.ball.x - this.ball.radius, this.ball.y - this.ball.radius, this.ball.radius * 2, this.ball.radius * 2);
-        // Paddles
-        ctx.fillRect(0, this.paddleL.y, this.paddleWidth, this.paddleHeight);
-        ctx.fillRect(width - this.paddleWidth, this.paddleR.y, this.paddleWidth, this.paddleHeight);
+        ctx.strokeStyle = '#fff';
 
         // Center line
         ctx.setLineDash([5, 5]);
-        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(width / 2, 0);
         ctx.lineTo(width / 2, height);
         ctx.stroke();
         ctx.setLineDash([]);
+
+        // Score
+        ctx.font = "16px monospace";
+        ctx.fillText(this.scoreL, width / 2 - 30, 20);
+        ctx.fillText(this.scoreR, width / 2 + 20, 20);
+
+        // Ball
+        ctx.fillRect(this.ball.x - this.ball.radius, this.ball.y - this.ball.radius, this.ball.radius * 2, this.ball.radius * 2);
+
+        // Paddles
+        ctx.fillRect(0, this.paddleL.y, this.paddleWidth, this.paddleHeight);
+        ctx.fillRect(width - this.paddleWidth, this.paddleR.y, this.paddleWidth, this.paddleHeight);
+    }
+
+    resetBall(width, height) {
+        this.ball.x = width / 2;
+        this.ball.y = height / 2;
+        this.ball.vx = (Math.random() > 0.5 ? 2 : -2);
+        this.ball.vy = (Math.random() - 0.5) * 3;
     }
 }

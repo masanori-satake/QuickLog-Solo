@@ -20,7 +20,7 @@ def generate_registry():
         match = re.search(r'export\s+default\s+class\s+(\w+)', content)
         if match:
             class_name = match.group(1)
-            module_id = filename[:-3].replace('_', '-')
+            module_id = filename[:-3]  # Use filename as ID (with underscores preserved)
             alias = class_name
 
             imports.append(f"import {alias} from './animation/{filename}';")

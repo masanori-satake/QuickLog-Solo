@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class RightToLeft extends AnimationBase {
     static metadata = {
         name: { en: "Right to Left", ja: "右から左へ" },
-        description: { en: "Fills the background from right to left.", ja: "背景を右から左へ塗りつぶします。" },
+        description: { en: "A simple linear fill that progresses from right to left.", ja: "右から左へと背景を塗りつぶしていく、シンプルな進行インジケーターです。" },
         author: "QuickLog-Solo"
     };
     draw(ctx, { width, height, progress }) {

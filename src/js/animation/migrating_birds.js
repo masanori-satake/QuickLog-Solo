@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class MigratingBirds extends AnimationBase {
     static metadata = {
         name: { en: "Migrating Birds", ja: "渡り鳥" },
-        description: { en: "Birds flying in a V-formation.", ja: "V字型で飛ぶ鳥の群れです。" },
+        description: { en: "Birds flying across the screen in a classic V-formation.", ja: "画面を横切ってV字型に飛んでいく渡り鳥の群れです。" },
         author: "QuickLog-Solo"
     };
     setup(width, height) {

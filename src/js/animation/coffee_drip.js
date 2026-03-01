@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class CoffeeDrip extends AnimationBase {
     static metadata = {
         name: { en: "Coffee Drip", ja: "コーヒードリップ" },
-        description: { en: "A relaxing coffee brewing animation.", ja: "ゆったりとしたコーヒー抽出のアニメーションです。" },
+        description: { en: "A relaxing coffee brewing animation that fills the pot.", ja: "ポットにコーヒーが溜まっていく、リラックスできるドリップアニメーションです。" },
         author: "QuickLog-Solo"
     };
     setup(width) {

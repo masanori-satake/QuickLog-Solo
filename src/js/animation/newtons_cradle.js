@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class NewtonsCradle extends AnimationBase {
     static metadata = {
         name: { en: "Newton's Cradle", ja: "ニュートンのゆりかご" },
-        description: { en: "A classic physics toy simulation.", ja: "古典的な物理学の玩具のシミュレーションです。" },
+        description: { en: "A simulation of the classic physical office toy.", ja: "古典的な物理玩具である「ニュートンのゆりかご」のシミュレーションです。" },
         author: "QuickLog-Solo"
     };
     setup(width, height) {

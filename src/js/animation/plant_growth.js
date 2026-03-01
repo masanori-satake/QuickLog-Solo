@@ -3,16 +3,31 @@ import { AnimationBase } from '../animations.js';
 export default class PlantGrowth extends AnimationBase {
     static metadata = {
         name: { en: "Plant Growth", ja: "植物の成長" },
-        description: { en: "A plant that grows and blooms.", ja: "植物が成長し、花を咲かせます。" },
+        description: { en: "A minimalist animation of a plant growing leaves and blooming over time.", ja: "茎が伸び、葉が茂り、やがて花を咲かせる植物の成長アニメーションです。" },
         author: "QuickLog-Solo"
     };
+
     setup(width, height) {
         this.centerX = width / 2;
         this.bottomY = height - 20;
         this.maxHeight = height * 0.6;
     }
 
-    draw(ctx, { progress }) {
+    draw(ctx, { progress, exclusionAreas }) {
+        ctx.save();
+        if (exclusionAreas && exclusionAreas.length > 0) {
+            ctx.beginPath();
+            ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            exclusionAreas.forEach(area => {
+                ctx.moveTo(area.x, area.y);
+                ctx.lineTo(area.x, area.y + area.height);
+                ctx.lineTo(area.x + area.width, area.y + area.height);
+                ctx.lineTo(area.x + area.width, area.y);
+                ctx.closePath();
+            });
+            ctx.clip("evenodd");
+        }
+
         ctx.strokeStyle = '#fff';
         ctx.fillStyle = '#fff';
         ctx.lineWidth = 2;
@@ -52,5 +67,6 @@ export default class PlantGrowth extends AnimationBase {
             }
             ctx.globalAlpha = 1.0;
         }
+        ctx.restore();
     }
 }

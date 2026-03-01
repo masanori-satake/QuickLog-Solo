@@ -3,21 +3,41 @@ import { AnimationBase } from '../animations.js';
 export default class Clock extends AnimationBase {
     static metadata = {
         name: { en: "Clock", ja: "時計" },
-        description: { en: "A circular progress indicator.", ja: "円形の進捗インジケーターです。" },
+        description: { en: "A simple circular progress indicator using a clock motif.", ja: "時計をモチーフにしたシンプルな円形の進捗インジケーターです。" },
         author: "QuickLog-Solo"
     };
+
     setup(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.radius = Math.min(width, height) * 0.4;
     }
-    draw(ctx, { progress }) {
+
+    draw(ctx, { progress, exclusionAreas }) {
         const angle = progress * Math.PI * 2;
+
+        ctx.save();
+        // If we have exclusion areas, we clip the drawing area
+        if (exclusionAreas && exclusionAreas.length > 0) {
+            ctx.beginPath();
+            ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            exclusionAreas.forEach(area => {
+                // Moving backward to subtract the area from clipping
+                ctx.moveTo(area.x, area.y);
+                ctx.lineTo(area.x, area.y + area.height);
+                ctx.lineTo(area.x + area.width, area.y + area.height);
+                ctx.lineTo(area.x + area.width, area.y);
+                ctx.closePath();
+            });
+            ctx.clip("evenodd");
+        }
+
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.moveTo(this.centerX, this.centerY);
         ctx.arc(this.centerX, this.centerY, this.radius, -Math.PI / 2, -Math.PI / 2 + angle);
         ctx.closePath();
         ctx.fill();
+        ctx.restore();
     }
 }
