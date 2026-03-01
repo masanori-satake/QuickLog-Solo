@@ -14,6 +14,7 @@ export default [
         ...globals.browser,
         ...globals.jest,
         ...globals.node,
+        chrome: "readonly",
       },
     },
     rules: {

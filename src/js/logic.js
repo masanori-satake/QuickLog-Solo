@@ -13,6 +13,29 @@ export function formatDuration(ms) {
     };
 }
 
+export function formatLogDuration(ms) {
+    const totalSeconds = Math.round(ms / 1000);
+    if (totalSeconds < 60) {
+        return `${totalSeconds}s`;
+    }
+
+    const totalMinutes = Math.round(ms / 60000);
+    if (totalMinutes < 60) {
+        return `${totalMinutes}m`;
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (minutes === 0) {
+        return `${hours}h`;
+    } else if (minutes < 10) {
+        return `${hours}h ${minutes}m`;
+    } else {
+        return `${hours}h${minutes}m`;
+    }
+}
+
 export async function startTaskLogic(categoryName, activeTask, resumableCategory = null, color = null) {
     if (activeTask && activeTask.category === categoryName && !activeTask.isPaused) return activeTask;
 

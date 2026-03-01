@@ -4,7 +4,7 @@ import {
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE
 } from './db.js';
 import { t, setLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
-import { formatDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
+import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
 import {
     AnimationEngine,
@@ -349,12 +349,9 @@ function createLogElement(log, categoryMap) {
     }
 
     const durationMs = log.endTime ? log.endTime - log.startTime : 0;
-    let durationText = '';
-    if (log.endTime && !log.isManualStop) {
-        durationText = durationMs < 60000 ? `${Math.round(durationMs / 1000)}s` : `${Math.round(durationMs / 60000)}m`;
-    }
+    const durationText = (log.endTime && !log.isManualStop) ? formatLogDuration(durationMs) : '';
 
-    let colorClass = 'dot-gray';
+    let colorClass;
     let displayName = log.category;
 
     if (log.isManualStop) {
@@ -528,8 +525,8 @@ async function updateUI() {
     };
 
     if (activeTask) {
-        let color = 'primary';
-        let categoryAnimation = 'default';
+        let color;
+        let categoryAnimation;
         const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
         if (isPaused) {

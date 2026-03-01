@@ -18,7 +18,7 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
     SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
-const { formatDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } = await import('../src/js/logic.js');
+const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } = await import('../src/js/logic.js');
 const { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../src/js/db.js');
 
 describe('Logic Module', () => {
@@ -35,6 +35,45 @@ describe('Logic Module', () => {
         test('handles single digits with padding', () => {
             const ms = (1 * 3600000) + (5 * 60000) + 9000;
             expect(formatDuration(ms).toString()).toBe('01:05:09');
+        });
+    });
+
+    describe('formatLogDuration', () => {
+        test('formats seconds correctly (< 60s) with rounding', () => {
+            expect(formatLogDuration(0)).toBe('0s');
+            expect(formatLogDuration(499)).toBe('0s');
+            expect(formatLogDuration(500)).toBe('1s');
+            expect(formatLogDuration(30000)).toBe('30s');
+            expect(formatLogDuration(59499)).toBe('59s');
+            expect(formatLogDuration(59500)).toBe('1m'); // Rounds up to 1m
+        });
+
+        test('formats minutes correctly (1m to < 60m) with rounding', () => {
+            expect(formatLogDuration(60000)).toBe('1m');
+            expect(formatLogDuration(60000 + 29999)).toBe('1m');
+            expect(formatLogDuration(60000 + 30000)).toBe('2m'); // Rounds up to 2m
+            expect(formatLogDuration(45 * 60000)).toBe('45m');
+            expect(formatLogDuration(59 * 60000 + 29999)).toBe('59m');
+            expect(formatLogDuration(59 * 60000 + 30000)).toBe('1h'); // Rounds up to 1h
+        });
+
+        test('formats hours and minutes correctly (>= 60m) with rounding', () => {
+            expect(formatLogDuration(60 * 60000)).toBe('1h');
+            expect(formatLogDuration(60 * 60000 + 29999)).toBe('1h');
+            expect(formatLogDuration(60 * 60000 + 30000)).toBe('1h 1m'); // 60.5m -> 61m -> 1h 1m
+            expect(formatLogDuration(61 * 60000)).toBe('1h 1m');
+            expect(formatLogDuration(69 * 60000)).toBe('1h 9m');
+            expect(formatLogDuration(70 * 60000)).toBe('1h10m');
+            expect(formatLogDuration(75 * 60000)).toBe('1h15m');
+            expect(formatLogDuration(120 * 60000)).toBe('2h');
+            expect(formatLogDuration(125 * 60000)).toBe('2h 5m');
+            expect(formatLogDuration(130 * 60000)).toBe('2h10m');
+        });
+
+        test('handles long durations', () => {
+            expect(formatLogDuration(10 * 60 * 60000)).toBe('10h');
+            expect(formatLogDuration(10 * 60 * 60000 + 5 * 60000)).toBe('10h 5m');
+            expect(formatLogDuration(10 * 60 * 60000 + 15 * 60000)).toBe('10h15m');
         });
     });
 
