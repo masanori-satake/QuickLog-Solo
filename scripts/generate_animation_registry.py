@@ -32,7 +32,7 @@ def generate_registry():
 {chr(10).join(imports)}
 
 export const animations = [
-{','.join(entries)}
+{(',' + chr(10)).join(entries)}
 ];
 """
 

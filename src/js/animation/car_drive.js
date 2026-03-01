@@ -10,10 +10,7 @@ export default class CarDrive extends AnimationBase {
     setup(width, height) {
         this.width = width;
         this.height = height;
-        this.roadWidth = width * 0.8;
         this.horizonY = height * 0.4;
-        this.carX = width / 2;
-        this.carY = height - 20;
     }
 
     draw(ctx, { width, height, exclusionAreas }) {
