@@ -2,7 +2,7 @@
  * QuickLog-Solo: Security and Validation Utilities
  */
 
-export const SYSTEM_CATEGORY_IDLE = '(待機)';
+export const SYSTEM_CATEGORY_IDLE = '__IDLE__';
 
 /**
  * Escapes HTML special characters to prevent XSS.

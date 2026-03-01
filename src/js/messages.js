@@ -95,7 +95,7 @@ export const messages = {
 
         // Dynamic Elements
         'day-names': ['日', '月', '火', '水', '木', '金', '土'],
-        'idle-category': '(待機)',
+        'idle-category': '待機中',
         'font-system': 'システムフォント',
         'anim-default': 'デフォルトを使用',
 
