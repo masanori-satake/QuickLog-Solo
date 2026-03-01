@@ -42,7 +42,8 @@ def get_commits_since(commit_hash):
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             lines = result.stdout.strip().split('\n')
             return [l for l in lines if l.strip()]
-        except:
+        except subprocess.CalledProcessError as e:
+            print(f"Warning: Could not get commits using merge-base. Git command failed: {e}", file=sys.stderr)
             return []
 
 def get_version_from_file(filepath):
