@@ -193,7 +193,10 @@
     <div id="preview-modal" class="modal hidden">
         <div class="modal-content preview-content">
             <div class="modal-header">
-                <h3 data-i18n="preview-title">アプリ プレビュー</h3>
+                <div style="display: flex; align-items: baseline; gap: 8px;">
+                    <h3 data-i18n="preview-title">アプリ プレビュー</h3>
+                    <span id="preview-version" style="font-size: 0.85rem; opacity: 0.7; font-weight: normal;"></span>
+                </div>
                 <button class="close-btn" onclick="closePreview()"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="preview-body">
@@ -686,6 +689,15 @@
             };
             document.title = titles[lang] || titles['en'];
         }
+
+        // Initialize version display
+        fetch('src/version.json')
+            .then(response => response.json())
+            .then(data => {
+                const el = document.getElementById('preview-version');
+                if (el) el.textContent = `v${data.version}`;
+            })
+            .catch(err => console.error('Failed to load version:', err));
 
         // Initialize language
         const userLang = navigator.language || navigator.userLanguage;
