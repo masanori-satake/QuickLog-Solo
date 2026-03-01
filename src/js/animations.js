@@ -111,6 +111,8 @@ export class AnimationEngine {
     drawLCD(progress, elapsedMs) {
         const w = this.canvas.width;
         const h = this.canvas.height;
+        if (w === 0 || h === 0) return;
+
         const cols = Math.ceil(w / CELL_SIZE);
         const rows = Math.ceil(h / CELL_SIZE);
 
@@ -210,7 +212,11 @@ export class AnimationEngine {
     }
 
     resize() {
-        const rect = this.canvas.parentElement.getBoundingClientRect();
+        const parent = this.canvas.parentElement;
+        if (!parent) return;
+        const rect = parent.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+
         this.canvas.width = rect.width;
         this.canvas.height = rect.height;
         if (this.activeAnimation) {
