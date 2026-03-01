@@ -1,0 +1,43 @@
+import { AnimationBase } from '../animations.js';
+
+export default class LissajousPendulum extends AnimationBase {
+    static metadata = {
+        name: { en: "Lissajous Pendulum", ja: "リサージュ振り子" },
+        description: { en: "Elegant harmonic motion curves.", ja: "優雅な調和振動の曲線です。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
+        this.centerX = width / 2;
+        this.centerY = height / 2;
+        this.size = Math.min(width, height) * 0.4;
+    }
+
+    draw(ctx, { progress }) {
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.4;
+
+        const a = 3;
+        const b = 2 + progress; // Frequency ratio changes slowly
+        const delta = Math.PI / 2;
+
+        ctx.beginPath();
+        for (let t = 0; t < Math.PI * 2; t += 0.05) {
+            const x = this.centerX + this.size * Math.sin(a * t + delta);
+            const y = this.centerY + this.size * Math.sin(b * t);
+            if (t === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Trace trajectory
+        const now = Date.now() / 1000;
+        const tx = this.centerX + this.size * Math.sin(a * now + delta);
+        const ty = this.centerY + this.size * Math.sin(b * now);
+        ctx.beginPath();
+        ctx.arc(tx, ty, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = 1.0;
+        ctx.fill();
+    }
+}

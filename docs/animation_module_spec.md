@@ -6,17 +6,24 @@ QuickLog-Solo の背景アニメーション機能をモジュール化し、外
 
 ## 2. システム構成と役割分担
 
-### 2.1. ライフサイクル・シーケンス図
+### 2.1. ディレクトリ構造と自動登録
+アニメーションモジュールは `src/js/animation/` ディレクトリに個別のファイルとして格納されます。
+ビルドプロセスにおいて、`scripts/generate_animation_registry.py` がこれらのファイルをスキャンし、`src/js/animation_registry.js` を自動生成します。
+これにより、コアモジュールを修正することなく、新しいアニメーションを追加・削除することが可能です。
+
+### 2.2. ライフサイクル・シーケンス図
 
 #### アニメーション一覧の取得 (Metadata Discovery)
 ユーザーが設定画面を開いた際など、インスタンス化の前にモジュールの情報を取得するフローです。
 ```mermaid
 sequenceDiagram
     participant C_Disc as QuickLog 本体 (Core)
+    participant R_Disc as animation_registry.js
     participant M_Disc as アニメーションモジュール (Class)
 
-    C_Disc->>M_Disc: static metadata 参照
-    M_Disc-->>C_Disc: { name, description, author } を返却
+    C_Disc->>R_Disc: animations 配列を参照
+    R_Disc->>M_Disc: static metadata 参照
+    M_Disc-->>R_Disc: { name, description, author } を返却
     C_Disc->>C_Disc: 設定画面の選択肢を構築
 ```
 
@@ -87,13 +94,13 @@ sequenceDiagram
     destroy M_Term
 ```
 
-### 2.2. QuickLog-Solo 本体（コア）の役割
+### 2.3. QuickLog-Solo 本体（コア）の役割
 - **時間計測とサイクル管理:** `Date.now()` に基づく正確な時間経過の計測、120秒（2分）を 1周期とする計時サイクル（0～239 のステップ）の算出、およびタスク開始時からの総経過時間（ミリ秒）の管理。
 - **レンダリングエンジン:** モジュールから提供されたデータに基づき、LCD ドットマトリクススタイル（4段階のドットサイズ）でのキャンバス描画。
 - **視認性確保（自動遮蔽）:** 業務カテゴリ名や経過時間などのテキスト表示エリアを自動的に検出し、アニメーションドットの描画を避ける「ドット回避（Exclusion Area）」処理の実行。
 - **リソース管理:** アニメーションの開始・停止・リサイズ制御。
 
-### 2.3. アニメーションモジュール（ロジック）の役割
+### 2.4. アニメーションモジュール（ロジック）の役割
 - **状態管理:** `setup` で受け取った領域情報に基づき、内部のパーティクルや座標情報を管理する。
 - **パターン生成:** `draw` メソッドを通じて提供される進捗情報（`progress`, `step`）に応じた描画を行う。
 - **視認性への配慮 (推奨):** 提供される `exclusionAreas` を利用して、テキストを避けるような「賢い」アニメーションを実装できる。
@@ -153,9 +160,9 @@ sequenceDiagram
 ## 4. 実装イメージ
 
 ```javascript
-import { AnimationBase } from './animations.js';
+import { AnimationBase } from '../animations.js';
 
-class MySmartAnimation extends AnimationBase {
+export default class MySmartAnimation extends AnimationBase {
     static metadata = {
         name: { en: "Bouncing Ball", ja: "跳ねるボール" },
         description: { en: "A ball that bounces off text.", ja: "テキストに当たって跳ね返るボールです。" },

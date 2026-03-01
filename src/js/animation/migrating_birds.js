@@ -1,0 +1,41 @@
+import { AnimationBase } from '../animations.js';
+
+export default class MigratingBirds extends AnimationBase {
+    static metadata = {
+        name: { en: "Migrating Birds", ja: "渡り鳥" },
+        description: { en: "Birds flying in a V-formation.", ja: "V字型で飛ぶ鳥の群れです。" },
+        author: "QuickLog-Solo"
+    };
+    setup(width, height) {
+        this.w = width;
+        this.h = height;
+        this.yBase = height / 2;
+        this.birdCount = 7;
+        this.birdSize = 10;
+        this.spacing = 30;
+    }
+
+    draw(ctx, { progress }) {
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = 0.5;
+
+        // V-shape movement from left to right over 2 minutes
+        const xBase = -100 + (this.w + 200) * progress;
+
+        for (let i = 0; i < this.birdCount; i++) {
+            const offset = i - Math.floor(this.birdCount / 2);
+            const bx = xBase - Math.abs(offset) * this.spacing;
+            const by = this.yBase + offset * this.spacing * 0.5;
+
+            // Flapping wing
+            const flap = Math.sin(Date.now() / 100 + i) * 5;
+
+            ctx.beginPath();
+            ctx.moveTo(bx, by);
+            ctx.lineTo(bx - this.birdSize, by - flap);
+            ctx.lineTo(bx - this.birdSize * 0.5, by);
+            ctx.lineTo(bx - this.birdSize, by + flap);
+            ctx.fill();
+        }
+    }
+}

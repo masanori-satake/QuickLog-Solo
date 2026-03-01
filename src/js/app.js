@@ -6,14 +6,8 @@ import {
 import { t, setLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
-import {
-    AnimationEngine,
-    LeftToRight, RightToLeft, Clock, SandClock,
-    TetrisBuilding, PlantGrowth, DotTyping,
-    NewtonsCradle, Ripple, LissajousPendulum,
-    MigratingBirds, CoffeeDrip, NightSky,
-    Kaleidoscope, ContourLines, MatrixCode
-} from './animations.js';
+import { AnimationEngine } from './animations.js';
+import { animations } from './animation_registry.js';
 
 // QuickLog-Solo: Main Application Entry
 
@@ -433,22 +427,9 @@ function initAnimationEngine() {
     const canvas = getEl('animation-canvas');
     if (canvas) {
         animationEngine = new AnimationEngine(canvas);
-        animationEngine.register('left-to-right', LeftToRight);
-        animationEngine.register('right-to-left', RightToLeft);
-        animationEngine.register('clock', Clock);
-        animationEngine.register('sand-clock', SandClock);
-        animationEngine.register('tetris-building', TetrisBuilding);
-        animationEngine.register('plant-growth', PlantGrowth);
-        animationEngine.register('dot-typing', DotTyping);
-        animationEngine.register('newtons-cradle', NewtonsCradle);
-        animationEngine.register('ripple', Ripple);
-        animationEngine.register('lissajous-pendulum', LissajousPendulum);
-        animationEngine.register('migrating-birds', MigratingBirds);
-        animationEngine.register('coffee-drip', CoffeeDrip);
-        animationEngine.register('night-sky', NightSky);
-        animationEngine.register('kaleidoscope', Kaleidoscope);
-        animationEngine.register('contour-lines', ContourLines);
-        animationEngine.register('matrix-code', MatrixCode);
+        animations.forEach(anim => {
+            animationEngine.register(anim.id, anim.class);
+        });
         animationEngine.resize();
         updateAnimationExclusionAreas();
         window.addEventListener('resize', () => {
@@ -491,6 +472,24 @@ async function syncState() {
 
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
+
+    // Update Animation options
+    const animSelect = getEl(ID_ANIMATION_SELECT);
+    if (animSelect) {
+        const currentLang = (lang === 'auto') ? detectBrowserLanguage() : lang;
+        animSelect.innerHTML = '';
+        animations.forEach(anim => {
+            const opt = createEl('option');
+            opt.value = anim.id;
+            if (typeof anim.metadata.name === 'object') {
+                opt.textContent = anim.metadata.name[currentLang] || anim.metadata.name['en'] || anim.id;
+            } else {
+                opt.textContent = anim.metadata.name;
+            }
+            animSelect.appendChild(opt);
+        });
+        animSelect.value = state.animation || 'clock';
+    }
 
     // Update Font options first. This filters the available fonts based on language.
     updateFontSelect();
@@ -793,24 +792,17 @@ async function renderCategoryEditor() {
                     data-color="${color}"></button>
         `).join('');
 
+        const lang = getEl(ID_LANGUAGE_SELECT)?.value === 'auto' ? detectBrowserLanguage() : getEl(ID_LANGUAGE_SELECT)?.value || 'en';
+        const getAnimLabel = (anim) => {
+            if (typeof anim.metadata.name === 'object') {
+                return anim.metadata.name[lang] || anim.metadata.name['en'] || anim.id;
+            }
+            return anim.metadata.name;
+        };
+
         const animOptions = [
             { value: 'default', label: t('anim-default') },
-            { value: 'left-to-right', label: 'Left to Right' },
-            { value: 'right-to-left', label: 'Right to Left' },
-            { value: 'clock', label: 'Clock' },
-            { value: 'sand-clock', label: 'Sand Clock' },
-            { value: 'tetris-building', label: 'Tetris Building' },
-            { value: 'plant-growth', label: 'Plant Growth' },
-            { value: 'dot-typing', label: 'Dot Typing' },
-            { value: 'newtons-cradle', label: 'Newton\'s Cradle' },
-            { value: 'ripple', label: 'Ripple' },
-            { value: 'lissajous-pendulum', label: 'Lissajous Pendulum' },
-            { value: 'migrating-birds', label: 'Migrating Birds' },
-            { value: 'coffee-drip', label: 'Coffee Drip' },
-            { value: 'night-sky', label: 'Night Sky' },
-            { value: 'kaleidoscope', label: 'Kaleidoscope' },
-            { value: 'contour-lines', label: 'Contour Lines' },
-            { value: 'matrix-code', label: 'Matrix Code' }
+            ...animations.map(anim => ({ value: anim.id, label: getAnimLabel(anim) }))
         ];
 
         const animSelectHtml = `
@@ -1045,6 +1037,19 @@ function setupEventListeners() {
 
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
+        const currentLang = getEl(ID_LANGUAGE_SELECT)?.value === 'auto' ? detectBrowserLanguage() : getEl(ID_LANGUAGE_SELECT)?.value || 'en';
+        animSelect.innerHTML = '';
+        animations.forEach(anim => {
+            const opt = createEl('option');
+            opt.value = anim.id;
+            if (typeof anim.metadata.name === 'object') {
+                opt.textContent = anim.metadata.name[currentLang] || anim.metadata.name['en'] || anim.id;
+            } else {
+                opt.textContent = anim.metadata.name;
+            }
+            animSelect.appendChild(opt);
+        });
+
         animSelect.onchange = async (e) => {
             const animType = e.target.value;
             currentAnimationType = animType;
