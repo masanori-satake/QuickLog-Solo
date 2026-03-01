@@ -26,11 +26,11 @@ def get_commits_since(commit_hash):
     if not commit_hash:
         return []
 
-    cmd = ["git", "log", f"{commit_hash}..HEAD", "--format=%s"]
+    cmd = ["git", "log", f"{commit_hash}..HEAD", "--format=%B", "-z"]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        lines = result.stdout.strip().split('\n')
-        return [l for l in lines if l.strip()]
+        commits = result.stdout.split('\0')
+        return [c.strip() for c in commits if c.strip()]
     except subprocess.CalledProcessError:
         # If the commit_hash is not reachable (e.g. shallow clone or different branch history)
         # try to get commits since the common ancestor
@@ -38,20 +38,18 @@ def get_commits_since(commit_hash):
             cmd_merge_base = ["git", "merge-base", commit_hash, "HEAD"]
             res_mb = subprocess.run(cmd_merge_base, capture_output=True, text=True, check=True)
             mb = res_mb.stdout.strip()
-            cmd = ["git", "log", f"{mb}..HEAD", "--format=%s"]
+            cmd = ["git", "log", f"{mb}..HEAD", "--format=%B", "-z"]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            lines = result.stdout.strip().split('\n')
-            return [l for l in lines if l.strip()]
-        except subprocess.CalledProcessError as e:
-            print(f"Warning: Could not get commits using merge-base. Git command failed: {e}", file=sys.stderr)
+            commits = result.stdout.split('\0')
+            return [c.strip() for c in commits if c.strip()]
+        except:
             return []
 
 def get_version_from_file(filepath):
     try:
         with open(filepath, 'r') as f:
             return json.load(f).get('version')
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Warning: Could not read version from {filepath}: {e}", file=sys.stderr)
+    except:
         return None
 
 def get_version_at_commit(filepath, commit_hash):
@@ -59,19 +57,18 @@ def get_version_at_commit(filepath, commit_hash):
         cmd = ["git", "show", f"{commit_hash}:{filepath}"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return json.loads(result.stdout).get('version')
-    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
-        print(f"Warning: Could not get version for {filepath} at {commit_hash}: {e}", file=sys.stderr)
+    except:
         return None
 
 def determine_required_bump(commits):
     bump = None
-    for msg in commits:
+    for body in commits:
         if bump != "major":
-            if "BREAKING CHANGE" in msg or re.match(r'^\w+!:', msg):
+            if "BREAKING CHANGE" in body or re.search(r'^[a-zA-Z]+!:', body, re.MULTILINE):
                 bump = "major"
-            elif msg.startswith("feat") and bump != "major":
+            elif re.search(r'^feat(\(.*\))?:', body, re.MULTILINE) and bump != "major":
                 bump = "minor"
-            elif msg.startswith("fix") and bump is None:
+            elif re.search(r'^fix(\(.*\))?:', body, re.MULTILINE) and bump is None:
                 bump = "patch"
     return bump
 

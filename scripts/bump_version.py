@@ -17,28 +17,31 @@ def get_last_version_commit():
 def get_commits_since(commit_hash):
     if not commit_hash:
         # If no last commit (initial), get all commits
-        cmd = ["git", "log", "--format=%s"]
+        cmd = ["git", "log", "--format=%B", "-z"]
     else:
-        cmd = ["git", "log", f"{commit_hash}..HEAD", "--format=%s"]
+        cmd = ["git", "log", f"{commit_hash}..HEAD", "--format=%B", "-z"]
 
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        lines = result.stdout.strip().split('\n')
-        return [l for l in lines if l.strip()]
+        commits = result.stdout.split('\0')
+        return [c.strip() for c in commits if c.strip()]
     except subprocess.CalledProcessError:
         return []
 
 def determine_bump_type(commits):
+    # Default to "patch" if any commit exists, to prevent forgetting version updates.
+    # We will upgrade this to "minor" or "major" if specific commit types are found.
     bump = "patch"
     found_any = False
 
-    for msg in commits:
+    for body in commits:
         found_any = True
         # Check for breaking change: "feat!:", "fix!:", or "BREAKING CHANGE" in body/footer
-        # Here we only check the subject line as per get_commits_since format %s
-        if "BREAKING CHANGE" in msg or re.match(r'^\w+!:', msg):
+        if "BREAKING CHANGE" in body or re.search(r'^[a-zA-Z]+!:', body, re.MULTILINE):
             return "major"
-        if msg.startswith("feat"):
+
+        # Check for features
+        if re.search(r'^feat(\(.*\))?:', body, re.MULTILINE):
             bump = "minor"
 
     if not found_any:
@@ -88,8 +91,8 @@ def main():
     try:
         with open('src/version.json', 'r') as f:
             current_version = json.load(f).get('version')
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Error reading or parsing src/version.json: {e}")
+    except Exception as e:
+        print(f"Error reading src/version.json: {e}")
         sys.exit(1)
 
     new_version = bump_version(current_version, bump_type)
