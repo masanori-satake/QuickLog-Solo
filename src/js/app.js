@@ -3,7 +3,7 @@ import {
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE
 } from './db.js';
-import { t, setLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
+import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
 import { AnimationEngine } from './animations.js';
@@ -474,29 +474,8 @@ async function syncState() {
     if (langSelect) langSelect.value = state.language || 'auto';
 
     // Update Animation options
-    const animSelect = getEl(ID_ANIMATION_SELECT);
-    if (animSelect) {
-        const currentLang = (lang === 'auto') ? detectBrowserLanguage() : lang;
-        animSelect.innerHTML = '';
-        animations.forEach(anim => {
-            const opt = createEl('option');
-            opt.value = anim.id;
-            if (typeof anim.metadata.name === 'object') {
-                opt.textContent = anim.metadata.name[currentLang] || anim.metadata.name['en'] || anim.id;
-            } else {
-                opt.textContent = anim.metadata.name;
-            }
-            if (anim.metadata.description) {
-                if (typeof anim.metadata.description === 'object') {
-                    opt.title = anim.metadata.description[currentLang] || anim.metadata.description['en'] || '';
-                } else {
-                    opt.title = anim.metadata.description;
-                }
-            }
-            animSelect.appendChild(opt);
-        });
-        animSelect.value = state.animation || 'clock';
-    }
+    currentAnimationType = state.animation || 'clock';
+    updateAnimationSelect();
 
     // Update Font options first. This filters the available fonts based on language.
     updateFontSelect();
@@ -529,13 +508,37 @@ async function syncState() {
     }
 }
 
+function updateAnimationSelect() {
+    const animSelect = getEl(ID_ANIMATION_SELECT);
+    if (animSelect) {
+        const currentLang = getLanguage();
+        animSelect.innerHTML = '';
+        animations.forEach(anim => {
+            const opt = createEl('option');
+            opt.value = anim.id;
+            if (typeof anim.metadata.name === 'object') {
+                opt.textContent = anim.metadata.name[currentLang] || anim.metadata.name['en'] || anim.id;
+            } else {
+                opt.textContent = anim.metadata.name;
+            }
+            if (anim.metadata.description) {
+                if (typeof anim.metadata.description === 'object') {
+                    opt.title = anim.metadata.description[currentLang] || anim.metadata.description['en'] || '';
+                } else {
+                    opt.title = anim.metadata.description;
+                }
+            }
+            animSelect.appendChild(opt);
+        });
+        animSelect.value = currentAnimationType;
+    }
+}
+
 function updateFontSelect() {
     const fontSelect = getEl(ID_FONT_SELECT);
     if (fontSelect) {
         const currentFont = fontSelect.value;
-        const currentLang = (getEl(ID_LANGUAGE_SELECT)?.value === 'auto' || !getEl(ID_LANGUAGE_SELECT)?.value)
-            ? detectBrowserLanguage()
-            : getEl(ID_LANGUAGE_SELECT).value;
+        const currentLang = getLanguage();
 
         fontSelect.innerHTML = '';
         const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
@@ -1021,7 +1024,8 @@ function setupEventListeners() {
         setLanguage(lang);
         applyLanguage();
 
-        // Update font selector based on the new language
+        // Update selectors based on the new language
+        updateAnimationSelect();
         updateFontSelect();
         // Save the font change if updateFontSelect had to fallback
         const newFontValue = getEl(ID_FONT_SELECT).value;
@@ -1052,25 +1056,7 @@ function setupEventListeners() {
 
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
-        const currentLang = getEl(ID_LANGUAGE_SELECT)?.value === 'auto' ? detectBrowserLanguage() : getEl(ID_LANGUAGE_SELECT)?.value || 'en';
-        animSelect.innerHTML = '';
-        animations.forEach(anim => {
-            const opt = createEl('option');
-            opt.value = anim.id;
-            if (typeof anim.metadata.name === 'object') {
-                opt.textContent = anim.metadata.name[currentLang] || anim.metadata.name['en'] || anim.id;
-            } else {
-                opt.textContent = anim.metadata.name;
-            }
-            if (anim.metadata.description) {
-                if (typeof anim.metadata.description === 'object') {
-                    opt.title = anim.metadata.description[currentLang] || anim.metadata.description['en'] || '';
-                } else {
-                    opt.title = anim.metadata.description;
-                }
-            }
-            animSelect.appendChild(opt);
-        });
+        updateAnimationSelect();
 
         animSelect.onchange = async (e) => {
             const animType = e.target.value;
@@ -1266,8 +1252,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('QuickLog-Solo: DB Initialized', settings);
         activeTask = settings.activeTask;
 
-        setLanguage(settings.language || 'auto');
+        const lang = settings.language || 'auto';
+        setLanguage(lang);
         applyLanguage();
+
+        const langSelect = getEl(ID_LANGUAGE_SELECT);
+        if (langSelect) langSelect.value = lang;
 
         applyTheme(settings.theme || THEME_SYSTEM);
 
