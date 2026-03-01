@@ -13,6 +13,7 @@ export default class Spectrum extends AnimationBase {
         this.barCount = 32;
         this.bars = Array(this.barCount).fill(0).map(() => Math.random() * 50);
         this.targetBars = Array(this.barCount).fill(0).map(() => Math.random() * 100);
+        this.peaks = Array(this.barCount).fill(0);
     }
 
     draw(ctx, { width, height, exclusionAreas }) {
@@ -28,7 +29,6 @@ export default class Spectrum extends AnimationBase {
             this.bars[i] += (this.targetBars[i] - this.bars[i]) * 0.15;
 
             // Peak effect
-            if (!this.peaks) this.peaks = Array(this.barCount).fill(0);
             if (this.bars[i] > this.peaks[i]) this.peaks[i] = this.bars[i];
             else this.peaks[i] -= 1;
 

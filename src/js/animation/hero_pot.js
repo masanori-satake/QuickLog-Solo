@@ -71,7 +71,7 @@ export default class HeroPot extends AnimationBase {
         } else if (this.hero.state === 'walking_with_pot') {
             const dx = this.hero.targetX - this.hero.x;
             const dy = this.hero.targetY - this.hero.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
+            const dist = Math.hypot(dx, dy);
 
             if (dist > 5) {
                 this.hero.x += dx / dist * 1.5;
