@@ -2,26 +2,8 @@ import { AnimationBase } from '../animations.js';
 
 export default class Tennis extends AnimationBase {
     static metadata = {
-        name: {
-            en: "Tennis",
-            ja: "テニス",
-            de: "Tennis",
-            es: "Tenis",
-            fr: "Tennis",
-            pt: "Tênis",
-            ko: "테니스",
-            zh: "网球"
-        },
-        description: {
-            en: "An 80s-inspired tennis game where the ball bounces off paddles and UI elements.",
-            ja: "80年代のテニスゲームをイメージした、パドルやUI要素でボールが跳ね返るアニメーションです。",
-            de: "Ein von den 80er Jahren inspiriertes Tennisspiel, bei dem der Ball von Schlägern und UI-Elementen abprallt.",
-            es: "Un juego de tenis inspirado en los 80 donde la pelota rebota en las raquetas y los elementos de la interfaz.",
-            fr: "Un jeu de tennis inspiré des années 80 où la balle rebondit sur les raquettes et les éléments de l'interface.",
-            pt: "Um jogo de tênis inspirado nos anos 80, onde a bola rebate nas raquetes e nos elementos da interface.",
-            ko: "80년대에서 영감을 받은 테니스 게임으로, 공이 패들과 UI 요소에서 튕겨 나옵니다.",
-            zh: "受80年代启发的网球游戏，球会在球拍和UI元素上反弹。"
-        },
+        name: { en: "Tennis", ja: "テニス" },
+        description: { en: "An 80s-inspired tennis game where the ball bounces off paddles and UI elements.", ja: "80年代のテニスゲームをイメージした、パドルやUI要素でボールが跳ね返るアニメーションです。" },
         author: "QuickLog-Solo"
     };
 

@@ -2,26 +2,8 @@ import { AnimationBase } from '../animations.js';
 
 export default class MatrixCode extends AnimationBase {
     static metadata = {
-        name: {
-            en: "Matrix Code",
-            ja: "マトリックス・コード",
-            de: "Matrix-Code",
-            es: "Código Matrix",
-            fr: "Code Matrix",
-            pt: "Código Matrix",
-            ko: "매트릭스 코드",
-            zh: "黑客帝国代码"
-        },
-        description: {
-            en: "Falling 'Digital Rain' effect inspired by science fiction.",
-            ja: "SF映画を彷彿とさせる、降り注ぐ「デジタル・レイン」のエフェクトです。",
-            de: "Fallender 'Digital Rain'-Effekt, inspiriert von Science-Fiction.",
-            es: "Efecto de 'lluvia digital' inspirado en la ciencia ficción.",
-            fr: "Effet de 'pluie numérique' inspiré de la science-fiction.",
-            pt: "Efeito de 'chuva digital' inspirado na ficção científica.",
-            ko: "SF 영화에서 영감을 받은 떨어지는 '디지털 레인' 효과입니다.",
-            zh: "受科幻电影启发的‘数字雨’效果。"
-        },
+        name: { en: "Matrix Code", ja: "マトリックス・コード" },
+        description: { en: "Falling 'Digital Rain' effect inspired by science fiction.", ja: "SF映画を彷彿とさせる、降り注ぐ「デジタル・レイン」のエフェクトです。" },
         author: "QuickLog-Solo"
     };
 

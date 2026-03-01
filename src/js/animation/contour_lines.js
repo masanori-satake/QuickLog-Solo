@@ -2,26 +2,8 @@ import { AnimationBase } from '../animations.js';
 
 export default class ContourLines extends AnimationBase {
     static metadata = {
-        name: {
-            en: "Contour Lines",
-            ja: "等高線",
-            de: "Höhenlinien",
-            es: "Curvas de nivel",
-            fr: "Courbes de niveau",
-            pt: "Curvas de nível",
-            ko: "등고선",
-            zh: "等高线"
-        },
-        description: {
-            en: "Abstract, organic topographic-style lines that flow smoothly.",
-            ja: "抽象的で有機的な、流れるような等高線スタイルの曲線です。",
-            de: "Abstrakte, organische Linien im topografischen Stil, die sanft fließen.",
-            es: "Líneas abstractas y orgánicas de estilo topográfico que fluyen suavemente.",
-            fr: "Lignes abstraites et organiques de style topographique qui coulent doucement.",
-            pt: "Linhas abstratas e orgânicas de estilo topográfico que fluem suavemente.",
-            ko: "부드럽게 흐르는 추상적이고 유기적인 지형 스타일의 선입니다.",
-            zh: "抽象、有机的地形风格线条，流动平滑。"
-        },
+        name: { en: "Contour Lines", ja: "等高線" },
+        description: { en: "Abstract, organic topographic-style lines that flow smoothly.", ja: "抽象的で有機的な、流れるような等高線スタイルの曲線です。" },
         author: "QuickLog-Solo"
     };
 

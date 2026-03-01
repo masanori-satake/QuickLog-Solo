@@ -2,26 +2,8 @@ import { AnimationBase } from '../animations.js';
 
 export default class MigratingBirds extends AnimationBase {
     static metadata = {
-        name: {
-            en: "Migrating Birds",
-            ja: "渡り鳥",
-            de: "Zugvögel",
-            es: "Aves migratorias",
-            fr: "Oiseaux migrateurs",
-            pt: "Aves migratórias",
-            ko: "외로운 새",
-            zh: "候鸟"
-        },
-        description: {
-            en: "Birds flying across the screen in a classic V-formation.",
-            ja: "画面を横切ってV字型に飛んでいく渡り鳥の群れです。",
-            de: "Vögel, die in einer klassischen V-Formation über den Bildschirm fliegen.",
-            es: "Aves volando por la pantalla en una clásica formación en V.",
-            fr: "Oiseaux volant à travers l'écran dans une formation classique en V.",
-            pt: "Pássaros voando pela tela em uma formação clássica em V.",
-            ko: "화면을 가로질러 클래식한 V자 대형으로 날아가는 새들입니다.",
-            zh: "候鸟以经典的V字形飞过屏幕。"
-        },
+        name: { en: "Migrating Birds", ja: "渡り鳥" },
+        description: { en: "Birds flying across the screen in a classic V-formation.", ja: "画面を横切ってV字型に飛んでいく渡り鳥の群れです。" },
         author: "QuickLog-Solo"
     };
     setup(width, height) {
