@@ -39,24 +39,28 @@ describe('Logic Module', () => {
     });
 
     describe('formatLogDuration', () => {
-        test('formats seconds correctly (< 60s)', () => {
+        test('formats seconds correctly (< 60s) with rounding', () => {
             expect(formatLogDuration(0)).toBe('0s');
+            expect(formatLogDuration(499)).toBe('0s');
+            expect(formatLogDuration(500)).toBe('1s');
             expect(formatLogDuration(30000)).toBe('30s');
             expect(formatLogDuration(59499)).toBe('59s');
-            // 59.5s rounds to 60s, which is 1m
-            expect(formatLogDuration(59500)).toBe('1m');
+            expect(formatLogDuration(59500)).toBe('1m'); // Rounds up to 1m
         });
 
-        test('formats minutes correctly (1m to < 60m)', () => {
+        test('formats minutes correctly (1m to < 60m) with rounding', () => {
             expect(formatLogDuration(60000)).toBe('1m');
+            expect(formatLogDuration(60000 + 29999)).toBe('1m');
+            expect(formatLogDuration(60000 + 30000)).toBe('2m'); // Rounds up to 2m
             expect(formatLogDuration(45 * 60000)).toBe('45m');
-            expect(formatLogDuration(59 * 60000 + 29000)).toBe('59m');
-            // 59m 30s rounds to 60m, which is 1h
-            expect(formatLogDuration(59 * 60000 + 30000)).toBe('1h');
+            expect(formatLogDuration(59 * 60000 + 29999)).toBe('59m');
+            expect(formatLogDuration(59 * 60000 + 30000)).toBe('1h'); // Rounds up to 1h
         });
 
-        test('formats hours and minutes correctly (>= 60m)', () => {
+        test('formats hours and minutes correctly (>= 60m) with rounding', () => {
             expect(formatLogDuration(60 * 60000)).toBe('1h');
+            expect(formatLogDuration(60 * 60000 + 29999)).toBe('1h');
+            expect(formatLogDuration(60 * 60000 + 30000)).toBe('1h 1m'); // 60.5m -> 61m -> 1h 1m
             expect(formatLogDuration(61 * 60000)).toBe('1h 1m');
             expect(formatLogDuration(69 * 60000)).toBe('1h 9m');
             expect(formatLogDuration(70 * 60000)).toBe('1h10m');

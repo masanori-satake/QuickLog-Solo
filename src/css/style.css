@@ -592,6 +592,7 @@ body.theme-light #current-task-display-base #clock-face {
     border-bottom: var(--border-width) solid var(--md-sys-color-outline-variant);
     margin-bottom: var(--md-sys-spacing-2);
     overflow-x: auto;
+    flex-shrink: 0;
 }
 
 .tab-btn {
@@ -614,6 +615,8 @@ body.theme-light #current-task-display-base #clock-face {
 
 .tab-content {
     display: block;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .tab-content.hidden {
