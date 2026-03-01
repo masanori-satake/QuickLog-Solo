@@ -12,50 +12,49 @@ QuickLog-Solo の背景アニメーション機能をモジュール化し、外
 ユーザーが設定画面を開いた際など、インスタンス化の前にモジュールの情報を取得するフローです。
 ```mermaid
 sequenceDiagram
-    participant C as QuickLog 本体 (Core)
-    participant M as アニメーションモジュール (Class)
+    participant C_Disc as QuickLog 本体 (Core)
+    participant M_Disc as アニメーションモジュール (Class)
 
-    C->>M: static metadata 参照
-    M-->>C: { name, description, author } を返却
-    C->>C: 設定画面の選択肢を構築
+    C_Disc->>M_Disc: static metadata 参照
+    M_Disc-->>C_Disc: { name, description, author } を返却
+    C_Disc->>C_Disc: 設定画面の選択肢を構築
 ```
 
 #### 初期化と開始 (Initialization)
 モジュールのインスタンスは、タスク開始時に作成され、描画領域の情報がセットされます。
 ```mermaid
 sequenceDiagram
-    participant U as ユーザー
-    participant C as QuickLog 本体 (Core)
-    participant M as アニメーションモジュール (Instance)
+    participant U_Inst as ユーザー
+    participant C_Inst as QuickLog 本体 (Core)
 
-    U->>C: 業務カテゴリを選択
-    C->>C: タイマー計測開始
-    create participant M
-    C->>M: new モジュールクラス()
-    C->>M: setup(width, height)
-    Note over M: 内部状態（座標、配列等）の初期化
-    C->>C: 描画ループ (requestAnimationFrame) 開始
+    U_Inst->>C_Inst: 業務カテゴリを選択
+    C_Inst->>C_Inst: タイマー計測開始
+    create participant M_Inst as アニメーションモジュール (Instance)
+    C_Inst->>M_Inst: new モジュールクラス()
+    C_Inst->>M_Inst: setup(width, height)
+    Note over M_Inst: 内部状態（座標、配列等）の初期化
+    C_Inst->>C_Inst: 描画ループ (requestAnimationFrame) 開始
 ```
 
 #### 描画ループ (Drawing Loop)
 描画はブラウザの更新周期に合わせて行われます。本体側で「ドット回避領域（Exclusion Area）」を算出し、モジュールへ提供します。
 ```mermaid
 sequenceDiagram
-    participant C as QuickLog 本体 (Core)
-    participant M as アニメーションモジュール (Instance)
-    participant D as LCDキャンバス
+    participant C_Loop as QuickLog 本体 (Core)
+    participant M_Loop as アニメーションモジュール (Instance)
+    participant D_Loop as LCDキャンバス
 
     loop requestAnimationFrame
-        C->>C: progress (0-1) / step (0-239) 等の算出
-        C->>C: テキスト遮蔽領域 (Exclusion Areas) の座標計算
-        C->>M: draw(offscreenCtx, params)
+        C_Loop->>C_Loop: progress (0-1) / step (0-239) 等の算出
+        C_Loop->>C_Loop: テキスト遮蔽領域 (Exclusion Areas) の座標計算
+        C_Loop->>M_Loop: draw(offscreenCtx, params)
         alt Matrix Mode
-            M-->>C: 2次元配列 (0-3) を返却
+            M_Loop-->>C_Loop: 2次元配列 (0-3) を返却
         else Canvas Mode
-            M->>M: offscreenCtx へモノクロ描画
+            M_Loop->>M_Loop: offscreenCtx へモノクロ描画
         end
-        C->>C: Exclusion Areas 内のドットを強制除去
-        C->>D: 指定カテゴリ色で LCD スタイル描画
+        C_Loop->>C_Loop: Exclusion Areas 内のドットを強制除去
+        C_Loop->>D_Loop: 指定カテゴリ色で LCD スタイル描画
     end
 ```
 
@@ -63,29 +62,29 @@ sequenceDiagram
 サイドパネルの幅が変更された場合、インスタンスを破棄せず、`setup` を再送して状態を適合させます。
 ```mermaid
 sequenceDiagram
-    participant U as ユーザー
-    participant C as QuickLog 本体 (Core)
-    participant M as アニメーションモジュール (Instance)
+    participant U_Size as ユーザー
+    participant C_Size as QuickLog 本体 (Core)
+    participant M_Size as アニメーションモジュール (Instance)
 
-    U->>C: サイドパネルの境界をドラッグ
-    C->>C: キャンバスのリサイズ
-    C->>C: 新しい Exclusion Areas の算出
-    C->>M: setup(newWidth, newHeight)
-    Note over M: 座標の再計算・状態の Fit 処理
+    U_Size->>C_Size: サイドパネルの境界をドラッグ
+    C_Size->>C_Size: キャンバスのリサイズ
+    C_Size->>C_Size: 新しい Exclusion Areas の算出
+    C_Size->>M_Size: setup(newWidth, newHeight)
+    Note over M_Size: 座標の再計算・状態の Fit 処理
 ```
 
 #### 終了と破棄 (Termination)
 タスクの停止、一時停止、または別のアニメーションへの切り替え時にインスタンスは破棄されます。
 ```mermaid
 sequenceDiagram
-    participant C as QuickLog 本体 (Core)
-    participant M as アニメーションモジュール (Instance)
+    participant C_Term as QuickLog 本体 (Core)
+    participant M_Term as アニメーションモジュール (Instance)
 
-    C->>C: 停止/一時停止/切替イベント発生
-    C->>C: requestAnimationFrame 停止
-    C->>C: activeAnimation = null (参照解除)
-    Note over M: ガベージコレクション対象へ
-    destroy M
+    C_Term->>C_Term: 停止/一時停止/切替イベント発生
+    C_Term->>C_Term: requestAnimationFrame 停止
+    C_Term->>C_Term: activeAnimation = null (参照解除)
+    Note over M_Term: ガベージコレクション対象へ
+    destroy M_Term
 ```
 
 ### 2.2. QuickLog-Solo 本体（コア）の役割
