@@ -31,15 +31,19 @@ jobs:
 
     - name: Check version consistency
       run: python3 scripts/check_version.py
+      timeout-minutes: 2
 
     - name: Run ESLint
       run: npx eslint .
+      timeout-minutes: 5
 
     - name: Run Stylelint
       run: npx stylelint "**/*.css"
+      timeout-minutes: 5
 
     - name: Run Jest tests
       run: npm test
+      timeout-minutes: 5
 
     - name: Install Playwright Browsers
       run: npx playwright install chromium --with-deps
