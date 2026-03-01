@@ -98,55 +98,77 @@ export class AnimationEngine {
             elapsedMs,
             progress,
             step: Math.floor(progress * 240),
-            color: '#fff',
             exclusionAreas: this.exclusionAreas
         };
-        this.activeAnimation.draw(octx, params);
-
-        const imgData = octx.getImageData(0, 0, w, h).data;
+        const matrix = this.activeAnimation.draw(octx, params);
 
         this.ctx.fillStyle = this.color;
 
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                const cellX = c * CELL_SIZE;
-                const cellY = r * CELL_SIZE;
+        if (matrix && Array.isArray(matrix)) {
+            // Matrix Mode
+            for (let r = 0; r < Math.min(matrix.length, rows); r++) {
+                for (let c = 0; c < Math.min(matrix[r].length, cols); c++) {
+                    const cellX = c * CELL_SIZE;
+                    const cellY = r * CELL_SIZE;
 
-                // Optimization: Skip brightness calculation if the cell is in an exclusion area
-                // A cell overlaps with an exclusion area if:
-                // cell_start_x < area_end_x AND cell_end_x > area_start_x
-                const inExclusion = this.exclusionAreas.some(area =>
-                    cellX < area.x + area.width && cellX + CELL_SIZE > area.x &&
-                    cellY < area.y + area.height && cellY + CELL_SIZE > area.y
-                );
+                    const inExclusion = this.exclusionAreas.some(area =>
+                        cellX < area.x + area.width && cellX + CELL_SIZE > area.x &&
+                        cellY < area.y + area.height && cellY + CELL_SIZE > area.y
+                    );
+                    if (inExclusion) continue;
 
-                if (inExclusion) continue;
+                    const val = matrix[r][c];
+                    let dotSize = 0;
+                    if (val === 3) dotSize = DOT_SIZE_LARGE;
+                    else if (val === 2) dotSize = DOT_SIZE_MID;
+                    else if (val === 1) dotSize = DOT_SIZE_SMALL;
 
-                // Average brightness of the cell
-                let totalBrightness = 0;
-                let count = 0;
-                for (let dy = 0; dy < CELL_SIZE; dy++) {
-                    for (let dx = 0; dx < CELL_SIZE; dx++) {
-                        const x = cellX + dx;
-                        const y = cellY + dy;
-                        if (x < w && y < h) {
-                            const idx = (y * w + x) * 4;
-                            totalBrightness += imgData[idx];
-                            count++;
-                        }
+                    if (dotSize > 0) {
+                        const dotX = cellX + (CELL_SIZE - dotSize) / 2;
+                        const dotY = cellY + (CELL_SIZE - dotSize) / 2;
+                        this.ctx.fillRect(dotX, dotY, dotSize, dotSize);
                     }
                 }
-                const brightness = totalBrightness / count;
+            }
+        } else {
+            // Canvas Mode
+            const imgData = octx.getImageData(0, 0, w, h).data;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cellX = c * CELL_SIZE;
+                    const cellY = r * CELL_SIZE;
 
-                let dotSize = 0;
-                if (brightness > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;      // 大ドット
-                else if (brightness > BRIGHTNESS_MID) dotSize = DOT_SIZE_MID;  // 中ドット
-                else if (brightness > BRIGHTNESS_LOW) dotSize = DOT_SIZE_SMALL;  // 小ドット
+                    const inExclusion = this.exclusionAreas.some(area =>
+                        cellX < area.x + area.width && cellX + CELL_SIZE > area.x &&
+                        cellY < area.y + area.height && cellY + CELL_SIZE > area.y
+                    );
+                    if (inExclusion) continue;
 
-                if (dotSize > 0) {
-                    const dotX = cellX + (CELL_SIZE - dotSize) / 2;
-                    const dotY = cellY + (CELL_SIZE - dotSize) / 2;
-                    this.ctx.fillRect(dotX, dotY, dotSize, dotSize);
+                    let totalBrightness = 0;
+                    let count = 0;
+                    for (let dy = 0; dy < CELL_SIZE; dy++) {
+                        for (let dx = 0; dx < CELL_SIZE; dx++) {
+                            const x = cellX + dx;
+                            const y = cellY + dy;
+                            if (x < w && y < h) {
+                                const idx = (y * w + x) * 4;
+                                totalBrightness += imgData[idx];
+                                count++;
+                            }
+                        }
+                    }
+                    const brightness = totalBrightness / count;
+
+                    let dotSize = 0;
+                    if (brightness > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;
+                    else if (brightness > BRIGHTNESS_MID) dotSize = DOT_SIZE_MID;
+                    else if (brightness > BRIGHTNESS_LOW) dotSize = DOT_SIZE_SMALL;
+
+                    if (dotSize > 0) {
+                        const dotX = cellX + (CELL_SIZE - dotSize) / 2;
+                        const dotY = cellY + (CELL_SIZE - dotSize) / 2;
+                        this.ctx.fillRect(dotX, dotY, dotSize, dotSize);
+                    }
                 }
             }
         }
@@ -168,28 +190,34 @@ export class AnimationEngine {
 // Basic Animations
 
 export class LeftToRight {
-    draw(ctx, { width, height, progress, color }) {
-        ctx.fillStyle = color;
+    static name = "Left to Right";
+    static description = "Fills the background from left to right.";
+    draw(ctx, { width, height, progress }) {
+        ctx.fillStyle = '#fff';
         ctx.fillRect(0, 0, width * progress, height);
     }
 }
 
 export class RightToLeft {
-    draw(ctx, { width, height, progress, color }) {
-        ctx.fillStyle = color;
+    static name = "Right to Left";
+    static description = "Fills the background from right to left.";
+    draw(ctx, { width, height, progress }) {
+        ctx.fillStyle = '#fff';
         ctx.fillRect(width * (1 - progress), 0, width * progress, height);
     }
 }
 
 export class Clock {
+    static name = "Clock";
+    static description = "A circular progress indicator.";
     init(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.radius = Math.min(width, height) * 0.4;
     }
-    draw(ctx, { progress, color }) {
+    draw(ctx, { progress }) {
         const angle = progress * Math.PI * 2;
-        ctx.fillStyle = color;
+        ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.moveTo(this.centerX, this.centerY);
         ctx.arc(this.centerX, this.centerY, this.radius, -Math.PI / 2, -Math.PI / 2 + angle);
@@ -199,13 +227,15 @@ export class Clock {
 }
 
 export class SandClock {
+    static name = "Sand Clock";
+    static description = "An hourglass that fills over time.";
     init(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.size = Math.min(width, height) * 0.4;
     }
-    draw(ctx, { progress, color }) {
-        ctx.fillStyle = color;
+    draw(ctx, { progress }) {
+        ctx.fillStyle = '#fff';
 
         // Top triangle (emptying)
         ctx.beginPath();
@@ -236,6 +266,8 @@ export class SandClock {
 // Group A: 「積み上げ・成長」を感じるアイデア
 
 export class TetrisBuilding {
+    static name = "Tetris Building";
+    static description = "Blocks stack up to fill the screen.";
     init(width, height) {
         this.rows = 10;
         this.cols = 6;
@@ -244,11 +276,11 @@ export class TetrisBuilding {
         this.yOffset = (height - (this.rows * this.cellSize)) / 2;
     }
 
-    draw(ctx, { width, height, progress, color }) {
+    draw(ctx, { width, height, progress }) {
         const totalBlocks = this.rows * this.cols;
         const blocksToDraw = Math.floor(progress * totalBlocks);
 
-        ctx.fillStyle = color;
+        ctx.fillStyle = '#fff';
         ctx.globalAlpha = 0.6;
 
         for (let i = 0; i < blocksToDraw; i++) {
@@ -268,15 +300,17 @@ export class TetrisBuilding {
 }
 
 export class PlantGrowth {
+    static name = "Plant Growth";
+    static description = "A plant that grows and blooms.";
     init(width, height) {
         this.centerX = width / 2;
         this.bottomY = height - 20;
         this.maxHeight = height * 0.6;
     }
 
-    draw(ctx, { progress, color }) {
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
+    draw(ctx, { progress }) {
+        ctx.strokeStyle = '#fff';
+        ctx.fillStyle = '#fff';
         ctx.lineWidth = 2;
 
         // Stem
@@ -318,13 +352,15 @@ export class PlantGrowth {
 }
 
 export class DotTyping {
+    static name = "Dot Typing";
+    static description = "Random characters being typed out.";
     constructor() {
         this.chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
         this.rows = 5;
         this.cols = 15;
     }
-    draw(ctx, { progress, color }) {
-        ctx.fillStyle = color;
+    draw(ctx, { progress }) {
+        ctx.fillStyle = '#fff';
         ctx.font = "12px monospace";
         ctx.globalAlpha = 0.7;
 
@@ -351,6 +387,8 @@ export class DotTyping {
 // Group B: 「物理的な心地よさ」を感じるアイデア
 
 export class NewtonsCradle {
+    static name = "Newton's Cradle";
+    static description = "A classic physics toy simulation.";
     init(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 3;
@@ -359,9 +397,9 @@ export class NewtonsCradle {
         this.stringLength = height / 2;
     }
 
-    draw(ctx, { width, height, progress, color }) {
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
+    draw(ctx, { width, height, progress }) {
+        ctx.strokeStyle = '#fff';
+        ctx.fillStyle = '#fff';
         ctx.lineWidth = 1;
 
         // Amplitude varies with 2 min cycle
@@ -402,14 +440,16 @@ export class NewtonsCradle {
 }
 
 export class Ripple {
+    static name = "Ripple";
+    static description = "Expanding concentric circles.";
     init(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.maxRadius = Math.sqrt(width * width + height * height) / 2;
     }
 
-    draw(ctx, { width, height, progress, color }) {
-        ctx.strokeStyle = color;
+    draw(ctx, { width, height, progress }) {
+        ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
 
         const rippleCount = 5 + Math.floor(progress * 20);
@@ -435,14 +475,16 @@ export class Ripple {
 }
 
 export class LissajousPendulum {
+    static name = "Lissajous Pendulum";
+    static description = "Elegant harmonic motion curves.";
     init(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.size = Math.min(width, height) * 0.4;
     }
 
-    draw(ctx, { progress, color }) {
-        ctx.strokeStyle = color;
+    draw(ctx, { progress }) {
+        ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1;
         ctx.globalAlpha = 0.4;
 
@@ -465,7 +507,7 @@ export class LissajousPendulum {
         const ty = this.centerY + this.size * Math.sin(b * now);
         ctx.beginPath();
         ctx.arc(tx, ty, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color;
+        ctx.fillStyle = '#fff';
         ctx.globalAlpha = 1.0;
         ctx.fill();
     }
@@ -474,6 +516,8 @@ export class LissajousPendulum {
 // Group C: 「物語・旅」を感じるアイデア
 
 export class MigratingBirds {
+    static name = "Migrating Birds";
+    static description = "Birds flying in a V-formation.";
     init(width, height) {
         this.w = width;
         this.h = height;
@@ -483,8 +527,8 @@ export class MigratingBirds {
         this.spacing = 30;
     }
 
-    draw(ctx, { progress, color }) {
-        ctx.fillStyle = color;
+    draw(ctx, { progress }) {
+        ctx.fillStyle = '#fff';
         ctx.globalAlpha = 0.5;
 
         // V-shape movement from left to right over 2 minutes
@@ -509,12 +553,14 @@ export class MigratingBirds {
 }
 
 export class CoffeeDrip {
+    static name = "Coffee Drip";
+    static description = "A relaxing coffee brewing animation.";
     init(width, height) {
         this.centerX = width / 2;
     }
 
-    draw(ctx, { progress, color }) {
-        ctx.fillStyle = color;
+    draw(ctx, { progress }) {
+        ctx.fillStyle = '#fff';
 
         // Filter/Dripper shape
         ctx.globalAlpha = 0.3;
@@ -546,6 +592,8 @@ export class CoffeeDrip {
 }
 
 export class NightSky {
+    static name = "Night Sky";
+    static description = "Twinkling stars forming a constellation.";
     constructor() {
         this.points = [
             {x: 0.2, y: 0.2}, {x: 0.3, y: 0.4}, {x: 0.5, y: 0.3},
@@ -557,9 +605,9 @@ export class NightSky {
         this.w = width;
         this.h = height;
     }
-    draw(ctx, { progress, color }) {
-        ctx.fillStyle = color;
-        ctx.strokeStyle = color;
+    draw(ctx, { progress }) {
+        ctx.fillStyle = '#fff';
+        ctx.strokeStyle = '#fff';
 
         // Draw stars
         this.points.forEach((pt, i) => {
@@ -597,15 +645,17 @@ export class NightSky {
 // Group D: 「抽象的・幾何学的」なアイデア
 
 export class Kaleidoscope {
+    static name = "Kaleidoscope";
+    static description = "Symmetrical patterns in motion.";
     init(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
         this.segments = 8;
     }
 
-    draw(ctx, { progress, color }) {
+    draw(ctx, { progress }) {
         const time = Date.now() / 2000;
-        ctx.fillStyle = color;
+        ctx.fillStyle = '#fff';
 
         for (let i = 0; i < this.segments; i++) {
             ctx.save();
@@ -627,14 +677,16 @@ export class Kaleidoscope {
 }
 
 export class ContourLines {
+    static name = "Contour Lines";
+    static description = "Flowing topological-style lines.";
     init(width, height) {
         this.width = width;
         this.height = height;
         this.lineCount = 10;
     }
 
-    draw(ctx, { progress, color }) {
-        ctx.strokeStyle = color;
+    draw(ctx, { progress }) {
+        ctx.strokeStyle = '#fff';
         ctx.globalAlpha = 0.3;
         ctx.lineWidth = 1;
 
@@ -658,6 +710,8 @@ export class ContourLines {
 }
 
 export class MatrixCode {
+    static name = "Matrix Code";
+    static description = "Falling digital rain effect.";
     constructor() {
         this.columns = [];
     }
@@ -668,9 +722,9 @@ export class MatrixCode {
             this.columns = Array(cols).fill(0).map(() => Math.random() * height);
         }
     }
-    draw(ctx, { height, progress, color }) {
+    draw(ctx, { height, progress }) {
         const fontSize = 14;
-        ctx.fillStyle = color;
+        ctx.fillStyle = '#fff';
         ctx.font = fontSize + "px monospace";
         ctx.globalAlpha = 0.4 + progress * 0.4;
 
