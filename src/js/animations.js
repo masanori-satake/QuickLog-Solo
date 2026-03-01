@@ -466,7 +466,7 @@ export class Ripple {
 
         // Screen fill at the end
         if (progress > 0.9) {
-            ctx.fillStyle = color;
+            ctx.fillStyle = '#fff';
             ctx.globalAlpha = (progress - 0.9) * 10;
             ctx.fillRect(0, 0, width, height);
         }
@@ -555,7 +555,7 @@ export class MigratingBirds {
 export class CoffeeDrip {
     static name = "Coffee Drip";
     static description = "A relaxing coffee brewing animation.";
-    init(width, height) {
+    init(width) {
         this.centerX = width / 2;
     }
 
