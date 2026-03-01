@@ -42,7 +42,7 @@ export default class NightSky extends AnimationBase {
         ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
 
-        this.backgroundStars.forEach((star, i) => {
+        this.backgroundStars.forEach((star) => {
             const twinkle = Math.sin(Date.now() / 1000 + star.twinkleOffset) * 0.5 + 0.5;
             ctx.globalAlpha = 0.1 + twinkle * 0.4;
             ctx.beginPath();

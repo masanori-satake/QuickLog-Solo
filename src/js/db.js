@@ -48,7 +48,7 @@ export function openDatabase() {
             resolve(db);
         };
         request.onerror = (event) => reject(event.target.error);
-        request.onblocked = (event) => {
+        request.onblocked = () => {
             console.warn('Database connection blocked. Please close other tabs of this app.');
             // We don't reject here because onsuccess might still fire if the user closes other tabs
         };

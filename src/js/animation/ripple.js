@@ -30,7 +30,7 @@ export default class Ripple extends AnimationBase {
         }
 
         // Animate Ripples
-        this.ripples.forEach((r, i) => {
+        this.ripples.forEach((r) => {
             r.radius += r.speed;
             r.life -= 0.01;
 

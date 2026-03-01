@@ -1,6 +1,6 @@
 import {
     initDB, getCurrentAppState, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
-    setDatabaseName,
+    setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE
 } from './db.js';
@@ -442,7 +442,7 @@ function initAnimationEngine() {
 }
 
 function setupBroadcastChannel() {
-    syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
+    syncChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
     syncChannel.onmessage = (event) => {
         console.log('QuickLog-Solo: Received sync message', event.data);
         if (event.data.type === 'reload') {
@@ -1258,34 +1258,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         console.log('QuickLog-Solo: Initializing DB...');
-        const settings = await initDB();
-        console.log('QuickLog-Solo: DB Initialized', settings);
-        activeTask = settings.activeTask;
-
-        const lang = settings.language || 'auto';
-        setLanguage(lang);
-        applyLanguage();
-
-        const langSelect = getEl(ID_LANGUAGE_SELECT);
-        if (langSelect) langSelect.value = lang;
-
-        applyTheme(settings.theme || THEME_SYSTEM);
-
-        // Update font select options based on language
-        updateFontSelect();
-        const currentLang = (settings.language || 'auto') === 'auto' ? detectBrowserLanguage() : settings.language;
-        const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
-        const fontToApply = filteredFonts.some(f => f.value === settings.font) ? settings.font : filteredFonts[0].value;
-        applyFont(fontToApply);
-
-        applyAnimation(settings.animation || 'matrix_code');
+        await initDB();
+        console.log('QuickLog-Solo: DB Initialized');
 
         initAnimationEngine();
         setupBroadcastChannel();
         setupEventListeners();
         await handleTestParameters();
-        await updateUI();
+
         isAppInitialized = true;
+        await syncState();
     } catch (e) {
         console.error('Failed to initialize application:', e);
         alert(`${t('alert-init-error')}\n\nDetails: ${e.message || e}`);
