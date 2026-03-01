@@ -50,7 +50,8 @@ def get_version_from_file(filepath):
     try:
         with open(filepath, 'r') as f:
             return json.load(f).get('version')
-    except:
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Warning: Could not read version from {filepath}: {e}", file=sys.stderr)
         return None
 
 def get_version_at_commit(filepath, commit_hash):
