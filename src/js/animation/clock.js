@@ -8,21 +8,48 @@ export default class Clock extends AnimationBase {
     };
 
     setup(width, height) {
-        this.centerX = width / 2;
-        this.centerY = height / 2;
+        this.width = width;
+        this.height = height;
         this.radius = Math.min(width, height) * 0.4;
     }
 
-    draw(ctx, { progress, exclusionAreas }) {
+    draw(ctx, { width, height, progress, exclusionAreas }) {
         const angle = progress * Math.PI * 2;
 
+        // Dynamic positioning to avoid exclusion areas
+        let cx = width / 2;
+        let cy = height / 2;
+
+        if (exclusionAreas && exclusionAreas.length > 0) {
+            // Find a space that is not covered by exclusion areas
+            // For now, let's try top-left, top-right, bottom-left, bottom-right corners
+            const margin = this.radius + 10;
+            const spots = [
+                {x: margin, y: margin},
+                {x: width - margin, y: margin},
+                {x: margin, y: height - margin},
+                {x: width - margin, y: height - margin},
+                {x: width / 2, y: height / 2}
+            ];
+
+            for (const spot of spots) {
+                const overlap = exclusionAreas.some(area => {
+                    return spot.x + this.radius > area.x && spot.x - this.radius < area.x + area.width &&
+                           spot.y + this.radius > area.y && spot.y - this.radius < area.y + area.height;
+                });
+                if (!overlap) {
+                    cx = spot.x;
+                    cy = spot.y;
+                    break;
+                }
+            }
+        }
+
         ctx.save();
-        // If we have exclusion areas, we clip the drawing area
         if (exclusionAreas && exclusionAreas.length > 0) {
             ctx.beginPath();
-            ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.rect(0, 0, width, height);
             exclusionAreas.forEach(area => {
-                // Moving backward to subtract the area from clipping
                 ctx.moveTo(area.x, area.y);
                 ctx.lineTo(area.x, area.y + area.height);
                 ctx.lineTo(area.x + area.width, area.y + area.height);
@@ -34,8 +61,8 @@ export default class Clock extends AnimationBase {
 
         ctx.fillStyle = '#fff';
         ctx.beginPath();
-        ctx.moveTo(this.centerX, this.centerY);
-        ctx.arc(this.centerX, this.centerY, this.radius, -Math.PI / 2, -Math.PI / 2 + angle);
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, this.radius, -Math.PI / 2, -Math.PI / 2 + angle);
         ctx.closePath();
         ctx.fill();
         ctx.restore();

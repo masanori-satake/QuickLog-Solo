@@ -46,47 +46,16 @@ export default class Cats extends AnimationBase {
                 // If reached target or edge of platform
                 const atEdge = currentPlatform && (cat.x <= currentPlatform.xStart + 5 || cat.x >= currentPlatform.xEnd - 5);
                 if (Math.abs(cat.x - cat.targetX) < 2 || atEdge) {
-                    if (atEdge && Math.random() > 0.3) {
-                        cat.state = 'jumping';
-                        // Decide whether to jump up or down
-                        const higher = allPlatforms.filter(p => p.y < cat.y - 10 && Math.abs(p.y - cat.y) < 60);
-                        const lower = allPlatforms.filter(p => p.y > cat.y + 10 && Math.abs(p.y - cat.y) < 60);
-
-                        if (higher.length > 0 && Math.random() > 0.5) {
-                            cat.jumpTarget = higher[Math.floor(Math.random() * higher.length)];
-                        } else if (lower.length > 0) {
-                            cat.jumpTarget = lower[Math.floor(Math.random() * lower.length)];
-                        } else {
-                            cat.state = 'sitting';
-                            cat.timer = 100 + Math.random() * 200;
-                        }
-                    } else {
-                        cat.state = 'sitting';
-                        cat.timer = 100 + Math.random() * 200;
-                    }
+                    cat.state = 'sitting';
+                    cat.timer = 100 + Math.random() * 200;
                 }
             } else if (cat.state === 'sitting') {
                 if (cat.timer <= 0) {
+                    // Decide next target (can be on a different platform)
+                    const nextPlatform = allPlatforms[Math.floor(Math.random() * allPlatforms.length)];
+                    cat.targetX = nextPlatform.xStart + Math.random() * (nextPlatform.xEnd - nextPlatform.xStart);
+                    cat.y = nextPlatform.y;
                     cat.state = 'walking';
-                    cat.targetX = Math.random() * width;
-                }
-            } else if (cat.state === 'jumping') {
-                if (cat.jumpTarget) {
-                    const dx = (cat.jumpTarget.xStart + cat.jumpTarget.xEnd) / 2 - cat.x;
-                    const dy = cat.jumpTarget.y - cat.y;
-                    const dist = Math.hypot(dx, dy);
-
-                    if (dist > 5) {
-                        cat.x += dx / dist * 3;
-                        cat.y += dy / dist * 3;
-                    } else {
-                        cat.y = cat.jumpTarget.y;
-                        cat.state = 'sitting';
-                        cat.timer = 50;
-                        delete cat.jumpTarget;
-                    }
-                } else {
-                    cat.state = 'walking'; // Failsafe
                 }
             }
 
@@ -96,19 +65,14 @@ export default class Cats extends AnimationBase {
             ctx.scale(cat.scale, cat.scale);
             ctx.fillStyle = cat.color;
 
-            // Mirror if walking left
             if (cat.x > cat.targetX && cat.state === 'walking') {
                 ctx.scale(-1, 1);
             }
 
-            // Body
             ctx.fillRect(-6, -6, 10, 6);
-            // Head
             ctx.fillRect(2, -10, 6, 6);
-            // Ears
             ctx.fillRect(3, -12, 2, 2);
             ctx.fillRect(6, -12, 2, 2);
-            // Legs
             if (cat.state === 'walking') {
                 const legOffset = Math.sin(Date.now() / 100) * 2;
                 ctx.fillRect(-5, 0, 2, 2 + legOffset);
@@ -117,18 +81,14 @@ export default class Cats extends AnimationBase {
                 ctx.fillRect(-5, 0, 2, 2);
                 ctx.fillRect(2, 0, 2, 2);
             }
-            // Tail
             const tailAngle = Math.sin(Date.now() / 300) * 0.5;
             ctx.save();
             ctx.translate(-6, -4);
             ctx.rotate(tailAngle);
             ctx.fillRect(-4, 0, 4, 2);
             ctx.restore();
-
-            // Eyes
             ctx.fillStyle = '#000';
             ctx.fillRect(6, -8, 1, 1);
-
             ctx.restore();
         });
     }

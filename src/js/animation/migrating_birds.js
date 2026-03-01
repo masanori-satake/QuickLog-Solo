@@ -19,7 +19,6 @@ export default class MigratingBirds extends AnimationBase {
         ctx.fillStyle = '#fff';
         ctx.globalAlpha = 0.5;
 
-        // V-shape movement from left to right over 2 minutes
         const xBase = -100 + (this.w + 200) * progress;
 
         for (let i = 0; i < this.birdCount; i++) {
@@ -27,7 +26,6 @@ export default class MigratingBirds extends AnimationBase {
             const bx = xBase - Math.abs(offset) * this.spacing;
             const by = this.yBase + offset * this.spacing * 0.5;
 
-            // Flapping wing
             const flap = Math.sin(Date.now() / 100 + i) * 5;
 
             ctx.beginPath();
@@ -35,6 +33,19 @@ export default class MigratingBirds extends AnimationBase {
             ctx.lineTo(bx - this.birdSize, by - flap);
             ctx.lineTo(bx - this.birdSize * 0.5, by);
             ctx.lineTo(bx - this.birdSize, by + flap);
+            ctx.fill();
+        }
+
+        // Surprise bird (flying opposite)
+        if (progress > 0.4 && progress < 0.6) {
+            const sx = this.w + 100 - (this.w + 200) * (progress - 0.4) * 5;
+            const sy = this.h * 0.2;
+            const flap = Math.sin(Date.now() / 80) * 4;
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(sx + this.birdSize, sy - flap);
+            ctx.lineTo(sx + this.birdSize * 0.5, sy);
+            ctx.lineTo(sx + this.birdSize, sy + flap);
             ctx.fill();
         }
     }
