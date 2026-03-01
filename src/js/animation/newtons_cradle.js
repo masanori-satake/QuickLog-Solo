@@ -7,19 +7,46 @@ export default class NewtonsCradle extends AnimationBase {
         author: "QuickLog-Solo"
     };
     setup(width, height) {
-        this.centerX = width / 2;
-        this.centerY = height / 3;
+        this.width = width;
+        this.height = height;
         this.ballCount = 5;
         this.ballRadius = 10;
         this.stringLength = height / 2;
     }
 
-    draw(ctx, { width, height, progress }) {
+    draw(ctx, { width, height, progress, exclusionAreas }) {
+        this.width = width;
+        this.height = height;
+        this.stringLength = height / 2;
+
+        let centerX = width / 2;
+        let centerY = height / 3;
+
+        if (exclusionAreas && exclusionAreas.length > 0) {
+            const w = this.ballRadius * 2 * this.ballCount;
+            const h = this.stringLength + this.ballRadius;
+            const spots = [
+                {x: w/2 + 10, y: height/3},
+                {x: width - w/2 - 10, y: height/3},
+                {x: width / 2, y: height / 3}
+            ];
+            for (const spot of spots) {
+                const overlap = exclusionAreas.some(area => {
+                    return spot.x + w/2 > area.x && spot.x - w/2 < area.x + area.width &&
+                           spot.y + h > area.y && spot.y < area.y + area.height;
+                });
+                if (!overlap) {
+                    centerX = spot.x;
+                    centerY = spot.y;
+                    break;
+                }
+            }
+        }
+
         ctx.strokeStyle = '#fff';
         ctx.fillStyle = '#fff';
         ctx.lineWidth = 1;
 
-        // Amplitude varies with 2 min cycle
         const amplitude = Math.PI / 6 * (1 + 0.2 * Math.sin(progress * Math.PI * 10));
         const time = Date.now() / 300;
         const angle = Math.sin(time);
@@ -29,12 +56,12 @@ export default class NewtonsCradle extends AnimationBase {
             if (i === 0 && angle < 0) currentAngle = angle * amplitude;
             if (i === this.ballCount - 1 && angle > 0) currentAngle = angle * amplitude;
 
-            const x = this.centerX + (i - (this.ballCount - 1) / 2) * this.ballRadius * 2;
+            const x = centerX + (i - (this.ballCount - 1) / 2) * this.ballRadius * 2;
             const bx = x + Math.sin(currentAngle) * this.stringLength;
-            const by = this.centerY + Math.cos(currentAngle) * this.stringLength;
+            const by = centerY + Math.cos(currentAngle) * this.stringLength;
 
             ctx.beginPath();
-            ctx.moveTo(x, this.centerY);
+            ctx.moveTo(x, centerY);
             ctx.lineTo(bx, by);
             ctx.stroke();
 
@@ -43,11 +70,10 @@ export default class NewtonsCradle extends AnimationBase {
             ctx.fill();
         }
 
-        // 360 degree spin at the end
         if (progress > 0.95) {
             const spinAngle = (progress - 0.95) * 20 * Math.PI * 2;
             ctx.save();
-            ctx.translate(this.centerX, this.centerY + this.stringLength / 2);
+            ctx.translate(centerX, centerY + this.stringLength / 2);
             ctx.rotate(spinAngle);
             ctx.globalAlpha = 0.2;
             ctx.fillRect(-width, -height, width * 2, height * 2);

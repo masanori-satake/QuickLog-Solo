@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class CarDrive extends AnimationBase {
     static metadata = {
         name: { en: "Car Drive", ja: "カー・ドライブ" },
-        description: { en: "90s style pseudo-3D driving game. UI text appears as roadside billboards.", ja: "90年代風の疑似3Dドライブゲーム。UIのテキストが道路脇の看板として登場します。" },
+        description: { en: "90s style pseudo-3D driving game. UI text and trees appear as roadside objects.", ja: "90年代風の疑似3Dドライブゲーム。UIのテキストや木々が道路脇のオブジェクトとして登場します。" },
         author: "QuickLog-Solo"
     };
 
@@ -25,11 +25,9 @@ export default class CarDrive extends AnimationBase {
         const time = Date.now() / 1000;
         const speed = 5;
 
-        // Draw Sky
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, width, this.horizonY);
 
-        // Stars in the sky
         ctx.fillStyle = '#fff';
         ctx.globalAlpha = 0.5;
         for (let i = 0; i < 20; i++) {
@@ -39,7 +37,6 @@ export default class CarDrive extends AnimationBase {
         }
         ctx.globalAlpha = 1.0;
 
-        // Draw Mountains (scrolling)
         ctx.fillStyle = '#fff';
         ctx.globalAlpha = 0.2;
         const scrollX = (time * 10) % width;
@@ -51,7 +48,6 @@ export default class CarDrive extends AnimationBase {
             ctx.lineTo(mx + m.width, this.horizonY);
             ctx.fill();
 
-            // Draw duplicate for wrap-around
             if (mx + m.width > width) {
                 let mx2 = mx - width;
                 ctx.beginPath();
@@ -63,7 +59,6 @@ export default class CarDrive extends AnimationBase {
         });
         ctx.globalAlpha = 1.0;
 
-        // Draw Road (perspective)
         ctx.fillStyle = '#fff';
         const roadBottomWidth = width * 0.8;
         const roadTopWidth = 20;
@@ -75,58 +70,61 @@ export default class CarDrive extends AnimationBase {
         ctx.closePath();
         ctx.fill();
 
-        // Road markings (scrolling)
         const roadTime = (time * speed) % 1;
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
         for (let i = 0; i < 5; i++) {
             const p = (i / 5 + roadTime / 5) % 1;
-            // Perspective mapping: y = horizon + p^2 * (height - horizon)
             const y = this.horizonY + (p * p) * (height - this.horizonY);
-            const w = roadTopWidth + p * (roadBottomWidth - roadTopWidth);
-            const markingLen = 10 * p;
-
             ctx.beginPath();
             ctx.moveTo(width / 2, y);
-            ctx.lineTo(width / 2, y + markingLen);
+            ctx.lineTo(width / 2, y + 10 * p);
             ctx.stroke();
         }
 
-        // Exclusion Areas as Billboards with perspective
+        // Draw Trees
+        const treeTime = (time * speed) % 1;
+        for (let i = 0; i < 4; i++) {
+            const p = (i / 4 + treeTime / 4) % 1;
+            const y = this.horizonY + (p * p) * (height - this.horizonY);
+            const w = roadTopWidth + p * (roadBottomWidth - roadTopWidth);
+            const side = (i % 2 === 0 ? 1 : -1);
+            const tx = width / 2 + side * (w / 2 + 30 * p);
+            const size = 20 * p;
+
+            if (p > 0.1) {
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.moveTo(tx, y);
+                ctx.lineTo(tx - size / 2, y + size);
+                ctx.lineTo(tx + size / 2, y + size);
+                ctx.fill();
+            }
+        }
+
         exclusionAreas.forEach((area) => {
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;
-
-            // Billboard frame
             ctx.strokeRect(area.x - 2, area.y - 2, area.width + 4, area.height + 4);
-
-            // Billboard stand (to the side of the road)
             ctx.beginPath();
-            // Side depends on where the area is
             const sideX = (area.x + area.width / 2 < width / 2) ? area.x : area.x + area.width;
             ctx.moveTo(sideX, area.y + area.height);
             ctx.lineTo(sideX, height);
             ctx.stroke();
         });
 
-        // The Car (player)
         const carWidth = 40;
         const carHeight = 20;
         const drift = Math.sin(time * 2) * 20;
         const cx = width / 2 + drift;
         const cy = height - 30;
 
-        // Car Body
         ctx.fillStyle = '#000';
         ctx.fillRect(cx - carWidth / 2, cy, carWidth, carHeight);
         ctx.fillStyle = '#fff';
         ctx.fillRect(cx - carWidth / 2 + 2, cy + 2, carWidth - 4, carHeight - 4);
-
-        // Windshield
         ctx.fillStyle = '#000';
         ctx.fillRect(cx - carWidth / 2 + 6, cy + 4, carWidth - 12, carHeight / 2);
-
-        // Taillights
         ctx.fillStyle = '#fff';
         ctx.fillRect(cx - carWidth / 2 + 4, cy + carHeight - 6, 6, 3);
         ctx.fillRect(cx + carWidth / 2 - 10, cy + carHeight - 6, 6, 3);

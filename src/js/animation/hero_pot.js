@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class HeroPot extends AnimationBase {
     static metadata = {
         name: { en: "Hero Pot", ja: "勇者と壺" },
-        description: { en: "An RPG hero lifts pots and throws them against UI elements to break them.", ja: "RPGの勇者が壺を持ち上げて、UIの文字やボタンにぶつけて壊します。" },
+        description: { en: "An RPG hero lifts pots and throws them to break them, avoiding UI elements.", ja: "RPGの勇者が壺を持ち上げて、UIを避けながら投げ壊します。" },
         author: "QuickLog-Solo"
     };
 
@@ -25,14 +25,13 @@ export default class HeroPot extends AnimationBase {
             let rx = 20 + Math.random() * (width - 40);
             let ry = this.groundY;
 
-            // Randomly pick a platform from exclusionAreas or ground
-            const platforms = [{ x: 0, y: this.groundY, width: width, height: 20 }, ...exclusionAreas];
-            const platform = platforms[Math.floor(Math.random() * platforms.length)];
-            rx = platform.x + Math.random() * platform.width;
-            ry = platform.y - 10;
+            // Check if placement is on ground and not in exclusion area
+            const isOverlap = exclusionAreas.some(area => {
+                return rx > area.x - 10 && rx < area.x + area.width + 10 &&
+                       ry > area.y - 10 && ry < area.y + area.height + 10;
+            });
 
-            // Check if another pot is nearby
-            if (!this.pots.some(p => Math.abs(p.x - rx) < 20 && Math.abs(p.y - ry) < 20)) {
+            if (!isOverlap && !this.pots.some(p => Math.abs(p.x - rx) < 20 && Math.abs(p.y - ry) < 20)) {
                 this.pots.push({ x: rx, y: ry, state: 'idle' });
             }
         }
@@ -59,14 +58,27 @@ export default class HeroPot extends AnimationBase {
             this.hero.timer--;
             if (this.hero.timer <= 0) {
                 this.hero.state = 'walking_with_pot';
-                this.hero.targetX = Math.random() * width;
-                this.hero.targetY = this.groundY;
-                // Target an exclusionArea to break against
-                if (exclusionAreas.length > 0) {
-                    const area = exclusionAreas[Math.floor(Math.random() * exclusionAreas.length)];
-                    this.hero.targetX = area.x + area.width / 2;
-                    this.hero.targetY = area.y + area.height / 2;
+
+                // Find a target point OUTSIDE exclusion areas to throw at
+                let tx = Math.random() * width;
+                let ty = this.groundY;
+                let attempts = 0;
+                while (attempts < 20) {
+                    const candidateX = Math.random() * width;
+                    const candidateY = Math.random() * height;
+                    const overlap = exclusionAreas.some(area => {
+                        return candidateX > area.x - 20 && candidateX < area.x + area.width + 20 &&
+                               candidateY > area.y - 20 && candidateY < area.y + area.height + 20;
+                    });
+                    if (!overlap) {
+                        tx = candidateX;
+                        ty = candidateY;
+                        break;
+                    }
+                    attempts++;
                 }
+                this.hero.targetX = tx;
+                this.hero.targetY = ty;
             }
         } else if (this.hero.state === 'walking_with_pot') {
             const dx = this.hero.targetX - this.hero.x;

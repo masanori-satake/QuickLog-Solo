@@ -7,33 +7,61 @@ export default class LissajousPendulum extends AnimationBase {
         author: "QuickLog-Solo"
     };
     setup(width, height) {
-        this.centerX = width / 2;
-        this.centerY = height / 2;
+        this.width = width;
+        this.height = height;
         this.size = Math.min(width, height) * 0.4;
     }
 
-    draw(ctx, { progress }) {
+    draw(ctx, { width, height, progress, exclusionAreas }) {
+        this.width = width;
+        this.height = height;
+        this.size = Math.min(width, height) * 0.4;
+
+        let centerX = width / 2;
+        let centerY = height / 2;
+
+        if (exclusionAreas && exclusionAreas.length > 0) {
+            const margin = this.size + 10;
+            const spots = [
+                {x: margin, y: margin},
+                {x: width - margin, y: margin},
+                {x: margin, y: height - margin},
+                {x: width - margin, y: height - margin},
+                {x: width / 2, y: height / 2}
+            ];
+            for (const spot of spots) {
+                const overlap = exclusionAreas.some(area => {
+                    return spot.x + this.size > area.x && spot.x - this.size < area.x + area.width &&
+                           spot.y + this.size > area.y && spot.y - this.size < area.y + area.height;
+                });
+                if (!overlap) {
+                    centerX = spot.x;
+                    centerY = spot.y;
+                    break;
+                }
+            }
+        }
+
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1;
         ctx.globalAlpha = 0.4;
 
         const a = 3;
-        const b = 2 + progress; // Frequency ratio changes slowly
+        const b = 2 + progress;
         const delta = Math.PI / 2;
 
         ctx.beginPath();
         for (let t = 0; t < Math.PI * 2; t += 0.05) {
-            const x = this.centerX + this.size * Math.sin(a * t + delta);
-            const y = this.centerY + this.size * Math.sin(b * t);
+            const x = centerX + this.size * Math.sin(a * t + delta);
+            const y = centerY + this.size * Math.sin(b * t);
             if (t === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
         ctx.stroke();
 
-        // Trace trajectory
         const now = Date.now() / 1000;
-        const tx = this.centerX + this.size * Math.sin(a * now + delta);
-        const ty = this.centerY + this.size * Math.sin(b * now);
+        const tx = centerX + this.size * Math.sin(a * now + delta);
+        const ty = centerY + this.size * Math.sin(b * now);
         ctx.beginPath();
         ctx.arc(tx, ty, 4, 0, Math.PI * 2);
         ctx.fillStyle = '#fff';

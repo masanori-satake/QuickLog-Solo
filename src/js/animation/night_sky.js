@@ -3,7 +3,7 @@ import { AnimationBase } from '../animations.js';
 export default class NightSky extends AnimationBase {
     static metadata = {
         name: { en: "Night Sky", ja: "夜空" },
-        description: { en: "A peaceful night sky where twinkling stars slowly form a constellation.", ja: "きらめく星々がゆっくりと繋がり、星座を描き出す静かな夜空です。" },
+        description: { en: "A peaceful night sky where twinkling stars and a moon slowly form a constellation.", ja: "きらめく星々と月がゆっくりと繋がり、星座を描き出す静かな夜空です。" },
         author: "QuickLog-Solo"
     };
 
@@ -12,7 +12,7 @@ export default class NightSky extends AnimationBase {
         this.constellationPoints = [
             {x: 0.2, y: 0.2}, {x: 0.3, y: 0.4}, {x: 0.5, y: 0.3},
             {x: 0.7, y: 0.5}, {x: 0.8, y: 0.2}, {x: 0.6, y: 0.7},
-            {x: 0.4, y: 0.8}, {x: 0.2, y: 0.6}, {x: 0.2, y: 0.2} // Loop back
+            {x: 0.4, y: 0.8}, {x: 0.2, y: 0.6}, {x: 0.2, y: 0.2}
         ];
         this.backgroundStars = Array(50).fill(0).map(() => ({
             x: Math.random(),
@@ -31,7 +31,17 @@ export default class NightSky extends AnimationBase {
         ctx.fillStyle = '#fff';
         ctx.strokeStyle = '#fff';
 
-        // Background stars
+        // Draw Moon
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(this.w * 0.8, this.h * 0.2, 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(this.w * 0.8 - 8, this.h * 0.2 - 5, 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+
         this.backgroundStars.forEach((star, i) => {
             const twinkle = Math.sin(Date.now() / 1000 + star.twinkleOffset) * 0.5 + 0.5;
             ctx.globalAlpha = 0.1 + twinkle * 0.4;
@@ -40,7 +50,6 @@ export default class NightSky extends AnimationBase {
             ctx.fill();
         });
 
-        // Constellation stars
         this.constellationPoints.forEach((pt, i) => {
             const x = pt.x * this.w;
             const y = pt.y * this.h;
@@ -51,7 +60,6 @@ export default class NightSky extends AnimationBase {
             ctx.fill();
         });
 
-        // Constellation lines
         const linesToDraw = Math.floor(progress * (this.constellationPoints.length - 1));
         ctx.globalAlpha = 0.4;
         ctx.setLineDash([5, 5]);
@@ -65,8 +73,7 @@ export default class NightSky extends AnimationBase {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Shooting star
-        const shootingP = (Date.now() / 3000) % 5; // Every 15 seconds roughly
+        const shootingP = (Date.now() / 3000) % 5;
         if (shootingP < 1) {
             ctx.globalAlpha = 0.8;
             const sx = this.w * (1.2 - shootingP * 1.5);
