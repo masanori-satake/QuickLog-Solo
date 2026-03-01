@@ -62,14 +62,14 @@ export class AnimationEngine {
         const progress = (elapsed % this.cycleMs) / this.cycleMs;
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawLCD(progress);
+        this.drawLCD(progress, elapsed);
     }
 
     setExclusionAreas(areas) {
         this.exclusionAreas = areas;
     }
 
-    drawLCD(progress) {
+    drawLCD(progress, elapsedMs) {
         const w = this.canvas.width;
         const h = this.canvas.height;
         const cols = Math.ceil(w / CELL_SIZE);
@@ -88,7 +88,8 @@ export class AnimationEngine {
 
         // Draw the monochromatic animation to offscreen
         // We use white as the base "on" color, then map brightness to dot size
-        this.activeAnimation.draw(octx, w, h, progress, '#fff');
+        // Passing both progress (120s cycle) and raw elapsedMs for flexibility
+        this.activeAnimation.draw(octx, w, h, progress, '#fff', elapsedMs);
 
         const imgData = octx.getImageData(0, 0, w, h).data;
 
@@ -152,21 +153,21 @@ export class AnimationEngine {
 // Basic Animations
 
 export class LeftToRight {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         ctx.fillStyle = color;
         ctx.fillRect(0, 0, w * p, h);
     }
 }
 
 export class RightToLeft {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         ctx.fillStyle = color;
         ctx.fillRect(w * (1 - p), 0, w * p, h);
     }
 }
 
 export class Clock {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         const centerX = w / 2;
         const centerY = h / 2;
         const radius = Math.min(w, h) * 0.4;
@@ -182,7 +183,7 @@ export class Clock {
 }
 
 export class SandClock {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         const centerX = w / 2;
         const centerY = h / 2;
         const size = Math.min(w, h) * 0.4;
@@ -218,7 +219,7 @@ export class SandClock {
 // Group A: 「積み上げ・成長」を感じるアイデア
 
 export class TetrisBuilding {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         const rows = 10;
         const cols = 6;
         const cellSize = Math.min(w / cols, h / rows);
@@ -248,7 +249,7 @@ export class TetrisBuilding {
 }
 
 export class PlantGrowth {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
         ctx.lineWidth = 2;
@@ -299,7 +300,7 @@ export class DotTyping {
     constructor() {
         this.chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
     }
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         ctx.fillStyle = color;
         ctx.font = "12px monospace";
         ctx.globalAlpha = 0.7;
@@ -329,7 +330,7 @@ export class DotTyping {
 // Group B: 「物理的な心地よさ」を感じるアイデア
 
 export class NewtonsCradle {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         const centerX = w / 2;
         const centerY = h / 3;
         const ballCount = 5;
@@ -378,7 +379,7 @@ export class NewtonsCradle {
 }
 
 export class Ripple {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
 
@@ -409,7 +410,7 @@ export class Ripple {
 }
 
 export class LissajousPendulum {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         ctx.strokeStyle = color;
         ctx.lineWidth = 1;
         ctx.globalAlpha = 0.4;
@@ -446,7 +447,7 @@ export class LissajousPendulum {
 // Group C: 「物語・旅」を感じるアイデア
 
 export class MigratingBirds {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         ctx.fillStyle = color;
         ctx.globalAlpha = 0.5;
 
@@ -477,7 +478,7 @@ export class MigratingBirds {
 }
 
 export class CoffeeDrip {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         const centerX = w / 2;
         ctx.fillStyle = color;
 
@@ -511,7 +512,7 @@ export class CoffeeDrip {
 }
 
 export class NightSky {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         const points = [
             {x: 0.2, y: 0.2}, {x: 0.3, y: 0.4}, {x: 0.5, y: 0.3},
             {x: 0.7, y: 0.5}, {x: 0.8, y: 0.2}, {x: 0.6, y: 0.7},
@@ -557,7 +558,7 @@ export class NightSky {
 // Group D: 「抽象的・幾何学的」なアイデア
 
 export class Kaleidoscope {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         const centerX = w / 2;
         const centerY = h / 2;
         const segments = 8;
@@ -585,7 +586,7 @@ export class Kaleidoscope {
 }
 
 export class ContourLines {
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         ctx.strokeStyle = color;
         ctx.globalAlpha = 0.3;
         ctx.lineWidth = 1;
@@ -614,7 +615,7 @@ export class MatrixCode {
     constructor() {
         this.columns = [];
     }
-    draw(ctx, w, h, p, color) {
+    draw(ctx, w, h, p, color, elapsedMs) {
         const fontSize = 14;
         const cols = Math.floor(w / fontSize);
 
