@@ -59,7 +59,7 @@ export const messages = {
         // About Tab
         'version': 'バージョン',
         'developer': '開発者',
-        'about-description': 'QuickLog-Solo は、プライバシー重視のミニマリストな作業ログツールです。データはブラウザ内の IndexedDB にのみ保存され、外部送信は一切行われません。外部ライブラリを使用しない軽量・セキュアな設計で、サイドパネルからいつでも素早く記録できます。',
+        'about-description': 'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB にのみ保存され、外部送信は一切行われません。外部ライブラリを使用しない軽量・セキュアな設計で、サイドパネルからいつでも素早く記録できます。',
 
         // Maintenance Tab
         'maintenance-clear-logs': 'ログの削除',
@@ -170,7 +170,7 @@ export const messages = {
         // About Tab
         'version': 'Version',
         'developer': 'Developer',
-        'about-description': 'QuickLog-Solo is a privacy-focused minimalist work log tool. Data is saved only in IndexedDB within your browser and is never sent externally. It features a lightweight, secure design with no external libraries, allowing for quick recording anytime from the sidebar.',
+        'about-description': 'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved only in IndexedDB within your browser and is never sent externally. It features a lightweight, secure design with no external libraries, allowing for quick recording anytime from the sidebar.',
 
         // Maintenance Tab
         'maintenance-clear-logs': 'Clear Logs',
@@ -270,7 +270,7 @@ export const messages = {
         'import-overwrite': 'Überschreiben',
         'version': 'Version',
         'developer': 'Entwickler',
-        'about-description': 'QuickLog-Solo ist ein datenschutzorientiertes minimalistisches Tool zur Zeiterfassung. Die Daten werden ausschließlich in der IndexedDB Ihres Browsers gespeichert und niemals extern übertragen.',
+        'about-description': 'QuickLog-Solo ist ein datenschutzorientiertes minimalistisches Arbeitsnotiz-Tool. Die Daten werden ausschließlich in der IndexedDB Ihres Browsers gespeichert und niemals extern übertragen.',
         'maintenance-clear-logs': 'Protokolle löschen',
         'btn-clear-logs': 'Alle Protokolle löschen',
         'maintenance-reset-all': 'Einstellungen & Kategorien zurücksetzen',
@@ -360,7 +360,7 @@ export const messages = {
         'import-overwrite': 'Sobrescribir',
         'version': 'Versión',
         'developer': 'Desarrollador',
-        'about-description': 'QuickLog-Solo es una herramienta de registro de trabajo minimalista centrada en la privacidad. Los datos se guardan solo en IndexedDB dentro de su navegador.',
+        'about-description': 'QuickLog-Solo es una herramienta de notas de trabajo minimalista centrada en la privacidad. Los datos se guardan solo en IndexedDB dentro de su navegador.',
         'maintenance-clear-logs': 'Borrar registros',
         'btn-clear-logs': 'Eliminar todos los registros',
         'maintenance-reset-all': 'Restablecer ajustes y categorías',
@@ -450,7 +450,7 @@ export const messages = {
         'import-overwrite': 'Écraser',
         'version': 'Version',
         'developer': 'Développeur',
-        'about-description': 'QuickLog-Solo est un outil de suivi de travail minimaliste axé sur la confidentialité. Les données sont enregistrées uniquement dans IndexedDB sur votre navigateur.',
+        'about-description': 'QuickLog-Solo est un outil de notes de travail minimaliste axé sur la confidentialité. Les données sont enregistrées uniquement dans IndexedDB sur votre navigateur.',
         'maintenance-clear-logs': 'Effacer les journaux',
         'btn-clear-logs': 'Supprimer tous les journaux',
         'maintenance-reset-all': 'Réinitialiser paramètres et catégories',
@@ -540,7 +540,7 @@ export const messages = {
         'import-overwrite': 'Sobrescrever',
         'version': 'Versão',
         'developer': 'Desenvolvedor',
-        'about-description': 'O QuickLog-Solo é uma ferramenta de registro de trabalho minimalista focada na privacidade. Os dados são salvos apenas no IndexedDB do seu navegador.',
+        'about-description': 'O QuickLog-Solo é uma ferramenta de notas de trabalho minimalista focada na privacidade. Os dados são salvos apenas no IndexedDB do seu navegador.',
         'maintenance-clear-logs': 'Limpar registros',
         'btn-clear-logs': 'Excluir todos os registros',
         'maintenance-reset-all': 'Redefinir ajustes e categorias',
@@ -630,7 +630,7 @@ export const messages = {
         'import-overwrite': '덮어쓰기',
         'version': '버전',
         'developer': '개발자',
-        'about-description': 'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 로그 도구입니다. 데이터는 브라우저의 IndexedDB에만 저장되며 외부로 전송되지 않습니다.',
+        'about-description': 'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 메모 도구입니다. 데이터는 브라우저의 IndexedDB에만 저장되며 외부로 전송되지 않습니다.',
         'maintenance-clear-logs': '로그 삭제',
         'btn-clear-logs': '모든 로그 삭제',
         'maintenance-reset-all': '설정 및 카테고리 초기화',
@@ -720,7 +720,7 @@ export const messages = {
         'import-overwrite': '覆盖',
         'version': '版本',
         'developer': '开发者',
-        'about-description': 'QuickLog-Solo 是一款注重隐私的极简工作日志工具。数据仅保存在您浏览器的 IndexedDB 中。',
+        'about-description': 'QuickLog-Solo 是一款注重隐私的极简工作笔记工具。数据仅保存在您浏览器的 IndexedDB 中。',
         'maintenance-clear-logs': '清空日志',
         'btn-clear-logs': '删除所有日志',
         'maintenance-reset-all': '重置设置与分类',
