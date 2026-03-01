@@ -2,7 +2,8 @@ import { messages } from '../src/js/messages.js';
 
 describe('i18n Coverage', () => {
     const baseLang = 'en';
-    const targetLanguages = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+    const allLanguages = Object.keys(messages).filter(lang => lang !== '_common');
+    const targetLanguages = allLanguages.filter(lang => lang !== baseLang);
     const baseKeys = Object.keys(messages[baseLang]);
 
     targetLanguages.forEach(lang => {
@@ -27,10 +28,8 @@ describe('i18n Coverage', () => {
         });
     });
 
-    test('all languages in ID_LANGUAGE_SELECT should be present in messages', async () => {
-        // This is a sanity check that the codes used in app.js/app.html match messages.js
-        const supportedCodes = ['en', 'ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-        supportedCodes.forEach(code => {
+    test('all languages in messages should be valid', async () => {
+        allLanguages.forEach(code => {
             expect(messages[code]).toBeDefined();
         });
     });

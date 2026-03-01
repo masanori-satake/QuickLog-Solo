@@ -60,9 +60,8 @@ test.describe('Settings Persistence', () => {
     await page.click('#settings-toggle');
     await page.waitForSelector('#font-select', { state: 'visible' });
 
-    // Select a specific font (Inter)
-    const interFontValue = "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif";
-    await page.selectOption('#font-select', interFontValue);
+    // Select a specific font (Inter) using label
+    await page.selectOption('#font-select', { label: 'Inter' });
 
     // Verify font is applied to body
     const body = page.locator('body');
