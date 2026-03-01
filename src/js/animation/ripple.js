@@ -2,8 +2,26 @@ import { AnimationBase } from '../animations.js';
 
 export default class Ripple extends AnimationBase {
     static metadata = {
-        name: { en: "Ripple", ja: "波紋" },
-        description: { en: "Dynamic concentric ripples that expand and fade across the background.", ja: "画面いっぱいに広がり、消えていくダイナミックな同心円状の波紋です。" },
+        name: {
+            en: "Ripple",
+            ja: "波紋",
+            de: "Wellen",
+            es: "Ondas",
+            fr: "Ondulations",
+            pt: "Ondulações",
+            ko: "파문",
+            zh: "涟漪"
+        },
+        description: {
+            en: "Dynamic concentric ripples that expand and fade across the background.",
+            ja: "画面いっぱいに広がり、消えていくダイナミックな同心円状の波紋です。",
+            de: "Dynamische konzentrische Wellen, die sich über den Hintergrund ausbreiten und verblassen.",
+            es: "Ondas concéntricas dinámicas que se expanden y se desvanecen por el fondo.",
+            fr: "Ondulations concentriques dynamiques qui s'étendent et s'estompent sur l'arrière-plan.",
+            pt: "Ondulações concêntricas dinâmicas que se expandem e desaparecem pelo fundo.",
+            ko: "배경을 가로질러 확장되고 사라지는 다이ナミック한 동심원 파문입니다.",
+            zh: "动态同心涟漪在背景中扩散并淡出。"
+        },
         author: "QuickLog-Solo"
     };
 

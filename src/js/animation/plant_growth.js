@@ -2,8 +2,26 @@ import { AnimationBase } from '../animations.js';
 
 export default class PlantGrowth extends AnimationBase {
     static metadata = {
-        name: { en: "Plant Growth", ja: "植物の成長" },
-        description: { en: "A minimalist animation of a plant growing leaves and blooming over time.", ja: "茎が伸び、葉が茂り、やがて花を咲かせる植物の成長アニメーションです。" },
+        name: {
+            en: "Plant Growth",
+            ja: "植物の成長",
+            de: "Pflanzenwachstum",
+            es: "Crecimiento de planta",
+            fr: "Croissance des plantes",
+            pt: "Crescimento de planta",
+            ko: "식물의 성장",
+            zh: "植物生长"
+        },
+        description: {
+            en: "A minimalist animation of a plant growing leaves and blooming over time.",
+            ja: "茎が伸び、葉が茂り、やがて花を咲かせる植物の成長アニメーションです。",
+            de: "Eine minimalistische Animation einer Pflanze, die mit der Zeit Blätter bekommt und blüht.",
+            es: "Una animación minimalista de una planta que crece hojas y florece con el tiempo.",
+            fr: "Une animation minimaliste d'une plante qui fait pousser des feuilles et fleurit avec le temps.",
+            pt: "Uma animação minimalista de uma planta crescendo folhas e florescendo ao longo do tempo.",
+            ko: "시간이 지남에 따라 잎이 자라고 꽃이 피는 식물의 성장을 보여주는 미니멀한 애니메이션입니다.",
+            zh: "植物长出叶子并开花的极简动画。"
+        },
         author: "QuickLog-Solo"
     };
 

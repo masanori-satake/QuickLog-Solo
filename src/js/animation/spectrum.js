@@ -2,8 +2,26 @@ import { AnimationBase } from '../animations.js';
 
 export default class Spectrum extends AnimationBase {
     static metadata = {
-        name: { en: "Spectrum", ja: "スペクトラム" },
-        description: { en: "A dynamic audio spectrum analyzer where bars bounce to a rhythm, avoiding UI elements.", ja: "リズムに合わせて上下する、UI要素を避けるオーディオ・スペクトラムアナライザです。" },
+        name: {
+            en: "Spectrum",
+            ja: "スペクトラム",
+            de: "Spektrum",
+            es: "Espectro",
+            fr: "Spectre",
+            pt: "Espectro",
+            ko: "스펙트럼",
+            zh: "频谱"
+        },
+        description: {
+            en: "A dynamic audio spectrum analyzer where bars bounce to a rhythm, avoiding UI elements.",
+            ja: "リズムに合わせて上下する、UI要素を避けるオーディオ・スペクトラムアナライザです。",
+            de: "Ein dynamischer Audiospektrum-Analysator, bei dem Balken im Rhythmus hüpfen und UI-Elemente umgehen.",
+            es: "Un analizador de espectro de audio dinámico donde las barras rebotan al ritmo, evitando los elementos de la interfaz.",
+            fr: "Un analyseur de spectre audio dynamique où des barres rebondissent au rythme, en évitant les éléments de l'interface.",
+            pt: "Um analisador de espectro de áudio dinâmico onde as barras saltam ao ritmo, evitando elementos da interface.",
+            ko: "리듬에 맞춰 바가 튀어 오르는 다이내믹한 오디오 스펙트럼 분석기로, UI 요소를 피합니다.",
+            zh: "动态音频频谱分析仪，条形随节奏跳动，避开UI元素。"
+        },
         author: "QuickLog-Solo"
     };
 

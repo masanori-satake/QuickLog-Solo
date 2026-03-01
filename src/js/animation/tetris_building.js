@@ -2,8 +2,26 @@ import { AnimationBase } from '../animations.js';
 
 export default class TetrisBuilding extends AnimationBase {
     static metadata = {
-        name: { en: "Tetris Building", ja: "テトリス・ビルディング" },
-        description: { en: "Falling blocks stack up to fill the screen, clearing rows along the way.", ja: "落ちてくるブロックが積み上がり、横一列が揃うと消えていくビルドアップ・アニメーションです。" },
+        name: {
+            en: "Tetris Building",
+            ja: "テトリス・ビルディング",
+            de: "Tetris-Bau",
+            es: "Construcción Tetris",
+            fr: "Construction Tetris",
+            pt: "Construção Tetris",
+            ko: "테트리스 빌딩",
+            zh: "俄罗斯方块建筑"
+        },
+        description: {
+            en: "Falling blocks stack up to fill the screen, clearing rows along the way.",
+            ja: "落ちてくるブロックが積み上がり、横一列が揃うと消えていくビルドアップ・アニメーションです。",
+            de: "Fallende Blöcke stapeln sich, um den Bildschirm zu füllen, und löschen dabei Reihen.",
+            es: "Bloques que caen se apilan para llenar la pantalla, despejando filas por el camino.",
+            fr: "Des blocs qui tombent s'empilent pour remplir l'écran, effaçant des lignes au passage.",
+            pt: "Blocos que caem se empilham para preencher a tela, limpando linhas pelo caminho.",
+            ko: "떨어지는 블록이 쌓여 화면을 채우고, 그 과정에서 가로 줄을 지웁니다.",
+            zh: "下落的方块堆叠以填满屏幕，并在此过程中消除行。"
+        },
         author: "QuickLog-Solo"
     };
 
