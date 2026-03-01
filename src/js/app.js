@@ -48,7 +48,6 @@ const ID_PAUSE_BTN = 'pause-btn';
 const ID_END_BTN = 'end-btn';
 const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
 const ID_CURRENT_TASK_DISPLAY_OVERLAY = 'current-task-display-overlay';
-const ID_CLOCK_CONTAINER = 'clock-container';
 const ID_TOAST = 'toast';
 const ID_CONFIRM_MODAL = 'confirm-modal';
 const ID_CONFIRM_MESSAGE = 'confirm-message';
@@ -195,12 +194,10 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
     const select = getEl(ID_ANIMATION_SELECT);
     if (select && select.value !== animationType) select.value = animationType;
 
-    const clockContainer = getEl(ID_CLOCK_CONTAINER);
     const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
     const display = getEl(ID_CURRENT_TASK_DISPLAY);
 
     // All animations are now canvas-based for consistency
-    clockContainer?.classList.add('hidden');
     if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
 
     if (animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
@@ -647,7 +644,7 @@ async function updateUI() {
             }
         });
         startTimer();
-        // Ensure proper animation/clock visibility (called after text content is updated for accurate exclusion)
+        // Ensure proper animation visibility (called after text content is updated for accurate exclusion)
         applyAnimation(currentAnimationType, categoryAnimation, color);
     } else {
         if (currentActiveAnimation !== null) {

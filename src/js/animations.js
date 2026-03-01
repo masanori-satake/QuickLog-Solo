@@ -69,9 +69,6 @@ export class AnimationEngine {
         this.activeAnimation = new AnimClass();
         if (typeof this.activeAnimation.setup === 'function') {
             this.activeAnimation.setup(this.canvas.width, this.canvas.height);
-        } else if (typeof this.activeAnimation.init === 'function') {
-            // Backward compatibility for temporary init method
-            this.activeAnimation.init(this.canvas.width, this.canvas.height);
         }
         this.startTime = startTime;
         this.color = color;
@@ -222,8 +219,6 @@ export class AnimationEngine {
         if (this.activeAnimation) {
             if (typeof this.activeAnimation.setup === 'function') {
                 this.activeAnimation.setup(this.canvas.width, this.canvas.height);
-            } else if (typeof this.activeAnimation.init === 'function') {
-                this.activeAnimation.init(this.canvas.width, this.canvas.height);
             }
             this.draw();
         }
