@@ -159,7 +159,7 @@ async function setupInitialData(languageSetting) {
         { name: t('init-cat-dev'), color: 'primary', order: 0, animation: 'matrix_code' },
         { name: t('init-cat-meeting'), color: 'secondary', order: 1, animation: 'migrating_birds' },
         { name: t('init-cat-research'), color: 'tertiary', order: 2, animation: 'contour_lines' },
-        { name: t('init-cat-admin'), color: 'neutral', order: 3, animation: 'clock' },
+        { name: t('init-cat-admin'), color: 'neutral', order: 3, animation: 'matrix_code' },
         { name: t('init-cat-focus'), color: 'error', order: 4, animation: 'ripple' },
         { name: t('init-cat-skill'), color: 'tertiary', order: 5, animation: 'plant_growth' },
         { name: t('init-cat-idea'), color: 'secondary', order: 6, animation: 'kaleidoscope' },

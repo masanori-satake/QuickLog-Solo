@@ -494,7 +494,7 @@ async function syncState() {
         color = cat ? cat.color : (activeTask.color || 'primary');
         categoryAnimation = cat ? (cat.animation || 'default') : 'default';
     }
-    applyAnimation(state.animation || 'clock', categoryAnimation, color);
+    applyAnimation(state.animation || 'matrix_code', categoryAnimation, color);
 
     await updateUI();
 
