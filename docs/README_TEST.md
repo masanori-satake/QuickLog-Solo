@@ -31,7 +31,7 @@
 | 正常系 | `startTaskLogic` | 新規タスクを開始する | 新しいタスクオブジェクトが生成され、DBに保存される |
 | 正常系 | `startTaskLogic` | 実行中と同じカテゴリを開始する | 何もせず現在のタスクをそのまま返す（二重開始防止） |
 | 正常系 | `stopTaskLogic` | アクティブなタスクを停止する | `endTime` が記録され、戻り値が `null` になる |
-| 正常系 | `pauseTaskLogic` | 作業を一時停止する | 現在のタスクが終了し、`(待機)` カテゴリのタスクが開始される |
+| 正常系 | `pauseTaskLogic` | 作業を一時停止する | 現在のタスクが終了し、`__IDLE__` カテゴリのタスクが開始される |
 
 ### 2.2. データベース操作 (`js/db.js`)
 
@@ -54,7 +54,7 @@ UIの確認や特定の状態（長時間経過など）のテストを容易に
 
 -   **レイアウト切り替え:** `?test_layout=horizontal` または `?test_layout=vertical`
 -   **タスクの強制開始:** `?test_cat=[カテゴリ名]&test_elapsed=[経過ミリ秒]`
--   **一時停止状態の再現:** `?test_cat=(待機)&test_resumable=[再開カテゴリ名]`
+-   **一時停止状態の再現:** `?test_cat=__IDLE__&test_resumable=[再開カテゴリ名]`
 
 例: `app.html?test_cat=🤝 会議&test_elapsed=3600000&test_layout=horizontal` (1時間経過した会議を横長レイアウトで表示)
 

@@ -213,10 +213,25 @@ async function setupInitialData(languageSetting) {
     }
 
     const allLogs = await dbGetAll(STORE_LOGS);
+
+    // Backward compatibility migration: convert legacy Japanese "(待機)" to language-independent "__IDLE__"
+    const legacyIdleName = '(待機)';
+    for (const log of allLogs) {
+        if (log.category === legacyIdleName) {
+            log.category = SYSTEM_CATEGORY_IDLE;
+            await dbPut(STORE_LOGS, log);
+        }
+    }
+    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    if (pauseStateSetting && pauseStateSetting.value && pauseStateSetting.value.category === legacyIdleName) {
+        pauseStateSetting.value.category = SYSTEM_CATEGORY_IDLE;
+        await dbPut(STORE_SETTINGS, pauseStateSetting);
+    }
+
     const openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
     const activeTaskFromLogs = openTasks[0];
 
-    // Migration / Auto-repair for (待機) tasks in logs
+    // Migration / Auto-repair for idle tasks in logs
     if (activeTaskFromLogs && activeTaskFromLogs.category === SYSTEM_CATEGORY_IDLE) {
         console.log(`QuickLog-Solo: Migrating open ${SYSTEM_CATEGORY_IDLE} task to pauseState`);
         const pauseState = {
@@ -229,8 +244,8 @@ async function setupInitialData(languageSetting) {
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
     }
 
-    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-    const activeTask = pauseStateSetting ? pauseStateSetting.value : activeTaskFromLogs;
+    const finalPauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    const activeTask = finalPauseStateSetting ? finalPauseStateSetting.value : activeTaskFromLogs;
 
     // 複数の未終了タスクがある場合は、最新以外を強制終了させて整合性を保つ
     // ただし、activeTaskがpauseStateの場合は、全てのopenTasksを強制終了すべき

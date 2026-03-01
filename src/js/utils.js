@@ -2,7 +2,7 @@
  * QuickLog-Solo: Security and Validation Utilities
  */
 
-export const SYSTEM_CATEGORY_IDLE = '(待機)';
+export const SYSTEM_CATEGORY_IDLE = '__IDLE__';
 
 /**
  * Escapes HTML special characters to prevent XSS.
@@ -87,20 +87,3 @@ export function isValidCategoryName(name) {
     return true;
 }
 
-/**
- * Checks if the current storage is persistent.
- * @returns {Promise<boolean>}
- */
-export async function isStoragePersisted() {
-    if (!navigator.storage || !navigator.storage.persisted) return false;
-    return await navigator.storage.persisted();
-}
-
-/**
- * Requests to make the storage persistent.
- * @returns {Promise<boolean>} - Returns true if granted, false if denied.
- */
-export async function requestStoragePersistence() {
-    if (!navigator.storage || !navigator.storage.persist) return false;
-    return await navigator.storage.persist();
-}

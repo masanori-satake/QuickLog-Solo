@@ -110,7 +110,7 @@ describe('DB Module', () => {
         expect(settings.activeTask.category).toBe(SYSTEM_CATEGORY_IDLE);
     });
 
-    test('initDB migrates open (待機) log to pauseState', async () => {
+    test('initDB migrates open idle log to pauseState', async () => {
         await openDatabase();
         const startTime = Date.now();
         await dbAdd(STORE_LOGS, { category: SYSTEM_CATEGORY_IDLE, startTime: startTime, endTime: null });
@@ -128,5 +128,26 @@ describe('DB Module', () => {
         const savedPauseState = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         expect(savedPauseState).toBeDefined();
         expect(savedPauseState.value.startTime).toBe(startTime);
+    });
+
+    test('initDB migrates legacy Japanese "(待機)" to language-independent identifier', async () => {
+        await openDatabase();
+        const startTime = Date.now();
+        const legacyIdleName = '(待機)';
+        // Add a legacy log entry
+        await dbAdd(STORE_LOGS, { category: legacyIdleName, startTime: startTime, endTime: null });
+        // Add a legacy pauseState
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { category: legacyIdleName, startTime: startTime, isPaused: true } });
+        closeDatabase();
+
+        const settings = await initDB();
+        expect(settings.activeTask.category).toBe(SYSTEM_CATEGORY_IDLE);
+
+        const allLogs = await dbGetAll(STORE_LOGS);
+        expect(allLogs.find(l => l.category === legacyIdleName)).toBeUndefined();
+        expect(allLogs.find(l => l.category === SYSTEM_CATEGORY_IDLE)).toBeDefined();
+
+        const savedPauseState = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+        expect(savedPauseState.value.category).toBe(SYSTEM_CATEGORY_IDLE);
     });
 });
