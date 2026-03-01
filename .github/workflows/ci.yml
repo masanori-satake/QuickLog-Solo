@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
     - uses: actions/checkout@v4
@@ -26,6 +27,7 @@ jobs:
 
     - name: Install dependencies
       run: npm install
+      timeout-minutes: 5
 
     - name: Check version consistency
       run: python3 scripts/check_version.py
@@ -41,9 +43,11 @@ jobs:
 
     - name: Install Playwright Browsers
       run: npx playwright install chromium --with-deps
+      timeout-minutes: 5
 
     - name: Start local server
       run: python3 -m http.server 8080 &
 
     - name: Run E2E tests
       run: npm run test:e2e
+      timeout-minutes: 10
