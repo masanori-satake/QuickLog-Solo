@@ -88,8 +88,8 @@ def main():
     try:
         with open('src/version.json', 'r') as f:
             current_version = json.load(f).get('version')
-    except Exception as e:
-        print(f"Error reading src/version.json: {e}")
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error reading or parsing src/version.json: {e}")
         sys.exit(1)
 
     new_version = bump_version(current_version, bump_type)
