@@ -59,7 +59,8 @@ def get_version_at_commit(filepath, commit_hash):
         cmd = ["git", "show", f"{commit_hash}:{filepath}"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return json.loads(result.stdout).get('version')
-    except:
+    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
+        print(f"Warning: Could not get version for {filepath} at {commit_hash}: {e}", file=sys.stderr)
         return None
 
 def determine_required_bump(commits):
