@@ -383,23 +383,48 @@ function updateAnimationExclusionAreas() {
     if (!canvas) return;
     const canvasRect = canvas.getBoundingClientRect();
 
-    const elementsToAvoid = [
-        getEl(ID_CURRENT_TASK_NAME),
-        getEl(ID_ELAPSED_TIME),
-        getEl(ID_STATUS_LABEL)
-    ];
+    // Grouping related elements into separate logical areas for cleaner exclusion
+    const taskNameText = getEl('current-task-name-text');
+    const statusLabel = getEl(ID_STATUS_LABEL);
+    const elapsedTime = getEl(ID_ELAPSED_TIME);
 
-    const exclusionAreas = elementsToAvoid
-        .filter(el => el && !el.classList.contains('hidden'))
-        .map(el => {
-            const rect = el.getBoundingClientRect();
-            return {
+    const exclusionAreas = [];
+
+    if (taskNameText && taskNameText.textContent !== '-') {
+        const rect = taskNameText.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            exclusionAreas.push({
                 x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
                 y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
                 width: rect.width + (EXCLUSION_PADDING_X * 2),
                 height: rect.height + (EXCLUSION_PADDING_Y * 2)
-            };
-        });
+            });
+        }
+    }
+
+    if (statusLabel) {
+        const rect = statusLabel.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            exclusionAreas.push({
+                x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
+                y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
+                width: rect.width + (EXCLUSION_PADDING_X * 2),
+                height: rect.height + (EXCLUSION_PADDING_Y * 2)
+            });
+        }
+    }
+
+    if (elapsedTime && !elapsedTime.classList.contains('hidden')) {
+        const rect = elapsedTime.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            exclusionAreas.push({
+                x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
+                y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
+                width: rect.width + (EXCLUSION_PADDING_X * 2),
+                height: rect.height + (EXCLUSION_PADDING_Y * 2)
+            });
+        }
+    }
 
     animationEngine.setExclusionAreas(exclusionAreas);
 }
@@ -575,9 +600,6 @@ async function updateUI() {
         if (elements.display) elements.display.className = `cat-${color}`;
         if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
 
-        // Ensure proper animation/clock visibility
-        applyAnimation(currentAnimationType, categoryAnimation, color);
-
         const iconName = isPaused ? 'pause' : 'play_arrow';
         const statusClass = isPaused ? 'status-paused' : 'status-running';
         [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
@@ -592,7 +614,8 @@ async function updateUI() {
             }
         });
         const displayCategoryName = isPaused ? t('idle-category') : activeTask.category;
-        [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = displayCategoryName; });
+        const nameElements = [getEl('current-task-name-text'), getEl('current-task-name-text-overlay')];
+        nameElements.forEach(el => { if (el) el.textContent = displayCategoryName; });
 
         if (elements.pauseBtn) {
             if (isPaused) {
@@ -612,6 +635,8 @@ async function updateUI() {
             }
         });
         startTimer();
+        // Ensure proper animation/clock visibility (called after text content is updated for accurate exclusion)
+        applyAnimation(currentAnimationType, categoryAnimation, color);
     } else {
         if (currentActiveAnimation !== null) {
             animationEngine?.stop();
@@ -628,7 +653,8 @@ async function updateUI() {
                 el.className = 'material-symbols-outlined status-stopped';
             }
         });
-        [elements.currentTaskName, elements.currentTaskNameOverlay].forEach(el => { if (el) el.textContent = '-'; });
+        const nameElements = [getEl('current-task-name-text'), getEl('current-task-name-text-overlay')];
+        nameElements.forEach(el => { if (el) el.textContent = '-'; });
 
         if (elements.pauseBtn) {
             elements.pauseBtn.disabled = true;

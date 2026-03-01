@@ -100,9 +100,11 @@ export class AnimationEngine {
                 const cellY = r * CELL_SIZE;
 
                 // Optimization: Skip brightness calculation if the cell is in an exclusion area
+                // A cell overlaps with an exclusion area if:
+                // cell_start_x < area_end_x AND cell_end_x > area_start_x
                 const inExclusion = this.exclusionAreas.some(area =>
-                    cellX >= area.x - CELL_SIZE && cellX < area.x + area.width &&
-                    cellY >= area.y - CELL_SIZE && cellY < area.y + area.height
+                    cellX < area.x + area.width && cellX + CELL_SIZE > area.x &&
+                    cellY < area.y + area.height && cellY + CELL_SIZE > area.y
                 );
 
                 if (inExclusion) continue;

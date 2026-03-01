@@ -32,7 +32,7 @@ test.describe('Multi-tab Synchronization', () => {
 
     // Switch to page 2 and check if the task is active
     await page2.bringToFront();
-    await expect(page2.locator('#current-task-name')).toHaveText(catName);
+    await expect(page2.locator('#current-task-name-text')).toHaveText(catName);
     await expect(page2.locator('#status-label')).toHaveText('play_arrow');
   });
 
