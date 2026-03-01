@@ -2,6 +2,14 @@
  * QuickLog-Solo: Canvas-based Animation Engine
  */
 
+const CELL_SIZE = 6;
+const BRIGHTNESS_HIGH = 120;
+const BRIGHTNESS_MID = 60;
+const BRIGHTNESS_LOW = 10;
+const DOT_SIZE_LARGE = 4;
+const DOT_SIZE_MID = 3;
+const DOT_SIZE_SMALL = 2;
+
 export class AnimationEngine {
     constructor(canvas) {
         this.canvas = canvas;
@@ -64,9 +72,8 @@ export class AnimationEngine {
     drawLCD(progress) {
         const w = this.canvas.width;
         const h = this.canvas.height;
-        const cellSize = 6;
-        const cols = Math.ceil(w / cellSize);
-        const rows = Math.ceil(h / cellSize);
+        const cols = Math.ceil(w / CELL_SIZE);
+        const rows = Math.ceil(h / CELL_SIZE);
 
         // Offscreen canvas for actual animation drawing
         if (!this.offscreen) {
@@ -89,13 +96,24 @@ export class AnimationEngine {
 
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
+                const cellX = c * CELL_SIZE;
+                const cellY = r * CELL_SIZE;
+
+                // Optimization: Skip brightness calculation if the cell is in an exclusion area
+                const inExclusion = this.exclusionAreas.some(area =>
+                    cellX >= area.x - CELL_SIZE && cellX < area.x + area.width &&
+                    cellY >= area.y - CELL_SIZE && cellY < area.y + area.height
+                );
+
+                if (inExclusion) continue;
+
                 // Average brightness of the cell
                 let totalBrightness = 0;
                 let count = 0;
-                for (let dy = 0; dy < cellSize; dy++) {
-                    for (let dx = 0; dx < cellSize; dx++) {
-                        const x = c * cellSize + dx;
-                        const y = r * cellSize + dy;
+                for (let dy = 0; dy < CELL_SIZE; dy++) {
+                    for (let dx = 0; dx < CELL_SIZE; dx++) {
+                        const x = cellX + dx;
+                        const y = cellY + dy;
                         if (x < w && y < h) {
                             const idx = (y * w + x) * 4;
                             totalBrightness += imgData[idx];
@@ -106,23 +124,14 @@ export class AnimationEngine {
                 const brightness = totalBrightness / count;
 
                 let dotSize = 0;
-                if (brightness > 120) dotSize = 4;      // 大ドット
-                else if (brightness > 60) dotSize = 3;  // 中ドット
-                else if (brightness > 10) dotSize = 2;  // 小ドット
+                if (brightness > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;      // 大ドット
+                else if (brightness > BRIGHTNESS_MID) dotSize = DOT_SIZE_MID;  // 中ドット
+                else if (brightness > BRIGHTNESS_LOW) dotSize = DOT_SIZE_SMALL;  // 小ドット
 
                 if (dotSize > 0) {
-                    const x = c * cellSize + (cellSize - dotSize) / 2;
-                    const y = r * cellSize + (cellSize - dotSize) / 2;
-
-                    // Skip drawing if the dot is in an exclusion area
-                    const inExclusion = this.exclusionAreas.some(area =>
-                        x >= area.x && x < area.x + area.width &&
-                        y >= area.y && y < area.y + area.height
-                    );
-
-                    if (!inExclusion) {
-                        this.ctx.fillRect(x, y, dotSize, dotSize);
-                    }
+                    const dotX = cellX + (CELL_SIZE - dotSize) / 2;
+                    const dotY = cellY + (CELL_SIZE - dotSize) / 2;
+                    this.ctx.fillRect(dotX, dotY, dotSize, dotSize);
                 }
             }
         }

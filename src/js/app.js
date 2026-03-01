@@ -28,6 +28,9 @@ const MAX_LOGS_DISPLAY = 100;
 const TOAST_DURATION_MS = 2000;
 const ITEMS_PER_PAGE = 16;
 
+const EXCLUSION_PADDING_X = 4;
+const EXCLUSION_PADDING_Y = 2;
+
 const CSV_HEADER = "id,category,startTime,endTime\n";
 const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
 
@@ -391,10 +394,10 @@ function updateAnimationExclusionAreas() {
         .map(el => {
             const rect = el.getBoundingClientRect();
             return {
-                x: rect.left - canvasRect.left - 4, // Padding
-                y: rect.top - canvasRect.top - 2,
-                width: rect.width + 8,
-                height: rect.height + 4
+                x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
+                y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
+                width: rect.width + (EXCLUSION_PADDING_X * 2),
+                height: rect.height + (EXCLUSION_PADDING_Y * 2)
             };
         });
 
