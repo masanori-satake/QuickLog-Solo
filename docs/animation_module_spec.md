@@ -33,12 +33,17 @@ sequenceDiagram
 sequenceDiagram
     participant U_Inst as ユーザー
     participant C_Inst as QuickLog 本体 (Core)
+    participant W_Inst as Animation Worker (Thread)
+    participant M_Inst as アニメーションモジュール (Instance)
 
     U_Inst->>C_Inst: 業務カテゴリを選択
     C_Inst->>C_Inst: タイマー計測開始
-    create participant M_Inst as アニメーションモジュール (Instance)
-    C_Inst->>M_Inst: new モジュールクラス()
-    C_Inst->>M_Inst: setup(width, height)
+    C_Inst->>W_Inst: init (modulePath) を postMessage
+    create participant M_Inst
+    W_Inst->>M_Inst: new モジュールクラス()
+    W_Inst-->>C_Inst: initialized 通知
+    C_Inst->>W_Inst: setup(width, height) を postMessage
+    W_Inst->>M_Inst: setup(width, height) 実行
     Note over M_Inst: 内部状態（座標、配列等）の初期化
     C_Inst->>C_Inst: 描画ループ (requestAnimationFrame) 開始
 ```
@@ -71,12 +76,14 @@ sequenceDiagram
 sequenceDiagram
     participant U_Size as ユーザー
     participant C_Size as QuickLog 本体 (Core)
+    participant W_Size as Animation Worker (Thread)
     participant M_Size as アニメーションモジュール (Instance)
 
     U_Size->>C_Size: サイドパネルの境界をドラッグ
     C_Size->>C_Size: キャンバスのリサイズ
     C_Size->>C_Size: 新しい Exclusion Areas の算出
-    C_Size->>M_Size: setup(newWidth, newHeight)
+    C_Size->>W_Size: setup(newWidth, newHeight) を postMessage
+    W_Size->>M_Size: setup(newWidth, newHeight) 実行
     Note over M_Size: 座標の再計算・状態の Fit 処理
 ```
 
@@ -85,12 +92,13 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant C_Term as QuickLog 本体 (Core)
+    participant W_Term as Animation Worker (Thread)
     participant M_Term as アニメーションモジュール (Instance)
 
     C_Term->>C_Term: 停止/一時停止/切替イベント発生
     C_Term->>C_Term: requestAnimationFrame 停止
-    C_Term->>C_Term: activeAnimation = null (参照解除)
-    Note over M_Term: ガベージコレクション対象へ
+    C_Term->>W_Term: Worker 停止 (terminate)
+    Note over M_Term: Worker 終了に伴い破棄
     destroy M_Term
 ```
 
@@ -112,6 +120,9 @@ sequenceDiagram
 
 ### 3.1. 実行環境 (Sandbox)
 - **Web Worker による分離:** すべてのアニメーションロジックは Web Worker 内で実行されます。これにより、メインスレッドの IndexedDB や DOM への直接アクセスが遮断されます。
+- **スレッドセーフティの保証 (競合状態の防止):**
+    JavaScript の Web Worker は独自のイベントループを持つシングルスレッド実行環境です。メインスレッド（Core）からの `setup`、`draw`、およびイベント（`onClick` 等）の要求は、Web Worker のメッセージキューに順次追加され、一つずつ順番に処理されます。
+    そのため、例えば `draw` の実行中に同時に `setup` が割り込んで内部状態を破壊するといった「呼び出しの交錯（Race Condition）」は、言語の仕様上発生しません。開発者はスレッドセーフティを意識することなく、同期的なコードとしてモジュールを記述できます。
 - **リソース監視:** モジュールの応答時間（`postMessage` から返信まで）が一定時間（100ms）を連続して超過した場合、アプリのフリーズを防ぐため、エンジンは自動的にそのアニメーションを停止します。
 
 ### 3.2. 通信と API の制限
