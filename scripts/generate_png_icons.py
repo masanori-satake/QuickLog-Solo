@@ -1,28 +1,42 @@
 import os
-import subprocess
-from playwright.sync_api import sync_playwright
-
-SIZES = [16, 32, 48, 128]
-SVG_PATH = os.path.join(os.getcwd(), 'src/assets/icon.svg')
-OUTPUT_DIR = os.path.join(os.getcwd(), 'src/assets')
 
 def generate_icons():
-    if not os.path.exists(SVG_PATH):
-        print(f"Error: {SVG_PATH} not found.")
+    svg_path = os.path.join(os.getcwd(), 'src/assets/icon.svg')
+    output_dir = os.path.join(os.getcwd(), 'src/assets')
+
+    if not os.path.exists(svg_path):
+        print(f"Error: {svg_path} not found.")
         return False
 
-    with open(SVG_PATH, 'r') as f:
+    with open(svg_path, 'r') as f:
         svg_content = f.read()
 
+    # If VERCEL environment is detected, skip generation as it's not needed for the landing page
+    # and Playwright might not be installed or configured.
+    if os.environ.get('VERCEL'):
+        print("Vercel environment detected. Skipping PNG icon generation for extension.")
+        return True
+
+    try:
+        from playwright.sync_api import sync_playwright
+        print("Playwright found. Generating icons...")
+    except ImportError:
+        print("Error: No module named 'playwright'. Please install it to generate extension icons.")
+        return False
+
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        try:
+            browser = p.chromium.launch()
+        except Exception as e:
+            print(f"Error: Failed to launch browser: {e}")
+            return False
+
         context = browser.new_context(
             viewport={'width': 512, 'height': 512},
             device_scale_factor=1
         )
         page = context.new_page()
 
-        # Set the content to the SVG, ensuring it fills the viewport
         page.set_content(f"""
             <style>
               body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }}
@@ -31,8 +45,8 @@ def generate_icons():
             {svg_content}
         """)
 
-        for size in SIZES:
-            output_path = os.path.join(OUTPUT_DIR, f"icon{size}.png")
+        for size in [16, 32, 48, 128]:
+            output_path = os.path.join(output_dir, f"icon{size}.png")
             print(f"Generating {size}x{size} icon: {output_path}")
 
             page.set_viewport_size({'width': size, 'height': size})
