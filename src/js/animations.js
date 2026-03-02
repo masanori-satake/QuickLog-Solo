@@ -97,9 +97,11 @@ export class AnimationEngine {
         if (!this.exclusionAreas || this.exclusionAreas.length === 0) {
             return { left: 0, width: 0, totalWidth: this.canvas.width };
         }
-        // Simplified: Find the widest horizontal span covered by exclusions
-        const left = Math.min(...this.exclusionAreas.map(a => a.x));
-        const right = Math.max(...this.exclusionAreas.map(a => a.x + a.width));
+        // Snapping to grid to maintain LCD consistency and prevent phase shifts
+        const minX = Math.min(...this.exclusionAreas.map(a => a.x));
+        const maxX = Math.max(...this.exclusionAreas.map(a => a.x + a.width));
+        const left = Math.floor(minX / CELL_SIZE) * CELL_SIZE;
+        const right = Math.ceil(maxX / CELL_SIZE) * CELL_SIZE;
         const width = right - left;
         return { left, width, totalWidth: this.canvas.width - width };
     }
@@ -233,7 +235,11 @@ export class AnimationEngine {
                 const realX = this._mapToRealX(sprite.x);
                 const realY = sprite.y;
 
-                if (this._isInExclusion(realX, realY)) return;
+                // Snap to the nearest cell grid to prevent blurring and maintain the LCD look
+                const cellX = Math.floor(realX / CELL_SIZE) * CELL_SIZE;
+                const cellY = Math.floor(realY / CELL_SIZE) * CELL_SIZE;
+
+                if (this._isInExclusion(cellX, cellY)) return;
 
                 let dotSize = 0;
                 if (sprite.size === 3) dotSize = DOT_SIZE_LARGE;
@@ -241,8 +247,8 @@ export class AnimationEngine {
                 else if (sprite.size === 1) dotSize = DOT_SIZE_SMALL;
 
                 if (dotSize > 0) {
-                    const dotX = realX - dotSize / 2;
-                    const dotY = realY - dotSize / 2;
+                    const dotX = cellX + (CELL_SIZE - dotSize) / 2;
+                    const dotY = cellY + (CELL_SIZE - dotSize) / 2;
                     this.ctx.fillRect(dotX, dotY, dotSize, dotSize);
                 }
             });
