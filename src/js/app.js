@@ -103,7 +103,8 @@ async function startTask(categoryName, resumableCategory = null) {
     if (syncTimeout) clearTimeout(syncTimeout);
     const cat = await dbGet(STORE_CATEGORIES, categoryName);
     const color = cat ? cat.color : null;
-    activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color);
+    const meta = cat ? (cat.meta || '') : '';
+    activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, meta);
     updateUI();
     broadcastSync();
 }
@@ -189,7 +190,11 @@ function applyFont(fontValue) {
 
 function applyAnimation(animationType, categoryAnimation = 'default', color = 'primary') {
     currentAnimationType = animationType;
-    const activeAnimation = (categoryAnimation && categoryAnimation !== 'default') ? categoryAnimation : animationType;
+    let activeAnimation = (categoryAnimation && categoryAnimation !== 'default') ? categoryAnimation : animationType;
+
+    if (categoryAnimation === 'none') {
+        activeAnimation = 'none';
+    }
 
     const select = getEl(ID_ANIMATION_SELECT);
     if (select && select.value !== animationType) select.value = animationType;
@@ -200,7 +205,7 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
     // All animations are now canvas-based for consistency
     if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
 
-    if (animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
+    if (animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE && activeAnimation !== 'none') {
         const colorCode = getColorCode(color);
         const animStateKey = `${activeAnimation}-${activeTask.startTime}-${colorCode}`;
         if (currentActiveAnimation !== animStateKey) {
@@ -362,9 +367,11 @@ function createLogElement(log, categoryMap) {
         colorClass = `dot-${color}`;
     }
 
+    const metaHtml = (log.meta) ? `<span class="log-meta">[${escapeHtml(log.meta)}]</span>` : '';
+
     li.innerHTML = `
         ${timeRangeHtml}
-        <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(displayName)}</span>
+        <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(displayName)}${metaHtml}</span>
         <span class="log-duration">${durationText}</span>
     `;
     return li;
@@ -513,6 +520,12 @@ function updateAnimationSelect() {
     if (animSelect) {
         const currentLang = getLanguage();
         animSelect.innerHTML = '';
+
+        const noneOpt = createEl('option');
+        noneOpt.value = 'none';
+        noneOpt.textContent = t('anim-none');
+        animSelect.appendChild(noneOpt);
+
         animations.forEach(anim => {
             const opt = createEl('option');
             opt.value = anim.id;
@@ -811,6 +824,7 @@ async function renderCategoryEditor() {
         };
 
         const animOptions = [
+            { value: 'none', label: t('anim-none'), description: '' },
             { value: 'default', label: t('anim-default'), description: '' },
             ...animations.map(anim => {
                 let desc = '';
@@ -841,6 +855,7 @@ async function renderCategoryEditor() {
                 <div class="color-presets" style="margin-left: 2rem; flex: 1;">
                     ${colorPresetsHtml}
                 </div>
+                <input type="text" class="category-edit-meta" value="${escapeHtml(cat.meta || '')}" data-i18n-placeholder="placeholder-meta" placeholder="${t('placeholder-meta')}" style="width: 120px; font-size: 0.75rem; margin-right: 0.5rem;">
                 ${animSelectHtml}
             </div>
         `;
@@ -892,6 +907,13 @@ async function renderCategoryEditor() {
         const animSelect = item.querySelector('.category-edit-animation');
         animSelect.onchange = async () => {
             cat.animation = animSelect.value;
+            await dbPut(STORE_CATEGORIES, cat);
+            broadcastSync();
+        };
+
+        const metaInput = item.querySelector('.category-edit-meta');
+        metaInput.onchange = async () => {
+            cat.meta = metaInput.value.trim();
             await dbPut(STORE_CATEGORIES, cat);
             broadcastSync();
         };

@@ -88,14 +88,17 @@ describe('Logic Module', () => {
             expect(dbAdd).toHaveBeenCalled();
         });
 
-        test('startTaskLogic includes color in log entry for historical preservation', async () => {
+        test('startTaskLogic includes color and meta in log entry for historical preservation', async () => {
             const color = 'secondary';
-            const newTask = await startTaskLogic('Work', null, null, color);
+            const meta = 'Project A';
+            const newTask = await startTaskLogic('Work', null, null, color, meta);
             expect(newTask.category).toBe('Work');
             expect(newTask.color).toBe(color);
+            expect(newTask.meta).toBe(meta);
             expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
                 category: 'Work',
-                color: color
+                color: color,
+                meta: meta
             }));
         });
 
