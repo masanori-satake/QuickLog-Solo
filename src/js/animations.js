@@ -3,12 +3,6 @@
  */
 
 const CELL_SIZE = 6;
-const BRIGHTNESS_HIGH = 120;
-const BRIGHTNESS_MID = 60;
-const BRIGHTNESS_LOW = 10;
-const DOT_SIZE_LARGE = 4;
-const DOT_SIZE_MID = 3;
-const DOT_SIZE_SMALL = 2;
 
 import { AnimationBase } from './animation_base.js';
 

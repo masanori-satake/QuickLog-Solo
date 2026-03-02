@@ -20,7 +20,7 @@ self.onmessage = async (e) => {
 
     try {
         switch (type) {
-            case 'init':
+            case 'init': {
                 const { modulePath } = payload;
                 // Load the animation module dynamically
                 const module = await import(modulePath);
@@ -28,6 +28,7 @@ self.onmessage = async (e) => {
                 animation = new AnimClass();
                 self.postMessage({ type: 'initialized' });
                 break;
+            }
 
             case 'setup':
                 if (animation && typeof animation.setup === 'function') {
@@ -35,7 +36,7 @@ self.onmessage = async (e) => {
                 }
                 break;
 
-            case 'draw':
+            case 'draw': {
                 if (!animation) return;
                 const dots = performDraw(payload);
                 self.postMessage({
@@ -46,6 +47,7 @@ self.onmessage = async (e) => {
                     }
                 });
                 break;
+            }
 
             case 'click':
                 if (animation && typeof animation.onClick === 'function') {
@@ -91,7 +93,7 @@ function _isInExclusion(x, y, exclusionAreas) {
 }
 
 function performDraw(params) {
-    const { width, height, canvasWidth, elapsedMs, progress, step, exclusionAreas } = params;
+    const { width, height, canvasWidth, exclusionAreas } = params;
     const config = animation.config || { mode: 'canvas' };
     const usePseudoSpace = !!config.usePseudoSpace;
 
