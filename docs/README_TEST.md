@@ -26,8 +26,6 @@
 | :--- | :--- | :--- | :--- |
 | 正常系 | `formatDuration` | ミリ秒を HH:MM:SS 形式に変換する | 正確な時・分・秒が計算され、文字列が返る |
 | 正常系 | `formatDuration` | 1桁の数値を 0 埋め（パディング）する | `01:05:09` のように 2 桁で表示される |
-| 正常系 | `getAnimationState` | 偶数分（0, 2, ...）の状態を取得する | `type: 'even'` および右から左へ塗る `inset` が返る |
-| 正常系 | `getAnimationState` | 奇数分（1, 3, ...）の状態を取得する | `type: 'odd'` および右から左へ消す `inset` が返る |
 | 正常系 | `startTaskLogic` | 新規タスクを開始する | 新しいタスクオブジェクトが生成され、DBに保存される |
 | 正常系 | `startTaskLogic` | 実行中と同じカテゴリを開始する | 何もせず現在のタスクをそのまま返す（二重開始防止） |
 | 正常系 | `stopTaskLogic` | アクティブなタスクを停止する | `endTime` が記録され、戻り値が `null` になる |
@@ -72,3 +70,12 @@ npm run test:e2e
 ```
 
 すべてのテストがパスすることを確認してからコミットしてください。
+
+---
+
+## 5. 関連ドキュメント
+
+- [製品仕様書 (spec.md)](spec.md)
+- [開発者ガイド (README_DEV.md)](README_DEV.md)
+- [背景アニメーション・モジュール仕様書 (animation_module_spec.md)](animation_module_spec.md)
+- [AI エージェント指針 (AGENTS.md)](../AGENTS.md)
