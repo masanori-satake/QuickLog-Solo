@@ -33,10 +33,10 @@ export default class CoffeeDrip extends AnimationBase {
 
     draw(ctx, { width, progress, exclusionAreas }) {
         this.width = width;
-        let centerX = width / 2;
+        let centerX = width * 0.2; // Default to left side
 
         if (exclusionAreas && exclusionAreas.length > 0) {
-            const spots = [width * 0.25, width * 0.75, width * 0.5];
+            const spots = [width * 0.15, width * 0.85, width * 0.25, width * 0.75];
             for (const spot of spots) {
                 const overlap = exclusionAreas.some(area => {
                     return spot + 30 > area.x && spot - 30 < area.x + area.width;

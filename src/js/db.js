@@ -169,30 +169,30 @@ async function setupInitialData(languageSetting) {
     setLanguage(languageSetting);
 
     const initialCategories = [
-        { name: t('init-cat-dev'), color: 'primary', order: 0, animation: 'matrix_code' },
-        { name: t('init-cat-meeting'), color: 'secondary', order: 1, animation: 'migrating_birds' },
-        { name: t('init-cat-research'), color: 'tertiary', order: 2, animation: 'contour_lines' },
-        { name: t('init-cat-admin'), color: 'neutral', order: 3, animation: 'matrix_code' },
-        { name: t('init-cat-focus'), color: 'error', order: 4, animation: 'ripple' },
-        { name: t('init-cat-skill'), color: 'tertiary', order: 5, animation: 'plant_growth' },
-        { name: t('init-cat-idea'), color: 'secondary', order: 6, animation: 'kaleidoscope' },
-        { name: t('init-cat-break'), color: 'outline', order: 7, animation: 'coffee_drip' },
-        { name: t('init-cat-client'), color: 'primary', order: 8, animation: 'car_drive' },
-        { name: t('init-cat-doc'), color: 'secondary', order: 9, animation: 'dot_typing' },
-        { name: t('init-cat-design'), color: 'tertiary', order: 10, animation: 'lissajous_pendulum' },
-        { name: t('init-cat-bug'), color: 'error', order: 11, animation: 'tetris_building' },
-        { name: t('init-cat-release'), color: 'teal', order: 12, animation: 'night_sky' },
-        { name: t('init-cat-tool'), color: 'green', order: 13, animation: 'matrix_code' },
-        { name: t('init-cat-schedule'), color: 'yellow', order: 14, animation: 'sand_clock' },
-        { name: t('init-cat-chat'), color: 'orange', order: 15, animation: 'tennis' },
-        { name: t('init-cat-wiki'), color: 'pink', order: 16, animation: 'dot_typing' },
-        { name: t('init-cat-qa'), color: 'indigo', order: 17, animation: 'hero_pot' },
-        { name: t('init-cat-sales'), color: 'brown', order: 18, animation: 'migrating_birds' },
-        { name: t('init-cat-arch'), color: 'cyan', order: 19, animation: 'contour_lines' },
-        { name: t('init-cat-sec'), color: 'error', order: 20, animation: 'spectrum' },
-        { name: t('init-cat-data'), color: 'teal', order: 21, animation: 'cats' },
-        { name: t('init-cat-wfh'), color: 'neutral', order: 22, animation: 'left_to_right' },
-        { name: t('init-cat-move'), color: 'outline', order: 23, animation: 'right_to_left' }
+        { name: t('init-cat-dev'), color: 'primary', order: 0, animation: 'matrix_code', meta: '' },
+        { name: t('init-cat-meeting'), color: 'secondary', order: 1, animation: 'migrating_birds', meta: '' },
+        { name: t('init-cat-research'), color: 'tertiary', order: 2, animation: 'contour_lines', meta: '' },
+        { name: t('init-cat-admin'), color: 'neutral', order: 3, animation: 'matrix_code', meta: '' },
+        { name: t('init-cat-focus'), color: 'error', order: 4, animation: 'ripple', meta: '' },
+        { name: t('init-cat-skill'), color: 'tertiary', order: 5, animation: 'dot_typing', meta: '' },
+        { name: t('init-cat-idea'), color: 'secondary', order: 6, animation: 'spectrum', meta: '' },
+        { name: t('init-cat-break'), color: 'outline', order: 7, animation: 'coffee_drip', meta: '' },
+        { name: t('init-cat-client'), color: 'primary', order: 8, animation: 'car_drive', meta: '' },
+        { name: t('init-cat-doc'), color: 'secondary', order: 9, animation: 'dot_typing', meta: '' },
+        { name: t('init-cat-design'), color: 'tertiary', order: 10, animation: 'contour_lines', meta: '' },
+        { name: t('init-cat-bug'), color: 'error', order: 11, animation: 'tetris_building', meta: '' },
+        { name: t('init-cat-release'), color: 'teal', order: 12, animation: 'night_sky', meta: '' },
+        { name: t('init-cat-tool'), color: 'green', order: 13, animation: 'matrix_code', meta: '' },
+        { name: t('init-cat-schedule'), color: 'yellow', order: 14, animation: 'sand_clock', meta: '' },
+        { name: t('init-cat-chat'), color: 'orange', order: 15, animation: 'matrix_code', meta: '' },
+        { name: t('init-cat-wiki'), color: 'pink', order: 16, animation: 'dot_typing', meta: '' },
+        { name: t('init-cat-qa'), color: 'indigo', order: 17, animation: 'hero_pot', meta: '' },
+        { name: t('init-cat-sales'), color: 'brown', order: 18, animation: 'migrating_birds', meta: '' },
+        { name: t('init-cat-arch'), color: 'cyan', order: 19, animation: 'contour_lines', meta: '' },
+        { name: t('init-cat-sec'), color: 'error', order: 20, animation: 'spectrum', meta: '' },
+        { name: t('init-cat-data'), color: 'teal', order: 21, animation: 'cats', meta: '' },
+        { name: t('init-cat-wfh'), color: 'neutral', order: 22, animation: 'left_to_right', meta: '' },
+        { name: t('init-cat-move'), color: 'outline', order: 23, animation: 'right_to_left', meta: '' }
     ];
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
@@ -201,12 +201,21 @@ async function setupInitialData(languageSetting) {
             await dbPut(STORE_CATEGORIES, cat);
         }
     } else {
+        const deletedAnimations = ['kaleidoscope', 'lissajous_pendulum', 'plant_growth', 'tennis'];
         for (let i = 0; i < existingCategories.length; i++) {
             let cat = existingCategories[i];
-            if (cat.color === undefined || cat.order === undefined || cat.animation === undefined) {
-                cat.color = cat.color || 'primary';
-                cat.order = cat.order !== undefined ? cat.order : i;
-                cat.animation = cat.animation || 'default';
+            let changed = false;
+            if (cat.color === undefined) { cat.color = 'primary'; changed = true; }
+            if (cat.order === undefined) { cat.order = i; changed = true; }
+            if (cat.animation === undefined) { cat.animation = 'default'; changed = true; }
+            if (cat.meta === undefined) { cat.meta = ''; changed = true; }
+
+            if (deletedAnimations.includes(cat.animation)) {
+                cat.animation = 'default';
+                changed = true;
+            }
+
+            if (changed) {
                 await dbPut(STORE_CATEGORIES, cat);
             }
         }

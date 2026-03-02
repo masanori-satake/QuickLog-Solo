@@ -39,16 +39,17 @@ export default class NewtonsCradle extends AnimationBase {
         this.height = height;
         this.stringLength = height / 2;
 
-        let centerX = width / 2;
+        const w = this.ballRadius * 2 * this.ballCount;
+        let centerX = width * 0.15 + w/2; // Default to left-ish
         let centerY = height / 3;
 
         if (exclusionAreas && exclusionAreas.length > 0) {
-            const w = this.ballRadius * 2 * this.ballCount;
             const h = this.stringLength + this.ballRadius;
             const spots = [
-                {x: w/2 + 10, y: height/3},
-                {x: width - w/2 - 10, y: height/3},
-                {x: width / 2, y: height / 3}
+                {x: w/2 + 20, y: height/3},
+                {x: width - w/2 - 20, y: height/3},
+                {x: width * 0.25, y: height / 3},
+                {x: width * 0.75, y: height / 3}
             ];
             for (const spot of spots) {
                 const overlap = exclusionAreas.some(area => {

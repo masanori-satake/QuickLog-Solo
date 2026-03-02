@@ -175,6 +175,13 @@ main {
     min-width: 0;
 }
 
+.log-meta {
+    font-size: 0.7rem;
+    color: var(--muted-color);
+    margin-left: 0.25rem;
+    opacity: 0.8;
+}
+
 .log-duration {
     font-size: 0.75rem;
     color: var(--muted-color);
@@ -815,6 +822,26 @@ body.theme-dark button:active {
     display: flex;
     align-items: center;
     gap: var(--md-sys-spacing-1);
+}
+
+.category-edit-meta {
+    width: 120px;
+    font-size: 0.75rem;
+    margin-right: 0.5rem;
+    padding: 2px 4px !important;
+    height: 24px;
+}
+
+.category-edit-meta:focus::placeholder {
+    color: transparent;
+}
+
+.category-edit-animation {
+    flex: 1;
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    height: 24px;
 }
 
 /* Confirm Dialog */

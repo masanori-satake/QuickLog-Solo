@@ -28,11 +28,11 @@ export default class TetrisBuilding extends AnimationBase {
     config = { mode: 'matrix', usePseudoSpace: false };
 
     setup(_width, _height) {
-        this.rows = 15;
+        this.rows = 12;
         this.cols = 6;
-        this.cellSize = 6;
-        this.xOffset = 2;
-        this.yOffset = 2;
+        this.cellSize = 12; // 2x2 cells
+        this.xOffset = 1;
+        this.yOffset = 1;
         this.grid = Array(this.rows).fill(0).map(() => Array(this.cols).fill(0));
         this.lastBlockP = 0;
         this.clearingLine = -1;
@@ -42,7 +42,7 @@ export default class TetrisBuilding extends AnimationBase {
     draw(_ctx, { width, height, progress, exclusionAreas }) {
         if (exclusionAreas && exclusionAreas.length > 0) {
             const gridWidth = this.cols * this.cellSize;
-            const spots = [2, Math.floor(width / this.cellSize) - this.cols - 2];
+            const spots = [1, Math.floor(width / 6) - (this.cols * 2) - 1];
             for (const spot of spots) {
                 const overlap = exclusionAreas.some(area => {
                     return spot * this.cellSize + gridWidth > area.x && spot * this.cellSize < area.x + area.width;
@@ -85,10 +85,14 @@ export default class TetrisBuilding extends AnimationBase {
             for (let c = 0; c < this.cols; c++) {
                 if (this.grid[r][c]) {
                     if (r === this.clearingLine && Math.floor(Date.now() / 100) % 2 === 0) continue;
-                    const mr = this.yOffset + r;
-                    const mc = this.xOffset + c;
-                    if (matrix[mr] && mc < matrix[mr].length) {
-                        matrix[mr][mc] = 3;
+                    for (let dr = 0; dr < 2; dr++) {
+                        for (let dc = 0; dc < 2; dc++) {
+                            const mr = (this.yOffset + r) * 2 + dr;
+                            const mc = (this.xOffset + c) * 2 + dc;
+                            if (matrix[mr] && mc < matrix[mr].length) {
+                                matrix[mr][mc] = 3;
+                            }
+                        }
                     }
                 }
             }
@@ -100,10 +104,14 @@ export default class TetrisBuilding extends AnimationBase {
             const c = seed % this.cols;
             const targetR = this.findLandingRow(c);
             const r = Math.floor(fallP * targetR);
-            const mr = this.yOffset + r;
-            const mc = this.xOffset + c;
-            if (matrix[mr] && mc < matrix[mr].length) {
-                matrix[mr][mc] = 2;
+            for (let dr = 0; dr < 2; dr++) {
+                for (let dc = 0; dc < 2; dc++) {
+                    const mr = (this.yOffset + r) * 2 + dr;
+                    const mc = (this.xOffset + c) * 2 + dc;
+                    if (matrix[mr] && mc < matrix[mr].length) {
+                        matrix[mr][mc] = 2;
+                    }
+                }
             }
         }
         return matrix;

@@ -8,19 +8,17 @@ import CoffeeDrip from './animation/coffee_drip.js';
 import ContourLines from './animation/contour_lines.js';
 import DotTyping from './animation/dot_typing.js';
 import HeroPot from './animation/hero_pot.js';
-import Kaleidoscope from './animation/kaleidoscope.js';
 import LeftToRight from './animation/left_to_right.js';
-import LissajousPendulum from './animation/lissajous_pendulum.js';
 import MatrixCode from './animation/matrix_code.js';
 import MigratingBirds from './animation/migrating_birds.js';
 import NewtonsCradle from './animation/newtons_cradle.js';
 import NightSky from './animation/night_sky.js';
-import PlantGrowth from './animation/plant_growth.js';
+import OpenReel from './animation/open_reel.js';
 import RightToLeft from './animation/right_to_left.js';
 import Ripple from './animation/ripple.js';
 import SandClock from './animation/sand_clock.js';
+import Smoke from './animation/smoke.js';
 import Spectrum from './animation/spectrum.js';
-import Tennis from './animation/tennis.js';
 import TetrisBuilding from './animation/tetris_building.js';
 
 export const animations = [
@@ -31,18 +29,16 @@ export const animations = [
     { id: 'contour_lines', class: ContourLines, metadata: ContourLines.metadata },
     { id: 'dot_typing', class: DotTyping, metadata: DotTyping.metadata },
     { id: 'hero_pot', class: HeroPot, metadata: HeroPot.metadata },
-    { id: 'kaleidoscope', class: Kaleidoscope, metadata: Kaleidoscope.metadata },
     { id: 'left_to_right', class: LeftToRight, metadata: LeftToRight.metadata },
-    { id: 'lissajous_pendulum', class: LissajousPendulum, metadata: LissajousPendulum.metadata },
     { id: 'matrix_code', class: MatrixCode, metadata: MatrixCode.metadata },
     { id: 'migrating_birds', class: MigratingBirds, metadata: MigratingBirds.metadata },
     { id: 'newtons_cradle', class: NewtonsCradle, metadata: NewtonsCradle.metadata },
     { id: 'night_sky', class: NightSky, metadata: NightSky.metadata },
-    { id: 'plant_growth', class: PlantGrowth, metadata: PlantGrowth.metadata },
+    { id: 'open_reel', class: OpenReel, metadata: OpenReel.metadata },
     { id: 'right_to_left', class: RightToLeft, metadata: RightToLeft.metadata },
     { id: 'ripple', class: Ripple, metadata: Ripple.metadata },
     { id: 'sand_clock', class: SandClock, metadata: SandClock.metadata },
+    { id: 'smoke', class: Smoke, metadata: Smoke.metadata },
     { id: 'spectrum', class: Spectrum, metadata: Spectrum.metadata },
-    { id: 'tennis', class: Tennis, metadata: Tennis.metadata },
     { id: 'tetris_building', class: TetrisBuilding, metadata: TetrisBuilding.metadata }
 ];
