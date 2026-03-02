@@ -12,20 +12,20 @@
   "action": {
     "default_title": "QuickLog-Soloを開く",
     "default_icon": {
-      "16": "assets/icon.svg",
-      "32": "assets/icon.svg",
-      "48": "assets/icon.svg",
-      "128": "assets/icon.svg"
+      "16": "assets/icon16.png",
+      "32": "assets/icon32.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
     }
   },
   "side_panel": {
     "default_path": "app.html"
   },
   "icons": {
-    "16": "assets/icon.svg",
-    "32": "assets/icon.svg",
-    "48": "assets/icon.svg",
-    "128": "assets/icon.svg"
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
   },
   "background": {
     "service_worker": "js/background.js",
