@@ -27,6 +27,7 @@ export class AnimationEngine {
         this.perfViolations = 0;
         this.maxViolations = 10;
         this.isMonitoring = false;
+        this.isDrawPending = false;
 
         this._initListeners();
     }
@@ -92,6 +93,7 @@ export class AnimationEngine {
         this.initialized = false;
         this.perfViolations = 0;
         this.isMonitoring = true;
+        this.isDrawPending = false;
 
         const animInstance = new entry.class();
         this.config = animInstance.config || { mode: 'canvas', usePseudoSpace: false };
@@ -111,7 +113,8 @@ export class AnimationEngine {
             this.resize();
             this.animate();
         } else if (type === 'drawResponse') {
-            const now = Date.now();
+            this.isDrawPending = false;
+            const now = performance.now();
             const latency = now - this.lastDrawRequestTime;
 
             if (latency > this.perfThreshold) {
@@ -168,6 +171,13 @@ export class AnimationEngine {
 
     draw() {
         if (!this.worker || !this.initialized) return;
+
+        // If a draw is already pending in the worker, skip this frame
+        // to avoid queuing up messages and causing latency spikes.
+        if (this.isDrawPending) {
+            return;
+        }
+
         const now = Date.now();
         const elapsed = now - this.startTime;
         const progress = (elapsed % this.cycleMs) / this.cycleMs;
@@ -187,7 +197,8 @@ export class AnimationEngine {
             exclusionAreas: this.exclusionAreas
         };
 
-        this.lastDrawRequestTime = Date.now();
+        this.lastDrawRequestTime = performance.now();
+        this.isDrawPending = true;
         this.worker.postMessage({ type: 'draw', payload: params });
     }
 
