@@ -34,12 +34,11 @@ sequenceDiagram
     participant U_Inst as ユーザー
     participant C_Inst as QuickLog 本体 (Core)
     participant W_Inst as Animation Worker (Thread)
-    participant M_Inst as アニメーションモジュール (Instance)
 
     U_Inst->>C_Inst: 業務カテゴリを選択
     C_Inst->>C_Inst: タイマー計測開始
     C_Inst->>W_Inst: init (modulePath) を postMessage
-    create participant M_Inst
+    create participant M_Inst as アニメーションモジュール (Instance)
     W_Inst->>M_Inst: new モジュールクラス()
     W_Inst-->>C_Inst: initialized 通知
     C_Inst->>W_Inst: setup(width, height) を postMessage
