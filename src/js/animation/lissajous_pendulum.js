@@ -24,6 +24,8 @@ export default class LissajousPendulum extends AnimationBase {
         },
         author: "QuickLog-Solo"
     };
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.width = width;
         this.height = height;

@@ -24,6 +24,9 @@ export default class CoffeeDrip extends AnimationBase {
         },
         author: "QuickLog-Solo"
     };
+
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width) {
         this.width = width;
     }
@@ -32,7 +35,6 @@ export default class CoffeeDrip extends AnimationBase {
         this.width = width;
         let centerX = width / 2;
 
-        // Offset if overlapping with exclusionAreas
         if (exclusionAreas && exclusionAreas.length > 0) {
             const spots = [width * 0.25, width * 0.75, width * 0.5];
             for (const spot of spots) {
@@ -59,9 +61,8 @@ export default class CoffeeDrip extends AnimationBase {
         ctx.fill();
 
         // Server/Pot shape
-        ctx.beginPath();
-        ctx.rect(centerX - 25, 60, 50, 40);
-        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+        ctx.strokeRect(centerX - 25, 60, 50, 40);
 
         // Drip droplets
         const dropP = (Date.now() / 1000) % 1;
@@ -74,5 +75,6 @@ export default class CoffeeDrip extends AnimationBase {
         ctx.globalAlpha = 0.6;
         const fillHeight = 40 * progress;
         ctx.fillRect(centerX - 24, 100 - fillHeight, 48, fillHeight);
+        ctx.globalAlpha = 1.0;
     }
 }

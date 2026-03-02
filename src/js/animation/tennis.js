@@ -25,6 +25,8 @@ export default class Tennis extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
@@ -41,11 +43,9 @@ export default class Tennis extends AnimationBase {
         this.width = width;
         this.height = height;
 
-        // Move ball
         this.ball.x += this.ball.vx;
         this.ball.y += this.ball.vy;
 
-        // Bounce off top/bottom
         if (this.ball.y - this.ball.radius < 0) {
             this.ball.y = this.ball.radius;
             this.ball.vy = Math.abs(this.ball.vy);
@@ -54,7 +54,6 @@ export default class Tennis extends AnimationBase {
             this.ball.vy = -Math.abs(this.ball.vy);
         }
 
-        // AI Paddles - only move when ball is approaching
         if (this.ball.vx < 0) {
             this.paddleL.targetY = this.ball.y - this.paddleHeight / 2;
         } else {
@@ -64,11 +63,9 @@ export default class Tennis extends AnimationBase {
         this.paddleL.y += (this.paddleL.targetY - this.paddleL.y) * 0.1;
         this.paddleR.y += (this.paddleR.targetY - this.paddleR.y) * 0.1;
 
-        // Constraint paddles
         this.paddleL.y = Math.max(0, Math.min(height - this.paddleHeight, this.paddleL.y));
         this.paddleR.y = Math.max(0, Math.min(height - this.paddleHeight, this.paddleR.y));
 
-        // Bounce off paddles
         if (this.ball.x - this.ball.radius < this.paddleWidth) {
             if (this.ball.y > this.paddleL.y - 5 && this.ball.y < this.paddleL.y + this.paddleHeight + 5) {
                 this.ball.vx = Math.abs(this.ball.vx);
@@ -87,14 +84,12 @@ export default class Tennis extends AnimationBase {
             }
         }
 
-        // Bounce off exclusionAreas
         exclusionAreas.forEach(area => {
             if (this.ball.x + this.ball.radius > area.x &&
                 this.ball.x - this.ball.radius < area.x + area.width &&
                 this.ball.y + this.ball.radius > area.y &&
                 this.ball.y - this.ball.radius < area.y + area.height) {
 
-                // Simple collision response
                 const overlapX = Math.min(this.ball.x + this.ball.radius - area.x, area.x + area.width - (this.ball.x - this.ball.radius));
                 const overlapY = Math.min(this.ball.y + this.ball.radius - area.y, area.y + area.height - (this.ball.y - this.ball.radius));
 
@@ -108,11 +103,9 @@ export default class Tennis extends AnimationBase {
             }
         });
 
-        // Draw everything
         ctx.fillStyle = '#fff';
         ctx.strokeStyle = '#fff';
 
-        // Center line
         ctx.setLineDash([5, 5]);
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -121,15 +114,11 @@ export default class Tennis extends AnimationBase {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Score
         ctx.font = "16px monospace";
         ctx.fillText(this.scoreL, width / 2 - 30, 20);
         ctx.fillText(this.scoreR, width / 2 + 20, 20);
 
-        // Ball
         ctx.fillRect(this.ball.x - this.ball.radius, this.ball.y - this.ball.radius, this.ball.radius * 2, this.ball.radius * 2);
-
-        // Paddles
         ctx.fillRect(0, this.paddleL.y, this.paddleWidth, this.paddleHeight);
         ctx.fillRect(width - this.paddleWidth, this.paddleR.y, this.paddleWidth, this.paddleHeight);
     }

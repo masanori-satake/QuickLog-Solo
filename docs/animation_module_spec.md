@@ -54,10 +54,11 @@ sequenceDiagram
     loop requestAnimationFrame
         C_Loop->>C_Loop: progress (0-1) / step (0-239) 等の算出
         C_Loop->>C_Loop: テキスト遮蔽領域 (Exclusion Areas) の座標計算
-        C_Loop->>M_Loop: draw(offscreenCtx, params)
-        alt Matrix Mode
-            M_Loop-->>C_Loop: 2次元配列 (0-3) を返却
+        alt Sprite/Matrix Mode
+            C_Loop->>M_Loop: draw(null, params)
+            M_Loop-->>C_Loop: 描画データ (Array) を返却
         else Canvas Mode
+            C_Loop->>M_Loop: draw(offscreenCtx, params)
             M_Loop->>M_Loop: offscreenCtx へモノクロ描画
         end
         C_Loop->>C_Loop: Exclusion Areas 内のドットを強制除去
@@ -108,13 +109,24 @@ sequenceDiagram
 
 ## 3. インターフェース仕様
 
-### 3.1. モジュール定義 (Metadata)
-各モジュールは `AnimationBase` クラスを継承し、以下の静的プロパティを持つことが期待される。
+### 3.1. モジュール定義 (Metadata & Config)
+各モジュールは `AnimationBase` クラスを継承し、以下のプロパティを持つことが期待される。
 
-- `static metadata`: モジュールの情報オブジェクト。
-    - `name`: アニメーション名（文字列、または言語コードをキーとしたオブジェクト）。
-    - `description`: 簡単な説明（多言語対応可）。
-    - `author`: 開発者名。
+#### static metadata
+モジュールの情報オブジェクト（設定画面等で使用）。
+- `name`: アニメーション名（文字列、または言語コードをキーとしたオブジェクト）。
+- `description`: 簡単な説明（多言語対応可）。
+- `author`: 開発者名。
+
+#### config (Instance property)
+描画エンジンへの動作指示設定。
+- `mode`: 描画モードの指定。
+    - `'canvas'`: (デフォルト) Canvas API を使用した自由な描画。
+    - `'matrix'`: 2次元配列を返すグリッド描画。
+    - `'sprite'`: `{x, y, size}` の配列を返すオブジェクト描画。
+- `usePseudoSpace`: 疑似空間（Pseudo-space）を使用するかどうかのフラグ。
+    - `true`: 遮蔽領域（テキスト等）を「最初から存在しない」ものとして扱い、連続した一本の領域として座標計算を行えるようにします。オブジェクトが遮蔽物を飛び越えて移動するようなシンプルな実装に適しています。
+    - `false`: (デフォルト) 実際のキャンバス座標を使用します。遮蔽物を避けたり、遮蔽物の上に乗ったりするような高度な演出に適しています。
 
 ### 3.2. 呼び出しサイクル
 - **計算用ステップ:** 500ms ごとに `step` (0-239) がインクリメントされる。
@@ -124,7 +136,7 @@ sequenceDiagram
 ### 3.3. 提供される情報 (Input Parameters)
 
 #### A. セットアップ時 (`setup(width, height)`)
-- `width`: 描画領域の幅 (px)
+- `width`: 描画領域の幅 (px)。`usePseudoSpace: true` の場合は、遮蔽領域を除いた仮想的な幅が渡されます。
 - `height`: 描画領域の高さ (px)
 ※開始時およびリサイズ時に呼び出される。
 
@@ -139,62 +151,89 @@ sequenceDiagram
     - **注意:** フォントの切り替えやテキスト長の変化により、描画中にサイズが変動する場合があるため、毎フレームチェックすることを推奨する。
 
 ### 3.4. 出力データ形式 (Output)
-ロジックの作成を容易にするため、以下のいずれかの形式をサポートする。
+`config.mode` の設定に応じて、以下のいずれかの形式でデータを出力します。
 
-#### A. マトリックス形式 (Matrix Mode) - 推奨
-`draw` 関数の戻り値として、現在のステップにおけるドット配置データを返す。
+#### A. スプライト形式 (Sprite Mode)
+`draw` 関数の戻り値として、ドット（オブジェクト）の座標とサイズの配列を返します。
+- **データ構造:** `Array<{x: number, y: number, size: number}>`
+- **size の値:** `1` (小), `2` (中), `3` (大)
+- **メリット:** 最も直感的です。`usePseudoSpace: true` と組み合わせることで、遮蔽領域を一切気にせず、好きな座標にドットを置くだけでアニメーションが完成します。
+
+#### B. マトリックス形式 (Matrix Mode)
+`draw` 関数の戻り値として、グリッド状の配置データを返します。
 - **データ構造:** 2次元配列 `Array<Array<number>>` (rows x cols)
-- **各要素の値:**
-    - `0`: ドットなし
-    - `1`: 小ドット
-    - `2`: 中ドット
-    - `3`: 大ドット
-- **メリット:** 座標計算に集中でき、キャンバス操作の知識がなくても実装可能。
+- **各要素の値:** `0`～`3` (ドットなし～大ドット)
+- **メリット:** ライフゲームやテトリスのような、セル単位のロジックを実装するのに適しています。
 
-#### B. キャンバス描画形式 (Canvas Mode)
-引数の `ctx` (CanvasRenderingContext2D) に対して直接描画する（戻り値は `void`）。
-- **描画ルール:** 白 (`#fff`) または `color` を用いてモノクロで描画。
-- **変換処理:** 本体側でピクセルの明度を読み取り、自動的に 4段階の LCD ドットに変換する。
-- **メリット:** 既存のキャンバスアニメーションライブラリや複雑な図形描画を活用可能。
+#### C. キャンバス描画形式 (Canvas Mode)
+引数の `ctx` に対して直接描画します（戻り値は `void`）。
+- **描画ルール:** モノクロ（白 `#fff`）で描画します。
+- **メリット:** Canvas API の全ての機能（曲線、グラデーション、画像の描画等）を利用でき、最も表現力が高いモードです。
 
-## 4. 実装イメージ
+### 3.5. インタラクション (Events)
+必要に応じて、以下のメソッドを実装することでユーザー操作に反応できます。
+
+- `onClick(x, y)`: キャンバスがクリックされたときに呼び出されます。
+- `onMouseMove(x, y)`: マウスが移動したときに呼び出されます。
+※ `usePseudoSpace: true` の場合、`x` 座標は自動的に仮想空間の座標に変換されます。
+
+## 4. 実装例
+
+### 例1: Sprite Mode + Pseudo-space (基本)
+遮蔽領域を気にせず、画面を横切るだけの星を描画します。
 
 ```javascript
 import { AnimationBase } from '../animations.js';
 
-export default class MySmartAnimation extends AnimationBase {
+export default class ShootingStar extends AnimationBase {
     static metadata = {
-        name: { en: "Bouncing Ball", ja: "跳ねるボール" },
-        description: { en: "A ball that bounces off text.", ja: "テキストに当たって跳ね返るボールです。" },
-        author: "Dev Name"
+        name: "Shooting Star",
+        author: "QuickLog-Solo"
     };
 
+    config = { mode: 'sprite', usePseudoSpace: true };
+
     setup(width, height) {
-        this.ball = { x: width / 2, y: height / 2, vx: 2, vy: 2 };
+        this.stars = Array(10).fill(0).map(() => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            speed: 1 + Math.random() * 3
+        }));
     }
 
-    draw(ctx, { width, height, exclusionAreas }) {
-        // ボールの移動
-        this.ball.x += this.ball.vx;
-        this.ball.y += this.ball.vy;
-
-        // 壁での跳ね返り
-        if (this.ball.x < 0 || this.ball.x > width) this.ball.vx *= -1;
-        if (this.ball.y < 0 || this.ball.y > height) this.ball.vy *= -1;
-
-        // exclusionAreas (テキスト領域) での跳ね返り
-        exclusionAreas.forEach(area => {
-            if (this.ball.x > area.x && this.ball.x < area.x + area.width &&
-                this.ball.y > area.y && this.ball.y < area.y + area.height) {
-                this.ball.vy *= -1; // 簡易的な反射
-            }
+    draw(ctx, { width }) {
+        return this.stars.map(star => {
+            star.x = (star.x + star.speed) % width;
+            return { x: star.x, y: star.y, size: 2 };
         });
+    }
+}
+```
 
-        // 描画 (Canvas Mode: モノクロで描く)
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(this.ball.x, this.ball.y, 5, 0, Math.PI * 2);
-        ctx.fill();
+### 例2: Canvas Mode + Interaction (応用)
+クリックした場所に円を描画します。
+
+```javascript
+import { AnimationBase } from '../animations.js';
+
+export default class Ripple extends AnimationBase {
+    static metadata = { name: "Ripple", author: "Dev" };
+
+    ripples = [];
+
+    onClick(x, y) {
+        this.ripples.push({ x, y, r: 0 });
+    }
+
+    draw(ctx) {
+        ctx.strokeStyle = '#fff';
+        this.ripples.forEach((rp, i) => {
+            rp.r += 2;
+            ctx.beginPath();
+            ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+            ctx.stroke();
+        });
+        this.ripples = this.ripples.filter(rp => rp.r < 100);
     }
 }
 ```

@@ -25,6 +25,8 @@ export default class Ripple extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
+    config = { mode: 'canvas', usePseudoSpace: true };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
@@ -32,18 +34,27 @@ export default class Ripple extends AnimationBase {
         this.maxRadius = Math.sqrt(width * width + height * height) / 2;
     }
 
+    onClick(x, y) {
+        this.ripples.push({
+            x, y,
+            radius: 0,
+            life: 1.0,
+            speed: 2
+        });
+    }
+
     draw(ctx, { width, height, progress }) {
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1;
 
         // Randomly add new ripple sources
-        if (Math.random() < 0.05 + progress * 0.1) {
+        if (Math.random() < 0.03 + progress * 0.07) {
             this.ripples.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
                 radius: 0,
                 life: 1.0,
-                speed: 1 + Math.random() * 2
+                speed: 1 + Math.random() * 1.5
             });
         }
 
@@ -68,11 +79,6 @@ export default class Ripple extends AnimationBase {
 
         // Remove dead ripples
         this.ripples = this.ripples.filter(r => r.life > 0 && r.radius < this.maxRadius);
-
-        // Progress fill
-        ctx.fillStyle = '#fff';
-        ctx.globalAlpha = progress * 0.2;
-        ctx.fillRect(0, 0, width, height);
         ctx.globalAlpha = 1.0;
     }
 }

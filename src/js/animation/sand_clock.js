@@ -25,6 +25,8 @@ export default class SandClock extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
@@ -61,20 +63,6 @@ export default class SandClock extends AnimationBase {
             }
         }
 
-        ctx.save();
-        if (exclusionAreas && exclusionAreas.length > 0) {
-            ctx.beginPath();
-            ctx.rect(0, 0, width, height);
-            exclusionAreas.forEach(area => {
-                ctx.moveTo(area.x, area.y);
-                ctx.lineTo(area.x, area.y + area.height);
-                ctx.lineTo(area.x + area.width, area.y + area.height);
-                ctx.lineTo(area.x + area.width, area.y);
-                ctx.closePath();
-            });
-            ctx.clip("evenodd");
-        }
-
         ctx.fillStyle = '#fff';
 
         ctx.beginPath();
@@ -98,6 +86,5 @@ export default class SandClock extends AnimationBase {
         ctx.globalCompositeOperation = 'destination-in';
         ctx.fillRect(centerX - this.size, centerY + this.size - this.size * progress, this.size * 2, this.size * progress);
         ctx.globalCompositeOperation = 'source-over';
-        ctx.restore();
     }
 }

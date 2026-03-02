@@ -25,6 +25,8 @@ export default class Cats extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
@@ -41,27 +43,23 @@ export default class Cats extends AnimationBase {
         this.height = height;
         this.groundY = height - 15;
 
-        // Platforms based on exclusionAreas
         const platforms = exclusionAreas.map(area => ({
             y: area.y,
             xStart: area.x,
             xEnd: area.x + area.width
         }));
 
-        // Ground platform
         const allPlatforms = [...platforms, { y: this.groundY, xStart: 0, xEnd: width }];
 
         this.cats.forEach((cat) => {
             if (cat.timer > 0) cat.timer--;
 
-            // Find current platform
             const currentPlatform = allPlatforms.find(p => Math.abs(cat.y - p.y) < 5 && cat.x >= p.xStart && cat.x <= p.xEnd);
 
             if (cat.state === 'walking') {
                 const speed = 0.8;
                 if (cat.x < cat.targetX) cat.x += speed; else cat.x -= speed;
 
-                // If reached target or edge of platform
                 const atEdge = currentPlatform && (cat.x <= currentPlatform.xStart + 5 || cat.x >= currentPlatform.xEnd - 5);
                 if (Math.abs(cat.x - cat.targetX) < 2 || atEdge) {
                     cat.state = 'sitting';
@@ -69,7 +67,6 @@ export default class Cats extends AnimationBase {
                 }
             } else if (cat.state === 'sitting') {
                 if (cat.timer <= 0) {
-                    // Decide next target (can be on a different platform)
                     const nextPlatform = allPlatforms[Math.floor(Math.random() * allPlatforms.length)];
                     cat.targetX = nextPlatform.xStart + Math.random() * (nextPlatform.xEnd - nextPlatform.xStart);
                     cat.y = nextPlatform.y;
@@ -77,7 +74,6 @@ export default class Cats extends AnimationBase {
                 }
             }
 
-            // Draw Detailed Pixel Cat
             ctx.save();
             ctx.translate(cat.x, cat.y);
             ctx.scale(cat.scale, cat.scale);

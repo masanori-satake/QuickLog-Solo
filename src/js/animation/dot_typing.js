@@ -25,48 +25,45 @@ export default class DotTyping extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
+    config = { mode: 'sprite', usePseudoSpace: true };
+
     constructor() {
         super();
-        this.chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
         this.rows = 5;
         this.cols = 15;
-        this.buffer = [];
-        this.backspaceCount = 0;
     }
 
     draw(ctx, { progress }) {
-        ctx.fillStyle = '#fff';
-        ctx.font = "12px monospace";
-        ctx.globalAlpha = 0.7;
-
+        const sprites = [];
         const totalChars = this.rows * this.cols;
         const targetChars = Math.floor(progress * totalChars);
 
-        // Simulating the buffer with occasional backspaces
-        this.buffer = [];
+        const buffer = [];
         for (let i = 0; i < targetChars; i++) {
-            // Every 10 characters, let's pretend a backspace happened
             if (i % 15 === 14) {
-               // Backspace 3 chars
-               this.buffer.splice(-3);
+               buffer.splice(-3);
             } else {
-               this.buffer.push(this.chars[i % this.chars.length]);
+               buffer.push(i);
             }
         }
 
-        this.buffer.forEach((char, i) => {
+        buffer.forEach((_, i) => {
             const r = Math.floor(i / this.cols);
             const c = i % this.cols;
-            ctx.fillText(char, 20 + c * 15, 30 + r * 15);
+            const x = 20 + c * 15;
+            const y = 30 + r * 15;
+            sprites.push({ x, y, size: 2 });
+            sprites.push({ x: x + 2, y: y + 2, size: 1 });
         });
 
-        // Cursor at the end of buffer
         if (Math.floor(Date.now() / 500) % 2 === 0) {
-            const lastIdx = this.buffer.length;
+            const lastIdx = buffer.length;
             const r = Math.floor(lastIdx / this.cols);
             const c = lastIdx % this.cols;
-            ctx.fillRect(20 + c * 15, 30 + r * 15 - 10, 8, 12);
+            const x = 20 + c * 15;
+            const y = 30 + r * 15;
+            sprites.push({ x, y: y - 5, size: 3 });
         }
-        ctx.globalAlpha = 1.0;
+        return sprites;
     }
 }

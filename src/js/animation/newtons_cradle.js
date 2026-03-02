@@ -24,6 +24,8 @@ export default class NewtonsCradle extends AnimationBase {
         },
         author: "QuickLog-Solo"
     };
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
@@ -86,16 +88,6 @@ export default class NewtonsCradle extends AnimationBase {
             ctx.beginPath();
             ctx.arc(bx, by, this.ballRadius, 0, Math.PI * 2);
             ctx.fill();
-        }
-
-        if (progress > 0.95) {
-            const spinAngle = (progress - 0.95) * 20 * Math.PI * 2;
-            ctx.save();
-            ctx.translate(centerX, centerY + this.stringLength / 2);
-            ctx.rotate(spinAngle);
-            ctx.globalAlpha = 0.2;
-            ctx.fillRect(-width, -height, width * 2, height * 2);
-            ctx.restore();
         }
     }
 }

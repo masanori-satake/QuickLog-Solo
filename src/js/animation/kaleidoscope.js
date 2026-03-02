@@ -24,6 +24,9 @@ export default class Kaleidoscope extends AnimationBase {
         },
         author: "QuickLog-Solo"
     };
+
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.centerX = width / 2;
         this.centerY = height / 2;
@@ -50,5 +53,6 @@ export default class Kaleidoscope extends AnimationBase {
 
             ctx.restore();
         }
+        ctx.globalAlpha = 1.0;
     }
 }

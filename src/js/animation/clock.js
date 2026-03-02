@@ -25,6 +25,8 @@ export default class Clock extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
@@ -34,13 +36,10 @@ export default class Clock extends AnimationBase {
     draw(ctx, { width, height, progress, exclusionAreas }) {
         const angle = progress * Math.PI * 2;
 
-        // Dynamic positioning to avoid exclusion areas
         let cx = width / 2;
         let cy = height / 2;
 
         if (exclusionAreas && exclusionAreas.length > 0) {
-            // Find a space that is not covered by exclusion areas
-            // For now, let's try top-left, top-right, bottom-left, bottom-right corners
             const margin = this.radius + 10;
             const spots = [
                 {x: margin, y: margin},
@@ -63,26 +62,11 @@ export default class Clock extends AnimationBase {
             }
         }
 
-        ctx.save();
-        if (exclusionAreas && exclusionAreas.length > 0) {
-            ctx.beginPath();
-            ctx.rect(0, 0, width, height);
-            exclusionAreas.forEach(area => {
-                ctx.moveTo(area.x, area.y);
-                ctx.lineTo(area.x, area.y + area.height);
-                ctx.lineTo(area.x + area.width, area.y + area.height);
-                ctx.lineTo(area.x + area.width, area.y);
-                ctx.closePath();
-            });
-            ctx.clip("evenodd");
-        }
-
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, this.radius, -Math.PI / 2, -Math.PI / 2 + angle);
         ctx.closePath();
         ctx.fill();
-        ctx.restore();
     }
 }

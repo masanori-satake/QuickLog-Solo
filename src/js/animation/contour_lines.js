@@ -25,27 +25,15 @@ export default class ContourLines extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
         this.lineCount = 10;
     }
 
-    draw(ctx, { progress, exclusionAreas }) {
-        ctx.save();
-        if (exclusionAreas && exclusionAreas.length > 0) {
-            ctx.beginPath();
-            ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            exclusionAreas.forEach(area => {
-                ctx.moveTo(area.x, area.y);
-                ctx.lineTo(area.x, area.y + area.height);
-                ctx.lineTo(area.x + area.width, area.y + area.height);
-                ctx.lineTo(area.x + area.width, area.y);
-                ctx.closePath();
-            });
-            ctx.clip("evenodd");
-        }
-
+    draw(ctx, { progress }) {
         ctx.strokeStyle = '#fff';
         ctx.globalAlpha = 0.3;
         ctx.lineWidth = 1;
@@ -66,6 +54,6 @@ export default class ContourLines extends AnimationBase {
             ctx.closePath();
             ctx.stroke();
         }
-        ctx.restore();
+        ctx.globalAlpha = 1.0;
     }
 }

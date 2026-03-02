@@ -24,8 +24,18 @@ export default class RightToLeft extends AnimationBase {
         },
         author: "QuickLog-Solo"
     };
+
+    config = { mode: 'sprite', usePseudoSpace: true };
+
     draw(ctx, { width, height, progress }) {
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(width * (1 - progress), 0, width * progress, height);
+        const sprites = [];
+        const startX = width * (1 - progress);
+        const spacing = 6;
+        for (let x = width; x >= startX; x -= spacing) {
+            for (let y = 0; y < height; y += spacing) {
+                sprites.push({ x, y, size: 2 });
+            }
+        }
+        return sprites;
     }
 }

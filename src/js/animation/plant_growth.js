@@ -25,6 +25,8 @@ export default class PlantGrowth extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
@@ -51,20 +53,6 @@ export default class PlantGrowth extends AnimationBase {
                     break;
                 }
             }
-        }
-
-        ctx.save();
-        if (exclusionAreas && exclusionAreas.length > 0) {
-            ctx.beginPath();
-            ctx.rect(0, 0, width, height);
-            exclusionAreas.forEach(area => {
-                ctx.moveTo(area.x, area.y);
-                ctx.lineTo(area.x, area.y + area.height);
-                ctx.lineTo(area.x + area.width, area.y + area.height);
-                ctx.lineTo(area.x + area.width, area.y);
-                ctx.closePath();
-            });
-            ctx.clip("evenodd");
         }
 
         ctx.strokeStyle = '#fff';
@@ -103,6 +91,5 @@ export default class PlantGrowth extends AnimationBase {
             }
             ctx.globalAlpha = 1.0;
         }
-        ctx.restore();
     }
 }
