@@ -42,7 +42,6 @@
 | 正常系 | `dbDelete` | データの削除 | 指定したキーのレコードが削除され、取得できなくなる |
 | 正常系 | `initDB` | 初期データセットアップ | 初回起動時にデフォルトのカテゴリ群が自動生成される |
 | 整合性 | `initDB` | 複数タスクの不整合修復 | 複数の未終了タスクがある場合、最新以外を自動終了させる |
-| 正常系 | `initStoragePersistence` | ストレージの永続化リクエスト | `navigator.storage.persist()` が呼び出され、ステータスが更新される |
 
 ---
 
@@ -50,11 +49,10 @@
 
 UIの確認や特定の状態（長時間経過など）のテストを容易にするため、URLパラメータによる状態注入をサポートしています。
 
--   **レイアウト切り替え:** `?test_layout=horizontal` または `?test_layout=vertical`
 -   **タスクの強制開始:** `?test_cat=[カテゴリ名]&test_elapsed=[経過ミリ秒]`
 -   **一時停止状態の再現:** `?test_cat=__IDLE__&test_resumable=[再開カテゴリ名]`
 
-例: `app.html?test_cat=🤝 会議&test_elapsed=3600000&test_layout=horizontal` (1時間経過した会議を横長レイアウトで表示)
+例: `app.html?test_cat=🤝 会議&test_elapsed=3600000` (1時間経過した会議を表示)
 
 ## 4. テストの実行方法
 
