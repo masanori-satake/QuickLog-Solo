@@ -44,25 +44,24 @@ sequenceDiagram
 ```
 
 #### 描画ループ (Drawing Loop)
-描画はブラウザの更新周期に合わせて行われます。本体側で「ドット回避領域（Exclusion Area）」を算出し、モジュールへ提供します。
+描画はブラウザの更新周期に合わせて行われます。安全のため、アニメーションロジックは Web Worker 上で実行されます。
 ```mermaid
 sequenceDiagram
     participant C_Loop as QuickLog 本体 (Core)
+    participant W_Loop as Animation Worker (Thread)
     participant M_Loop as アニメーションモジュール (Instance)
     participant D_Loop as LCDキャンバス
 
     loop requestAnimationFrame
         C_Loop->>C_Loop: progress (0-1) / step (0-239) 等の算出
         C_Loop->>C_Loop: テキスト遮蔽領域 (Exclusion Areas) の座標計算
-        alt Sprite/Matrix Mode
-            C_Loop->>M_Loop: draw(null, params)
-            M_Loop-->>C_Loop: 描画データ (Array) を返却
-        else Canvas Mode
-            C_Loop->>M_Loop: draw(offscreenCtx, params)
-            M_Loop->>M_Loop: offscreenCtx へモノクロ描画
-        end
-        C_Loop->>C_Loop: Exclusion Areas 内のドットを強制除去
+        C_Loop->>W_Loop: draw(params) を postMessage
+        W_Loop->>M_Loop: draw(offscreenCtx/null, params)
+        M_Loop-->>W_Loop: 描画データまたは Canvas 描画
+        W_Loop->>W_Loop: LCD ドット変換 & Exclusion 処理
+        W_Loop-->>C_Loop: ドット座標データの配列を返却
         C_Loop->>D_Loop: 指定カテゴリ色で LCD スタイル描画
+        Note over C_Loop: 応答時間を監視 (100ms 超過で停止)
     end
 ```
 
@@ -107,7 +106,22 @@ sequenceDiagram
 - **視認性への配慮 (推奨):** 提供される `exclusionAreas` を利用して、テキストを避けるような「賢い」アニメーションを実装できる。
 - **メタデータの提供:** クラスの静的プロパティとして名前や作者情報を定義する。
 
-## 3. インターフェース仕様
+## 3. 安全性とセキュリティポリシー
+
+本プロジェクトでは、利用者のプライバシーと安全を最優先するため、アニメーションモジュールに対して以下の制限を設けています。
+
+### 3.1. 実行環境 (Sandbox)
+- **Web Worker による分離:** すべてのアニメーションロジックは Web Worker 内で実行されます。これにより、メインスレッドの IndexedDB や DOM への直接アクセスが遮断されます。
+- **リソース監視:** モジュールの応答時間（`postMessage` から返信まで）が一定時間（100ms）を連続して超過した場合、アプリのフリーズを防ぐため、エンジンは自動的にそのアニメーションを停止します。
+
+### 3.2. 通信と API の制限
+- **通信禁止 (No Network):** Content Security Policy (CSP) により、`fetch` や `XMLHttpRequest` による外部通信は一切禁止されています。
+- **禁止キーワード:** 以下の機能を使用しているモジュールは、ビルド時の静的解析によって拒否されます：
+    - 通信関連: `fetch`, `XMLHttpRequest`, `WebSocket`, `BroadcastChannel`
+    - ストレージ関連: `IndexedDB`, `localStorage`, `sessionStorage`, `cookie`
+    - 動的実行: `eval()`, `new Function()`
+
+## 4. インターフェース仕様
 
 ### 3.1. モジュール定義 (Metadata & Config)
 各モジュールは `AnimationBase` クラスを継承し、以下のプロパティを持つことが期待される。
