@@ -123,7 +123,7 @@ sequenceDiagram
 - `mode`: 描画モードの指定。
     - `'canvas'`: (デフォルト) Canvas API を使用した自由な描画。
     - `'matrix'`: 2次元配列を返すグリッド描画。
-    - `'sprite'`: `{x, y, size}` の配列を返すオブジェクト描画。新人向け。
+    - `'sprite'`: `{x, y, size}` の配列を返すオブジェクト描画。
 - `usePseudoSpace`: 疑似空間（Pseudo-space）を使用するかどうかのフラグ。
     - `true`: 遮蔽領域（テキスト等）を「最初から存在しない」ものとして扱い、連続した一本の領域として座標計算を行えるようにします。オブジェクトが遮蔽物を飛び越えて移動するようなシンプルな実装に適しています。
     - `false`: (デフォルト) 実際のキャンバス座標を使用します。遮蔽物を避けたり、遮蔽物の上に乗ったりするような高度な演出に適しています。
@@ -153,7 +153,7 @@ sequenceDiagram
 ### 3.4. 出力データ形式 (Output)
 `config.mode` の設定に応じて、以下のいずれかの形式でデータを出力します。
 
-#### A. スプライト形式 (Sprite Mode) - 新人向け推奨
+#### A. スプライト形式 (Sprite Mode)
 `draw` 関数の戻り値として、ドット（オブジェクト）の座標とサイズの配列を返します。
 - **データ構造:** `Array<{x: number, y: number, size: number}>`
 - **size の値:** `1` (小), `2` (中), `3` (大)
@@ -179,7 +179,7 @@ sequenceDiagram
 
 ## 4. 実装例
 
-### 例1: Sprite Mode + Pseudo-space (新人向け・簡単)
+### 例1: Sprite Mode + Pseudo-space (基本)
 遮蔽領域を気にせず、画面を横切るだけの星を描画します。
 
 ```javascript
@@ -210,7 +210,7 @@ export default class ShootingStar extends AnimationBase {
 }
 ```
 
-### 例2: Canvas Mode + Interaction (中級者向け)
+### 例2: Canvas Mode + Interaction (応用)
 クリックした場所に円を描画します。
 
 ```javascript
