@@ -1,4 +1,4 @@
-import { AnimationBase } from '../animations.js';
+import { AnimationBase } from '../animation_base.js';
 
 export default class DotTyping extends AnimationBase {
     static metadata = {

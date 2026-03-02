@@ -427,7 +427,7 @@ function initAnimationEngine() {
     if (canvas) {
         animationEngine = new AnimationEngine(canvas);
         animations.forEach(anim => {
-            animationEngine.register(anim.id, anim.class);
+            animationEngine.register(anim.id, anim.class, anim.id);
         });
         animationEngine.resize();
         updateAnimationExclusionAreas();
