@@ -24,19 +24,19 @@ export default class MigratingBirds extends AnimationBase {
         },
         author: "QuickLog-Solo"
     };
+
+    config = { mode: 'sprite', usePseudoSpace: true };
+
     setup(width, height) {
         this.w = width;
         this.h = height;
         this.yBase = height / 2;
         this.birdCount = 7;
-        this.birdSize = 10;
-        this.spacing = 30;
+        this.spacing = 25;
     }
 
     draw(ctx, { progress }) {
-        ctx.fillStyle = '#fff';
-        ctx.globalAlpha = 0.5;
-
+        const sprites = [];
         const xBase = -100 + (this.w + 200) * progress;
 
         for (let i = 0; i < this.birdCount; i++) {
@@ -44,27 +44,31 @@ export default class MigratingBirds extends AnimationBase {
             const bx = xBase - Math.abs(offset) * this.spacing;
             const by = this.yBase + offset * this.spacing * 0.5;
 
-            const flap = Math.sin(Date.now() / 100 + i) * 5;
+            const flap = Math.sin(Date.now() / 150 + i) > 0;
 
-            ctx.beginPath();
-            ctx.moveTo(bx, by);
-            ctx.lineTo(bx - this.birdSize, by - flap);
-            ctx.lineTo(bx - this.birdSize * 0.5, by);
-            ctx.lineTo(bx - this.birdSize, by + flap);
-            ctx.fill();
+            // Represent bird with 3 dots (body and wing tips)
+            sprites.push({ x: bx, y: by, size: 2 }); // Body
+            if (flap) {
+                sprites.push({ x: bx - 8, y: by - 5, size: 1 });
+                sprites.push({ x: bx - 8, y: by + 5, size: 1 });
+            } else {
+                sprites.push({ x: bx - 8, y: by - 1, size: 1 });
+                sprites.push({ x: bx - 8, y: by + 1, size: 1 });
+            }
         }
 
         // Surprise bird (flying opposite)
         if (progress > 0.4 && progress < 0.6) {
             const sx = this.w + 100 - (this.w + 200) * (progress - 0.4) * 5;
             const sy = this.h * 0.2;
-            const flap = Math.sin(Date.now() / 80) * 4;
-            ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.lineTo(sx + this.birdSize, sy - flap);
-            ctx.lineTo(sx + this.birdSize * 0.5, sy);
-            ctx.lineTo(sx + this.birdSize, sy + flap);
-            ctx.fill();
+            const flap = Math.sin(Date.now() / 120) > 0;
+            sprites.push({ x: sx, y: sy, size: 2 });
+            if (flap) {
+                sprites.push({ x: sx + 8, y: sy - 4, size: 1 });
+                sprites.push({ x: sx + 8, y: sy + 4, size: 1 });
+            }
         }
+
+        return sprites;
     }
 }

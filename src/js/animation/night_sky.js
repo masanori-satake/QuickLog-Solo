@@ -40,67 +40,57 @@ export default class NightSky extends AnimationBase {
         }));
     }
 
+    config = { mode: 'sprite', usePseudoSpace: true };
+
     setup(width, height) {
         this.w = width;
         this.h = height;
     }
 
     draw(ctx, { progress }) {
-        ctx.fillStyle = '#fff';
-        ctx.strokeStyle = '#fff';
+        const sprites = [];
 
-        // Draw Moon
-        ctx.globalAlpha = 0.3;
-        ctx.beginPath();
-        ctx.arc(this.w * 0.8, this.h * 0.2, 15, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(this.w * 0.8 - 8, this.h * 0.2 - 5, 15, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = 'source-over';
-
+        // Stars
         this.backgroundStars.forEach((star) => {
-            const twinkle = Math.sin(Date.now() / 1000 + star.twinkleOffset) * 0.5 + 0.5;
-            ctx.globalAlpha = 0.1 + twinkle * 0.4;
-            ctx.beginPath();
-            ctx.arc(star.x * this.w, star.y * this.h, star.size, 0, Math.PI * 2);
-            ctx.fill();
+            const twinkle = Math.sin(Date.now() / 1000 + star.twinkleOffset) > 0;
+            if (twinkle) {
+                sprites.push({ x: star.x * this.w, y: star.y * this.h, size: star.size > 1.5 ? 2 : 1 });
+            }
         });
 
-        this.constellationPoints.forEach((pt, i) => {
-            const x = pt.x * this.w;
-            const y = pt.y * this.h;
-            const twinkle = Math.sin(Date.now() / 500 + i) * 0.5 + 0.5;
-            ctx.globalAlpha = 0.5 + twinkle * 0.5;
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
-            ctx.fill();
-        });
-
+        // Constellation
         const linesToDraw = Math.floor(progress * (this.constellationPoints.length - 1));
-        ctx.globalAlpha = 0.4;
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath();
         for (let i = 0; i <= linesToDraw; i++) {
-            const x = this.constellationPoints[i].x * this.w;
-            const y = this.constellationPoints[i].y * this.h;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.setLineDash([]);
+            const pt1 = this.constellationPoints[i];
+            sprites.push({ x: pt1.x * this.w, y: pt1.y * this.h, size: 2 });
 
+            if (i < linesToDraw) {
+                const pt2 = this.constellationPoints[i+1];
+                // Draw dotted line between points
+                const dx = (pt2.x - pt1.x) * this.w;
+                const dy = (pt2.y - pt1.y) * this.h;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const steps = Math.floor(dist / 8);
+                for (let s = 1; s < steps; s++) {
+                    sprites.push({
+                        x: pt1.x * this.w + dx * (s / steps),
+                        y: pt1.y * this.h + dy * (s / steps),
+                        size: 1
+                    });
+                }
+            }
+        }
+
+        // Shooting star
         const shootingP = (Date.now() / 3000) % 5;
         if (shootingP < 1) {
-            ctx.globalAlpha = 0.8;
             const sx = this.w * (1.2 - shootingP * 1.5);
             const sy = this.h * (shootingP * 1.2 - 0.2);
-            ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.lineTo(sx + 40, sy - 30);
-            ctx.stroke();
+            for (let i = 0; i < 5; i++) {
+                sprites.push({ x: sx + i * 5, y: sy - i * 4, size: 1 });
+            }
         }
-        ctx.globalAlpha = 1.0;
+
+        return sprites;
     }
 }

@@ -24,8 +24,18 @@ export default class LeftToRight extends AnimationBase {
         },
         author: "QuickLog-Solo"
     };
+
+    config = { mode: 'sprite', usePseudoSpace: true };
+
     draw(ctx, { width, height, progress }) {
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, width * progress, height);
+        const sprites = [];
+        const fillWidth = width * progress;
+        const spacing = 6;
+        for (let x = 0; x < fillWidth; x += spacing) {
+            for (let y = 0; y < height; y += spacing) {
+                sprites.push({ x, y, size: 2 });
+            }
+        }
+        return sprites;
     }
 }

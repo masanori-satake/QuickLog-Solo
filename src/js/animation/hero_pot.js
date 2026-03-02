@@ -25,6 +25,8 @@ export default class HeroPot extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
+    config = { mode: 'canvas', usePseudoSpace: false };
+
     setup(width, height) {
         this.width = width;
         this.height = height;
@@ -33,17 +35,22 @@ export default class HeroPot extends AnimationBase {
         this.groundY = height - 20;
     }
 
+    onClick(x, y) {
+        // If clicking on ground, place a pot there
+        if (Math.abs(y - this.groundY) < 20) {
+            this.pots.push({ x, y: this.groundY, state: 'idle' });
+        }
+    }
+
     draw(ctx, { width, height, exclusionAreas }) {
         this.width = width;
         this.height = height;
         this.groundY = height - 20;
 
-        // Pot placement (avoiding exclusionAreas)
         if (this.pots.length < 3 && Math.random() < 0.05) {
             let rx = 20 + Math.random() * (width - 40);
             let ry = this.groundY;
 
-            // Check if placement is on ground and not in exclusion area
             const isOverlap = exclusionAreas.some(area => {
                 return rx > area.x - 10 && rx < area.x + area.width + 10 &&
                        ry > area.y - 10 && ry < area.y + area.height + 10;
@@ -54,7 +61,6 @@ export default class HeroPot extends AnimationBase {
             }
         }
 
-        // Hero state logic
         if (this.hero.state === 'walking') {
             if (this.pots.length > 0) {
                 const targetPot = this.pots[0];
@@ -77,7 +83,6 @@ export default class HeroPot extends AnimationBase {
             if (this.hero.timer <= 0) {
                 this.hero.state = 'walking_with_pot';
 
-                // Find a target point OUTSIDE exclusion areas to throw at
                 let tx = Math.random() * width;
                 let ty = this.groundY;
                 let attempts = 0;
@@ -116,7 +121,6 @@ export default class HeroPot extends AnimationBase {
                 const pot = this.pots.find(p => p.state === 'held');
                 if (pot) {
                     pot.state = 'broken';
-                    // Create shards
                     for (let i = 0; i < 6; i++) {
                         this.hero.shards.push({
                             x: pot.x, y: pot.y,
@@ -130,7 +134,6 @@ export default class HeroPot extends AnimationBase {
             }
         }
 
-        // Draw Shards
         ctx.fillStyle = '#fff';
         this.hero.shards.forEach(s => {
             s.x += s.vx; s.y += s.vy; s.vy += 0.2; s.life--;
@@ -138,7 +141,6 @@ export default class HeroPot extends AnimationBase {
         });
         this.hero.shards = this.hero.shards.filter(s => s.life > 0);
 
-        // Draw Pots
         this.pots.forEach(p => {
             if (p.state === 'idle') {
                 ctx.fillRect(p.x - 5, p.y - 10, 10, 10);
@@ -149,13 +151,10 @@ export default class HeroPot extends AnimationBase {
             }
         });
 
-        // Draw Hero (simple stickman)
-        ctx.fillStyle = '#fff';
         const hx = this.hero.x;
         const hy = this.hero.y;
-        ctx.fillRect(hx - 2, hy - 15, 4, 15); // Body
-        ctx.fillRect(hx - 4, hy - 18, 8, 4); // Head
-        // Arms
+        ctx.fillRect(hx - 2, hy - 15, 4, 15);
+        ctx.fillRect(hx - 4, hy - 18, 8, 4);
         if (this.hero.state === 'lifting' || this.hero.state === 'walking_with_pot' || this.hero.state === 'throwing') {
             ctx.fillRect(hx - 6, hy - 15, 2, 8);
             ctx.fillRect(hx + 4, hy - 15, 2, 8);
