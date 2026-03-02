@@ -1,6 +1,18 @@
 # QuickLog-Solo: 開発者ガイド
 
-このドキュメントでは、QuickLog-Solo の内部構造、開発ワークフロー、および技術的な実装詳細について説明します。設計思想については [AGENTS.md](AGENTS.md) を参照してください。
+このドキュメントでは、QuickLog-Solo の内部構造、開発ワークフロー、および技術的な実装詳細について説明します。
+設計思想や判断の背景については [spec.md](spec.md) および [AGENTS.md](../AGENTS.md) を参照してください。
+
+## 0. 技術スタック
+- **言語:** Vanilla JS (ES Modules)
+- **スタイル:** CSS3 (Material 3 Design Tokens)
+- **マークアップ:** HTML5
+- **ブラウザ API:**
+  - Chrome Extension Manifest V3 (Side Panel API)
+  - Firefox Sidebar Action API
+  - IndexedDB (Data Storage)
+  - Web Workers (Animation logic isolation)
+  - BroadcastChannel (State synchronization)
 
 ## 1. アーキテクチャ概要
 
@@ -11,41 +23,53 @@
 ```mermaid
 graph TD
     subgraph Browser
-        SW[sw.js]
+        SW[background.js <br/>Service Worker]
         App[app.html]
     end
 
     subgraph Application
-        App[js/app.js <br/>UI Orchestrator]
+        AppJS[js/app.js <br/>UI Orchestrator]
         Logic[js/logic.js <br/>Business Logic]
         DB[js/db.js <br/>Data Access Layer]
+        Utils[js/utils.js <br/>Utilities]
+        I18n[js/i18n.js <br/>Internationalization]
+        Anim[js/animations.js <br/>Animation Engine]
     end
 
-    Index --> App
-    SW -.-> Index
-    App --> Logic
-    App --> DB
+    subgraph Workers
+        AnimWorker[js/animation_worker.js]
+        AnimModules[js/animation/*.js]
+    end
+
+    App --> AppJS
+    AppJS --> Logic
+    AppJS --> DB
+    AppJS --> Utils
+    AppJS --> I18n
+    AppJS --> Anim
     Logic --> DB
+    Anim --> AnimWorker
+    AnimWorker --> AnimModules
 ```
 
 ### 各モジュールの役割
 
 -   **js/app.js (UI層):**
-    -   DOM要素の取得と操作。
-    -   イベントリスナーの設定。
-    -   UI状態の同期（`updateUI`）。
-    -   ユーザーへの通知（トースト、確認ダイアログ）。
+    -   DOM要素の取得と操作、イベントリスナーの設定。
+    -   UI状態の同期（`updateUI`, `syncState`）。
+    -   ユーザーへの通知（トースト、カスタム確認ダイアログ）。
+    -   URLパラメータによる状態インジェクション機能（`handleTestParameters`）。
 -   **js/logic.js (ロジック層):**
     -   タスクの開始・停止・一時停止の純粋な状態遷移ロジック。
-    -   時間のフォーマット計算。
-    -   アニメーション状態（clip-path）の計算。
+    -   時間のフォーマット計算 (`formatDuration`, `formatLogDuration`)。
     -   DOMに直接触れず、テストが容易な形式で記述。
--   **js/app.js (テスト・デバッグ機能):**
-    -   URLパラメータによる状態インジェクション機能（`handleTestParameters`）。
 -   **js/db.js (データ層):**
     -   IndexedDB (Raw API) のカプセル化。
-    -   CRUD操作の提供。
-    -   データベースの初期化、マイグレーション、クリーンアップ。
+    -   CRUD操作、初期化、マイグレーション、クリーンアップ、自動修復。
+-   **js/animations.js (描画エンジン):**
+    -   Canvas 描画の統括、Web Worker (`animation_worker.js`) との通信。
+-   **js/utils.js:** 共通定数、バリデーション、セキュリティ（HTMLエスケープ）。
+-   **js/i18n.js / messages.js:** 多言語対応ロジックと翻訳データ。
 
 ---
 
@@ -85,13 +109,13 @@ sequenceDiagram
 - **状態の復元:** PiP ウィンドウが閉じられた際、元の座標とサイズを復元し、`window.focus()` を呼び出します。
 - **配置の安全性:** `js/app.js` の `recoverWindowPosition` により、起動時にウィンドウが画面外にある場合や、前回の PiP 状態が残っている場合は、自動的に視認可能な位置に戻します。これはクラッシュ等で復元処理がスキップされた場合の備えで、`localStorage` を用いた状態管理により確実に復元を行います。
 
-### アニメーション・ロジック (Clip-path)
+### 背景アニメーション (Canvas & Web Worker)
 
-タスク実行中の背景アニメーションは、`js/logic.js` の `getAnimationState` によって制御されます。
--   **偶数分:** 右から左へ「白 → アクセントカラー」で塗りつぶし。
--   **奇数分:** 右から左へ「アクセントカラー → 白」で塗りつぶし（クリッピング解除）。
--   **一時停止時:** アニメーションを停止し、状態グリフ（⏸）を点滅させます。
-これにより、視覚的に「進んでいる」感覚と「リフレッシュ」を繰り返します。
+タスク実行中の背景アニメーションは、`js/animations.js` および Web Worker 上で実行されるモジュール群によって制御されます。
+- **Web Worker:** アニメーションロジックはメインスレッドから分離された `animation_worker.js` 内で実行され、パフォーマンスの安定とセキュリティを確保します。
+- **LCD スタイル:** 全てのアニメーションは 4 段階のドットサイズを持つ LCD ドットマトリクススタイルで描画されます。
+- **自動遮蔽 (Exclusion Areas):** 前面のテキスト（カテゴリ名、タイマー）が隠れないよう、エンジン側で描画を回避します。
+詳細な仕様は [animation_module_spec.md](animation_module_spec.md) を参照してください。
 
 ---
 
@@ -101,7 +125,32 @@ sequenceDiagram
 
 ---
 
-## 4. テストと品質管理
+## 4. 開発ワークフロー
+
+### ディレクトリ構成
+- `src/`: 拡張機能のソースコード一式。
+  - `js/`: アプリケーションロジック。
+    - `animation/`: 個別のアニメーションモジュール。
+  - `css/`: アプリ用スタイルシート。
+  - `assets/`: アイコン等の静的アセット。
+  - `app.html`: アプリ本体のHTML。
+- `index.html`: ランディングページ。
+- `scripts/`: ビルドや管理用のスクリプト。
+- `tests/`: テストコード。
+- `docs/`: 仕様書などのドキュメント。
+
+### バージョン管理
+`npm run version:bump` コマンドにより、`src/version.json`, `package.json`, `src/manifest.*.json` を一括更新します。
+
+### ビルドとパッケージング
+`npm run build` により、以下の処理を自動実行します：
+1. アニメーションレジストリ (`src/js/animation_registry.js`) の生成。
+2. バージョン整合性チェック。
+3. `releases/` ディレクトリへの ZIP パッケージ作成。
+
+---
+
+## 5. テストと品質管理
 
 ### テスト構成
 
@@ -130,8 +179,18 @@ npx stylelint "**/*.css"
 
 ---
 
-## 5. 拡張・修正時の注意点
+## 6. 拡張・修正時の注意点
 
 1.  **ドキュメントの更新:** 実装の修正や拡張を行った場合、必ず `README.md` および `README_DEV.md` を更新してください。
 2.  **Vanilla JS の維持:** 新たな外部ライブラリ（npm パッケージ）の導入は、開発用ツール（devDependencies）を除き、原則禁止です。
 3.  **互換性:** `js/db.js` のスキーマを変更する場合は、`setupInitialData` 内で適切なデータ移行（Migration）処理を記述してください。
+4.  **定数化の徹底:** マジックナンバーや DOM ID は必ず定数化してください。
+
+---
+
+## 7. 関連ドキュメント
+
+- [製品仕様書 (spec.md)](spec.md)
+- [テスト計画・ケース定義書 (README_TEST.md)](README_TEST.md)
+- [背景アニメーション・モジュール仕様書 (animation_module_spec.md)](animation_module_spec.md)
+- [AI エージェント指針 (AGENTS.md)](../AGENTS.md)

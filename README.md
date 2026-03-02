@@ -46,18 +46,4 @@
 - **フォント切り替え:** 視認性の高い複数のフォントから、好みに合わせて表示を切り替えられます。
 
 ## 開発者向け情報
-- **技術スタック:** Vanilla JS, HTML5, CSS3 (Material 3).
-- **マニフェスト:** Chrome Extension Manifest V3 準拠（Firefox対応版を含む）。
-- **ディレクトリ構成:**
-  - `src/`: 拡張機能のソースコード一式。
-    - `js/`: アプリケーションロジック (`app.js`, `logic.js` 等)。
-    - `css/`: アプリ用スタイルシート。
-    - `assets/`: アイコン等の静的アセット。
-    - `app.html`: アプリ本体のHTML。
-  - `index.html`: ランディングページ。
-  - `scripts/`: ビルドや管理用のスクリプト。
-  - `tests/`: テストコード。
-  - `docs/`: 仕様書などのドキュメント。
-- **バージョン管理:** `version.json` および `package.json`, `manifest.json` で管理されています。
-- **テスト:** `npm test` で単体テストを実行できます。
-- **仕様書:** `docs/spec.md` を参照してください。
+開発環境の構築、ディレクトリ構成、テスト方法などの技術的な詳細は [docs/README_DEV.md](docs/README_DEV.md) を参照してください。
