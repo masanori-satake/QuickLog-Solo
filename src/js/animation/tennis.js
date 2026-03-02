@@ -114,6 +114,7 @@ export default class Tennis extends AnimationBase {
         ctx.stroke();
         ctx.setLineDash([]);
 
+        ctx.font = "16px monospace";
         ctx.fillText(this.scoreL, width / 2 - 30, 20);
         ctx.fillText(this.scoreR, width / 2 + 20, 20);
 
