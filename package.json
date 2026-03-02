@@ -9,7 +9,8 @@
   "scripts": {
     "test": "python3 scripts/generate_animation_registry.py && node --experimental-vm-modules ./node_modules/.bin/jest",
     "test:e2e": "python3 scripts/generate_animation_registry.py && playwright test",
-    "build": "python3 scripts/generate_animation_registry.py && python3 scripts/check_version.py && python3 scripts/create_package.py"
+    "build": "python3 scripts/generate_animation_registry.py && python3 scripts/check_version.py && python3 scripts/create_package.py",
+    "version:bump": "python3 scripts/bump_version.py"
   },
   "repository": {
     "type": "git",

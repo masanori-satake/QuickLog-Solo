@@ -102,7 +102,10 @@
 - **予約語の保護:** システム予約文字列（`__IDLE__` 等）をカテゴリ名として使用することを禁止する。
 
 ### バージョニングポリシー
-- `[メジャー].[マイナー].[パッチ]` 形式で `src/version.json`, `package.json`, `src/manifest.*.json` で管理。`scripts/check_version.py` によって整合性がチェックされる。
+- `[メジャー].[マイナー].[パッチ]` 形式で `src/version.json`, `package.json`, `src/manifest.*.json` で管理。
+- **自動採番:** Conventional Commits (`feat:`, `fix:`, `BREAKING CHANGE:`) に基づき、`scripts/bump_version.py` によって自動的に採番・更新される。
+- **整合性チェック:** `scripts/check_version.py` によって各ファイルのバージョン一致が確認される。
+- **影響度検証:** `scripts/verify_version_impact.py` によって、変更内容に対して適切なバージョンアップが行われているかが CI 上で自動検証される。
 
 ### 静的デプロイメント (Vercel)
 - **vercel.json:** `outputDirectory: "."` および `cleanUrls: true` を設定し、ルートの `index.html` および `src/` 配下のアセットが正しく参照されるように構成する。
