@@ -75,6 +75,76 @@
             </section>
         </main>
 
+        <!-- Report Modal -->
+        <div id="report-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2 data-i18n="copy-report-btn">日報コピー</h2>
+
+                <div class="report-date-selector">
+                    <button id="report-date-prev" class="icon-btn"><span class="material-symbols-outlined">chevron_left</span></button>
+                    <div id="report-date-display-box">
+                        <div id="report-date-display" tabindex="0">
+                            <span id="report-date-text">-</span>
+                            <span class="material-symbols-outlined" style="font-size: 1.2rem;">calendar_month</span>
+                        </div>
+                        <div id="report-calendar-container" class="hidden">
+                            <!-- JS renders calendar here -->
+                        </div>
+                    </div>
+                    <button id="report-date-next" class="icon-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+                </div>
+
+                <div class="report-options">
+                    <div class="report-option-row">
+                        <div class="report-option-item">
+                            <span class="material-symbols-outlined" data-i18n-title="report-format-title">format_list_bulleted</span>
+                            <select id="report-format-select">
+                                <option value="markdown" data-i18n="report-format-markdown">Markdown</option>
+                                <option value="wiki" data-i18n="report-format-wiki">Wiki markup</option>
+                                <option value="csv" data-i18n="report-format-csv">CSV</option>
+                                <option value="text-table" data-i18n="report-format-text-table">Text (Table)</option>
+                                <option value="text-plain" data-i18n="report-format-text-plain">Text (Plain)</option>
+                            </select>
+                        </div>
+                        <div class="report-option-item">
+                            <span class="material-symbols-outlined" data-i18n-title="report-emoji-title">mood</span>
+                            <select id="report-emoji-select">
+                                <option value="keep" data-i18n="report-emoji-keep">あり</option>
+                                <option value="remove" data-i18n="report-emoji-remove">なし</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="report-option-row">
+                        <div class="report-option-item">
+                            <span class="material-symbols-outlined" data-i18n-title="report-endtime-title">history</span>
+                            <select id="report-endtime-select">
+                                <option value="none" data-i18n="report-endtime-none">なし</option>
+                                <option value="show" data-i18n="report-endtime-show">あり</option>
+                            </select>
+                        </div>
+                        <div class="report-option-item">
+                            <span class="material-symbols-outlined" data-i18n-title="report-duration-title">timer</span>
+                            <select id="report-duration-select">
+                                <option value="none" data-i18n="report-duration-none">なし</option>
+                                <option value="right" data-i18n="report-duration-right">右</option>
+                                <option value="bottom" data-i18n="report-duration-bottom">下</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="report-preview-container">
+                    <pre id="report-preview"></pre>
+                </div>
+
+                <button id="report-copy-confirm-btn" class="primary-btn">
+                    <span class="material-symbols-outlined">content_paste</span>
+                    <span data-i18n="toast-copied">コピー</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Settings Popup -->
         <div id="settings-popup" class="modal hidden">
             <div class="modal-content">

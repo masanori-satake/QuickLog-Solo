@@ -17,6 +17,7 @@ export const SETTING_KEY_FONT = 'font';
 export const SETTING_KEY_ANIMATION = 'animation';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 export const SETTING_KEY_LANGUAGE = 'language';
+export const SETTING_KEY_REPORT_SETTINGS = 'reportSettings';
 
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
@@ -142,6 +143,7 @@ export async function getCurrentAppState() {
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
     const animation = await dbGet(STORE_SETTINGS, SETTING_KEY_ANIMATION);
     const language = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
+    const reportSettings = await dbGet(STORE_SETTINGS, SETTING_KEY_REPORT_SETTINGS);
     const categories = await dbGetAll(STORE_CATEGORIES);
 
     const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
@@ -160,6 +162,7 @@ export async function getCurrentAppState() {
         font: font ? font.value : null,
         animation: animation ? animation.value : 'matrix_code',
         language: language ? language.value : 'auto',
+        reportSettings: reportSettings ? reportSettings.value : null,
         categories,
         activeTask
     };
