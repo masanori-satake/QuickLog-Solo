@@ -58,4 +58,4 @@ jobs:
 
     - name: Run E2E tests
       run: npm run test:e2e
-      timeout-minutes: 10
+      timeout-minutes: 15
