@@ -6,7 +6,7 @@ import {
 } from './db.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport } from './logic.js';
-import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
+import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
 import { AnimationEngine } from './animations.js';
 import { animations } from './animation_registry.js';
 
@@ -159,13 +159,27 @@ function startTimer() {
     timerInterval = setInterval(updateTimer, 1000);
 }
 
-function updateTimer() {
+async function updateTimer() {
     if (!activeTask) {
         if (timerInterval) clearInterval(timerInterval);
         return;
     }
 
-    const elapsed = Date.now() - activeTask.startTime;
+    const now = Date.now();
+
+    // Check Auto-stop
+    const autoStopSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP);
+    if (autoStopSetting ? autoStopSetting.value : true) {
+        const stopTime = getAutoStopTimeIfPassed(activeTask.startTime, now);
+        if (stopTime) {
+            console.log('QuickLog-Solo: Auto-stop triggered');
+            await stopTask();
+            updateUI();
+            return;
+        }
+    }
+
+    const elapsed = now - activeTask.startTime;
     const timeStr = formatDuration(elapsed).toString();
 
     const elements = [ID_ELAPSED_TIME, ID_ELAPSED_TIME_OVERLAY];
@@ -256,20 +270,41 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
 }
 
 async function renderCategories() {
-    let categories;
+    let allCategories;
     try {
-        categories = await dbGetAll(STORE_CATEGORIES);
+        allCategories = await dbGetAll(STORE_CATEGORIES);
     } catch (e) {
         console.error('Failed to get categories:', e);
         return;
     }
-    categories.sort((a, b) => (a.order || 0) - (b.order || 0));
+    allCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE) || 1;
+    // Handle Page Breaks
+    const pages = [[]];
+    let currentPageIdx = 0;
+    allCategories.forEach(cat => {
+        if (cat.name === SYSTEM_CATEGORY_PAGE_BREAK) {
+            if (pages[currentPageIdx].length > 0) {
+                pages.push([]);
+                currentPageIdx++;
+            }
+        } else {
+            if (pages[currentPageIdx].length >= ITEMS_PER_PAGE) {
+                pages.push([]);
+                currentPageIdx++;
+            }
+            pages[currentPageIdx].push(cat);
+        }
+    });
+    // Remove last page if empty
+    if (pages.length > 1 && pages[pages.length - 1].length === 0) {
+        pages.pop();
+    }
+
+    const totalPages = pages.length;
     if (currentCategoryPage >= totalPages) currentCategoryPage = totalPages - 1;
 
-    const start = currentCategoryPage * ITEMS_PER_PAGE;
-    const pageCategories = categories.slice(start, start + ITEMS_PER_PAGE);
+    const pageCategories = pages[currentCategoryPage] || [];
 
     const activeTaskCatName = activeTask ? activeTask.category : null;
 
@@ -500,6 +535,16 @@ async function syncState() {
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
 
+    const autoStopToggle = getEl('auto-stop-toggle');
+    if (autoStopToggle) {
+        autoStopToggle.checked = state.autoStop;
+        autoStopToggle.onchange = async (e) => {
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: e.target.checked });
+            // Ensure tooltip is updated if needed, though here it's static
+            broadcastSync();
+        };
+    }
+
     // Update Animation options
     currentAnimationType = state.animation || 'matrix_code';
     updateAnimationSelect();
@@ -648,6 +693,7 @@ async function updateUI() {
             if (el) {
                 el.textContent = iconName;
                 el.className = `material-symbols-outlined ${statusClass}`;
+                el.title = isPaused ? t('tooltip-status-paused') : t('tooltip-status-running');
                 if (isPaused) {
                     el.classList.add('blink');
                 } else {
@@ -693,6 +739,7 @@ async function updateUI() {
             if (el) {
                 el.textContent = 'stop';
                 el.className = 'material-symbols-outlined status-stopped';
+                el.title = t('tooltip-status-stopped');
             }
         });
         const nameElements = [getEl('current-task-name-text'), getEl('current-task-name-text-overlay')];
@@ -949,7 +996,7 @@ async function renderCategoryEditor() {
     const list = getEl(ID_CATEGORY_EDITOR_LIST);
     if (!list) return;
     let categories = await dbGetAll(STORE_CATEGORIES);
-    categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => a.order - b.order);
+    categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     list.innerHTML = '';
 
     const colors = [
@@ -957,11 +1004,13 @@ async function renderCategoryEditor() {
         'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
     ];
 
-    categories.forEach(cat => {
+    categories.forEach((cat, idx) => {
         const item = createEl('div');
-        item.className = 'category-editor-item';
+        const isPageBreak = cat.name === SYSTEM_CATEGORY_PAGE_BREAK;
+        item.className = 'category-editor-item' + (isPageBreak ? ' page-break-item' : '');
         item.draggable = true;
         item.dataset.name = cat.name;
+        item.dataset.index = idx;
 
         const lang = getEl(ID_LANGUAGE_SELECT)?.value === 'auto' ? detectBrowserLanguage() : getEl(ID_LANGUAGE_SELECT)?.value || 'en';
         const getAnimLabel = (anim) => {
@@ -971,46 +1020,60 @@ async function renderCategoryEditor() {
             return anim.metadata.name;
         };
 
-        const animOptions = [
-            { value: 'none', label: t('anim-none'), description: '' },
-            { value: 'default', label: t('anim-default'), description: '' },
-            ...animations.map(anim => {
-                let desc = '';
-                if (anim.metadata.description) {
-                    desc = (typeof anim.metadata.description === 'object')
-                        ? (anim.metadata.description[lang] || anim.metadata.description['en'] || '')
-                        : anim.metadata.description;
-                }
-                return { value: anim.id, label: getAnimLabel(anim), description: desc };
-            })
-        ];
+        if (isPageBreak) {
+            item.innerHTML = `
+                <div class="cat-editor-row row-1">
+                    <span class="material-symbols-outlined drag-handle" style="cursor: grab;" title="${t('tooltip-drag-handle')}">drag_indicator</span>
+                    <span class="page-break-label"><span class="material-symbols-outlined">insert_page_break</span> <span>${t('page-break')}</span></span>
+                    <button class="delete-cat-btn" title="${t('tooltip-delete-category')}">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            `;
+            item.dataset.name = cat.name;
+        } else {
+            const animOptions = [
+                { value: 'none', label: t('anim-none'), description: '' },
+                { value: 'default', label: t('anim-default'), description: '' },
+                ...animations.map(anim => {
+                    let desc = '';
+                    if (anim.metadata.description) {
+                        desc = (typeof anim.metadata.description === 'object')
+                            ? (anim.metadata.description[lang] || anim.metadata.description['en'] || '')
+                            : anim.metadata.description;
+                    }
+                    return { value: anim.id, label: getAnimLabel(anim), description: desc };
+                })
+            ];
 
-        item.innerHTML = `
-            <div class="cat-editor-row row-1">
-                <span class="material-symbols-outlined drag-handle" style="cursor: grab;">drag_indicator</span>
-                <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
-                <button class="delete-cat-btn" title="${t('delete')}">
-                    <span class="material-symbols-outlined">delete</span>
-                </button>
-            </div>
-            <div class="cat-editor-row row-2">
-                <div class="custom-color-dropdown">
-                    <div class="color-dropdown-trigger" style="background-color: ${getColorCode(cat.color)}"></div>
-                    <div class="color-dropdown-menu hidden">
-                        ${colors.map(color => `<div class="color-dropdown-item ${color === cat.color ? 'selected' : ''}" data-color="${color}" style="background-color: ${getColorCode(color)}"></div>`).join('')}
+            item.innerHTML = `
+                <div class="cat-editor-row row-1">
+                    <span class="material-symbols-outlined drag-handle" style="cursor: grab;" title="${t('tooltip-drag-handle')}">drag_indicator</span>
+                    <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
+                    <button class="delete-cat-btn" title="${t('tooltip-delete-category')}">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+                <div class="cat-editor-row row-2">
+                    <div class="custom-color-dropdown">
+                        <div class="color-dropdown-trigger" style="background-color: ${getColorCode(cat.color)}"></div>
+                        <div class="color-dropdown-menu hidden">
+                            ${colors.map(color => `<div class="color-dropdown-item ${color === cat.color ? 'selected' : ''}" data-color="${color}" style="background-color: ${getColorCode(color)}"></div>`).join('')}
+                        </div>
+                    </div>
+                    <select class="category-edit-animation">
+                        ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${escapeHtml(opt.label)}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="cat-editor-row row-3">
+                    <div class="tag-container">
+                        <div class="tag-list"></div>
+                        <input type="text" class="tag-input" placeholder="${t('placeholder-tags')}">
                     </div>
                 </div>
-                <select class="category-edit-animation">
-                    ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${escapeHtml(opt.label)}</option>`).join('')}
-                </select>
-            </div>
-            <div class="cat-editor-row row-3">
-                <div class="tag-container">
-                    <div class="tag-list"></div>
-                    <input type="text" class="tag-input" data-i18n-placeholder="placeholder-tags" placeholder="${t('placeholder-tags')}">
-                </div>
-            </div>
-        `;
+            `;
+            item.dataset.name = cat.name;
+        }
 
         // --- Row 1 Events ---
         const input = item.querySelector('.category-edit-name');
@@ -1130,7 +1193,11 @@ async function renderCategoryEditor() {
         renderTags();
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
-            if (await showConfirm(t('confirm-delete-category', { name: cat.name }))) {
+            const confirmMsg = isPageBreak ? t('confirm-delete-page-break') : t('confirm-delete-category', { name: cat.name });
+            if (await showConfirm(confirmMsg)) {
+                // To support multiple page breaks with the same "name" (SYSTEM_CATEGORY_PAGE_BREAK),
+                // we'll need to filter and find by other means or ensure name is unique.
+                // Since STORE_CATEGORIES uses name as keyPath, we MUST make it unique if we want multiples.
                 await dbDelete(STORE_CATEGORIES, cat.name);
                 updateUI();
                 renderCategoryEditor();
@@ -1161,9 +1228,14 @@ async function renderCategoryEditor() {
     list.ondrop = async (e) => {
         e.preventDefault();
         const items = [...list.querySelectorAll('.category-editor-item')];
+        const currentCategories = await dbGetAll(STORE_CATEGORIES);
+        // Map current categories by name for easy lookup
+        const catMap = new Map(currentCategories.map(c => [c.name, c]));
+
+        await dbClear(STORE_CATEGORIES);
         for (let i = 0; i < items.length; i++) {
             const name = items[i].dataset.name;
-            const cat = await dbGet(STORE_CATEGORIES, name);
+            const cat = catMap.get(name);
             if (cat) {
                 cat.order = i;
                 await dbPut(STORE_CATEGORIES, cat);
@@ -1381,16 +1453,40 @@ function setupEventListeners() {
         }
     });
 
+    getEl('add-page-break-btn')?.addEventListener('click', async () => {
+        const categories = await dbGetAll(STORE_CATEGORIES);
+        // Ensure unique name for each page break to work with current keyPath:'name'
+        const pbName = `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}`;
+        await dbPut(STORE_CATEGORIES, {
+            name: pbName,
+            order: categories.length
+        });
+        renderCategories();
+        renderCategoryEditor();
+        broadcastSync();
+    });
+
     // Category Import/Export
     getEl(ID_EXPORT_CATEGORIES_BTN)?.addEventListener('click', async () => {
         const categories = await dbGetAll(STORE_CATEGORIES);
-        // Exclude system idle category from export just in case it's in the store (it shouldn't be, but good to be safe)
+        categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         const exportData = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE);
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+
+        // Convert to NDJSON
+        const ndjson = exportData.map(c => {
+            const copy = { ...c };
+            delete copy.order; // Remove order as per requirement
+            if (copy.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+                return JSON.stringify({ type: 'page-break' });
+            }
+            return JSON.stringify(copy);
+        }).join('\n');
+
+        const blob = new Blob([ndjson], { type: 'application/x-ndjson' });
         const url = URL.createObjectURL(blob);
         const a = createEl('a');
         a.href = url;
-        a.download = `quicklog_categories_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `quicklog_categories_${new Date().toISOString().slice(0, 10)}.ndjson`;
         a.click();
     });
 
@@ -1405,11 +1501,8 @@ function setupEventListeners() {
 
         try {
             const text = await file.text();
-            const importedCategories = JSON.parse(text);
-
-            if (!Array.isArray(importedCategories)) {
-                throw new Error('Invalid format: expected an array of categories.');
-            }
+            const lines = text.split('\n').filter(line => line.trim());
+            const importedCategories = lines.map(line => JSON.parse(line));
 
             const importMode = document.querySelector('input[name="import-mode"]:checked')?.value || 'append';
 
@@ -1425,20 +1518,25 @@ function setupEventListeners() {
             const currentCategories = await dbGetAll(STORE_CATEGORIES);
             let maxOrder = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
 
-            for (const cat of importedCategories) {
-                if (cat.name && isValidCategoryName(cat.name)) {
+            for (const item of importedCategories) {
+                if (item.type === 'page-break') {
+                    await dbAdd(STORE_CATEGORIES, {
+                        name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                        order: ++maxOrder
+                    });
+                } else if (item.name && isValidCategoryName(item.name)) {
                     // Check for duplicates in append mode
                     if (importMode === 'append') {
-                        const existing = await dbGet(STORE_CATEGORIES, cat.name);
+                        const existing = currentCategories.find(c => c.name === item.name);
                         if (existing) continue;
                     }
 
-                    await dbPut(STORE_CATEGORIES, {
-                        name: cat.name,
-                        color: cat.color || 'primary',
-                        order: cat.order !== undefined ? cat.order : ++maxOrder,
-                        tags: cat.tags || '',
-                        animation: cat.animation || 'default'
+                    await dbAdd(STORE_CATEGORIES, {
+                        name: item.name,
+                        color: item.color || 'primary',
+                        order: ++maxOrder,
+                        tags: item.tags || '',
+                        animation: item.animation || 'default'
                     });
                 }
             }

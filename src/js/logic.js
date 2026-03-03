@@ -186,6 +186,21 @@ function formatAsText(items, options, isTable) {
     }
 }
 
+/**
+ * Checks if the task should be auto-stopped at 23:59:59 of its start day.
+ * Returns the auto-stop time (23:59:59.999) if it has passed, otherwise null.
+ */
+export function getAutoStopTimeIfPassed(startTime, now = Date.now()) {
+    const startDate = new Date(startTime);
+    const autoStopDate = new Date(startTime);
+    autoStopDate.setHours(23, 59, 59, 999);
+
+    if (now >= autoStopDate.getTime()) {
+        return autoStopDate.getTime();
+    }
+    return null;
+}
+
 export async function startTaskLogic(categoryName, activeTask, resumableCategory = null, color = null, tags = '') {
     if (activeTask && activeTask.category === categoryName && !activeTask.isPaused) return activeTask;
 

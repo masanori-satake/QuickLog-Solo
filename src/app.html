@@ -18,9 +18,9 @@
     <div id="app">
         <header>
             <div id="header-btns">
-                <button id="copy-report-btn" data-i18n-title="copy-report-btn"><span class="material-symbols-outlined">content_paste</span></button>
-                <button id="copy-aggregation-btn" data-i18n-title="copy-aggregation-btn"><span class="material-symbols-outlined">assessment</span></button>
-                <button id="settings-toggle" data-i18n-title="settings"><span class="material-symbols-outlined">settings</span></button>
+                <button id="copy-report-btn" data-i18n-title="tooltip-copy-report"><span class="material-symbols-outlined">content_paste</span></button>
+                <button id="copy-aggregation-btn" data-i18n-title="tooltip-copy-aggregation"><span class="material-symbols-outlined">assessment</span></button>
+                <button id="settings-toggle" data-i18n-title="tooltip-settings"><span class="material-symbols-outlined">settings</span></button>
             </div>
         </header>
 
@@ -84,7 +84,7 @@
                 <div class="report-date-selector">
                     <button id="report-date-prev" class="icon-btn"><span class="material-symbols-outlined">chevron_left</span></button>
                     <div id="report-date-display-box">
-                        <div id="report-date-display" tabindex="0">
+                        <div id="report-date-display" tabindex="0" data-i18n-title="tooltip-calendar">
                             <span id="report-date-text">-</span>
                             <span class="material-symbols-outlined">calendar_month</span>
                         </div>
@@ -161,9 +161,9 @@
                 <div id="general-tab" class="tab-content">
                     <div class="setting-item">
                         <label style="display: flex; align-items: center; gap: 4px;">
-                            <span class="material-symbols-outlined" style="font-size: 1.2rem;">translate</span>
+                            <span class="material-symbols-outlined" style="font-size: 1.2rem;" data-i18n-title="tooltip-language-select">translate</span>
                         </label>
-                        <select id="language-select">
+                        <select id="language-select" data-i18n-title="tooltip-language-select">
                             <option value="auto" data-i18n="lang-auto">ブラウザの表示言語</option>
                             <option value="en" data-i18n="lang-en-native">English</option>
                             <option value="ja" data-i18n="lang-ja-native">日本語</option>
@@ -177,7 +177,7 @@
                     </div>
                     <div class="setting-item">
                         <label data-i18n="setting-theme">テーマ</label>
-                        <select id="theme-select">
+                        <select id="theme-select" data-i18n-title="tooltip-theme-select">
                             <option value="system" data-i18n="theme-system">システム設定に従う</option>
                             <option value="light" data-i18n="theme-light">ライトモード</option>
                             <option value="dark" data-i18n="theme-dark">ダークモード</option>
@@ -185,15 +185,24 @@
                     </div>
                     <div class="setting-item">
                         <label data-i18n="setting-font">表示フォント</label>
-                        <select id="font-select">
+                        <select id="font-select" data-i18n-title="tooltip-font-select">
                             <!-- JSで生成 -->
                         </select>
                     </div>
                     <div class="setting-item">
                         <label data-i18n="setting-animation">背景アニメーション</label>
-                        <select id="animation-select">
+                        <select id="animation-select" data-i18n-title="tooltip-animation-select">
                             <!-- JSで生成 -->
                         </select>
+                    </div>
+                    <div class="setting-item">
+                        <label style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                            <span style="display: flex; align-items: center; gap: 4px;" data-i18n-title="tooltip-auto-stop">
+                                <span class="material-symbols-outlined" style="font-size: 1.2rem;">timer_off</span>
+                                <span data-i18n="setting-auto-stop">自動終了機能</span>
+                            </span>
+                            <input type="checkbox" id="auto-stop-toggle" class="m3-switch" checked>
+                        </label>
                     </div>
                     <div class="setting-item">
                         <button id="export-csv-btn" data-i18n="btn-export-csv">CSVエクスポート</button>
@@ -207,16 +216,19 @@
                         <!-- カテゴリ編集アイテムがここに動的に追加される -->
                     </div>
                     <div id="add-category-box-settings">
+                        <button id="add-page-break-btn" class="icon-btn" data-i18n-title="btn-add-page-break">
+                            <span class="material-symbols-outlined">insert_page_break</span>
+                        </button>
                         <input type="text" id="new-category-name-settings" data-i18n-placeholder="placeholder-new-category" placeholder="新しいカテゴリ...">
-                        <button id="add-category-btn-settings">+</button>
+                        <button id="add-category-btn-settings" class="icon-btn">+</button>
                     </div>
 
                     <div class="category-maintenance-box">
                         <div class="setting-item">
                             <label data-i18n="category-backup">カテゴリーのバックアップ</label>
                             <div class="maintenance-btns">
-                                <button id="export-categories-btn" data-i18n="btn-export-json">エクスポート (JSON)</button>
-                                <button id="import-categories-btn" data-i18n="btn-import-json">インポート (JSON)</button>
+                                <button id="export-categories-btn" data-i18n="btn-export-json">エクスポート (NDJSON)</button>
+                                <button id="import-categories-btn" data-i18n="btn-import-json">インポート (NDJSON)</button>
                             </div>
                             <div class="import-mode-selector">
                                 <span data-i18n="import-setting">インポート設定:</span>
@@ -227,7 +239,7 @@
                                     <input type="radio" name="import-mode" value="overwrite"> <span data-i18n="import-overwrite">上書き</span>
                                 </label>
                             </div>
-                            <input type="file" id="category-file-input" style="display:none" accept=".json">
+                            <input type="file" id="category-file-input" style="display:none" accept=".ndjson">
                         </div>
                     </div>
                 </div>

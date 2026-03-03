@@ -3,6 +3,7 @@
  */
 
 export const SYSTEM_CATEGORY_IDLE = '__IDLE__';
+export const SYSTEM_CATEGORY_PAGE_BREAK = '__PAGE_BREAK__';
 
 /**
  * Escapes HTML special characters to prevent XSS.
@@ -83,7 +84,7 @@ export function isValidCategoryName(name) {
     if (!name) return false;
     const trimmed = name.trim();
     if (trimmed.length === 0 || trimmed.length > 50) return false;
-    if (trimmed === SYSTEM_CATEGORY_IDLE) return false;
+    if (trimmed === SYSTEM_CATEGORY_IDLE || trimmed === SYSTEM_CATEGORY_PAGE_BREAK) return false;
     return true;
 }
 
