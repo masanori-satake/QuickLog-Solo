@@ -839,7 +839,7 @@ async function renderCategoryEditor() {
 
         const animSelectHtml = `
             <select class="category-edit-animation" style="flex: 1; font-size: 0.75rem; padding: 2px 4px; border-radius: 4px;">
-                ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${opt.label}</option>`).join('')}
+                ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${escapeHtml(opt.label)}</option>`).join('')}
             </select>
         `;
 
