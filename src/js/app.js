@@ -1231,7 +1231,7 @@ function setupEventListeners() {
 
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
-    queryAll('.close-btn').forEach(btn => {
+    queryAll('.close-btn, .report-close-btn').forEach(btn => {
         btn.onclick = () => Object.values(popups).forEach(p => p?.classList.add('hidden'));
     });
 

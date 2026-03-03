@@ -782,7 +782,7 @@ body.theme-light #current-task-display-base #clock-face {
 }
 
 
-.close-btn {
+.close-btn, .report-close-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.75rem;
