@@ -33,12 +33,13 @@ export default class MatrixCode extends AnimationBase {
     }
 
     setup(width, height) {
-        const spacing = 12;
+        const spacing = 6;
         const cols = Math.floor(width / spacing);
         if (this.columns.length !== cols) {
             this.columns = Array(cols).fill(0).map(() => ({
                 y: Math.random() * height,
                 speed: 1 + Math.random() * 3,
+                maxDots: 10 + Math.random() * 20,
                 dots: []
             }));
         }
@@ -46,21 +47,22 @@ export default class MatrixCode extends AnimationBase {
 
     draw(ctx, { height }) {
         const sprites = [];
-        const spacing = 12;
+        const spacing = 6;
 
         this.columns.forEach((col, i) => {
             col.y += col.speed;
-            if (col.y > height + 50) {
-                col.y = -50;
+            if (col.y > height + 100) {
+                col.y = -100;
                 col.speed = 1 + Math.random() * 3;
+                col.maxDots = 10 + Math.random() * 20;
             }
 
             // Add leading dot
-            col.dots.push({ y: col.y, size: 3 });
-            if (col.dots.length > 10) col.dots.shift();
+            col.dots.push({ y: col.y });
+            if (col.dots.length > col.maxDots) col.dots.shift();
 
             col.dots.forEach((dot, idx) => {
-                const size = idx === col.dots.length - 1 ? 3 : (idx > col.dots.length - 4 ? 2 : 1);
+                const size = idx === col.dots.length - 1 ? 3 : (idx > col.dots.length - 6 ? 2 : 1);
                 sprites.push({ x: i * spacing, y: dot.y, size: size });
             });
         });
