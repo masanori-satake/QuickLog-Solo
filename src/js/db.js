@@ -274,6 +274,120 @@ async function setupInitialData(languageSetting) {
             await dbPut(STORE_LOGS, orphaned);
         }
     }
+
+    // Generate dummy history if no logs exist (demo purpose)
+    const logsAfterMigration = await dbGetAll(STORE_LOGS);
+    if (logsAfterMigration.length === 0) {
+        await generateDummyHistory();
+    }
+}
+
+async function generateDummyHistory() {
+    console.log('QuickLog-Solo: Generating dummy history...');
+
+    const CONFIG = {
+        DAYS_OFFSET: [1, 3, 5], // Non-consecutive days (e.g., Mon, Wed, Fri)
+        WORK_START_H: 8,
+        WORK_START_M: 30,
+        WORK_END_H: 17,
+        WORK_END_M: 30,
+        LUNCH_START_H: 12,
+        LUNCH_START_M: 30,
+        LUNCH_DURATION_MINS: 60,
+        TIME_JITTER_MIN: 3,
+        TIME_JITTER_MAX: 7,
+        LUNCH_JITTER_MIN: 2,
+        LUNCH_JITTER_MAX: 5,
+        TASKS_PER_DAY_MIN: 5,
+        TASKS_PER_DAY_MAX: 7,
+        MORNING_TASK_COUNT: 2,
+        TASK_TIME_VARIATION: 0.2, // e.g., 0.2 means +/- 20%
+    };
+
+    const categories = await dbGetAll(STORE_CATEGORIES);
+    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE);
+
+    if (workCategories.length === 0) return;
+
+    const createJitter = (min, max) => (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * (max - min + 1)) + min);
+
+    for (const offset of CONFIG.DAYS_OFFSET) {
+        const baseDate = new Date();
+        baseDate.setDate(baseDate.getDate() - offset);
+        baseDate.setHours(0, 0, 0, 0);
+
+        const baseTime = baseDate.getTime();
+        const toMillis = (h, m) => (h * 60 + m) * 60 * 1000;
+
+        const startJitter = createJitter(CONFIG.TIME_JITTER_MIN, CONFIG.TIME_JITTER_MAX);
+        const startTime = baseTime + toMillis(CONFIG.WORK_START_H, CONFIG.WORK_START_M) + startJitter * 60 * 1000;
+
+        const endJitter = createJitter(CONFIG.TIME_JITTER_MIN, CONFIG.TIME_JITTER_MAX);
+        const endTime = baseTime + toMillis(CONFIG.WORK_END_H, CONFIG.WORK_END_M) + endJitter * 60 * 1000;
+
+        const lunchJitter = createJitter(CONFIG.LUNCH_JITTER_MIN, CONFIG.LUNCH_JITTER_MAX);
+        const lunchStart = baseTime + toMillis(CONFIG.LUNCH_START_H, CONFIG.LUNCH_START_M) + lunchJitter * 60 * 1000;
+        const lunchEnd = lunchStart + CONFIG.LUNCH_DURATION_MINS * 60 * 1000;
+
+        const numTasks = Math.floor(Math.random() * (CONFIG.TASKS_PER_DAY_MAX - CONFIG.TASKS_PER_DAY_MIN + 1)) + CONFIG.TASKS_PER_DAY_MIN;
+        const morningCount = CONFIG.MORNING_TASK_COUNT;
+        const afternoonCount = numTasks - morningCount;
+
+        let lastCategoryName = null;
+
+        const generateTasks = async (start, end, count, isMorning) => {
+            let current = start;
+            for (let i = 0; i < count; i++) {
+                const remainingTasks = count - i;
+                const timePerTask = (end - current) / remainingTasks;
+                const variation = 1 - CONFIG.TASK_TIME_VARIATION + Math.random() * 2 * CONFIG.TASK_TIME_VARIATION;
+                const taskEnd = i === count - 1 ? end : current + timePerTask * variation;
+
+                const isFirstOfDay = isMorning && i === 0;
+                let cat;
+                if (isFirstOfDay) {
+                    cat = { name: t('demo-warning'), color: 'error' };
+                } else {
+                    // Avoid consecutive identical categories
+                    const candidates = workCategories.filter(c => c.name !== lastCategoryName);
+                    cat = candidates[Math.floor(Math.random() * candidates.length)];
+                }
+                lastCategoryName = cat.name;
+
+                await dbAdd(STORE_LOGS, {
+                    category: cat.name,
+                    startTime: Math.floor(current),
+                    endTime: Math.floor(taskEnd),
+                    color: cat.color || 'primary'
+                });
+                current = taskEnd;
+            }
+        };
+
+        // Morning Tasks
+        await generateTasks(startTime, lunchStart, morningCount, true);
+
+        // Lunch Break
+        await dbAdd(STORE_LOGS, {
+            category: SYSTEM_CATEGORY_IDLE,
+            startTime: Math.floor(lunchStart),
+            endTime: Math.floor(lunchEnd)
+        });
+        // We do NOT reset lastCategoryName to SYSTEM_CATEGORY_IDLE here,
+        // so that the first afternoon task avoids the last morning task's category.
+
+        // Afternoon Tasks
+        await generateTasks(lunchEnd, endTime, afternoonCount, false);
+
+        // Final Stop Marker
+        // Use SYSTEM_CATEGORY_IDLE for consistency with logic.js and ensuring visibility in UI
+        await dbAdd(STORE_LOGS, {
+            category: SYSTEM_CATEGORY_IDLE,
+            startTime: Math.floor(endTime),
+            endTime: Math.floor(endTime),
+            isManualStop: true
+        });
+    }
 }
 
 async function cleanupOldLogs() {
