@@ -1,0 +1,111 @@
+import { test, expect } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
+import { EVAL_CONFIG } from './animation_eval_config.js';
+
+// Helper to get animation IDs from the filesystem
+const animationDir = path.join(process.cwd(), 'src/js/animation');
+const animationFiles = fs.readdirSync(animationDir).filter(f => f.endsWith('.js'));
+const animationIds = animationFiles.map(f => f.replace('.js', ''));
+
+test.describe('Animation Quality Evaluation', () => {
+    for (const id of animationIds) {
+        test(`Evaluating animation: ${id}`, async ({ page }) => {
+            // Navigate to the app with test parameters to start a task immediately
+            // baseURL in playwright.config.js points to src/app.html
+            await page.goto(`?test_cat=EvalTarget&test_elapsed=0`);
+
+            // Wait for the app to initialize
+            await page.waitForSelector('#animation-canvas');
+
+            // Open settings and select the animation
+            await page.click('#settings-toggle');
+            await page.selectOption('#animation-select', id);
+            await page.click('.close-btn');
+
+            // Evaluation Loop
+            const stats = {
+                samples: [],
+                firstActivityTime: null,
+                totalNonZero: 0,
+                totalChanged: 0
+            };
+
+            let lastRData = null;
+            const startTime = Date.now();
+
+            while (Date.now() - startTime < EVAL_CONFIG.TOTAL_EVALUATION_MS) {
+                const sampleResult = await page.evaluate((prevR) => {
+                    const canvas = document.getElementById('animation-canvas');
+                    if (!canvas) return null;
+                    const ctx = canvas.getContext('2d');
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    const imgData = ctx.getImageData(0, 0, width, height).data;
+
+                    let nonZero = 0;
+                    let changed = 0;
+
+                    const currentR = new Uint8Array(width * height);
+                    for (let i = 0; i < imgData.length; i += 4) {
+                        const r = imgData[i];
+                        const idx = i / 4;
+                        currentR[idx] = r;
+
+                        if (r !== 0) nonZero++;
+                        if (prevR && r !== prevR[idx]) {
+                            changed++;
+                        }
+                    }
+
+                    return {
+                        nonZero,
+                        changed,
+                        currentR: Array.from(currentR),
+                        totalPixels: width * height
+                    };
+                }, lastRData);
+
+                if (sampleResult) {
+                    const elapsed = Date.now() - startTime;
+                    if (stats.firstActivityTime === null && sampleResult.nonZero > 0) {
+                        stats.firstActivityTime = elapsed;
+                    }
+
+                    stats.samples.push({
+                        elapsed,
+                        nonZero: sampleResult.nonZero,
+                        changed: sampleResult.changed,
+                        totalPixels: sampleResult.totalPixels
+                    });
+
+                    stats.totalNonZero += sampleResult.nonZero;
+                    stats.totalChanged += sampleResult.changed;
+                    lastRData = sampleResult.currentR;
+                }
+
+                await page.waitForTimeout(EVAL_CONFIG.SAMPLE_INTERVAL_MS);
+            }
+
+            // Calculations
+            const avgDots = stats.samples.length > 0 ? stats.totalNonZero / stats.samples.length : 0;
+            const avgChangeRate = (stats.samples.length > 1)
+                ? (stats.totalChanged / (stats.samples.length - 1)) / stats.samples[0].totalPixels
+                : 0;
+
+            const sustainedActivity = stats.samples.some(s => s.elapsed >= EVAL_CONFIG.SUSTAINED_ACTIVITY_CHECK_MS && s.changed > 0);
+
+            console.log(`Results for ${id}:`, {
+                firstActivityTime: stats.firstActivityTime,
+                avgDots,
+                avgChangeRate,
+                sustainedActivity
+            });
+
+            expect(stats.firstActivityTime, `Animation ${id} did not start within threshold`).toBeLessThanOrEqual(EVAL_CONFIG.INITIAL_ACTIVITY_THRESHOLD_MS);
+            expect(sustainedActivity, `Animation ${id} did not show sustained activity`).toBe(true);
+            expect(avgDots, `Animation ${id} is too sparse (avg dots: ${avgDots})`).toBeGreaterThanOrEqual(EVAL_CONFIG.MIN_AVERAGE_DOTS);
+            expect(avgChangeRate, `Animation ${id} is too static (avg change rate: ${avgChangeRate})`).toBeGreaterThanOrEqual(EVAL_CONFIG.MIN_CHANGE_RATE);
+        });
+    }
+});

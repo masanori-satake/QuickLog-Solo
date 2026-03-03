@@ -287,3 +287,20 @@ export default class Ripple extends AnimationBase {
 - [開発者ガイド (README_DEV.md)](README_DEV.md)
 - [テスト計画・ケース定義書 (README_TEST.md)](README_TEST.md)
 - [AI エージェント指針 (AGENTS.md)](../AGENTS.md)
+
+---
+
+## 9. 品質評価システム (Evaluation System)
+
+ユーザーの期待に応える「動きのある」アニメーションを維持するため、全てのアニメーションモジュールは自動評価テストをパスする必要があります。
+
+### 9.1. 評価基準
+以下の項目を自動的に計測し、基準を下回るアニメーションは「退屈」または「不具合」としてビルド時に拒否されます。
+
+- **初期応答性 (Initial Activity):** 作業開始から所定時間（デフォルト15秒）以内に最初の描画が行われること。
+- **継続性 (Sustained Activity):** 開始後一定時間経過後も変化し続けていること。
+- **密度 (Average Density):** 表示領域に平均して一定以上のドット（非ゼロピクセル）が表示されていること。
+- **変化量 (Entropy/Change Rate):** フレーム間で表示されているドットの位置や状態が一定割合以上変化していること。
+
+### 9.2. パラメータの調整
+評価のしきい値は `tests/animation_eval_config.js` で管理されており、必要に応じて微調整が可能です。

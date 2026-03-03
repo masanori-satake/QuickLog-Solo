@@ -9,6 +9,7 @@
   "scripts": {
     "test": "python3 scripts/generate_animation_registry.py && python3 scripts/verify_animations.py && node --experimental-vm-modules ./node_modules/.bin/jest",
     "test:e2e": "python3 scripts/generate_animation_registry.py && playwright test",
+    "test:animation-eval": "python3 scripts/generate_animation_registry.py && playwright test tests/animation_evaluation.spec.js",
     "build": "python3 scripts/generate_png_icons.py && python3 scripts/generate_animation_registry.py && python3 scripts/check_version.py && python3 scripts/create_package.py",
     "version:bump": "python3 scripts/bump_version.py"
   },
