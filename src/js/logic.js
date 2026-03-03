@@ -76,8 +76,28 @@ export function visualPadEnd(str, targetWidth, padChar = ' ') {
  * Formats a report based on provided logs and options.
  */
 export function generateReport(logs, options) {
-    const { format, emoji, endTime, duration } = options;
-    const items = logs.map(l => {
+    const { format } = options;
+    const items = prepareReportItems(logs, options);
+
+    switch (format) {
+        case 'csv':
+            return formatAsCsv(items);
+        case 'markdown':
+            return formatAsList(items, options, '-');
+        case 'wiki':
+            return formatAsList(items, options, '*');
+        case 'text-plain':
+            return formatAsText(items, options, false);
+        case 'text-table':
+            return formatAsText(items, options, true);
+        default:
+            return '';
+    }
+}
+
+function prepareReportItems(logs, options) {
+    const { emoji } = options;
+    return logs.map(l => {
         let category = l.category;
         if (l.category === '__IDLE__') {
             category = options.idleText || '(待機)';
@@ -93,91 +113,51 @@ export function generateReport(logs, options) {
 
         return { start, end, category, durText };
     });
+}
 
-    if (format === 'csv') {
-        let csv = 'startTime,endTime,category,duration\n';
-        items.forEach(item => {
-            csv += `${item.start},${item.end},"${item.category.replace(/"/g, '""')}",${item.durText}\n`;
-        });
-        return csv;
-    }
+function formatAsCsv(items) {
+    let csv = 'startTime,endTime,category,duration\n';
+    items.forEach(item => {
+        csv += `${item.start},${item.end},"${item.category.replace(/"/g, '""')}",${item.durText}\n`;
+    });
+    return csv;
+}
 
-    if (format === 'markdown') {
-        return items.map(item => {
-            let line = `- ${item.start}`;
-            if (endTime === 'show') line += ` - ${item.end}`;
-            line += ` | ${item.category}`;
-            if (duration === 'right') line += ` (${item.durText})`;
-            if (duration === 'bottom') line += `\n  (${item.durText})`;
-            return line;
-        }).join('\n');
-    }
+function formatAsList(items, options, bullet) {
+    const { endTime, duration } = options;
+    return items.map(item => {
+        let line = `${bullet} ${item.start}`;
+        if (endTime === 'show') line += ` - ${item.end}`;
+        line += ` | ${item.category}`;
+        if (duration === 'right') line += ` (${item.durText})`;
+        if (duration === 'bottom') line += `\n  (${item.durText})`;
+        return line;
+    }).join('\n');
+}
 
-    if (format === 'wiki') {
-        return items.map(item => {
-            let line = `* ${item.start}`;
-            if (endTime === 'show') line += ` - ${item.end}`;
-            line += ` | ${item.category}`;
-            if (duration === 'right') line += ` (${item.durText})`;
-            if (duration === 'bottom') line += `\n  (${item.durText})`;
-            return line;
-        }).join('\n');
-    }
+function formatAsText(items, options, isTable) {
+    const { endTime, duration } = options;
+    const headerTime = options.headerTime || 'Time';
+    const headerCategory = options.headerCategory || 'Category';
 
-    if (format === 'text-plain') {
-        const maxTimeLen = endTime === 'show' ? 15 : 5;
-        const maxCatLen = Math.max(...items.map(i => {
-            let len = getVisualWidth(i.category);
-            if (duration === 'right' && i.durText) {
-                len += getVisualWidth(` (${i.durText})`);
-            }
-            return len;
-        }), 8);
+    const maxTimeLen = Math.max(endTime === 'show' ? 15 : 5, isTable ? getVisualWidth(headerTime) : 5);
+    const maxCatLen = Math.max(...items.map(i => {
+        let len = getVisualWidth(i.category);
+        if (duration === 'right' && i.durText) {
+            len += getVisualWidth(` (${i.durText})`);
+        }
+        return len;
+    }), isTable ? getVisualWidth(headerCategory) : 8);
 
-        return items.map(item => {
-            let timePart = item.start;
-            if (endTime === 'show') timePart += ` - ${item.end}`;
-
-            let catPart = item.category;
-            if (duration === 'right' && item.durText) {
-                catPart += ` (${item.durText})`;
-            }
-
-            let line = `${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(catPart, maxCatLen)}`;
-            if (duration === 'bottom' && item.durText) {
-                line += `\n${visualPadEnd('', maxTimeLen)} | (${item.durText})`;
-            }
-            return line;
-        }).join('\n');
-    }
-
-    if (format === 'text-table') {
-        const headerTime = options.headerTime || 'Time';
-        const headerCategory = options.headerCategory || 'Category';
-
-        const maxTimeLen = Math.max(endTime === 'show' ? 15 : 5, getVisualWidth(headerTime));
-        const maxCatLen = Math.max(...items.map(i => {
-            let len = getVisualWidth(i.category);
-            if (duration === 'right' && i.durText) {
-                len += getVisualWidth(` (${i.durText})`);
-            }
-            return len;
-        }), getVisualWidth(headerCategory));
-
+    if (isTable) {
         const lineSep = '+' + '-'.repeat(maxTimeLen + 2) + '+' + '-'.repeat(maxCatLen + 2) + '+';
-
         let out = lineSep + '\n';
         out += `| ${visualPadEnd(headerTime, maxTimeLen)} | ${visualPadEnd(headerCategory, maxCatLen)} |\n`;
         out += lineSep + '\n';
 
         items.forEach(item => {
-            let timePart = item.start;
-            if (endTime === 'show') timePart += ` - ${item.end}`;
-
-            let catPart = item.category;
-            if (duration === 'right' && item.durText) {
-                catPart += ` (${item.durText})`;
-            }
+            const timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
+            const catPart = item.category + (duration === 'right' && item.durText ? ` (${item.durText})` : '');
 
             out += `| ${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(catPart, maxCatLen)} |\n`;
             if (duration === 'bottom' && item.durText) {
@@ -186,9 +166,18 @@ export function generateReport(logs, options) {
         });
         out += lineSep;
         return out;
-    }
+    } else {
+        return items.map(item => {
+            const timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
+            const catPart = item.category + (duration === 'right' && item.durText ? ` (${item.durText})` : '');
 
-    return '';
+            let line = `${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(catPart, maxCatLen)}`;
+            if (duration === 'bottom' && item.durText) {
+                line += `\n${visualPadEnd('', maxTimeLen)} | (${item.durText})`;
+            }
+            return line;
+        }).join('\n');
+    }
 }
 
 export async function startTaskLogic(categoryName, activeTask, resumableCategory = null, color = null, tags = '') {

@@ -621,6 +621,10 @@ body.theme-light #current-task-display-base #clock-face {
     outline-offset: -2px;
 }
 
+#report-date-display .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
 #report-calendar-container {
     position: absolute;
     top: 100%;
@@ -677,8 +681,8 @@ body.theme-light #current-task-display-base #clock-face {
 }
 
 .calendar-table td.selected {
-    background-color: var(--md-sys-color-primary) !important;
-    color: var(--md-sys-color-on-primary) !important;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
 }
 
 .calendar-table td.today {

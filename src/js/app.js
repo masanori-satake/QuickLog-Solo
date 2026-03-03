@@ -94,6 +94,7 @@ let animationEngine = null;
 let currentActiveAnimation = null;
 let isAppInitialized = false;
 let reportSelectedDate = new Date();
+let reportLogDates = new Set();
 let reportSettings = {
     format: 'markdown',
     emoji: 'keep',
@@ -721,6 +722,9 @@ async function openReportModal() {
     reportSelectedDate = new Date();
     reportSelectedDate.setHours(0, 0, 0, 0);
 
+    const allLogs = await dbGetAll(STORE_LOGS);
+    reportLogDates = new Set(allLogs.map(l => new Date(l.startTime).setHours(0, 0, 0, 0)));
+
     const state = await getCurrentAppState();
     if (state.reportSettings) {
         reportSettings = state.reportSettings;
@@ -759,8 +763,7 @@ async function saveReportSettings() {
 }
 
 async function moveReportDate(delta) {
-    const allLogs = await dbGetAll(STORE_LOGS);
-    const logDates = [...new Set(allLogs.map(l => new Date(l.startTime).setHours(0, 0, 0, 0)))].sort((a, b) => a - b);
+    const logDates = [...reportLogDates].sort((a, b) => a - b);
     const today = new Date().setHours(0, 0, 0, 0);
 
     let current = reportSelectedDate.getTime();
@@ -787,10 +790,6 @@ async function renderReportCalendar() {
     const container = getEl(ID_REPORT_CALENDAR_CONTAINER);
     container.innerHTML = '';
 
-    const allLogs = await dbGetAll(STORE_LOGS);
-    const logDates = new Set(allLogs.map(l => new Date(l.startTime).setHours(0, 0, 0, 0)));
-
-    const now = new Date();
     const year = reportSelectedDate.getFullYear();
     const month = reportSelectedDate.getMonth();
 
@@ -822,7 +821,7 @@ async function renderReportCalendar() {
             } else {
                 const currentDate = new Date(year, month, date).setHours(0, 0, 0, 0);
                 td.textContent = date;
-                if (logDates.has(currentDate)) {
+                if (reportLogDates.has(currentDate)) {
                     td.classList.add('has-logs');
                 }
                 if (currentDate === reportSelectedDate.getTime()) {
@@ -1273,7 +1272,7 @@ function setupEventListeners() {
 
     [ID_REPORT_FORMAT_SELECT, ID_REPORT_EMOJI_SELECT, ID_REPORT_ENDTIME_SELECT, ID_REPORT_DURATION_SELECT].forEach(id => {
         getEl(id)?.addEventListener('change', (e) => {
-            const key = id.replace('report-', '').replace('-select', '');
+            const key = e.target.dataset.key || id.replace('report-', '').replace('-select', '');
             reportSettings[key] = e.target.value;
             updateReportUI();
             saveReportSettings();
