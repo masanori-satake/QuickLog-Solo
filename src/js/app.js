@@ -367,11 +367,10 @@ function createLogElement(log, categoryMap) {
         colorClass = `dot-${color}`;
     }
 
-    const metaHtml = (log.meta) ? `<span class="log-meta">[${escapeHtml(log.meta)}]</span>` : '';
-
+    // Tags (formerly meta) are hidden in history as per requirements
     li.innerHTML = `
         ${timeRangeHtml}
-        <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(displayName)}${metaHtml}</span>
+        <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(displayName)}</span>
         <span class="log-duration">${durationText}</span>
     `;
     return li;
@@ -718,15 +717,32 @@ async function copyAggregation() {
     const today = new Date().setHours(0,0,0,0);
     const todayLogs = allLogs.filter(l => l.startTime >= today && l.endTime);
 
-    const agg = {};
+    const catAgg = {};
+    const tagAgg = {};
+
     todayLogs.forEach(l => {
         const dur = (l.endTime - l.startTime) / 60000;
-        agg[l.category] = (agg[l.category] || 0) + dur;
+        catAgg[l.category] = (catAgg[l.category] || 0) + dur;
+
+        if (l.meta) {
+            const tags = l.meta.split(',').filter(t => t.trim());
+            tags.forEach(tag => {
+                tagAgg[tag] = (tagAgg[tag] || 0) + dur;
+            });
+        }
     });
 
     let text = "";
-    for (const cat in agg) {
-        text += `${cat} | ${Math.round(agg[cat])} min\n`;
+    for (const cat in catAgg) {
+        text += `${cat} | ${Math.round(catAgg[cat])} min\n`;
+    }
+
+    if (Object.keys(tagAgg).length > 0) {
+        text += "\n---\n";
+        const sortedTags = Object.keys(tagAgg).sort();
+        sortedTags.forEach(tag => {
+            text += `#${tag} | ${Math.round(tagAgg[tag])} min\n`;
+        });
     }
 
     navigator.clipboard.writeText(text);
@@ -799,21 +815,16 @@ async function renderCategoryEditor() {
     categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => a.order - b.order);
     list.innerHTML = '';
 
+    const colors = [
+        'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
+        'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
+    ];
+
     categories.forEach(cat => {
         const item = createEl('div');
         item.className = 'category-editor-item';
         item.draggable = true;
         item.dataset.name = cat.name;
-
-        const colors = [
-            'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
-            'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
-        ];
-        const colorPresetsHtml = colors.map(color => `
-            <button class="color-preset ${color === cat.color ? 'selected' : ''}"
-                    style="background-color: ${getColorCode(color)}"
-                    data-color="${color}"></button>
-        `).join('');
 
         const lang = getEl(ID_LANGUAGE_SELECT)?.value === 'auto' ? detectBrowserLanguage() : getEl(ID_LANGUAGE_SELECT)?.value || 'en';
         const getAnimLabel = (anim) => {
@@ -837,30 +848,34 @@ async function renderCategoryEditor() {
             })
         ];
 
-        const animSelectHtml = `
-            <select class="category-edit-animation" style="flex: 1; font-size: 0.75rem; padding: 2px 4px; border-radius: 4px;">
-                ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${escapeHtml(opt.label)}</option>`).join('')}
-            </select>
-        `;
-
         item.innerHTML = `
-            <div class="cat-editor-row">
+            <div class="cat-editor-row row-1">
                 <span class="material-symbols-outlined drag-handle" style="cursor: grab;">drag_indicator</span>
                 <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
-                <button class="delete-cat-btn" title="${t('delete')}" style="border:none; background:none; padding:0; display:flex; align-items:center; justify-content:center;">
+                <button class="delete-cat-btn" title="${t('delete')}">
                     <span class="material-symbols-outlined">delete</span>
                 </button>
             </div>
-            <div class="cat-editor-row" style="margin-top: 0.5rem; align-items: center;">
-                <div class="color-presets" style="margin-left: 2rem; flex: 1;">
-                    ${colorPresetsHtml}
+            <div class="cat-editor-row row-2">
+                <div class="custom-color-dropdown">
+                    <div class="color-dropdown-trigger" style="background-color: ${getColorCode(cat.color)}"></div>
+                    <div class="color-dropdown-menu hidden">
+                        ${colors.map(color => `<div class="color-dropdown-item ${color === cat.color ? 'selected' : ''}" data-color="${color}" style="background-color: ${getColorCode(color)}"></div>`).join('')}
+                    </div>
                 </div>
-                <input type="text" class="category-edit-meta" value="${escapeHtml(cat.meta || '')}" data-i18n-placeholder="placeholder-meta" placeholder="${t('placeholder-meta')}" style="width: 120px; font-size: 0.75rem; margin-right: 0.5rem;">
-                ${animSelectHtml}
+                <select class="category-edit-animation">
+                    ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${escapeHtml(opt.label)}</option>`).join('')}
+                </select>
+            </div>
+            <div class="cat-editor-row row-3">
+                <div class="tag-container">
+                    <div class="tag-list"></div>
+                    <input type="text" class="tag-input" data-i18n-placeholder="placeholder-meta" placeholder="${t('placeholder-meta')}">
+                </div>
             </div>
         `;
 
-        // Event listeners
+        // --- Row 1 Events ---
         const input = item.querySelector('.category-edit-name');
         input.onchange = async () => {
             const newName = input.value.trim();
@@ -894,10 +909,20 @@ async function renderCategoryEditor() {
             }
         };
 
-        item.querySelectorAll('.color-preset').forEach(btn => {
-            btn.onclick = async () => {
+        // --- Row 2 Events (Custom Color Dropdown) ---
+        const colorTrigger = item.querySelector('.color-dropdown-trigger');
+        const colorMenu = item.querySelector('.color-dropdown-menu');
+        colorTrigger.onclick = (e) => {
+            e.stopPropagation();
+            queryAll('.color-dropdown-menu').forEach(m => { if (m !== colorMenu) m.classList.add('hidden'); });
+            colorMenu.classList.toggle('hidden');
+        };
+        colorMenu.querySelectorAll('.color-dropdown-item').forEach(btn => {
+            btn.onclick = async (e) => {
+                e.stopPropagation();
                 cat.color = btn.dataset.color;
                 await dbPut(STORE_CATEGORIES, cat);
+                colorMenu.classList.add('hidden');
                 renderCategoryEditor();
                 renderCategories();
                 broadcastSync();
@@ -911,12 +936,50 @@ async function renderCategoryEditor() {
             broadcastSync();
         };
 
-        const metaInput = item.querySelector('.category-edit-meta');
-        metaInput.onchange = async () => {
-            cat.meta = metaInput.value.trim();
-            await dbPut(STORE_CATEGORIES, cat);
-            broadcastSync();
+        // --- Row 3 Events (Tags) ---
+        const tagListEl = item.querySelector('.tag-list');
+        const tagInput = item.querySelector('.tag-input');
+
+        const renderTags = () => {
+            tagListEl.innerHTML = '';
+            const tags = cat.meta ? cat.meta.split(',').filter(t => t.trim()) : [];
+            tags.forEach((tag, idx) => {
+                const pill = createEl('span');
+                pill.className = 'tag-pill';
+                pill.innerHTML = `
+                    <span class="tag-text">${escapeHtml(tag)}</span>
+                    <span class="tag-remove material-symbols-outlined" data-index="${idx}">close</span>
+                `;
+                pill.querySelector('.tag-remove').onclick = async () => {
+                    tags.splice(idx, 1);
+                    cat.meta = tags.join(',');
+                    await dbPut(STORE_CATEGORIES, cat);
+                    renderTags();
+                    broadcastSync();
+                };
+                tagListEl.appendChild(pill);
+            });
         };
+
+        tagInput.onkeydown = async (e) => {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const newTag = tagInput.value.trim().replace(/,/g, '');
+                if (newTag) {
+                    const tags = cat.meta ? cat.meta.split(',').filter(t => t.trim()) : [];
+                    if (!tags.includes(newTag)) {
+                        tags.push(newTag);
+                        cat.meta = tags.join(',');
+                        await dbPut(STORE_CATEGORIES, cat);
+                        tagInput.value = '';
+                        renderTags();
+                        broadcastSync();
+                    }
+                }
+            }
+        };
+
+        renderTags();
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
             if (await showConfirm(t('confirm-delete-category', { name: cat.name }))) {
@@ -1025,6 +1088,10 @@ function setupEventListeners() {
 
     window.onclick = (event) => {
         Object.values(popups).forEach(p => { if (event.target === p) p.classList.add('hidden'); });
+        // Close custom dropdowns when clicking outside
+        if (!event.target.closest('.custom-color-dropdown')) {
+            queryAll('.color-dropdown-menu').forEach(m => m.classList.add('hidden'));
+        }
     };
 
     // Tabs
