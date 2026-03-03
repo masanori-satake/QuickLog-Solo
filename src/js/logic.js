@@ -36,7 +36,7 @@ export function formatLogDuration(ms) {
     }
 }
 
-export async function startTaskLogic(categoryName, activeTask, resumableCategory = null, color = null, meta = '') {
+export async function startTaskLogic(categoryName, activeTask, resumableCategory = null, color = null, tags = '') {
     if (activeTask && activeTask.category === categoryName && !activeTask.isPaused) return activeTask;
 
     await stopTaskLogic(activeTask);
@@ -47,7 +47,7 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
         endTime: null,
         resumableCategory: resumableCategory,
         color: color,
-        meta: meta
+        tags: tags
     };
 
     const id = await dbAdd(STORE_LOGS, newLog);

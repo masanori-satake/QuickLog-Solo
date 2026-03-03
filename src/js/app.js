@@ -103,8 +103,8 @@ async function startTask(categoryName, resumableCategory = null) {
     if (syncTimeout) clearTimeout(syncTimeout);
     const cat = await dbGet(STORE_CATEGORIES, categoryName);
     const color = cat ? cat.color : null;
-    const meta = cat ? (cat.meta || '') : '';
-    activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, meta);
+    const tags = cat ? (cat.tags || '') : '';
+    activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
     updateUI();
     broadcastSync();
 }
@@ -724,8 +724,9 @@ async function copyAggregation() {
         const dur = (l.endTime - l.startTime) / 60000;
         catAgg[l.category] = (catAgg[l.category] || 0) + dur;
 
-        if (l.meta) {
-            const tags = l.meta.split(',').map(t => t.trim()).filter(Boolean);
+        const tagStr = l.tags || '';
+        if (tagStr) {
+            const tags = tagStr.split(',').map(t => t.trim()).filter(Boolean);
             tags.forEach(tag => {
                 tagAgg[tag] = (tagAgg[tag] || 0) + dur;
             });
@@ -870,7 +871,7 @@ async function renderCategoryEditor() {
             <div class="cat-editor-row row-3">
                 <div class="tag-container">
                     <div class="tag-list"></div>
-                    <input type="text" class="tag-input" data-i18n-placeholder="placeholder-meta" placeholder="${t('placeholder-meta')}">
+                    <input type="text" class="tag-input" data-i18n-placeholder="placeholder-tags" placeholder="${t('placeholder-tags')}">
                 </div>
             </div>
         `;
@@ -942,7 +943,8 @@ async function renderCategoryEditor() {
 
         const renderTags = () => {
             tagListEl.innerHTML = '';
-            const tags = cat.meta ? cat.meta.split(',').map(t => t.trim()).filter(Boolean) : [];
+            const tagStr = cat.tags || '';
+            const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
             tags.forEach((tag, idx) => {
                 const pill = createEl('span');
                 pill.className = 'tag-pill';
@@ -952,7 +954,7 @@ async function renderCategoryEditor() {
                 `;
                 pill.querySelector('.tag-remove').onclick = async () => {
                     tags.splice(idx, 1);
-                    cat.meta = tags.join(',');
+                    cat.tags = tags.join(',');
                     await dbPut(STORE_CATEGORIES, cat);
                     renderTags();
                     broadcastSync();
@@ -966,10 +968,11 @@ async function renderCategoryEditor() {
                 e.preventDefault();
                 const newTag = tagInput.value.trim().replace(/,/g, '');
                 if (newTag) {
-                    const tags = cat.meta ? cat.meta.split(',').map(t => t.trim()).filter(Boolean) : [];
+                    const tagStr = cat.tags || '';
+                    const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
                     if (!tags.includes(newTag)) {
                         tags.push(newTag);
-                        cat.meta = tags.join(',');
+                        cat.tags = tags.join(',');
                         await dbPut(STORE_CATEGORIES, cat);
                         tagInput.value = '';
                         renderTags();
@@ -1166,7 +1169,12 @@ function setupEventListeners() {
                 return;
             }
             const categories = await dbGetAll(STORE_CATEGORIES);
-            await dbPut(STORE_CATEGORIES, { name, color: 'primary', order: categories.length });
+            await dbPut(STORE_CATEGORIES, {
+                name,
+                color: 'primary',
+                order: categories.length,
+                tags: ''
+            });
             if (input) input.value = '';
             renderCategories();
             renderCategoryEditor();
@@ -1229,7 +1237,9 @@ function setupEventListeners() {
                     await dbPut(STORE_CATEGORIES, {
                         name: cat.name,
                         color: cat.color || 'primary',
-                        order: cat.order !== undefined ? cat.order : ++maxOrder
+                        order: cat.order !== undefined ? cat.order : ++maxOrder,
+                        tags: cat.tags !== undefined ? cat.tags : (cat.meta || ''),
+                        animation: cat.animation || 'default'
                     });
                 }
             }

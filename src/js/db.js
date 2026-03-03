@@ -169,30 +169,30 @@ async function setupInitialData(languageSetting) {
     setLanguage(languageSetting);
 
     const initialCategories = [
-        { name: t('init-cat-dev'), color: 'primary', order: 0, animation: 'matrix_code', meta: '' },
-        { name: t('init-cat-meeting'), color: 'secondary', order: 1, animation: 'migrating_birds', meta: '' },
-        { name: t('init-cat-research'), color: 'tertiary', order: 2, animation: 'contour_lines', meta: '' },
-        { name: t('init-cat-admin'), color: 'neutral', order: 3, animation: 'matrix_code', meta: '' },
-        { name: t('init-cat-focus'), color: 'error', order: 4, animation: 'ripple', meta: '' },
-        { name: t('init-cat-skill'), color: 'tertiary', order: 5, animation: 'dot_typing', meta: '' },
-        { name: t('init-cat-idea'), color: 'secondary', order: 6, animation: 'spectrum', meta: '' },
-        { name: t('init-cat-break'), color: 'outline', order: 7, animation: 'coffee_drip', meta: '' },
-        { name: t('init-cat-client'), color: 'primary', order: 8, animation: 'car_drive', meta: '' },
-        { name: t('init-cat-doc'), color: 'secondary', order: 9, animation: 'dot_typing', meta: '' },
-        { name: t('init-cat-design'), color: 'tertiary', order: 10, animation: 'contour_lines', meta: '' },
-        { name: t('init-cat-bug'), color: 'error', order: 11, animation: 'tetris_building', meta: '' },
-        { name: t('init-cat-release'), color: 'teal', order: 12, animation: 'night_sky', meta: '' },
-        { name: t('init-cat-tool'), color: 'green', order: 13, animation: 'matrix_code', meta: '' },
-        { name: t('init-cat-schedule'), color: 'yellow', order: 14, animation: 'sand_clock', meta: '' },
-        { name: t('init-cat-chat'), color: 'orange', order: 15, animation: 'matrix_code', meta: '' },
-        { name: t('init-cat-wiki'), color: 'pink', order: 16, animation: 'dot_typing', meta: '' },
-        { name: t('init-cat-qa'), color: 'indigo', order: 17, animation: 'hero_pot', meta: '' },
-        { name: t('init-cat-sales'), color: 'brown', order: 18, animation: 'migrating_birds', meta: '' },
-        { name: t('init-cat-arch'), color: 'cyan', order: 19, animation: 'contour_lines', meta: '' },
-        { name: t('init-cat-sec'), color: 'error', order: 20, animation: 'spectrum', meta: '' },
-        { name: t('init-cat-data'), color: 'teal', order: 21, animation: 'cats', meta: '' },
-        { name: t('init-cat-wfh'), color: 'neutral', order: 22, animation: 'left_to_right', meta: '' },
-        { name: t('init-cat-move'), color: 'outline', order: 23, animation: 'right_to_left', meta: '' }
+        { name: t('init-cat-dev'), color: 'primary', order: 0, animation: 'matrix_code', tags: '' },
+        { name: t('init-cat-meeting'), color: 'secondary', order: 1, animation: 'migrating_birds', tags: '' },
+        { name: t('init-cat-research'), color: 'tertiary', order: 2, animation: 'contour_lines', tags: '' },
+        { name: t('init-cat-admin'), color: 'neutral', order: 3, animation: 'matrix_code', tags: '' },
+        { name: t('init-cat-focus'), color: 'error', order: 4, animation: 'ripple', tags: '' },
+        { name: t('init-cat-skill'), color: 'tertiary', order: 5, animation: 'dot_typing', tags: '' },
+        { name: t('init-cat-idea'), color: 'secondary', order: 6, animation: 'spectrum', tags: '' },
+        { name: t('init-cat-break'), color: 'outline', order: 7, animation: 'coffee_drip', tags: '' },
+        { name: t('init-cat-client'), color: 'primary', order: 8, animation: 'car_drive', tags: '' },
+        { name: t('init-cat-doc'), color: 'secondary', order: 9, animation: 'dot_typing', tags: '' },
+        { name: t('init-cat-design'), color: 'tertiary', order: 10, animation: 'contour_lines', tags: '' },
+        { name: t('init-cat-bug'), color: 'error', order: 11, animation: 'tetris_building', tags: '' },
+        { name: t('init-cat-release'), color: 'teal', order: 12, animation: 'night_sky', tags: '' },
+        { name: t('init-cat-tool'), color: 'green', order: 13, animation: 'matrix_code', tags: '' },
+        { name: t('init-cat-schedule'), color: 'yellow', order: 14, animation: 'sand_clock', tags: '' },
+        { name: t('init-cat-chat'), color: 'orange', order: 15, animation: 'matrix_code', tags: '' },
+        { name: t('init-cat-wiki'), color: 'pink', order: 16, animation: 'dot_typing', tags: '' },
+        { name: t('init-cat-qa'), color: 'indigo', order: 17, animation: 'hero_pot', tags: '' },
+        { name: t('init-cat-sales'), color: 'brown', order: 18, animation: 'migrating_birds', tags: '' },
+        { name: t('init-cat-arch'), color: 'cyan', order: 19, animation: 'contour_lines', tags: '' },
+        { name: t('init-cat-sec'), color: 'error', order: 20, animation: 'spectrum', tags: '' },
+        { name: t('init-cat-data'), color: 'teal', order: 21, animation: 'cats', tags: '' },
+        { name: t('init-cat-wfh'), color: 'neutral', order: 22, animation: 'left_to_right', tags: '' },
+        { name: t('init-cat-move'), color: 'outline', order: 23, animation: 'right_to_left', tags: '' }
     ];
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
@@ -208,7 +208,13 @@ async function setupInitialData(languageSetting) {
             if (cat.color === undefined) { cat.color = 'primary'; changed = true; }
             if (cat.order === undefined) { cat.order = i; changed = true; }
             if (cat.animation === undefined) { cat.animation = 'default'; changed = true; }
-            if (cat.meta === undefined) { cat.meta = ''; changed = true; }
+
+            // Migration: rename meta to tags
+            if (cat.tags === undefined) {
+                cat.tags = cat.meta || '';
+                delete cat.meta;
+                changed = true;
+            }
 
             if (deletedAnimations.includes(cat.animation)) {
                 cat.animation = 'default';
@@ -223,11 +229,20 @@ async function setupInitialData(languageSetting) {
 
     const allLogs = await dbGetAll(STORE_LOGS);
 
-    // Backward compatibility migration: convert legacy Japanese "(待機)" to language-independent "__IDLE__"
+    // Migration: rename meta to tags in logs, and convert legacy Japanese "(待機)" to language-independent "__IDLE__"
     const legacyIdleName = '(待機)';
     for (const log of allLogs) {
+        let changed = false;
         if (log.category === legacyIdleName) {
             log.category = SYSTEM_CATEGORY_IDLE;
+            changed = true;
+        }
+        if (log.tags === undefined && log.meta !== undefined) {
+            log.tags = log.meta;
+            delete log.meta;
+            changed = true;
+        }
+        if (changed) {
             await dbPut(STORE_LOGS, log);
         }
     }
