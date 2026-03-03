@@ -31,11 +31,11 @@ test.describe('Animation Quality Evaluation', () => {
                 totalChanged: 0
             };
 
-            let lastRData = null;
+            let lastPixels = null;
             const startTime = Date.now();
 
             while (Date.now() - startTime < EVAL_CONFIG.TOTAL_EVALUATION_MS) {
-                const sampleResult = await page.evaluate((prevR) => {
+                const sampleResult = await page.evaluate((prevPixels) => {
                     const canvas = document.getElementById('animation-canvas');
                     if (!canvas) return null;
                     const ctx = canvas.getContext('2d');
@@ -46,14 +46,17 @@ test.describe('Animation Quality Evaluation', () => {
                     let nonZero = 0;
                     let changed = 0;
 
-                    const currentR = new Uint8Array(width * height);
+                    const currentPixels = new Uint32Array(width * height);
                     for (let i = 0; i < imgData.length; i += 4) {
                         const r = imgData[i];
+                        const g = imgData[i + 1];
+                        const b = imgData[i + 2];
+                        const val = r + g + b;
                         const idx = i / 4;
-                        currentR[idx] = r;
+                        currentPixels[idx] = val;
 
-                        if (r !== 0) nonZero++;
-                        if (prevR && r !== prevR[idx]) {
+                        if (val !== 0) nonZero++;
+                        if (prevPixels && val !== prevPixels[idx]) {
                             changed++;
                         }
                     }
@@ -61,10 +64,10 @@ test.describe('Animation Quality Evaluation', () => {
                     return {
                         nonZero,
                         changed,
-                        currentR: Array.from(currentR),
+                        currentPixels: Array.from(currentPixels),
                         totalPixels: width * height
                     };
-                }, lastRData);
+                }, lastPixels);
 
                 if (sampleResult) {
                     const elapsed = Date.now() - startTime;
@@ -81,7 +84,7 @@ test.describe('Animation Quality Evaluation', () => {
 
                     stats.totalNonZero += sampleResult.nonZero;
                     stats.totalChanged += sampleResult.changed;
-                    lastRData = sampleResult.currentR;
+                    lastPixels = sampleResult.currentPixels;
                 }
 
                 await page.waitForTimeout(EVAL_CONFIG.SAMPLE_INTERVAL_MS);

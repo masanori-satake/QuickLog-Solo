@@ -5,8 +5,8 @@
 
 export const EVAL_CONFIG = {
     // Time (ms) within which the first visual change must appear after starting.
-    // Set to 15s to accommodate animations with slow starts like 'Migrating Birds'.
-    INITIAL_ACTIVITY_THRESHOLD_MS: 15000,
+    // Set to 5s to ensure quick user feedback.
+    INITIAL_ACTIVITY_THRESHOLD_MS: 5000,
 
     // Time (ms) at which to verify if the animation is still producing changes.
     SUSTAINED_ACTIVITY_CHECK_MS: 8000,

@@ -71,13 +71,15 @@ graph TD
     CheckVersion --> Lint[コードスタイル検査<br/>ESLint / Stylelint]
     Lint --> Unit[ユニットテスト<br/>npm test]
     Unit --> E2E[ブラウザ動作確認<br/>npm run test:e2e]
-    E2E --> Success{すべて合格?}
+    E2E --> Eval[アニメーション評価<br/>npm run test:animation-eval]
+    Eval --> Success{すべて合格?}
     Success -- Yes --> Merge[マージ可能]
     Success -- No --> Fix[修正が必要]
 ```
 
 - **何が引き渡されるか**: ソースコード
 - **判断基準**: すべてのスクリプトとテストがエラーなしで終了すること。
+- **アニメーション品質**: 新しく追加・修正されたアニメーションが、5秒以内の応答性や一定の密度を維持していること（アニメーション評価システム）。
 - **結果**: GitHub 上の PR に緑色のチェックマーク（Pass）が表示される。
 
 ---
