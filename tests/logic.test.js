@@ -18,7 +18,7 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
     SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
-const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } = await import('../src/js/logic.js');
+const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport } = await import('../src/js/logic.js');
 const { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../src/js/db.js');
 
 describe('Logic Module', () => {
@@ -63,17 +63,17 @@ describe('Logic Module', () => {
             expect(formatLogDuration(60 * 60000 + 30000)).toBe('1h 1m'); // 60.5m -> 61m -> 1h 1m
             expect(formatLogDuration(61 * 60000)).toBe('1h 1m');
             expect(formatLogDuration(69 * 60000)).toBe('1h 9m');
-            expect(formatLogDuration(70 * 60000)).toBe('1h10m');
-            expect(formatLogDuration(75 * 60000)).toBe('1h15m');
+            expect(formatLogDuration(70 * 60000)).toBe('1h 10m');
+            expect(formatLogDuration(75 * 60000)).toBe('1h 15m');
             expect(formatLogDuration(120 * 60000)).toBe('2h');
             expect(formatLogDuration(125 * 60000)).toBe('2h 5m');
-            expect(formatLogDuration(130 * 60000)).toBe('2h10m');
+            expect(formatLogDuration(130 * 60000)).toBe('2h 10m');
         });
 
         test('handles long durations', () => {
             expect(formatLogDuration(10 * 60 * 60000)).toBe('10h');
             expect(formatLogDuration(10 * 60 * 60000 + 5 * 60000)).toBe('10h 5m');
-            expect(formatLogDuration(10 * 60 * 60000 + 15 * 60000)).toBe('10h15m');
+            expect(formatLogDuration(10 * 60 * 60000 + 15 * 60000)).toBe('10h 15m');
         });
     });
 
@@ -178,6 +178,86 @@ describe('Logic Module', () => {
             expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, category: SYSTEM_CATEGORY_IDLE, endTime: expect.any(Number) }));
             expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ category: 'Meeting' }));
             expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+        });
+    });
+
+    describe('Report Generation Logic', () => {
+        const sampleLogs = [
+            { startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T10:30:00').getTime(), category: 'Task 1' },
+            { startTime: new Date('2026-03-03T10:30:00').getTime(), endTime: new Date('2026-03-03T11:00:00').getTime(), category: '💻 Task 2' },
+            { startTime: new Date('2026-03-03T11:00:00').getTime(), endTime: new Date('2026-03-03T11:15:00').getTime(), category: '__IDLE__' }
+        ];
+
+        const defaultOptions = {
+            format: 'markdown',
+            emoji: 'keep',
+            endTime: 'none',
+            duration: 'none',
+            idleText: '(待機)',
+            headerTime: 'Time',
+            headerCategory: 'Category'
+        };
+
+        test('stripEmojis removes emojis correctly', () => {
+            expect(stripEmojis('💻 Work')).toBe('Work');
+            expect(stripEmojis('Meeting 🤝')).toBe('Meeting');
+            expect(stripEmojis('🔥 Focus 🔥')).toBe('Focus');
+        });
+
+        test('getVisualWidth calculates width correctly', () => {
+            expect(getVisualWidth('abc')).toBe(3);
+            expect(getVisualWidth('あいう')).toBe(6);
+            expect(getVisualWidth('aいc')).toBe(4);
+        });
+
+        test('visualPadEnd pads correctly', () => {
+            expect(visualPadEnd('abc', 5)).toBe('abc  ');
+            expect(visualPadEnd('あいう', 10)).toBe('あいう    ');
+        });
+
+        test('generates markdown report', () => {
+            const report = generateReport(sampleLogs, defaultOptions);
+            expect(report).toMatch(/- \d{1,2}:\d{2}( [AP]M)? \| Task 1/);
+            expect(report).toMatch(/- \d{1,2}:\d{2}( [AP]M)? \| 💻 Task 2/);
+            expect(report).toMatch(/- \d{1,2}:\d{2}( [AP]M)? \| \(待機\)/);
+        });
+
+        test('generates csv report', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'csv' });
+            expect(report).toContain('startTime,endTime,category,duration');
+            expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,\d{1,2}:\d{2}( [AP]M)?,"Task 1",30m/);
+        });
+
+        test('handles emoji removal', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, emoji: 'remove' });
+            expect(report).toMatch(/- \d{1,2}:\d{2}( [AP]M)? \| Task 2/);
+        });
+
+        test('shows end time', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, endTime: 'show' });
+            expect(report).toMatch(/- \d{1,2}:\d{2}( [AP]M)? - \d{1,2}:\d{2}( [AP]M)? \| Task 1/);
+        });
+
+        test('shows duration on the right', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, duration: 'right' });
+            expect(report).toMatch(/- \d{1,2}:\d{2}( [AP]M)? \(30m\) \| Task 1/);
+        });
+
+        test('generates text table report', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'text-table' });
+            expect(report).toContain('| Time');
+            expect(report).toContain('| Category');
+            expect(report).toMatch(/\| \d{1,2}:\d{2}( [AP]M)?\s+\| Task 1/);
+        });
+
+        test('filters out manual stop markers', () => {
+            const logsWithStop = [
+                ...sampleLogs,
+                { startTime: Date.now(), endTime: Date.now(), category: '__IDLE__', isManualStop: true }
+            ];
+            const report = generateReport(logsWithStop, defaultOptions);
+            const idleCount = (report.match(/\(待機\)/g) || []).length;
+            expect(idleCount).toBe(1); // Only the non-manual idle from sampleLogs
         });
     });
 });

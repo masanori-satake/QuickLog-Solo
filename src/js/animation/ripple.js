@@ -48,7 +48,7 @@ export default class Ripple extends AnimationBase {
         ctx.lineWidth = 1;
 
         // Randomly add new ripple sources
-        if (Math.random() < 0.03 + progress * 0.07) {
+        if (Math.random() < 0.05 + progress * 0.1) {
             this.ripples.push({
                 x: Math.random() * width,
                 y: Math.random() * height,

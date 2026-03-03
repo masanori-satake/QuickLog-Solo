@@ -2,10 +2,10 @@ import {
     initDB, getCurrentAppState, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE
+    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS
 } from './db.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
-import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic } from './logic.js';
+import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
 import { AnimationEngine } from './animations.js';
 import { animations } from './animation_registry.js';
@@ -70,6 +70,19 @@ const ID_CLEAR_LOGS_BTN = 'clear-logs-btn';
 const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
 const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 
+const ID_REPORT_MODAL = 'report-modal';
+const ID_REPORT_PREVIEW = 'report-preview';
+const ID_REPORT_DATE_TEXT = 'report-date-text';
+const ID_REPORT_DATE_PREV = 'report-date-prev';
+const ID_REPORT_DATE_NEXT = 'report-date-next';
+const ID_REPORT_DATE_DISPLAY = 'report-date-display';
+const ID_REPORT_CALENDAR_CONTAINER = 'report-calendar-container';
+const ID_REPORT_FORMAT_SELECT = 'report-format-select';
+const ID_REPORT_EMOJI_SELECT = 'report-emoji-select';
+const ID_REPORT_ENDTIME_SELECT = 'report-endtime-select';
+const ID_REPORT_DURATION_SELECT = 'report-duration-select';
+const ID_REPORT_COPY_CONFIRM_BTN = 'report-copy-confirm-btn';
+
 let activeTask = null;
 let timerInterval = null;
 let syncChannel = null;
@@ -80,6 +93,14 @@ let lastCategoryRenderData = null;
 let animationEngine = null;
 let currentActiveAnimation = null;
 let isAppInitialized = false;
+let reportSelectedDate = new Date();
+let reportLogDates = new Set();
+let reportSettings = {
+    format: 'markdown',
+    emoji: 'keep',
+    endTime: 'none',
+    duration: 'none'
+};
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -697,19 +718,134 @@ async function updateUI() {
 
 // --- Action Logic ---
 
-async function copyReport() {
+async function openReportModal() {
+    reportSelectedDate = new Date();
+    reportSelectedDate.setHours(0, 0, 0, 0);
+
     const allLogs = await dbGetAll(STORE_LOGS);
-    const today = new Date().setHours(0,0,0,0);
-    const todayLogs = allLogs.filter(l => l.startTime >= today && l.endTime);
+    reportLogDates = new Set(allLogs.map(l => new Date(l.startTime).setHours(0, 0, 0, 0)));
 
-    let text = "";
-    todayLogs.forEach(l => {
-        const start = new Date(l.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        text += `${start} | ${l.category}\n`;
+    const state = await getCurrentAppState();
+    if (state.reportSettings) {
+        reportSettings = state.reportSettings;
+        getEl(ID_REPORT_FORMAT_SELECT).value = reportSettings.format;
+        getEl(ID_REPORT_EMOJI_SELECT).value = reportSettings.emoji;
+        getEl(ID_REPORT_ENDTIME_SELECT).value = reportSettings.endTime;
+        getEl(ID_REPORT_DURATION_SELECT).value = reportSettings.duration;
+    }
+
+    updateReportUI();
+    getEl(ID_REPORT_MODAL).classList.remove('hidden');
+}
+
+async function updateReportUI() {
+    const d = reportSelectedDate;
+    const days = t('day-names');
+    const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} (${days[d.getDay()]})`;
+    getEl(ID_REPORT_DATE_TEXT).textContent = dateStr;
+
+    const allLogs = await dbGetAll(STORE_LOGS);
+    const startOfDay = d.getTime();
+    const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
+    const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime).sort((a, b) => a.startTime - b.startTime);
+
+    const reportText = generateReport(dayLogs, {
+        ...reportSettings,
+        idleText: t('idle-category-log'),
+        headerTime: t('report-header-time'),
+        headerCategory: t('report-header-category')
     });
+    getEl(ID_REPORT_PREVIEW).textContent = reportText || t('no-logs-for-day');
+}
 
-    navigator.clipboard.writeText(text);
-    showToast(t('toast-copied'));
+async function saveReportSettings() {
+    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_REPORT_SETTINGS, value: reportSettings });
+}
+
+async function moveReportDate(delta) {
+    const logDates = [...reportLogDates].sort((a, b) => a - b);
+    const today = new Date().setHours(0, 0, 0, 0);
+
+    let current = reportSelectedDate.getTime();
+
+    if (delta < 0) {
+        // Find previous date with logs
+        const prevDates = logDates.filter(d => d < current);
+        if (prevDates.length > 0) {
+            reportSelectedDate = new Date(prevDates[prevDates.length - 1]);
+        }
+    } else {
+        // Find next date with logs, up to today
+        const nextDates = logDates.filter(d => d > current && d <= today);
+        if (nextDates.length > 0) {
+            reportSelectedDate = new Date(nextDates[0]);
+        } else if (current < today) {
+            reportSelectedDate = new Date(today);
+        }
+    }
+    updateReportUI();
+}
+
+async function renderReportCalendar() {
+    const container = getEl(ID_REPORT_CALENDAR_CONTAINER);
+    container.innerHTML = '';
+
+    const year = reportSelectedDate.getFullYear();
+    const month = reportSelectedDate.getMonth();
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+
+    const table = createEl('table');
+    table.className = 'calendar-table';
+
+    // Header
+    const days = t('day-names');
+    const headerRow = createEl('tr');
+    days.forEach(day => {
+        const th = createEl('th');
+        th.textContent = day;
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    let date = 1;
+    for (let i = 0; i < 6; i++) {
+        const row = createEl('tr');
+        for (let j = 0; j < 7; j++) {
+            const td = createEl('td');
+            if (i === 0 && j < firstDay) {
+                // Empty
+            } else if (date > lastDate) {
+                // Empty
+            } else {
+                const currentDate = new Date(year, month, date).setHours(0, 0, 0, 0);
+                td.textContent = date;
+                if (reportLogDates.has(currentDate)) {
+                    td.classList.add('has-logs');
+                }
+                if (currentDate === reportSelectedDate.getTime()) {
+                    td.classList.add('selected');
+                }
+                if (currentDate === new Date().setHours(0, 0, 0, 0)) {
+                    td.classList.add('today');
+                }
+
+                td.onclick = (e) => {
+                    e.stopPropagation();
+                    reportSelectedDate = new Date(currentDate);
+                    updateReportUI();
+                    container.classList.add('hidden');
+                };
+                date++;
+            }
+            row.appendChild(td);
+        }
+        table.appendChild(row);
+        if (date > lastDate) break;
+    }
+
+    container.appendChild(table);
 }
 
 async function copyAggregation() {
@@ -1062,7 +1198,7 @@ function setupEventListeners() {
         }
     });
     getEl(ID_END_BTN)?.addEventListener('click', endTask);
-    getEl(ID_COPY_REPORT_BTN)?.addEventListener('click', copyReport);
+    getEl(ID_COPY_REPORT_BTN)?.addEventListener('click', openReportModal);
     getEl(ID_COPY_AGGREGATION_BTN)?.addEventListener('click', copyAggregation);
 
     // Category Wheel Pagination
@@ -1089,12 +1225,13 @@ function setupEventListeners() {
 
     // Modals
     const popups = {
-        settings: getEl(ID_SETTINGS_POPUP)
+        settings: getEl(ID_SETTINGS_POPUP),
+        report: getEl(ID_REPORT_MODAL)
     };
 
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
-    queryAll('.close-btn').forEach(btn => {
+    queryAll('.close-btn, .report-close-btn').forEach(btn => {
         btn.onclick = () => Object.values(popups).forEach(p => p?.classList.add('hidden'));
     });
 
@@ -1104,7 +1241,59 @@ function setupEventListeners() {
         if (!event.target.closest('.custom-color-dropdown')) {
             queryAll('.color-dropdown-menu').forEach(m => m.classList.add('hidden'));
         }
+        if (!event.target.closest('#report-date-display-box')) {
+            getEl(ID_REPORT_CALENDAR_CONTAINER)?.classList.add('hidden');
+        }
     };
+
+    // Report Modal events
+    getEl(ID_REPORT_DATE_PREV)?.addEventListener('click', () => moveReportDate(-1));
+    getEl(ID_REPORT_DATE_NEXT)?.addEventListener('click', () => moveReportDate(1));
+    getEl(ID_REPORT_DATE_DISPLAY)?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const container = getEl(ID_REPORT_CALENDAR_CONTAINER);
+        if (container.classList.contains('hidden')) {
+            renderReportCalendar();
+            container.classList.remove('hidden');
+        } else {
+            container.classList.add('hidden');
+        }
+    });
+
+    getEl(ID_REPORT_DATE_DISPLAY)?.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            moveReportDate(-1);
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            moveReportDate(1);
+        }
+    });
+
+    [ID_REPORT_FORMAT_SELECT, ID_REPORT_EMOJI_SELECT, ID_REPORT_ENDTIME_SELECT, ID_REPORT_DURATION_SELECT].forEach(id => {
+        getEl(id)?.addEventListener('change', (e) => {
+            const key = e.target.dataset.key || id.replace('report-', '').replace('-select', '');
+            reportSettings[key] = e.target.value;
+            updateReportUI();
+            saveReportSettings();
+        });
+    });
+
+    getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', (e) => {
+        const text = getEl(ID_REPORT_PREVIEW).textContent;
+        navigator.clipboard.writeText(text);
+
+        const btn = e.currentTarget;
+        const span = btn.querySelector('[data-i18n]');
+        if (span) {
+            const originalText = t('btn-copy');
+            span.textContent = t('toast-copied');
+            setTimeout(() => {
+                span.textContent = originalText;
+            }, 2000);
+        }
+        showToast(t('toast-copied'));
+    });
 
     // Tabs
     queryAll('.tab-btn').forEach(btn => {

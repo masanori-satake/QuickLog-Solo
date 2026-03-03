@@ -582,12 +582,207 @@ body.theme-light #current-task-display-base #clock-face {
     max-height: 300px;
 }
 
+#report-modal .modal-content {
+    height: auto;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+}
+
+.report-date-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--md-sys-spacing-1);
+    margin: var(--md-sys-spacing-1) 0;
+}
+
+#report-date-display-box {
+    position: relative;
+    flex: 1;
+}
+
+#report-date-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
+    background-color: var(--md-sys-color-surface-container-highest);
+    border-radius: var(--md-sys-shape-extra-small);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+#report-date-display:focus {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: -2px;
+}
+
+#report-date-display .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
+#report-calendar-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background-color: var(--md-sys-color-surface-container-high);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-extra-small);
+    box-shadow: var(--md-sys-elevation-3);
+    padding: 8px;
+    margin-top: 4px;
+}
+
+.calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+.calendar-table th {
+    font-weight: bold;
+    color: var(--md-sys-color-on-surface-variant);
+    padding-bottom: 4px;
+}
+
+.calendar-table td {
+    text-align: center;
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.calendar-table td:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.calendar-table td.has-logs {
+    font-weight: bold;
+    color: var(--md-sys-color-primary);
+    position: relative;
+}
+
+.calendar-table td.has-logs::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--md-sys-color-primary);
+}
+
+.calendar-table td.selected {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.calendar-table td.today {
+    border: 1px solid var(--md-sys-color-primary);
+}
+
+.report-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: var(--md-sys-spacing-1);
+}
+
+.report-option-row {
+    display: flex;
+    gap: 8px;
+}
+
+.report-option-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--md-sys-color-surface-container-low);
+    padding: 4px 8px;
+    border-radius: var(--md-sys-shape-extra-small);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.report-option-item select {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.75rem;
+    padding: 4px;
+    height: auto;
+}
+
+#report-preview-container {
+    flex: 1;
+    background-color: var(--md-sys-color-surface-container-lowest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-extra-small);
+    padding: 8px;
+    overflow: auto;
+    margin-bottom: var(--md-sys-spacing-1);
+    min-height: 150px;
+    max-height: 300px;
+}
+
+#report-preview {
+    margin: 0;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--md-sys-color-on-surface);
+}
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    cursor: pointer;
+}
+
+.icon-btn:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.primary-btn {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    padding: var(--md-sys-spacing-1) var(--md-sys-spacing-2);
+    border-radius: var(--md-sys-shape-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: bold;
+    width: 100%;
+}
+
+.primary-btn:hover {
+    background-color: color-mix(in srgb, var(--md-sys-color-primary), black 15%);
+    box-shadow: var(--md-sys-elevation-1);
+}
+
 .modal-content h2 {
     flex-shrink: 0;
 }
 
 
-.close-btn {
+.close-btn, .report-close-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.75rem;
