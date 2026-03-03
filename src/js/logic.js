@@ -191,7 +191,7 @@ function formatAsText(items, options, isTable) {
  * Returns the auto-stop time (23:59:59.999) if it has passed, otherwise null.
  */
 export function getAutoStopTimeIfPassed(startTime, now = Date.now()) {
-    const startDate = new Date(startTime);
+    const _startDate = new Date(startTime);
     const autoStopDate = new Date(startTime);
     autoStopDate.setHours(23, 59, 59, 999);
 

@@ -31,7 +31,7 @@ export function openDatabase() {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
-            const oldVersion = event.oldVersion;
+            const _oldVersion = event.oldVersion;
 
             if (!db.objectStoreNames.contains(STORE_LOGS)) {
                 db.createObjectStore(STORE_LOGS, { keyPath: 'id', autoIncrement: true });
