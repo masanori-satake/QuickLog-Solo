@@ -1,21 +1,7 @@
 import os
 import sys
 import re
-
-# Forbidden patterns that should not appear in animation modules.
-# Using regex with word boundaries where appropriate to avoid false positives.
-FORBIDDEN_PATTERNS = [
-    r'\bfetch\b',
-    r'\bXMLHttpRequest\b',
-    r'\bIndexedDB\b',
-    r'eval\s*\(',
-    r'new\s+Function\s*\(',
-    r'\blocalStorage\b',
-    r'\bsessionStorage\b',
-    r'\bcookie\b',
-    r'\bBroadcastChannel\b',
-    r'\bWebSocket\b'
-]
+from animation_utils import FORBIDDEN_PATTERNS, validate_metadata_text, extract_metadata_block
 
 def remove_comments_and_strings(content):
     """
@@ -30,24 +16,6 @@ def remove_comments_and_strings(content):
             return '"__STRING_PLACEHOLDER__"'
 
     return re.sub(pattern, replacer, content)
-
-def verify_metadata_content(metadata_text, filename):
-    """
-    Specifically verifies the content of the metadata block.
-    Checks for HTML tags and forbidden patterns inside strings.
-    """
-    violations = []
-
-    # Check for HTML tags
-    if '<' in metadata_text or '>' in metadata_text:
-        violations.append(f"Violation in {filename}: Found potential HTML tags ('<' or '>') in metadata.")
-
-    # Check for forbidden patterns (even inside strings)
-    for pattern in FORBIDDEN_PATTERNS:
-        if re.search(pattern, metadata_text):
-            violations.append(f"Violation in {filename}: Found forbidden pattern matching '{pattern}' in metadata.")
-
-    return violations
 
 def verify_animations():
     animation_dir = 'src/js/animation'
@@ -64,15 +32,11 @@ def verify_animations():
             raw_content = f.read()
 
             # 1. Extract and verify metadata block
-            # This is a bit naive but should work for the standard format used in the project
-            metadata_match = re.search(r'static\s+metadata\s*=\s*(\{[\s\S]*?\});', raw_content)
-            if metadata_match:
-                metadata_text = metadata_match.group(1)
-                violations.extend(verify_metadata_content(metadata_text, filename))
+            metadata_text = extract_metadata_block(raw_content)
+            if not metadata_text:
+                violations.append(f"Error in {filename}: Could not extract metadata block. All animations must have 'static metadata'.")
             else:
-                # If no metadata found, it might be an issue depending on project rules
-                # But for now we just skip it or log it if it's mandatory
-                pass
+                violations.extend(validate_metadata_text(metadata_text, filename))
 
             # 2. Verify the rest of the code with masking
             clean_content = remove_comments_and_strings(raw_content)

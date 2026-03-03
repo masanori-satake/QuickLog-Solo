@@ -4,3 +4,4 @@ node_modules/
 test-results/
 verification/
 releases/*.zip
+__pycache__/

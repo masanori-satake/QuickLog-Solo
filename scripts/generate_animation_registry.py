@@ -1,44 +1,7 @@
 import os
 import re
 import sys
-
-# Re-use forbidden patterns for consistency
-FORBIDDEN_PATTERNS = [
-    r'\bfetch\b',
-    r'\bXMLHttpRequest\b',
-    r'\bIndexedDB\b',
-    r'eval\s*\(',
-    r'new\s+Function\s*\(',
-    r'\blocalStorage\b',
-    r'\bsessionStorage\b',
-    r'\bcookie\b',
-    r'\bBroadcastChannel\b',
-    r'\bWebSocket\b'
-]
-
-def validate_metadata(content, filename):
-    """
-    Validates metadata in the animation module content.
-    Returns True if valid, False otherwise.
-    """
-    metadata_match = re.search(r'static\s+metadata\s*=\s*(\{[\s\S]*?\});', content)
-    if not metadata_match:
-        return True # Or False if mandatory
-
-    metadata_text = metadata_match.group(1)
-
-    # Check for HTML tags
-    if '<' in metadata_text or '>' in metadata_text:
-        print(f"Error in {filename}: Potential HTML tags in metadata.")
-        return False
-
-    # Check for forbidden patterns
-    for pattern in FORBIDDEN_PATTERNS:
-        if re.search(pattern, metadata_text):
-            print(f"Error in {filename}: Forbidden pattern '{pattern}' in metadata.")
-            return False
-
-    return True
+from animation_utils import validate_metadata_text, extract_metadata_block
 
 def generate_registry():
     animation_dir = 'src/js/animation'
@@ -60,7 +23,16 @@ def generate_registry():
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        if not validate_metadata(content, filename):
+        metadata_text = extract_metadata_block(content)
+        if not metadata_text:
+            print(f"Error in {filename}: Could not extract metadata block. All animations must have 'static metadata'.")
+            has_error = True
+            continue
+
+        violations = validate_metadata_text(metadata_text, filename)
+        if violations:
+            for v in violations:
+                print(v)
             has_error = True
             continue
 
