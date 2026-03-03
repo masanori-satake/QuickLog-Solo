@@ -31,7 +31,8 @@ export default class HeroPot extends AnimationBase {
         this.width = width;
         this.height = height;
         this.hero = { x: 20, y: height - 20, targetX: 0, targetY: 0, state: 'walking', potX: 0, potY: 0, shards: [] };
-        this.pots = [];
+        // Pre-populate with one pot to ensure immediate target for evaluation
+        this.pots = [{ x: width / 2, y: height - 20, state: 'idle' }];
         this.groundY = height - 20;
     }
 
@@ -64,10 +65,13 @@ export default class HeroPot extends AnimationBase {
         if (this.hero.state === 'walking') {
             if (this.pots.length > 0) {
                 const targetPot = this.pots[0];
-                if (this.hero.x < targetPot.x) this.hero.x += 1;
-                else this.hero.x -= 1;
-                if (this.hero.y < targetPot.y) this.hero.y += 1;
-                else this.hero.y -= 1;
+                const speed = 2.0;
+                if (Math.abs(this.hero.x - targetPot.x) > speed) {
+                    this.hero.x += (this.hero.x < targetPot.x ? speed : -speed);
+                }
+                if (Math.abs(this.hero.y - targetPot.y) > speed) {
+                    this.hero.y += (this.hero.y < targetPot.y ? speed : -speed);
+                }
 
                 if (Math.abs(this.hero.x - targetPot.x) < 5 && Math.abs(this.hero.y - targetPot.y) < 5) {
                     this.hero.state = 'lifting';

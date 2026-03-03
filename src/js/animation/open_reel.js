@@ -27,7 +27,7 @@ export default class OpenReel extends AnimationBase {
 
     config = { mode: 'canvas', usePseudoSpace: false };
 
-    draw(ctx, { width, height, progress, exclusionAreas }) {
+    draw(ctx, { width, height, _progress, exclusionAreas }) {
         const time = Date.now() / 1000;
 
         // Reels on the left
