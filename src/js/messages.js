@@ -23,6 +23,7 @@ export const messages = {
         'tags': 'タグ',
         'settings': '設定',
         'delete': '削除',
+        'btn-copy': 'コピー',
 
         // Controls
         'pause': '一時停止',
@@ -160,6 +161,7 @@ export const messages = {
         'tags': 'Tags',
         'settings': 'Settings',
         'delete': 'Delete',
+        'btn-copy': 'Copy',
 
         // Controls
         'pause': 'Pause',
@@ -296,6 +298,7 @@ export const messages = {
         'tags': 'Tags',
         'settings': 'Einstellungen',
         'delete': 'Löschen',
+        'btn-copy': 'Kopieren',
         'pause': 'Pause',
         'resume': 'Fortsetzen',
         'stop': 'Beenden',
@@ -413,6 +416,7 @@ export const messages = {
         'tags': 'Etiquetas',
         'settings': 'Ajustes',
         'delete': 'Eliminar',
+        'btn-copy': 'Copiar',
         'pause': 'Pausa',
         'resume': 'Reanudar',
         'stop': 'Detener',
@@ -530,6 +534,7 @@ export const messages = {
         'tags': 'Tags',
         'settings': 'Paramètres',
         'delete': 'Supprimer',
+        'btn-copy': 'Copier',
         'pause': 'Pause',
         'resume': 'Reprendre',
         'stop': 'Arrêter',
@@ -647,6 +652,7 @@ export const messages = {
         'tags': 'Tags',
         'settings': 'Configurações',
         'delete': 'Excluir',
+        'btn-copy': 'Copiar',
         'pause': 'Pausar',
         'resume': 'Retomar',
         'stop': 'Parar',
@@ -764,6 +770,7 @@ export const messages = {
         'tags': '태그',
         'settings': '설정',
         'delete': '삭제',
+        'btn-copy': '복사',
         'pause': '일시 중지',
         'resume': '재개',
         'stop': '종료',
@@ -881,6 +888,7 @@ export const messages = {
         'tags': '标签',
         'settings': '设置',
         'delete': '删除',
+        'btn-copy': '复制',
         'pause': '暂停',
         'resume': '继续',
         'stop': '停止',

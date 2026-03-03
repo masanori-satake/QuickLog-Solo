@@ -1279,11 +1279,20 @@ function setupEventListeners() {
         });
     });
 
-    getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', () => {
+    getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', (e) => {
         const text = getEl(ID_REPORT_PREVIEW).textContent;
         navigator.clipboard.writeText(text);
+
+        const btn = e.currentTarget;
+        const span = btn.querySelector('[data-i18n]');
+        if (span) {
+            const originalText = t('btn-copy');
+            span.textContent = t('toast-copied');
+            setTimeout(() => {
+                span.textContent = originalText;
+            }, 2000);
+        }
         showToast(t('toast-copied'));
-        getEl(ID_REPORT_MODAL).classList.add('hidden');
     });
 
     // Tabs
