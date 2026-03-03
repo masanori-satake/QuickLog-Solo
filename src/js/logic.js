@@ -29,10 +29,8 @@ export function formatLogDuration(ms) {
 
     if (minutes === 0) {
         return `${hours}h`;
-    } else if (minutes < 10) {
-        return `${hours}h ${minutes}m`;
     } else {
-        return `${hours}h${minutes}m`;
+        return `${hours}h ${minutes}m`;
     }
 }
 
@@ -109,7 +107,7 @@ function prepareReportItems(logs, options) {
         const start = new Date(l.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const end = l.endTime ? new Date(l.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
         const durMs = l.endTime ? l.endTime - l.startTime : 0;
-        const durText = l.endTime ? `${Math.round(durMs / 60000)} min` : '';
+        const durText = l.endTime ? formatLogDuration(durMs) : '';
 
         return { start, end, category, durText };
     });
@@ -128,9 +126,14 @@ function formatAsList(items, options, bullet) {
     return items.map(item => {
         let line = `${bullet} ${item.start}`;
         if (endTime === 'show') line += ` - ${item.end}`;
+
+        if (duration === 'right' && item.durText) {
+            line += ` (${item.durText})`;
+        } else if (duration === 'bottom' && item.durText) {
+            line += `\n  (${item.durText})`;
+        }
+
         line += ` | ${item.category}`;
-        if (duration === 'right') line += ` (${item.durText})`;
-        if (duration === 'bottom') line += `\n  (${item.durText})`;
         return line;
     }).join('\n');
 }
@@ -140,14 +143,17 @@ function formatAsText(items, options, isTable) {
     const headerTime = options.headerTime || 'Time';
     const headerCategory = options.headerCategory || 'Category';
 
-    const maxTimeLen = Math.max(endTime === 'show' ? 15 : 5, isTable ? getVisualWidth(headerTime) : 5);
-    const maxCatLen = Math.max(...items.map(i => {
-        let len = getVisualWidth(i.category);
-        if (duration === 'right' && i.durText) {
-            len += getVisualWidth(` (${i.durText})`);
-        }
-        return len;
-    }), isTable ? getVisualWidth(headerCategory) : 8);
+    const maxTimeLen = Math.max(
+        endTime === 'show' ? 15 : 5,
+        isTable ? getVisualWidth(headerTime) : 5,
+        ...items.map(i => {
+            let len = getVisualWidth(i.start + (endTime === 'show' ? ` - ${i.end}` : ''));
+            if (duration === 'right' && i.durText) len += getVisualWidth(` (${i.durText})`);
+            return len;
+        }),
+        ...items.map(i => (duration === 'bottom' && i.durText) ? getVisualWidth(`(${i.durText})`) : 0)
+    );
+    const maxCatLen = Math.max(...items.map(i => getVisualWidth(i.category)), isTable ? getVisualWidth(headerCategory) : 8);
 
     if (isTable) {
         const lineSep = '+' + '-'.repeat(maxTimeLen + 2) + '+' + '-'.repeat(maxCatLen + 2) + '+';
@@ -156,24 +162,24 @@ function formatAsText(items, options, isTable) {
         out += lineSep + '\n';
 
         items.forEach(item => {
-            const timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
-            const catPart = item.category + (duration === 'right' && item.durText ? ` (${item.durText})` : '');
+            let timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
+            if (duration === 'right' && item.durText) timePart += ` (${item.durText})`;
 
-            out += `| ${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(catPart, maxCatLen)} |\n`;
+            out += `| ${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(item.category, maxCatLen)} |\n`;
             if (duration === 'bottom' && item.durText) {
-                out += `| ${visualPadEnd('', maxTimeLen)} | ${visualPadEnd(`(${item.durText})`, maxCatLen)} |\n`;
+                out += `| ${visualPadEnd(`(${item.durText})`, maxTimeLen)} | ${visualPadEnd('', maxCatLen)} |\n`;
             }
+            out += lineSep + '\n';
         });
-        out += lineSep;
-        return out;
+        return out.trim();
     } else {
         return items.map(item => {
-            const timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
-            const catPart = item.category + (duration === 'right' && item.durText ? ` (${item.durText})` : '');
+            let timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
+            if (duration === 'right' && item.durText) timePart += ` (${item.durText})`;
 
-            let line = `${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(catPart, maxCatLen)}`;
+            let line = `${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(item.category, maxCatLen)}`;
             if (duration === 'bottom' && item.durText) {
-                line += `\n${visualPadEnd('', maxTimeLen)} | (${item.durText})`;
+                line += `\n${visualPadEnd(`(${item.durText})`, maxTimeLen)} | ${visualPadEnd('', maxCatLen)}`;
             }
             return line;
         }).join('\n');

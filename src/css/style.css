@@ -773,7 +773,7 @@ body.theme-light #current-task-display-base #clock-face {
 }
 
 .primary-btn:hover {
-    background-color: var(--md-sys-color-primary-fixed-dim);
+    background-color: color-mix(in srgb, var(--md-sys-color-primary), black 15%);
     box-shadow: var(--md-sys-elevation-1);
 }
 
