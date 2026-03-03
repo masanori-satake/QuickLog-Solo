@@ -367,7 +367,7 @@ function createLogElement(log, categoryMap) {
         colorClass = `dot-${color}`;
     }
 
-    // Tags (formerly meta) are hidden in history as per requirements
+    // Tags are hidden in history as per requirements
     li.innerHTML = `
         ${timeRangeHtml}
         <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(displayName)}</span>
@@ -1238,7 +1238,7 @@ function setupEventListeners() {
                         name: cat.name,
                         color: cat.color || 'primary',
                         order: cat.order !== undefined ? cat.order : ++maxOrder,
-                        tags: cat.tags !== undefined ? cat.tags : (cat.meta || ''),
+                        tags: cat.tags || '',
                         animation: cat.animation || 'default'
                     });
                 }

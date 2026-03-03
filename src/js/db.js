@@ -208,13 +208,7 @@ async function setupInitialData(languageSetting) {
             if (cat.color === undefined) { cat.color = 'primary'; changed = true; }
             if (cat.order === undefined) { cat.order = i; changed = true; }
             if (cat.animation === undefined) { cat.animation = 'default'; changed = true; }
-
-            // Migration: rename meta to tags
-            if (cat.tags === undefined) {
-                cat.tags = cat.meta || '';
-                delete cat.meta;
-                changed = true;
-            }
+            if (cat.tags === undefined) { cat.tags = ''; changed = true; }
 
             if (deletedAnimations.includes(cat.animation)) {
                 cat.animation = 'default';
@@ -229,20 +223,11 @@ async function setupInitialData(languageSetting) {
 
     const allLogs = await dbGetAll(STORE_LOGS);
 
-    // Migration: rename meta to tags in logs, and convert legacy Japanese "(待機)" to language-independent "__IDLE__"
+    // Backward compatibility migration: convert legacy Japanese "(待機)" to language-independent "__IDLE__"
     const legacyIdleName = '(待機)';
     for (const log of allLogs) {
-        let changed = false;
         if (log.category === legacyIdleName) {
             log.category = SYSTEM_CATEGORY_IDLE;
-            changed = true;
-        }
-        if (log.tags === undefined && log.meta !== undefined) {
-            log.tags = log.meta;
-            delete log.meta;
-            changed = true;
-        }
-        if (changed) {
             await dbPut(STORE_LOGS, log);
         }
     }
