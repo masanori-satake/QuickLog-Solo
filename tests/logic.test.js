@@ -18,7 +18,7 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
     SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
-const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport } = await import('../src/js/logic.js');
+const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, aggregateTimeByCategoryAndTags } = await import('../src/js/logic.js');
 const { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../src/js/db.js');
 
 describe('Logic Module', () => {
@@ -63,17 +63,17 @@ describe('Logic Module', () => {
             expect(formatLogDuration(60 * 60000 + 30000)).toBe('1h 1m'); // 60.5m -> 61m -> 1h 1m
             expect(formatLogDuration(61 * 60000)).toBe('1h 1m');
             expect(formatLogDuration(69 * 60000)).toBe('1h 9m');
-            expect(formatLogDuration(70 * 60000)).toBe('1h 10m');
-            expect(formatLogDuration(75 * 60000)).toBe('1h 15m');
+            expect(formatLogDuration(70 * 60000)).toBe('1h10m');
+            expect(formatLogDuration(75 * 60000)).toBe('1h15m');
             expect(formatLogDuration(120 * 60000)).toBe('2h');
             expect(formatLogDuration(125 * 60000)).toBe('2h 5m');
-            expect(formatLogDuration(130 * 60000)).toBe('2h 10m');
+            expect(formatLogDuration(130 * 60000)).toBe('2h10m');
         });
 
         test('handles long durations', () => {
             expect(formatLogDuration(10 * 60 * 60000)).toBe('10h');
             expect(formatLogDuration(10 * 60 * 60000 + 5 * 60000)).toBe('10h 5m');
-            expect(formatLogDuration(10 * 60 * 60000 + 15 * 60000)).toBe('10h 15m');
+            expect(formatLogDuration(10 * 60 * 60000 + 15 * 60000)).toBe('10h15m');
         });
     });
 
@@ -258,6 +258,43 @@ describe('Logic Module', () => {
             const report = generateReport(logsWithStop, defaultOptions);
             const idleCount = (report.match(/\(待機\)/g) || []).length;
             expect(idleCount).toBe(1); // Only the non-manual idle from sampleLogs
+        });
+    });
+
+    describe('aggregateTimeByCategoryAndTags', () => {
+        const logs = [
+            { startTime: 1000, endTime: 70000, category: 'Work', tags: 'ProjectA, Urgent' }, // 1.15 min
+            { startTime: 100000, endTime: 160000, category: 'Work', tags: 'ProjectB' },      // 1 min
+            { startTime: 200000, endTime: 230000, category: 'Meeting', tags: 'ProjectA' },   // 0.5 min
+            { startTime: 300000, endTime: 360000, category: '__IDLE__', tags: '' }           // 1 min
+        ];
+
+        test('aggregates time by category', () => {
+            const result = aggregateTimeByCategoryAndTags(logs);
+            expect(result).toContain('Work | 2 min');
+            expect(result).toContain('Meeting | 1 min');
+            expect(result).toContain('(待機) | 1 min');
+        });
+
+        test('aggregates time by tags', () => {
+            const result = aggregateTimeByCategoryAndTags(logs);
+            expect(result).toContain('#ProjectA | 2 min'); // 1.15 + 0.5 = 1.65 -> 2
+            expect(result).toContain('#ProjectB | 1 min');
+            expect(result).toContain('#Urgent | 1 min');
+        });
+
+        test('handles custom idle text', () => {
+            const result = aggregateTimeByCategoryAndTags(logs, { idleText: 'Paused' });
+            expect(result).toContain('Paused | 1 min');
+        });
+
+        test('handles logs without tags', () => {
+            const logsNoTags = [
+                { startTime: 0, endTime: 60000, category: 'Work' }
+            ];
+            const result = aggregateTimeByCategoryAndTags(logsNoTags);
+            expect(result).toContain('Work | 1 min');
+            expect(result).not.toContain('---');
         });
     });
 });

@@ -5,7 +5,7 @@ import {
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS
 } from './db.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
-import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport } from './logic.js';
+import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, aggregateTimeByCategoryAndTags } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
 import { AnimationEngine } from './animations.js';
 import { animations } from './animation_registry.js';
@@ -850,37 +850,12 @@ async function renderReportCalendar() {
 
 async function copyAggregation() {
     const allLogs = await dbGetAll(STORE_LOGS);
-    const today = new Date().setHours(0,0,0,0);
+    const today = new Date().setHours(0, 0, 0, 0);
     const todayLogs = allLogs.filter(l => l.startTime >= today && l.endTime);
 
-    const catAgg = {};
-    const tagAgg = {};
-
-    todayLogs.forEach(l => {
-        const dur = (l.endTime - l.startTime) / 60000;
-        catAgg[l.category] = (catAgg[l.category] || 0) + dur;
-
-        const tagStr = l.tags || '';
-        if (tagStr) {
-            const tags = tagStr.split(',').map(t => t.trim()).filter(Boolean);
-            tags.forEach(tag => {
-                tagAgg[tag] = (tagAgg[tag] || 0) + dur;
-            });
-        }
+    const text = aggregateTimeByCategoryAndTags(todayLogs, {
+        idleText: t('idle-category-log')
     });
-
-    let text = "";
-    for (const cat in catAgg) {
-        text += `${cat} | ${Math.round(catAgg[cat])} min\n`;
-    }
-
-    if (Object.keys(tagAgg).length > 0) {
-        text += "\n---\n";
-        const sortedTags = Object.keys(tagAgg).sort();
-        sortedTags.forEach(tag => {
-            text += `#${tag} | ${Math.round(tagAgg[tag])} min\n`;
-        });
-    }
 
     navigator.clipboard.writeText(text);
     showToast(t('toast-copied'));

@@ -29,8 +29,10 @@ export function formatLogDuration(ms) {
 
     if (minutes === 0) {
         return `${hours}h`;
-    } else {
+    } else if (minutes < 10) {
         return `${hours}h ${minutes}m`;
+    } else {
+        return `${hours}h${minutes}m`;
     }
 }
 
@@ -260,4 +262,45 @@ export async function pauseTaskLogic(activeTask) {
     pauseState.id = id;
     await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
     return pauseState;
+}
+
+/**
+ * Aggregates time by category and tags for a given set of logs.
+ */
+export function aggregateTimeByCategoryAndTags(logs, options = {}) {
+    const { idleText = '(待機)' } = options;
+    const catAgg = {};
+    const tagAgg = {};
+
+    logs.forEach(l => {
+        const dur = (l.endTime - l.startTime) / 60000;
+        let category = l.category;
+        if (category === SYSTEM_CATEGORY_IDLE) {
+            category = idleText;
+        }
+        catAgg[category] = (catAgg[category] || 0) + dur;
+
+        const tagStr = l.tags || '';
+        if (tagStr) {
+            const tags = tagStr.split(',').map(t => t.trim()).filter(Boolean);
+            tags.forEach(tag => {
+                tagAgg[tag] = (tagAgg[tag] || 0) + dur;
+            });
+        }
+    });
+
+    let text = "";
+    for (const cat in catAgg) {
+        text += `${cat} | ${Math.round(catAgg[cat])} min\n`;
+    }
+
+    if (Object.keys(tagAgg).length > 0) {
+        text += "\n---\n";
+        const sortedTags = Object.keys(tagAgg).sort();
+        sortedTags.forEach(tag => {
+            text += `#${tag} | ${Math.round(tagAgg[tag])} min\n`;
+        });
+    }
+
+    return text;
 }
