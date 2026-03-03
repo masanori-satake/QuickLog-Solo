@@ -249,5 +249,15 @@ describe('Logic Module', () => {
             expect(report).toContain('| Category');
             expect(report).toMatch(/\| \d{1,2}:\d{2}( [AP]M)?\s+\| Task 1/);
         });
+
+        test('filters out manual stop markers', () => {
+            const logsWithStop = [
+                ...sampleLogs,
+                { startTime: Date.now(), endTime: Date.now(), category: '__IDLE__', isManualStop: true }
+            ];
+            const report = generateReport(logsWithStop, defaultOptions);
+            const idleCount = (report.match(/\(待機\)/g) || []).length;
+            expect(idleCount).toBe(1); // Only the non-manual idle from sampleLogs
+        });
     });
 });

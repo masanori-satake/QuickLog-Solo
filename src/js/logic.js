@@ -95,7 +95,7 @@ export function generateReport(logs, options) {
 
 function prepareReportItems(logs, options) {
     const { emoji } = options;
-    return logs.map(l => {
+    return logs.filter(l => !l.isManualStop).map(l => {
         let category = l.category;
         if (l.category === '__IDLE__') {
             category = options.idleText || '(待機)';
