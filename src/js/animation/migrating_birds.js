@@ -37,7 +37,8 @@ export default class MigratingBirds extends AnimationBase {
 
     draw(ctx, { progress }) {
         const sprites = [];
-        const xBase = -100 + (this.w + 200) * progress;
+        // Start with the lead bird at x=0 when progress=0 to ensure immediate visibility.
+        const xBase = (this.w + 100) * progress;
 
         for (let i = 0; i < this.birdCount; i++) {
             const offset = i - Math.floor(this.birdCount / 2);
