@@ -904,7 +904,13 @@ async function renderCategoryEditor() {
                         await dbPut(STORE_LOGS, log);
                     }
                 }
-                updateUI();
+
+                // If the renamed category is the active task, update it immediately
+                if (activeTask && activeTask.category === oldName) {
+                    activeTask.category = newName;
+                }
+
+                await updateUI();
                 renderCategoryEditor();
                 broadcastSync();
             }
@@ -926,6 +932,7 @@ async function renderCategoryEditor() {
                 colorMenu.classList.add('hidden');
                 renderCategoryEditor();
                 renderCategories();
+                await updateUI();
                 broadcastSync();
             };
         });
@@ -934,6 +941,7 @@ async function renderCategoryEditor() {
         animSelect.onchange = async () => {
             cat.animation = animSelect.value;
             await dbPut(STORE_CATEGORIES, cat);
+            await updateUI();
             broadcastSync();
         };
 
@@ -976,6 +984,7 @@ async function renderCategoryEditor() {
                         await dbPut(STORE_CATEGORIES, cat);
                         tagInput.value = '';
                         renderTags();
+                        await updateUI();
                         broadcastSync();
                     }
                 }
@@ -1131,6 +1140,7 @@ function setupEventListeners() {
         const theme = e.target.value;
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_THEME, value: theme });
         applyTheme(theme);
+        await updateUI();
         broadcastSync();
     });
 
@@ -1138,25 +1148,25 @@ function setupEventListeners() {
     const fontSelect = getEl(ID_FONT_SELECT);
     if (fontSelect) {
         updateFontSelect();
-        fontSelect.onchange = async (e) => {
+        fontSelect.addEventListener('change', async (e) => {
             const fontValue = e.target.value;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_FONT, value: fontValue });
             applyFont(fontValue);
+            await updateUI();
             broadcastSync();
-        };
+        });
     }
 
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
         updateAnimationSelect();
-
-        animSelect.onchange = async (e) => {
+        animSelect.addEventListener('change', async (e) => {
             const animType = e.target.value;
             currentAnimationType = animType;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: animType });
             await updateUI();
             broadcastSync();
-        };
+        });
     }
 
     // Category additions
