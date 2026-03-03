@@ -89,8 +89,7 @@ graph TD
 ```mermaid
 graph LR
     Trigger[mainへマージ] --> VercelBuild[Vercel ビルド実行]
-    VercelBuild --> IconGen[アイコン生成<br/>scripts/generate_png_icons.py]
-    IconGen --> Registry[レジストリ更新<br/>scripts/generate_animation_registry.py]
+    VercelBuild --> Registry[レジストリ更新<br/>scripts/generate_animation_registry.py]
     Registry --> Zip[パッケージ作成<br/>scripts/create_package.py]
     Zip --> Deploy[サイト公開]
 ```
