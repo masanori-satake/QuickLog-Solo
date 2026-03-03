@@ -725,7 +725,7 @@ async function copyAggregation() {
         catAgg[l.category] = (catAgg[l.category] || 0) + dur;
 
         if (l.meta) {
-            const tags = l.meta.split(',').filter(t => t.trim());
+            const tags = l.meta.split(',').map(t => t.trim()).filter(Boolean);
             tags.forEach(tag => {
                 tagAgg[tag] = (tagAgg[tag] || 0) + dur;
             });
@@ -942,7 +942,7 @@ async function renderCategoryEditor() {
 
         const renderTags = () => {
             tagListEl.innerHTML = '';
-            const tags = cat.meta ? cat.meta.split(',').filter(t => t.trim()) : [];
+            const tags = cat.meta ? cat.meta.split(',').map(t => t.trim()).filter(Boolean) : [];
             tags.forEach((tag, idx) => {
                 const pill = createEl('span');
                 pill.className = 'tag-pill';
@@ -966,7 +966,7 @@ async function renderCategoryEditor() {
                 e.preventDefault();
                 const newTag = tagInput.value.trim().replace(/,/g, '');
                 if (newTag) {
-                    const tags = cat.meta ? cat.meta.split(',').filter(t => t.trim()) : [];
+                    const tags = cat.meta ? cat.meta.split(',').map(t => t.trim()).filter(Boolean) : [];
                     if (!tags.includes(newTag)) {
                         tags.push(newTag);
                         cat.meta = tags.join(',');
