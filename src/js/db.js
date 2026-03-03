@@ -346,6 +346,14 @@ async function generateDummyHistory() {
             });
             current = taskEnd;
         }
+
+        // Final Stop Marker
+        await dbPut(STORE_LOGS, {
+            category: '',
+            startTime: Math.floor(endTime),
+            endTime: Math.floor(endTime),
+            isManualStop: true
+        });
     }
 }
 
