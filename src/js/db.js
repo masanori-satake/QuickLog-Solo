@@ -271,6 +271,82 @@ async function setupInitialData(languageSetting) {
             await dbPut(STORE_LOGS, orphaned);
         }
     }
+
+    // Generate dummy history if no logs exist (demo purpose)
+    const logsAfterMigration = await dbGetAll(STORE_LOGS);
+    if (logsAfterMigration.length === 0) {
+        await generateDummyHistory();
+    }
+}
+
+async function generateDummyHistory() {
+    console.log('QuickLog-Solo: Generating dummy history...');
+    const daysOffset = [1, 2, 4]; // Yesterday, 2 days ago, 4 days ago
+    const categories = await dbGetAll(STORE_CATEGORIES);
+    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE);
+
+    if (workCategories.length === 0) return;
+
+    for (const offset of daysOffset) {
+        const baseDate = new Date();
+        baseDate.setDate(baseDate.getDate() - offset);
+        baseDate.setHours(0, 0, 0, 0);
+
+        // Start time: 8:30 +/- 3-7 mins
+        const startJitter = (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * 5) + 3);
+        const startTime = baseDate.getTime() + (8 * 60 + 30 + startJitter) * 60 * 1000;
+
+        // End time: 17:30 +/- 3-7 mins
+        const endJitter = (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * 5) + 3);
+        const endTime = baseDate.getTime() + (17 * 60 + 30 + endJitter) * 60 * 1000;
+
+        // Lunch: 12:30 +/- 2-5 mins
+        const lunchJitter = (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * 4) + 2);
+        const lunchStart = baseDate.getTime() + (12 * 60 + 30 + lunchJitter) * 60 * 1000;
+        const lunchEnd = lunchStart + 60 * 60 * 1000; // Exactly 1 hour
+
+        const numTasks = Math.floor(Math.random() * 3) + 5; // 5 to 7 tasks total per day
+        const morningCount = 2; // Fixed 2 tasks for morning for demo balance
+        const afternoonCount = numTasks - morningCount;
+
+        // Morning Tasks
+        let current = startTime;
+        for (let i = 0; i < morningCount; i++) {
+            const taskEnd = i === morningCount - 1 ? lunchStart : current + (lunchStart - current) / (morningCount - i) * (0.8 + Math.random() * 0.4);
+            const isFirst = i === 0;
+            const cat = isFirst ? { name: t('demo-warning'), color: 'error' } : workCategories[Math.floor(Math.random() * workCategories.length)];
+
+            await dbPut(STORE_LOGS, {
+                category: cat.name,
+                startTime: Math.floor(current),
+                endTime: Math.floor(taskEnd),
+                color: cat.color || 'primary'
+            });
+            current = taskEnd;
+        }
+
+        // Lunch Break
+        await dbPut(STORE_LOGS, {
+            category: SYSTEM_CATEGORY_IDLE,
+            startTime: Math.floor(lunchStart),
+            endTime: Math.floor(lunchEnd)
+        });
+
+        // Afternoon Tasks
+        current = lunchEnd;
+        for (let i = 0; i < afternoonCount; i++) {
+            const taskEnd = i === afternoonCount - 1 ? endTime : current + (endTime - current) / (afternoonCount - i) * (0.8 + Math.random() * 0.4);
+            const cat = workCategories[Math.floor(Math.random() * workCategories.length)];
+
+            await dbPut(STORE_LOGS, {
+                category: cat.name,
+                startTime: Math.floor(current),
+                endTime: Math.floor(taskEnd),
+                color: cat.color || 'primary'
+            });
+            current = taskEnd;
+        }
+    }
 }
 
 async function cleanupOldLogs() {
