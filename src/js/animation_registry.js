@@ -7,6 +7,7 @@ import Clock from './animation/clock.js';
 import CoffeeDrip from './animation/coffee_drip.js';
 import ContourLines from './animation/contour_lines.js';
 import DotTyping from './animation/dot_typing.js';
+import HeartBeat from './animation/heart_beat.js';
 import HeroPot from './animation/hero_pot.js';
 import LeftToRight from './animation/left_to_right.js';
 import MatrixCode from './animation/matrix_code.js';
@@ -28,6 +29,7 @@ export const animations = [
     { id: 'coffee_drip', class: CoffeeDrip, metadata: CoffeeDrip.metadata },
     { id: 'contour_lines', class: ContourLines, metadata: ContourLines.metadata },
     { id: 'dot_typing', class: DotTyping, metadata: DotTyping.metadata },
+    { id: 'heart_beat', class: HeartBeat, metadata: HeartBeat.metadata },
     { id: 'hero_pot', class: HeroPot, metadata: HeroPot.metadata },
     { id: 'left_to_right', class: LeftToRight, metadata: LeftToRight.metadata },
     { id: 'matrix_code', class: MatrixCode, metadata: MatrixCode.metadata },
