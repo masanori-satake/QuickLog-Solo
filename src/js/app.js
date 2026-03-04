@@ -536,11 +536,11 @@ async function syncState() {
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
 
-    const autoStopToggle = getEl('auto-stop-toggle');
-    if (autoStopToggle) {
-        autoStopToggle.checked = state.autoStop;
-        autoStopToggle.onchange = async (e) => {
-            const enabled = e.target.checked;
+    const autoStopSelect = getEl('auto-stop-select');
+    if (autoStopSelect) {
+        autoStopSelect.value = state.autoStop ? 'true' : 'false';
+        autoStopSelect.onchange = async (e) => {
+            const enabled = e.target.value === 'true';
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: enabled });
             autoStopEnabledCache = enabled;
             broadcastSync();
@@ -1077,121 +1077,123 @@ async function renderCategoryEditor() {
             item.dataset.name = cat.name;
         }
 
-        // --- Row 1 Events ---
-        const input = item.querySelector('.category-edit-name');
-        input.onchange = async () => {
-            const newName = input.value.trim();
-            if (newName && newName !== cat.name) {
-                if (!isValidCategoryName(newName)) {
-                    alert(t('alert-invalid-category', { idle: t('idle-category') }));
-                    input.value = cat.name;
-                    return;
-                }
-                const oldName = cat.name;
-                const existing = await dbGetByName(STORE_CATEGORIES, newName);
-                if (existing) {
-                    alert(t('alert-duplicate-category'));
-                    input.value = oldName;
-                    return;
-                }
-                const updatedCat = { ...cat, name: newName };
-                await dbPut(STORE_CATEGORIES, updatedCat);
-
-                const allLogs = await dbGetAll(STORE_LOGS);
-                for (const log of allLogs) {
-                    if (log.category === oldName) {
-                        log.category = newName;
-                        await dbPut(STORE_LOGS, log);
+        if (!isPageBreak) {
+            // --- Row 1 Events ---
+            const input = item.querySelector('.category-edit-name');
+            input.onchange = async () => {
+                const newName = input.value.trim();
+                if (newName && newName !== cat.name) {
+                    if (!isValidCategoryName(newName)) {
+                        alert(t('alert-invalid-category', { idle: t('idle-category') }));
+                        input.value = cat.name;
+                        return;
                     }
+                    const oldName = cat.name;
+                    const existing = await dbGetByName(STORE_CATEGORIES, newName);
+                    if (existing) {
+                        alert(t('alert-duplicate-category'));
+                        input.value = oldName;
+                        return;
+                    }
+                    const updatedCat = { ...cat, name: newName };
+                    await dbPut(STORE_CATEGORIES, updatedCat);
+
+                    const allLogs = await dbGetAll(STORE_LOGS);
+                    for (const log of allLogs) {
+                        if (log.category === oldName) {
+                            log.category = newName;
+                            await dbPut(STORE_LOGS, log);
+                        }
+                    }
+
+                    // If the renamed category is the active task, update it immediately
+                    if (activeTask && activeTask.category === oldName) {
+                        activeTask.category = newName;
+                    }
+
+                    await updateUI();
+                    renderCategoryEditor();
+                    broadcastSync();
                 }
+            };
 
-                // If the renamed category is the active task, update it immediately
-                if (activeTask && activeTask.category === oldName) {
-                    activeTask.category = newName;
-                }
-
-                await updateUI();
-                renderCategoryEditor();
-                broadcastSync();
-            }
-        };
-
-        // --- Row 2 Events (Custom Color Dropdown) ---
-        const colorTrigger = item.querySelector('.color-dropdown-trigger');
-        const colorMenu = item.querySelector('.color-dropdown-menu');
-        colorTrigger.onclick = (e) => {
-            e.stopPropagation();
-            queryAll('.color-dropdown-menu').forEach(m => { if (m !== colorMenu) m.classList.add('hidden'); });
-            colorMenu.classList.toggle('hidden');
-        };
-        colorMenu.querySelectorAll('.color-dropdown-item').forEach(btn => {
-            btn.onclick = async (e) => {
+            // --- Row 2 Events (Custom Color Dropdown) ---
+            const colorTrigger = item.querySelector('.color-dropdown-trigger');
+            const colorMenu = item.querySelector('.color-dropdown-menu');
+            colorTrigger.onclick = (e) => {
                 e.stopPropagation();
-                cat.color = btn.dataset.color;
+                queryAll('.color-dropdown-menu').forEach(m => { if (m !== colorMenu) m.classList.add('hidden'); });
+                colorMenu.classList.toggle('hidden');
+            };
+            colorMenu.querySelectorAll('.color-dropdown-item').forEach(btn => {
+                btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    cat.color = btn.dataset.color;
+                    await dbPut(STORE_CATEGORIES, cat);
+                    colorMenu.classList.add('hidden');
+                    renderCategoryEditor();
+                    renderCategories();
+                    await updateUI();
+                    broadcastSync();
+                };
+            });
+
+            const animSelect = item.querySelector('.category-edit-animation');
+            animSelect.onchange = async () => {
+                cat.animation = animSelect.value;
                 await dbPut(STORE_CATEGORIES, cat);
-                colorMenu.classList.add('hidden');
-                renderCategoryEditor();
-                renderCategories();
                 await updateUI();
                 broadcastSync();
             };
-        });
 
-        const animSelect = item.querySelector('.category-edit-animation');
-        animSelect.onchange = async () => {
-            cat.animation = animSelect.value;
-            await dbPut(STORE_CATEGORIES, cat);
-            await updateUI();
-            broadcastSync();
-        };
+            // --- Row 3 Events (Tags) ---
+            const tagListEl = item.querySelector('.tag-list');
+            const tagInput = item.querySelector('.tag-input');
 
-        // --- Row 3 Events (Tags) ---
-        const tagListEl = item.querySelector('.tag-list');
-        const tagInput = item.querySelector('.tag-input');
-
-        const renderTags = () => {
-            tagListEl.innerHTML = '';
-            const tagStr = cat.tags || '';
-            const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
-            tags.forEach((tag, idx) => {
-                const pill = createEl('span');
-                pill.className = 'tag-pill';
-                pill.innerHTML = `
-                    <span class="tag-text">${escapeHtml(tag)}</span>
-                    <span class="tag-remove material-symbols-outlined" data-index="${idx}">close</span>
-                `;
-                pill.querySelector('.tag-remove').onclick = async () => {
-                    tags.splice(idx, 1);
-                    cat.tags = tags.join(',');
-                    await dbPut(STORE_CATEGORIES, cat);
-                    renderTags();
-                    broadcastSync();
-                };
-                tagListEl.appendChild(pill);
-            });
-        };
-
-        tagInput.onkeydown = async (e) => {
-            if (e.key === 'Enter' || e.key === ',') {
-                e.preventDefault();
-                const newTag = tagInput.value.trim().replace(/,/g, '');
-                if (newTag) {
-                    const tagStr = cat.tags || '';
-                    const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
-                    if (!tags.includes(newTag)) {
-                        tags.push(newTag);
+            const renderTags = () => {
+                tagListEl.innerHTML = '';
+                const tagStr = cat.tags || '';
+                const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+                tags.forEach((tag, idx) => {
+                    const pill = createEl('span');
+                    pill.className = 'tag-pill';
+                    pill.innerHTML = `
+                        <span class="tag-text">${escapeHtml(tag)}</span>
+                        <span class="tag-remove material-symbols-outlined" data-index="${idx}">close</span>
+                    `;
+                    pill.querySelector('.tag-remove').onclick = async () => {
+                        tags.splice(idx, 1);
                         cat.tags = tags.join(',');
                         await dbPut(STORE_CATEGORIES, cat);
-                        tagInput.value = '';
                         renderTags();
-                        await updateUI();
                         broadcastSync();
+                    };
+                    tagListEl.appendChild(pill);
+                });
+            };
+
+            tagInput.onkeydown = async (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const newTag = tagInput.value.trim().replace(/,/g, '');
+                    if (newTag) {
+                        const tagStr = cat.tags || '';
+                        const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+                        if (!tags.includes(newTag)) {
+                            tags.push(newTag);
+                            cat.tags = tags.join(',');
+                            await dbPut(STORE_CATEGORIES, cat);
+                            tagInput.value = '';
+                            renderTags();
+                            await updateUI();
+                            broadcastSync();
+                        }
                     }
                 }
-            }
-        };
+            };
 
-        renderTags();
+            renderTags();
+        }
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
             const confirmMsg = isPageBreak ? t('confirm-delete-page-break') : t('confirm-delete-category', { name: cat.name });

@@ -196,13 +196,14 @@
                         </select>
                     </div>
                     <div class="setting-item">
-                        <label class="auto-stop-label">
-                            <span class="auto-stop-label-content" data-i18n-title="tooltip-auto-stop">
-                                <span class="material-symbols-outlined">timer_off</span>
-                                <span data-i18n="setting-auto-stop">自動終了機能</span>
-                            </span>
-                            <input type="checkbox" id="auto-stop-toggle" class="m3-switch" checked>
+                        <label style="display: flex; align-items: center; gap: 4px;">
+                            <span class="material-symbols-outlined" style="font-size: 1.2rem;" data-i18n-title="tooltip-auto-stop">timer_off</span>
+                            <span data-i18n="setting-auto-stop">一日の終わりの自動停止</span>
                         </label>
+                        <select id="auto-stop-select" data-i18n-title="tooltip-auto-stop">
+                            <option value="true" data-i18n="setting-enabled">有効 (ON)</option>
+                            <option value="false" data-i18n="setting-disabled">無効 (OFF)</option>
+                        </select>
                     </div>
                     <div class="setting-item">
                         <button id="export-csv-btn" data-i18n="btn-export-csv">CSVエクスポート</button>

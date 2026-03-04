@@ -36,6 +36,10 @@ export const messages = {
         'tab-maintenance': 'メンテナンス',
         'tab-about': 'About',
 
+        // Common labels
+        'setting-enabled': '有効 (ON)',
+        'setting-disabled': '無効 (OFF)',
+
         // General Tab
         'setting-language': '表示言語',
         'lang-auto': 'ブラウザの表示言語',
@@ -66,8 +70,8 @@ export const messages = {
         'about-description': 'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB にのみ保存され、外部送信は一切行われません。外部ライブラリを使用しない軽量・セキュアな設計で、サイドパネルからいつでも素早く記録できます。',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': '自動終了機能',
-        'tooltip-auto-stop': 'ONにすると、毎日23:59:59に作業を自動的に終了します。次回起動時、未終了の作業があれば開始日の23:59:59に遡って記録を完了させます。',
+        'setting-auto-stop': '一日の終わりの自動停止',
+        'tooltip-auto-stop': 'ONにすると、毎日23:59:59に作業を自動的に終了し、翌日の記録がスムーズに始められるようガードします。次回起動時、未終了の作業があれば開始日の23:59:59に遡って記録を完了させます。',
         'page-break': '改ページ',
         'btn-add-page-break': '改ページを追加',
         'confirm-delete-page-break': 'この改ページを削除しますか？',
@@ -197,6 +201,10 @@ export const messages = {
         'tab-maintenance': 'Maintenance',
         'tab-about': 'About',
 
+        // Common labels
+        'setting-enabled': 'Enabled (ON)',
+        'setting-disabled': 'Disabled (OFF)',
+
         // General Tab
         'setting-language': 'Language',
         'lang-auto': 'Browser Language',
@@ -227,8 +235,8 @@ export const messages = {
         'about-description': 'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved only in IndexedDB within your browser and is never sent externally. It features a lightweight, secure design with no external libraries, allowing for quick recording anytime from the sidebar.',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Auto-Stop Feature',
-        'tooltip-auto-stop': 'When ON, automatically ends work at 23:59:59 every day. If work is unfinished on next launch, it records the end time as 23:59:59 of the start day.',
+        'setting-auto-stop': 'Auto-Stop at End of Day',
+        'tooltip-auto-stop': 'Automatically ends any active task at 23:59:59 to ensure a clean start for the next day. If work is unfinished on next launch, it retroactively records the end time as 23:59:59 of the start day.',
         'page-break': 'Page Break',
         'btn-add-page-break': 'Add Page Break',
         'confirm-delete-page-break': 'Do you want to delete this page break?',
@@ -347,8 +355,8 @@ export const messages = {
         'btn-copy': 'Kopieren',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Automatischer Stopp',
-        'tooltip-auto-stop': 'Wenn EIN, wird die Arbeit jeden Tag um 23:59:59 automatisch beendet.',
+        'setting-auto-stop': 'Automatischer Stopp am Tagesende',
+        'tooltip-auto-stop': 'Beendet die Arbeit automatisch um 23:59:59, um einen sauberen Start in den nächsten Tag zu gewährleisten.',
         'page-break': 'Seitenumbruch',
         'btn-add-page-break': 'Seitenumbruch hinzufügen',
         'confirm-delete-page-break': 'Möchten Sie diesen Seitenumbruch löschen?',
@@ -374,6 +382,8 @@ export const messages = {
         'tab-categories': 'Kategorien',
         'tab-maintenance': 'Wartung',
         'tab-about': 'Über',
+        'setting-enabled': 'Aktiviert (EIN)',
+        'setting-disabled': 'Deaktiviert (AUS)',
         'setting-language': 'Sprache',
         'lang-auto': 'Browsersprache',
         'lang-ja': 'Japanisch',
@@ -488,8 +498,8 @@ export const messages = {
         'btn-copy': 'Copiar',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Función de parada automática',
-        'tooltip-auto-stop': 'Cuando está activada, finaliza automáticamente el trabajo a las 23:59:59 todos los días.',
+        'setting-auto-stop': 'Parada automática al final del día',
+        'tooltip-auto-stop': 'Finaliza automáticamente el trabajo a las 23:59:59 para asegurar un inicio limpio al día siguiente.',
         'page-break': 'Salto de página',
         'btn-add-page-break': 'Añadir salto de página',
         'confirm-delete-page-break': '¿Desea eliminar este salto de página?',
@@ -515,6 +525,8 @@ export const messages = {
         'tab-categories': 'Categorías',
         'tab-maintenance': 'Mantenimiento',
         'tab-about': 'Acerca de',
+        'setting-enabled': 'Activado (SÍ)',
+        'setting-disabled': 'Desactivado (NO)',
         'setting-language': 'Idioma',
         'lang-auto': 'Idioma del navegador',
         'lang-ja': 'Japonés',
@@ -629,8 +641,8 @@ export const messages = {
         'btn-copy': 'Copier',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Fonction d\'arrêt automatique',
-        'tooltip-auto-stop': 'Si activé, arrête automatiquement le travail à 23:59:59 chaque jour.',
+        'setting-auto-stop': 'Arrêt automatique en fin de journée',
+        'tooltip-auto-stop': 'Arrête automatiquement le travail à 23:59:59 pour assurer un démarrage propre le lendemain.',
         'page-break': 'Saut de page',
         'btn-add-page-break': 'Ajouter un saut de page',
         'confirm-delete-page-break': 'Voulez-vous supprimer ce saut de page ?',
@@ -656,6 +668,8 @@ export const messages = {
         'tab-categories': 'Catégories',
         'tab-maintenance': 'Maintenance',
         'tab-about': 'À propos',
+        'setting-enabled': 'Activé (ON)',
+        'setting-disabled': 'Désactivé (OFF)',
         'setting-language': 'Langue',
         'lang-auto': 'Langue du navigateur',
         'lang-ja': 'Japonais',
@@ -770,8 +784,8 @@ export const messages = {
         'btn-copy': 'Copiar',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Recurso de parada automática',
-        'tooltip-auto-stop': 'Quando ativado, encerra automaticamente o trabalho às 23:59:59 todos os dias.',
+        'setting-auto-stop': 'Parada automática no fim do dia',
+        'tooltip-auto-stop': 'Encerra o trabalho automaticamente às 23:59:59 para garantir um início limpo no dia seguinte.',
         'page-break': 'Quebra de página',
         'btn-add-page-break': 'Adicionar quebra de página',
         'confirm-delete-page-break': 'Deseja excluir esta quebra de página?',
@@ -797,6 +811,8 @@ export const messages = {
         'tab-categories': 'Categorias',
         'tab-maintenance': 'Manutenção',
         'tab-about': 'Sobre',
+        'setting-enabled': 'Ativado (LIGADO)',
+        'setting-disabled': 'Desativado (DESLIGADO)',
         'setting-language': 'Idioma',
         'lang-auto': 'Idioma do navegador',
         'lang-ja': 'Japonês',
@@ -911,8 +927,8 @@ export const messages = {
         'btn-copy': '복사',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': '자동 종료 기능',
-        'tooltip-auto-stop': 'ON으로 설정하면 매일 23:59:59에 작업이 자동으로 종료됩니다.',
+        'setting-auto-stop': '하루 끝 자동 종료',
+        'tooltip-auto-stop': '매일 23:59:59에 작업을 자동으로 종료하여 다음 날의 기록을 원활하게 시작할 수 있도록 합니다.',
         'page-break': '페이지 나누기',
         'btn-add-page-break': '페이지 나누기 추가',
         'confirm-delete-page-break': '이 페이지 나누기를 삭제하시겠습니까?',
@@ -938,6 +954,8 @@ export const messages = {
         'tab-categories': '카테고리',
         'tab-maintenance': '유지 관리',
         'tab-about': '정보',
+        'setting-enabled': '활성화 (ON)',
+        'setting-disabled': '비활성화 (OFF)',
         'setting-language': '표시 언어',
         'lang-auto': '브라우저 언어',
         'lang-ja': '일본어',
@@ -1052,8 +1070,8 @@ export const messages = {
         'btn-copy': '复制',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': '自动结束功能',
-        'tooltip-auto-stop': '开启后，每天 23:59:59 会自动结束工作。',
+        'setting-auto-stop': '每日结束自动停止',
+        'tooltip-auto-stop': '每天 23:59:59 自动结束工作，以确保第二天能顺利开始新的记录。',
         'page-break': '换页',
         'btn-add-page-break': '添加换页',
         'confirm-delete-page-break': '是否删除此换页？',
@@ -1079,6 +1097,8 @@ export const messages = {
         'tab-categories': '分类',
         'tab-maintenance': '维护',
         'tab-about': '关于',
+        'setting-enabled': '已开启 (ON)',
+        'setting-disabled': '已关闭 (OFF)',
         'setting-language': '语言',
         'lang-auto': '浏览器语言',
         'lang-ja': '日语',
