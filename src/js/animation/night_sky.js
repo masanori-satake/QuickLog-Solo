@@ -82,13 +82,47 @@ export default class NightSky extends AnimationBase {
             }
         }
 
-        // Shooting star
-        const shootingP = (Date.now() / 3000) % 5;
-        if (shootingP < 1) {
-            const sx = this.w * (1.2 - shootingP * 1.5);
-            const sy = this.h * (shootingP * 1.2 - 0.2);
-            for (let i = 0; i < 5; i++) {
-                sprites.push({ x: sx + i * 5, y: sy - i * 4, size: 1 });
+        // UFO & Cattle Mutilation
+        // Cycle: 0-0.3: Fly In, 0.3-0.7: Abduct (Stop), 0.7-1.0: Fly Out
+        const ufoCycle = (Date.now() / 15000) % 3; // 45 sec total, 15 sec active
+        if (ufoCycle < 1) {
+            const p = ufoCycle;
+            let ufoX;
+            const ufoY = this.h * 0.15;
+
+            if (p < 0.3) {
+                // Fly In
+                ufoX = this.w * (p / 0.3 * 0.95 - 0.2);
+            } else if (p < 0.7) {
+                // Stop and Abduct (Right half)
+                ufoX = this.w * 0.75;
+            } else {
+                // Fly Out
+                ufoX = this.w * (0.75 + (p - 0.7) / 0.3 * 0.45);
+            }
+
+            // UFO Body
+            for (let i = -5; i <= 5; i++) sprites.push({ x: ufoX + i * 4, y: ufoY, size: 2 });
+            for (let i = -2; i <= 2; i++) sprites.push({ x: ufoX + i * 4, y: ufoY - 4, size: 2 });
+
+            // Abduction Beam & Cow
+            if (p >= 0.3 && p <= 0.7) {
+                const beamP = (p - 0.3) / 0.4;
+                // Beam
+                for (let y = ufoY + 4; y < this.h; y += 8) {
+                    for (let x = -2; x <= 2; x++) {
+                        if (Math.random() > 0.4) sprites.push({ x: ufoX + x * 6, y: y, size: 1 });
+                    }
+                }
+                // Cow (being sucked up)
+                const cowY = this.h - (this.h - ufoY) * beamP;
+                if (cowY > ufoY) {
+                    // Cow shape (pixel art)
+                    sprites.push({ x: ufoX - 4, y: cowY, size: 2 });
+                    sprites.push({ x: ufoX, y: cowY, size: 2 });
+                    sprites.push({ x: ufoX + 4, y: cowY, size: 2 });
+                    sprites.push({ x: ufoX + 4, y: cowY - 4, size: 2 });
+                }
             }
         }
 

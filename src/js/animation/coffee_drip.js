@@ -61,21 +61,44 @@ export default class CoffeeDrip extends AnimationBase {
         ctx.closePath();
         ctx.fill();
 
-        // Server/Pot shape
+        // Server/Cup shape
+        const cupY = 60;
+        const cupWidth = 40;
+        const cupHeight = 30;
+
         ctx.globalAlpha = 1.0;
-        ctx.strokeRect(centerX - 25, 60, 50, 40);
+        // Cup Body
+        ctx.beginPath();
+        ctx.moveTo(centerX - cupWidth / 2, cupY);
+        ctx.lineTo(centerX + cupWidth / 2, cupY);
+        ctx.lineTo(centerX + cupWidth / 2 - 5, cupY + cupHeight);
+        ctx.lineTo(centerX - cupWidth / 2 + 5, cupY + cupHeight);
+        ctx.closePath();
+        ctx.stroke();
+
+        // Handle
+        ctx.beginPath();
+        ctx.arc(centerX + cupWidth / 2 - 2, cupY + cupHeight / 2, 8, -Math.PI / 2, Math.PI / 2);
+        ctx.stroke();
 
         // Drip droplets
         const dropP = (Date.now() / 1000) % 1;
         ctx.globalAlpha = 0.8;
         ctx.beginPath();
-        ctx.arc(centerX, 50 + dropP * 30, 3, 0, Math.PI * 2);
+        ctx.arc(centerX, 50 + dropP * 15, 2, 0, Math.PI * 2);
         ctx.fill();
 
         // Filling coffee
         ctx.globalAlpha = 0.6;
-        const fillHeight = 40 * progress;
-        ctx.fillRect(centerX - 24, 100 - fillHeight, 48, fillHeight);
+        const fillMaxHeight = cupHeight - 4;
+        const fillHeight = fillMaxHeight * progress;
+        ctx.beginPath();
+        ctx.moveTo(centerX - cupWidth / 2 + 2, cupY + cupHeight - 2);
+        ctx.lineTo(centerX + cupWidth / 2 - 2, cupY + cupHeight - 2);
+        ctx.lineTo(centerX + cupWidth / 2 - 2, cupY + cupHeight - 2 - fillHeight);
+        ctx.lineTo(centerX - cupWidth / 2 + 2, cupY + cupHeight - 2 - fillHeight);
+        ctx.closePath();
+        ctx.fill();
         ctx.globalAlpha = 1.0;
     }
 }

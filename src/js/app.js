@@ -95,7 +95,7 @@ let syncTimeout = null;
 /** @type {number} Current page index in the category list. */
 let currentCategoryPage = 0;
 /** @type {string} Current background animation ID. */
-let currentAnimationType = 'matrix_code';
+let currentAnimationType = 'digital_rain';
 /** @type {string|null} JSON string of the last rendered category state for change detection. */
 let lastCategoryRenderData = null;
 /** @type {Object|null} Instance of the animation engine. */
@@ -551,6 +551,12 @@ function broadcastSync(type = 'sync') {
 async function syncState() {
     if (!isAppInitialized) return;
     const state = await getCurrentAppState();
+
+    // Migration: Update 'matrix_code' to 'digital_rain' for existing users
+    if (state.animation === 'matrix_code') {
+        state.animation = 'digital_rain';
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: 'digital_rain' });
+    }
     activeTask = state.activeTask;
     autoStopEnabledCache = state.autoStop;
 
@@ -575,7 +581,7 @@ async function syncState() {
     }
 
     // Update Animation options
-    currentAnimationType = state.animation || 'matrix_code';
+    currentAnimationType = state.animation || 'digital_rain';
     updateAnimationSelect();
 
     // Update Font options first. This filters the available fonts based on language.
@@ -595,7 +601,7 @@ async function syncState() {
         color = cat ? cat.color : (activeTask.color || 'primary');
         categoryAnimation = cat ? (cat.animation || 'default') : 'default';
     }
-    applyAnimation(state.animation || 'matrix_code', categoryAnimation, color);
+    applyAnimation(state.animation || 'digital_rain', categoryAnimation, color);
 
     await updateUI();
 

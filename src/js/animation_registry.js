@@ -6,11 +6,11 @@ import Cats from './animation/cats.js';
 import Clock from './animation/clock.js';
 import CoffeeDrip from './animation/coffee_drip.js';
 import ContourLines from './animation/contour_lines.js';
+import DigitalRain from './animation/digital_rain.js';
 import DotTyping from './animation/dot_typing.js';
 import HeartBeat from './animation/heart_beat.js';
 import HeroPot from './animation/hero_pot.js';
 import LeftToRight from './animation/left_to_right.js';
-import MatrixCode from './animation/matrix_code.js';
 import MigratingBirds from './animation/migrating_birds.js';
 import NewtonsCradle from './animation/newtons_cradle.js';
 import NightSky from './animation/night_sky.js';
@@ -28,11 +28,11 @@ export const animations = [
     { id: 'clock', class: Clock, metadata: Clock.metadata },
     { id: 'coffee_drip', class: CoffeeDrip, metadata: CoffeeDrip.metadata },
     { id: 'contour_lines', class: ContourLines, metadata: ContourLines.metadata },
+    { id: 'digital_rain', class: DigitalRain, metadata: DigitalRain.metadata },
     { id: 'dot_typing', class: DotTyping, metadata: DotTyping.metadata },
     { id: 'heart_beat', class: HeartBeat, metadata: HeartBeat.metadata },
     { id: 'hero_pot', class: HeroPot, metadata: HeroPot.metadata },
     { id: 'left_to_right', class: LeftToRight, metadata: LeftToRight.metadata },
-    { id: 'matrix_code', class: MatrixCode, metadata: MatrixCode.metadata },
     { id: 'migrating_birds', class: MigratingBirds, metadata: MigratingBirds.metadata },
     { id: 'newtons_cradle', class: NewtonsCradle, metadata: NewtonsCradle.metadata },
     { id: 'night_sky', class: NightSky, metadata: NightSky.metadata },

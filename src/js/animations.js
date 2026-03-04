@@ -74,6 +74,28 @@ export class AnimationEngine {
         return realX - info.width;
     }
 
+    _getVirtualExclusionAreas() {
+        if (!this.config.usePseudoSpace) return this.exclusionAreas;
+        const info = this._getPseudoInfo();
+        return this.exclusionAreas.map(area => {
+            const vX = this._mapToVirtualX(area.x);
+            let vWidth = area.width;
+            const areaRight = area.x + area.width;
+            const gapLeft = info.left;
+            const gapRight = info.left + info.width;
+
+            if (area.x < gapLeft && areaRight > gapRight) {
+                vWidth -= info.width;
+            } else if (area.x >= gapLeft && area.x < gapRight) {
+                const overlap = gapRight - area.x;
+                vWidth = Math.max(0, area.width - overlap);
+            } else if (areaRight > gapLeft && areaRight <= gapRight) {
+                vWidth = gapLeft - area.x;
+            }
+            return { ...area, x: vX, width: vWidth };
+        }).filter(a => a.width > 0);
+    }
+
     register(name, animationClass, id) {
         // In the new architecture, we store the ID or path to the module
         this.registry.set(name, { class: animationClass, id: id });
@@ -194,7 +216,8 @@ export class AnimationEngine {
             elapsedMs: elapsed,
             progress,
             step: Math.floor(progress * 240),
-            exclusionAreas: this.exclusionAreas
+            exclusionAreas: this._getVirtualExclusionAreas(),
+            realExclusionAreas: this.exclusionAreas
         };
 
         this.lastDrawRequestTime = performance.now();

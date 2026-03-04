@@ -37,13 +37,14 @@ export default class SandClock extends AnimationBase {
     draw(ctx, { width, height, progress, exclusionAreas }) {
         this.width = width;
         this.height = height;
-        this.size = Math.min(width, height) * 0.4;
+        // Adjust size to ensure it fits with margin
+        this.size = Math.min(width, height) * 0.35;
 
         let centerX = width / 2;
         let centerY = height / 2;
 
         if (exclusionAreas && exclusionAreas.length > 0) {
-            const margin = this.size + 10;
+            const margin = this.size + 15;
             const spots = [
                 {x: margin, y: margin},
                 {x: width - margin, y: margin},
@@ -64,28 +65,46 @@ export default class SandClock extends AnimationBase {
             }
         }
 
+        // Draw Outline
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX - this.size, centerY - this.size);
+        ctx.lineTo(centerX + this.size, centerY - this.size);
+        ctx.lineTo(centerX - this.size, centerY + this.size);
+        ctx.lineTo(centerX + this.size, centerY + this.size);
+        ctx.closePath();
+        ctx.stroke();
+
         ctx.fillStyle = '#fff';
 
+        // Top triangle (sand falling)
+        ctx.save();
         ctx.beginPath();
         ctx.moveTo(centerX - this.size, centerY - this.size);
         ctx.lineTo(centerX + this.size, centerY - this.size);
         ctx.lineTo(centerX, centerY);
         ctx.closePath();
-        ctx.fill();
+        ctx.clip();
 
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.fillRect(centerX - this.size, centerY - this.size, this.size * 2, this.size * progress);
-        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillRect(centerX - this.size, centerY - this.size + this.size * progress, this.size * 2, this.size);
+        ctx.restore();
 
+        // Bottom triangle (sand accumulating)
+        ctx.save();
         ctx.beginPath();
         ctx.moveTo(centerX - this.size, centerY + this.size);
         ctx.lineTo(centerX + this.size, centerY + this.size);
         ctx.lineTo(centerX, centerY);
         ctx.closePath();
-        ctx.fill();
+        ctx.clip();
 
-        ctx.globalCompositeOperation = 'destination-in';
-        ctx.fillRect(centerX - this.size, centerY + this.size - this.size * progress, this.size * 2, this.size * progress);
-        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillRect(centerX - this.size, centerY + this.size - this.size * progress, this.size * 2, this.size);
+        ctx.restore();
+
+        // Falling sand stream
+        if (progress < 1.0) {
+            ctx.fillRect(centerX - 1, centerY, 2, this.size);
+        }
     }
 }

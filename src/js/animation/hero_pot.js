@@ -26,7 +26,7 @@ export default class HeroPot extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false };
+    config = { mode: 'canvas', usePseudoSpace: true };
 
     setup(width, height) {
         this.width = width;
@@ -53,47 +53,57 @@ export default class HeroPot extends AnimationBase {
             let rx = 20 + Math.random() * (width - 40);
             let ry = this.groundY;
 
+            // Reduce strictness of overlap check for pots to ensure they keep spawning
             const isOverlap = exclusionAreas.some(area => {
-                return rx > area.x - 10 && rx < area.x + area.width + 10 &&
-                       ry > area.y - 10 && ry < area.y + area.height + 10;
+                return rx > area.x + 10 && rx < area.x + area.width - 10 &&
+                       ry > area.y + 5 && ry < area.y + area.height - 5;
             });
 
-            if (!isOverlap && !this.pots.some(p => Math.abs(p.x - rx) < 20 && Math.abs(p.y - ry) < 20)) {
+            if (!isOverlap && !this.pots.some(p => Math.abs(p.x - rx) < 20)) {
                 this.pots.push({ x: rx, y: ry, state: 'idle' });
             }
         }
 
         if (this.hero.state === 'walking') {
-            if (this.pots.length > 0) {
-                const targetPot = this.pots[0];
+            const targetPot = this.pots.find(p => p.state === 'idle');
+            if (targetPot) {
                 const speed = 2.0;
+
+                // Move X first, then Y (no diagonal)
                 if (Math.abs(this.hero.x - targetPot.x) > speed) {
                     this.hero.x += (this.hero.x < targetPot.x ? speed : -speed);
-                }
-                if (Math.abs(this.hero.y - targetPot.y) > speed) {
+                } else if (Math.abs(this.hero.y - targetPot.y) > speed) {
                     this.hero.y += (this.hero.y < targetPot.y ? speed : -speed);
-                }
-
-                if (Math.abs(this.hero.x - targetPot.x) < 5 && Math.abs(this.hero.y - targetPot.y) < 5) {
+                } else {
+                    // Close enough to lift
                     this.hero.state = 'lifting';
                     targetPot.state = 'held';
                     this.hero.timer = 30;
                 }
             } else {
-               this.hero.x += (width/2 - this.hero.x) * 0.02;
-               this.hero.y += (this.groundY - this.hero.y) * 0.02;
+                const tx = width / 2;
+                const ty = this.groundY;
+                const speed = 1.0;
+                if (Math.abs(this.hero.x - tx) > speed) {
+                    this.hero.x += (this.hero.x < tx ? speed : -speed);
+                } else if (Math.abs(this.hero.y - ty) > speed) {
+                    this.hero.y += (this.hero.y < ty ? speed : -speed);
+                }
             }
         } else if (this.hero.state === 'lifting') {
             this.hero.timer--;
             if (this.hero.timer <= 0) {
                 this.hero.state = 'walking_with_pot';
 
-                let tx = Math.random() * width;
-                let ty = this.groundY;
+                const minX = 15, maxX = width - 15;
+                const minY = 25, maxY = height - 5;
+
+                let tx = minX + Math.random() * (maxX - minX);
+                let ty = minY + Math.random() * (maxY - minY);
                 let attempts = 0;
                 while (attempts < 20) {
-                    const candidateX = Math.random() * width;
-                    const candidateY = Math.random() * height;
+                    const candidateX = minX + Math.random() * (maxX - minX);
+                    const candidateY = minY + Math.random() * (maxY - minY);
                     const overlap = exclusionAreas.some(area => {
                         return candidateX > area.x - 20 && candidateX < area.x + area.width + 20 &&
                                candidateY > area.y - 20 && candidateY < area.y + area.height + 20;
@@ -109,14 +119,14 @@ export default class HeroPot extends AnimationBase {
                 this.hero.targetY = ty;
             }
         } else if (this.hero.state === 'walking_with_pot') {
-            const dx = this.hero.targetX - this.hero.x;
-            const dy = this.hero.targetY - this.hero.y;
-            const dist = Math.hypot(dx, dy);
+            const speed = 1.5;
+            if (Math.abs(this.hero.x - this.hero.targetX) > speed) {
+                this.hero.x += (this.hero.x < this.hero.targetX ? speed : -speed);
+            } else if (Math.abs(this.hero.y - this.hero.targetY) > speed) {
+                this.hero.y += (this.hero.y < this.hero.targetY ? speed : -speed);
+            }
 
-            if (dist > 5) {
-                this.hero.x += dx / dist * 1.5;
-                this.hero.y += dy / dist * 1.5;
-            } else {
+            if (Math.abs(this.hero.x - this.hero.targetX) <= speed && Math.abs(this.hero.y - this.hero.targetY) <= speed) {
                 this.hero.state = 'throwing';
                 this.hero.timer = 10;
             }
@@ -155,6 +165,10 @@ export default class HeroPot extends AnimationBase {
                 ctx.fillRect(p.x - 5, p.y - 10, 10, 10);
             }
         });
+
+        // Ensure Hero is within bounds
+        this.hero.x = Math.max(10, Math.min(width - 10, this.hero.x));
+        this.hero.y = Math.max(20, Math.min(height, this.hero.y));
 
         const hx = this.hero.x;
         const hy = this.hero.y;

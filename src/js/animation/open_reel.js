@@ -96,9 +96,12 @@ export default class OpenReel extends AnimationBase {
             // Gauge outline
             ctx.strokeRect(vx - 20, vy - 15, 40, 30);
 
-            // Needle
-            const noise = Math.sin(time * 10 + offset) * 0.3 + Math.sin(time * 23) * 0.1;
-            const angle = -Math.PI / 2 + noise;
+            // Needle - centered around middle (0 rad = 12 o'clock)
+            // Use offset to create different patterns for left and right
+            const freq1 = 8 + (offset > 0 ? 3 : 0);
+            const freq2 = 15 + (offset < 0 ? 7 : 0);
+            const noise = Math.sin(time * freq1 + offset) * 0.5 + Math.sin(time * freq2) * 0.2;
+            const angle = noise * 0.8; // Scale to keep within gauge
 
             ctx.beginPath();
             ctx.moveTo(vx, vy + 10);

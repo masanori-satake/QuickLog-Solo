@@ -28,12 +28,12 @@ export default class TetrisBuilding extends AnimationBase {
 
     config = { mode: 'matrix', usePseudoSpace: false };
 
-    setup(_width, _height) {
-        this.rows = 12;
+    setup(_width, height) {
         this.cols = 6;
         this.cellSize = 12; // 2x2 cells
+        this.rows = Math.floor((height - 12) / this.cellSize);
         this.xOffset = 1;
-        this.yOffset = 1;
+        this.yOffset = 0.5;
         this.grid = Array(this.rows).fill(0).map(() => Array(this.cols).fill(0));
         this.lastBlockP = 0;
         this.clearingLine = -1;
@@ -41,6 +41,12 @@ export default class TetrisBuilding extends AnimationBase {
     }
 
     draw(_ctx, { width, height, progress, exclusionAreas }) {
+        const currentRows = Math.floor((height - 12) / this.cellSize);
+        if (currentRows !== this.rows) {
+            this.rows = currentRows;
+            this.grid = Array(this.rows).fill(0).map(() => Array(this.cols).fill(0));
+        }
+
         if (exclusionAreas && exclusionAreas.length > 0) {
             const gridWidth = this.cols * this.cellSize;
             const spots = [1, Math.floor(width / 6) - (this.cols * 2) - 1];

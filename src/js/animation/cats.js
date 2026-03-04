@@ -14,35 +14,57 @@ export default class Cats extends AnimationBase {
             zh: "猫"
         },
         description: {
-            en: "Pixel art cats playing and resting on the UI text and buttons.",
-            ja: "ドット絵の猫たちがUIの文字やボタンの上で遊んだり、くつろいだりします。",
-            de: "Pixel-Art-Katzen, die auf den UI-Texten und Schaltflächen spielen und ruhen.",
-            es: "Gatos de arte de píxeles que juegan y descansan sobre el texto y los botones de la interfaz.",
-            fr: "Des chats en pixel art qui jouent et se reposent sur le texte et les boutons de l'interface.",
-            pt: "Gatos em pixel art brincando e descansando sobre o texto e os botões da interface.",
-            ko: "도트 아트 고양이들이 UI 텍스트와 버튼 위에서 놀거나 휴식을 취합니다.",
-            zh: "在UI文本和按钮上玩耍和休息的像素艺术猫。"
+            en: "Pixel art cats walking around and eating food.",
+            ja: "猫たちが歩き回ったり、餌を食べたりします。",
+            de: "Pixel-Art-Katzen, die herumspazieren und Futter fressen.",
+            es: "Gatos de arte de píxeles caminando y comiendo comida.",
+            fr: "Des chats en pixel art qui se promènent et mangent de la nourriture.",
+            pt: "Gatos de arte pixelada andando e comendo comida.",
+            ko: "도트 아트 고양이들이 돌아다니며 먹이를 먹습니다.",
+            zh: "像素艺术猫在到处走动并吃食物。"
         },
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false };
+    config = { mode: 'canvas', usePseudoSpace: true };
 
     setup(width, height) {
         this.width = width;
         this.height = height;
         this.groundY = height - 15;
         this.cats = [
-            { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'walking', timer: 0, color: '#fff', scale: 1.5 },
-            { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'sitting', timer: 100, color: '#aaa', scale: 1.4 },
-            { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'walking', timer: 0, color: '#ccc', scale: 1.6 }
+            { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'walking', timer: 0, color: '#fff', scale: 1.5, interested: true },
+            { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'sitting', timer: 100, color: '#aaa', scale: 1.4, interested: false },
+            { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'walking', timer: 0, color: '#ccc', scale: 1.6, interested: true }
         ];
+        this.foods = [];
+        this.lastPlatforms = [];
+    }
+
+    onClick(x, y) {
+        if (this.lastPlatforms.length === 0) {
+            this.foods.push({ x, y, life: 300 });
+            return;
+        }
+
+        // Snap food to the nearest platform
+        const nearestP = this.lastPlatforms.reduce((closest, current) => {
+            const dCurrent = Math.abs(y - current.y);
+            const dClosest = Math.abs(y - closest.y);
+            return dCurrent < dClosest ? current : closest;
+        });
+
+        const snappedX = Math.max(nearestP.xStart + 5, Math.min(nearestP.xEnd - 5, x));
+        this.foods.push({ x: snappedX, y: nearestP.y, life: 300 });
     }
 
     draw(ctx, { width, height, exclusionAreas }) {
         this.width = width;
         this.height = height;
         this.groundY = height - 15;
+
+        // Draw food
+        this.foods = this.foods.filter(f => f.life > 0);
 
         const platforms = exclusionAreas.map(area => ({
             y: area.y,
@@ -51,14 +73,27 @@ export default class Cats extends AnimationBase {
         }));
 
         const allPlatforms = [...platforms, { y: this.groundY, xStart: 0, xEnd: width }];
+        this.lastPlatforms = allPlatforms;
 
         this.cats.forEach((cat) => {
             if (cat.timer > 0) cat.timer--;
 
             const currentPlatform = allPlatforms.find(p => Math.abs(cat.y - p.y) < 5 && cat.x >= p.xStart && cat.x <= p.xEnd);
 
+            if (cat.interested && this.foods.length > 0 && cat.state !== 'eating') {
+                const food = this.foods[0];
+                if (Math.abs(cat.y - food.y) < 20) {
+                    cat.targetX = food.x;
+                    cat.state = 'walking';
+                    if (Math.abs(cat.x - food.x) < 10) {
+                        cat.state = 'eating';
+                        cat.timer = 100;
+                    }
+                }
+            }
+
             if (cat.state === 'walking') {
-                const speed = 0.8;
+                const speed = (cat.state === 'walking' && cat.interested && this.foods.length > 0) ? 1.2 : 0.8;
                 if (cat.x < cat.targetX) cat.x += speed; else cat.x -= speed;
 
                 const atEdge = currentPlatform && (cat.x <= currentPlatform.xStart + 5 || cat.x >= currentPlatform.xEnd - 5);
@@ -72,6 +107,14 @@ export default class Cats extends AnimationBase {
                     cat.targetX = nextPlatform.xStart + Math.random() * (nextPlatform.xEnd - nextPlatform.xStart);
                     cat.y = nextPlatform.y;
                     cat.state = 'walking';
+                }
+            } else if (cat.state === 'eating') {
+                if (cat.timer <= 0) {
+                    if (this.foods.length > 0) this.foods[0].life -= 50;
+                    cat.state = 'sitting';
+                    cat.timer = 60;
+                    // Move away after eating
+                    cat.targetX = Math.random() * width;
                 }
             }
 
@@ -105,6 +148,13 @@ export default class Cats extends AnimationBase {
             ctx.fillStyle = '#000';
             ctx.fillRect(6, -8, 1, 1);
             ctx.restore();
+        });
+
+        // Draw food
+        this.foods.forEach(f => {
+            ctx.fillStyle = '#ffa';
+            ctx.fillRect(f.x - 2, f.y - 2, 4, 2);
+            ctx.fillRect(f.x - 1, f.y - 4, 2, 2);
         });
     }
 }

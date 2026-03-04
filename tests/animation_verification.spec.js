@@ -6,7 +6,7 @@ test.describe('Animation Rendering Verification', () => {
 
         // Ensure Matrix Code is selected
         await page.click('#settings-toggle');
-        await page.selectOption('#animation-select', 'matrix_code');
+        await page.selectOption('#animation-select', 'digital_rain');
         await page.click('.close-btn');
 
         // Start a task to trigger animation
