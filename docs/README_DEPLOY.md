@@ -1,5 +1,15 @@
 # 自動化された検査とデリバリー（CI/CD）の解説
 
+> [!CAUTION]
+> **免責事項 / Disclaimer**
+> 本ドキュメントは、本プロジェクトの開発者が自身の環境（Vercel）で構築した際の参考情報を共有するものです。
+> 開発者は Vercel の利用を特別に推奨しているわけではなく、また他のサービスを含め、本手順が将来にわたって正常に動作することを保証しません。
+> 自動化設定に伴う機密情報の管理やデプロイは、すべて利用者の自己責任において行ってください。
+>
+> This document shares reference information based on the developer's environment (Vercel).
+> The developer does not specifically recommend Vercel, nor does it guarantee that these steps will work correctly for this or any other service in the future.
+> Managing secrets and performing deployments is strictly at your own risk.
+
 本ドキュメントでは、本プロジェクトにおけるコードの検査、ビルド、および成果物の公開プロセスについて解説します。
 GitHub Actions を活用することで、「品質の維持」と「リリースの自動化」を両立しています。
 

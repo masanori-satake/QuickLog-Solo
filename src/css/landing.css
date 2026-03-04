@@ -387,6 +387,12 @@ h1 {
     font-size: 0.875rem;
 }
 
+.disclaimer-footer {
+    margin-top: var(--md-sys-spacing-1);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
 code {
     background-color: var(--md-sys-color-surface-variant);
     padding: 2px 4px;
