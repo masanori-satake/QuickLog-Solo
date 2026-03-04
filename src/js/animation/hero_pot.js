@@ -53,19 +53,20 @@ export default class HeroPot extends AnimationBase {
             let rx = 20 + Math.random() * (width - 40);
             let ry = this.groundY;
 
+            // Reduce strictness of overlap check for pots to ensure they keep spawning
             const isOverlap = exclusionAreas.some(area => {
-                return rx > area.x - 10 && rx < area.x + area.width + 10 &&
-                       ry > area.y - 10 && ry < area.y + area.height + 10;
+                return rx > area.x + 10 && rx < area.x + area.width - 10 &&
+                       ry > area.y + 5 && ry < area.y + area.height - 5;
             });
 
-            if (!isOverlap && !this.pots.some(p => Math.abs(p.x - rx) < 20 && Math.abs(p.y - ry) < 20)) {
+            if (!isOverlap && !this.pots.some(p => Math.abs(p.x - rx) < 20)) {
                 this.pots.push({ x: rx, y: ry, state: 'idle' });
             }
         }
 
         if (this.hero.state === 'walking') {
-            if (this.pots.length > 0) {
-                const targetPot = this.pots[0];
+            const targetPot = this.pots.find(p => p.state === 'idle');
+            if (targetPot) {
                 const speed = 2.0;
 
                 // Move X first, then Y (no diagonal)
@@ -73,9 +74,8 @@ export default class HeroPot extends AnimationBase {
                     this.hero.x += (this.hero.x < targetPot.x ? speed : -speed);
                 } else if (Math.abs(this.hero.y - targetPot.y) > speed) {
                     this.hero.y += (this.hero.y < targetPot.y ? speed : -speed);
-                }
-
-                if (Math.abs(this.hero.x - targetPot.x) <= speed && Math.abs(this.hero.y - targetPot.y) <= speed) {
+                } else {
+                    // Close enough to lift
                     this.hero.state = 'lifting';
                     targetPot.state = 'held';
                     this.hero.timer = 30;
@@ -95,12 +95,15 @@ export default class HeroPot extends AnimationBase {
             if (this.hero.timer <= 0) {
                 this.hero.state = 'walking_with_pot';
 
-                let tx = Math.random() * width;
-                let ty = this.groundY;
+                const minX = 15, maxX = width - 15;
+                const minY = 25, maxY = height - 5;
+
+                let tx = minX + Math.random() * (maxX - minX);
+                let ty = minY + Math.random() * (maxY - minY);
                 let attempts = 0;
                 while (attempts < 20) {
-                    const candidateX = Math.random() * width;
-                    const candidateY = Math.random() * height;
+                    const candidateX = minX + Math.random() * (maxX - minX);
+                    const candidateY = minY + Math.random() * (maxY - minY);
                     const overlap = exclusionAreas.some(area => {
                         return candidateX > area.x - 20 && candidateX < area.x + area.width + 20 &&
                                candidateY > area.y - 20 && candidateY < area.y + area.height + 20;

@@ -83,29 +83,41 @@ export default class NightSky extends AnimationBase {
         }
 
         // UFO & Cattle Mutilation
-        const ufoCycle = (Date.now() / 5000) % 3; // 15 sec cycle
+        // Cycle: 0-0.3: Fly In, 0.3-0.7: Abduct (Stop), 0.7-1.0: Fly Out
+        const ufoCycle = (Date.now() / 15000) % 3; // 45 sec total, 15 sec active
         if (ufoCycle < 1) {
             const p = ufoCycle;
-            const ufoX = this.w * (p * 1.4 - 0.2);
+            let ufoX;
             const ufoY = this.h * 0.15;
+
+            if (p < 0.3) {
+                // Fly In
+                ufoX = this.w * (p / 0.3 * 0.7 - 0.2);
+            } else if (p < 0.7) {
+                // Stop and Abduct
+                ufoX = this.w * 0.5;
+            } else {
+                // Fly Out
+                ufoX = this.w * (0.5 + (p - 0.7) / 0.3 * 0.7);
+            }
 
             // UFO Body
             for (let i = -5; i <= 5; i++) sprites.push({ x: ufoX + i * 4, y: ufoY, size: 2 });
             for (let i = -2; i <= 2; i++) sprites.push({ x: ufoX + i * 4, y: ufoY - 4, size: 2 });
 
             // Abduction Beam & Cow
-            if (p > 0.3 && p < 0.7) {
+            if (p >= 0.3 && p <= 0.7) {
                 const beamP = (p - 0.3) / 0.4;
                 // Beam
                 for (let y = ufoY + 4; y < this.h; y += 8) {
                     for (let x = -2; x <= 2; x++) {
-                        if (Math.random() > 0.5) sprites.push({ x: ufoX + x * 6, y: y, size: 1 });
+                        if (Math.random() > 0.4) sprites.push({ x: ufoX + x * 6, y: y, size: 1 });
                     }
                 }
                 // Cow (being sucked up)
                 const cowY = this.h - (this.h - ufoY) * beamP;
                 if (cowY > ufoY) {
-                    // Cow shape
+                    // Cow shape (pixel art)
                     sprites.push({ x: ufoX - 4, y: cowY, size: 2 });
                     sprites.push({ x: ufoX, y: cowY, size: 2 });
                     sprites.push({ x: ufoX + 4, y: cowY, size: 2 });
