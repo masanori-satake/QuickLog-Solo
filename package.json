@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向けサイドパネル作業メモツールです。",
   "main": "src/js/app.js",
   "directories": {
