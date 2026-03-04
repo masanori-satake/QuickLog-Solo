@@ -271,36 +271,36 @@ async function setupInitialData(languageSetting) {
     ];
 
     const categoryDefs = [
-        { name: t('init-cat-dev'), color: 'primary' },
-        { name: t('init-cat-meeting'), color: 'secondary' },
-        { name: t('init-cat-research'), color: 'tertiary' },
-        { name: t('init-cat-admin'), color: 'neutral' },
-        { name: t('init-cat-focus'), color: 'error' },
-        { name: t('init-cat-skill'), color: 'tertiary' },
-        { name: t('init-cat-idea'), color: 'secondary' },
-        { name: t('init-cat-break'), color: 'outline' },
-        { name: t('init-cat-client'), color: 'primary' },
-        { name: t('init-cat-doc'), color: 'secondary' },
-        { name: t('init-cat-design'), color: 'tertiary' },
-        { name: t('init-cat-bug'), color: 'error' },
-        { name: t('init-cat-release'), color: 'teal' },
-        { name: t('init-cat-tool'), color: 'green' },
-        { name: t('init-cat-schedule'), color: 'yellow' },
-        { name: t('init-cat-chat'), color: 'orange' },
-        { name: t('init-cat-wiki'), color: 'pink' },
-        { name: t('init-cat-qa'), color: 'indigo' },
-        { name: t('init-cat-sales'), color: 'brown' },
-        { name: t('init-cat-arch'), color: 'cyan' },
-        { name: t('init-cat-sec'), color: 'error' },
-        { name: t('init-cat-data'), color: 'teal' },
-        { name: t('init-cat-wfh'), color: 'neutral' },
-        { name: t('init-cat-move'), color: 'outline' }
+        { name: t('init-cat-dev'), color: 'primary', tags: '開発, 設計' },
+        { name: t('init-cat-meeting'), color: 'secondary', tags: '会議' },
+        { name: t('init-cat-research'), color: 'tertiary', tags: '調査' },
+        { name: t('init-cat-admin'), color: 'neutral', tags: '事務' },
+        { name: t('init-cat-focus'), color: 'error', tags: '集中' },
+        { name: t('init-cat-skill'), color: 'tertiary', tags: '自己研鑽' },
+        { name: t('init-cat-idea'), color: 'secondary', tags: '企画' },
+        { name: t('init-cat-break'), color: 'outline', tags: '' },
+        { name: t('init-cat-client'), color: 'primary', tags: '顧客対応' },
+        { name: t('init-cat-doc'), color: 'secondary', tags: 'ドキュメント, 報告' },
+        { name: t('init-cat-design'), color: 'tertiary', tags: 'デザイン' },
+        { name: t('init-cat-bug'), color: 'error', tags: 'バグ修正' },
+        { name: t('init-cat-release'), color: 'teal', tags: 'リリース' },
+        { name: t('init-cat-tool'), color: 'green', tags: 'ツール' },
+        { name: t('init-cat-schedule'), color: 'yellow', tags: '管理' },
+        { name: t('init-cat-chat'), color: 'orange', tags: 'チャット' },
+        { name: t('init-cat-wiki'), color: 'pink', tags: 'ドキュメント' },
+        { name: t('init-cat-qa'), color: 'indigo', tags: 'テスト' },
+        { name: t('init-cat-sales'), color: 'brown', tags: '営業' },
+        { name: t('init-cat-arch'), color: 'cyan', tags: '設計' },
+        { name: t('init-cat-sec'), color: 'error', tags: 'セキュリティ' },
+        { name: t('init-cat-data'), color: 'teal', tags: '分析' },
+        { name: t('init-cat-wfh'), color: 'neutral', tags: '' },
+        { name: t('init-cat-move'), color: 'outline', tags: '移動' }
     ];
 
     const initialCategories = categoryDefs.map((def, i) => ({
         ...def,
         animation: animationOrder[i],
-        tags: ''
+        tags: def.tags || ''
     }));
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
@@ -309,6 +309,24 @@ async function setupInitialData(languageSetting) {
             const cat = initialCategories[i];
             cat.order = i;
             await dbPut(STORE_CATEGORIES, cat);
+        }
+    } else {
+        // Migration: Ensure existing categories have tags and animation if missing
+        for (const cat of existingCategories) {
+            let changed = false;
+            if (cat.tags === undefined) {
+                const def = initialCategories.find(d => d.name === cat.name);
+                cat.tags = def ? def.tags : '';
+                changed = true;
+            }
+            if (cat.animation === undefined) {
+                const def = initialCategories.find(d => d.name === cat.name);
+                cat.animation = def ? def.animation : 'default';
+                changed = true;
+            }
+            if (changed) {
+                await dbPut(STORE_CATEGORIES, cat);
+            }
         }
     }
 
@@ -444,7 +462,8 @@ async function generateDummyHistory() {
                     category: cat.name,
                     startTime: Math.floor(current),
                     endTime: Math.floor(taskEnd),
-                    color: cat.color || 'primary'
+                    color: cat.color || 'primary',
+                    tags: cat.tags || ''
                 });
                 current = taskEnd;
             }

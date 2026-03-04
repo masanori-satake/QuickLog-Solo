@@ -19,8 +19,10 @@ export const messages = {
         'title': 'QuickLog-Solo',
         'copy-report-btn': '日報コピー',
         'copy-report-title': '日報コピー',
+        'tag-aggregation-title': 'タグ集計',
         'copy-aggregation-btn': '集計コピー',
         'tags': 'タグ',
+        'no-tags': 'タグ無し',
         'settings': '設定',
         'delete': '削除',
         'btn-copy': 'コピー',
@@ -79,7 +81,7 @@ export const messages = {
 
         // Tooltips
         'tooltip-copy-report': '日報をクリップボードにコピーします',
-        'tooltip-copy-aggregation': '今日の集計結果をクリップボードにコピーします',
+        'tooltip-copy-aggregation': 'タグ毎の集計結果をクリップボードにコピーします',
         'tooltip-settings': '設定を開きます',
         'tooltip-drag-handle': 'ドラッグして順序を入れ替えます',
         'tooltip-delete-category': 'このカテゴリを削除します',
@@ -192,8 +194,10 @@ export const messages = {
         'title': 'QuickLog-Solo',
         'copy-report-btn': 'Copy Daily Report',
         'copy-report-title': 'Daily Report Copy',
+        'tag-aggregation-title': 'Tag Aggregation',
         'copy-aggregation-btn': 'Copy Stats',
         'tags': 'Tags',
+        'no-tags': 'No Tags',
         'settings': 'Settings',
         'delete': 'Delete',
         'btn-copy': 'Copy',
@@ -252,7 +256,7 @@ export const messages = {
 
         // Tooltips
         'tooltip-copy-report': 'Copy daily report to clipboard',
-        'tooltip-copy-aggregation': 'Copy today\'s stats to clipboard',
+        'tooltip-copy-aggregation': 'Copy tag aggregation results to clipboard',
         'tooltip-settings': 'Open settings',
         'tooltip-drag-handle': 'Drag to reorder',
         'tooltip-delete-category': 'Delete this category',
@@ -364,8 +368,10 @@ export const messages = {
         'title': 'QuickLog-Solo',
         'copy-report-btn': 'Tagesbericht kopieren',
         'copy-report-title': 'Tagesbericht kopieren',
+        'tag-aggregation-title': 'Tag-Aggregation',
         'copy-aggregation-btn': 'Statistik kopieren',
         'tags': 'Tags',
+        'no-tags': 'Keine Tags',
         'settings': 'Einstellungen',
         'delete': 'Löschen',
         'btn-copy': 'Kopieren',
@@ -379,7 +385,7 @@ export const messages = {
 
         // Tooltips
         'tooltip-copy-report': 'Tagesbericht in die Zwischenablage kopieren',
-        'tooltip-copy-aggregation': 'Statistik von heute in die Zwischenablage kopieren',
+        'tooltip-copy-aggregation': 'Kopiert die Ergebnisse der Tag-Aggregation in die Zwischenablage',
         'tooltip-settings': 'Einstellungen öffnen',
         'tooltip-drag-handle': 'Ziehen zum Neuordnen',
         'tooltip-delete-category': 'Diese Kategorie löschen',
@@ -515,8 +521,10 @@ export const messages = {
         'title': 'QuickLog-Solo',
         'copy-report-btn': 'Copiar informe diario',
         'copy-report-title': 'Copiar informe diario',
+        'tag-aggregation-title': 'Agregación de etiquetas',
         'copy-aggregation-btn': 'Copiar estadísticas',
         'tags': 'Etiquetas',
+        'no-tags': 'Sin etiquetas',
         'settings': 'Ajustes',
         'delete': 'Eliminar',
         'btn-copy': 'Copiar',
@@ -530,7 +538,7 @@ export const messages = {
 
         // Tooltips
         'tooltip-copy-report': 'Copiar informe diario al portapapeles',
-        'tooltip-copy-aggregation': 'Copiar estadísticas de hoy al portapapeles',
+        'tooltip-copy-aggregation': 'Copia los resultados de la agregación de etiquetas al portapapeles',
         'tooltip-settings': 'Abrir ajustes',
         'tooltip-drag-handle': 'Arrastrar para reordenar',
         'tooltip-delete-category': 'Eliminar esta categoría',
@@ -666,8 +674,10 @@ export const messages = {
         'title': 'QuickLog-Solo',
         'copy-report-btn': 'Copier rapport journalier',
         'copy-report-title': 'Copier rapport journalier',
+        'tag-aggregation-title': 'Agrégation de tags',
         'copy-aggregation-btn': 'Copier stats',
         'tags': 'Tags',
+        'no-tags': 'Pas de tags',
         'settings': 'Paramètres',
         'delete': 'Supprimer',
         'btn-copy': 'Copier',
@@ -681,7 +691,7 @@ export const messages = {
 
         // Tooltips
         'tooltip-copy-report': 'Copier le rapport journalier dans le presse-papiers',
-        'tooltip-copy-aggregation': 'Copier les stats d\'aujourd\'hui dans le presse-papiers',
+        'tooltip-copy-aggregation': 'Copier les résultats de l\'agrégation par tag dans le presse-papiers',
         'tooltip-settings': 'Ouvrir les paramètres',
         'tooltip-drag-handle': 'Faire glisser pour réordonner',
         'tooltip-delete-category': 'Supprimer cette catégorie',
@@ -817,8 +827,10 @@ export const messages = {
         'title': 'QuickLog-Solo',
         'copy-report-btn': 'Copiar relatório diário',
         'copy-report-title': 'Copiar relatório diário',
+        'tag-aggregation-title': 'Agregação de tags',
         'copy-aggregation-btn': 'Copiar estatísticas',
         'tags': 'Tags',
+        'no-tags': 'Sem tags',
         'settings': 'Configurações',
         'delete': 'Excluir',
         'btn-copy': 'Copiar',
@@ -832,7 +844,7 @@ export const messages = {
 
         // Tooltips
         'tooltip-copy-report': 'Copiar relatório diário para a área de transferência',
-        'tooltip-copy-aggregation': 'Copiar estatísticas de hoje para a área de transferência',
+        'tooltip-copy-aggregation': 'Copiar resultados de agregação de tags para a área de transferência',
         'tooltip-settings': 'Abrir configurações',
         'tooltip-drag-handle': 'Arraste para reordenar',
         'tooltip-delete-category': 'Excluir esta categoria',
@@ -968,8 +980,10 @@ export const messages = {
         'title': 'QuickLog-Solo',
         'copy-report-btn': '일일 보고서 복사',
         'copy-report-title': '일일 보고서 복사',
+        'tag-aggregation-title': '태그 집계',
         'copy-aggregation-btn': '통계 복사',
         'tags': '태그',
+        'no-tags': '태그 없음',
         'settings': '설정',
         'delete': '삭제',
         'btn-copy': '복사',
@@ -983,7 +997,7 @@ export const messages = {
 
         // Tooltips
         'tooltip-copy-report': '일일 보고서를 클립보드에 복사',
-        'tooltip-copy-aggregation': '오늘의 통계를 클립보드에 복사',
+        'tooltip-copy-aggregation': '태그별 집계 결과를 클립보드에 복사합니다',
         'tooltip-settings': '설정 열기',
         'tooltip-drag-handle': '드래그하여 순서 변경',
         'tooltip-delete-category': '이 카테고리 삭제',
@@ -1119,8 +1133,10 @@ export const messages = {
         'title': 'QuickLog-Solo',
         'copy-report-btn': '复制日报',
         'copy-report-title': '复制日报',
+        'tag-aggregation-title': '标签汇总',
         'copy-aggregation-btn': '复制统计',
         'tags': '标签',
+        'no-tags': '无标签',
         'settings': '设置',
         'delete': '删除',
         'btn-copy': '复制',
@@ -1134,7 +1150,7 @@ export const messages = {
 
         // Tooltips
         'tooltip-copy-report': '复制日报到剪贴板',
-        'tooltip-copy-aggregation': '复制今日统计到剪贴板',
+        'tooltip-copy-aggregation': '按标签汇总结果并复制到剪贴板',
         'tooltip-settings': '打开设置',
         'tooltip-drag-handle': '拖动以排序',
         'tooltip-delete-category': '删除此分类',

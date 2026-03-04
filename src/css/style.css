@@ -599,12 +599,17 @@ body.theme-light #current-task-display-base #clock-face {
     flex-direction: column;
 }
 
+
+#tag-aggregation-modal .modal-content {
+    min-height: 450px;
+}
+
 #confirm-modal .modal-content {
     height: auto;
     max-height: 300px;
 }
 
-#report-modal .modal-content {
+#report-modal .modal-content, #tag-aggregation-modal .modal-content {
     height: auto;
     max-height: 90%;
     display: flex;
@@ -619,12 +624,12 @@ body.theme-light #current-task-display-base #clock-face {
     margin: var(--md-sys-spacing-1) 0;
 }
 
-#report-date-display-box {
+#report-date-display-box, #tag-aggregation-date-display-box {
     position: relative;
     flex: 1;
 }
 
-#report-date-display {
+#report-date-display, #tag-aggregation-date-display {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -647,7 +652,7 @@ body.theme-light #current-task-display-base #clock-face {
     font-size: 1.2rem;
 }
 
-#report-calendar-container {
+#report-calendar-container, #tag-aggregation-calendar-container {
     position: absolute;
     top: 100%;
     left: 0;
@@ -804,7 +809,7 @@ body.theme-light #current-task-display-base #clock-face {
 }
 
 
-.close-btn, .report-close-btn {
+.close-btn, .report-close-btn, .tag-aggregation-close-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.75rem;
@@ -1239,6 +1244,59 @@ body.theme-dark button:active {
 
 .tag-input:focus::placeholder {
     color: transparent;
+}
+
+/* Tag Aggregation */
+#tag-aggregation-container {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: var(--md-sys-spacing-1);
+    background-color: var(--md-sys-color-surface-container-low);
+    border-radius: var(--md-sys-shape-extra-small);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+#tag-aggregation-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+}
+
+#tag-aggregation-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    vertical-align: middle;
+}
+
+.tag-name-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px; /* Adjust as needed */
+}
+
+.tag-duration-cell {
+    width: 80px;
+    text-align: right;
+    font-family: 'Roboto Mono', monospace;
+    white-space: nowrap;
+}
+
+.tag-copy-cell {
+    width: 48px;
+    text-align: center;
+}
+
+.tag-copy-btn {
+    border: none !important;
+    background: transparent !important;
+    color: var(--md-sys-color-primary);
+    padding: 4px !important;
+    border-radius: var(--md-sys-shape-full);
+}
+
+.tag-copy-btn:hover {
+    background-color: var(--md-sys-color-primary-container) !important;
 }
 
 /* Confirm Dialog */

@@ -1,5 +1,5 @@
 import {
-    initDB, getCurrentAppState, dbGet, dbGetByName, dbGetAll, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
+    initDB, getCurrentAppState, dbGetByName, dbGetAll, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
@@ -84,6 +84,14 @@ const ID_REPORT_DURATION_SELECT = 'report-duration-select';
 const ID_REPORT_ADJUST_SELECT = 'report-adjust-select';
 const ID_REPORT_COPY_CONFIRM_BTN = 'report-copy-confirm-btn';
 
+const ID_TAG_AGGREGATION_MODAL = 'tag-aggregation-modal';
+const ID_TAG_AGGREGATION_TABLE = 'tag-aggregation-table';
+const ID_TAG_AGGREGATION_DATE_TEXT = 'tag-aggregation-date-text';
+const ID_TAG_AGGREGATION_DATE_PREV = 'tag-aggregation-date-prev';
+const ID_TAG_AGGREGATION_DATE_NEXT = 'tag-aggregation-date-next';
+const ID_TAG_AGGREGATION_DATE_DISPLAY = 'tag-aggregation-date-display';
+const ID_TAG_AGGREGATION_CALENDAR_CONTAINER = 'tag-aggregation-calendar-container';
+
 /** @type {Object|null} Currently running task log entry. */
 let activeTask = null;
 /** @type {number|null} ID of the main timer interval. */
@@ -106,6 +114,8 @@ let currentActiveAnimation = null;
 let isAppInitialized = false;
 /** @type {Date} Currently selected date in the report modal. */
 let reportSelectedDate = new Date();
+/** @type {Date} Currently selected date in the tag aggregation modal. */
+let tagAggregationSelectedDate = new Date();
 /** @type {Set<number>} Timestamps (day start) of all dates containing logs. */
 let reportLogDates = new Set();
 /** @type {Object} User preferences for report generation. */
@@ -833,6 +843,17 @@ async function openReportModal() {
     getEl(ID_REPORT_MODAL).classList.remove('hidden');
 }
 
+async function openTagAggregationModal() {
+    tagAggregationSelectedDate = new Date();
+    tagAggregationSelectedDate.setHours(0, 0, 0, 0);
+
+    const allLogs = await dbGetAll(STORE_LOGS);
+    reportLogDates = new Set(allLogs.map(l => new Date(l.startTime).setHours(0, 0, 0, 0)));
+
+    await updateTagAggregationUI();
+    getEl(ID_TAG_AGGREGATION_MODAL).classList.remove('hidden');
+}
+
 async function updateReportUI() {
     const d = reportSelectedDate;
     const days = t('day-names');
@@ -858,35 +879,60 @@ async function saveReportSettings() {
 }
 
 async function moveReportDate(delta) {
+    reportSelectedDate = moveSelectedDate(reportSelectedDate, delta);
+    updateReportUI();
+}
+
+async function moveTagAggregationDate(delta) {
+    tagAggregationSelectedDate = moveSelectedDate(tagAggregationSelectedDate, delta);
+    updateTagAggregationUI();
+}
+
+function moveSelectedDate(currentDate, delta) {
     const logDates = [...reportLogDates].sort((a, b) => a - b);
     const today = new Date().setHours(0, 0, 0, 0);
 
-    let current = reportSelectedDate.getTime();
+    let current = currentDate.getTime();
+    let newDate = currentDate;
 
     if (delta < 0) {
         // Find previous date with logs
         const prevDates = logDates.filter(d => d < current);
         if (prevDates.length > 0) {
-            reportSelectedDate = new Date(prevDates[prevDates.length - 1]);
+            newDate = new Date(prevDates[prevDates.length - 1]);
         }
     } else {
         // Find next date with logs, up to today
         const nextDates = logDates.filter(d => d > current && d <= today);
         if (nextDates.length > 0) {
-            reportSelectedDate = new Date(nextDates[0]);
+            newDate = new Date(nextDates[0]);
         } else if (current < today) {
-            reportSelectedDate = new Date(today);
+            newDate = new Date(today);
         }
     }
-    updateReportUI();
+    return newDate;
 }
 
 async function renderReportCalendar() {
-    const container = getEl(ID_REPORT_CALENDAR_CONTAINER);
+    renderCalendar(ID_REPORT_CALENDAR_CONTAINER, reportSelectedDate, (date) => {
+        reportSelectedDate = new Date(date);
+        updateReportUI();
+    });
+}
+
+async function renderTagAggregationCalendar() {
+    renderCalendar(ID_TAG_AGGREGATION_CALENDAR_CONTAINER, tagAggregationSelectedDate, (date) => {
+        tagAggregationSelectedDate = new Date(date);
+        updateTagAggregationUI();
+    });
+}
+
+function renderCalendar(containerId, selectedDate, onSelect) {
+    const container = getEl(containerId);
     container.innerHTML = '';
 
-    const year = reportSelectedDate.getFullYear();
-    const month = reportSelectedDate.getMonth();
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth();
 
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
@@ -919,7 +965,7 @@ async function renderReportCalendar() {
                 if (reportLogDates.has(currentDate)) {
                     td.classList.add('has-logs');
                 }
-                if (currentDate === reportSelectedDate.getTime()) {
+                if (currentDate === selectedDate.getTime()) {
                     td.classList.add('selected');
                 }
                 if (currentDate === new Date().setHours(0, 0, 0, 0)) {
@@ -928,8 +974,7 @@ async function renderReportCalendar() {
 
                 td.onclick = (e) => {
                     e.stopPropagation();
-                    reportSelectedDate = new Date(currentDate);
-                    updateReportUI();
+                    onSelect(currentDate);
                     container.classList.add('hidden');
                 };
                 date++;
@@ -943,17 +988,22 @@ async function renderReportCalendar() {
     container.appendChild(table);
 }
 
-async function copyAggregation() {
+async function updateTagAggregationUI() {
+    const d = tagAggregationSelectedDate;
+    const days = t('day-names');
+    const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} (${days[d.getDay()]})`;
+    getEl(ID_TAG_AGGREGATION_DATE_TEXT).textContent = dateStr;
+
     const allLogs = await dbGetAll(STORE_LOGS);
-    const today = new Date().setHours(0,0,0,0);
-    const todayLogs = allLogs.filter(l => l.startTime >= today && l.endTime);
+    const startOfDay = d.getTime();
+    const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
+    const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime);
 
-    const catAgg = {};
     const tagAgg = {};
-
-    todayLogs.forEach(l => {
-        const dur = (l.endTime - l.startTime) / 60000;
-        catAgg[l.category] = (catAgg[l.category] || 0) + dur;
+    dayLogs.forEach(l => {
+        if (l.isManualStop) return;
+        const dur = l.endTime - l.startTime;
+        if (dur <= 0) return;
 
         const tagStr = l.tags || '';
         if (tagStr) {
@@ -961,24 +1011,65 @@ async function copyAggregation() {
             tags.forEach(tag => {
                 tagAgg[tag] = (tagAgg[tag] || 0) + dur;
             });
+        } else {
+            const noTagLabel = t('no-tags');
+            tagAgg[noTagLabel] = (tagAgg[noTagLabel] || 0) + dur;
         }
     });
 
-    let text = "";
-    for (const cat in catAgg) {
-        text += `${cat} | ${Math.round(catAgg[cat])} min\n`;
+    const table = getEl(ID_TAG_AGGREGATION_TABLE);
+    table.innerHTML = '';
+
+    const sortedTags = Object.keys(tagAgg).sort((a, b) => {
+        if (a === t('no-tags')) return 1;
+        if (b === t('no-tags')) return -1;
+        return a.localeCompare(b);
+    });
+
+    if (sortedTags.length === 0) {
+        const row = createEl('tr');
+        const cell = createEl('td');
+        cell.textContent = t('no-logs-for-day');
+        cell.colSpan = 3;
+        cell.style.textAlign = 'center';
+        row.appendChild(cell);
+        table.appendChild(row);
+        return;
     }
 
-    if (Object.keys(tagAgg).length > 0) {
-        text += "\n---\n";
-        const sortedTags = Object.keys(tagAgg).sort();
-        sortedTags.forEach(tag => {
-            text += `#${tag} | ${Math.round(tagAgg[tag])} min\n`;
-        });
-    }
+    sortedTags.forEach(tag => {
+        const row = createEl('tr');
 
-    navigator.clipboard.writeText(text);
-    showToast(t('toast-copied'));
+        const nameCell = createEl('td');
+        nameCell.className = 'tag-name-cell';
+        nameCell.textContent = tag;
+        nameCell.title = tag;
+        row.appendChild(nameCell);
+
+        const durCell = createEl('td');
+        durCell.className = 'tag-duration-cell';
+        const ms = tagAgg[tag];
+        const h = Math.floor(ms / 3600000);
+        const m = Math.floor((ms % 3600000) / 60000);
+        durCell.textContent = `${h}:${String(m).padStart(2, '0')}`;
+        row.appendChild(durCell);
+
+        const copyCell = createEl('td');
+        copyCell.className = 'tag-copy-cell';
+        const copyBtn = createEl('button');
+        copyBtn.className = 'tag-copy-btn material-symbols-outlined';
+        copyBtn.textContent = 'content_paste';
+        copyBtn.title = t('btn-copy');
+        copyBtn.onclick = () => {
+            const text = `${tag} | ${durCell.textContent}`;
+            navigator.clipboard.writeText(text);
+            showToast(t('toast-copied'));
+        };
+        copyCell.appendChild(copyBtn);
+        row.appendChild(copyCell);
+
+        table.appendChild(row);
+    });
 }
 
 function showToast(message = t('toast-done')) {
@@ -1315,7 +1406,7 @@ function setupEventListeners() {
     });
     getEl(ID_END_BTN)?.addEventListener('click', endTask);
     getEl(ID_COPY_REPORT_BTN)?.addEventListener('click', openReportModal);
-    getEl(ID_COPY_AGGREGATION_BTN)?.addEventListener('click', copyAggregation);
+    getEl(ID_COPY_AGGREGATION_BTN)?.addEventListener('click', openTagAggregationModal);
 
     // Category Wheel Pagination
     const categorySection = getEl(ID_CATEGORY_SECTION);
@@ -1343,12 +1434,13 @@ function setupEventListeners() {
     // Modals
     const popups = {
         settings: getEl(ID_SETTINGS_POPUP),
-        report: getEl(ID_REPORT_MODAL)
+        report: getEl(ID_REPORT_MODAL),
+        tagAggregation: getEl(ID_TAG_AGGREGATION_MODAL)
     };
 
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
-    queryAll('.close-btn, .report-close-btn').forEach(btn => {
+    queryAll('.close-btn, .report-close-btn, .tag-aggregation-close-btn').forEach(btn => {
         btn.onclick = () => Object.values(popups).forEach(p => p?.classList.add('hidden'));
     });
 
@@ -1360,6 +1452,9 @@ function setupEventListeners() {
         }
         if (!event.target.closest('#report-date-display-box')) {
             getEl(ID_REPORT_CALENDAR_CONTAINER)?.classList.add('hidden');
+        }
+        if (!event.target.closest('#tag-aggregation-date-display-box')) {
+            getEl(ID_TAG_AGGREGATION_CALENDAR_CONTAINER)?.classList.add('hidden');
         }
     };
 
@@ -1384,6 +1479,30 @@ function setupEventListeners() {
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
             moveReportDate(1);
+        }
+    });
+
+    // Tag Aggregation Modal events
+    getEl(ID_TAG_AGGREGATION_DATE_PREV)?.addEventListener('click', () => moveTagAggregationDate(-1));
+    getEl(ID_TAG_AGGREGATION_DATE_NEXT)?.addEventListener('click', () => moveTagAggregationDate(1));
+    getEl(ID_TAG_AGGREGATION_DATE_DISPLAY)?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const container = getEl(ID_TAG_AGGREGATION_CALENDAR_CONTAINER);
+        if (container.classList.contains('hidden')) {
+            renderTagAggregationCalendar();
+            container.classList.remove('hidden');
+        } else {
+            container.classList.add('hidden');
+        }
+    });
+
+    getEl(ID_TAG_AGGREGATION_DATE_DISPLAY)?.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            moveTagAggregationDate(-1);
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            moveTagAggregationDate(1);
         }
     });
 
