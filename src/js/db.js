@@ -310,6 +310,24 @@ async function setupInitialData(languageSetting) {
             cat.order = i;
             await dbPut(STORE_CATEGORIES, cat);
         }
+    } else {
+        // Migration: Ensure existing categories have tags and animation if missing
+        for (const cat of existingCategories) {
+            let changed = false;
+            if (cat.tags === undefined) {
+                const def = initialCategories.find(d => d.name === cat.name);
+                cat.tags = def ? def.tags : '';
+                changed = true;
+            }
+            if (cat.animation === undefined) {
+                const def = initialCategories.find(d => d.name === cat.name);
+                cat.animation = def ? def.animation : 'default';
+                changed = true;
+            }
+            if (changed) {
+                await dbPut(STORE_CATEGORIES, cat);
+            }
+        }
     }
 
     const allLogs = await dbGetAll(STORE_LOGS);
@@ -444,7 +462,8 @@ async function generateDummyHistory() {
                     category: cat.name,
                     startTime: Math.floor(current),
                     endTime: Math.floor(taskEnd),
-                    color: cat.color || 'primary'
+                    color: cat.color || 'primary',
+                    tags: cat.tags || ''
                 });
                 current = taskEnd;
             }

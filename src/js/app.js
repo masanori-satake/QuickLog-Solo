@@ -850,7 +850,7 @@ async function openTagAggregationModal() {
     const allLogs = await dbGetAll(STORE_LOGS);
     reportLogDates = new Set(allLogs.map(l => new Date(l.startTime).setHours(0, 0, 0, 0)));
 
-    updateTagAggregationUI();
+    await updateTagAggregationUI();
     getEl(ID_TAG_AGGREGATION_MODAL).classList.remove('hidden');
 }
 
@@ -1001,7 +1001,10 @@ async function updateTagAggregationUI() {
 
     const tagAgg = {};
     dayLogs.forEach(l => {
+        if (l.isManualStop) return;
         const dur = l.endTime - l.startTime;
+        if (dur <= 0) return;
+
         const tagStr = l.tags || '';
         if (tagStr) {
             const tags = tagStr.split(',').map(t => t.trim()).filter(Boolean);
