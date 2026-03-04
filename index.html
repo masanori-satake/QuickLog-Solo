@@ -665,7 +665,7 @@
 
         function getSafeLang(lang) {
             // Whitelist of supported languages; fallback to English if unknown
-            const allowedLangs = ['en', 'ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+            const allowedLangs = Object.keys(translations);
             return allowedLangs.includes(lang) ? lang : 'en';
         }
 
@@ -686,11 +686,11 @@
                 zh: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
                 default: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif"
             };
-            document.body.style.fontFamily = fontStacks[lang] || fontStacks.default;
+            document.body.style.fontFamily = fontStacks[safeLang] || fontStacks.default;
 
             // Update dropdown value
             const select = document.getElementById('lang-select-landing');
-            if (select) select.value = lang;
+            if (select) select.value = safeLang;
 
             // Update page title
             const titles = {
@@ -703,7 +703,7 @@
                 ko: "QuickLog-Solo - 미니멀리스트를 위한 작업 메모 도구",
                 zh: "QuickLog-Solo - 极简主义者的工作笔记工具"
             };
-            document.title = titles[lang] || titles['en'];
+            document.title = titles[safeLang] || titles['en'];
         }
 
         // Initialize version display
@@ -739,14 +739,24 @@
             event.preventDefault();
             const target = event.currentTarget;
             navigator.clipboard.writeText(url).then(() => {
-                const originalHtml = target.innerHTML;
                 const feedbackText = translations[currentLang]["copy-success"];
-                target.innerHTML = '<span style="font-size: 0.8em; font-weight: bold;">' + feedbackText + '</span>';
+
+                // Store original children to restore later
+                const originalContent = Array.from(target.childNodes);
+                target.textContent = '';
+
+                const feedbackSpan = document.createElement('span');
+                feedbackSpan.style.fontSize = '0.8em';
+                feedbackSpan.style.fontWeight = 'bold';
+                feedbackSpan.textContent = feedbackText;
+                target.appendChild(feedbackSpan);
+
                 const originalColor = target.style.color;
                 target.style.color = 'var(--md-sys-color-tertiary)';
 
                 setTimeout(() => {
-                    target.innerHTML = originalHtml;
+                    target.textContent = '';
+                    originalContent.forEach(node => target.appendChild(node));
                     target.style.color = originalColor;
                 }, 2000);
             }).catch(err => {
@@ -776,8 +786,7 @@
         }
 
         function loadPreview(iframe) {
-            const safeLang = getSafeLang(currentLang);
-            const previewUrl = 'src/app.html?lang=' + encodeURIComponent(safeLang) + '&db=QuickLogSoloDB_Preview';
+            const previewUrl = 'src/app.html?lang=' + encodeURIComponent(currentLang) + '&db=QuickLogSoloDB_Preview';
             if (iframe.src !== previewUrl) {
                 iframe.src = previewUrl;
             }
