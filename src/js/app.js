@@ -84,18 +84,31 @@ const ID_REPORT_DURATION_SELECT = 'report-duration-select';
 const ID_REPORT_ADJUST_SELECT = 'report-adjust-select';
 const ID_REPORT_COPY_CONFIRM_BTN = 'report-copy-confirm-btn';
 
+/** @type {Object|null} Currently running task log entry. */
 let activeTask = null;
+/** @type {number|null} ID of the main timer interval. */
 let timerInterval = null;
+/** @type {BroadcastChannel|null} Channel for cross-tab state sync. */
 let syncChannel = null;
+/** @type {number|null} Timeout ID for delayed sync execution. */
 let syncTimeout = null;
+/** @type {number} Current page index in the category list. */
 let currentCategoryPage = 0;
+/** @type {string} Current background animation ID. */
 let currentAnimationType = 'matrix_code';
+/** @type {string|null} JSON string of the last rendered category state for change detection. */
 let lastCategoryRenderData = null;
+/** @type {Object|null} Instance of the animation engine. */
 let animationEngine = null;
+/** @type {string|null} Key identifying the currently active animation instance. */
 let currentActiveAnimation = null;
+/** @type {boolean} True if the app has completed initial setup. */
 let isAppInitialized = false;
+/** @type {Date} Currently selected date in the report modal. */
 let reportSelectedDate = new Date();
+/** @type {Set<number>} Timestamps (day start) of all dates containing logs. */
 let reportLogDates = new Set();
+/** @type {Object} User preferences for report generation. */
 let reportSettings = {
     format: 'markdown',
     emoji: 'keep',
