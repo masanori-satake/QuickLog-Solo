@@ -1,0 +1,53 @@
+name: Manual Animation Quality Evaluation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+      timeout-minutes: 5
+
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-
+
+    - name: Install Playwright Browsers
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright install chromium --with-deps
+      timeout-minutes: 5
+
+    - name: Install Playwright Dependencies (if cache hit)
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      run: npx playwright install-deps chromium
+      timeout-minutes: 2
+
+    - name: Start local server
+      run: python3 -m http.server 8080 &
+
+    - name: Run Animation Quality Evaluation
+      run: npm run test:animation-eval
+      timeout-minutes: 15
