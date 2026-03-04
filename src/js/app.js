@@ -269,21 +269,15 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
     }
 }
 
-async function renderCategories() {
-    let allCategories;
-    try {
-        allCategories = await dbGetAll(STORE_CATEGORIES);
-    } catch (e) {
-        console.error('Failed to get categories:', e);
-        return;
-    }
+function splitCategoriesIntoPages(allCategories) {
     allCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    // Handle Page Breaks
     const pages = [[]];
     let currentPageIdx = 0;
     allCategories.forEach(cat => {
         if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+            // Only push a new page if current page isn't empty
+            // to avoid multiple page breaks creating multiple empty pages
             if (pages[currentPageIdx].length > 0) {
                 pages.push([]);
                 currentPageIdx++;
@@ -296,11 +290,23 @@ async function renderCategories() {
             pages[currentPageIdx].push(cat);
         }
     });
-    // Remove last page if empty
+    // Remove last page if empty (can happen if last item was a page break)
     if (pages.length > 1 && pages[pages.length - 1].length === 0) {
         pages.pop();
     }
+    return pages;
+}
 
+async function renderCategories() {
+    let allCategories;
+    try {
+        allCategories = await dbGetAll(STORE_CATEGORIES);
+    } catch (e) {
+        console.error('Failed to get categories:', e);
+        return;
+    }
+
+    const pages = splitCategoriesIntoPages(allCategories);
     const totalPages = pages.length;
     if (currentCategoryPage >= totalPages) currentCategoryPage = totalPages - 1;
 
@@ -350,6 +356,12 @@ function renderPaginationDots(totalPages) {
     for (let i = 0; i < totalPages; i++) {
         const dot = createEl('div');
         dot.className = 'pagination-dot' + (i === currentCategoryPage ? ' active' : '');
+        dot.onclick = () => {
+            if (currentCategoryPage !== i) {
+                currentCategoryPage = i;
+                renderCategories();
+            }
+        };
         container.appendChild(dot);
     }
 }
@@ -1277,7 +1289,8 @@ function setupEventListeners() {
     categorySection?.addEventListener('wheel', (e) => {
         e.preventDefault();
         dbGetAll(STORE_CATEGORIES).then(categories => {
-            const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE) || 1;
+            const pages = splitCategoriesIntoPages(categories);
+            const totalPages = pages.length;
             if (e.deltaY > 0) {
                 // Scroll down -> next page
                 if (currentCategoryPage < totalPages - 1) {
