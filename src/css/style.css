@@ -375,6 +375,23 @@ body.theme-light #current-task-display-base #clock-face {
     gap: 0.5rem;
 }
 
+.auto-stop-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.auto-stop-label-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.auto-stop-label .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
 #status-label, #status-label-overlay {
     font-size: 1.5rem;
     font-weight: normal;
@@ -1002,6 +1019,14 @@ body.theme-dark button:active {
 #add-category-box-settings {
     flex-shrink: 0;
     margin-bottom: var(--md-sys-spacing-1);
+    display: flex;
+    gap: 8px;
+}
+
+#add-category-box-settings .icon-btn {
+    padding: 4px;
+    min-width: 40px;
+    height: 40px;
 }
 
 .category-maintenance-box {
@@ -1042,6 +1067,22 @@ body.theme-dark button:active {
     padding: var(--md-sys-spacing-1);
     margin-bottom: var(--md-sys-spacing-1);
     border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.category-editor-item.page-break-item {
+    background-color: var(--md-sys-color-surface-container-low);
+    padding: 4px 12px;
+    border: 1px dashed var(--md-sys-color-outline);
+}
+
+.page-break-label {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 500;
 }
 
 .cat-editor-row {

@@ -1,12 +1,12 @@
 import {
-    initDB, getCurrentAppState, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
+    initDB, getCurrentAppState, dbGet, dbGetByName, dbGetAll, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS
+    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
 } from './db.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport } from './logic.js';
-import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE } from './utils.js';
+import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPassed } from './utils.js';
 import { AnimationEngine } from './animations.js';
 import { animations } from './animation_registry.js';
 
@@ -101,6 +101,7 @@ let reportSettings = {
     endTime: 'none',
     duration: 'none'
 };
+let autoStopEnabledCache = true;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -122,7 +123,7 @@ const FONTS = [
 
 async function startTask(categoryName, resumableCategory = null) {
     if (syncTimeout) clearTimeout(syncTimeout);
-    const cat = await dbGet(STORE_CATEGORIES, categoryName);
+    const cat = await dbGetByName(STORE_CATEGORIES, categoryName);
     const color = cat ? cat.color : null;
     const tags = cat ? (cat.tags || '') : '';
     activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
@@ -159,13 +160,26 @@ function startTimer() {
     timerInterval = setInterval(updateTimer, 1000);
 }
 
-function updateTimer() {
+async function updateTimer() {
     if (!activeTask) {
         if (timerInterval) clearInterval(timerInterval);
         return;
     }
 
-    const elapsed = Date.now() - activeTask.startTime;
+    const now = Date.now();
+
+    // Check Auto-stop using cache
+    if (autoStopEnabledCache) {
+        const stopTime = getAutoStopTimeIfPassed(activeTask.startTime, now);
+        if (stopTime) {
+            console.log('QuickLog-Solo: Auto-stop triggered');
+            await stopTask();
+            updateUI();
+            return;
+        }
+    }
+
+    const elapsed = now - activeTask.startTime;
     const timeStr = formatDuration(elapsed).toString();
 
     const elements = [ID_ELAPSED_TIME, ID_ELAPSED_TIME_OVERLAY];
@@ -255,21 +269,48 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
     }
 }
 
+function splitCategoriesIntoPages(allCategories) {
+    allCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    const pages = [[]];
+    let currentPageIdx = 0;
+    allCategories.forEach(cat => {
+        if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+            // Only push a new page if current page isn't empty
+            // to avoid multiple page breaks creating multiple empty pages
+            if (pages[currentPageIdx].length > 0) {
+                pages.push([]);
+                currentPageIdx++;
+            }
+        } else {
+            if (pages[currentPageIdx].length >= ITEMS_PER_PAGE) {
+                pages.push([]);
+                currentPageIdx++;
+            }
+            pages[currentPageIdx].push(cat);
+        }
+    });
+    // Remove last page if empty (can happen if last item was a page break)
+    if (pages.length > 1 && pages[pages.length - 1].length === 0) {
+        pages.pop();
+    }
+    return pages;
+}
+
 async function renderCategories() {
-    let categories;
+    let allCategories;
     try {
-        categories = await dbGetAll(STORE_CATEGORIES);
+        allCategories = await dbGetAll(STORE_CATEGORIES);
     } catch (e) {
         console.error('Failed to get categories:', e);
         return;
     }
-    categories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE) || 1;
+    const pages = splitCategoriesIntoPages(allCategories);
+    const totalPages = pages.length;
     if (currentCategoryPage >= totalPages) currentCategoryPage = totalPages - 1;
 
-    const start = currentCategoryPage * ITEMS_PER_PAGE;
-    const pageCategories = categories.slice(start, start + ITEMS_PER_PAGE);
+    const pageCategories = pages[currentCategoryPage] || [];
 
     const activeTaskCatName = activeTask ? activeTask.category : null;
 
@@ -315,6 +356,12 @@ function renderPaginationDots(totalPages) {
     for (let i = 0; i < totalPages; i++) {
         const dot = createEl('div');
         dot.className = 'pagination-dot' + (i === currentCategoryPage ? ' active' : '');
+        dot.onclick = () => {
+            if (currentCategoryPage !== i) {
+                currentCategoryPage = i;
+                renderCategories();
+            }
+        };
         container.appendChild(dot);
     }
 }
@@ -490,6 +537,7 @@ async function syncState() {
     if (!isAppInitialized) return;
     const state = await getCurrentAppState();
     activeTask = state.activeTask;
+    autoStopEnabledCache = state.autoStop;
 
     const lang = state.language || 'auto';
     setLanguage(lang);
@@ -499,6 +547,17 @@ async function syncState() {
 
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
+
+    const autoStopSelect = getEl('auto-stop-select');
+    if (autoStopSelect) {
+        autoStopSelect.value = state.autoStop ? 'true' : 'false';
+        autoStopSelect.onchange = async (e) => {
+            const enabled = e.target.value === 'true';
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: enabled });
+            autoStopEnabledCache = enabled;
+            broadcastSync();
+        };
+    }
 
     // Update Animation options
     currentAnimationType = state.animation || 'matrix_code';
@@ -517,7 +576,7 @@ async function syncState() {
     let color = 'primary';
     let categoryAnimation = 'default';
     if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
-        const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
+        const cat = await dbGetByName(STORE_CATEGORIES, activeTask.category);
         color = cat ? cat.color : (activeTask.color || 'primary');
         categoryAnimation = cat ? (cat.animation || 'default') : 'default';
     }
@@ -634,7 +693,7 @@ async function updateUI() {
         if (isPaused) {
             color = 'neutral';
         } else {
-            const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
+            const cat = await dbGetByName(STORE_CATEGORIES, activeTask.category);
             color = cat ? cat.color : (activeTask.color || 'primary');
             categoryAnimation = cat ? cat.animation : 'default';
         }
@@ -648,6 +707,7 @@ async function updateUI() {
             if (el) {
                 el.textContent = iconName;
                 el.className = `material-symbols-outlined ${statusClass}`;
+                el.title = isPaused ? t('tooltip-status-paused') : t('tooltip-status-running');
                 if (isPaused) {
                     el.classList.add('blink');
                 } else {
@@ -693,6 +753,7 @@ async function updateUI() {
             if (el) {
                 el.textContent = 'stop';
                 el.className = 'material-symbols-outlined status-stopped';
+                el.title = t('tooltip-status-stopped');
             }
         });
         const nameElements = [getEl('current-task-name-text'), getEl('current-task-name-text-overlay')];
@@ -949,7 +1010,7 @@ async function renderCategoryEditor() {
     const list = getEl(ID_CATEGORY_EDITOR_LIST);
     if (!list) return;
     let categories = await dbGetAll(STORE_CATEGORIES);
-    categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => a.order - b.order);
+    categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     list.innerHTML = '';
 
     const colors = [
@@ -957,11 +1018,14 @@ async function renderCategoryEditor() {
         'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
     ];
 
-    categories.forEach(cat => {
+    categories.forEach((cat, idx) => {
         const item = createEl('div');
-        item.className = 'category-editor-item';
+        const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        item.className = 'category-editor-item' + (isPageBreak ? ' page-break-item' : '');
         item.draggable = true;
         item.dataset.name = cat.name;
+        item.dataset.id = cat.id;
+        item.dataset.index = idx;
 
         const lang = getEl(ID_LANGUAGE_SELECT)?.value === 'auto' ? detectBrowserLanguage() : getEl(ID_LANGUAGE_SELECT)?.value || 'en';
         const getAnimLabel = (anim) => {
@@ -971,167 +1035,182 @@ async function renderCategoryEditor() {
             return anim.metadata.name;
         };
 
-        const animOptions = [
-            { value: 'none', label: t('anim-none'), description: '' },
-            { value: 'default', label: t('anim-default'), description: '' },
-            ...animations.map(anim => {
-                let desc = '';
-                if (anim.metadata.description) {
-                    desc = (typeof anim.metadata.description === 'object')
-                        ? (anim.metadata.description[lang] || anim.metadata.description['en'] || '')
-                        : anim.metadata.description;
-                }
-                return { value: anim.id, label: getAnimLabel(anim), description: desc };
-            })
-        ];
+        if (isPageBreak) {
+            item.innerHTML = `
+                <div class="cat-editor-row row-1">
+                    <span class="material-symbols-outlined drag-handle" style="cursor: grab;" title="${t('tooltip-drag-handle')}">drag_indicator</span>
+                    <span class="page-break-label"><span class="material-symbols-outlined">insert_page_break</span> <span>${t('page-break')}</span></span>
+                    <button class="delete-cat-btn" title="${t('tooltip-delete-category')}">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            `;
+        } else {
+            const animOptions = [
+                { value: 'none', label: t('anim-none'), description: '' },
+                { value: 'default', label: t('anim-default'), description: '' },
+                ...animations.map(anim => {
+                    let desc = '';
+                    if (anim.metadata.description) {
+                        desc = (typeof anim.metadata.description === 'object')
+                            ? (anim.metadata.description[lang] || anim.metadata.description['en'] || '')
+                            : anim.metadata.description;
+                    }
+                    return { value: anim.id, label: getAnimLabel(anim), description: desc };
+                })
+            ];
 
-        item.innerHTML = `
-            <div class="cat-editor-row row-1">
-                <span class="material-symbols-outlined drag-handle" style="cursor: grab;">drag_indicator</span>
-                <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
-                <button class="delete-cat-btn" title="${t('delete')}">
-                    <span class="material-symbols-outlined">delete</span>
-                </button>
-            </div>
-            <div class="cat-editor-row row-2">
-                <div class="custom-color-dropdown">
-                    <div class="color-dropdown-trigger" style="background-color: ${getColorCode(cat.color)}"></div>
-                    <div class="color-dropdown-menu hidden">
-                        ${colors.map(color => `<div class="color-dropdown-item ${color === cat.color ? 'selected' : ''}" data-color="${color}" style="background-color: ${getColorCode(color)}"></div>`).join('')}
+            item.innerHTML = `
+                <div class="cat-editor-row row-1">
+                    <span class="material-symbols-outlined drag-handle" style="cursor: grab;" title="${t('tooltip-drag-handle')}">drag_indicator</span>
+                    <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
+                    <button class="delete-cat-btn" title="${t('tooltip-delete-category')}">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+                <div class="cat-editor-row row-2">
+                    <div class="custom-color-dropdown">
+                        <div class="color-dropdown-trigger" style="background-color: ${getColorCode(cat.color)}"></div>
+                        <div class="color-dropdown-menu hidden">
+                            ${colors.map(color => `<div class="color-dropdown-item ${color === cat.color ? 'selected' : ''}" data-color="${color}" style="background-color: ${getColorCode(color)}"></div>`).join('')}
+                        </div>
+                    </div>
+                    <select class="category-edit-animation">
+                        ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${escapeHtml(opt.label)}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="cat-editor-row row-3">
+                    <div class="tag-container">
+                        <div class="tag-list"></div>
+                        <input type="text" class="tag-input" placeholder="${t('placeholder-tags')}">
                     </div>
                 </div>
-                <select class="category-edit-animation">
-                    ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${escapeHtml(opt.label)}</option>`).join('')}
-                </select>
-            </div>
-            <div class="cat-editor-row row-3">
-                <div class="tag-container">
-                    <div class="tag-list"></div>
-                    <input type="text" class="tag-input" data-i18n-placeholder="placeholder-tags" placeholder="${t('placeholder-tags')}">
-                </div>
-            </div>
-        `;
+            `;
+            item.dataset.name = cat.name;
+        }
 
-        // --- Row 1 Events ---
-        const input = item.querySelector('.category-edit-name');
-        input.onchange = async () => {
-            const newName = input.value.trim();
-            if (newName && newName !== cat.name) {
-                if (!isValidCategoryName(newName)) {
-                    alert(t('alert-invalid-category', { idle: t('idle-category') }));
-                    input.value = cat.name;
-                    return;
-                }
-                const oldName = cat.name;
-                const existing = await dbGet(STORE_CATEGORIES, newName);
-                if (existing) {
-                    alert(t('alert-duplicate-category'));
-                    input.value = oldName;
-                    return;
-                }
-                const updatedCat = { ...cat, name: newName };
-                await dbDelete(STORE_CATEGORIES, oldName);
-                await dbPut(STORE_CATEGORIES, updatedCat);
-
-                const allLogs = await dbGetAll(STORE_LOGS);
-                for (const log of allLogs) {
-                    if (log.category === oldName) {
-                        log.category = newName;
-                        await dbPut(STORE_LOGS, log);
+        if (!isPageBreak) {
+            // --- Row 1 Events ---
+            const input = item.querySelector('.category-edit-name');
+            input.onchange = async () => {
+                const newName = input.value.trim();
+                if (newName && newName !== cat.name) {
+                    if (!isValidCategoryName(newName)) {
+                        alert(t('alert-invalid-category', { idle: t('idle-category') }));
+                        input.value = cat.name;
+                        return;
                     }
+                    const oldName = cat.name;
+                    const existing = await dbGetByName(STORE_CATEGORIES, newName);
+                    if (existing) {
+                        alert(t('alert-duplicate-category'));
+                        input.value = oldName;
+                        return;
+                    }
+                    const updatedCat = { ...cat, name: newName };
+                    await dbPut(STORE_CATEGORIES, updatedCat);
+
+                    const allLogs = await dbGetAll(STORE_LOGS);
+                    for (const log of allLogs) {
+                        if (log.category === oldName) {
+                            log.category = newName;
+                            await dbPut(STORE_LOGS, log);
+                        }
+                    }
+
+                    // If the renamed category is the active task, update it immediately
+                    if (activeTask && activeTask.category === oldName) {
+                        activeTask.category = newName;
+                    }
+
+                    await updateUI();
+                    renderCategoryEditor();
+                    broadcastSync();
                 }
+            };
 
-                // If the renamed category is the active task, update it immediately
-                if (activeTask && activeTask.category === oldName) {
-                    activeTask.category = newName;
-                }
-
-                await updateUI();
-                renderCategoryEditor();
-                broadcastSync();
-            }
-        };
-
-        // --- Row 2 Events (Custom Color Dropdown) ---
-        const colorTrigger = item.querySelector('.color-dropdown-trigger');
-        const colorMenu = item.querySelector('.color-dropdown-menu');
-        colorTrigger.onclick = (e) => {
-            e.stopPropagation();
-            queryAll('.color-dropdown-menu').forEach(m => { if (m !== colorMenu) m.classList.add('hidden'); });
-            colorMenu.classList.toggle('hidden');
-        };
-        colorMenu.querySelectorAll('.color-dropdown-item').forEach(btn => {
-            btn.onclick = async (e) => {
+            // --- Row 2 Events (Custom Color Dropdown) ---
+            const colorTrigger = item.querySelector('.color-dropdown-trigger');
+            const colorMenu = item.querySelector('.color-dropdown-menu');
+            colorTrigger.onclick = (e) => {
                 e.stopPropagation();
-                cat.color = btn.dataset.color;
+                queryAll('.color-dropdown-menu').forEach(m => { if (m !== colorMenu) m.classList.add('hidden'); });
+                colorMenu.classList.toggle('hidden');
+            };
+            colorMenu.querySelectorAll('.color-dropdown-item').forEach(btn => {
+                btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    cat.color = btn.dataset.color;
+                    await dbPut(STORE_CATEGORIES, cat);
+                    colorMenu.classList.add('hidden');
+                    renderCategoryEditor();
+                    renderCategories();
+                    await updateUI();
+                    broadcastSync();
+                };
+            });
+
+            const animSelect = item.querySelector('.category-edit-animation');
+            animSelect.onchange = async () => {
+                cat.animation = animSelect.value;
                 await dbPut(STORE_CATEGORIES, cat);
-                colorMenu.classList.add('hidden');
-                renderCategoryEditor();
-                renderCategories();
                 await updateUI();
                 broadcastSync();
             };
-        });
 
-        const animSelect = item.querySelector('.category-edit-animation');
-        animSelect.onchange = async () => {
-            cat.animation = animSelect.value;
-            await dbPut(STORE_CATEGORIES, cat);
-            await updateUI();
-            broadcastSync();
-        };
+            // --- Row 3 Events (Tags) ---
+            const tagListEl = item.querySelector('.tag-list');
+            const tagInput = item.querySelector('.tag-input');
 
-        // --- Row 3 Events (Tags) ---
-        const tagListEl = item.querySelector('.tag-list');
-        const tagInput = item.querySelector('.tag-input');
-
-        const renderTags = () => {
-            tagListEl.innerHTML = '';
-            const tagStr = cat.tags || '';
-            const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
-            tags.forEach((tag, idx) => {
-                const pill = createEl('span');
-                pill.className = 'tag-pill';
-                pill.innerHTML = `
-                    <span class="tag-text">${escapeHtml(tag)}</span>
-                    <span class="tag-remove material-symbols-outlined" data-index="${idx}">close</span>
-                `;
-                pill.querySelector('.tag-remove').onclick = async () => {
-                    tags.splice(idx, 1);
-                    cat.tags = tags.join(',');
-                    await dbPut(STORE_CATEGORIES, cat);
-                    renderTags();
-                    broadcastSync();
-                };
-                tagListEl.appendChild(pill);
-            });
-        };
-
-        tagInput.onkeydown = async (e) => {
-            if (e.key === 'Enter' || e.key === ',') {
-                e.preventDefault();
-                const newTag = tagInput.value.trim().replace(/,/g, '');
-                if (newTag) {
-                    const tagStr = cat.tags || '';
-                    const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
-                    if (!tags.includes(newTag)) {
-                        tags.push(newTag);
+            const renderTags = () => {
+                tagListEl.innerHTML = '';
+                const tagStr = cat.tags || '';
+                const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+                tags.forEach((tag, idx) => {
+                    const pill = createEl('span');
+                    pill.className = 'tag-pill';
+                    pill.innerHTML = `
+                        <span class="tag-text">${escapeHtml(tag)}</span>
+                        <span class="tag-remove material-symbols-outlined" data-index="${idx}">close</span>
+                    `;
+                    pill.querySelector('.tag-remove').onclick = async () => {
+                        tags.splice(idx, 1);
                         cat.tags = tags.join(',');
                         await dbPut(STORE_CATEGORIES, cat);
-                        tagInput.value = '';
                         renderTags();
-                        await updateUI();
                         broadcastSync();
+                    };
+                    tagListEl.appendChild(pill);
+                });
+            };
+
+            tagInput.onkeydown = async (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const newTag = tagInput.value.trim().replace(/,/g, '');
+                    if (newTag) {
+                        const tagStr = cat.tags || '';
+                        const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+                        if (!tags.includes(newTag)) {
+                            tags.push(newTag);
+                            cat.tags = tags.join(',');
+                            await dbPut(STORE_CATEGORIES, cat);
+                            tagInput.value = '';
+                            renderTags();
+                            await updateUI();
+                            broadcastSync();
+                        }
                     }
                 }
-            }
-        };
+            };
 
-        renderTags();
+            renderTags();
+        }
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
-            if (await showConfirm(t('confirm-delete-category', { name: cat.name }))) {
-                await dbDelete(STORE_CATEGORIES, cat.name);
+            const confirmMsg = isPageBreak ? t('confirm-delete-page-break') : t('confirm-delete-category', { name: cat.name });
+            if (await showConfirm(confirmMsg)) {
+                await dbDelete(STORE_CATEGORIES, cat.id);
                 updateUI();
                 renderCategoryEditor();
                 broadcastSync();
@@ -1139,7 +1218,7 @@ async function renderCategoryEditor() {
         };
 
         item.ondragstart = (e) => {
-            e.dataTransfer.setData('text/plain', cat.name);
+            e.dataTransfer.setData('text/plain', cat.id);
             item.classList.add('dragging');
         };
         item.ondragend = () => item.classList.remove('dragging');
@@ -1161,9 +1240,13 @@ async function renderCategoryEditor() {
     list.ondrop = async (e) => {
         e.preventDefault();
         const items = [...list.querySelectorAll('.category-editor-item')];
+        const currentCategories = await dbGetAll(STORE_CATEGORIES);
+        // Map current categories by ID for easy lookup
+        const catMap = new Map(currentCategories.map(c => [c.id.toString(), c]));
+
         for (let i = 0; i < items.length; i++) {
-            const name = items[i].dataset.name;
-            const cat = await dbGet(STORE_CATEGORIES, name);
+            const id = items[i].dataset.id;
+            const cat = catMap.get(id);
             if (cat) {
                 cat.order = i;
                 await dbPut(STORE_CATEGORIES, cat);
@@ -1206,7 +1289,8 @@ function setupEventListeners() {
     categorySection?.addEventListener('wheel', (e) => {
         e.preventDefault();
         dbGetAll(STORE_CATEGORIES).then(categories => {
-            const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE) || 1;
+            const pages = splitCategoriesIntoPages(categories);
+            const totalPages = pages.length;
             if (e.deltaY > 0) {
                 // Scroll down -> next page
                 if (currentCategoryPage < totalPages - 1) {
@@ -1381,16 +1465,40 @@ function setupEventListeners() {
         }
     });
 
+    getEl('add-page-break-btn')?.addEventListener('click', async () => {
+        const categories = await dbGetAll(STORE_CATEGORIES);
+        // Ensure unique name for each page break to work with current keyPath:'name'
+        const pbName = `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}`;
+        await dbPut(STORE_CATEGORIES, {
+            name: pbName,
+            order: categories.length
+        });
+        renderCategories();
+        renderCategoryEditor();
+        broadcastSync();
+    });
+
     // Category Import/Export
     getEl(ID_EXPORT_CATEGORIES_BTN)?.addEventListener('click', async () => {
         const categories = await dbGetAll(STORE_CATEGORIES);
-        // Exclude system idle category from export just in case it's in the store (it shouldn't be, but good to be safe)
+        categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         const exportData = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE);
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+
+        // Convert to NDJSON
+        const ndjson = exportData.map(c => {
+            const copy = { ...c };
+            delete copy.order; // Remove order as per requirement
+            if (copy.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+                return JSON.stringify({ type: 'page-break' });
+            }
+            return JSON.stringify(copy);
+        }).join('\n');
+
+        const blob = new Blob([ndjson], { type: 'application/x-ndjson' });
         const url = URL.createObjectURL(blob);
         const a = createEl('a');
         a.href = url;
-        a.download = `quicklog_categories_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `quicklog_categories_${new Date().toISOString().slice(0, 10)}.ndjson`;
         a.click();
     });
 
@@ -1405,43 +1513,29 @@ function setupEventListeners() {
 
         try {
             const text = await file.text();
-            const importedCategories = JSON.parse(text);
+            const lines = text.split('\n').filter(line => line.trim());
+            const importedCategories = lines.map(line => JSON.parse(line));
 
-            if (!Array.isArray(importedCategories)) {
-                throw new Error('Invalid format: expected an array of categories.');
-            }
+            const validatedItems = importedCategories.filter(item => {
+                if (item.type === 'page-break') return true;
+                if (!item.name || !isValidCategoryName(item.name)) return false;
+                if (item.color && !isValidColor(item.color)) {
+                    console.warn(`QuickLog-Solo: Invalid color '${item.color}' for category '${item.name}' during import.`);
+                    item.color = 'primary'; // Fallback
+                }
+                return true;
+            });
 
             const importMode = document.querySelector('input[name="import-mode"]:checked')?.value || 'append';
 
             if (importMode === 'overwrite') {
-                if (await showConfirm(t('confirm-import-overwrite'))) {
-                    await dbClear(STORE_CATEGORIES);
-                } else {
+                if (!(await showConfirm(t('confirm-import-overwrite')))) {
                     categoryFileInput.value = '';
                     return;
                 }
             }
 
-            const currentCategories = await dbGetAll(STORE_CATEGORIES);
-            let maxOrder = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
-
-            for (const cat of importedCategories) {
-                if (cat.name && isValidCategoryName(cat.name)) {
-                    // Check for duplicates in append mode
-                    if (importMode === 'append') {
-                        const existing = await dbGet(STORE_CATEGORIES, cat.name);
-                        if (existing) continue;
-                    }
-
-                    await dbPut(STORE_CATEGORIES, {
-                        name: cat.name,
-                        color: cat.color || 'primary',
-                        order: cat.order !== undefined ? cat.order : ++maxOrder,
-                        tags: cat.tags || '',
-                        animation: cat.animation || 'default'
-                    });
-                }
-            }
+            await dbImportCategories(validatedItems, importMode);
 
             categoryFileInput.value = '';
             showToast(t('toast-cat-imported'));

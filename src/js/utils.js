@@ -3,6 +3,7 @@
  */
 
 export const SYSTEM_CATEGORY_IDLE = '__IDLE__';
+export const SYSTEM_CATEGORY_PAGE_BREAK = '__PAGE_BREAK__';
 
 /**
  * Escapes HTML special characters to prevent XSS.
@@ -83,7 +84,37 @@ export function isValidCategoryName(name) {
     if (!name) return false;
     const trimmed = name.trim();
     if (trimmed.length === 0 || trimmed.length > 50) return false;
-    if (trimmed === SYSTEM_CATEGORY_IDLE) return false;
+    if (trimmed === SYSTEM_CATEGORY_IDLE || trimmed === SYSTEM_CATEGORY_PAGE_BREAK) return false;
     return true;
 }
 
+const VALID_COLORS = [
+    'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
+    'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
+];
+
+/**
+ * Validates if the color is in the predefined list.
+ * @param {string} color
+ * @returns {boolean}
+ */
+export function isValidColor(color) {
+    return VALID_COLORS.includes(color);
+}
+
+/**
+ * Checks if the task should be auto-stopped at 23:59:59 of its start day.
+ * Returns the auto-stop time (23:59:59.999) if it has passed, otherwise null.
+ * @param {number} startTime
+ * @param {number} now
+ * @returns {number|null}
+ */
+export function getAutoStopTimeIfPassed(startTime, now = Date.now()) {
+    const autoStopDate = new Date(startTime);
+    autoStopDate.setHours(23, 59, 59, 0);
+
+    if (now >= autoStopDate.getTime()) {
+        return autoStopDate.getTime();
+    }
+    return null;
+}
