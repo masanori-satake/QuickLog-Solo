@@ -2,7 +2,7 @@ import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPass
 import { t, setLanguage } from './i18n.js';
 
 export let DB_NAME = 'QuickLogSoloDB';
-export const DB_VERSION = 2;
+export const DB_VERSION = 1;
 
 export function setDatabaseName(name) {
     DB_NAME = name;
@@ -28,17 +28,11 @@ let db;
 export function openDatabase() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = async (event) => {
+        request.onupgradeneeded = (event) => {
             const db = event.target.result;
-            const oldVersion = event.oldVersion;
 
             if (!db.objectStoreNames.contains(STORE_LOGS)) {
                 db.createObjectStore(STORE_LOGS, { keyPath: 'id', autoIncrement: true });
-            }
-
-            // Force recreation for schema change if upgrading from v1
-            if (oldVersion < 2 && db.objectStoreNames.contains(STORE_CATEGORIES)) {
-                db.deleteObjectStore(STORE_CATEGORIES);
             }
 
             if (!db.objectStoreNames.contains(STORE_CATEGORIES)) {
