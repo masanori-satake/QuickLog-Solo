@@ -1,5 +1,5 @@
 import {
-    initDB, getCurrentAppState, dbGet, dbGetByName, dbGetAll, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
+    initDB, getCurrentAppState, dbGetByName, dbGetAll, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
