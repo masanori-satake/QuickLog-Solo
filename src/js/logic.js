@@ -94,12 +94,61 @@ export function generateReport(logs, options) {
 }
 
 function prepareReportItems(logs, options) {
-    const { emoji } = options;
-    return logs.filter(l => !l.isManualStop).map(l => {
-        let category = l.category;
-        if (l.category === '__IDLE__') {
-            category = options.idleText || '(待機)';
+    const { emoji, adjust } = options;
+    const filteredLogs = logs.filter(l => !l.isManualStop);
+    if (filteredLogs.length === 0) return [];
+
+    const adjustMinutes = parseInt(adjust);
+    const adjustIntervalMs = (adjustMinutes && !isNaN(adjustMinutes)) ? adjustMinutes * 60 * 1000 : 0;
+
+    let displayLogs = filteredLogs.map(l => ({
+        startTime: l.startTime,
+        endTime: l.endTime,
+        category: l.category === '__IDLE__' ? (options.idleText || '(待機)') : l.category
+    }));
+
+    if (adjustIntervalMs > 0) {
+        const n = displayLogs.length;
+        const allTimes = [];
+        displayLogs.forEach(l => {
+            allTimes.push(l.startTime);
+            if (l.endTime) allTimes.push(l.endTime);
+        });
+        const uniqueTimes = [...new Set(allTimes)].sort((a, b) => a - b);
+        const adjustedTimes = new Map();
+
+        if (uniqueTimes.length > 0) {
+            // First and last are fixed
+            adjustedTimes.set(uniqueTimes[0], uniqueTimes[0]);
+            if (uniqueTimes.length > 1) {
+                adjustedTimes.set(uniqueTimes[uniqueTimes.length - 1], uniqueTimes[uniqueTimes.length - 1]);
+            }
+
+            // Adjust intermediate points
+            for (let i = 1; i < uniqueTimes.length - 1; i++) {
+                const original = uniqueTimes[i];
+                const rounded = Math.round(original / adjustIntervalMs) * adjustIntervalMs;
+
+                const prevAdjusted = adjustedTimes.get(uniqueTimes[i - 1]);
+                const nextOriginal = uniqueTimes[i + 1];
+
+                if (rounded >= prevAdjusted && rounded <= nextOriginal) {
+                    adjustedTimes.set(original, rounded);
+                } else {
+                    adjustedTimes.set(original, original);
+                }
+            }
+
+            // Apply
+            displayLogs.forEach(l => {
+                l.startTime = adjustedTimes.get(l.startTime);
+                if (l.endTime) l.endTime = adjustedTimes.get(l.endTime);
+            });
         }
+    }
+
+    return displayLogs.map(l => {
+        let category = l.category;
         if (emoji === 'remove') {
             category = stripEmojis(category);
         }

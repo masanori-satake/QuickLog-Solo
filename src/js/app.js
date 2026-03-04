@@ -81,6 +81,7 @@ const ID_REPORT_FORMAT_SELECT = 'report-format-select';
 const ID_REPORT_EMOJI_SELECT = 'report-emoji-select';
 const ID_REPORT_ENDTIME_SELECT = 'report-endtime-select';
 const ID_REPORT_DURATION_SELECT = 'report-duration-select';
+const ID_REPORT_ADJUST_SELECT = 'report-adjust-select';
 const ID_REPORT_COPY_CONFIRM_BTN = 'report-copy-confirm-btn';
 
 let activeTask = null;
@@ -99,7 +100,8 @@ let reportSettings = {
     format: 'markdown',
     emoji: 'keep',
     endTime: 'none',
-    duration: 'none'
+    duration: 'none',
+    adjust: 'none'
 };
 let autoStopEnabledCache = true;
 
@@ -805,6 +807,7 @@ async function openReportModal() {
         getEl(ID_REPORT_EMOJI_SELECT).value = reportSettings.emoji;
         getEl(ID_REPORT_ENDTIME_SELECT).value = reportSettings.endTime;
         getEl(ID_REPORT_DURATION_SELECT).value = reportSettings.duration;
+        getEl(ID_REPORT_ADJUST_SELECT).value = reportSettings.adjust || 'none';
     }
 
     updateReportUI();
@@ -1365,7 +1368,7 @@ function setupEventListeners() {
         }
     });
 
-    [ID_REPORT_FORMAT_SELECT, ID_REPORT_EMOJI_SELECT, ID_REPORT_ENDTIME_SELECT, ID_REPORT_DURATION_SELECT].forEach(id => {
+    [ID_REPORT_FORMAT_SELECT, ID_REPORT_EMOJI_SELECT, ID_REPORT_ENDTIME_SELECT, ID_REPORT_DURATION_SELECT, ID_REPORT_ADJUST_SELECT].forEach(id => {
         getEl(id)?.addEventListener('change', (e) => {
             const key = e.target.dataset.key || id.replace('report-', '').replace('-select', '');
             reportSettings[key] = e.target.value;
