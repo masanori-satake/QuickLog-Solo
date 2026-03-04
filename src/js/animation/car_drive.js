@@ -103,22 +103,32 @@ export default class CarDrive extends AnimationBase {
             ctx.stroke();
         }
 
-        // Draw Trees
-        const treeTime = (time * speed) % 1;
-        for (let i = 0; i < 4; i++) {
-            const p = (i / 4 + treeTime / 4) % 1;
-            const y = this.horizonY + (p * p) * (height - this.horizonY);
+        // Draw Roadside Objects (Trees/Buildings) with perspective
+        const objectSpeed = speed * 0.8;
+        const objectTime = (time * objectSpeed) % 1;
+        // Draw multiple objects for continuity
+        for (let i = 0; i < 10; i++) {
+            const pRaw = (i / 10 + objectTime) % 1;
+            // Use non-linear interpolation for perspective (faster/bigger when closer)
+            const p = pRaw * pRaw;
+            const y = this.horizonY + p * (height - this.horizonY);
             const w = roadTopWidth + p * (roadBottomWidth - roadTopWidth);
             const side = (i % 2 === 0 ? 1 : -1);
-            const tx = width / 2 + side * (w / 2 + 30 * p);
-            const size = 20 * p;
+            // Move objects outward as they get closer
+            const tx = width / 2 + side * (w / 2 + 60 * p);
+            // Scaling: bigger when closer
+            const size = 5 + 50 * p;
 
-            if (p > 0.1) {
+            if (p > 0.01) {
                 ctx.fillStyle = '#fff';
                 ctx.beginPath();
-                ctx.moveTo(tx, y);
-                ctx.lineTo(tx - size / 2, y + size);
-                ctx.lineTo(tx + size / 2, y + size);
+                if ((i + Math.floor(time * objectSpeed)) % 3 === 0) { // Building
+                    ctx.rect(tx - size / 2, y - size, size, size);
+                } else { // Tree
+                    ctx.moveTo(tx, y - size);
+                    ctx.lineTo(tx - size / 3, y);
+                    ctx.lineTo(tx + size / 3, y);
+                }
                 ctx.fill();
             }
         }

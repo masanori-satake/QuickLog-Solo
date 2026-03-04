@@ -226,7 +226,7 @@ export async function getCurrentAppState() {
     return {
         theme: theme ? theme.value : null,
         font: font ? font.value : null,
-        animation: animation ? animation.value : 'matrix_code',
+        animation: animation ? animation.value : 'digital_rain',
         language: language ? language.value : 'auto',
         reportSettings: reportSettings ? reportSettings.value : null,
         autoStop: autoStop ? autoStop.value : true,
@@ -246,7 +246,7 @@ async function setupInitialData(languageSetting) {
     const animationOrder = [
         'none',
         'default',
-        'matrix_code',
+        'digital_rain',
         'migrating_birds',
         'ripple',
         'dot_typing',
@@ -266,7 +266,7 @@ async function setupInitialData(languageSetting) {
         'smoke',
         'heart_beat',
         'newtons_cradle',
-        'matrix_code',
+        'digital_rain',
         'migrating_birds'
     ];
 

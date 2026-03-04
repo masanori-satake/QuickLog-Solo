@@ -82,13 +82,13 @@ test.describe('Settings Persistence', () => {
     await page.waitForSelector('#animation-select', { state: 'visible' });
 
     // Ensure options are loaded (they are dynamic)
-    await expect(page.locator('#animation-select option[value="matrix_code"]')).toBeAttached();
+    await expect(page.locator('#animation-select option[value="digital_rain"]')).toBeAttached();
 
-    // Change animation to matrix_code
-    await page.selectOption('#animation-select', 'matrix_code');
+    // Change animation to digital_rain
+    await page.selectOption('#animation-select', 'digital_rain');
 
     // Verify selection in dropdown
-    await expect(page.locator('#animation-select')).toHaveValue('matrix_code');
+    await expect(page.locator('#animation-select')).toHaveValue('digital_rain');
 
     // Reload page
     await page.reload();
@@ -96,6 +96,6 @@ test.describe('Settings Persistence', () => {
 
     // Verify selection persisted
     await page.click('#settings-toggle');
-    await expect(page.locator('#animation-select')).toHaveValue('matrix_code');
+    await expect(page.locator('#animation-select')).toHaveValue('digital_rain');
   });
 });
