@@ -131,6 +131,8 @@ export const messages = {
         'font-system': 'システムフォント',
         'anim-default': '標準',
         'anim-none': '無し',
+        'anim-author-label': '作者',
+        'anim-unknown-author': '不明',
 
         // Report Settings
         'report-emoji-keep': 'あり',
@@ -296,6 +298,8 @@ export const messages = {
         'font-system': 'System Default',
         'anim-default': 'Standard',
         'anim-none': 'None',
+        'anim-author-label': 'Author',
+        'anim-unknown-author': 'Unknown',
 
         // Report Settings
         'report-emoji-keep': 'Keep',
@@ -440,6 +444,8 @@ export const messages = {
         'font-system': 'System-Schriftart',
         'anim-default': 'Standard',
         'anim-none': 'Keine',
+        'anim-author-label': 'Autor',
+        'anim-unknown-author': 'Unbekannt',
 
         // Report Settings
         'report-emoji-keep': 'Behalten',
@@ -583,6 +589,8 @@ export const messages = {
         'font-system': 'Fuente del sistema',
         'anim-default': 'Estándar',
         'anim-none': 'Ninguna',
+        'anim-author-label': 'Autor',
+        'anim-unknown-author': 'Desconocido',
 
         // Report Settings
         'report-emoji-keep': 'Mantener',
@@ -726,6 +734,8 @@ export const messages = {
         'font-system': 'Police système',
         'anim-default': 'Standard',
         'anim-none': 'Aucune',
+        'anim-author-label': 'Auteur',
+        'anim-unknown-author': 'Inconnu',
 
         // Report Settings
         'report-emoji-keep': 'Garder',
@@ -869,6 +879,8 @@ export const messages = {
         'font-system': 'Fonte do sistema',
         'anim-default': 'Padrão',
         'anim-none': 'Nenhuma',
+        'anim-author-label': 'Autor',
+        'anim-unknown-author': 'Desconhecido',
 
         // Report Settings
         'report-emoji-keep': 'Manter',
@@ -1012,6 +1024,8 @@ export const messages = {
         'font-system': '시스템 글꼴',
         'anim-default': '표준',
         'anim-none': '없음',
+        'anim-author-label': '제작자',
+        'anim-unknown-author': '미상',
 
         // Report Settings
         'report-emoji-keep': '있음',
@@ -1155,6 +1169,8 @@ export const messages = {
         'font-system': '系统字体',
         'anim-default': '标准',
         'anim-none': '无',
+        'anim-author-label': '作者',
+        'anim-unknown-author': '未知',
 
         // Report Settings
         'report-emoji-keep': '有',

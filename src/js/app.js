@@ -594,6 +594,23 @@ async function syncState() {
     }
 }
 
+function getAnimationTooltip(metadata, lang) {
+    let description = '';
+    if (metadata.description) {
+        description = (typeof metadata.description === 'object')
+            ? (metadata.description[lang] || metadata.description['en'] || '')
+            : metadata.description;
+    }
+
+    const author = metadata.author;
+    if (description || author) {
+        const authorText = author || t('anim-unknown-author');
+        const authorLine = `${t('anim-author-label')}: ${authorText}`;
+        return description ? `${description}\n${authorLine}` : authorLine;
+    }
+    return '';
+}
+
 function updateAnimationSelect() {
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
@@ -613,13 +630,8 @@ function updateAnimationSelect() {
             } else {
                 opt.textContent = anim.metadata.name;
             }
-            if (anim.metadata.description) {
-                if (typeof anim.metadata.description === 'object') {
-                    opt.title = anim.metadata.description[currentLang] || anim.metadata.description['en'] || '';
-                } else {
-                    opt.title = anim.metadata.description;
-                }
-            }
+
+            opt.title = getAnimationTooltip(anim.metadata, currentLang);
             animSelect.appendChild(opt);
         });
         animSelect.value = currentAnimationType;
@@ -1018,6 +1030,8 @@ async function renderCategoryEditor() {
         'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
     ];
 
+    const lang = getLanguage();
+
     categories.forEach((cat, idx) => {
         const item = createEl('div');
         const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
@@ -1027,7 +1041,6 @@ async function renderCategoryEditor() {
         item.dataset.id = cat.id;
         item.dataset.index = idx;
 
-        const lang = getEl(ID_LANGUAGE_SELECT)?.value === 'auto' ? detectBrowserLanguage() : getEl(ID_LANGUAGE_SELECT)?.value || 'en';
         const getAnimLabel = (anim) => {
             if (typeof anim.metadata.name === 'object') {
                 return anim.metadata.name[lang] || anim.metadata.name['en'] || anim.id;
@@ -1047,16 +1060,14 @@ async function renderCategoryEditor() {
             `;
         } else {
             const animOptions = [
-                { value: 'none', label: t('anim-none'), description: '' },
-                { value: 'default', label: t('anim-default'), description: '' },
+                { value: 'none', label: t('anim-none'), tooltip: '' },
+                { value: 'default', label: t('anim-default'), tooltip: '' },
                 ...animations.map(anim => {
-                    let desc = '';
-                    if (anim.metadata.description) {
-                        desc = (typeof anim.metadata.description === 'object')
-                            ? (anim.metadata.description[lang] || anim.metadata.description['en'] || '')
-                            : anim.metadata.description;
-                    }
-                    return { value: anim.id, label: getAnimLabel(anim), description: desc };
+                    return {
+                        value: anim.id,
+                        label: getAnimLabel(anim),
+                        tooltip: getAnimationTooltip(anim.metadata, lang)
+                    };
                 })
             ];
 
@@ -1076,7 +1087,7 @@ async function renderCategoryEditor() {
                         </div>
                     </div>
                     <select class="category-edit-animation">
-                        ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${escapeHtml(opt.label)}</option>`).join('')}
+                        ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.tooltip || '')}">${escapeHtml(opt.label)}</option>`).join('')}
                     </select>
                 </div>
                 <div class="cat-editor-row row-3">
