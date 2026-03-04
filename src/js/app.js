@@ -354,7 +354,7 @@ async function renderCategories() {
     console.log('QuickLog-Solo: Rendering categories...');
     const list = getEl(ID_CATEGORY_LIST);
     if (!list) return;
-    list.textContent = '';
+    list.innerHTML = '';
 
     pageCategories.forEach(cat => {
         const btn = createEl('button');
@@ -376,7 +376,7 @@ async function renderCategories() {
 function renderPaginationDots(totalPages) {
     const container = getEl(ID_CATEGORY_PAGINATION);
     if (!container) return;
-    container.textContent = '';
+    container.innerHTML = '';
 
     for (let i = 0; i < totalPages; i++) {
         const dot = createEl('div');
@@ -406,7 +406,7 @@ async function renderLogs() {
 
     const logList = getEl(ID_LOG_LIST);
     if (!logList) return;
-    logList.textContent = '';
+    logList.innerHTML = '';
 
     let lastDate = '';
     const days = t('day-names');
@@ -434,25 +434,14 @@ function createLogElement(log, categoryMap) {
     const startTimeStr = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const endTimeStr = log.endTime ? new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
-    const timeRangeSpan = createEl('span');
-    timeRangeSpan.className = 'log-time';
-
+    let timeRangeHtml;
     if (log.isManualStop) {
-        const startHidden = createEl('span');
-        startHidden.style.visibility = 'hidden';
-        startHidden.textContent = startTimeStr;
-        timeRangeSpan.appendChild(startHidden);
-        timeRangeSpan.appendChild(document.createTextNode(`-${endTimeStr}`));
+        timeRangeHtml = `<span class="log-time"><span style="visibility:hidden">${startTimeStr}</span>-${endTimeStr}</span>`;
     } else if (log.endTime) {
-        timeRangeSpan.textContent = `${startTimeStr}-${endTimeStr}`;
+        timeRangeHtml = `<span class="log-time">${startTimeStr}-${endTimeStr}</span>`;
     } else {
-        timeRangeSpan.textContent = `${startTimeStr}-`;
-        const startHidden = createEl('span');
-        startHidden.style.visibility = 'hidden';
-        startHidden.textContent = startTimeStr;
-        timeRangeSpan.appendChild(startHidden);
+        timeRangeHtml = `<span class="log-time">${startTimeStr}-<span style="visibility:hidden">${startTimeStr}</span></span>`;
     }
-    li.appendChild(timeRangeSpan);
 
     const durationMs = log.endTime ? log.endTime - log.startTime : 0;
     const durationText = (log.endTime && !log.isManualStop) ? formatLogDuration(durationMs) : '';
@@ -471,19 +460,12 @@ function createLogElement(log, categoryMap) {
         colorClass = `dot-${color}`;
     }
 
-    const nameSpan = createEl('span');
-    nameSpan.className = 'log-name';
-    const dotSpan = createEl('span');
-    dotSpan.className = `category-dot ${colorClass}`;
-    nameSpan.appendChild(dotSpan);
-    nameSpan.appendChild(document.createTextNode(displayName));
-    li.appendChild(nameSpan);
-
-    const durSpan = createEl('span');
-    durSpan.className = 'log-duration';
-    durSpan.textContent = durationText;
-    li.appendChild(durSpan);
-
+    // Tags are hidden in history as per requirements
+    li.innerHTML = `
+        ${timeRangeHtml}
+        <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(displayName)}</span>
+        <span class="log-duration">${durationText}</span>
+    `;
     return li;
 }
 
@@ -664,7 +646,7 @@ function updateAnimationSelect() {
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
         const currentLang = getLanguage();
-        animSelect.textContent = '';
+        animSelect.innerHTML = '';
 
         const noneOpt = createEl('option');
         noneOpt.value = 'none';
@@ -693,7 +675,7 @@ function updateFontSelect() {
         const currentFont = fontSelect.value;
         const currentLang = getLanguage();
 
-        fontSelect.textContent = '';
+        fontSelect.innerHTML = '';
         const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
 
         filteredFonts.forEach(f => {
@@ -781,22 +763,13 @@ async function updateUI() {
         nameElements.forEach(el => { if (el) el.textContent = displayCategoryName; });
 
         if (elements.pauseBtn) {
-            elements.pauseBtn.textContent = '';
-            const icon = createEl('span');
-            icon.className = 'material-symbols-outlined btn-icon';
-            const text = createEl('span');
-            text.className = 'btn-text';
             if (isPaused) {
-                icon.textContent = 'play_arrow';
-                text.textContent = t('resume');
+                elements.pauseBtn.innerHTML = `<span class="material-symbols-outlined btn-icon">play_arrow</span><span class="btn-text">${t('resume')}</span>`;
                 elements.pauseBtn.disabled = !activeTask.resumableCategory;
             } else {
-                icon.textContent = 'pause';
-                text.textContent = t('pause');
+                elements.pauseBtn.innerHTML = `<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">${t('pause')}</span>`;
                 elements.pauseBtn.disabled = false;
             }
-            elements.pauseBtn.appendChild(icon);
-            elements.pauseBtn.appendChild(text);
         }
         if (elements.endBtn) elements.endBtn.disabled = false;
 
@@ -831,15 +804,7 @@ async function updateUI() {
 
         if (elements.pauseBtn) {
             elements.pauseBtn.disabled = true;
-            elements.pauseBtn.textContent = '';
-            const icon = createEl('span');
-            icon.className = 'material-symbols-outlined btn-icon';
-            icon.textContent = 'pause';
-            const text = createEl('span');
-            text.className = 'btn-text';
-            text.textContent = t('pause');
-            elements.pauseBtn.appendChild(icon);
-            elements.pauseBtn.appendChild(text);
+            elements.pauseBtn.innerHTML = `<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">${t('pause')}</span>`;
         }
         if (elements.endBtn) elements.endBtn.disabled = true;
 
@@ -964,7 +929,7 @@ async function renderTagAggregationCalendar() {
 
 function renderCalendar(containerId, selectedDate, onSelect) {
     const container = getEl(containerId);
-    container.textContent = '';
+    container.innerHTML = '';
 
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth();
@@ -1053,7 +1018,7 @@ async function updateTagAggregationUI() {
     });
 
     const table = getEl(ID_TAG_AGGREGATION_TABLE);
-    table.textContent = '';
+    table.innerHTML = '';
 
     const sortedTags = Object.keys(tagAgg).sort((a, b) => {
         if (a === t('no-tags')) return 1;
@@ -1171,7 +1136,7 @@ async function renderCategoryEditor() {
     if (!list) return;
     let categories = await dbGetAll(STORE_CATEGORIES);
     categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    list.textContent = '';
+    list.innerHTML = '';
 
     const colors = [
         'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
@@ -1197,37 +1162,15 @@ async function renderCategoryEditor() {
         };
 
         if (isPageBreak) {
-            const row1 = createEl('div');
-            row1.className = 'cat-editor-row row-1';
-
-            const dragHandle = createEl('span');
-            dragHandle.className = 'material-symbols-outlined drag-handle';
-            dragHandle.style.cursor = 'grab';
-            dragHandle.title = t('tooltip-drag-handle');
-            dragHandle.textContent = 'drag_indicator';
-            row1.appendChild(dragHandle);
-
-            const label = createEl('span');
-            label.className = 'page-break-label';
-            const icon = createEl('span');
-            icon.className = 'material-symbols-outlined';
-            icon.textContent = 'insert_page_break';
-            label.appendChild(icon);
-            const text = createEl('span');
-            text.textContent = t('page-break');
-            label.appendChild(text);
-            row1.appendChild(label);
-
-            const delBtn = createEl('button');
-            delBtn.className = 'delete-cat-btn';
-            delBtn.title = t('tooltip-delete-category');
-            const delIcon = createEl('span');
-            delIcon.className = 'material-symbols-outlined';
-            delIcon.textContent = 'delete';
-            delBtn.appendChild(delIcon);
-            row1.appendChild(delBtn);
-
-            item.appendChild(row1);
+            item.innerHTML = `
+                <div class="cat-editor-row row-1">
+                    <span class="material-symbols-outlined drag-handle" style="cursor: grab;" title="${t('tooltip-drag-handle')}">drag_indicator</span>
+                    <span class="page-break-label"><span class="material-symbols-outlined">insert_page_break</span> <span>${t('page-break')}</span></span>
+                    <button class="delete-cat-btn" title="${t('tooltip-delete-category')}">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            `;
         } else {
             const animOptions = [
                 { value: 'none', label: t('anim-none'), tooltip: '' },
@@ -1241,80 +1184,32 @@ async function renderCategoryEditor() {
                 })
             ];
 
-            const row1 = createEl('div');
-            row1.className = 'cat-editor-row row-1';
-
-            const dragHandle = createEl('span');
-            dragHandle.className = 'material-symbols-outlined drag-handle';
-            dragHandle.style.cursor = 'grab';
-            dragHandle.title = t('tooltip-drag-handle');
-            dragHandle.textContent = 'drag_indicator';
-            row1.appendChild(dragHandle);
-
-            const input = createEl('input');
-            input.type = 'text';
-            input.className = 'category-edit-name';
-            input.value = cat.name;
-            row1.appendChild(input);
-
-            const delBtn = createEl('button');
-            delBtn.className = 'delete-cat-btn';
-            delBtn.title = t('tooltip-delete-category');
-            const delIcon = createEl('span');
-            delIcon.className = 'material-symbols-outlined';
-            delIcon.textContent = 'delete';
-            delBtn.appendChild(delIcon);
-            row1.appendChild(delBtn);
-
-            const row2 = createEl('div');
-            row2.className = 'cat-editor-row row-2';
-            const colorDropdown = createEl('div');
-            colorDropdown.className = 'custom-color-dropdown';
-            const colorTrigger = createEl('div');
-            colorTrigger.className = 'color-dropdown-trigger';
-            colorTrigger.style.backgroundColor = getColorCode(cat.color);
-            colorDropdown.appendChild(colorTrigger);
-            const colorMenu = createEl('div');
-            colorMenu.className = 'color-dropdown-menu hidden';
-            colors.forEach(color => {
-                const colorItem = createEl('div');
-                colorItem.className = 'color-dropdown-item' + (color === cat.color ? ' selected' : '');
-                colorItem.dataset.color = color;
-                colorItem.style.backgroundColor = getColorCode(color);
-                colorMenu.appendChild(colorItem);
-            });
-            colorDropdown.appendChild(colorMenu);
-            row2.appendChild(colorDropdown);
-
-            const select = createEl('select');
-            select.className = 'category-edit-animation';
-            animOptions.forEach(opt => {
-                const option = createEl('option');
-                option.value = opt.value;
-                option.textContent = opt.label;
-                option.title = opt.tooltip || '';
-                if (cat.animation === opt.value) option.selected = true;
-                select.appendChild(option);
-            });
-            row2.appendChild(select);
-
-            const row3 = createEl('div');
-            row3.className = 'cat-editor-row row-3';
-            const tagContainer = createEl('div');
-            tagContainer.className = 'tag-container';
-            const tagList = createEl('div');
-            tagList.className = 'tag-list';
-            tagContainer.appendChild(tagList);
-            const tagInput = createEl('input');
-            tagInput.type = 'text';
-            tagInput.className = 'tag-input';
-            tagInput.placeholder = t('placeholder-tags');
-            tagContainer.appendChild(tagInput);
-            row3.appendChild(tagContainer);
-
-            item.appendChild(row1);
-            item.appendChild(row2);
-            item.appendChild(row3);
+            item.innerHTML = `
+                <div class="cat-editor-row row-1">
+                    <span class="material-symbols-outlined drag-handle" style="cursor: grab;" title="${t('tooltip-drag-handle')}">drag_indicator</span>
+                    <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
+                    <button class="delete-cat-btn" title="${t('tooltip-delete-category')}">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+                <div class="cat-editor-row row-2">
+                    <div class="custom-color-dropdown">
+                        <div class="color-dropdown-trigger" style="background-color: ${getColorCode(cat.color)}"></div>
+                        <div class="color-dropdown-menu hidden">
+                            ${colors.map(color => `<div class="color-dropdown-item ${color === cat.color ? 'selected' : ''}" data-color="${color}" style="background-color: ${getColorCode(color)}"></div>`).join('')}
+                        </div>
+                    </div>
+                    <select class="category-edit-animation">
+                        ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.tooltip || '')}">${escapeHtml(opt.label)}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="cat-editor-row row-3">
+                    <div class="tag-container">
+                        <div class="tag-list"></div>
+                        <input type="text" class="tag-input" placeholder="${t('placeholder-tags')}">
+                    </div>
+                </div>
+            `;
             item.dataset.name = cat.name;
         }
 
@@ -1392,23 +1287,17 @@ async function renderCategoryEditor() {
             const tagInput = item.querySelector('.tag-input');
 
             const renderTags = () => {
-                tagListEl.textContent = '';
+                tagListEl.innerHTML = '';
                 const tagStr = cat.tags || '';
                 const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
                 tags.forEach((tag, idx) => {
                     const pill = createEl('span');
                     pill.className = 'tag-pill';
-                    const tagText = createEl('span');
-                    tagText.className = 'tag-text';
-                    tagText.textContent = tag;
-                    pill.appendChild(tagText);
-                    const removeIcon = createEl('span');
-                    removeIcon.className = 'tag-remove material-symbols-outlined';
-                    removeIcon.dataset.index = idx;
-                    removeIcon.textContent = 'close';
-                    pill.appendChild(removeIcon);
-
-                    removeIcon.onclick = async () => {
+                    pill.innerHTML = `
+                        <span class="tag-text">${escapeHtml(tag)}</span>
+                        <span class="tag-remove material-symbols-outlined" data-index="${idx}">close</span>
+                    `;
+                    pill.querySelector('.tag-remove').onclick = async () => {
                         tags.splice(idx, 1);
                         cat.tags = tags.join(',');
                         await dbPut(STORE_CATEGORIES, cat);
