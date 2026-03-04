@@ -93,7 +93,7 @@ function _isInExclusion(x, y, exclusionAreas) {
 }
 
 function performDraw(params) {
-    const { width, height, canvasWidth, exclusionAreas } = params;
+    const { width, height, canvasWidth, exclusionAreas, realExclusionAreas } = params;
     const config = animation.config || { mode: 'canvas' };
     const usePseudoSpace = !!config.usePseudoSpace;
 
@@ -175,12 +175,12 @@ function performDraw(params) {
 
                 let vCellX = cellX;
                 if (usePseudoSpace) {
-                    const info = _getPseudoInfo(exclusionAreas, canvasWidth);
+                    const info = _getPseudoInfo(realExclusionAreas, canvasWidth);
                     if (cellX < info.left) {
                         vCellX = cellX;
                     } else if (cellX < info.left + info.width) {
-                        // Map dots in the "exclusion gap" to the seam to avoid the blank space
-                        vCellX = info.left;
+                        // Skip rendering in the real exclusion gap to avoid smearing and UI overlap
+                        continue;
                     } else {
                         vCellX = cellX - info.width;
                     }

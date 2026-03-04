@@ -216,7 +216,8 @@ export class AnimationEngine {
             elapsedMs: elapsed,
             progress,
             step: Math.floor(progress * 240),
-            exclusionAreas: this._getVirtualExclusionAreas()
+            exclusionAreas: this._getVirtualExclusionAreas(),
+            realExclusionAreas: this.exclusionAreas
         };
 
         this.lastDrawRequestTime = performance.now();
