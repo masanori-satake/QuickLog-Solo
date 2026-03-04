@@ -172,14 +172,20 @@ function performDraw(params) {
             for (let c = 0; c < cols; c++) {
                 const cellX = c * CELL_SIZE;
                 const cellY = r * CELL_SIZE;
-                if (_isInExclusion(cellX, cellY, exclusionAreas)) continue;
 
                 let vCellX = cellX;
                 if (usePseudoSpace) {
-                   const info = _getPseudoInfo(exclusionAreas, canvasWidth);
-                   if (cellX < info.left) vCellX = cellX;
-                   else if (cellX < info.left + info.width) continue;
-                   else vCellX = cellX - info.width;
+                    const info = _getPseudoInfo(exclusionAreas, canvasWidth);
+                    if (cellX < info.left) {
+                        vCellX = cellX;
+                    } else if (cellX < info.left + info.width) {
+                        // Map dots in the "exclusion gap" to the seam to avoid the blank space
+                        vCellX = info.left;
+                    } else {
+                        vCellX = cellX - info.width;
+                    }
+                } else {
+                    if (_isInExclusion(cellX, cellY, exclusionAreas)) continue;
                 }
 
                 let totalBrightness = 0;

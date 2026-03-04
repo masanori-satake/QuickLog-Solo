@@ -14,14 +14,14 @@ export default class Cats extends AnimationBase {
             zh: "猫"
         },
         description: {
-            en: "Pixel art cats playing and resting on the UI text and buttons.",
-            ja: "ドット絵の猫たちがUIの文字やボタンの上で遊んだり、くつろいだりします。",
-            de: "Pixel-Art-Katzen, die auf den UI-Texten und Schaltflächen spielen und ruhen.",
-            es: "Gatos de arte de píxeles que juegan y descansan sobre el texto y los botones de la interfaz.",
-            fr: "Des chats en pixel art qui jouent et se reposent sur le texte et les boutons de l'interface.",
-            pt: "Gatos em pixel art brincando e descansando sobre o texto e os botões da interface.",
-            ko: "도트 아트 고양이들이 UI 텍스트와 버튼 위에서 놀거나 휴식을 취합니다.",
-            zh: "在UI文本和按钮上玩耍和休息的像素艺术猫。"
+            en: "Pixel art cats walking around and eating food.",
+            ja: "猫たちが歩き回ったり、餌を食べたりします。",
+            de: "Pixel-Art-Katzen, die herumspazieren und Futter fressen.",
+            es: "Gatos de arte de píxeles caminando y comiendo comida.",
+            fr: "Des chats en pixel art qui se promènent et mangent de la nourriture.",
+            pt: "Gatos de arte pixelada andando e comendo comida.",
+            ko: "도트 아트 고양이들이 돌아다니며 먹이를 먹습니다.",
+            zh: "像素艺术猫在到处走动并吃食物。"
         },
         author: "QuickLog-Solo"
     };
