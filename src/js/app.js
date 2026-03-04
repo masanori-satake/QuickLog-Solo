@@ -5,7 +5,7 @@ import {
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
 } from './db.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
-import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport } from './logic.js';
+import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPassed } from './utils.js';
 import { AnimationEngine } from './animations.js';
 import { animations } from './animation_registry.js';
@@ -999,23 +999,7 @@ async function updateTagAggregationUI() {
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
     const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime);
 
-    const tagAgg = {};
-    dayLogs.forEach(l => {
-        if (l.isManualStop) return;
-        const dur = l.endTime - l.startTime;
-        if (dur <= 0) return;
-
-        const tagStr = l.tags || '';
-        if (tagStr) {
-            const tags = tagStr.split(',').map(t => t.trim()).filter(Boolean);
-            tags.forEach(tag => {
-                tagAgg[tag] = (tagAgg[tag] || 0) + dur;
-            });
-        } else {
-            const noTagLabel = t('no-tags');
-            tagAgg[noTagLabel] = (tagAgg[noTagLabel] || 0) + dur;
-        }
-    });
+    const tagAgg = calculateTagAggregation(dayLogs, t('no-tags'));
 
     const table = getEl(ID_TAG_AGGREGATION_TABLE);
     table.innerHTML = '';

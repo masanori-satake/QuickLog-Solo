@@ -29,9 +29,37 @@ export function formatLogDuration(ms) {
 
     if (minutes === 0) {
         return `${hours}h`;
-    } else {
+    } else if (minutes < 10) {
         return `${hours}h ${minutes}m`;
+    } else {
+        return `${hours}h${minutes}m`;
     }
+}
+
+/**
+ * Calculates aggregated duration per tag from a list of logs.
+ * @param {Object[]} logs
+ * @param {string} noTagLabel
+ * @returns {Object} Tag-to-duration mapping
+ */
+export function calculateTagAggregation(logs, noTagLabel) {
+    const tagAgg = {};
+    logs.forEach(l => {
+        if (l.isManualStop) return;
+        const dur = l.endTime - l.startTime;
+        if (dur <= 0) return;
+
+        const tagStr = l.tags || '';
+        if (tagStr) {
+            const tags = tagStr.split(',').map(t => t.trim()).filter(Boolean);
+            tags.forEach(tag => {
+                tagAgg[tag] = (tagAgg[tag] || 0) + dur;
+            });
+        } else {
+            tagAgg[noTagLabel] = (tagAgg[noTagLabel] || 0) + dur;
+        }
+    });
+    return tagAgg;
 }
 
 /**
