@@ -92,13 +92,13 @@ export default class NightSky extends AnimationBase {
 
             if (p < 0.3) {
                 // Fly In
-                ufoX = this.w * (p / 0.3 * 0.7 - 0.2);
+                ufoX = this.w * (p / 0.3 * 0.95 - 0.2);
             } else if (p < 0.7) {
-                // Stop and Abduct
-                ufoX = this.w * 0.5;
+                // Stop and Abduct (Right half)
+                ufoX = this.w * 0.75;
             } else {
                 // Fly Out
-                ufoX = this.w * (0.5 + (p - 0.7) / 0.3 * 0.7);
+                ufoX = this.w * (0.75 + (p - 0.7) / 0.3 * 0.45);
             }
 
             // UFO Body

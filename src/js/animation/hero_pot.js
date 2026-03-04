@@ -26,7 +26,7 @@ export default class HeroPot extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false };
+    config = { mode: 'canvas', usePseudoSpace: true };
 
     setup(width, height) {
         this.width = width;
