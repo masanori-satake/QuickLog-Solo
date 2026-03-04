@@ -2,6 +2,7 @@ import { AnimationBase } from '../animation_base.js';
 
 export default class NewtonsCradle extends AnimationBase {
     static metadata = {
+        specVersion: '1.0',
         name: {
             en: "Newton's Cradle",
             ja: "ニュートンのゆりかご",

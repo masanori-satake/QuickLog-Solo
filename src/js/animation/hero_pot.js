@@ -2,6 +2,7 @@ import { AnimationBase } from '../animation_base.js';
 
 export default class HeroPot extends AnimationBase {
     static metadata = {
+        specVersion: '1.0',
         name: {
             en: "Hero Pot",
             ja: "勇者と壺",

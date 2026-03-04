@@ -2,6 +2,7 @@ import { AnimationBase } from '../animation_base.js';
 
 export default class ContourLines extends AnimationBase {
     static metadata = {
+        specVersion: '1.0',
         name: {
             en: "Contour Lines",
             ja: "等高線",

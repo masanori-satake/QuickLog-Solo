@@ -2,6 +2,7 @@ import { AnimationBase } from '../animation_base.js';
 
 export default class RightToLeft extends AnimationBase {
     static metadata = {
+        specVersion: '1.0',
         name: {
             en: "Right to Left",
             ja: "右から左へ",
