@@ -18,8 +18,9 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
     SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
-const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport } = await import('../src/js/logic.js');
+const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation } = await import('../src/js/logic.js');
 const { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../src/js/db.js');
+const { getAutoStopTimeIfPassed } = await import('../src/js/utils.js');
 
 describe('Logic Module', () => {
     describe('formatDuration', () => {
@@ -57,23 +58,77 @@ describe('Logic Module', () => {
             expect(formatLogDuration(59 * 60000 + 30000)).toBe('1h'); // Rounds up to 1h
         });
 
-        test('formats hours and minutes correctly (>= 60m) with rounding', () => {
+        test('formats hours and minutes correctly (>= 60m) with rounding and space rule', () => {
             expect(formatLogDuration(60 * 60000)).toBe('1h');
             expect(formatLogDuration(60 * 60000 + 29999)).toBe('1h');
-            expect(formatLogDuration(60 * 60000 + 30000)).toBe('1h 1m'); // 60.5m -> 61m -> 1h 1m
+            expect(formatLogDuration(60 * 60000 + 30000)).toBe('1h 1m'); // 60.5m -> 61m -> 1h 1m (space because < 10)
             expect(formatLogDuration(61 * 60000)).toBe('1h 1m');
             expect(formatLogDuration(69 * 60000)).toBe('1h 9m');
-            expect(formatLogDuration(70 * 60000)).toBe('1h 10m');
-            expect(formatLogDuration(75 * 60000)).toBe('1h 15m');
+            expect(formatLogDuration(70 * 60000)).toBe('1h10m'); // No space because >= 10
+            expect(formatLogDuration(75 * 60000)).toBe('1h15m');
             expect(formatLogDuration(120 * 60000)).toBe('2h');
             expect(formatLogDuration(125 * 60000)).toBe('2h 5m');
-            expect(formatLogDuration(130 * 60000)).toBe('2h 10m');
+            expect(formatLogDuration(130 * 60000)).toBe('2h10m');
         });
 
-        test('handles long durations', () => {
+        test('handles long durations with space rule', () => {
             expect(formatLogDuration(10 * 60 * 60000)).toBe('10h');
             expect(formatLogDuration(10 * 60 * 60000 + 5 * 60000)).toBe('10h 5m');
-            expect(formatLogDuration(10 * 60 * 60000 + 15 * 60000)).toBe('10h 15m');
+            expect(formatLogDuration(10 * 60 * 60000 + 15 * 60000)).toBe('10h15m');
+        });
+    });
+
+    describe('Tag Aggregation Logic', () => {
+        test('calculates aggregated duration per tag correctly', () => {
+            const logs = [
+                { startTime: 1000, endTime: 2000, category: 'Task 1', tags: 'A, B' },
+                { startTime: 3000, endTime: 5000, category: 'Task 2', tags: 'B, C' },
+                { startTime: 6000, endTime: 7000, category: 'Task 3', tags: '' }, // No tags
+                { startTime: 8000, endTime: 9000, category: SYSTEM_CATEGORY_IDLE, tags: '' }, // Idle should be ignored
+                { startTime: 9000, endTime: 10000, category: 'Task 4', isManualStop: true } // Manual stop should be ignored
+            ];
+            const result = calculateTagAggregation(logs, 'No Tags');
+            expect(result['A']).toBe(1000);
+            expect(result['B']).toBe(1000 + 2000);
+            expect(result['C']).toBe(2000);
+            expect(result['No Tags']).toBe(1000);
+            expect(result[SYSTEM_CATEGORY_IDLE]).toBeUndefined();
+        });
+
+        test('deduplicates tags in a single log entry', () => {
+            const logs = [
+                { startTime: 0, endTime: 1000, category: 'Task', tags: 'A, A, B' }
+            ];
+            const result = calculateTagAggregation(logs, 'None');
+            expect(result['A']).toBe(1000); // Not 2000
+            expect(result['B']).toBe(1000);
+        });
+
+        test('handles overlapping tags with different spacing', () => {
+            const logs = [
+                { startTime: 0, endTime: 1000, tags: 'Tag1,Tag2' },
+                { startTime: 1000, endTime: 2000, tags: ' Tag1 , Tag3 ' }
+            ];
+            const result = calculateTagAggregation(logs, 'None');
+            expect(result['Tag1']).toBe(2000);
+            expect(result['Tag2']).toBe(1000);
+            expect(result['Tag3']).toBe(1000);
+        });
+    });
+
+    describe('Auto-stop Logic', () => {
+        test('triggers auto-stop if end of day has passed', () => {
+            const startTime = new Date('2026-03-03T20:00:00').getTime();
+            const nextDay = new Date('2026-03-04T01:00:00').getTime();
+            const stopTime = getAutoStopTimeIfPassed(startTime, nextDay);
+            expect(stopTime).toBe(new Date('2026-03-03T23:59:59').getTime());
+        });
+
+        test('does not trigger auto-stop if still on the same day', () => {
+            const startTime = new Date('2026-03-03T20:00:00').getTime();
+            const sameDay = new Date('2026-03-03T23:00:00').getTime();
+            const stopTime = getAutoStopTimeIfPassed(startTime, sameDay);
+            expect(stopTime).toBeNull();
         });
     });
 
