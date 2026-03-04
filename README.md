@@ -1,4 +1,4 @@
-[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.4.2-blue) ![License](https://img.shields.io/badge/license-ISC-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
+[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.4.2-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
 
 # QuickLog-Solo
 
@@ -39,6 +39,15 @@
 ## プライバシーとセキュリティ
 - **Local Only:** 本アプリは、外部への通信を一切行いません。
 - **透明性:** 開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。
+
+## 免責事項 (Disclaimer)
+本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトです。
+利用に際して生じたいかなる損害についても、開発者は一切の責任を負いません。
+MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。
+
+This software is a personal open-source project.
+The developer shall not be liable for any damages arising from the use of this software.
+It is provided "AS IS" without warranty of any kind, as per the MIT License.
 
 ## カスタマイズ
 - **テーマ:** ライトモード / ダークモードの切り替えが可能です。
