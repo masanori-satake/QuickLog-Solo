@@ -244,30 +244,30 @@ async function setupInitialData(languageSetting) {
     }
 
     const initialCategories = [
-        { name: t('init-cat-dev'), color: 'primary', animation: 'matrix_code', tags: '' },
-        { name: t('init-cat-meeting'), color: 'secondary', animation: 'migrating_birds', tags: '' },
-        { name: t('init-cat-research'), color: 'tertiary', animation: 'contour_lines', tags: '' },
-        { name: t('init-cat-admin'), color: 'neutral', animation: 'matrix_code', tags: '' },
+        { name: t('init-cat-dev'), color: 'primary', animation: 'none', tags: '' },
+        { name: t('init-cat-meeting'), color: 'secondary', animation: 'default', tags: '' },
+        { name: t('init-cat-research'), color: 'tertiary', animation: 'matrix_code', tags: '' },
+        { name: t('init-cat-admin'), color: 'neutral', animation: 'migrating_birds', tags: '' },
         { name: t('init-cat-focus'), color: 'error', animation: 'ripple', tags: '' },
         { name: t('init-cat-skill'), color: 'tertiary', animation: 'dot_typing', tags: '' },
         { name: t('init-cat-idea'), color: 'secondary', animation: 'spectrum', tags: '' },
         { name: t('init-cat-break'), color: 'outline', animation: 'coffee_drip', tags: '' },
         { name: t('init-cat-client'), color: 'primary', animation: 'car_drive', tags: '' },
-        { name: t('init-cat-doc'), color: 'secondary', animation: 'dot_typing', tags: '' },
+        { name: t('init-cat-doc'), color: 'secondary', animation: 'left_to_right', tags: '' },
         { name: t('init-cat-design'), color: 'tertiary', animation: 'contour_lines', tags: '' },
         { name: t('init-cat-bug'), color: 'error', animation: 'tetris_building', tags: '' },
         { name: t('init-cat-release'), color: 'teal', animation: 'night_sky', tags: '' },
-        { name: t('init-cat-tool'), color: 'green', animation: 'matrix_code', tags: '' },
+        { name: t('init-cat-tool'), color: 'green', animation: 'open_reel', tags: '' },
         { name: t('init-cat-schedule'), color: 'yellow', animation: 'sand_clock', tags: '' },
-        { name: t('init-cat-chat'), color: 'orange', animation: 'matrix_code', tags: '' },
-        { name: t('init-cat-wiki'), color: 'pink', animation: 'dot_typing', tags: '' },
+        { name: t('init-cat-chat'), color: 'orange', animation: 'clock', tags: '' },
+        { name: t('init-cat-wiki'), color: 'pink', animation: 'cats', tags: '' },
         { name: t('init-cat-qa'), color: 'indigo', animation: 'hero_pot', tags: '' },
-        { name: t('init-cat-sales'), color: 'brown', animation: 'migrating_birds', tags: '' },
-        { name: t('init-cat-arch'), color: 'cyan', animation: 'contour_lines', tags: '' },
-        { name: t('init-cat-sec'), color: 'error', animation: 'spectrum', tags: '' },
-        { name: t('init-cat-data'), color: 'teal', animation: 'cats', tags: '' },
-        { name: t('init-cat-wfh'), color: 'neutral', animation: 'left_to_right', tags: '' },
-        { name: t('init-cat-move'), color: 'outline', animation: 'right_to_left', tags: '' }
+        { name: t('init-cat-sales'), color: 'brown', animation: 'right_to_left', tags: '' },
+        { name: t('init-cat-arch'), color: 'cyan', animation: 'smoke', tags: '' },
+        { name: t('init-cat-sec'), color: 'error', animation: 'heart_beat', tags: '' },
+        { name: t('init-cat-data'), color: 'teal', animation: 'newtons_cradle', tags: '' },
+        { name: t('init-cat-wfh'), color: 'neutral', animation: 'matrix_code', tags: '' },
+        { name: t('init-cat-move'), color: 'outline', animation: 'migrating_birds', tags: '' }
     ];
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
