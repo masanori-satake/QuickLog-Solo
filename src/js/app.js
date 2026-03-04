@@ -1390,9 +1390,21 @@ function setupEventListeners() {
         });
     });
 
-    getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', (e) => {
+    getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', async (e) => {
         const text = getEl(ID_REPORT_PREVIEW).textContent;
-        navigator.clipboard.writeText(text);
+        if (reportSettings.format === 'html') {
+            const htmlType = 'text/html';
+            const plainType = 'text/plain';
+            const blobHtml = new Blob([text], { type: htmlType });
+            const blobPlain = new Blob([text], { type: plainType });
+            const data = [new ClipboardItem({
+                [htmlType]: blobHtml,
+                [plainType]: blobPlain,
+            })];
+            await navigator.clipboard.write(data);
+        } else {
+            await navigator.clipboard.writeText(text);
+        }
 
         const btn = e.currentTarget;
         const span = btn.querySelector('[data-i18n]');

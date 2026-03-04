@@ -1,5 +1,5 @@
 import { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
-import { SYSTEM_CATEGORY_IDLE } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, escapeHtml } from './utils.js';
 
 export function formatDuration(ms) {
     const hours = Math.floor(ms / 3600000);
@@ -80,6 +80,8 @@ export function generateReport(logs, options) {
     switch (format) {
         case 'csv':
             return formatAsCsv(items);
+        case 'html':
+            return formatAsHtml(items, options);
         case 'markdown':
             return formatAsList(items, options, '-');
         case 'wiki':
@@ -180,6 +182,33 @@ function formatAsCsv(items) {
         csv += `${item.start},${item.end},"${item.category.replace(/"/g, '""')}",${item.durText}\n`;
     });
     return csv;
+}
+
+function formatAsHtml(items, options) {
+    const headerTime = options.headerTime || 'Time';
+    const headerCategory = options.headerCategory || 'Category';
+    const { endTime, duration } = options;
+
+    let html = '<table>\n  <thead>\n    <tr>';
+    html += `<th>${headerTime}</th><th>${headerCategory}</th>`;
+    html += '</tr>\n  </thead>\n  <tbody>\n';
+
+    items.forEach(item => {
+        let timePart = item.start;
+        if (endTime === 'show') timePart += ` - ${item.end}`;
+        if (duration === 'right' && item.durText) timePart += ` (${item.durText})`;
+
+        html += '    <tr>';
+        html += `<td>${timePart}`;
+        if (duration === 'bottom' && item.durText) {
+            html += `<br>(${item.durText})`;
+        }
+        html += `</td><td>${escapeHtml(item.category)}</td>`;
+        html += '</tr>\n';
+    });
+
+    html += '  </tbody>\n</table>';
+    return html;
 }
 
 function formatAsList(items, options, bullet) {
