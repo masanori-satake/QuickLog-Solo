@@ -153,6 +153,10 @@ export const messages = {
         'report-duration-title': '所要時間',
         'report-header-time': '時刻',
         'report-header-category': 'カテゴリ',
+        'report-adjust-title': '時刻アジャスト',
+        'report-adjust-none': 'しない',
+        'report-adjust-5m': '5分間隔',
+        'report-adjust-10m': '10分間隔',
 
         // Initial Categories
         'init-cat-dev': '💻 開発・プログラミング',
@@ -320,6 +324,10 @@ export const messages = {
         'report-duration-title': 'Duration',
         'report-header-time': 'Time',
         'report-header-category': 'Category',
+        'report-adjust-title': 'Time Adjustment',
+        'report-adjust-none': 'None',
+        'report-adjust-5m': '5 min',
+        'report-adjust-10m': '10 min',
 
         // Initial Categories
         'init-cat-dev': '💻 Development/Coding',
@@ -466,6 +474,10 @@ export const messages = {
         'report-duration-title': 'Dauer',
         'report-header-time': 'Zeit',
         'report-header-category': 'Kategorie',
+        'report-adjust-title': 'Zeitanpassung',
+        'report-adjust-none': 'Keine',
+        'report-adjust-5m': '5 Min.',
+        'report-adjust-10m': '10 Min.',
 
         'init-cat-dev': '💻 Entwicklung/Programmierung',
         'init-cat-meeting': '🤝 Team-Meeting/Jour fixe',
@@ -611,6 +623,10 @@ export const messages = {
         'report-duration-title': 'Duración',
         'report-header-time': 'Hora',
         'report-header-category': 'Categoría',
+        'report-adjust-title': 'Ajuste de tiempo',
+        'report-adjust-none': 'Ninguno',
+        'report-adjust-5m': '5 min',
+        'report-adjust-10m': '10 min',
 
         'init-cat-dev': '💻 Desarrollo/Programación',
         'init-cat-meeting': '🤝 Reunión de equipo',
@@ -756,6 +772,10 @@ export const messages = {
         'report-duration-title': 'Durée',
         'report-header-time': 'Heure',
         'report-header-category': 'Catégorie',
+        'report-adjust-title': 'Ajustement de l\'heure',
+        'report-adjust-none': 'Aucun',
+        'report-adjust-5m': '5 min',
+        'report-adjust-10m': '10 min',
 
         'init-cat-dev': '💻 Développement/Code',
         'init-cat-meeting': '🤝 Réunion d\'équipe',
@@ -901,6 +921,10 @@ export const messages = {
         'report-duration-title': 'Duração',
         'report-header-time': 'Hora',
         'report-header-category': 'Categoria',
+        'report-adjust-title': 'Ajuste de tempo',
+        'report-adjust-none': 'Nenhum',
+        'report-adjust-5m': '5 min',
+        'report-adjust-10m': '10 min',
 
         'init-cat-dev': '💻 Desenvolvimento/Código',
         'init-cat-meeting': '🤝 Reunião de equipe',
@@ -1046,6 +1070,10 @@ export const messages = {
         'report-duration-title': '소요 시간',
         'report-header-time': '시간',
         'report-header-category': '카테고리',
+        'report-adjust-title': '시간 조정',
+        'report-adjust-none': '안 함',
+        'report-adjust-5m': '5분 간격',
+        'report-adjust-10m': '10분 간격',
 
         'init-cat-dev': '💻 개발/프로그래밍',
         'init-cat-meeting': '🤝 팀 회의/정기 미팅',
@@ -1191,6 +1219,10 @@ export const messages = {
         'report-duration-title': '所要时间',
         'report-header-time': '时间',
         'report-header-category': '类别',
+        'report-adjust-title': '时间调整',
+        'report-adjust-none': '无',
+        'report-adjust-5m': '5分钟间隔',
+        'report-adjust-10m': '10分钟间隔',
 
         'init-cat-dev': '💻 开发与编程',
         'init-cat-meeting': '🤝 团队会议',

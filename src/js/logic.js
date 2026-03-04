@@ -93,23 +93,84 @@ export function generateReport(logs, options) {
     }
 }
 
+/**
+ * Prepares log items for report generation, applying emoji removal and time adjustment.
+ * @param {Object[]} logs
+ * @param {Object} options
+ * @returns {Object[]}
+ */
 function prepareReportItems(logs, options) {
-    const { emoji } = options;
-    return logs.filter(l => !l.isManualStop).map(l => {
-        let category = l.category;
-        if (l.category === '__IDLE__') {
-            category = options.idleText || '(待機)';
+    const { emoji, adjust } = options;
+    const filteredLogs = logs.filter(log => !log.isManualStop);
+    if (filteredLogs.length === 0) return [];
+
+    const adjustMinutes = parseInt(adjust);
+    const adjustIntervalMs = (adjustMinutes && !isNaN(adjustMinutes)) ? adjustMinutes * 60 * 1000 : 0;
+
+    let displayLogs = filteredLogs.map(log => ({
+        startTime: log.startTime,
+        endTime: log.endTime,
+        category: log.category === '__IDLE__' ? (options.idleText || '(待機)') : log.category
+    }));
+
+    if (adjustIntervalMs > 0) {
+        const allTimestamps = [];
+        displayLogs.forEach(log => {
+            allTimestamps.push(log.startTime);
+            if (log.endTime) allTimestamps.push(log.endTime);
+        });
+        const uniqueTimes = [...new Set(allTimestamps)].sort((a, b) => a - b);
+        const adjustedTimesMap = new Map();
+
+        const timestampCount = uniqueTimes.length;
+        if (timestampCount > 0) {
+            // The first timestamp of the day and the last timestamp of the day are kept fixed
+            // as per requirements to preserve workday boundaries.
+            adjustedTimesMap.set(uniqueTimes[0], uniqueTimes[0]);
+            if (timestampCount > 1) {
+                adjustedTimesMap.set(uniqueTimes[timestampCount - 1], uniqueTimes[timestampCount - 1]);
+            }
+
+            // Adjust intermediate points (rounding to the nearest interval).
+            // Logic: A rounded time is accepted only if it remains chronological,
+            // i.e., not before the previous (already adjusted) point and not after
+            // the next (original) point. This ensures no overlaps or order swaps.
+            // Loop runs from 1 to timestampCount - 2, so i+1 is always valid (< timestampCount).
+            for (let i = 1; i < timestampCount - 1; i++) {
+                const originalTime = uniqueTimes[i];
+                const roundedTime = Math.round(originalTime / adjustIntervalMs) * adjustIntervalMs;
+
+                const previousAdjustedTime = adjustedTimesMap.get(uniqueTimes[i - 1]);
+                const nextOriginalTime = uniqueTimes[i + 1];
+
+                if (roundedTime >= previousAdjustedTime && roundedTime <= nextOriginalTime) {
+                    adjustedTimesMap.set(originalTime, roundedTime);
+                } else {
+                    // Fallback to original time if rounding causes a chronological contradiction.
+                    adjustedTimesMap.set(originalTime, originalTime);
+                }
+            }
+
+            // Apply adjusted timestamps to the display log copies.
+            displayLogs.forEach(log => {
+                log.startTime = adjustedTimesMap.get(log.startTime);
+                if (log.endTime) log.endTime = adjustedTimesMap.get(log.endTime);
+            });
         }
+    }
+
+    return displayLogs.map(log => {
+        let category = log.category;
         if (emoji === 'remove') {
             category = stripEmojis(category);
         }
 
-        const start = new Date(l.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const end = l.endTime ? new Date(l.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        const durMs = l.endTime ? l.endTime - l.startTime : 0;
-        const durText = l.endTime ? formatLogDuration(durMs) : '';
+        const startText = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const endText = log.endTime ? new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const durationMs = log.endTime ? log.endTime - log.startTime : 0;
+        const durationText = log.endTime ? formatLogDuration(durationMs) : '';
 
-        return { start, end, category, durText };
+        return { start: startText, end: endText, category, durText: durationText };
     });
 }
 
