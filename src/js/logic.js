@@ -45,13 +45,13 @@ export function formatLogDuration(ms) {
 export function calculateTagAggregation(logs, noTagLabel) {
     const tagAgg = {};
     logs.forEach(l => {
-        if (l.isManualStop) return;
+        if (l.isManualStop || l.category === SYSTEM_CATEGORY_IDLE) return;
         const dur = l.endTime - l.startTime;
         if (dur <= 0) return;
 
         const tagStr = l.tags || '';
         if (tagStr) {
-            const tags = tagStr.split(',').map(t => t.trim()).filter(Boolean);
+            const tags = [...new Set(tagStr.split(',').map(t => t.trim()).filter(Boolean))];
             tags.forEach(tag => {
                 tagAgg[tag] = (tagAgg[tag] || 0) + dur;
             });
