@@ -9,8 +9,9 @@ test.describe('Animation Rendering Verification', () => {
         await page.selectOption('#animation-select', 'digital_rain');
         await page.click('.close-btn');
 
-        // Start a task to trigger animation
-        await page.click('.category-btn:first-child');
+        // Start a task to trigger animation.
+        // Use the second category because the first one is set to 'none' by default.
+        await page.locator('.category-btn').nth(1).click();
 
         // Wait for worker to initialize and draw
         await page.waitForTimeout(2000);
