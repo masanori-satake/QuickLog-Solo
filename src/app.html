@@ -19,7 +19,7 @@
         <header>
             <div id="header-btns">
                 <button id="copy-report-btn" data-i18n-title="tooltip-copy-report"><span class="material-symbols-outlined">content_paste</span></button>
-                <button id="copy-aggregation-btn" data-i18n-title="tooltip-copy-aggregation"><span class="material-symbols-outlined">assessment</span></button>
+                <button id="copy-aggregation-btn" data-i18n-title="tooltip-copy-aggregation"><span class="material-symbols-outlined">functions</span></button>
                 <button id="settings-toggle" data-i18n-title="tooltip-settings"><span class="material-symbols-outlined">settings</span></button>
             </div>
         </header>
@@ -76,6 +76,34 @@
         </main>
 
         <!-- Report Modal -->
+        <!-- Tag Aggregation Modal -->
+        <div id="tag-aggregation-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="tag-aggregation-close-btn">&times;</span>
+                <h2 data-i18n="tag-aggregation-title">タグ集計</h2>
+
+                <div class="report-date-selector">
+                    <button id="tag-aggregation-date-prev" class="icon-btn"><span class="material-symbols-outlined">chevron_left</span></button>
+                    <div id="tag-aggregation-date-display-box" class="date-display-box">
+                        <div id="tag-aggregation-date-display" tabindex="0" data-i18n-title="tooltip-calendar">
+                            <span id="tag-aggregation-date-text">-</span>
+                            <span class="material-symbols-outlined">calendar_month</span>
+                        </div>
+                        <div id="tag-aggregation-calendar-container" class="calendar-popup hidden">
+                            <!-- JS renders calendar here -->
+                        </div>
+                    </div>
+                    <button id="tag-aggregation-date-next" class="icon-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+                </div>
+
+                <div id="tag-aggregation-container">
+                    <table id="tag-aggregation-table">
+                        <!-- JS renders aggregation table here -->
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="report-modal" class="modal hidden">
             <div class="modal-content">
                 <span class="report-close-btn">&times;</span>
