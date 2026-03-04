@@ -97,6 +97,9 @@ function performDraw(params) {
     const config = animation.config || { mode: 'canvas' };
     const usePseudoSpace = !!config.usePseudoSpace;
 
+    // Use raw exclusion areas for physical masking to prevent drawing over UI
+    const physicalMask = realExclusionAreas || exclusionAreas;
+
     let dots = [];
 
     if (config.mode === 'matrix') {
@@ -110,11 +113,13 @@ function performDraw(params) {
             for (let c = 0; c < cols; c++) {
                 const cellX = c * CELL_SIZE;
                 const cellY = r * CELL_SIZE;
-                if (_isInExclusion(cellX, cellY, exclusionAreas)) continue;
+
+                // 1. Physical Masking: Prevent drawing over UI text/buttons
+                if (_isInExclusion(cellX, cellY, physicalMask)) continue;
 
                 let virtualC = c;
                 if (usePseudoSpace) {
-                    const info = _getPseudoInfo(exclusionAreas, canvasWidth);
+                    const info = _getPseudoInfo(physicalMask, canvasWidth);
                     const realX = cellX;
                     if (realX < info.left) virtualC = Math.floor(realX / CELL_SIZE);
                     else if (realX < info.left + info.width) continue;
@@ -139,12 +144,13 @@ function performDraw(params) {
         if (!sprites || !Array.isArray(sprites)) return [];
 
         sprites.forEach(sprite => {
-            const realX = _mapToRealX(sprite.x, usePseudoSpace, exclusionAreas, canvasWidth);
+            const realX = _mapToRealX(sprite.x, usePseudoSpace, physicalMask, canvasWidth);
             const realY = sprite.y;
             const cellX = Math.floor(realX / CELL_SIZE) * CELL_SIZE;
             const cellY = Math.floor(realY / CELL_SIZE) * CELL_SIZE;
 
-            if (_isInExclusion(cellX, cellY, exclusionAreas)) return;
+            // 1. Physical Masking: Prevent drawing over UI text/buttons
+            if (_isInExclusion(cellX, cellY, physicalMask)) return;
 
             let dotSize = 0;
             if (sprite.size === 3) dotSize = DOT_SIZE_LARGE;
@@ -173,19 +179,20 @@ function performDraw(params) {
                 const cellX = c * CELL_SIZE;
                 const cellY = r * CELL_SIZE;
 
+                // 1. Physical Masking: Prevent drawing over UI text/buttons
+                if (_isInExclusion(cellX, cellY, physicalMask)) continue;
+
                 let vCellX = cellX;
                 if (usePseudoSpace) {
-                    const info = _getPseudoInfo(realExclusionAreas, canvasWidth);
+                    const info = _getPseudoInfo(physicalMask, canvasWidth);
                     if (cellX < info.left) {
                         vCellX = cellX;
                     } else if (cellX < info.left + info.width) {
-                        // Skip rendering in the real exclusion gap to avoid smearing and UI overlap
+                        // Gap handling is already covered by physical masking above
                         continue;
                     } else {
                         vCellX = cellX - info.width;
                     }
-                } else {
-                    if (_isInExclusion(cellX, cellY, exclusionAreas)) continue;
                 }
 
                 let totalBrightness = 0;
