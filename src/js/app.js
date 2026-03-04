@@ -1,12 +1,12 @@
 import {
-    initDB, getCurrentAppState, dbGet, dbGetAll, dbPut, dbAdd, dbDelete, dbClear,
+    initDB, getCurrentAppState, dbGet, dbGetByName, dbGetAll, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
 } from './db.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
-import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, getAutoStopTimeIfPassed } from './logic.js';
-import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
+import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport } from './logic.js';
+import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPassed } from './utils.js';
 import { AnimationEngine } from './animations.js';
 import { animations } from './animation_registry.js';
 
@@ -101,6 +101,7 @@ let reportSettings = {
     endTime: 'none',
     duration: 'none'
 };
+let autoStopEnabledCache = true;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -122,7 +123,7 @@ const FONTS = [
 
 async function startTask(categoryName, resumableCategory = null) {
     if (syncTimeout) clearTimeout(syncTimeout);
-    const cat = await dbGet(STORE_CATEGORIES, categoryName);
+    const cat = await dbGetByName(STORE_CATEGORIES, categoryName);
     const color = cat ? cat.color : null;
     const tags = cat ? (cat.tags || '') : '';
     activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
@@ -167,9 +168,8 @@ async function updateTimer() {
 
     const now = Date.now();
 
-    // Check Auto-stop
-    const autoStopSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP);
-    if (autoStopSetting ? autoStopSetting.value : true) {
+    // Check Auto-stop using cache
+    if (autoStopEnabledCache) {
         const stopTime = getAutoStopTimeIfPassed(activeTask.startTime, now);
         if (stopTime) {
             console.log('QuickLog-Solo: Auto-stop triggered');
@@ -283,7 +283,7 @@ async function renderCategories() {
     const pages = [[]];
     let currentPageIdx = 0;
     allCategories.forEach(cat => {
-        if (cat.name === SYSTEM_CATEGORY_PAGE_BREAK) {
+        if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
             if (pages[currentPageIdx].length > 0) {
                 pages.push([]);
                 currentPageIdx++;
@@ -525,6 +525,7 @@ async function syncState() {
     if (!isAppInitialized) return;
     const state = await getCurrentAppState();
     activeTask = state.activeTask;
+    autoStopEnabledCache = state.autoStop;
 
     const lang = state.language || 'auto';
     setLanguage(lang);
@@ -539,8 +540,9 @@ async function syncState() {
     if (autoStopToggle) {
         autoStopToggle.checked = state.autoStop;
         autoStopToggle.onchange = async (e) => {
-            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: e.target.checked });
-            // Ensure tooltip is updated if needed, though here it's static
+            const enabled = e.target.checked;
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: enabled });
+            autoStopEnabledCache = enabled;
             broadcastSync();
         };
     }
@@ -562,7 +564,7 @@ async function syncState() {
     let color = 'primary';
     let categoryAnimation = 'default';
     if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
-        const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
+        const cat = await dbGetByName(STORE_CATEGORIES, activeTask.category);
         color = cat ? cat.color : (activeTask.color || 'primary');
         categoryAnimation = cat ? (cat.animation || 'default') : 'default';
     }
@@ -679,7 +681,7 @@ async function updateUI() {
         if (isPaused) {
             color = 'neutral';
         } else {
-            const cat = await dbGet(STORE_CATEGORIES, activeTask.category);
+            const cat = await dbGetByName(STORE_CATEGORIES, activeTask.category);
             color = cat ? cat.color : (activeTask.color || 'primary');
             categoryAnimation = cat ? cat.animation : 'default';
         }
@@ -1006,10 +1008,11 @@ async function renderCategoryEditor() {
 
     categories.forEach((cat, idx) => {
         const item = createEl('div');
-        const isPageBreak = cat.name === SYSTEM_CATEGORY_PAGE_BREAK;
+        const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
         item.className = 'category-editor-item' + (isPageBreak ? ' page-break-item' : '');
         item.draggable = true;
         item.dataset.name = cat.name;
+        item.dataset.id = cat.id;
         item.dataset.index = idx;
 
         const lang = getEl(ID_LANGUAGE_SELECT)?.value === 'auto' ? detectBrowserLanguage() : getEl(ID_LANGUAGE_SELECT)?.value || 'en';
@@ -1030,7 +1033,6 @@ async function renderCategoryEditor() {
                     </button>
                 </div>
             `;
-            item.dataset.name = cat.name;
         } else {
             const animOptions = [
                 { value: 'none', label: t('anim-none'), description: '' },
@@ -1086,14 +1088,13 @@ async function renderCategoryEditor() {
                     return;
                 }
                 const oldName = cat.name;
-                const existing = await dbGet(STORE_CATEGORIES, newName);
+                const existing = await dbGetByName(STORE_CATEGORIES, newName);
                 if (existing) {
                     alert(t('alert-duplicate-category'));
                     input.value = oldName;
                     return;
                 }
                 const updatedCat = { ...cat, name: newName };
-                await dbDelete(STORE_CATEGORIES, oldName);
                 await dbPut(STORE_CATEGORIES, updatedCat);
 
                 const allLogs = await dbGetAll(STORE_LOGS);
@@ -1195,10 +1196,7 @@ async function renderCategoryEditor() {
         item.querySelector('.delete-cat-btn').onclick = async () => {
             const confirmMsg = isPageBreak ? t('confirm-delete-page-break') : t('confirm-delete-category', { name: cat.name });
             if (await showConfirm(confirmMsg)) {
-                // To support multiple page breaks with the same "name" (SYSTEM_CATEGORY_PAGE_BREAK),
-                // we'll need to filter and find by other means or ensure name is unique.
-                // Since STORE_CATEGORIES uses name as keyPath, we MUST make it unique if we want multiples.
-                await dbDelete(STORE_CATEGORIES, cat.name);
+                await dbDelete(STORE_CATEGORIES, cat.id);
                 updateUI();
                 renderCategoryEditor();
                 broadcastSync();
@@ -1206,7 +1204,7 @@ async function renderCategoryEditor() {
         };
 
         item.ondragstart = (e) => {
-            e.dataTransfer.setData('text/plain', cat.name);
+            e.dataTransfer.setData('text/plain', cat.id);
             item.classList.add('dragging');
         };
         item.ondragend = () => item.classList.remove('dragging');
@@ -1229,13 +1227,12 @@ async function renderCategoryEditor() {
         e.preventDefault();
         const items = [...list.querySelectorAll('.category-editor-item')];
         const currentCategories = await dbGetAll(STORE_CATEGORIES);
-        // Map current categories by name for easy lookup
-        const catMap = new Map(currentCategories.map(c => [c.name, c]));
+        // Map current categories by ID for easy lookup
+        const catMap = new Map(currentCategories.map(c => [c.id.toString(), c]));
 
-        await dbClear(STORE_CATEGORIES);
         for (let i = 0; i < items.length; i++) {
-            const name = items[i].dataset.name;
-            const cat = catMap.get(name);
+            const id = items[i].dataset.id;
+            const cat = catMap.get(id);
             if (cat) {
                 cat.order = i;
                 await dbPut(STORE_CATEGORIES, cat);
@@ -1504,42 +1501,26 @@ function setupEventListeners() {
             const lines = text.split('\n').filter(line => line.trim());
             const importedCategories = lines.map(line => JSON.parse(line));
 
+            const validatedItems = importedCategories.filter(item => {
+                if (item.type === 'page-break') return true;
+                if (!item.name || !isValidCategoryName(item.name)) return false;
+                if (item.color && !isValidColor(item.color)) {
+                    console.warn(`QuickLog-Solo: Invalid color '${item.color}' for category '${item.name}' during import.`);
+                    item.color = 'primary'; // Fallback
+                }
+                return true;
+            });
+
             const importMode = document.querySelector('input[name="import-mode"]:checked')?.value || 'append';
 
             if (importMode === 'overwrite') {
-                if (await showConfirm(t('confirm-import-overwrite'))) {
-                    await dbClear(STORE_CATEGORIES);
-                } else {
+                if (!(await showConfirm(t('confirm-import-overwrite')))) {
                     categoryFileInput.value = '';
                     return;
                 }
             }
 
-            const currentCategories = await dbGetAll(STORE_CATEGORIES);
-            let maxOrder = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
-
-            for (const item of importedCategories) {
-                if (item.type === 'page-break') {
-                    await dbAdd(STORE_CATEGORIES, {
-                        name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                        order: ++maxOrder
-                    });
-                } else if (item.name && isValidCategoryName(item.name)) {
-                    // Check for duplicates in append mode
-                    if (importMode === 'append') {
-                        const existing = currentCategories.find(c => c.name === item.name);
-                        if (existing) continue;
-                    }
-
-                    await dbAdd(STORE_CATEGORIES, {
-                        name: item.name,
-                        color: item.color || 'primary',
-                        order: ++maxOrder,
-                        tags: item.tags || '',
-                        animation: item.animation || 'default'
-                    });
-                }
-            }
+            await dbImportCategories(validatedItems, importMode);
 
             categoryFileInput.value = '';
             showToast(t('toast-cat-imported'));

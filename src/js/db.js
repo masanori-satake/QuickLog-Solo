@@ -1,9 +1,8 @@
-import { SYSTEM_CATEGORY_IDLE } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPassed } from './utils.js';
 import { t, setLanguage } from './i18n.js';
-import { getAutoStopTimeIfPassed } from './logic.js';
 
 export let DB_NAME = 'QuickLogSoloDB';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export function setDatabaseName(name) {
     DB_NAME = name;
@@ -29,16 +28,24 @@ let db;
 export function openDatabase() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = (event) => {
+        request.onupgradeneeded = async (event) => {
             const db = event.target.result;
-            const _oldVersion = event.oldVersion;
+            const oldVersion = event.oldVersion;
 
             if (!db.objectStoreNames.contains(STORE_LOGS)) {
                 db.createObjectStore(STORE_LOGS, { keyPath: 'id', autoIncrement: true });
             }
-            if (!db.objectStoreNames.contains(STORE_CATEGORIES)) {
-                db.createObjectStore(STORE_CATEGORIES, { keyPath: 'id', autoIncrement: true });
+
+            // Force recreation for schema change if upgrading from v1
+            if (oldVersion < 2 && db.objectStoreNames.contains(STORE_CATEGORIES)) {
+                db.deleteObjectStore(STORE_CATEGORIES);
             }
+
+            if (!db.objectStoreNames.contains(STORE_CATEGORIES)) {
+                const catStore = db.createObjectStore(STORE_CATEGORIES, { keyPath: 'id', autoIncrement: true });
+                catStore.createIndex('name', 'name', { unique: false });
+            }
+
             if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
                 db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
             }
@@ -66,6 +73,66 @@ export function dbGet(storeName, key) {
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.get(key);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Imports categories in a single transaction.
+ * @param {Array} items
+ * @param {string} importMode - 'append' or 'overwrite'
+ */
+export function dbImportCategories(items, importMode) {
+    return new Promise((resolve, reject) => {
+        if (!db) { reject(new Error('DB not initialized')); return; }
+        const tx = db.transaction([STORE_CATEGORIES], 'readwrite');
+        const store = tx.objectStore(STORE_CATEGORIES);
+
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e.target.error);
+
+        const performImport = (currentCategories) => {
+            let maxOrder = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
+            for (const item of items) {
+                if (item.type === 'page-break') {
+                    store.add({
+                        name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                        order: ++maxOrder
+                    });
+                } else if (item.name) {
+                    if (importMode === 'append') {
+                        const existing = currentCategories.find(c => c.name === item.name);
+                        if (existing) continue;
+                    }
+                    store.add({
+                        name: item.name,
+                        color: item.color || 'primary',
+                        order: ++maxOrder,
+                        tags: item.tags || '',
+                        animation: item.animation || 'default'
+                    });
+                }
+            }
+        };
+
+        if (importMode === 'overwrite') {
+            store.clear();
+            performImport([]);
+        } else {
+            const getAllReq = store.getAll();
+            getAllReq.onsuccess = () => performImport(getAllReq.result);
+        }
+    });
+}
+
+export function dbGetByName(storeName, name) {
+    return new Promise((resolve, reject) => {
+        if (!db) { reject(new Error('DB not initialized')); return; }
+        const tx = db.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
+        const index = store.index('name');
+        const request = index.get(name);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
     });
@@ -216,41 +283,9 @@ async function setupInitialData(languageSetting) {
             cat.order = i;
             await dbPut(STORE_CATEGORIES, cat);
         }
-    } else {
-        const deletedAnimations = ['kaleidoscope', 'lissajous_pendulum', 'plant_growth', 'tennis'];
-        for (let i = 0; i < existingCategories.length; i++) {
-            let cat = existingCategories[i];
-            let changed = false;
-            if (cat.color === undefined) { cat.color = 'primary'; changed = true; }
-            if (cat.animation === undefined) { cat.animation = 'default'; changed = true; }
-            if (cat.tags === undefined) { cat.tags = ''; changed = true; }
-
-            if (deletedAnimations.includes(cat.animation)) {
-                cat.animation = 'default';
-                changed = true;
-            }
-
-            if (changed) {
-                await dbPut(STORE_CATEGORIES, cat);
-            }
-        }
     }
 
     const allLogs = await dbGetAll(STORE_LOGS);
-
-    // Backward compatibility migration: convert legacy Japanese "(待機)" to language-independent "__IDLE__"
-    const legacyIdleName = '(待機)';
-    for (const log of allLogs) {
-        if (log.category === legacyIdleName) {
-            log.category = SYSTEM_CATEGORY_IDLE;
-            await dbPut(STORE_LOGS, log);
-        }
-    }
-    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-    if (pauseStateSetting && pauseStateSetting.value && pauseStateSetting.value.category === legacyIdleName) {
-        pauseStateSetting.value.category = SYSTEM_CATEGORY_IDLE;
-        await dbPut(STORE_SETTINGS, pauseStateSetting);
-    }
 
     const autoStopStatus = await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP);
     const isAutoStopEnabled = autoStopStatus ? autoStopStatus.value : true;
@@ -272,9 +307,8 @@ async function setupInitialData(languageSetting) {
 
     const activeTaskFromLogs = openTasks[0];
 
-    // Migration / Auto-repair for idle tasks in logs
+    // Auto-repair for idle tasks in logs (sync pauseState with logs)
     if (activeTaskFromLogs && activeTaskFromLogs.category === SYSTEM_CATEGORY_IDLE) {
-        console.log(`QuickLog-Solo: Migrating open ${SYSTEM_CATEGORY_IDLE} task to pauseState`);
         const pauseState = {
             id: activeTaskFromLogs.id,
             category: SYSTEM_CATEGORY_IDLE,
@@ -288,25 +322,21 @@ async function setupInitialData(languageSetting) {
     const finalPauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
     const activeTask = finalPauseStateSetting ? finalPauseStateSetting.value : activeTaskFromLogs;
 
-    // 複数の未終了タスクがある場合は、最新以外を強制終了させて整合性を保つ
-    // ただし、activeTaskがpauseStateの場合は、全てのopenTasksを強制終了すべき
+    // Ensure only one active task remains
     const hasPauseState = activeTask && activeTask.isPaused;
     const startIndex = hasPauseState ? 0 : 1;
     if (openTasks.length > startIndex) {
-        console.warn('QuickLog-Solo: Found orphaned active tasks. Closing them.');
         for (let i = startIndex; i < openTasks.length; i++) {
             const orphaned = openTasks[i];
-            // すでにmigrationで削除済みの場合はスキップ
             if (hasPauseState && orphaned.category === SYSTEM_CATEGORY_IDLE && orphaned.startTime === activeTask.startTime) continue;
 
-            orphaned.endTime = orphaned.startTime + ORPHANED_TASK_MIN_DURATION_MS; // 最小限の時間を記録
+            orphaned.endTime = orphaned.startTime + ORPHANED_TASK_MIN_DURATION_MS;
             await dbPut(STORE_LOGS, orphaned);
         }
     }
 
-    // Generate dummy history if no logs exist (demo purpose)
-    const logsAfterMigration = await dbGetAll(STORE_LOGS);
-    if (logsAfterMigration.length === 0) {
+    // Generate dummy history if no logs exist
+    if ((await dbGetAll(STORE_LOGS)).length === 0) {
         await generateDummyHistory();
     }
 }

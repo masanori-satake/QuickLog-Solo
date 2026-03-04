@@ -375,6 +375,23 @@ body.theme-light #current-task-display-base #clock-face {
     gap: 0.5rem;
 }
 
+.auto-stop-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.auto-stop-label-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.auto-stop-label .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
 #status-label, #status-label-overlay {
     font-size: 1.5rem;
     font-weight: normal;

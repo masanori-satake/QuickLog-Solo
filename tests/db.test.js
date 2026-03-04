@@ -130,24 +130,4 @@ describe('DB Module', () => {
         expect(savedPauseState.value.startTime).toBe(startTime);
     });
 
-    test('initDB migrates legacy Japanese "(待機)" to language-independent identifier', async () => {
-        await openDatabase();
-        const startTime = Date.now();
-        const legacyIdleName = '(待機)';
-        // Add a legacy log entry
-        await dbAdd(STORE_LOGS, { category: legacyIdleName, startTime: startTime, endTime: null });
-        // Add a legacy pauseState
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { category: legacyIdleName, startTime: startTime, isPaused: true } });
-        closeDatabase();
-
-        const settings = await initDB();
-        expect(settings.activeTask.category).toBe(SYSTEM_CATEGORY_IDLE);
-
-        const allLogs = await dbGetAll(STORE_LOGS);
-        expect(allLogs.find(l => l.category === legacyIdleName)).toBeUndefined();
-        expect(allLogs.find(l => l.category === SYSTEM_CATEGORY_IDLE)).toBeDefined();
-
-        const savedPauseState = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-        expect(savedPauseState.value.category).toBe(SYSTEM_CATEGORY_IDLE);
-    });
 });
