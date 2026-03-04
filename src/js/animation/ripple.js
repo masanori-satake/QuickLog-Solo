@@ -2,6 +2,7 @@ import { AnimationBase } from '../animation_base.js';
 
 export default class Ripple extends AnimationBase {
     static metadata = {
+        specVersion: '1.0',
         name: {
             en: "Ripple",
             ja: "波紋",

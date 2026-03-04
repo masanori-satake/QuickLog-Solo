@@ -7,6 +7,7 @@ export class AnimationBase {
      * Static metadata for the animation.
      */
     static metadata = {
+        specVersion: '1.0',
         name: 'Base Animation',
         description: 'Template for animations',
         author: 'QuickLog-Solo'

@@ -2,6 +2,7 @@ import { AnimationBase } from '../animation_base.js';
 
 export default class MigratingBirds extends AnimationBase {
     static metadata = {
+        specVersion: '1.0',
         name: {
             en: "Migrating Birds",
             ja: "渡り鳥",
