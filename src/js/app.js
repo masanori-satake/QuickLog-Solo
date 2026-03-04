@@ -613,12 +613,19 @@ function updateAnimationSelect() {
             } else {
                 opt.textContent = anim.metadata.name;
             }
+
+            let description = '';
             if (anim.metadata.description) {
-                if (typeof anim.metadata.description === 'object') {
-                    opt.title = anim.metadata.description[currentLang] || anim.metadata.description['en'] || '';
-                } else {
-                    opt.title = anim.metadata.description;
-                }
+                description = (typeof anim.metadata.description === 'object')
+                    ? (anim.metadata.description[currentLang] || anim.metadata.description['en'] || '')
+                    : anim.metadata.description;
+            }
+
+            const author = anim.metadata.author;
+            if (description || author) {
+                const authorText = author || t('anim-unknown-author');
+                const authorLine = `${t('anim-author-label')}: ${authorText}`;
+                opt.title = description ? `${description}\n${authorLine}` : authorLine;
             }
             animSelect.appendChild(opt);
         });
@@ -1050,13 +1057,20 @@ async function renderCategoryEditor() {
                 { value: 'none', label: t('anim-none'), description: '' },
                 { value: 'default', label: t('anim-default'), description: '' },
                 ...animations.map(anim => {
-                    let desc = '';
+                    let description = '';
                     if (anim.metadata.description) {
-                        desc = (typeof anim.metadata.description === 'object')
+                        description = (typeof anim.metadata.description === 'object')
                             ? (anim.metadata.description[lang] || anim.metadata.description['en'] || '')
                             : anim.metadata.description;
                     }
-                    return { value: anim.id, label: getAnimLabel(anim), description: desc };
+                    const author = anim.metadata.author;
+                    let tooltip = '';
+                    if (description || author) {
+                        const authorText = author || t('anim-unknown-author');
+                        const authorLine = `${t('anim-author-label')}: ${authorText}`;
+                        tooltip = description ? `${description}\n${authorLine}` : authorLine;
+                    }
+                    return { value: anim.id, label: getAnimLabel(anim), tooltip: tooltip };
                 })
             ];
 
@@ -1076,7 +1090,7 @@ async function renderCategoryEditor() {
                         </div>
                     </div>
                     <select class="category-edit-animation">
-                        ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.description)}">${escapeHtml(opt.label)}</option>`).join('')}
+                        ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.tooltip || '')}">${escapeHtml(opt.label)}</option>`).join('')}
                     </select>
                 </div>
                 <div class="cat-editor-row row-3">
