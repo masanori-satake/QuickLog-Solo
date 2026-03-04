@@ -48,16 +48,11 @@ export default class Cats extends AnimationBase {
         }
 
         // Snap food to the nearest platform
-        let nearestP = this.lastPlatforms[0];
-        let minDist = Math.abs(y - nearestP.y);
-
-        for (let i = 1; i < this.lastPlatforms.length; i++) {
-            const d = Math.abs(y - this.lastPlatforms[i].y);
-            if (d < minDist) {
-                minDist = d;
-                nearestP = this.lastPlatforms[i];
-            }
-        }
+        const nearestP = this.lastPlatforms.reduce((closest, current) => {
+            const dCurrent = Math.abs(y - current.y);
+            const dClosest = Math.abs(y - closest.y);
+            return dCurrent < dClosest ? current : closest;
+        });
 
         const snappedX = Math.max(nearestP.xStart + 5, Math.min(nearestP.xEnd - 5, x));
         this.foods.push({ x: snappedX, y: nearestP.y, life: 300 });
@@ -67,6 +62,9 @@ export default class Cats extends AnimationBase {
         this.width = width;
         this.height = height;
         this.groundY = height - 15;
+
+        // Draw food
+        this.foods = this.foods.filter(f => f.life > 0);
 
         const platforms = exclusionAreas.map(area => ({
             y: area.y,
@@ -153,7 +151,6 @@ export default class Cats extends AnimationBase {
         });
 
         // Draw food
-        this.foods = this.foods.filter(f => f.life > 0);
         this.foods.forEach(f => {
             ctx.fillStyle = '#ffa';
             ctx.fillRect(f.x - 2, f.y - 2, 4, 2);
