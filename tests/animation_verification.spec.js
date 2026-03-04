@@ -10,10 +10,12 @@ test.describe('Animation Rendering Verification', () => {
         await page.click('.close-btn');
 
         // Start a task to trigger animation
-        await page.click('.category-btn:first-child');
+        // Note: The first category button is 'Development/Coding' which is set to animation: 'none' by default.
+        // We use the second button which is set to 'default' animation.
+        await page.click('.category-btn:nth-child(2)');
 
         // Wait for worker to initialize and draw
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(3000);
 
         // Check if canvas has some content (not empty)
         const canvasContent = await page.evaluate(() => {
