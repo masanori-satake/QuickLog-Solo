@@ -30,7 +30,7 @@ button, input, select, textarea {
     font-family: inherit;
     font-weight: var(--md-sys-typescale-body-large-weight);
     border: var(--border-width) solid var(--md-sys-color-outline);
-    background: transparent;
+    background: var(--md-sys-color-surface-container-lowest);
     color: var(--text-color);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -742,7 +742,8 @@ body.theme-light #current-task-display-base #clock-face {
 .report-option-item select {
     flex: 1;
     border: none;
-    background: transparent;
+    background: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface);
     font-size: 0.75rem;
     padding: 4px;
     height: auto;
@@ -897,6 +898,12 @@ body.theme-light #current-task-display-base #clock-face {
 }
 
 body.theme-dark {
+    color-scheme: dark;
+}
+
+body.theme-dark select,
+body.theme-dark input,
+body.theme-dark textarea {
     color-scheme: dark;
 }
 
