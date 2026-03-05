@@ -39,15 +39,11 @@ const ID_CATEGORY_LIST = 'category-list';
 const ID_CATEGORY_PAGINATION = 'category-pagination';
 const ID_LOG_LIST = 'log-list';
 const ID_ELAPSED_TIME = 'elapsed-time';
-const ID_ELAPSED_TIME_OVERLAY = 'elapsed-time-overlay';
 const ID_STATUS_LABEL = 'status-label';
-const ID_STATUS_LABEL_OVERLAY = 'status-label-overlay';
 const ID_CURRENT_TASK_NAME = 'current-task-name';
-const ID_CURRENT_TASK_NAME_OVERLAY = 'current-task-name-overlay';
 const ID_PAUSE_BTN = 'pause-btn';
 const ID_END_BTN = 'end-btn';
 const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
-const ID_CURRENT_TASK_DISPLAY_OVERLAY = 'current-task-display-overlay';
 const ID_TOAST = 'toast';
 const ID_CONFIRM_MODAL = 'confirm-modal';
 const ID_CONFIRM_MESSAGE = 'confirm-message';
@@ -207,18 +203,12 @@ async function updateTimer() {
     const elapsed = now - activeTask.startTime;
     const timeStr = formatDuration(elapsed).toString();
 
-    const elements = [ID_ELAPSED_TIME, ID_ELAPSED_TIME_OVERLAY];
-    elements.forEach(id => {
-        const el = getEl(id);
-        if (el) el.textContent = timeStr;
-    });
+    const el = getEl(ID_ELAPSED_TIME);
+    if (el) el.textContent = timeStr;
 
     const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
-    const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
-
     if (isPaused) {
-        if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
         if (currentActiveAnimation !== null) {
             animationEngine?.stop();
             currentActiveAnimation = null;
@@ -259,11 +249,7 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
     const select = getEl(ID_ANIMATION_SELECT);
     if (select && select.value !== animationType) select.value = animationType;
 
-    const overlay = getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY);
     const display = getEl(ID_CURRENT_TASK_DISPLAY);
-
-    // All animations are now canvas-based for consistency
-    if (overlay) overlay.style.clipPath = 'inset(0 100% 0 0)';
 
     if (animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE && activeAnimation !== 'none') {
         const colorCode = getColorCode(color);
@@ -717,15 +703,11 @@ async function updateUI() {
 
     const elements = {
         statusLabel: getEl(ID_STATUS_LABEL),
-        statusLabelOverlay: getEl(ID_STATUS_LABEL_OVERLAY),
         currentTaskName: getEl(ID_CURRENT_TASK_NAME),
-        currentTaskNameOverlay: getEl(ID_CURRENT_TASK_NAME_OVERLAY),
         pauseBtn: getEl(ID_PAUSE_BTN),
         endBtn: getEl(ID_END_BTN),
         elapsedTime: getEl(ID_ELAPSED_TIME),
-        elapsedTimeOverlay: getEl(ID_ELAPSED_TIME_OVERLAY),
-        display: getEl(ID_CURRENT_TASK_DISPLAY),
-        overlay: getEl(ID_CURRENT_TASK_DISPLAY_OVERLAY)
+        display: getEl(ID_CURRENT_TASK_DISPLAY)
     };
 
     if (activeTask) {
@@ -742,25 +724,22 @@ async function updateUI() {
         }
 
         if (elements.display) elements.display.className = `cat-${color}`;
-        if (elements.overlay) elements.overlay.className = `cat-${color}-full`;
 
         const iconName = isPaused ? 'pause' : 'play_arrow';
         const statusClass = isPaused ? 'status-paused' : 'status-running';
-        [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
-            if (el) {
-                el.textContent = iconName;
-                el.className = `material-symbols-outlined ${statusClass}`;
-                el.title = isPaused ? t('tooltip-status-paused') : t('tooltip-status-running');
-                if (isPaused) {
-                    el.classList.add('blink');
-                } else {
-                    el.classList.remove('blink');
-                }
+        if (elements.statusLabel) {
+            elements.statusLabel.textContent = iconName;
+            elements.statusLabel.className = `material-symbols-outlined ${statusClass}`;
+            elements.statusLabel.title = isPaused ? t('tooltip-status-paused') : t('tooltip-status-running');
+            if (isPaused) {
+                elements.statusLabel.classList.add('blink');
+            } else {
+                elements.statusLabel.classList.remove('blink');
             }
-        });
+        }
         const displayCategoryName = isPaused ? t('idle-category') : activeTask.category;
-        const nameElements = [getEl('current-task-name-text'), getEl('current-task-name-text-overlay')];
-        nameElements.forEach(el => { if (el) el.textContent = displayCategoryName; });
+        const nameEl = getEl('current-task-name-text');
+        if (nameEl) nameEl.textContent = displayCategoryName;
 
         if (elements.pauseBtn) {
             if (isPaused) {
@@ -773,12 +752,10 @@ async function updateUI() {
         }
         if (elements.endBtn) elements.endBtn.disabled = false;
 
-        [elements.elapsedTime, elements.elapsedTimeOverlay].forEach(el => {
-            if (el) {
-                el.classList.remove('hidden');
-                el.style.visibility = isPaused ? 'hidden' : 'visible';
-            }
-        });
+        if (elements.elapsedTime) {
+            elements.elapsedTime.classList.remove('hidden');
+            elements.elapsedTime.style.visibility = isPaused ? 'hidden' : 'visible';
+        }
         startTimer();
         // Ensure proper animation visibility (called after text content is updated for accurate exclusion)
         applyAnimation(currentAnimationType, categoryAnimation, color);
@@ -791,16 +768,13 @@ async function updateUI() {
         // instead, just ensure engine is stopped.
 
         if (elements.display) elements.display.className = '';
-        if (elements.overlay) elements.overlay.className = '';
-        [elements.statusLabel, elements.statusLabelOverlay].forEach(el => {
-            if (el) {
-                el.textContent = 'stop';
-                el.className = 'material-symbols-outlined status-stopped';
-                el.title = t('tooltip-status-stopped');
-            }
-        });
-        const nameElements = [getEl('current-task-name-text'), getEl('current-task-name-text-overlay')];
-        nameElements.forEach(el => { if (el) el.textContent = '-'; });
+        if (elements.statusLabel) {
+            elements.statusLabel.textContent = 'stop';
+            elements.statusLabel.className = 'material-symbols-outlined status-stopped';
+            elements.statusLabel.title = t('tooltip-status-stopped');
+        }
+        const nameEl = getEl('current-task-name-text');
+        if (nameEl) nameEl.textContent = '-';
 
         if (elements.pauseBtn) {
             elements.pauseBtn.disabled = true;
@@ -808,14 +782,11 @@ async function updateUI() {
         }
         if (elements.endBtn) elements.endBtn.disabled = true;
 
-        [elements.elapsedTime, elements.elapsedTimeOverlay].forEach(el => {
-            if (el) {
-                el.classList.add('hidden');
-                el.textContent = '00:00:00';
-                el.style.visibility = 'visible';
-            }
-        });
-        if (elements.overlay) elements.overlay.style.clipPath = 'inset(0 0 0 100%)';
+        if (elements.elapsedTime) {
+            elements.elapsedTime.classList.add('hidden');
+            elements.elapsedTime.textContent = '00:00:00';
+            elements.elapsedTime.style.visibility = 'visible';
+        }
         document.title = 'QuickLog-Solo';
     }
 }
