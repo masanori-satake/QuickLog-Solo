@@ -890,6 +890,12 @@ body.theme-light #current-task-display-base #clock-face {
     width: 100%;
 }
 
+.csv-btns button,
+.maintenance-btns button {
+    flex: 1;
+    margin-bottom: 0 !important;
+}
+
 body.theme-dark {
     color-scheme: dark;
 }
@@ -1059,12 +1065,6 @@ body.theme-dark button:active {
     display: flex;
     gap: var(--md-sys-spacing-1);
     margin-bottom: var(--md-sys-spacing-1);
-}
-
-.csv-btns button,
-.maintenance-btns button {
-    flex: 1;
-    margin-bottom: 0 !important;
 }
 
 .import-mode-selector {
