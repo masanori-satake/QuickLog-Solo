@@ -60,7 +60,7 @@ graph TD
     -   ユーザーへの通知（トースト、カスタム確認ダイアログ）。
     -   URLパラメータによる状態インジェクション機能（`handleTestParameters`）。
 -   **js/logic.js (ロジック層):**
-    -   タスクの開始・停止・一時停止の純粋な状態遷移ロジック。
+    -   タスクの開始・終了・一時停止の純粋な状態遷移ロジック。
     -   時間のフォーマット計算 (`formatDuration`, `formatLogDuration`)。
     -   DOMに直接触れず、テストが容易な形式で記述。
 -   **js/db.js (データ層):**
@@ -87,7 +87,7 @@ sequenceDiagram
     U->>A: カテゴリクリック
     A->>L: startTaskLogic(cat, activeTask)
     L->>L: stopTaskLogic(activeTask)
-    L->>D: dbPut (停止時刻記録)
+    L->>D: dbPut (終了時刻記録)
     L->>D: dbAdd (新規タスク開始)
     L-->>A: 新規タスクオブジェクト
     A->>A: updateUI()
