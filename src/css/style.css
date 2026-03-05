@@ -82,8 +82,8 @@ button:disabled {
 #settings-toggle, #copy-report-btn, #copy-aggregation-btn {
     padding: var(--md-sys-spacing-1);
     font-size: 1.25rem;
-    border: none !important;
-    background: transparent !important;
+    border: none;
+    background: transparent;
     cursor: pointer;
     border-radius: var(--md-sys-shape-full);
     color: var(--md-sys-color-on-surface-variant);
@@ -95,7 +95,7 @@ button:disabled {
 }
 
 #settings-toggle:hover, #copy-report-btn:hover, #copy-aggregation-btn:hover {
-    background-color: var(--md-sys-color-surface-variant) !important;
+    background-color: var(--md-sys-color-surface-variant);
     color: var(--md-sys-color-on-surface);
 }
 
@@ -224,7 +224,7 @@ main {
 }
 
 #current-task-display.anim-active {
-    background-color: transparent !important;
+    background-color: transparent;
     box-shadow: none;
 }
 
@@ -247,24 +247,24 @@ main {
 }
 
 #current-task-display-base.anim-active {
-    background-color: transparent !important;
-    backdrop-filter: none !important;
+    background-color: transparent;
+    backdrop-filter: none;
 }
 
-#current-task-display-base.cat-primary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%) !important; }
-#current-task-display-base.cat-secondary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%) !important; }
-#current-task-display-base.cat-tertiary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%) !important; }
-#current-task-display-base.cat-error.anim-active { background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 95%) !important; }
-#current-task-display-base.cat-neutral.anim-active { background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 95%) !important; }
-#current-task-display-base.cat-outline.anim-active { background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 95%) !important; }
-#current-task-display-base.cat-teal.anim-active { background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 95%) !important; }
-#current-task-display-base.cat-green.anim-active { background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 95%) !important; }
-#current-task-display-base.cat-yellow.anim-active { background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 95%) !important; }
-#current-task-display-base.cat-orange.anim-active { background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 95%) !important; }
-#current-task-display-base.cat-pink.anim-active { background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 95%) !important; }
-#current-task-display-base.cat-indigo.anim-active { background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 95%) !important; }
-#current-task-display-base.cat-brown.anim-active { background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%) !important; }
-#current-task-display-base.cat-cyan.anim-active { background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%) !important; }
+#current-task-display-base.cat-primary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%); }
+#current-task-display-base.cat-secondary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%); }
+#current-task-display-base.cat-tertiary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%); }
+#current-task-display-base.cat-error.anim-active { background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 95%); }
+#current-task-display-base.cat-neutral.anim-active { background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 95%); }
+#current-task-display-base.cat-outline.anim-active { background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 95%); }
+#current-task-display-base.cat-teal.anim-active { background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 95%); }
+#current-task-display-base.cat-green.anim-active { background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 95%); }
+#current-task-display-base.cat-yellow.anim-active { background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 95%); }
+#current-task-display-base.cat-orange.anim-active { background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 95%); }
+#current-task-display-base.cat-pink.anim-active { background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 95%); }
+#current-task-display-base.cat-indigo.anim-active { background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 95%); }
+#current-task-display-base.cat-brown.anim-active { background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%); }
+#current-task-display-base.cat-cyan.anim-active { background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%); }
 
 #current-task-name {
     font-size: var(--md-sys-typescale-title-medium-size);
@@ -296,8 +296,8 @@ main {
     color: var(--md-sys-color-on-surface);
 }
 
-#status-label {
-    font-size: 1.5rem !important;
+#status-label.material-symbols-outlined {
+    font-size: 1.5rem;
     line-height: 1;
 }
 
@@ -314,8 +314,8 @@ main {
     50% { opacity: 0.3; }
 }
 
-#pause-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-secondary-container), transparent 40%) !important; }
-#end-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-error-container), transparent 40%) !important; }
+#pause-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-secondary-container), transparent 40%); }
+#end-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-error-container), transparent 40%); }
 
 #control-section {
     display: flex;
