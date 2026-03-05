@@ -1030,7 +1030,15 @@ body.theme-dark button:active {
     flex-shrink: 0;
     margin-bottom: var(--md-sys-spacing-1);
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 8px;
+}
+
+.add-cat-left {
+    display: flex;
+    gap: 8px;
+    flex: 1;
 }
 
 #add-category-box-settings .icon-btn {
@@ -1046,10 +1054,17 @@ body.theme-dark button:active {
     border-top: 1px solid var(--md-sys-color-outline-variant);
 }
 
+.csv-btns,
 .maintenance-btns {
     display: flex;
     gap: var(--md-sys-spacing-1);
     margin-bottom: var(--md-sys-spacing-1);
+}
+
+.csv-btns button,
+.maintenance-btns button {
+    flex: 1;
+    margin-bottom: 0 !important;
 }
 
 .import-mode-selector {

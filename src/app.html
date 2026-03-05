@@ -245,8 +245,11 @@
                         </select>
                     </div>
                     <div class="setting-item">
-                        <button id="export-csv-btn" data-i18n="btn-export-csv">CSVエクスポート</button>
-                        <button id="import-csv-btn" data-i18n="btn-import-csv">CSVインポート</button>
+                        <label data-i18n="setting-history-csv">履歴(CSV)</label>
+                        <div class="csv-btns">
+                            <button id="export-csv-btn" data-i18n="btn-export-csv">エクスポート</button>
+                            <button id="import-csv-btn" data-i18n="btn-import-csv">インポート</button>
+                        </div>
                         <input type="file" id="csv-file-input" style="display:none" accept=".csv">
                     </div>
                 </div>
@@ -256,11 +259,13 @@
                         <!-- カテゴリ編集アイテムがここに動的に追加される -->
                     </div>
                     <div id="add-category-box-settings">
+                        <div class="add-cat-left">
+                            <input type="text" id="new-category-name-settings" data-i18n-placeholder="placeholder-new-category" placeholder="新しいカテゴリ...">
+                            <button id="add-category-btn-settings" class="icon-btn">+</button>
+                        </div>
                         <button id="add-page-break-btn" class="icon-btn" data-i18n-title="btn-add-page-break">
                             <span class="material-symbols-outlined">insert_page_break</span>
                         </button>
-                        <input type="text" id="new-category-name-settings" data-i18n-placeholder="placeholder-new-category" placeholder="新しいカテゴリ...">
-                        <button id="add-category-btn-settings" class="icon-btn">+</button>
                     </div>
 
                     <div class="category-maintenance-box">
