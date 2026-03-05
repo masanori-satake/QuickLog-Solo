@@ -314,5 +314,28 @@ describe('Logic Module', () => {
             const idleCount = (report.match(/\(待機\)/g) || []).length;
             expect(idleCount).toBe(1); // Only the non-manual idle from sampleLogs
         });
+
+        test('handles time adjustment rounding correctly', () => {
+            const logs = [
+                { startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T10:07:00').getTime(), category: 'Task 1' },
+                { startTime: new Date('2026-03-03T10:07:00').getTime(), endTime: new Date('2026-03-03T10:15:00').getTime(), category: 'Task 2' }
+            ];
+            // Adjust to 5m. 10:07 should round to 10:05.
+            const report = generateReport(logs, { ...defaultOptions, adjust: '5', endTime: 'show' });
+            expect(report).toContain('10:00');
+            expect(report).toContain('10:05'); // Rounded from 10:07
+            expect(report).toContain('10:15'); // Last timestamp preserved
+        });
+
+        test('preserves workday boundaries during time adjustment', () => {
+            const logs = [
+                { startTime: new Date('2026-03-03T09:02:00').getTime(), endTime: new Date('2026-03-03T17:58:00').getTime(), category: 'Work' }
+            ];
+            // Even with 10m adjustment, 09:02 and 17:58 should be preserved as they are boundaries.
+            const report = generateReport(logs, { ...defaultOptions, adjust: '10', endTime: 'show' });
+            // Note: Use regex or check parts to avoid AM/PM mismatch if locale differs
+            expect(report).toMatch(/09:02/);
+            expect(report).toMatch(/05:58/); // 17:58 -> 05:58 PM
+        });
     });
 });

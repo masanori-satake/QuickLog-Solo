@@ -210,23 +210,6 @@ main {
 .dot-pink { background-color: var(--custom-cat-pink); }
 .dot-indigo { background-color: var(--custom-cat-indigo); }
 
-#current-task-display-base, #current-task-display-overlay {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: var(--md-sys-spacing-0-5);
-    text-align: center;
-    width: 100%;
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-}
-
-#current-task-display-base > *, #current-task-display-overlay > * {
-    pointer-events: auto;
-}
 
 #current-task-display {
     position: relative;
@@ -243,6 +226,24 @@ main {
 #current-task-display.anim-active {
     background-color: transparent !important;
     box-shadow: none;
+}
+
+#current-task-display-base {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: var(--md-sys-spacing-1);
+    pointer-events: none; /* Allow interaction with canvas behind */
+    transition: background-color 0.3s;
+}
+
+#current-task-display-base > * {
+    pointer-events: auto; /* Re-enable for text selection and future tooltips */
 }
 
 #current-task-display-base.anim-active {
@@ -265,94 +266,7 @@ main {
 #current-task-display-base.cat-brown.anim-active { background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%) !important; }
 #current-task-display-base.cat-cyan.anim-active { background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%) !important; }
 
-#pause-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-secondary-container), transparent 40%) !important; }
-#end-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-error-container), transparent 40%) !important; }
-
-#current-task-display-overlay {
-    clip-path: inset(0 100% 0 0);
-    z-index: 1;
-    background-color: transparent;
-    display: none; /* Deactivate overlay mechanism as we moved to canvas */
-}
-
-#clock-container {
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
-    z-index: 2;
-}
-
-#clock-face {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--custom-cat-on-main);
-    border-radius: 50%;
-    position: relative;
-    background: transparent;
-}
-
-#sand-clock-face {
-    width: 24px;
-    height: 32px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#sand-clock-face.hidden {
-    display: none !important;
-}
-
-#sand-clock-face::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-top: 2px solid var(--custom-cat-on-main);
-    border-bottom: 2px solid var(--custom-cat-on-main);
-    background:
-        linear-gradient(to bottom right, transparent calc(50% - 1px), var(--custom-cat-on-main) calc(50% - 1px), var(--custom-cat-on-main) calc(50% + 1px), transparent calc(50% + 1px)),
-        linear-gradient(to bottom left, transparent calc(50% - 1px), var(--custom-cat-on-main) calc(50% - 1px), var(--custom-cat-on-main) calc(50% + 1px), transparent calc(50% + 1px));
-    z-index: 2;
-}
-
-#sand-top, #sand-bottom {
-    width: 24px;
-    height: 16px;
-    position: relative;
-    overflow: hidden;
-}
-
-#sand-top {
-    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
-    border-bottom: none;
-}
-
-#sand-bottom {
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    border-top: none;
-}
-
-#clock-hand {
-    display: none;
-}
-
-body.theme-light #current-task-display-base #clock-face {
-    border-color: var(--md-sys-color-on-surface-variant);
-}
-
-#current-task-name, #elapsed-time, #status-label {
-    position: relative;
-    z-index: 0;
-}
-
-#current-task-name-overlay, #elapsed-time-overlay, #status-label-overlay {
-    color: var(--custom-cat-on-main);
-}
-
-#current-task-name, #current-task-name-overlay {
+#current-task-name {
     font-size: var(--md-sys-typescale-title-medium-size);
     font-weight: var(--md-sys-typescale-title-large-weight);
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
@@ -364,42 +278,26 @@ body.theme-light #current-task-display-base #clock-face {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--md-sys-color-on-surface);
 }
 
-#elapsed-time, #elapsed-time-overlay {
+#timer-box-base {
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-1);
+}
+
+#elapsed-time {
     font-size: var(--md-sys-typescale-headline-medium-size);
     font-weight: var(--md-sys-typescale-headline-large-weight);
     font-family: 'Roboto Mono', 'Courier New', monospace;
     line-height: 1;
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
 }
 
-.timer-box {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.auto-stop-label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-.auto-stop-label-content {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.auto-stop-label .material-symbols-outlined {
-    font-size: 1.2rem;
-}
-
-#status-label, #status-label-overlay {
-    font-size: 1.5rem;
-    font-weight: normal;
+#status-label {
+    font-size: 1.5rem !important;
     line-height: 1;
 }
 
@@ -416,11 +314,8 @@ body.theme-light #current-task-display-base #clock-face {
     50% { opacity: 0.3; }
 }
 
-#status-label-overlay.status-running,
-#status-label-overlay.status-paused,
-#status-label-overlay.status-stopped {
-    color: var(--custom-cat-on-main);
-}
+#pause-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-secondary-container), transparent 40%) !important; }
+#end-btn.anim-active { background-color: color-mix(in srgb, var(--md-sys-color-error-container), transparent 40%) !important; }
 
 #control-section {
     display: flex;
