@@ -1,15 +1,19 @@
-[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.5.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
+[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.6.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
 
 # QuickLog-Solo
 
-「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向け・サイドパネル型作業メモツールです。設計思想や行動指針については [AGENTS.md](AGENTS.md) を参照してください。
+「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向け・サイドパネル型作業メモツールです。
+「作業の記録」という、本来の業務ではないけれど避けては通れないタスクを、極限まで楽に、そして少しだけ楽しくすることを目指しています。
+設計思想や行動指針については [AGENTS.md](AGENTS.md) を参照してください。
 
 ## 特徴
-- **ブラウザ・サイドバー:** Chrome, Edge, Firefoxのサイドバー（サイドパネル）に常駐し、作業の傍らでいつでも記録が可能です。
-- **完全ローカル動作:** 記録されたデータはすべてブラウザ内の IndexedDB に保存されます。外部サーバーへの送信は一切行われません。
-- **タブを越えた継続:** 異なるタブに移動しても、計測は中断されず継続されます。
-- **自動終了ロジック:** 新しいタスクを開始すると、自動的に前のタスクを終了します。
-- **データ管理:** 40日を過ぎたデータは自動的にクリーンアップされ、メンテナンスフリーで利用できます。
+- **ブラウザ・サイドバー常駐:** Chrome, Edge, Firefoxのサイドバー（サイドパネル）に寄り添い、作業の傍らでいつでも記録が可能です。
+- **「前の作業を止める」手間を排除:** 新しいタスクを開始すると、直前のタスクは自動的に終了処理されます。「止める」という余計な操作を忘れさせてくれる、徹底した効率化（Zero Friction）を実現。
+- **完全ローカル動作 & プライバシー:** データはすべてブラウザ内の IndexedDB に保存されます。外部サーバーへの送信やトラッキングは一切ありません。
+- **クリーンな環境:** DLLのインストールやレジストリの変更は行いません。アンインストールすれば跡形もなく消える、PC環境を汚さない安心設計です。
+- **癒やしの背景アニメーション:** 集中を妨げない20種類以上のドットアニメーションが、殺伐としがちな業務記録に温かみを与え、愛着の持てる道具へと変えてくれます。
+- **一瞬で集計・出力:** 日報形式（Markdown, HTML Table等）のコピーや、カテゴリを横断した「タグ集計」により、自分の働きを一瞬で振り返ることができます。
+- **メンテナンスフリー:** 40日を過ぎた古いデータは自動的にクリーンアップ。導入したら、あとは使うだけです。
 
 ## インストール方法（開発者モード）
 現在、本拡張機能は各ブラウザのストアには公開されていません。以下の手順でインストールしてください。
@@ -38,7 +42,8 @@
 
 ## プライバシーとセキュリティ
 - **Local Only:** 本アプリは、外部への通信を一切行いません。
-- **透明性:** 開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。
+- **No Tracking:** アクセス解析や広告、トラッキングコードは一切含まれていません。
+- **透明性:** 外部フレームワークに依存しない Vanilla JS で構築されており、コードの透明性が保たれています。また、開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。
 
 ## 免責事項 (Disclaimer)
 本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトです。

@@ -40,8 +40,8 @@
                     <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt="Edge" title="Edge Support">
                     <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" title="Firefox Support">
                 </div>
-                <h2 class="display-large" data-i18n="hero-title">1秒で記録、1秒で集計。</h2>
-                <p class="body-large" data-i18n="hero-desc">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型作業メモツールです。</p>
+                <h2 class="display-large" data-i18n="hero-title">1秒で記録、1秒で集計。1秒で安心。</h2>
+                <p class="body-large" data-i18n="hero-desc">QuickLog-Soloは、業務記録を「極限まで楽に、少しだけ楽しく」することを目指した、ミニマリスト向けサイドバー型作業メモツールです。</p>
                 <div class="cta-buttons">
                     <button class="btn-primary" onclick="openPreview()" data-i18n="cta-test">ブラウザで試す</button>
                     <div class="download-dropdown" id="download-dropdown">
@@ -51,6 +51,10 @@
                             <a href="releases/QuickLog-Solo-Firefox.zip" download><span data-i18n="dl-firefox">Firefox 用</span> (.zip)</a>
                         </div>
                     </div>
+                    <button class="btn-text" onclick="openFeatures()" style="margin-left: 8px;">
+                        <span data-i18n="cta-features">機能の詳細を見る</span>
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
                 </div>
             </section>
 
@@ -63,14 +67,14 @@
                         <p data-i18n="policy-local-desc">データはブラウザ内の IndexedDB にのみ保存。外部サーバーへの送信は一切行いません。</p>
                     </div>
                     <div class="policy-item">
-                        <span class="material-symbols-outlined icon-large">visibility_off</span>
-                        <h4>No Tracking</h4>
-                        <p data-i18n="policy-tracking-desc">アクセス解析やトラッキングコードは一切含みません。あなたの作業を誰も監視しません。</p>
+                        <span class="material-symbols-outlined icon-large">cleaning_services</span>
+                        <h4 data-i18n="policy-clean-title">No Pollution</h4>
+                        <p data-i18n="policy-clean-desc">DLLやレジストリを汚しません。削除すれば跡形もなく消えるクリーンな設計です。</p>
                     </div>
                     <div class="policy-item">
                         <span class="material-symbols-outlined icon-large">speed</span>
                         <h4>Zero Friction</h4>
-                        <p data-i18n="policy-friction-desc">「Less is More」。過剰な機能を削ぎ落とし、1秒で打刻できる軽快さを追求しました。</p>
+                        <p data-i18n="policy-friction-desc">「前の作業を止める」手間すら省く自動終了ロジック。作業の勢いを止めません。</p>
                     </div>
                 </div>
             </section>
@@ -191,6 +195,7 @@
         </footer>
     </div>
 
+    <!-- Preview Modal -->
     <div id="preview-modal" class="modal hidden">
         <div class="modal-content preview-content">
             <div class="modal-header">
@@ -209,17 +214,70 @@
         </div>
     </div>
 
+    <!-- Features Modal -->
+    <div id="features-modal" class="modal hidden">
+        <div class="modal-content features-content">
+            <div class="modal-header">
+                <h3 data-i18n="features-modal-title">機能の詳細</h3>
+                <button class="close-btn" onclick="closeFeatures()"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="features-body">
+                <section class="feature-detail-section">
+                    <h4 data-i18n="f-auto-stop-title"><span class="material-symbols-outlined">auto_stop</span> 自動終了ロジック</h4>
+                    <p data-i18n="f-auto-stop-desc">「開始」を押すだけで、それまで行っていた作業は自動的に終了処理されます。計測を止めるという余計な意識を捨てて、次の仕事に1秒でフォーカスできます。</p>
+                    <div class="feature-placeholder">
+                        <span class="material-symbols-outlined">analytics</span>
+                        <span style="font-size: 0.8rem;">Auto-stop visualization placeholder</span>
+                    </div>
+                </section>
+
+                <section class="feature-detail-section">
+                    <h4 data-i18n="f-anim-title"><span class="material-symbols-outlined">auto_awesome</span> 癒やしのアニメーション</h4>
+                    <p data-i18n="f-anim-desc">20種類以上のドットアニメーション（Hero Pot, Cats, Digital Rain等）が、作業の傍らで静かに流れます。無機質になりがちな業務ツールを、愛着の持てる相棒に変えてくれます。</p>
+                    <div class="feature-placeholder">
+                        <span class="material-symbols-outlined">pets</span>
+                        <span style="font-size: 0.8rem;">Animations preview (Cats, Rain, etc.) placeholder</span>
+                    </div>
+                </section>
+
+                <section class="feature-detail-section">
+                    <h4 data-i18n="f-report-title"><span class="material-symbols-outlined">description</span> 高度な日報出力</h4>
+                    <p data-i18n="f-report-desc">MarkdownやHTMLテーブル、CSVなど多彩な形式でコピー可能。時刻アジャスト（丸め）機能を使えば、一日の終わりに行う面倒な集計作業が一瞬で終わります。</p>
+                    <div class="feature-placeholder">
+                        <span class="material-symbols-outlined">content_paste</span>
+                        <span style="font-size: 0.8rem;">Report formats preview placeholder</span>
+                    </div>
+                </section>
+
+                <section class="feature-detail-section">
+                    <h4 data-i18n="f-tag-title"><span class="material-symbols-outlined">label</span> タグ集計</h4>
+                    <p data-i18n="f-tag-desc">カテゴリごとに設定したタグ（プロジェクト名や作業種別）を集計。複数のカテゴリを跨いで「どのプロジェクトに合計何時間使ったか」を簡単に把握できます。</p>
+                </section>
+
+                <section class="feature-detail-section">
+                    <h4 data-i18n="f-future-title"><span class="material-symbols-outlined">rocket_launch</span> 今後の予定</h4>
+                    <p data-i18n="f-future-desc">ブラウザ上で誰でもアニメーションを自作・試行錯誤できる「AnimStudio」を計画中。あなたの作ったアニメーションが、世界中のエンジニアの集中と癒やしを支える日が来るかもしれません。</p>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="closeFeatures(); openPreview();" data-i18n="cta-test">ブラウザで試す</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const translations = {
             ja: {
-                "hero-title": "1秒で記録、1秒で集計。",
-                "hero-desc": "QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型作業メモツールです。",
+                "hero-title": "1秒で記録、1秒で集計、1秒で安心。",
+                "hero-desc": "QuickLog-Soloは、業務記録を「極限まで楽に、少しだけ楽しく」することを目指した、ミニマリスト向けサイドバー型作業メモツールです。",
                 "cta-test": "ブラウザで試す",
                 "cta-download": "拡張機能をダウンロード",
+                "cta-features": "機能の詳細を見る",
                 "policy-title": "大事なポリシー",
                 "policy-local-desc": "データはブラウザ内の IndexedDB にのみ保存。外部サーバーへの送信は一切行いません。",
-                "policy-tracking-desc": "アクセス解析やトラッキングコードは一切含みません。あなたの作業を誰も監視しません。",
-                "policy-friction-desc": "「Less is More」。過剰な機能を削ぎ落とし、1秒で打刻できる軽快さを追求しました。",
+                "policy-clean-title": "No Pollution",
+                "policy-clean-desc": "DLLやレジストリを汚しません。削除すれば跡形もなく消えるクリーンな設計です。",
+                "policy-friction-desc": "「前の作業を止める」手間すら省く自動終了ロジック。作業の勢いを止めません。",
                 "features-title": "主な機能",
                 "feature-1-title": "ワンクリック打刻",
                 "feature-1-desc": "カテゴリを選んで開始するだけ。前のタスクは自動的に終了処理されます。",
@@ -254,6 +312,17 @@
                 "scene-desc": "「今日、何してたっけ？」と思い出す時間はもう不要です。QuickLog-Soloを開いて集計ボタンを押すだけ。正確な記録が、あなたの誠実な仕事を証明します。",
                 "preview-title": "アプリ プレビュー",
                 "preview-note": "※ プレビュー版ではサイドパネルでの動作をシミュレートしています。",
+                "features-modal-title": "機能の詳細",
+                "f-auto-stop-title": "自動終了ロジック",
+                "f-auto-stop-desc": "「開始」を押すだけで、それまで行っていた作業は自動的に終了処理されます。計測を止めるという余計な意識を捨てて、次の仕事に1秒でフォーカスできます。",
+                "f-anim-title": "癒やしのアニメーション",
+                "f-anim-desc": "20種類以上のドットアニメーション（Hero Pot, Cats, Digital Rain等）が、作業の傍らで静かに流れます。無機質になりがちな業務ツールを、愛着の持てる相棒に変えてくれます。",
+                "f-report-title": "高度な日報出力",
+                "f-report-desc": "MarkdownやHTMLテーブル、CSVなど多彩な形式でコピー可能。時刻アジャスト（丸め）機能を使えば、一日の終わりに行う面倒な集計作業が一瞬で終わります。",
+                "f-tag-title": "タグ集計",
+                "f-tag-desc": "カテゴリごとに設定したタグ（プロジェクト名や作業種別）を集計。複数のカテゴリを跨いで「どのプロジェクトに合計何時間使ったか」を簡単に把握できます。",
+                "f-future-title": "今後の予定",
+                "f-future-desc": "ブラウザ上で誰でもアニメーションを自作・試行錯誤できる「AnimStudio」を計画中。あなたの作ったアニメーションが、世界中のエンジニアの集中と癒やしを支える日が来るかもしれません。",
                 "copy-success": "URLをコピーしました！",
                 "dl-chrome": "Chrome / Edge 用",
                 "dl-firefox": "Firefox 用",
@@ -268,14 +337,16 @@
                 "lang-zh": "🇨🇳 简体中文"
             },
             en: {
-                "hero-title": "Record in 1s, Total in 1s.",
-                "hero-desc": "QuickLog-Solo is a minimalist sidebar-style work memo tool designed for engineers who find tracking work a burden but demand transparency and security.",
+                "hero-title": "Record in 1s, Total in 1s, Peace in 1s.",
+                "hero-desc": "QuickLog-Solo is a minimalist sidebar work memo tool designed to make work tracking as effortless and slightly more enjoyable as possible.",
                 "cta-test": "Try in Browser",
                 "cta-download": "Download Extension",
+                "cta-features": "View Feature Details",
                 "policy-title": "Key Policies",
                 "policy-local-desc": "Data is saved only in IndexedDB within your browser. No server uploads, ever.",
-                "policy-tracking-desc": "Zero analytics or tracking code. Your work remains private and unmonitored.",
-                "policy-friction-desc": "Based on 'Less is More'. We've stripped away the clutter for lightning-fast tracking.",
+                "policy-clean-title": "No Pollution",
+                "policy-clean-desc": "Zero DLLs or registry changes. A clean design that disappears without a trace when uninstalled.",
+                "policy-friction-desc": "Auto-stop logic eliminates even the effort of stopping previous tasks. Keep your flow.",
                 "features-title": "Key Features",
                 "feature-1-title": "One-Click Tracking",
                 "feature-1-desc": "Just pick a category and start. Previous tasks are automatically finalized.",
@@ -310,6 +381,17 @@
                 "scene-desc": "No more struggling to remember what you did. Open QuickLog-Solo and click 'Total'. Accurate records that prove your hard work.",
                 "preview-title": "App Preview",
                 "preview-note": "* The preview version simulates behavior in the sidebar.",
+                "features-modal-title": "Feature Details",
+                "f-auto-stop-title": "Auto-stop Logic",
+                "f-auto-stop-desc": "Just click 'Start' and your previous task is automatically finalized. Forget the overhead of stopping timers and focus on your next move in just 1 second.",
+                "f-anim-title": "Visual Healing",
+                "f-anim-desc": "Over 20 unique dot animations (Hero Pot, Cats, Digital Rain, etc.) flow quietly in the background. Transform a sterile tool into a companion you'll love to use.",
+                "f-report-title": "Advanced Reporting",
+                "f-report-desc": "Copy in various formats like Markdown, HTML Table, or CSV. With Time Adjustment (rounding), that tedious end-of-day totaling is done in a flash.",
+                "f-tag-title": "Tag Aggregation",
+                "f-tag-desc": "Aggregate time by tags assigned to categories. Easily see how many hours you spent on each project across multiple categories.",
+                "f-future-title": "Future Roadmap",
+                "f-future-desc": "We are planning 'AnimStudio', where anyone can create and experiment with animations directly in the browser. Your creation might one day support the focus of engineers worldwide.",
                 "copy-success": "URL Copied!",
                 "dl-chrome": "For Chrome / Edge",
                 "dl-firefox": "For Firefox",
@@ -324,14 +406,16 @@
                 "lang-zh": "🇨🇳 简体中文"
             },
             de: {
-                "hero-title": "Protokoll in 1s, Bilanz in 1s.",
-                "hero-desc": "QuickLog-Solo ist ein minimalistisches Arbeitsnotiz-Tool für die Sidebar, entwickelt für Ingenieure, die Transparenz und Sicherheit fordern.",
+                "hero-title": "Protokoll in 1s, Bilanz in 1s, Sicherheit in 1s.",
+                "hero-desc": "QuickLog-Solo ist ein minimalistisches Sidebar-Arbeitsnotiz-Tool, das darauf ausgelegt ist, die Arbeitserfassung so mühelos und angenehm wie möglich zu gestalten.",
                 "cta-test": "Im Browser testen",
                 "cta-download": "Erweiterung herunterladen",
+                "cta-features": "Funktionsdetails ansehen",
                 "policy-title": "Wichtige Richtlinien",
                 "policy-local-desc": "Daten werden nur in der IndexedDB Ihres Browsers gespeichert. Keine Server-Uploads.",
-                "policy-tracking-desc": "Keine Analyse- oder Tracking-Codes. Ihre Arbeit bleibt privat.",
-                "policy-friction-desc": "Nach dem Prinzip 'Weniger ist mehr'. Konzipiert für blitzschnelles Tracking.",
+                "policy-clean-title": "Keine Belastung",
+                "policy-clean-desc": "Keine DLLs oder Registry-Änderungen. Ein sauberes Design, das nach der Deinstallation spurlos verschwindet.",
+                "policy-friction-desc": "Die Auto-Stopp-Logik erspart sogar das manuelle Beenden früherer Aufgaben. Behalten Sie Ihren Flow.",
                 "features-title": "Hauptmerkmale",
                 "feature-1-title": "Ein-Klick-Tracking",
                 "feature-1-desc": "Kategorie wählen und starten. Vorherige Aufgaben werden automatisch beendet.",
@@ -366,6 +450,17 @@
                 "scene-desc": "Nie mehr mühsam erinnern, was Sie getan haben. QuickLog-Solo öffnen und 'Bilanz' klicken.",
                 "preview-title": "App-Vorschau",
                 "preview-note": "* Die Vorschau simuliert das Verhalten in der Sidebar.",
+                "features-modal-title": "Funktionsdetails",
+                "f-auto-stop-title": "Auto-Stopp-Logik",
+                "f-auto-stop-desc": "Klicken Sie einfach auf 'Start' und Ihre vorherige Aufgabe wird automatisch abgeschlossen. Vergessen Sie den Aufwand des Timer-Stoppens und konzentrieren Sie sich in nur 1 Sekunde auf Ihren nächsten Schritt.",
+                "f-anim-title": "Visuelle Heilung",
+                "f-anim-desc": "Über 20 einzigartige Punkt-Animationen (Hero Pot, Cats, Digital Rain usw.) fließen leise im Hintergrund. Verwandeln Sie ein steriles Werkzeug in einen Begleiter, den Sie gerne benutzen.",
+                "f-report-title": "Erweitertes Berichtswesen",
+                "f-report-desc": "Kopieren Sie in verschiedenen Formaten wie Markdown, HTML-Tabelle oder CSV. Mit der Zeitanpassung (Rundung) ist die mühsame Abrechnung am Ende des Tages im Handumdrehen erledigt.",
+                "f-tag-title": "Tag-Aggregation",
+                "f-tag-desc": "Aggregieren Sie die Zeit nach Tags, die Kategorien zugeordnet sind. Sehen Sie ganz einfach, wie viele Stunden Sie für jedes Projekt über mehrere Kategorien hinweg aufgewendet haben.",
+                "f-future-title": "Zukunfts-Roadmap",
+                "f-future-desc": "Wir planen 'AnimStudio', in dem jeder Animationen direkt im Browser erstellen und damit experimentieren kann. Ihre Kreation könnte eines Tages den Fokus von Ingenieuren weltweit unterstützen.",
                 "copy-success": "URL kopiert!",
                 "dl-chrome": "Für Chrome / Edge",
                 "dl-firefox": "Für Firefox",
@@ -380,14 +475,16 @@
                 "lang-zh": "🇨🇳 简体中文"
             },
             es: {
-                "hero-title": "Registro en 1s, Total en 1s.",
-                "hero-desc": "QuickLog-Solo es una herramienta minimalista de notas de trabajo diseñada para ingenieros que demandan transparencia y seguridad.",
+                "hero-title": "Registro en 1s, Total en 1s, Paz en 1s.",
+                "hero-desc": "QuickLog-Solo es una herramienta minimalista de notas de trabajo diseñada para que el seguimiento sea lo más sencillo y agradable posible.",
                 "cta-test": "Probar en navegador",
                 "cta-download": "Descargar extensión",
+                "cta-features": "Ver detalles de funciones",
                 "policy-title": "Políticas clave",
                 "policy-local-desc": "Los datos se guardan solo en IndexedDB dentro de su navegador. Sin cargas al servidor.",
-                "policy-tracking-desc": "Cero analíticas o rastreo. Su trabajo sigue siendo privado.",
-                "policy-friction-desc": "Basado en 'Menos es más'. Eliminamos lo innecesario para un seguimiento veloz.",
+                "policy-clean-title": "Sin contaminación",
+                "policy-clean-desc": "Cero DLLs o cambios en el registro. Un diseño limpio que desaparece sin dejar rastro al desinstalar.",
+                "policy-friction-desc": "La lógica de parada automática elimina incluso el esfuerzo de detener tareas previas.",
                 "features-title": "Características",
                 "feature-1-title": "Registro en un clic",
                 "feature-1-desc": "Elija una categoría y comience. Las tareas previas se finalizan automáticamente.",
@@ -422,6 +519,17 @@
                 "scene-desc": "No más esfuerzos para recordar qué hizo. Abra QuickLog-Solo y haga clic en 'Total'.",
                 "preview-title": "Vista previa",
                 "preview-note": "* La versión de vista previa simula el comportamiento en la barra lateral.",
+                "features-modal-title": "Detalles de funciones",
+                "f-auto-stop-title": "Lógica de parada automática",
+                "f-auto-stop-desc": "Solo haga clic en 'Iniciar' y su tarea anterior se finalizará automáticamente. Olvida la carga de detener temporizadores y concéntrate en tu próximo movimiento en solo 1 segundo.",
+                "f-anim-title": "Sanación visual",
+                "f-anim-desc": "Más de 20 animaciones de puntos únicas (Hero Pot, Cats, Digital Rain, etc.) fluyen silenciosamente en segundo plano. Convierte una herramienta estéril en un compañero que te encantará usar.",
+                "f-report-title": "Informes avanzados",
+                "f-report-desc": "Copia en varios formatos como Markdown, tabla HTML o CSV. Con el ajuste de tiempo (redondeo), ese tedioso recuento final del día se hace en un instante.",
+                "f-tag-title": "Agregación de etiquetas",
+                "f-tag-desc": "Suma el tiempo por etiquetas asignadas a las categorías. Mira fácilmente cuántas horas pasaste en cada proyecto a través de múltiples categorías.",
+                "f-future-title": "Futuro",
+                "f-future-desc": "Estamos planeando 'AnimStudio', donde cualquiera puede crear y experimentar con animaciones directamente en el navegador. Tu creación podría algún día apoyar el enfoque de ingenieros de todo el mundo.",
                 "copy-success": "¡URL copiada!",
                 "dl-chrome": "Para Chrome / Edge",
                 "dl-firefox": "Para Firefox",
@@ -436,14 +544,16 @@
                 "lang-zh": "🇨🇳 简体中文"
             },
             fr: {
-                "hero-title": "Saisie en 1s, Bilan en 1s.",
-                "hero-desc": "QuickLog-Solo est un outil de notes de travail minimaliste conçu pour les ingénieurs exigeant transparence et sécurité.",
+                "hero-title": "Saisie en 1s, Bilan en 1s, Sérénité en 1s.",
+                "hero-desc": "QuickLog-Solo est un outil de notes de travail minimaliste conçu pour rendre le suivi aussi simple et agréable que possible.",
                 "cta-test": "Essayer en ligne",
                 "cta-download": "Télécharger l'extension",
+                "cta-features": "Voir les détails des fonctions",
                 "policy-title": "Politiques clés",
                 "policy-local-desc": "Les données sont sauvées dans l'IndexedDB de votre navigateur. Pas d'upload serveur.",
-                "policy-tracking-desc": "Zéro analyse ou tracking. Votre travail reste privé.",
-                "policy-friction-desc": "Basé sur 'Less is More'. Épuré pour un suivi ultra-rapide.",
+                "policy-clean-title": "Zéro pollution",
+                "policy-clean-desc": "Aucune DLL ni modification du registre. Une conception propre qui s'efface sans trace à la désinstallation.",
+                "policy-friction-desc": "La logique d'arrêt automatique élimine même l'effort d'arrêter les tâches précédentes.",
                 "features-title": "Fonctions clés",
                 "feature-1-title": "Suivi en un clic",
                 "feature-1-desc": "Choisissez une catégorie et lancez. Les tâches précédentes sont closes.",
@@ -478,6 +588,17 @@
                 "scene-desc": "Plus besoin de chercher ce que vous avez fait. Cliquez sur 'Bilan'.",
                 "preview-title": "Aperçu de l'app",
                 "preview-note": "* L'aperçu simule le comportement dans la barre latérale.",
+                "features-modal-title": "Détails des fonctions",
+                "f-auto-stop-title": "Logique d'arrêt automatique",
+                "f-auto-stop-desc": "Cliquez simplement sur 'Démarrer' et votre tâche précédente est automatiquement clôturée. Oubliez la corvée d'arrêter les minuteurs et concentrez-vous sur la suite en 1 seconde.",
+                "f-anim-title": "Apaisement visuel",
+                "f-anim-desc": "Plus de 20 animations (Hero Pot, Cats, Digital Rain, etc.) s'écoulent paisiblement en fond. Transformez un outil stérile en un compagnon agréable.",
+                "f-report-title": "Rapports avancés",
+                "f-report-desc": "Copiez dans divers formats (Markdown, tableau HTML, CSV). Avec l'ajustement de l'heure (arrondi), le bilan de fin de journée est fait en un clin d'œil.",
+                "f-tag-title": "Agrégation de tags",
+                "f-tag-desc": "Cumulez le temps par tags assignés aux catégories. Visualisez facilement combien d'heures vous avez passé sur chaque projet.",
+                "f-future-title": "Futur",
+                "f-future-desc": "Nous prévoyons 'AnimStudio', où chacun pourra créer ses propres animations directement dans le navigateur. Votre création pourrait un jour soutenir la concentration des ingénieurs du monde entier.",
                 "copy-success": "URL copiée !",
                 "dl-chrome": "Pour Chrome / Edge",
                 "dl-firefox": "Pour Firefox",
@@ -492,14 +613,16 @@
                 "lang-zh": "🇨🇳 简体中文"
             },
             pt: {
-                "hero-title": "Registro em 1s, Total em 1s.",
-                "hero-desc": "QuickLog-Solo é uma ferramenta de notas de trabalho minimalista projetada para engenheiros que exigem transparência e segurança.",
+                "hero-title": "Registro em 1s, Total em 1s, Paz em 1s.",
+                "hero-desc": "QuickLog-Solo é uma ferramenta de notas de trabalho minimalista projetada para tornar o rastreio o mais simples e agradável possível.",
                 "cta-test": "Testar no Navegador",
                 "cta-download": "Baixar Extensão",
+                "cta-features": "Ver detalhes dos recursos",
                 "policy-title": "Políticas Principais",
                 "policy-local-desc": "Dados salvos apenas no IndexedDB do navegador. Sem uploads para servidores.",
-                "policy-tracking-desc": "Zero códigos de análise ou rastreamento. Seu trabalho é privado.",
-                "policy-friction-desc": "Baseado em 'Menos é Mais'. Simplicidade para um rastreamento veloz.",
+                "policy-clean-title": "Sem poluição",
+                "policy-clean-desc": "Zero DLLs ou alterações no registro. Um design limpo que desaparece sem deixar rastros ao ser desinstalado.",
+                "policy-friction-desc": "A lógica de parada automática elimina até o esforço de parar tarefas anteriores. Mantenha seu fluxo.",
                 "features-title": "Recursos",
                 "feature-1-title": "Rastreio Num Clique",
                 "feature-1-desc": "Escolha a categoria e comece. Tarefas anteriores são finalizadas.",
@@ -534,6 +657,17 @@
                 "scene-desc": "Não sofra tentando lembrar o que fez. Clique em 'Total'.",
                 "preview-title": "Prévia do App",
                 "preview-note": "* A versão de prévia simula o comportamento na barra lateral.",
+                "features-modal-title": "Detalhes dos recursos",
+                "f-auto-stop-title": "Lógica de parada automática",
+                "f-auto-stop-desc": "Basta clicar em 'Iniciar' e sua tarefa anterior será finalizada automaticamente. Esqueça o trabalho de parar cronômetros e foque no próximo passo em apenas 1 segundo.",
+                "f-anim-title": "Cura visual",
+                "f-anim-desc": "Mais de 20 animações de pontos (Hero Pot, Cats, Digital Rain, etc.) fluem calmamente ao fundo. Transforme uma ferramenta estéril em um companheiro que você vai adorar usar.",
+                "f-report-title": "Relatórios avançados",
+                "f-report-desc": "Copie em vários formatos (Markdown, tabela HTML, CSV). Com o ajuste de tempo (arredondamento), aquela apuração chata de fim de dia é feita em um piscar de olhos.",
+                "f-tag-title": "Agregação de tags",
+                "f-tag-desc": "Some o tempo por tags atribuídas às categorias. Veja facilmente quantas horas você gastou em cada projeto através de várias categorias.",
+                "f-future-title": "Futuro",
+                "f-future-desc": "Estamos planejando o 'AnimStudio', onde qualquer pessoa poderá criar e experimentar animações diretamente no navegador. Sua criação poderá um dia apoiar o foco de engenheiros em todo o mundo.",
                 "copy-success": "URL Copiada!",
                 "dl-chrome": "Para Chrome / Edge",
                 "dl-firefox": "Para Firefox",
@@ -548,14 +682,16 @@
                 "lang-zh": "🇨🇳 简体中文"
             },
             ko: {
-                "hero-title": "1초 기록, 1초 집계.",
-                "hero-desc": "QuickLog-Solo는 업무 기록을 부담스럽게 느끼지만 투명성과 보안을 중시하는 엔지니어를 위해 설계된 미니멀리스트 작업 메모 도구입니다.",
+                "hero-title": "1초 기록, 1초 집계, 1초 안심.",
+                "hero-desc": "QuickLog-Solo는 업무 기록을 '최대한 편하게, 조금 더 즐겁게' 만드는 것을 목표로 하는 미니멀리스트 사이드바 작업 메모 도구입니다.",
                 "cta-test": "브라우저에서 체험하기",
                 "cta-download": "확장 프로그램 다운로드",
+                "cta-features": "기능 상세 보기",
                 "policy-title": "핵심 정책",
                 "policy-local-desc": "데이터는 브라우저의 IndexedDB에만 저장됩니다. 서버 업로드는 절대 없습니다.",
-                "policy-tracking-desc": "분석이나 추적 코드가 없습니다. 당신의 작업은 비공개로 유지됩니다.",
-                "policy-friction-desc": "'Less is More' 철학 기반. 빠른 기록을 위해 불필요한 요소를 제거했습니다.",
+                "policy-clean-title": "No Pollution",
+                "policy-clean-desc": "DLL이나 레지스트리를 오염시키지 않습니다. 삭제 시 흔적 없이 사라지는 클린 설계입니다.",
+                "policy-friction-desc": "'이전 작업 종료'의 번거로움까지 없앤 자동 종료 로직. 작업의 흐름을 끊지 않습니다.",
                 "features-title": "주요 기능",
                 "feature-1-title": "원클릭 기록",
                 "feature-1-desc": "카테고리를 선택하고 시작하세요. 이전 작업은 자동으로 종료됩니다.",
@@ -590,6 +726,17 @@
                 "scene-desc": "오늘 무엇을 했는지 기억해내려 애쓸 필요 없습니다. '집계' 버튼만 누르세요.",
                 "preview-title": "앱 미리보기",
                 "preview-note": "* 미리보기 버전은 사이드바에서의 동작을 시뮬레이션합니다.",
+                "features-modal-title": "기능 상세",
+                "f-auto-stop-title": "자동 종료 로직",
+                "f-auto-stop-desc": "'시작'을 누르는 것만으로 이전 작업은 자동으로 종료됩니다. 타이머를 끄는 번거로움을 잊고 1초 만에 다음 업무에 집중하세요.",
+                "f-anim-title": "시각적 힐링",
+                "f-anim-desc": "20종 이상의 도트 애니메이션(Hero Pot, Cats, Digital Rain 등)이 배경에서 조용히 흐릅니다. 무미건조한 업무 도구를 애착이 가는 파트너로 바꿔줍니다.",
+                "f-report-title": "고급 보고서 출력",
+                "f-report-desc": "Markdown, HTML 표, CSV 등 다양한 형식으로 복사 가능. 시간 조정(반올림) 기능을 사용하면 번거로운 업무 마감이 순식간에 끝납니다.",
+                "f-tag-title": "태그 집계",
+                "f-tag-desc": "카테고리별로 설정한 태그를 집계하여 여러 카테고리에 걸친 프로젝트별 작업 시간을 쉽게 파악할 수 있습니다.",
+                "f-future-title": "향후 계획",
+                "f-future-desc": "누구나 브라우저에서 애니메이션을 직접 만들 수 있는 'AnimStudio'를 계획 중입니다. 당신의 작품이 전 세계 엔지니어들의 집중을 돕는 날이 올지도 모릅니다.",
                 "copy-success": "URL 복사됨!",
                 "dl-chrome": "Chrome / Edge 용",
                 "dl-firefox": "Firefox 용",
@@ -604,14 +751,16 @@
                 "lang-zh": "🇨🇳 简体中文"
             },
             zh: {
-                "hero-title": "1秒记录，1秒统计。",
-                "hero-desc": "QuickLog-Solo 是一款专为追求透明度与安全性的工程师设计的极简侧边栏工作笔记工具。",
+                "hero-title": "1秒记录，1秒统计，1秒安心。",
+                "hero-desc": "QuickLog-Solo 是一款旨在让工作记录变得“极简、高效、且富有乐趣”的侧边栏工作笔记工具。",
                 "cta-test": "浏览器试用",
                 "cta-download": "下载扩展程序",
+                "cta-features": "查看功能详情",
                 "policy-title": "核心政策",
                 "policy-local-desc": "数据仅保存在浏览器的 IndexedDB 中。绝不上传服务器。",
-                "policy-tracking-desc": "无分析或追踪代码。您的工作状态完全私密。",
-                "policy-friction-desc": "秉承“少即是多”的原则。为极致快捷的记录而精简。",
+                "policy-clean-title": "不留痕迹",
+                "policy-clean-desc": "无需 DLL 或注册表更改。卸载后不留任何残留的纯净设计。",
+                "policy-friction-desc": "自动结算逻辑甚至省去了停止前一任务的操作，让你的工作流始终连贯。",
                 "features-title": "主要功能",
                 "feature-1-title": "一键记录",
                 "feature-1-desc": "选择分类即可开始。前一任务会自动结算。",
@@ -646,6 +795,17 @@
                 "scene-desc": "不再需要苦苦回忆做了什么。只需点击“统计”。",
                 "preview-title": "应用预览",
                 "preview-note": "* 预览版模拟了在侧边栏中的运行状态。",
+                "features-modal-title": "功能详情",
+                "f-auto-stop-title": "自动结算逻辑",
+                "f-auto-stop-desc": "点击“开始”即可自动结束前一任务。告别手动停止计时器的繁琐，1秒切换到下一个任务。",
+                "f-anim-title": "视觉疗愈",
+                "f-anim-desc": "20多种独特的点阵动画（Hero Pot, Cats, Digital Rain 等）在后台静静流淌。让工具不再冰冷，成为你工作中的伴侣。",
+                "f-report-title": "高级报表导出",
+                "f-report-desc": "支持 Markdown、HTML 表格、CSV 等多种格式。配合时间微调（取整）功能，瞬间完成繁琐的日报统计。",
+                "f-tag-title": "标签汇总",
+                "f-tag-desc": "按标签汇总跨分类的工作时间。轻松掌握每个项目累计投入了多少小时。",
+                "f-future-title": "未来计划",
+                "f-future-desc": "我们正在计划推出 'AnimStudio'，让每个人都能直接在浏览器中创作动画。你的作品或许有一天能为全球工程师提供专注力支持。",
                 "copy-success": "URL 已复制！",
                 "dl-chrome": "适用于 Chrome / Edge",
                 "dl-firefox": "适用于 Firefox",
@@ -792,6 +952,16 @@
             document.body.style.overflow = '';
         }
 
+        function openFeatures() {
+            document.getElementById('features-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFeatures() {
+            document.getElementById('features-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
         function toggleDownloadDropdown(event) {
             event.stopPropagation();
             const dropdown = document.getElementById('download-dropdown');
@@ -799,9 +969,13 @@
         }
 
         window.onclick = function(event) {
-            const modal = document.getElementById('preview-modal');
-            if (event.target == modal) {
+            const previewModal = document.getElementById('preview-modal');
+            const featuresModal = document.getElementById('features-modal');
+            if (event.target == previewModal) {
                 closePreview();
+            }
+            if (event.target == featuresModal) {
+                closeFeatures();
             }
 
             const dropdown = document.getElementById('download-dropdown');
