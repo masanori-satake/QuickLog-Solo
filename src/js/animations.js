@@ -170,6 +170,7 @@ export class AnimationEngine {
 
     stop() {
         this.isMonitoring = false;
+        this.isDrawPending = false;
         if (this.requestId) {
             cancelAnimationFrame(this.requestId);
             this.requestId = null;

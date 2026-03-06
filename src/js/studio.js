@@ -141,6 +141,8 @@ function updateTranslations() {
         const key = el.getAttribute('data-i18n');
         if (messages[currentLang] && messages[currentLang][key]) {
             el.textContent = messages[currentLang][key];
+        } else if (messages._common && messages._common[key]) {
+            el.textContent = messages._common[key];
         } else if (messages.en[key]) {
             el.textContent = messages.en[key];
         }
@@ -868,7 +870,7 @@ function updateExclusionAreas() {
         engine.setExclusionAreas([]);
     }
 
-    if (engine.initialized) {
+    if (isTesting && engine.initialized) {
         // Just trigger a resize to update worker state without full restart
         engine.resize();
     }
