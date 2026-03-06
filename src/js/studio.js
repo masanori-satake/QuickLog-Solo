@@ -169,8 +169,8 @@ async function loadSample(id) {
         const response = await fetch(`./js/animation/${id}.js`);
         const text = await response.text();
         parseAndPopulate(text, anim.metadata);
-    } catch (err) {
-        console.error('Failed to load sample:', err);
+    } catch {
+        console.error('Failed to load sample');
     }
 }
 
@@ -286,7 +286,6 @@ function startTest() {
     engine.stop();
 
     // We need to override the engine's internal module path logic for this test
-    const originalStart = engine.start;
     engine.start = function(name, startTime, color) {
         this.stop();
         this.activeAnimationId = 'test';
@@ -402,7 +401,7 @@ function handleUpload(e) {
                 inputDraw.value = data.draw || '';
                 inputInteraction.value = data.interaction || '';
                 showToast('Loaded from JSON');
-            } catch (err) {
+            } catch {
                 showToast('Invalid JSON');
             }
         } else if (file.name.endsWith('.js')) {
@@ -422,13 +421,10 @@ function showToast(msg) {
 
 // Metrics Collection
 let metricsInterval = null;
-let lastDrawTime = 0;
-let drawCount = 0;
 let lastImageData = null;
 let lastLatency = 0;
 
 function startMetricsCollection() {
-    drawCount = 0;
     lastImageData = null;
 
     // Patch engine to track latency

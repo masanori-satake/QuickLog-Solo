@@ -4,8 +4,8 @@
     --studio-bg: var(--md-sys-color-surface-container-low);
     --editor-bg: #1e1e1e; /* VSCode-like dark */
     --editor-text: #d4d4d4;
-    --editor-header: #333333;
-    --editor-border: #444444;
+    --editor-header: #333;
+    --editor-border: #444;
     --accent-color: var(--md-sys-color-primary);
     --sidebar-width: 350px;
 }
@@ -19,7 +19,7 @@
 body.theme-dark {
     background-color: var(--studio-bg);
     color: var(--md-sys-color-on-surface);
-    font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+    font-family: Roboto, 'Noto Sans JP', sans-serif;
     height: 100vh;
     overflow: hidden;
 }
@@ -219,10 +219,7 @@ body.theme-dark {
     flex-direction: column;
     height: 100%;
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
 }
 
 .editor-container.active {
@@ -311,10 +308,30 @@ textarea {
     height: 8px;
     background-color: #1976d2;
 }
-.resizer.nw { top: -4px; left: -4px; cursor: nw-resize; }
-.resizer.ne { top: -4px; right: -4px; cursor: ne-resize; }
-.resizer.sw { bottom: -4px; left: -4px; cursor: sw-resize; }
-.resizer.se { bottom: -4px; right: -4px; cursor: se-resize; }
+
+.resizer.nw {
+    top: -4px;
+    left: -4px;
+    cursor: nw-resize;
+}
+
+.resizer.ne {
+    top: -4px;
+    right: -4px;
+    cursor: ne-resize;
+}
+
+.resizer.sw {
+    bottom: -4px;
+    left: -4px;
+    cursor: sw-resize;
+}
+
+.resizer.se {
+    bottom: -4px;
+    right: -4px;
+    cursor: se-resize;
+}
 
 /* Metrics */
 .metrics-grid {
@@ -410,7 +427,9 @@ button:active {
     backdrop-filter: blur(4px);
 }
 
-.modal.hidden { display: none; }
+.modal.hidden {
+    display: none;
+}
 
 .modal-content {
     background-color: var(--md-sys-color-surface-container);
@@ -422,7 +441,10 @@ button:active {
     box-shadow: var(--md-sys-elevation-3);
 }
 
-.modal h2 { margin-bottom: 1rem; color: var(--md-sys-color-primary); }
+.modal h2 {
+    margin-bottom: 1rem;
+    color: var(--md-sys-color-primary);
+}
 
 .pr-guide-body ol {
     margin: 1.5rem 0;
@@ -470,19 +492,24 @@ button:active {
     font-size: 0.9rem;
 }
 
-#toast.hidden { display: none; }
+#toast.hidden {
+    display: none;
+}
 
 /* Responsive */
-@media (max-width: 900px) {
+@media (width <= 900px) {
     .studio-main {
         flex-direction: column;
         overflow-y: auto;
     }
+
     .preview-pane {
         width: 100%;
         border-left: none;
         border-top: 1px solid var(--md-sys-color-outline-variant);
     }
+
+
     body.theme-dark {
         overflow-y: auto;
     }
