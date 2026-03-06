@@ -1,5 +1,5 @@
 import {
-    openDatabase, dbAdd, dbGet, dbGetAll, dbPut, dbDelete, initDB, closeDatabase,
+    openDatabase, dbAdd, dbGet, dbGetAll, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
 } from '../src/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../src/js/utils.js';
@@ -128,6 +128,45 @@ describe('DB Module', () => {
         const savedPauseState = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         expect(savedPauseState).toBeDefined();
         expect(savedPauseState.value.startTime).toBe(startTime);
+    });
+
+    describe('dbImportCategories', () => {
+        test('imports categories in append mode', async () => {
+            await openDatabase();
+            await dbAdd(STORE_CATEGORIES, { name: 'Existing', color: 'primary', order: 0 });
+
+            const items = [
+                { name: 'Existing', color: 'secondary' }, // Should be skipped
+                { name: 'New', color: 'teal' },
+                { type: 'page-break' }
+            ];
+
+            await dbImportCategories(items, 'append');
+            const result = await dbGetAll(STORE_CATEGORIES);
+
+            expect(result.length).toBe(3);
+            expect(result.find(c => c.name === 'Existing').color).toBe('primary');
+            expect(result.find(c => c.name === 'New').color).toBe('teal');
+            expect(result.some(c => c.name.startsWith('__PAGE_BREAK__'))).toBe(true);
+            // Verify order
+            expect(result.find(c => c.name === 'New').order).toBeGreaterThan(0);
+        });
+
+        test('imports categories in overwrite mode', async () => {
+            await openDatabase();
+            await dbAdd(STORE_CATEGORIES, { name: 'Old', color: 'primary', order: 0 });
+
+            const items = [
+                { name: 'New', color: 'green' }
+            ];
+
+            await dbImportCategories(items, 'overwrite');
+            const result = await dbGetAll(STORE_CATEGORIES);
+
+            expect(result.length).toBe(1);
+            expect(result[0].name).toBe('New');
+            expect(result[0].order).toBe(0);
+        });
     });
 
 });

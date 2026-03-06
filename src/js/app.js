@@ -40,7 +40,6 @@ const ID_CATEGORY_PAGINATION = 'category-pagination';
 const ID_LOG_LIST = 'log-list';
 const ID_ELAPSED_TIME = 'elapsed-time';
 const ID_STATUS_LABEL = 'status-label';
-const ID_CURRENT_TASK_NAME = 'current-task-name';
 const ID_PAUSE_BTN = 'pause-btn';
 const ID_END_BTN = 'end-btn';
 const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
@@ -703,7 +702,6 @@ async function updateUI() {
 
     const elements = {
         statusLabel: getEl(ID_STATUS_LABEL),
-        currentTaskName: getEl(ID_CURRENT_TASK_NAME),
         pauseBtn: getEl(ID_PAUSE_BTN),
         endBtn: getEl(ID_END_BTN),
         elapsedTime: getEl(ID_ELAPSED_TIME),

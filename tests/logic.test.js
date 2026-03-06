@@ -337,5 +337,29 @@ describe('Logic Module', () => {
             expect(report).toMatch(/09:02/);
             expect(report).toMatch(/05:58/); // 17:58 -> 05:58 PM
         });
+
+        test('generates wiki markup report', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'wiki' });
+            expect(report).toMatch(/\* \d{1,2}:\d{2}( [AP]M)? \| Task 1/);
+        });
+
+        test('generates html table report', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'html' });
+            expect(report).toContain('<table>');
+            expect(report).toContain('<thead>');
+            expect(report).toContain('<tbody>');
+            expect(report).toContain('<td>Task 1</td>');
+        });
+
+        test('generates plain text report', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'text-plain' });
+            expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?\s+\| Task 1/);
+        });
+
+        test('handles duration at bottom in markdown', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, duration: 'bottom' });
+            expect(report).toContain('(30m)');
+            expect(report).toContain('\n  (30m)');
+        });
     });
 });
