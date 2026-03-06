@@ -160,10 +160,8 @@ function setupColorPresets() {
             currentPreviewColor = color;
             document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
             div.classList.add('active');
-            if (isTesting) {
-                // Hot restart if testing
-                stopTest();
-                startTest();
+            if (isTesting && engine) {
+                engine.color = color;
             }
         });
         colorPresetsContainer.appendChild(div);

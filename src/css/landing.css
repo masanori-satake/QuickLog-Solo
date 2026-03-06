@@ -245,6 +245,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: var(--md-sys-spacing-3);
+    margin-bottom: var(--md-sys-spacing-6);
 }
 
 .setup-tabs {
