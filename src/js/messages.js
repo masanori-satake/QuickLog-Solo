@@ -412,7 +412,6 @@ export const messages = {
 
         // QL-Animation Studio
         'studio-title': 'QL-Animation Studio (Beta)',
-        'studio-title': 'QL-Animation Studio (Beta)',
         'sample-select-placeholder': 'Select a sample...',
         'section-metadata': 'Metadata',
         'label-metadata-lang': 'Editor Language',
