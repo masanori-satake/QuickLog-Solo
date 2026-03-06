@@ -43,44 +43,46 @@
 
         <main class="studio-main">
             <div class="editor-pane">
-                <section class="metadata-section card">
-                    <h2 class="section-title"><span class="material-symbols-outlined">info</span> <span data-i18n="section-metadata">Metadata</span></h2>
-                    <div class="input-grid">
-                        <div class="input-group">
-                            <label data-i18n="label-name">Name</label>
-                            <input type="text" id="meta-name" placeholder="My Animation">
-                        </div>
-                        <div class="input-group">
-                            <label data-i18n="label-author">Author</label>
-                            <input type="text" id="meta-author" placeholder="Your Name">
-                        </div>
-                        <div class="input-group full-width">
-                            <label data-i18n="label-description">Description</label>
-                            <input type="text" id="meta-desc" placeholder="Brief explanation of your animation">
-                        </div>
-                    </div>
-                </section>
-
-                <section class="config-section card">
-                    <h2 class="section-title"><span class="material-symbols-outlined">settings</span> <span data-i18n="section-config">Configuration</span></h2>
-                    <div class="input-grid">
-                        <div class="input-group">
-                            <label data-i18n="label-mode">Mode</label>
-                            <select id="config-mode">
-                                <option value="canvas">Canvas (2D Context)</option>
-                                <option value="sprite">Sprite (Object Array)</option>
-                                <option value="matrix">Matrix (2D Array)</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label data-i18n="label-pseudo">Pseudo Space</label>
-                            <div class="switch-container">
-                                <input type="checkbox" id="config-pseudo">
-                                <span class="switch-label" data-i18n="pseudo-desc">Use virtual width</span>
+                <div class="top-row">
+                    <section class="metadata-section card">
+                        <h2 class="section-title"><span class="material-symbols-outlined">info</span> <span data-i18n="section-metadata">Metadata</span></h2>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label data-i18n="label-name">Name</label>
+                                <input type="text" id="meta-name" placeholder="My Animation">
+                            </div>
+                            <div class="input-group">
+                                <label data-i18n="label-author">Author</label>
+                                <input type="text" id="meta-author" placeholder="Your Name">
+                            </div>
+                            <div class="input-group full-width">
+                                <label data-i18n="label-description">Description</label>
+                                <input type="text" id="meta-desc" placeholder="Brief explanation of your animation">
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+
+                    <section class="config-section card">
+                        <h2 class="section-title"><span class="material-symbols-outlined">settings</span> <span data-i18n="section-config">Configuration</span></h2>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label data-i18n="label-mode">Mode</label>
+                                <select id="config-mode">
+                                    <option value="canvas">Canvas (2D Context)</option>
+                                    <option value="sprite">Sprite (Object Array)</option>
+                                    <option value="matrix">Matrix (2D Array)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label data-i18n="label-pseudo">Pseudo Space</label>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="config-pseudo">
+                                    <span class="switch-label" data-i18n="pseudo-desc">Use virtual width</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
 
                 <section class="code-section">
                     <div class="code-tabs">
@@ -116,6 +118,16 @@
                         <div class="preview-header">
                             <h2 class="section-title"><span class="material-symbols-outlined">play_circle</span> <span data-i18n="section-preview">Preview</span></h2>
                             <div class="preview-controls">
+                                <button id="shrink-preview" class="icon-btn" data-i18n-title="btn-shrink-preview">
+                                    <span class="material-symbols-outlined">expand_less</span>
+                                </button>
+                                <button id="expand-preview" class="icon-btn" data-i18n-title="btn-expand-preview">
+                                    <span class="material-symbols-outlined">expand_more</span>
+                                </button>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="show-exclusion" checked>
+                                    <span data-i18n="label-show-exclusion">Exclusion</span>
+                                </label>
                                 <label class="checkbox-label">
                                     <input type="checkbox" id="show-metrics" checked>
                                     <span data-i18n="label-show-metrics">Metrics</span>
@@ -168,7 +180,7 @@
                             </button>
                         </div>
                         <button id="pr-btn" class="tertiary-btn full-width">
-                            <span class="material-symbols-outlined">github</span>
+                            <span class="material-symbols-outlined">rocket_launch</span>
                             <span data-i18n="btn-pr">Prepare PR</span>
                         </button>
                         <input type="file" id="studio-upload-input" style="display:none" accept=".json,.js">

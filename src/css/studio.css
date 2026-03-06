@@ -97,6 +97,19 @@ body.theme-dark {
     gap: var(--md-sys-spacing-2);
 }
 
+.top-row {
+    display: flex;
+    gap: var(--md-sys-spacing-2);
+}
+
+.metadata-section {
+    flex: 2;
+}
+
+.config-section {
+    flex: 1;
+}
+
 .preview-pane {
     width: var(--sidebar-width);
     border-left: 1px solid var(--md-sys-color-outline-variant);
@@ -181,7 +194,6 @@ body.theme-dark {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-height: 400px;
 }
 
 .code-tabs {
@@ -253,6 +265,31 @@ textarea {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
+}
+
+.preview-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    width: 32px;
+    height: 32px;
+}
+
+.icon-btn:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.icon-btn .material-symbols-outlined {
+    font-size: 1.2rem;
 }
 
 .checkbox-label {

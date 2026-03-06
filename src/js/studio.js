@@ -41,6 +41,10 @@ const canvas = document.getElementById('animation-canvas');
 const exclusionSim = document.getElementById('exclusion-simulator');
 const metricsPanel = document.getElementById('metrics-panel');
 const showMetricsCheck = document.getElementById('show-metrics');
+const showExclusionCheck = document.getElementById('show-exclusion');
+const shrinkPreviewBtn = document.getElementById('shrink-preview');
+const expandPreviewBtn = document.getElementById('expand-preview');
+const previewContainer = document.getElementById('preview-container');
 
 const metricLatency = document.getElementById('metric-latency');
 const metricDensity = document.getElementById('metric-density');
@@ -54,13 +58,6 @@ function init() {
     populateSamples();
     setupEventListeners();
     setupDraggableResizable();
-
-    // Set default sample
-    const heroPot = animations.find(a => a.id === 'hero_pot');
-    if (heroPot) {
-        loadSample('hero_pot');
-        sampleSelect.value = 'hero_pot';
-    }
 }
 
 function setupLanguage() {
@@ -148,6 +145,11 @@ function setupEventListeners() {
         metricsPanel.style.display = e.target.checked ? 'grid' : 'none';
     });
 
+    showExclusionCheck.addEventListener('change', (e) => {
+        exclusionSim.style.display = e.target.checked ? 'flex' : 'none';
+        updateExclusionAreas();
+    });
+
     window.addEventListener('beforeunload', (e) => {
         if (!isTesting) {
             e.preventDefault();
@@ -158,6 +160,16 @@ function setupEventListeners() {
     window.addEventListener('resize', () => {
         if (engine) engine.resize();
     });
+
+    shrinkPreviewBtn.addEventListener('click', () => adjustPreviewHeight(-20));
+    expandPreviewBtn.addEventListener('click', () => adjustPreviewHeight(20));
+}
+
+function adjustPreviewHeight(delta) {
+    const currentHeight = previewContainer.offsetHeight;
+    const newHeight = Math.max(100, Math.min(600, currentHeight + delta));
+    previewContainer.style.height = `${newHeight}px`;
+    if (engine) engine.resize();
 }
 
 async function loadSample(id) {
@@ -240,7 +252,24 @@ function extractMethod(code, name) {
     if (lastBrace !== -1) {
         body = body.substring(0, lastBrace);
     }
-    return body.trim();
+    return deindent(body).trim();
+}
+
+function deindent(text) {
+    const lines = text.split('\n');
+    // Find minimum indentation (ignoring empty lines)
+    const minIndent = lines.reduce((min, line) => {
+        if (line.trim().length === 0) return min;
+        const match = line.match(/^\s*/);
+        return Math.min(min, match[0].length);
+    }, Infinity);
+
+    if (minIndent === Infinity) return text;
+
+    return lines.map(line => {
+        if (line.trim().length === 0) return '';
+        return line.substring(minIndent);
+    }).join('\n');
 }
 
 function findRange(text, namePattern) {
@@ -372,8 +401,11 @@ function buildModuleCode() {
         return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     };
 
-    return `
-import { AnimationBase } from '${animationBaseUrl}';
+    const indentCode = (code, spaces) => {
+        return code.split('\n').map(line => ' '.repeat(spaces) + line).join('\n').trimStart();
+    };
+
+    return `import { AnimationBase } from '${animationBaseUrl}';
 
 export default class CustomAnimation extends AnimationBase {
     static metadata = {
@@ -388,17 +420,17 @@ export default class CustomAnimation extends AnimationBase {
         usePseudoSpace: ${configPseudo.checked}
     };
 
-    ${inputVars.value}
+    ${indentCode(inputVars.value, 4)}
 
     setup(width, height) {
-        ${inputSetup.value}
+        ${indentCode(inputSetup.value, 8)}
     }
 
     draw(ctx, { width, height, canvasWidth, elapsedMs, progress, step, exclusionAreas, realExclusionAreas }) {
-        ${inputDraw.value}
+        ${indentCode(inputDraw.value, 8)}
     }
 
-    ${inputInteraction.value}
+    ${indentCode(inputInteraction.value, 4)}
 }`;
 }
 
@@ -605,16 +637,21 @@ function setupDraggableResizable() {
 
 function updateExclusionAreas() {
     if (!engine) return;
-    const rect = exclusionSim.getBoundingClientRect();
-    const canvasRect = canvas.getBoundingClientRect();
 
-    const area = {
-        x: rect.left - canvasRect.left,
-        y: rect.top - canvasRect.top,
-        width: rect.width,
-        height: rect.height
-    };
-    engine.setExclusionAreas([area]);
+    if (showExclusionCheck.checked) {
+        const rect = exclusionSim.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+
+        const area = {
+            x: rect.left - canvasRect.left,
+            y: rect.top - canvasRect.top,
+            width: rect.width,
+            height: rect.height
+        };
+        engine.setExclusionAreas([area]);
+    } else {
+        engine.setExclusionAreas([]);
+    }
 }
 
 init();
