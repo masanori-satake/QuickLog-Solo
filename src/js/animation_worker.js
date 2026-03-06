@@ -26,6 +26,8 @@ console.error = (...args) => {
 let animation = null;
 let offscreenCanvas = null;
 let offscreenCtx = null;
+let speedFactor = 1.0;
+let initPromise = null;
 
 const CELL_SIZE = 6;
 const BRIGHTNESS_HIGH = 120;
@@ -39,17 +41,21 @@ self.onmessage = async (e) => {
     const { type, payload } = e.data;
 
     try {
-        switch (type) {
-            case 'init': {
-                const { modulePath } = payload;
-                // Load the animation module dynamically
+        if (type === 'init') {
+            const { modulePath } = payload;
+            initPromise = (async () => {
                 const module = await import(modulePath);
                 const AnimClass = module.default;
                 animation = new AnimClass();
                 self.postMessage({ type: 'initialized' });
-                break;
-            }
+            })();
+            return;
+        }
 
+        // Wait for initialization to complete for other message types
+        if (initPromise) await initPromise;
+
+        switch (type) {
             case 'setup':
                 if (animation && typeof animation.setup === 'function') {
                     animation.setup(payload.width, payload.height);
@@ -79,6 +85,10 @@ self.onmessage = async (e) => {
                 if (animation && typeof animation.onMouseMove === 'function') {
                     animation.onMouseMove(payload.x, payload.y);
                 }
+                break;
+
+            case 'setSpeed':
+                speedFactor = payload;
                 break;
         }
     } catch (err) {
@@ -113,7 +123,20 @@ function _isInExclusion(x, y, exclusionAreas) {
 }
 
 function performDraw(params) {
-    const { width, height, canvasWidth, exclusionAreas, realExclusionAreas } = params;
+    const { width, height, canvasWidth, exclusionAreas, realExclusionAreas, elapsedMs } = params;
+
+    // Apply speed factor to elapsed time if needed
+    // However, for consistency, we'll pass the modified elapsedMs and progress to the animation
+    const modifiedElapsedMs = elapsedMs * speedFactor;
+    const cycleMs = 120000; // 2 minutes cycle
+    const progress = (modifiedElapsedMs % cycleMs) / cycleMs;
+
+    const modifiedParams = {
+        ...params,
+        elapsedMs: modifiedElapsedMs,
+        progress: progress,
+        step: Math.floor(progress * 240)
+    };
     const config = animation.config || { mode: 'canvas' };
     const usePseudoSpace = !!config.usePseudoSpace;
 
@@ -123,7 +146,7 @@ function performDraw(params) {
     let dots = [];
 
     if (config.mode === 'matrix') {
-        const matrix = animation.draw(null, params);
+        const matrix = animation.draw(null, modifiedParams);
         if (!matrix || !Array.isArray(matrix)) return [];
         const rows = Math.ceil(height / CELL_SIZE);
         const cols = Math.ceil(canvasWidth / CELL_SIZE);
@@ -160,7 +183,7 @@ function performDraw(params) {
             }
         }
     } else if (config.mode === 'sprite') {
-        const sprites = animation.draw(null, params);
+        const sprites = animation.draw(null, modifiedParams);
         if (!sprites || !Array.isArray(sprites)) return [];
 
         sprites.forEach(sprite => {
@@ -188,7 +211,7 @@ function performDraw(params) {
             offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
         }
         offscreenCtx.clearRect(0, 0, width, height);
-        animation.draw(offscreenCtx, params);
+        animation.draw(offscreenCtx, modifiedParams);
 
         const imgData = offscreenCtx.getImageData(0, 0, width, height).data;
         const rows = Math.ceil(height / CELL_SIZE);

@@ -20,6 +20,7 @@ let workerUrl = null;
 let currentPreviewColor = '#0056d2'; // Default primary
 let currentTheme = 'dark';
 let isWordWrap = true;
+let currentSpeed = 1.0;
 
 // DOM Elements
 const sampleSelect = document.getElementById('sample-select');
@@ -57,6 +58,8 @@ const shrinkPreviewBtn = document.getElementById('shrink-preview');
 const expandPreviewBtn = document.getElementById('expand-preview');
 const previewContainer = document.getElementById('preview-container');
 const colorPresetsContainer = document.getElementById('preview-color-presets');
+const speedSlider = document.getElementById('preview-speed');
+const speedValue = document.getElementById('speed-value');
 
 const metricLatency = document.getElementById('metric-latency');
 const metricDensity = document.getElementById('metric-density');
@@ -305,8 +308,26 @@ function setupEventListeners() {
         updateAllGutter();
     });
 
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            searchBar.classList.toggle('hidden');
+            if (!searchBar.classList.contains('hidden')) {
+                searchInput.focus();
+            }
+        }
+    });
+
     shrinkPreviewBtn.addEventListener('click', () => adjustPreviewHeight(-20));
     expandPreviewBtn.addEventListener('click', () => adjustPreviewHeight(20));
+
+    speedSlider.addEventListener('input', (e) => {
+        currentSpeed = parseFloat(e.target.value);
+        speedValue.textContent = currentSpeed.toFixed(1);
+        if (isTesting && engine && engine.worker) {
+            engine.worker.postMessage({ type: 'setSpeed', payload: currentSpeed });
+        }
+    });
 
     toggleWrapBtn.addEventListener('click', () => {
         isWordWrap = !isWordWrap;
@@ -551,6 +572,7 @@ function startTest() {
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
         this.worker.postMessage({ type: 'init', payload: { modulePath: workerUrl } });
+        this.worker.postMessage({ type: 'setSpeed', payload: currentSpeed });
     };
 
     updateExclusionAreas();
@@ -838,6 +860,10 @@ function updateExclusionAreas() {
         engine.setExclusionAreas([area]);
     } else {
         engine.setExclusionAreas([]);
+    }
+
+    if (engine.initialized) {
+        engine.resize();
     }
 }
 
