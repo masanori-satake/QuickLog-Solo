@@ -232,20 +232,18 @@ function parseAndPopulate(code, metadata) {
 
 function extractMethod(code, name) {
     const range = findRange(code, name);
-    if (!range) return '';
+    if (!range || range.bodyStart === undefined) return '';
 
-    // findRange returns the whole method including signature and braces.
-    // We want just the body content.
-    let text = code.substring(range.start, range.end);
-    let start = text.indexOf('{');
-    let end = text.lastIndexOf('}');
-    if (start === -1 || end === -1) return text.trim();
-    return text.substring(start + 1, end).trim();
+    // Extract body content between the identified braces
+    let body = code.substring(range.bodyStart + 1, range.end);
+    let lastBrace = body.lastIndexOf('}');
+    if (lastBrace !== -1) {
+        body = body.substring(0, lastBrace);
+    }
+    return body.trim();
 }
 
 function findRange(text, namePattern) {
-    // Regex to find the name followed by ( or =
-    // Avoid matching if preceded by a dot (e.g., this.setup())
     const regex = new RegExp(`\\b${namePattern}\\b\\s*[=(]`, 'g');
     let match;
     let found = null;
@@ -258,8 +256,8 @@ function findRange(text, namePattern) {
 
     let start = found.index;
     let pos = found.index + found[0].length;
+    let bodyStart;
 
-    // Handle parens if it's a method signature
     if (found[0].endsWith('(')) {
         let pCount = 1;
         while (pCount > 0 && pos < text.length) {
@@ -269,13 +267,13 @@ function findRange(text, namePattern) {
         }
     }
 
-    // Skip to body start '{' or simple assignment end ';'
     while (pos < text.length && text[pos] !== '{' && text[pos] !== ';') {
         pos++;
     }
     if (pos >= text.length) return null;
 
     if (text[pos] === '{') {
+        bodyStart = pos;
         let bCount = 1;
         pos++;
         while (bCount > 0 && pos < text.length) {
@@ -283,14 +281,12 @@ function findRange(text, namePattern) {
             else if (text[pos] === '}') bCount--;
             pos++;
         }
-        // Consume optional trailing semicolon
         if (pos < text.length && text[pos] === ';') pos++;
     } else {
-        // It was a semicolon (simple assignment like config = { ... };)
         pos++;
     }
 
-    return { start, end: pos };
+    return { start, end: pos, bodyStart };
 }
 
 function toggleTest() {
