@@ -212,49 +212,85 @@ function parseAndPopulate(code, metadata) {
     }
 
     let vars = classContent;
+    const toRemove = ['static\\s+metadata', 'config', 'constructor', 'setup', 'draw', 'onClick', 'onMouseMove'];
 
-    const methodsToRemove = ['static\\s+metadata', 'config', 'constructor', 'setup', 'draw', 'onClick', 'onMouseMove'];
-    methodsToRemove.forEach(methodName => {
-        const regex = new RegExp(`${methodName}\\s*[=(]?`);
-        const match = vars.match(regex);
-        if (match) {
-            let start = match.index;
-            let braceCount = 0;
-            let started = false;
-            let end = start;
-            while (end < vars.length) {
-                if (vars[end] === '{') {
-                    braceCount++;
-                    started = true;
-                } else if (vars[end] === '}') {
-                    braceCount--;
-                }
-                end++;
-                if (started && braceCount === 0) break;
+    let changed = true;
+    while (changed) {
+        changed = false;
+        for (const name of toRemove) {
+            const range = findRange(vars, name);
+            if (range) {
+                vars = vars.substring(0, range.start) + vars.substring(range.end);
+                changed = true;
+                break;
             }
-            // Consume optional semicolon
-            if (vars[end] === ';') end++;
-            vars = vars.substring(0, start) + vars.substring(end);
         }
-    });
+    }
 
     inputVars.value = vars.trim();
 }
 
 function extractMethod(code, name) {
-    const regex = new RegExp(`${name}\\s*\\([^)]*\\)\\s*{`);
-    const match = code.match(regex);
-    if (!match) return '';
+    const range = findRange(code, name);
+    if (!range) return '';
 
-    let start = match.index + match[0].length;
-    let braceCount = 1;
-    let end = start;
-    while (braceCount > 0 && end < code.length) {
-        if (code[end] === '{') braceCount++;
-        else if (code[end] === '}') braceCount--;
-        end++;
+    // findRange returns the whole method including signature and braces.
+    // We want just the body content.
+    let text = code.substring(range.start, range.end);
+    let start = text.indexOf('{');
+    let end = text.lastIndexOf('}');
+    if (start === -1 || end === -1) return text.trim();
+    return text.substring(start + 1, end).trim();
+}
+
+function findRange(text, namePattern) {
+    // Regex to find the name followed by ( or =
+    // Avoid matching if preceded by a dot (e.g., this.setup())
+    const regex = new RegExp(`\\b${namePattern}\\b\\s*[=(]`, 'g');
+    let match;
+    let found = null;
+    while ((match = regex.exec(text)) !== null) {
+        if (match.index > 0 && text[match.index - 1] === '.') continue;
+        found = match;
+        break;
     }
-    return code.substring(start, end - 1).trim();
+    if (!found) return null;
+
+    let start = found.index;
+    let pos = found.index + found[0].length;
+
+    // Handle parens if it's a method signature
+    if (found[0].endsWith('(')) {
+        let pCount = 1;
+        while (pCount > 0 && pos < text.length) {
+            if (text[pos] === '(') pCount++;
+            else if (text[pos] === ')') pCount--;
+            pos++;
+        }
+    }
+
+    // Skip to body start '{' or simple assignment end ';'
+    while (pos < text.length && text[pos] !== '{' && text[pos] !== ';') {
+        pos++;
+    }
+    if (pos >= text.length) return null;
+
+    if (text[pos] === '{') {
+        let bCount = 1;
+        pos++;
+        while (bCount > 0 && pos < text.length) {
+            if (text[pos] === '{') bCount++;
+            else if (text[pos] === '}') bCount--;
+            pos++;
+        }
+        // Consume optional trailing semicolon
+        if (pos < text.length && text[pos] === ';') pos++;
+    } else {
+        // It was a semicolon (simple assignment like config = { ... };)
+        pos++;
+    }
+
+    return { start, end: pos };
 }
 
 function toggleTest() {
@@ -292,6 +328,10 @@ function startTest() {
         this.startTime = startTime;
         this.color = color;
         this.initialized = false;
+        this.config = {
+            mode: configMode.value,
+            usePseudoSpace: configPseudo.checked
+        };
 
         // Use custom worker that can handle the blob URL
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
@@ -427,14 +467,20 @@ let lastLatency = 0;
 function startMetricsCollection() {
     lastImageData = null;
 
-    // Patch engine to track latency
-    const originalHandleMessage = engine._handleWorkerMessage;
-    engine._handleWorkerMessage = function(e) {
-        if (e.data.type === 'drawResponse') {
-            lastLatency = performance.now() - this.lastDrawRequestTime;
-        }
-        originalHandleMessage.call(this, e);
-    };
+    // Patch engine to track latency and errors
+    if (!engine._handleWorkerMessage._isPatched) {
+        const original = engine._handleWorkerMessage;
+        engine._handleWorkerMessage = function(e) {
+            if (e.data.type === 'drawResponse') {
+                lastLatency = performance.now() - this.lastDrawRequestTime;
+            } else if (e.data.type === 'error') {
+                showToast('Animation Error: ' + e.data.payload);
+            }
+            original.call(this, e);
+        };
+        engine._handleWorkerMessage._original = original;
+        engine._handleWorkerMessage._isPatched = true;
+    }
 
     metricsInterval = setInterval(() => {
         if (!engine || !engine.canvas) return;
