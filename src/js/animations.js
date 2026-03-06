@@ -246,4 +246,12 @@ export class AnimationEngine {
             this.worker.postMessage({ type: 'setup', payload: { width: w, height: this.canvas.height } });
         }
     }
+
+    forceReset() {
+        if (this.worker && this.initialized) {
+            this.initialized = false;
+            this.stop();
+            // We can't easily restart without the original params, but Studio handles this.
+        }
+    }
 }

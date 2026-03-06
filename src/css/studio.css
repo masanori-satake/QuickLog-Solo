@@ -370,6 +370,10 @@ input:checked + .slider::before {
     border-bottom: none;
 }
 
+.search-bar.hidden {
+    display: none !important;
+}
+
 .code-tabs {
     display: flex;
 }
@@ -578,11 +582,15 @@ body.theme-light .hl-bracket { color: #af00db; }
     height: 48px;
 }
 
+.console-section.collapsed #clear-console {
+    display: none;
+}
+
 .console-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 4px 8px;
+    padding: 0 8px;
     cursor: pointer;
     user-select: none;
 }
@@ -673,8 +681,14 @@ body.theme-light .hl-bracket { color: #af00db; }
     height: 32px;
 }
 
-.icon-btn:hover {
+.icon-btn:hover,
+.icon-btn.active {
     background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.icon-btn.active {
+    color: var(--md-sys-color-primary);
+    box-shadow: inset 0 0 0 1px var(--md-sys-color-outline-variant);
 }
 
 .icon-btn .material-symbols-outlined {

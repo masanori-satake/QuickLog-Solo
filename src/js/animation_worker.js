@@ -135,7 +135,8 @@ function performDraw(params) {
         ...params,
         elapsedMs: modifiedElapsedMs,
         progress: progress,
-        step: Math.floor(progress * 240)
+        step: Math.floor(progress * 240),
+        speed: speedFactor
     };
     const config = animation.config || { mode: 'canvas' };
     const usePseudoSpace = !!config.usePseudoSpace;

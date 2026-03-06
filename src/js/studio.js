@@ -305,7 +305,8 @@ function setupEventListeners() {
 
     window.addEventListener('resize', () => {
         if (engine) engine.resize();
-        updateAllGutter();
+        // Wait for potential wrapping to finish before updating gutter
+        setTimeout(updateAllGutter, 50);
     });
 
     window.addEventListener('keydown', (e) => {
@@ -331,6 +332,7 @@ function setupEventListeners() {
 
     toggleWrapBtn.addEventListener('click', () => {
         isWordWrap = !isWordWrap;
+        toggleWrapBtn.classList.toggle('active', isWordWrap);
         document.querySelectorAll('.editor-textarea, .editor-highlight').forEach(el => {
             if (isWordWrap) {
                 el.classList.remove('no-wrap');
@@ -355,9 +357,13 @@ function setupEventListeners() {
     btnReplace.addEventListener('click', () => handleReplace(false));
     btnReplaceAll.addEventListener('click', () => handleReplace(true));
 
-    toggleConsoleBtn.addEventListener('click', () => {
-        consoleSection.classList.toggle('collapsed');
-        toggleConsoleBtn.querySelector('span').textContent = consoleSection.classList.contains('collapsed') ? 'expand_more' : 'expand_less';
+    toggleConsoleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleConsole();
+    });
+
+    document.querySelector('.console-header').addEventListener('click', () => {
+        toggleConsole();
     });
 
     clearConsoleBtn.addEventListener('click', () => {
@@ -847,6 +853,11 @@ function setupDraggableResizable() {
 function updateExclusionAreas() {
     if (!engine) return;
 
+    const wasRunning = isTesting;
+    if (wasRunning) {
+        stopTest();
+    }
+
     if (showExclusionCheck.checked) {
         const rect = exclusionSim.getBoundingClientRect();
         const canvasRect = canvas.getBoundingClientRect();
@@ -862,8 +873,12 @@ function updateExclusionAreas() {
         engine.setExclusionAreas([]);
     }
 
-    if (engine.initialized) {
-        engine.resize();
+    if (wasRunning) {
+        startTest();
+    } else {
+        if (engine.initialized) {
+            engine.resize();
+        }
     }
 }
 
@@ -914,9 +929,9 @@ function updateHighlight(ta) {
     const highlightEl = ta.parentElement.querySelector('.editor-highlight');
     if (!highlightEl) return;
 
-    let code = ta.value;
+    const code = ta.value;
+    const lines = code.split('\n');
 
-    // Simple regex highlighting
     const rules = [
         { regex: /\/\/.*/g, class: 'hl-comment' },
         { regex: /\/\*[\s\S]*?\*\//g, class: 'hl-comment' },
@@ -927,43 +942,51 @@ function updateHighlight(ta) {
         { regex: /[{}[\]()]/g, class: 'hl-bracket' }
     ];
 
-    // To avoid overlapping, we process and escape
-    let escapedCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const processedLines = lines.map(line => {
+        let escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const tokens = [];
 
-    // This is a naive implementation, but avoids external libs
-    // We'll use placeholders to avoid re-highlighting
-    const tokens = [];
-    let processed = escapedCode;
-
-    rules.forEach((rule, idx) => {
-        processed = processed.replace(rule.regex, (match) => {
-            const id = `__TOKEN_${idx}_${tokens.length}__`;
-            tokens.push({ id, html: `<span class="${rule.class}">${match}</span>` });
-            return id;
+        rules.forEach((rule, idx) => {
+            escaped = escaped.replace(rule.regex, (match) => {
+                const id = `__TOKEN_${idx}_${tokens.length}__`;
+                tokens.push({ id, html: `<span class="${rule.class}">${match}</span>` });
+                return id;
+            });
         });
+
+        tokens.forEach(token => {
+            escaped = escaped.replace(token.id, token.html);
+        });
+
+        return `<div class="logical-line">${escaped || ' '}</div>`;
     });
 
-    tokens.forEach(token => {
-        processed = processed.replace(token.id, token.html);
-    });
-
-    highlightEl.innerHTML = processed + (code.endsWith('\n') ? ' ' : '');
+    highlightEl.innerHTML = processedLines.join('');
 }
 
 function updateGutter(ta) {
     const gutter = ta.closest('.editor-body').querySelector('.editor-gutter');
     if (!gutter) return;
 
-    const lines = ta.value.split('\n');
-    // Calculate actual visual lines if word wrap is on
-    // But for simplicity, we'll just use line numbers for now.
-    // If we want to be precise with word wrap, we need to calculate line heights.
+    gutter.innerHTML = '';
 
-    let gutterHTML = '';
-    for (let i = 1; i <= lines.length; i++) {
-        gutterHTML += `<div>${i}</div>`;
-    }
-    gutter.innerHTML = gutterHTML;
+    // To support word wrap, we need to ensure each gutter line matches the height of the editor line.
+    const highlight = ta.parentElement.querySelector('.editor-highlight');
+
+    // Ensure highlight is up to date before measuring
+    updateHighlight(ta);
+
+    const logicalLines = highlight.querySelectorAll('.logical-line');
+    logicalLines.forEach((lineEl, idx) => {
+        const numDiv = document.createElement('div');
+        numDiv.textContent = idx + 1;
+        numDiv.style.height = `${lineEl.offsetHeight}px`;
+        numDiv.style.lineHeight = `${lineEl.offsetHeight}px`;
+        numDiv.style.display = 'flex';
+        numDiv.style.alignItems = 'flex-start';
+        numDiv.style.justifyContent = 'flex-end';
+        gutter.appendChild(numDiv);
+    });
 }
 
 function syncScroll(ta) {
@@ -1022,9 +1045,15 @@ function appendConsole(msg, type = '') {
     }
 }
 
+function toggleConsole() {
+    consoleSection.classList.toggle('collapsed');
+    const isCollapsed = consoleSection.classList.contains('collapsed');
+    toggleConsoleBtn.querySelector('span').textContent = isCollapsed ? 'expand_less' : 'expand_more';
+}
+
 function showConsole() {
     consoleSection.classList.remove('collapsed');
-    toggleConsoleBtn.querySelector('span').textContent = 'expand_less';
+    toggleConsoleBtn.querySelector('span').textContent = 'expand_more';
 }
 
 init();
