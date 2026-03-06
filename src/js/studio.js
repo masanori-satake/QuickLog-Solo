@@ -14,6 +14,7 @@ let metaData = {
 };
 let engine = null;
 let isTesting = false;
+let isDirty = false;
 let startTime = 0;
 let workerUrl = null;
 
@@ -151,8 +152,21 @@ function setupEventListeners() {
         loadCurrentMetaData();
     });
 
-    metaName.addEventListener('input', saveCurrentMetaData);
-    metaDesc.addEventListener('input', saveCurrentMetaData);
+    metaName.addEventListener('input', () => {
+        saveCurrentMetaData();
+        markDirty();
+    });
+    metaDesc.addEventListener('input', () => {
+        saveCurrentMetaData();
+        markDirty();
+    });
+    metaAuthor.addEventListener('input', markDirty);
+    configMode.addEventListener('change', markDirty);
+    configPseudo.addEventListener('change', markDirty);
+
+    [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
+        el.addEventListener('input', markDirty);
+    });
 
     sampleSelect.addEventListener('change', (e) => {
         if (e.target.value) {
@@ -186,7 +200,7 @@ function setupEventListeners() {
     });
 
     window.addEventListener('beforeunload', (e) => {
-        if (!isTesting) {
+        if (isDirty) {
             e.preventDefault();
             e.returnValue = '';
         }
@@ -198,6 +212,10 @@ function setupEventListeners() {
 
     shrinkPreviewBtn.addEventListener('click', () => adjustPreviewHeight(-20));
     expandPreviewBtn.addEventListener('click', () => adjustPreviewHeight(20));
+}
+
+function markDirty() {
+    isDirty = true;
 }
 
 function adjustPreviewHeight(delta) {
@@ -232,6 +250,7 @@ function loadCurrentMetaData() {
 }
 
 function parseAndPopulate(code, metadata) {
+    isDirty = false;
     metaData.name = typeof metadata.name === 'object' ? { ...metadata.name } : { en: metadata.name };
     metaData.description = typeof metadata.description === 'object' ? { ...metadata.description } : { en: metadata.description || '' };
     loadCurrentMetaData();
@@ -360,9 +379,13 @@ function toggleTest() {
     }
 }
 
+function getMsg(key) {
+    return (messages[currentLang] && messages[currentLang][key]) || messages.en[key] || key;
+}
+
 function startTest() {
     isTesting = true;
-    testBtn.innerHTML = '<span class="material-symbols-outlined">stop</span> <span>Stop Test</span>';
+    testBtn.innerHTML = `<span class="material-symbols-outlined">stop</span> <span>${getMsg('btn-stop-test')}</span>`;
     testBtn.classList.replace('primary-btn', 'danger-btn');
 
     // Disable inputs
@@ -401,7 +424,7 @@ function startTest() {
     updateExclusionAreas();
     engine.start('test', startTime, '#1976d2');
 
-    metricStatus.textContent = 'Running';
+    metricStatus.textContent = getMsg('status-running');
     metricStatus.style.color = '#4caf50';
 
     startMetricsCollection();
@@ -416,7 +439,7 @@ function stopTest() {
     setInputDisabled(false);
     engine.stop();
 
-    metricStatus.textContent = 'Ready';
+    metricStatus.textContent = getMsg('status-ready');
     metricStatus.style.color = 'inherit';
     stopMetricsCollection();
 }
@@ -478,7 +501,8 @@ function downloadAnimation() {
     a.download = `${metaName.value.toLowerCase().replace(/\s+/g, '_') || 'animation'}.js`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Downloaded JS file');
+    isDirty = false;
+    showToast(getMsg('toast-downloaded-js'));
 }
 
 function handleUpload(e) {
@@ -502,13 +526,15 @@ function handleUpload(e) {
                 inputSetup.value = data.setup || '';
                 inputDraw.value = data.draw || '';
                 inputInteraction.value = data.interaction || '';
-                showToast('Loaded from JSON');
+                isDirty = false;
+                showToast(getMsg('toast-loaded-json'));
             } catch {
-                showToast('Invalid JSON');
+                showToast(getMsg('toast-invalid-json'));
             }
         } else if (file.name.endsWith('.js')) {
             parseAndPopulate(content, { name: 'Imported', description: '', author: '' });
-            showToast('Loaded from JS');
+            isDirty = false;
+            showToast(getMsg('toast-loaded-js'));
         }
     };
     reader.readAsText(file);
@@ -536,7 +562,7 @@ function startMetricsCollection() {
             if (e.data.type === 'drawResponse') {
                 lastLatency = performance.now() - this.lastDrawRequestTime;
             } else if (e.data.type === 'error') {
-                showToast('Animation Error: ' + e.data.payload);
+                showToast(getMsg('toast-anim-error') + e.data.payload);
                 stopTest();
             }
             original.call(this, e);
@@ -607,13 +633,6 @@ function setupDraggableResizable() {
     let isResizing = false;
     let currentResizer = null;
     let startX, startY, startLeft, startTop, startWidth, startHeight;
-
-    window.addEventListener('beforeunload', (e) => {
-        if (inputDraw.value.length > 10) { // Simple heuristic
-            e.preventDefault();
-            e.returnValue = '';
-        }
-    });
 
     exclusionSim.addEventListener('mousedown', (e) => {
         if (e.target.classList.contains('resizer')) {
