@@ -1,4 +1,4 @@
-[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.5.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
+[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.9.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
 
 # QuickLog-Solo
 
@@ -51,9 +51,10 @@ It is provided "AS IS" without warranty of any kind, as per the MIT License.
 
 ## カスタマイズ
 - **テーマ:** ライトモード / ダークモードの切り替えが可能です。
-- **アクセントカラー:** 設定パネルからお好みの色（ブルー、グリーン、オレンジ等）を選択できます。
-- **フォント切り替え:** 視認性の高い複数のフォントから、好みに合わせて表示を切り替えられます。
-- **QL-Animation Studio:** ブラウザ上でオリジナルの背景アニメーションを作成・テストできる [QL-Animation Studio](src/studio.html) を搭載しています。
+- **アクセントカラー:** カテゴリごとに 14 色のカラーバリエーションから選択できます。
+- **フォント切り替え:** 言語ごとに最適化された複数のフォントから選択可能です。
+- **背景アニメーション:** 20 種類以上の LCD ドットマトリクス風アニメーションを搭載。
+- **QL-Animation Studio (β版):** ブラウザ上でオリジナルの背景アニメーションを作成・テストできる [開発環境](https://quicklog-solo.vercel.app/src/studio.html) を公開しています。
 
 ## 開発者向け情報
 開発環境の構築、ディレクトリ構成、テスト方法などの技術的な詳細は [docs/README_DEV.md](docs/README_DEV.md) を参照してください。
