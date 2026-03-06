@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "QuickLog-Solo",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "1秒で記録、1秒で集計 - ミニマリスト向けサイドパネル作業メモツール",
   "permissions": [
     "sidebars"
