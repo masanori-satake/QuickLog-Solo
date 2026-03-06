@@ -137,11 +137,33 @@ body.theme-dark {
 .section-title {
     font-size: 1rem;
     font-weight: 500;
-    margin-bottom: var(--md-sys-spacing-1-5);
     display: flex;
     align-items: center;
     gap: 8px;
     color: var(--md-sys-color-primary);
+}
+
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--md-sys-spacing-1-5);
+}
+
+.input-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.lang-select-small {
+    padding: 2px 4px;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    background: var(--md-sys-color-surface-container-highest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-on-surface);
 }
 
 .section-title .material-symbols-outlined {

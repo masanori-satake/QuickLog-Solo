@@ -45,7 +45,7 @@
                 <p class="body-large" data-i18n="hero-desc">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型作業メモツールです。</p>
                 <div class="cta-buttons">
                     <button class="btn-primary" onclick="openPreview()" data-i18n="cta-test">ブラウザで試す</button>
-                    <a href="src/studio.html" class="btn-tertiary" data-i18n="cta-studio">Anim Studioで遊ぶ</a>
+
                     <div class="download-dropdown" id="download-dropdown">
                         <button class="btn-secondary" onclick="toggleDownloadDropdown(event)"><span data-i18n="cta-download">拡張機能をダウンロード</span> <span class="material-symbols-outlined">expand_more</span></button>
                         <div class="dropdown-content">
@@ -172,6 +172,13 @@
                         <h4 data-i18n="faq-3-q">Q. 動作が重くなった場合は？</h4>
                         <p data-i18n="faq-3-a">A. 設定の「メンテナンス」タブからログをクリアするか、CSVエクスポートでバックアップを取ってからリセットをお試しください。</p>
                     </div>
+                    <div class="faq-item">
+                        <h4 data-i18n="faq-4-q">Q. アニメーションは追加することができますか？</h4>
+                        <p data-i18n="faq-4-a">A. 今後順次増やしていきます。さらに皆さんが作成したものも組み込んでいきたいと思います。興味のある方はぜひ Playground で試してみてください！</p>
+                        <div style="margin-top: 12px;">
+                            <a href="src/studio.html" id="cta-studio-link" class="btn-tertiary" style="text-decoration: none; display: inline-block;" data-i18n="cta-studio">Anim Studio (β版) で遊ぶ</a>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -259,7 +266,9 @@
                 "copy-success": "URLをコピーしました！",
                 "dl-chrome": "Chrome / Edge 用",
                 "dl-firefox": "Firefox 用",
-                "cta-studio": "Anim Studioで遊ぶ",
+                "cta-studio": "Anim Studio (β版) で遊ぶ",
+                "faq-4-q": "Q. アニメーションは追加することができますか？",
+                "faq-4-a": "A. 今後順次増やしていきます。さらに皆さんが作成したものも組み込んでいきたいと思います。技術に興味のある方はぜひ Studio で遊んでみてください！",
                 "footer-disclaimer": "本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用による損害について開発者は一切の責任を負いません。",
                 "lang-en": "🇺🇸 English",
                 "lang-ja": "🇯🇵 日本語",
@@ -316,7 +325,9 @@
                 "copy-success": "URL Copied!",
                 "dl-chrome": "For Chrome / Edge",
                 "dl-firefox": "For Firefox",
-                "cta-studio": "Play in Anim Studio",
+                "cta-studio": "Play in Anim Studio (Beta)",
+                "faq-4-q": "Q. Can I add more animations?",
+                "faq-4-a": "A. We will continue to add more over time. We also hope to incorporate animations created by the community. If you are interested, please try out the Anim Studio!",
                 "footer-disclaimer": "This is a personal open-source project and provided 'AS IS' without warranty of any kind. Use at your own risk.",
                 "lang-en": "🇺🇸 English",
                 "lang-ja": "🇯🇵 日本語",
@@ -695,6 +706,12 @@
             // Update dropdown value
             const select = document.getElementById('lang-select-landing');
             if (select) select.value = lang;
+
+            // Update Anim Studio link with language parameter
+            const studioLink = document.getElementById('cta-studio-link');
+            if (studioLink) {
+                studioLink.href = 'src/studio.html?lang=' + encodeURIComponent(safeLang);
+            }
 
             // Update page title
             const titles = {

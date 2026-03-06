@@ -191,9 +191,10 @@ export const messages = {
         'init-cat-move': '🚶 移動・外出',
 
         // Anim Studio
-        'studio-title': 'QuickLog Anim Studio',
+        'studio-title': 'QuickLog Anim Studio (β版)',
         'sample-select-placeholder': 'サンプルを選択...',
         'section-metadata': 'メタデータ',
+        'label-metadata-lang': '編集言語',
         'section-config': '設定',
         'section-preview': 'プレビュー',
         'label-name': '名前',
@@ -398,9 +399,10 @@ export const messages = {
         'init-cat-move': '🚶 Travel/Outing',
 
         // Anim Studio
-        'studio-title': 'QuickLog Anim Studio',
+        'studio-title': 'QuickLog Anim Studio (Beta)',
         'sample-select-placeholder': 'Select a sample...',
         'section-metadata': 'Metadata',
+        'label-metadata-lang': 'Editor Language',
         'section-config': 'Configuration',
         'section-preview': 'Preview',
         'label-name': 'Name',

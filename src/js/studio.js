@@ -7,6 +7,11 @@ import { AnimationEngine } from './animations.js';
 import { messages } from './messages.js';
 
 let currentLang = 'en';
+let metaLang = 'en';
+let metaData = {
+    name: {},
+    description: {}
+};
 let engine = null;
 let isTesting = false;
 let startTime = 0;
@@ -15,6 +20,7 @@ let workerUrl = null;
 // DOM Elements
 const sampleSelect = document.getElementById('sample-select');
 const langSelect = document.getElementById('lang-select-studio');
+const metaLangSelect = document.getElementById('meta-lang-select');
 const codeTabs = document.querySelectorAll('.code-tab');
 const editors = document.querySelectorAll('.editor-container');
 const testBtn = document.getElementById('test-btn');
@@ -61,17 +67,28 @@ function init() {
 }
 
 function setupLanguage() {
-    const userLang = navigator.language || navigator.userLanguage;
-    const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+
+    const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh', 'en'];
     let matched = 'en';
-    for (const prefix of prefixes) {
-        if (userLang.startsWith(prefix)) {
-            matched = prefix;
-            break;
+
+    if (langParam && prefixes.includes(langParam)) {
+        matched = langParam;
+    } else {
+        const userLang = navigator.language || navigator.userLanguage;
+        for (const prefix of prefixes) {
+            if (userLang.startsWith(prefix)) {
+                matched = prefix;
+                break;
+            }
         }
     }
+
     currentLang = matched;
+    metaLang = matched;
     langSelect.value = matched;
+    metaLangSelect.value = matched;
     updateTranslations();
 }
 
@@ -127,6 +144,15 @@ function setupEventListeners() {
         populateSamples();
         sampleSelect.value = val;
     });
+
+    metaLangSelect.addEventListener('change', (e) => {
+        saveCurrentMetaData();
+        metaLang = e.target.value;
+        loadCurrentMetaData();
+    });
+
+    metaName.addEventListener('input', saveCurrentMetaData);
+    metaDesc.addEventListener('input', saveCurrentMetaData);
 
     sampleSelect.addEventListener('change', (e) => {
         if (e.target.value) {
@@ -195,10 +221,22 @@ async function loadSample(id) {
     }
 }
 
+function saveCurrentMetaData() {
+    metaData.name[metaLang] = metaName.value;
+    metaData.description[metaLang] = metaDesc.value;
+}
+
+function loadCurrentMetaData() {
+    metaName.value = metaData.name[metaLang] || '';
+    metaDesc.value = metaData.description[metaLang] || '';
+}
+
 function parseAndPopulate(code, metadata) {
-    metaName.value = typeof metadata.name === 'object' ? metadata.name.en : metadata.name;
+    metaData.name = typeof metadata.name === 'object' ? { ...metadata.name } : { en: metadata.name };
+    metaData.description = typeof metadata.description === 'object' ? { ...metadata.description } : { en: metadata.description || '' };
+    loadCurrentMetaData();
+
     metaAuthor.value = metadata.author || '';
-    metaDesc.value = typeof metadata.description === 'object' ? metadata.description.en : (metadata.description || '');
 
     // Extract config
     const modeMatch = code.match(/mode:\s*['"](canvas|matrix|sprite)['"]/);
@@ -402,13 +440,19 @@ function buildModuleCode() {
         return code.split('\n').map(line => ' '.repeat(spaces) + line).join('\n').trimStart();
     };
 
+    const formatMetaData = (obj) => {
+        return JSON.stringify(obj, null, 8).replace(/^{/, '').replace(/}$/, '').trim();
+    };
+
+    saveCurrentMetaData();
+
     return `import { AnimationBase } from '${animationBaseUrl}';
 
 export default class CustomAnimation extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
-        name: "${escapeJSString(metaName.value)}",
-        description: "${escapeJSString(metaDesc.value)}",
+        name: ${JSON.stringify(metaData.name, null, 8).trimStart()},
+        description: ${JSON.stringify(metaData.description, null, 8).trimStart()},
         author: "${escapeJSString(metaAuthor.value)}"
     };
 
@@ -452,9 +496,10 @@ function handleUpload(e) {
             try {
                 const data = JSON.parse(content);
                 // Populate fields from JSON
-                metaName.value = data.name || '';
+                metaData.name = typeof data.name === 'object' ? { ...data.name } : { en: data.name || '' };
+                metaData.description = typeof data.description === 'object' ? { ...data.description } : { en: data.description || '' };
+                loadCurrentMetaData();
                 metaAuthor.value = data.author || '';
-                metaDesc.value = data.description || '';
                 configMode.value = data.mode || 'canvas';
                 configPseudo.checked = !!data.usePseudoSpace;
                 inputVars.value = data.vars || '';
