@@ -53,6 +53,7 @@ It is provided "AS IS" without warranty of any kind, as per the MIT License.
 - **テーマ:** ライトモード / ダークモードの切り替えが可能です。
 - **アクセントカラー:** 設定パネルからお好みの色（ブルー、グリーン、オレンジ等）を選択できます。
 - **フォント切り替え:** 視認性の高い複数のフォントから、好みに合わせて表示を切り替えられます。
+- **Anim Studio:** ブラウザ上でオリジナルの背景アニメーションを作成・テストできる [Anim Studio](src/studio.html) を搭載しています。
 
 ## 開発者向け情報
 開発環境の構築、ディレクトリ構成、テスト方法などの技術的な詳細は [docs/README_DEV.md](docs/README_DEV.md) を参照してください。
