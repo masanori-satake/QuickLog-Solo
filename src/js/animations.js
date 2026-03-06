@@ -125,8 +125,10 @@ export class AnimationEngine {
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
 
-        const modulePath = `./animation/${this.activeAnimationId}.js`;
-        this.worker.postMessage({ type: 'init', payload: { modulePath } });
+        // Use absolute URL for module loading to be more robust across different loading contexts
+        const moduleUrl = new URL(`./animation/${this.activeAnimationId}.js`, import.meta.url).href;
+        console.log(`QuickLog-Solo: Starting animation "${name}" (${this.activeAnimationId})`);
+        this.worker.postMessage({ type: 'init', payload: { modulePath: moduleUrl } });
     }
 
     _handleWorkerMessage(e) {
@@ -242,8 +244,8 @@ export class AnimationEngine {
         const rect = parent.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return;
 
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
+        this.canvas.width = Math.floor(rect.width);
+        this.canvas.height = Math.floor(rect.height);
 
         if (this.worker && this.initialized) {
             let w = this.canvas.width;

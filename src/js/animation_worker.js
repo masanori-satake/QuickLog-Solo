@@ -65,7 +65,6 @@ self.onmessage = async (e) => {
             case 'draw': {
                 if (!animation) return;
                 const result = performDraw(payload);
-                if (!result || !result.dots) return;
                 const { dots, rawBitmap } = result;
                 const response = {
                     type: 'drawResponse',
@@ -156,7 +155,7 @@ function performDraw(params) {
 
     if (config.mode === 'matrix') {
         const matrix = animation.draw(null, modifiedParams);
-        if (!matrix || !Array.isArray(matrix)) return [];
+        if (!matrix || !Array.isArray(matrix)) return { dots: [], rawBitmap: null };
         const rows = Math.ceil(height / CELL_SIZE);
         const cols = Math.ceil(canvasWidth / CELL_SIZE);
 
@@ -193,7 +192,7 @@ function performDraw(params) {
         }
     } else if (config.mode === 'sprite') {
         const sprites = animation.draw(null, modifiedParams);
-        if (!sprites || !Array.isArray(sprites)) return [];
+        if (!sprites || !Array.isArray(sprites)) return { dots: [], rawBitmap: null };
 
         sprites.forEach(sprite => {
             const realX = _mapToRealX(sprite.x, usePseudoSpace, physicalMask, canvasWidth);
