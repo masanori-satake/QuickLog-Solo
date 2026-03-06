@@ -81,10 +81,10 @@ export function parseCsvLine(line) {
  * @returns {boolean}
  */
 export function isValidCategoryName(name) {
-    if (!name) return false;
+    if (typeof name !== 'string') return false;
     const trimmed = name.trim();
     if (trimmed.length === 0 || trimmed.length > 50) return false;
-    if (trimmed === SYSTEM_CATEGORY_IDLE || trimmed === SYSTEM_CATEGORY_PAGE_BREAK) return false;
+    if (trimmed === SYSTEM_CATEGORY_IDLE || trimmed.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return false;
     return true;
 }
 

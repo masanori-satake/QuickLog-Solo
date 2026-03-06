@@ -45,6 +45,9 @@ describe('Utils Module', () => {
             expect(isValidCategoryName('a'.repeat(51))).toBe(false);
             expect(isValidCategoryName('__IDLE__')).toBe(false);
             expect(isValidCategoryName('__PAGE_BREAK__')).toBe(false);
+            expect(isValidCategoryName('__PAGE_BREAK___123')).toBe(false);
+            expect(isValidCategoryName(123)).toBe(false);
+            expect(isValidCategoryName(null)).toBe(false);
         });
     });
 
