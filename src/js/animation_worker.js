@@ -125,8 +125,7 @@ function _isInExclusion(x, y, exclusionAreas) {
 function performDraw(params) {
     const { width, height, canvasWidth, exclusionAreas, realExclusionAreas, elapsedMs } = params;
 
-    // Apply speed factor to elapsed time if needed
-    // However, for consistency, we'll pass the modified elapsedMs and progress to the animation
+    // Apply speed factor to elapsed time
     const modifiedElapsedMs = elapsedMs * speedFactor;
     const cycleMs = 120000; // 2 minutes cycle
     const progress = (modifiedElapsedMs % cycleMs) / cycleMs;
@@ -136,7 +135,7 @@ function performDraw(params) {
         elapsedMs: modifiedElapsedMs,
         progress: progress,
         step: Math.floor(progress * 240),
-        speed: speedFactor
+        speed: speedFactor // Ensure speed is passed for legacy or manual use
     };
     const config = animation.config || { mode: 'canvas' };
     const usePseudoSpace = !!config.usePseudoSpace;

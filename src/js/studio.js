@@ -143,7 +143,7 @@ function updateTranslations() {
             el.textContent = messages[currentLang][key];
         } else if (messages._common && messages._common[key]) {
             el.textContent = messages._common[key];
-        } else if (messages.en[key]) {
+        } else if (messages.en[key] !== undefined) {
             el.textContent = messages.en[key];
         }
     });
@@ -558,33 +558,39 @@ function startTest() {
     if (workerUrl) URL.revokeObjectURL(workerUrl);
     workerUrl = URL.createObjectURL(blob);
 
-    // Inject custom worker URL to handle blob imports if necessary
-    // Actually, the current engine imports modulePath. Blob URLs work with dynamic import().
-
     startTime = Date.now();
-    engine.stop();
 
-    // We need to override the engine's internal module path logic for this test
+    // Configure engine for testing
+    engine.config = {
+        mode: configMode.value,
+        usePseudoSpace: configPseudo.checked
+    };
+
+    updateExclusionAreas();
+
+    // We start the engine using the blob URL as module path
+    // We need to pass a special ID to trigger blob loading in the engine's start method logic
+    // But since the engine normally constructs the path, we'll patch it to use our blob.
+
+    const originalStart = engine.start;
     engine.start = function(name, startTime, color) {
         this.stop();
-        this.activeAnimationId = 'test';
+        this.activeAnimationId = 'test'; // Identifier
         this.startTime = startTime;
         this.color = color;
         this.initialized = false;
-        this.config = {
-            mode: configMode.value,
-            usePseudoSpace: configPseudo.checked
-        };
+        this.perfViolations = 0;
+        this.isMonitoring = true;
+        this.isDrawPending = false;
 
-        // Use custom worker that can handle the blob URL
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
         this.worker.postMessage({ type: 'init', payload: { modulePath: workerUrl } });
         this.worker.postMessage({ type: 'setSpeed', payload: currentSpeed });
     };
 
-    updateExclusionAreas();
     engine.start('test', startTime, currentPreviewColor);
+    engine.start = originalStart; // Restore after one-time use
 
     metricStatus.textContent = getMsg('status-running');
     metricStatus.style.color = '#4caf50';
@@ -726,7 +732,7 @@ function startMetricsCollection() {
         const original = engine._handleWorkerMessage;
         engine._handleWorkerMessage = function(e) {
             if (e.data.type === 'drawResponse') {
-                lastLatency = performance.now() - this.lastDrawRequestTime;
+                lastLatency = performance.now() - engine.lastDrawRequestTime;
             } else if (e.data.type === 'error') {
                 appendConsole(e.data.payload, 'error');
                 showConsole();
@@ -734,7 +740,7 @@ function startMetricsCollection() {
             } else if (e.data.type === 'log') {
                 appendConsole(e.data.payload, e.data.level || 'info');
             }
-            original.call(this, e);
+            original.call(engine, e);
         };
         engine._handleWorkerMessage._original = original;
         engine._handleWorkerMessage._isPatched = true;

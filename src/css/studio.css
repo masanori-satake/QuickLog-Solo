@@ -39,8 +39,11 @@ body.theme-light {
     --preview-bg: #fff;
 }
 
-button {
+button, input, select, textarea {
     font-family: inherit;
+}
+
+button {
     cursor: pointer;
     border: none;
     display: flex;
