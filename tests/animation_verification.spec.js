@@ -6,8 +6,9 @@ test.describe('Animation Rendering Verification', () => {
 
         // Ensure Matrix Code is selected
         await page.click('#settings-toggle');
+        await page.waitForSelector('#animation-select', { state: 'visible' });
         await page.selectOption('#animation-select', 'digital_rain');
-        await page.click('.close-btn');
+        await page.click('#settings-popup .close-btn');
 
         // Start a task to trigger animation
         // Note: The first category button is 'Development/Coding' which is set to animation: 'none' by default.
