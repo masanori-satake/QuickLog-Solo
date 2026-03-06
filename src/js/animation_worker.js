@@ -64,7 +64,9 @@ self.onmessage = async (e) => {
 
             case 'draw': {
                 if (!animation) return;
-                const { dots, rawBitmap } = performDraw(payload);
+                const result = performDraw(payload);
+                if (!result || !result.dots) return;
+                const { dots, rawBitmap } = result;
                 const response = {
                     type: 'drawResponse',
                     payload: {
