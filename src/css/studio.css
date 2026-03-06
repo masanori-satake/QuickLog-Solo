@@ -282,6 +282,7 @@ input:checked + .slider::before {
     align-items: center;
     gap: 8px;
     color: var(--md-sys-color-primary);
+    margin: 0;
 }
 
 .section-header-row {
@@ -576,6 +577,7 @@ body.theme-light .hl-bracket { color: #af00db; }
     transition: height 0.3s ease;
     height: 200px;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .console-section.collapsed {

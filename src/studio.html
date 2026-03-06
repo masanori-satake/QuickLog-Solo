@@ -13,6 +13,13 @@
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 </head>
 <body class="theme-dark">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('studio-theme');
+            if (savedTheme === 'light') document.body.classList.replace('theme-dark', 'theme-light');
+            else if (!savedTheme && window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.classList.replace('theme-dark', 'theme-light');
+        })();
+    </script>
     <div id="studio-app">
         <header class="studio-header">
             <div class="header-left">

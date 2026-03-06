@@ -101,7 +101,7 @@ function setupTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    applyTheme();
+    // Body class is already set by inline script to prevent flickering
     themeToggle.checked = (currentTheme === 'dark');
 }
 
@@ -853,11 +853,6 @@ function setupDraggableResizable() {
 function updateExclusionAreas() {
     if (!engine) return;
 
-    const wasRunning = isTesting;
-    if (wasRunning) {
-        stopTest();
-    }
-
     if (showExclusionCheck.checked) {
         const rect = exclusionSim.getBoundingClientRect();
         const canvasRect = canvas.getBoundingClientRect();
@@ -873,12 +868,9 @@ function updateExclusionAreas() {
         engine.setExclusionAreas([]);
     }
 
-    if (wasRunning) {
-        startTest();
-    } else {
-        if (engine.initialized) {
-            engine.resize();
-        }
+    if (engine.initialized) {
+        // Just trigger a resize to update worker state without full restart
+        engine.resize();
     }
 }
 
