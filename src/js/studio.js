@@ -394,9 +394,14 @@ function markDirty() {
 function updateCanvasControlVisibility() {
     const isCanvasMode = configMode.value === 'canvas';
     showCanvasLabel.style.display = isCanvasMode ? 'flex' : 'none';
-    if (!isCanvasMode) {
+    if (isCanvasMode) {
+        showCanvasCheck.checked = true;
+        rawCanvasContainer.classList.remove('hidden');
+        if (engine) engine.requestRawBitmap = true;
+    } else {
         showCanvasCheck.checked = false;
         rawCanvasContainer.classList.add('hidden');
+        if (engine) engine.requestRawBitmap = false;
     }
 }
 
@@ -413,10 +418,10 @@ function resetStudioUI() {
     metaDesc.value = '';
 
     // 2. Configuration
-    showCanvasCheck.checked = false;
-    rawCanvasContainer.classList.add('hidden');
-    showCanvasLabel.style.display = 'none';
-    if (engine) engine.requestRawBitmap = false;
+    showCanvasCheck.checked = true;
+    rawCanvasContainer.classList.remove('hidden');
+    showCanvasLabel.style.display = 'none'; // Will be updated by updateCanvasControlVisibility
+    if (engine) engine.requestRawBitmap = true;
 
     // 3. Preview
     // Reset Color
