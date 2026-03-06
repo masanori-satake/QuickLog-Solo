@@ -19,6 +19,8 @@ let startTime = 0;
 let workerUrl = null;
 let currentPreviewColor = '#0056d2'; // Default primary
 let currentTheme = 'dark';
+let isWordWrap = true;
+let currentSpeed = 1.0;
 
 // DOM Elements
 const sampleSelect = document.getElementById('sample-select');
@@ -56,11 +58,27 @@ const shrinkPreviewBtn = document.getElementById('shrink-preview');
 const expandPreviewBtn = document.getElementById('expand-preview');
 const previewContainer = document.getElementById('preview-container');
 const colorPresetsContainer = document.getElementById('preview-color-presets');
+const speedSlider = document.getElementById('preview-speed');
+const speedValue = document.getElementById('speed-value');
 
 const metricLatency = document.getElementById('metric-latency');
 const metricDensity = document.getElementById('metric-density');
 const metricChange = document.getElementById('metric-change');
 const metricStatus = document.getElementById('metric-status');
+
+const toggleWrapBtn = document.getElementById('toggle-wrap');
+const showSearchBtn = document.getElementById('show-search');
+const searchBar = document.getElementById('search-bar');
+const searchInput = document.getElementById('search-input');
+const replaceInput = document.getElementById('replace-input');
+const btnReplace = document.getElementById('btn-replace');
+const btnReplaceAll = document.getElementById('btn-replace-all');
+const closeSearchBtn = document.getElementById('close-search');
+
+const consoleSection = document.getElementById('console-section');
+const consoleOutput = document.getElementById('console-output');
+const clearConsoleBtn = document.getElementById('clear-console');
+const toggleConsoleBtn = document.getElementById('toggle-console');
 
 // Initialize
 function init() {
@@ -71,6 +89,11 @@ function init() {
     setupColorPresets();
     setupEventListeners();
     setupDraggableResizable();
+    setupEditorEnhancements();
+
+    // Initial UI state
+    updateAllGutter();
+    updateAllHighlight();
 }
 
 function setupTheme() {
@@ -78,7 +101,7 @@ function setupTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    applyTheme();
+    // Body class is already set by inline script to prevent flickering
     themeToggle.checked = (currentTheme === 'dark');
 }
 
@@ -118,7 +141,9 @@ function updateTranslations() {
         const key = el.getAttribute('data-i18n');
         if (messages[currentLang] && messages[currentLang][key]) {
             el.textContent = messages[currentLang][key];
-        } else if (messages.en[key]) {
+        } else if (messages._common && messages._common[key]) {
+            el.textContent = messages._common[key];
+        } else if (messages.en[key] !== undefined) {
             el.textContent = messages.en[key];
         }
     });
@@ -136,6 +161,13 @@ function updateTranslations() {
         const key = el.getAttribute('data-i18n-title');
         if (messages[currentLang] && messages[currentLang][key]) {
             el.title = messages[currentLang][key];
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (messages[currentLang] && messages[currentLang][key]) {
+            el.placeholder = messages[currentLang][key];
         }
     });
 }
@@ -215,7 +247,14 @@ function setupEventListeners() {
     configPseudo.addEventListener('change', markDirty);
 
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
-        el.addEventListener('input', markDirty);
+        el.addEventListener('input', () => {
+            markDirty();
+            updateGutter(el);
+            updateHighlight(el);
+        });
+        el.addEventListener('scroll', () => {
+            syncScroll(el);
+        });
     });
 
     sampleSelect.addEventListener('change', (e) => {
@@ -229,7 +268,17 @@ function setupEventListeners() {
             codeTabs.forEach(t => t.classList.remove('active'));
             editors.forEach(e => e.classList.remove('active'));
             tab.classList.add('active');
-            document.getElementById(tab.getAttribute('data-target')).classList.add('active');
+            const targetId = tab.getAttribute('data-target');
+            const target = document.getElementById(targetId);
+            target.classList.add('active');
+
+            // Refresh highlighting and gutter for the newly visible editor
+            const textarea = target.querySelector('textarea');
+            if (textarea) {
+                updateHighlight(textarea);
+                updateGutter(textarea);
+                syncScroll(textarea);
+            }
         });
     });
 
@@ -258,10 +307,70 @@ function setupEventListeners() {
 
     window.addEventListener('resize', () => {
         if (engine) engine.resize();
+        // Wait for potential wrapping to finish before updating gutter
+        setTimeout(updateAllGutter, 50);
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            searchBar.classList.toggle('hidden');
+            if (!searchBar.classList.contains('hidden')) {
+                searchInput.focus();
+            }
+        }
     });
 
     shrinkPreviewBtn.addEventListener('click', () => adjustPreviewHeight(-20));
     expandPreviewBtn.addEventListener('click', () => adjustPreviewHeight(20));
+
+    speedSlider.addEventListener('input', (e) => {
+        currentSpeed = parseFloat(e.target.value);
+        speedValue.textContent = currentSpeed.toFixed(1);
+        if (isTesting && engine && engine.worker) {
+            engine.worker.postMessage({ type: 'setSpeed', payload: currentSpeed });
+        }
+    });
+
+    toggleWrapBtn.addEventListener('click', () => {
+        isWordWrap = !isWordWrap;
+        toggleWrapBtn.classList.toggle('active', isWordWrap);
+        document.querySelectorAll('.editor-textarea, .editor-highlight').forEach(el => {
+            if (isWordWrap) {
+                el.classList.remove('no-wrap');
+            } else {
+                el.classList.add('no-wrap');
+            }
+        });
+        updateAllGutter();
+    });
+
+    showSearchBtn.addEventListener('click', () => {
+        searchBar.classList.toggle('hidden');
+        if (!searchBar.classList.contains('hidden')) {
+            searchInput.focus();
+        }
+    });
+
+    closeSearchBtn.addEventListener('click', () => {
+        searchBar.classList.add('hidden');
+    });
+
+    btnReplace.addEventListener('click', () => handleReplace(false));
+    btnReplaceAll.addEventListener('click', () => handleReplace(true));
+
+    toggleConsoleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleConsole();
+    });
+
+    document.querySelector('.console-header').addEventListener('click', () => {
+        toggleConsole();
+    });
+
+    clearConsoleBtn.addEventListener('click', () => {
+        consoleOutput.innerHTML = '';
+    });
 }
 
 function markDirty() {
@@ -284,6 +393,8 @@ async function loadSample(id) {
         const response = await fetch(`./js/animation/${id}.js`);
         const text = await response.text();
         parseAndPopulate(text, anim.metadata);
+        updateAllGutter();
+        updateAllHighlight();
     } catch {
         console.error('Failed to load sample');
     }
@@ -447,32 +558,39 @@ function startTest() {
     if (workerUrl) URL.revokeObjectURL(workerUrl);
     workerUrl = URL.createObjectURL(blob);
 
-    // Inject custom worker URL to handle blob imports if necessary
-    // Actually, the current engine imports modulePath. Blob URLs work with dynamic import().
-
     startTime = Date.now();
-    engine.stop();
 
-    // We need to override the engine's internal module path logic for this test
-    engine.start = function(name, startTime, color) {
-        this.stop();
-        this.activeAnimationId = 'test';
-        this.startTime = startTime;
-        this.color = color;
-        this.initialized = false;
-        this.config = {
-            mode: configMode.value,
-            usePseudoSpace: configPseudo.checked
-        };
-
-        // Use custom worker that can handle the blob URL
-        this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
-        this.worker.onmessage = (e) => this._handleWorkerMessage(e);
-        this.worker.postMessage({ type: 'init', payload: { modulePath: workerUrl } });
+    // Configure engine for testing
+    engine.config = {
+        mode: configMode.value,
+        usePseudoSpace: configPseudo.checked
     };
 
     updateExclusionAreas();
+
+    // We start the engine using the blob URL as module path
+    // We need to pass a special ID to trigger blob loading in the engine's start method logic
+    // But since the engine normally constructs the path, we'll patch it to use our blob.
+
+    const originalStart = engine.start;
+    engine.start = function(name, startTime, color) {
+        this.stop();
+        this.activeAnimationId = 'test'; // Identifier
+        this.startTime = startTime;
+        this.color = color;
+        this.initialized = false;
+        this.perfViolations = 0;
+        this.isMonitoring = true;
+        this.isDrawPending = false;
+
+        this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
+        this.worker.onmessage = (e) => this._handleWorkerMessage(e);
+        this.worker.postMessage({ type: 'init', payload: { modulePath: workerUrl } });
+        this.worker.postMessage({ type: 'setSpeed', payload: currentSpeed });
+    };
+
     engine.start('test', startTime, currentPreviewColor);
+    engine.start = originalStart; // Restore after one-time use
 
     metricStatus.textContent = getMsg('status-running');
     metricStatus.style.color = '#4caf50';
@@ -578,6 +696,8 @@ function handleUpload(e) {
                 inputInteraction.value = data.interaction || '';
                 isDirty = false;
                 showToast(getMsg('toast-loaded-json'));
+                updateAllHighlight();
+                updateAllGutter();
             } catch {
                 showToast(getMsg('toast-invalid-json'));
             }
@@ -585,6 +705,8 @@ function handleUpload(e) {
             parseAndPopulate(content, { name: 'Imported', description: '', author: '' });
             isDirty = false;
             showToast(getMsg('toast-loaded-js'));
+            updateAllHighlight();
+            updateAllGutter();
         }
     };
     reader.readAsText(file);
@@ -610,12 +732,15 @@ function startMetricsCollection() {
         const original = engine._handleWorkerMessage;
         engine._handleWorkerMessage = function(e) {
             if (e.data.type === 'drawResponse') {
-                lastLatency = performance.now() - this.lastDrawRequestTime;
+                lastLatency = performance.now() - engine.lastDrawRequestTime;
             } else if (e.data.type === 'error') {
-                showToast(getMsg('toast-anim-error') + e.data.payload);
+                appendConsole(e.data.payload, 'error');
+                showConsole();
                 stopTest();
+            } else if (e.data.type === 'log') {
+                appendConsole(e.data.payload, e.data.level || 'info');
             }
-            original.call(this, e);
+            original.call(engine, e);
         };
         engine._handleWorkerMessage._original = original;
         engine._handleWorkerMessage._isPatched = true;
@@ -670,11 +795,6 @@ function startMetricsCollection() {
 
 function stopMetricsCollection() {
     clearInterval(metricsInterval);
-    // Restore original engine method
-    if (engine && engine._handleWorkerMessage && engine._handleWorkerMessage._original) {
-        // This is a bit tricky since we didn't save it properly.
-        // Actually, just resetting it in stopTest is better if we want to be clean.
-    }
 }
 
 // Draggable Resizable Exclusion Simulator
@@ -755,6 +875,185 @@ function updateExclusionAreas() {
     } else {
         engine.setExclusionAreas([]);
     }
+
+    if (isTesting && engine.initialized) {
+        // Just trigger a resize to update worker state without full restart
+        engine.resize();
+    }
+}
+
+// Editor Enhancements
+function setupEditorEnhancements() {
+    const textareas = [inputVars, inputSetup, inputDraw, inputInteraction];
+    textareas.forEach(ta => {
+        ta.addEventListener('keydown', (e) => handleKeyDown(e, ta));
+    });
+}
+
+function handleKeyDown(e, ta) {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + 2;
+        updateHighlight(ta);
+    } else if (e.key === 'Enter') {
+        // Auto-indent
+        const start = ta.selectionStart;
+        const line = ta.value.substring(0, start).split('\n').pop();
+        const match = line.match(/^\s*/);
+        if (match && match[0].length > 0) {
+            e.preventDefault();
+            const indent = '\n' + match[0];
+            ta.value = ta.value.substring(0, start) + indent + ta.value.substring(start);
+            ta.selectionStart = ta.selectionEnd = start + indent.length;
+            updateHighlight(ta);
+            updateGutter(ta);
+        }
+    } else if (['{', '[', '(', '"', "'"].includes(e.key)) {
+        // Auto-complete
+        const pairs = { '{': '}', '[': ']', '(': ')', '"': '"', "'": "'" };
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        if (start === end) {
+            e.preventDefault();
+            ta.value = ta.value.substring(0, start) + e.key + pairs[e.key] + ta.value.substring(end);
+            ta.selectionStart = ta.selectionEnd = start + 1;
+            updateHighlight(ta);
+        }
+    }
+}
+
+function updateHighlight(ta) {
+    const highlightEl = ta.parentElement.querySelector('.editor-highlight');
+    if (!highlightEl) return;
+
+    const code = ta.value;
+    const lines = code.split('\n');
+
+    const rules = [
+        { regex: /\/\/.*/g, class: 'hl-comment' },
+        { regex: /\/\*[\s\S]*?\*\//g, class: 'hl-comment' },
+        { regex: /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, class: 'hl-string' },
+        { regex: /\b(class|extends|export|default|static|this|new|if|else|for|while|return|function|let|const|var|async|await|try|catch|finally|throw)\b/g, class: 'hl-keyword' },
+        { regex: /\b\d+\b/g, class: 'hl-number' },
+        { regex: /\b(\w+)(?=\s*\()/g, class: 'hl-function' },
+        { regex: /[{}[\]()]/g, class: 'hl-bracket' }
+    ];
+
+    const processedLines = lines.map(line => {
+        let escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const tokens = [];
+
+        rules.forEach((rule, idx) => {
+            escaped = escaped.replace(rule.regex, (match) => {
+                const id = `__TOKEN_${idx}_${tokens.length}__`;
+                tokens.push({ id, html: `<span class="${rule.class}">${match}</span>` });
+                return id;
+            });
+        });
+
+        tokens.forEach(token => {
+            escaped = escaped.replace(token.id, token.html);
+        });
+
+        return `<div class="logical-line">${escaped || ' '}</div>`;
+    });
+
+    highlightEl.innerHTML = processedLines.join('');
+}
+
+function updateGutter(ta) {
+    const gutter = ta.closest('.editor-body').querySelector('.editor-gutter');
+    if (!gutter) return;
+
+    gutter.innerHTML = '';
+
+    // To support word wrap, we need to ensure each gutter line matches the height of the editor line.
+    const highlight = ta.parentElement.querySelector('.editor-highlight');
+
+    // Ensure highlight is up to date before measuring
+    updateHighlight(ta);
+
+    const logicalLines = highlight.querySelectorAll('.logical-line');
+    logicalLines.forEach((lineEl, idx) => {
+        const numDiv = document.createElement('div');
+        numDiv.textContent = idx + 1;
+        numDiv.style.height = `${lineEl.offsetHeight}px`;
+        numDiv.style.lineHeight = `${lineEl.offsetHeight}px`;
+        numDiv.style.display = 'flex';
+        numDiv.style.alignItems = 'flex-start';
+        numDiv.style.justifyContent = 'flex-end';
+        gutter.appendChild(numDiv);
+    });
+}
+
+function syncScroll(ta) {
+    const wrapper = ta.parentElement;
+    const highlight = wrapper.querySelector('.editor-highlight');
+    const gutter = ta.closest('.editor-body').querySelector('.editor-gutter');
+
+    if (highlight) {
+        highlight.scrollTop = ta.scrollTop;
+        highlight.scrollLeft = ta.scrollLeft;
+    }
+    if (gutter) {
+        gutter.scrollTop = ta.scrollTop;
+    }
+}
+
+function updateAllHighlight() {
+    [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateHighlight(ta));
+}
+
+function updateAllGutter() {
+    [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateGutter(ta));
+}
+
+function handleReplace(all) {
+    const activeTab = document.querySelector('.code-tab.active');
+    const targetId = activeTab.getAttribute('data-target');
+    const ta = document.getElementById(targetId).querySelector('textarea');
+    if (!ta) return;
+
+    const search = searchInput.value;
+    const replace = replaceInput.value;
+    if (!search) return;
+
+    const code = ta.value;
+    if (all) {
+        ta.value = code.split(search).join(replace);
+    } else {
+        ta.value = code.replace(search, replace);
+    }
+    updateHighlight(ta);
+    updateGutter(ta);
+    markDirty();
+}
+
+function appendConsole(msg, type = '') {
+    const line = document.createElement('div');
+    line.className = `console-line ${type}`;
+    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    consoleOutput.appendChild(line);
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+
+    // Auto-open on error
+    if (type === 'error') {
+        showConsole();
+    }
+}
+
+function toggleConsole() {
+    consoleSection.classList.toggle('collapsed');
+    const isCollapsed = consoleSection.classList.contains('collapsed');
+    toggleConsoleBtn.querySelector('span').textContent = isCollapsed ? 'expand_less' : 'expand_more';
+}
+
+function showConsole() {
+    consoleSection.classList.remove('collapsed');
+    toggleConsoleBtn.querySelector('span').textContent = 'expand_more';
 }
 
 init();

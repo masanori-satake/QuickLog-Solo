@@ -170,6 +170,7 @@ export class AnimationEngine {
 
     stop() {
         this.isMonitoring = false;
+        this.isDrawPending = false;
         if (this.requestId) {
             cancelAnimationFrame(this.requestId);
             this.requestId = null;
@@ -244,6 +245,14 @@ export class AnimationEngine {
                 w = this._getPseudoInfo().totalWidth;
             }
             this.worker.postMessage({ type: 'setup', payload: { width: w, height: this.canvas.height } });
+        }
+    }
+
+    forceReset() {
+        if (this.worker && this.initialized) {
+            this.initialized = false;
+            this.stop();
+            // We can't easily restart without the original params, but Studio handles this.
         }
     }
 }

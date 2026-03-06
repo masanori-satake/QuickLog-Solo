@@ -46,12 +46,12 @@ export default class DigitalRain extends AnimationBase {
         }
     }
 
-    draw(ctx, { height }) {
+    draw(ctx, { height, speed }) {
         const sprites = [];
         const spacing = 6;
 
         this.columns.forEach((col, i) => {
-            col.y += col.speed;
+            col.y += col.speed * speed;
             if (col.y > height + 100) {
                 col.y = -100;
                 col.speed = 1 + Math.random() * 3;
