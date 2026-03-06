@@ -19,6 +19,7 @@ let startTime = 0;
 let workerUrl = null;
 let currentPreviewColor = '#0056d2'; // Default primary
 let currentTheme = 'dark';
+let isWordWrap = true;
 
 // DOM Elements
 const sampleSelect = document.getElementById('sample-select');
@@ -62,6 +63,20 @@ const metricDensity = document.getElementById('metric-density');
 const metricChange = document.getElementById('metric-change');
 const metricStatus = document.getElementById('metric-status');
 
+const toggleWrapBtn = document.getElementById('toggle-wrap');
+const showSearchBtn = document.getElementById('show-search');
+const searchBar = document.getElementById('search-bar');
+const searchInput = document.getElementById('search-input');
+const replaceInput = document.getElementById('replace-input');
+const btnReplace = document.getElementById('btn-replace');
+const btnReplaceAll = document.getElementById('btn-replace-all');
+const closeSearchBtn = document.getElementById('close-search');
+
+const consoleSection = document.getElementById('console-section');
+const consoleOutput = document.getElementById('console-output');
+const clearConsoleBtn = document.getElementById('clear-console');
+const toggleConsoleBtn = document.getElementById('toggle-console');
+
 // Initialize
 function init() {
     setupLanguage();
@@ -71,6 +86,11 @@ function init() {
     setupColorPresets();
     setupEventListeners();
     setupDraggableResizable();
+    setupEditorEnhancements();
+
+    // Initial UI state
+    updateAllGutter();
+    updateAllHighlight();
 }
 
 function setupTheme() {
@@ -136,6 +156,13 @@ function updateTranslations() {
         const key = el.getAttribute('data-i18n-title');
         if (messages[currentLang] && messages[currentLang][key]) {
             el.title = messages[currentLang][key];
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (messages[currentLang] && messages[currentLang][key]) {
+            el.placeholder = messages[currentLang][key];
         }
     });
 }
@@ -215,7 +242,14 @@ function setupEventListeners() {
     configPseudo.addEventListener('change', markDirty);
 
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
-        el.addEventListener('input', markDirty);
+        el.addEventListener('input', () => {
+            markDirty();
+            updateGutter(el);
+            updateHighlight(el);
+        });
+        el.addEventListener('scroll', () => {
+            syncScroll(el);
+        });
     });
 
     sampleSelect.addEventListener('change', (e) => {
@@ -229,7 +263,17 @@ function setupEventListeners() {
             codeTabs.forEach(t => t.classList.remove('active'));
             editors.forEach(e => e.classList.remove('active'));
             tab.classList.add('active');
-            document.getElementById(tab.getAttribute('data-target')).classList.add('active');
+            const targetId = tab.getAttribute('data-target');
+            const target = document.getElementById(targetId);
+            target.classList.add('active');
+
+            // Refresh highlighting and gutter for the newly visible editor
+            const textarea = target.querySelector('textarea');
+            if (textarea) {
+                updateHighlight(textarea);
+                updateGutter(textarea);
+                syncScroll(textarea);
+            }
         });
     });
 
@@ -258,10 +302,46 @@ function setupEventListeners() {
 
     window.addEventListener('resize', () => {
         if (engine) engine.resize();
+        updateAllGutter();
     });
 
     shrinkPreviewBtn.addEventListener('click', () => adjustPreviewHeight(-20));
     expandPreviewBtn.addEventListener('click', () => adjustPreviewHeight(20));
+
+    toggleWrapBtn.addEventListener('click', () => {
+        isWordWrap = !isWordWrap;
+        document.querySelectorAll('.editor-textarea, .editor-highlight').forEach(el => {
+            if (isWordWrap) {
+                el.classList.remove('no-wrap');
+            } else {
+                el.classList.add('no-wrap');
+            }
+        });
+        updateAllGutter();
+    });
+
+    showSearchBtn.addEventListener('click', () => {
+        searchBar.classList.toggle('hidden');
+        if (!searchBar.classList.contains('hidden')) {
+            searchInput.focus();
+        }
+    });
+
+    closeSearchBtn.addEventListener('click', () => {
+        searchBar.classList.add('hidden');
+    });
+
+    btnReplace.addEventListener('click', () => handleReplace(false));
+    btnReplaceAll.addEventListener('click', () => handleReplace(true));
+
+    toggleConsoleBtn.addEventListener('click', () => {
+        consoleSection.classList.toggle('collapsed');
+        toggleConsoleBtn.querySelector('span').textContent = consoleSection.classList.contains('collapsed') ? 'expand_more' : 'expand_less';
+    });
+
+    clearConsoleBtn.addEventListener('click', () => {
+        consoleOutput.innerHTML = '';
+    });
 }
 
 function markDirty() {
@@ -284,6 +364,8 @@ async function loadSample(id) {
         const response = await fetch(`./js/animation/${id}.js`);
         const text = await response.text();
         parseAndPopulate(text, anim.metadata);
+        updateAllGutter();
+        updateAllHighlight();
     } catch {
         console.error('Failed to load sample');
     }
@@ -578,6 +660,8 @@ function handleUpload(e) {
                 inputInteraction.value = data.interaction || '';
                 isDirty = false;
                 showToast(getMsg('toast-loaded-json'));
+                updateAllHighlight();
+                updateAllGutter();
             } catch {
                 showToast(getMsg('toast-invalid-json'));
             }
@@ -585,6 +669,8 @@ function handleUpload(e) {
             parseAndPopulate(content, { name: 'Imported', description: '', author: '' });
             isDirty = false;
             showToast(getMsg('toast-loaded-js'));
+            updateAllHighlight();
+            updateAllGutter();
         }
     };
     reader.readAsText(file);
@@ -612,8 +698,11 @@ function startMetricsCollection() {
             if (e.data.type === 'drawResponse') {
                 lastLatency = performance.now() - this.lastDrawRequestTime;
             } else if (e.data.type === 'error') {
-                showToast(getMsg('toast-anim-error') + e.data.payload);
+                appendConsole(e.data.payload, 'error');
+                showConsole();
                 stopTest();
+            } else if (e.data.type === 'log') {
+                appendConsole(e.data.payload, e.data.level || 'info');
             }
             original.call(this, e);
         };
@@ -670,11 +759,6 @@ function startMetricsCollection() {
 
 function stopMetricsCollection() {
     clearInterval(metricsInterval);
-    // Restore original engine method
-    if (engine && engine._handleWorkerMessage && engine._handleWorkerMessage._original) {
-        // This is a bit tricky since we didn't save it properly.
-        // Actually, just resetting it in stopTest is better if we want to be clean.
-    }
 }
 
 // Draggable Resizable Exclusion Simulator
@@ -755,6 +839,166 @@ function updateExclusionAreas() {
     } else {
         engine.setExclusionAreas([]);
     }
+}
+
+// Editor Enhancements
+function setupEditorEnhancements() {
+    const textareas = [inputVars, inputSetup, inputDraw, inputInteraction];
+    textareas.forEach(ta => {
+        ta.addEventListener('keydown', (e) => handleKeyDown(e, ta));
+    });
+}
+
+function handleKeyDown(e, ta) {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + 2;
+        updateHighlight(ta);
+    } else if (e.key === 'Enter') {
+        // Auto-indent
+        const start = ta.selectionStart;
+        const line = ta.value.substring(0, start).split('\n').pop();
+        const match = line.match(/^\s*/);
+        if (match && match[0].length > 0) {
+            e.preventDefault();
+            const indent = '\n' + match[0];
+            ta.value = ta.value.substring(0, start) + indent + ta.value.substring(start);
+            ta.selectionStart = ta.selectionEnd = start + indent.length;
+            updateHighlight(ta);
+            updateGutter(ta);
+        }
+    } else if (['{', '[', '(', '"', "'"].includes(e.key)) {
+        // Auto-complete
+        const pairs = { '{': '}', '[': ']', '(': ')', '"': '"', "'": "'" };
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        if (start === end) {
+            e.preventDefault();
+            ta.value = ta.value.substring(0, start) + e.key + pairs[e.key] + ta.value.substring(end);
+            ta.selectionStart = ta.selectionEnd = start + 1;
+            updateHighlight(ta);
+        }
+    }
+}
+
+function updateHighlight(ta) {
+    const highlightEl = ta.parentElement.querySelector('.editor-highlight');
+    if (!highlightEl) return;
+
+    let code = ta.value;
+
+    // Simple regex highlighting
+    const rules = [
+        { regex: /\/\/.*/g, class: 'hl-comment' },
+        { regex: /\/\*[\s\S]*?\*\//g, class: 'hl-comment' },
+        { regex: /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, class: 'hl-string' },
+        { regex: /\b(class|extends|export|default|static|this|new|if|else|for|while|return|function|let|const|var|async|await|try|catch|finally|throw)\b/g, class: 'hl-keyword' },
+        { regex: /\b\d+\b/g, class: 'hl-number' },
+        { regex: /\b(\w+)(?=\s*\()/g, class: 'hl-function' },
+        { regex: /[{}[\]()]/g, class: 'hl-bracket' }
+    ];
+
+    // To avoid overlapping, we process and escape
+    let escapedCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    // This is a naive implementation, but avoids external libs
+    // We'll use placeholders to avoid re-highlighting
+    const tokens = [];
+    let processed = escapedCode;
+
+    rules.forEach((rule, idx) => {
+        processed = processed.replace(rule.regex, (match) => {
+            const id = `__TOKEN_${idx}_${tokens.length}__`;
+            tokens.push({ id, html: `<span class="${rule.class}">${match}</span>` });
+            return id;
+        });
+    });
+
+    tokens.forEach(token => {
+        processed = processed.replace(token.id, token.html);
+    });
+
+    highlightEl.innerHTML = processed + (code.endsWith('\n') ? ' ' : '');
+}
+
+function updateGutter(ta) {
+    const gutter = ta.closest('.editor-body').querySelector('.editor-gutter');
+    if (!gutter) return;
+
+    const lines = ta.value.split('\n');
+    // Calculate actual visual lines if word wrap is on
+    // But for simplicity, we'll just use line numbers for now.
+    // If we want to be precise with word wrap, we need to calculate line heights.
+
+    let gutterHTML = '';
+    for (let i = 1; i <= lines.length; i++) {
+        gutterHTML += `<div>${i}</div>`;
+    }
+    gutter.innerHTML = gutterHTML;
+}
+
+function syncScroll(ta) {
+    const wrapper = ta.parentElement;
+    const highlight = wrapper.querySelector('.editor-highlight');
+    const gutter = ta.closest('.editor-body').querySelector('.editor-gutter');
+
+    if (highlight) {
+        highlight.scrollTop = ta.scrollTop;
+        highlight.scrollLeft = ta.scrollLeft;
+    }
+    if (gutter) {
+        gutter.scrollTop = ta.scrollTop;
+    }
+}
+
+function updateAllHighlight() {
+    [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateHighlight(ta));
+}
+
+function updateAllGutter() {
+    [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateGutter(ta));
+}
+
+function handleReplace(all) {
+    const activeTab = document.querySelector('.code-tab.active');
+    const targetId = activeTab.getAttribute('data-target');
+    const ta = document.getElementById(targetId).querySelector('textarea');
+    if (!ta) return;
+
+    const search = searchInput.value;
+    const replace = replaceInput.value;
+    if (!search) return;
+
+    const code = ta.value;
+    if (all) {
+        ta.value = code.split(search).join(replace);
+    } else {
+        ta.value = code.replace(search, replace);
+    }
+    updateHighlight(ta);
+    updateGutter(ta);
+    markDirty();
+}
+
+function appendConsole(msg, type = '') {
+    const line = document.createElement('div');
+    line.className = `console-line ${type}`;
+    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    consoleOutput.appendChild(line);
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+
+    // Auto-open on error
+    if (type === 'error') {
+        showConsole();
+    }
+}
+
+function showConsole() {
+    consoleSection.classList.remove('collapsed');
+    toggleConsoleBtn.querySelector('span').textContent = 'expand_less';
 }
 
 init();

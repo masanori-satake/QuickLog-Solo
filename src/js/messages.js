@@ -232,7 +232,15 @@ export const messages = {
         'toast-loaded-json': 'JSONから読み込みました',
         'toast-invalid-json': '無効なJSONです',
         'toast-loaded-js': 'JSから読み込みました',
-        'toast-anim-error': 'アニメーションエラー: '
+        'toast-anim-error': 'アニメーションエラー: ',
+        'btn-toggle-wrap': '折り返しを切り替え',
+        'btn-search': '検索・置換',
+        'search-placeholder': '検索...',
+        'replace-placeholder': '置換...',
+        'btn-replace': '置換',
+        'btn-replace-all': 'すべて置換',
+        'section-console': 'コンソール',
+        'btn-clear-console': 'コンソールをクリア'
     },
     en: {
         // UI Header & Sections
@@ -452,7 +460,15 @@ export const messages = {
         'toast-loaded-json': 'Loaded from JSON',
         'toast-invalid-json': 'Invalid JSON',
         'toast-loaded-js': 'Loaded from JS',
-        'toast-anim-error': 'Animation Error: '
+        'toast-anim-error': 'Animation Error: ',
+        'btn-toggle-wrap': 'Toggle Word Wrap',
+        'btn-search': 'Search & Replace',
+        'search-placeholder': 'Search...',
+        'replace-placeholder': 'Replace...',
+        'btn-replace': 'Replace',
+        'btn-replace-all': 'Replace All',
+        'section-console': 'Console',
+        'btn-clear-console': 'Clear Console'
     },
     de: {
         'title': 'QuickLog-Solo',
@@ -648,7 +664,15 @@ export const messages = {
         'toast-loaded-json': 'Vom JSON geladen',
         'toast-invalid-json': 'Ungültiges JSON',
         'toast-loaded-js': 'Vom JS geladen',
-        'toast-anim-error': 'Animationsfehler: '
+        'toast-anim-error': 'Animationsfehler: ',
+        'btn-toggle-wrap': 'Zeilenumbruch umschalten',
+        'btn-search': 'Suchen & Ersetzen',
+        'search-placeholder': 'Suchen...',
+        'replace-placeholder': 'Ersetzen...',
+        'btn-replace': 'Ersetzen',
+        'btn-replace-all': 'Alle ersetzen',
+        'section-console': 'Konsole',
+        'btn-clear-console': 'Konsole leeren'
     },
     es: {
         'title': 'QuickLog-Solo',
@@ -844,7 +868,15 @@ export const messages = {
         'toast-loaded-json': 'Cargado desde JSON',
         'toast-invalid-json': 'JSON inválido',
         'toast-loaded-js': 'Cargado desde JS',
-        'toast-anim-error': 'Error de animación: '
+        'toast-anim-error': 'Error de animación: ',
+        'btn-toggle-wrap': 'Alternar ajuste de línea',
+        'btn-search': 'Buscar y reemplazar',
+        'search-placeholder': 'Buscar...',
+        'replace-placeholder': 'Reemplazar...',
+        'btn-replace': 'Reemplazar',
+        'btn-replace-all': 'Reemplazar todo',
+        'section-console': 'Consola',
+        'btn-clear-console': 'Limpiar consola'
     },
     fr: {
         'title': 'QuickLog-Solo',
@@ -1040,7 +1072,15 @@ export const messages = {
         'toast-loaded-json': 'Chargé depuis JSON',
         'toast-invalid-json': 'JSON invalide',
         'toast-loaded-js': 'Chargé depuis JS',
-        'toast-anim-error': 'Erreur d\'animation : '
+        'toast-anim-error': 'Erreur d\'animation : ',
+        'btn-toggle-wrap': 'Basculer le retour à la ligne',
+        'btn-search': 'Rechercher & Remplacer',
+        'search-placeholder': 'Rechercher...',
+        'replace-placeholder': 'Remplacer...',
+        'btn-replace': 'Remplacer',
+        'btn-replace-all': 'Tout remplacer',
+        'section-console': 'Console',
+        'btn-clear-console': 'Effacer la console'
     },
     pt: {
         'title': 'QuickLog-Solo',
@@ -1236,7 +1276,15 @@ export const messages = {
         'toast-loaded-json': 'Carregado de JSON',
         'toast-invalid-json': 'JSON inválido',
         'toast-loaded-js': 'Carregado de JS',
-        'toast-anim-error': 'Erro de animação: '
+        'toast-anim-error': 'Erro de animação: ',
+        'btn-toggle-wrap': 'Alternar quebra de linha',
+        'btn-search': 'Pesquisar e substituir',
+        'search-placeholder': 'Pesquisar...',
+        'replace-placeholder': 'Substituir...',
+        'btn-replace': 'Substituir',
+        'btn-replace-all': 'Substituir tudo',
+        'section-console': 'Console',
+        'btn-clear-console': 'Limpar console'
     },
     ko: {
         'title': 'QuickLog-Solo',
@@ -1432,7 +1480,15 @@ export const messages = {
         'toast-loaded-json': 'JSON에서 로드됨',
         'toast-invalid-json': '유효하지 않은 JSON',
         'toast-loaded-js': 'JS에서 로드됨',
-        'toast-anim-error': '애니메이션 오류: '
+        'toast-anim-error': '애니메이션 오류: ',
+        'btn-toggle-wrap': '자동 줄바꿈 설정',
+        'btn-search': '검색 및 바꾸기',
+        'search-placeholder': '검색...',
+        'replace-placeholder': '바꾸기...',
+        'btn-replace': '바꾸기',
+        'btn-replace-all': '모두 바꾸기',
+        'section-console': '콘솔',
+        'btn-clear-console': '콘솔 지우기'
     },
     zh: {
         'title': 'QuickLog-Solo',
@@ -1628,6 +1684,14 @@ export const messages = {
         'toast-loaded-json': '已从 JSON 加载',
         'toast-invalid-json': '无效的 JSON',
         'toast-loaded-js': '已从 JS 加载',
-        'toast-anim-error': '动画错误: '
+        'toast-anim-error': '动画错误: ',
+        'btn-toggle-wrap': '自动换行',
+        'btn-search': '查找与替换',
+        'search-placeholder': '查找...',
+        'replace-placeholder': '替换...',
+        'btn-replace': '替换',
+        'btn-replace-all': '全部替换',
+        'section-console': '控制台',
+        'btn-clear-console': '清空控制台'
     }
 };

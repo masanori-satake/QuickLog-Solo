@@ -3,6 +3,26 @@
  * Handles animation logic and LCD conversion in a separate thread.
  */
 
+// Proxy console to main thread
+const originalConsole = {
+    log: console.log,
+    warn: console.warn,
+    error: console.error
+};
+
+console.log = (...args) => {
+    self.postMessage({ type: 'log', payload: args.join(' '), level: 'info' });
+    originalConsole.log(...args);
+};
+console.warn = (...args) => {
+    self.postMessage({ type: 'log', payload: args.join(' '), level: 'warn' });
+    originalConsole.warn(...args);
+};
+console.error = (...args) => {
+    self.postMessage({ type: 'log', payload: args.join(' '), level: 'error' });
+    originalConsole.error(...args);
+};
+
 let animation = null;
 let offscreenCanvas = null;
 let offscreenCtx = null;

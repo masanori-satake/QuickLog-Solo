@@ -108,30 +108,86 @@
                 </div>
 
                 <section class="code-section">
-                    <div class="code-tabs">
-                        <button class="code-tab active" data-target="code-vars">Variables</button>
-                        <button class="code-tab" data-target="code-setup">setup()</button>
-                        <button class="code-tab" data-target="code-draw">draw()</button>
-                        <button class="code-tab" data-target="code-interaction">Interaction</button>
+                    <div class="editor-toolbar">
+                        <div class="code-tabs">
+                            <button class="code-tab active" data-target="code-vars">Variables</button>
+                            <button class="code-tab" data-target="code-setup">setup()</button>
+                            <button class="code-tab" data-target="code-draw">draw()</button>
+                            <button class="code-tab" data-target="code-interaction">Interaction</button>
+                        </div>
+                        <div class="editor-tools">
+                            <button id="toggle-wrap" class="icon-btn" data-i18n-title="btn-toggle-wrap">
+                                <span class="material-symbols-outlined">wrap_text</span>
+                            </button>
+                            <button id="show-search" class="icon-btn" data-i18n-title="btn-search">
+                                <span class="material-symbols-outlined">search</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="search-bar" class="search-bar hidden">
+                        <input type="text" id="search-input" placeholder="Search..." data-i18n-placeholder="search-placeholder">
+                        <input type="text" id="replace-input" placeholder="Replace..." data-i18n-placeholder="replace-placeholder">
+                        <button id="btn-replace" data-i18n="btn-replace">Replace</button>
+                        <button id="btn-replace-all" data-i18n="btn-replace-all">All</button>
+                        <button id="close-search" class="icon-btn"><span class="material-symbols-outlined">close</span></button>
                     </div>
                     <div class="code-editors">
                         <div id="code-vars" class="editor-container active">
                             <div class="editor-header">Class Variables / Constants</div>
-                            <textarea id="input-vars" spellcheck="false" placeholder="// Define your class properties here...&#10;this.speed = 2;&#10;this.particles = [];"></textarea>
+                            <div class="editor-body">
+                                <div class="editor-gutter"></div>
+                                <div class="editor-content-wrapper">
+                                    <pre class="editor-highlight" aria-hidden="true"></pre>
+                                    <textarea id="input-vars" class="editor-textarea" spellcheck="false" placeholder="// Define your class properties here...&#10;this.speed = 2;&#10;this.particles = [];"></textarea>
+                                </div>
+                            </div>
                         </div>
                         <div id="code-setup" class="editor-container">
                             <div class="editor-header">setup(width, height)</div>
-                            <textarea id="input-setup" spellcheck="false" placeholder="// Initialization logic..."></textarea>
+                            <div class="editor-body">
+                                <div class="editor-gutter"></div>
+                                <div class="editor-content-wrapper">
+                                    <pre class="editor-highlight" aria-hidden="true"></pre>
+                                    <textarea id="input-setup" class="editor-textarea" spellcheck="false" placeholder="// Initialization logic..."></textarea>
+                                </div>
+                            </div>
                         </div>
                         <div id="code-draw" class="editor-container">
                             <div class="editor-header">draw(ctx, params)</div>
-                            <textarea id="input-draw" spellcheck="false" placeholder="// Drawing logic..."></textarea>
+                            <div class="editor-body">
+                                <div class="editor-gutter"></div>
+                                <div class="editor-content-wrapper">
+                                    <pre class="editor-highlight" aria-hidden="true"></pre>
+                                    <textarea id="input-draw" class="editor-textarea" spellcheck="false" placeholder="// Drawing logic..."></textarea>
+                                </div>
+                            </div>
                         </div>
                         <div id="code-interaction" class="editor-container">
                             <div class="editor-header">onClick(x, y) / onMouseMove(x, y)</div>
-                            <textarea id="input-interaction" spellcheck="false" placeholder="// Interaction logic..."></textarea>
+                            <div class="editor-body">
+                                <div class="editor-gutter"></div>
+                                <div class="editor-content-wrapper">
+                                    <pre class="editor-highlight" aria-hidden="true"></pre>
+                                    <textarea id="input-interaction" class="editor-textarea" spellcheck="false" placeholder="// Interaction logic..."></textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </section>
+
+                <section id="console-section" class="console-section card collapsed">
+                    <div class="console-header">
+                        <h2 class="section-title"><span class="material-symbols-outlined">terminal</span> <span data-i18n="section-console">Console</span></h2>
+                        <div class="console-controls">
+                            <button id="clear-console" class="icon-btn" data-i18n-title="btn-clear-console">
+                                <span class="material-symbols-outlined">delete_sweep</span>
+                            </button>
+                            <button id="toggle-console" class="icon-btn">
+                                <span class="material-symbols-outlined">expand_less</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="console-output" class="console-output"></div>
                 </section>
             </div>
 

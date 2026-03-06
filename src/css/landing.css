@@ -360,6 +360,18 @@ h1 {
     font-style: italic;
 }
 
+.faq-section {
+    margin-bottom: var(--md-sys-spacing-8);
+}
+
+#cta-studio-link {
+    display: inline-block;
+}
+
+.scene-section.card {
+    margin-top: var(--md-sys-spacing-8);
+}
+
 .faq-list {
     display: flex;
     flex-direction: column;
