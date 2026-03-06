@@ -710,11 +710,22 @@ body.theme-light .hl-bracket { color: #af00db; }
     cursor: pointer;
 }
 
-#preview-container, #raw-canvas-container {
+#preview-container {
     position: relative;
     width: 100%;
     height: 150px;
     background-color: var(--preview-bg);
+    border-radius: var(--md-sys-shape-small);
+    overflow: hidden;
+    margin-bottom: 12px;
+    transition: background-color 0.3s;
+}
+
+#raw-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    background-color: var(--md-sys-color-surface-container-high);
     border-radius: var(--md-sys-shape-small);
     overflow: hidden;
     margin-bottom: 12px;

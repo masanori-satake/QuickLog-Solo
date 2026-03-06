@@ -572,11 +572,10 @@ function deindent(text) {
 }
 
 function findRange(text, namePattern) {
-    const regex = new RegExp(`(?:^|\\s)(static\\s+)?${namePattern}\\b`, 'g');
+    const regex = new RegExp(`(^|\\n)([ \\t]*)(static\\s+)?${namePattern}\\b`, 'g');
     let match;
     while ((match = regex.exec(text)) !== null) {
-        let actualStart = match.index;
-        if (/\s/.test(text[match.index])) actualStart++;
+        let actualStart = match.index + match[1].length;
         if (actualStart > 0 && text[actualStart - 1] === '.') continue;
 
         let pos = actualStart;
@@ -667,7 +666,8 @@ function startTest() {
                 rawCanvas.width = engine.canvas.width;
                 rawCanvas.height = engine.canvas.height;
             }
-            ctx.clearRect(0, 0, rawCanvas.width, rawCanvas.height);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, bitmap.width, bitmap.height);
             ctx.drawImage(bitmap, 0, 0);
             bitmap.close();
         };
@@ -695,6 +695,11 @@ function stopTest() {
 
     setInputDisabled(false);
     engine.stop();
+
+    // Clear raw canvas on stop
+    const ctx = rawCanvas.getContext('2d');
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, rawCanvas.width, rawCanvas.height);
 
     metricStatus.textContent = getMsg('status-ready');
     metricStatus.style.color = 'inherit';
