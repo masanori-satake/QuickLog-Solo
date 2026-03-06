@@ -1,13 +1,7 @@
 /* QuickLog Anim Studio Styles */
 
 :root {
-    --studio-bg: var(--md-sys-color-surface-container-low);
-    --editor-bg: #1e1e1e; /* VSCode-like dark */
-    --editor-text: #d4d4d4;
-    --editor-header: #333;
-    --editor-border: #444;
-    --accent-color: var(--md-sys-color-primary);
-    --sidebar-width: 350px;
+    --sidebar-width: 525px;
 }
 
 * {
@@ -16,12 +10,31 @@
     padding: 0;
 }
 
-body.theme-dark {
-    background-color: var(--studio-bg);
-    color: var(--md-sys-color-on-surface);
+body {
     font-family: Roboto, 'Noto Sans JP', sans-serif;
     height: 100vh;
     overflow: hidden;
+    transition: background-color 0.3s, color 0.3s;
+    background-color: var(--studio-bg);
+    color: var(--md-sys-color-on-surface);
+}
+
+body.theme-dark {
+    --studio-bg: var(--md-sys-color-surface-container-low);
+    --editor-bg: #1e1e1e;
+    --editor-text: #d4d4d4;
+    --editor-header: #333;
+    --editor-border: #444;
+    --accent-color: var(--md-sys-color-primary);
+}
+
+body.theme-light {
+    --studio-bg: var(--md-sys-color-surface-container-low);
+    --editor-bg: #ffffff;
+    --editor-text: #000000;
+    --editor-header: #f3f3f3;
+    --editor-border: #cccccc;
+    --accent-color: var(--md-sys-color-primary);
 }
 
 #studio-app {
@@ -64,6 +77,68 @@ body.theme-dark {
 .header-left h1 {
     font-size: var(--md-sys-typescale-title-large-size);
     font-weight: 500;
+}
+
+/* Theme Switch */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+}
+
+.theme-switch-wrapper .material-symbols-outlined {
+    font-size: 1.2rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 24px;
+    position: relative;
+    width: 48px;
+}
+
+.theme-switch input {
+    display: none;
+}
+
+.slider {
+    background-color: var(--md-sys-color-outline-variant);
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: 0.4s;
+}
+
+.slider::before {
+    background-color: #fff;
+    bottom: 4px;
+    content: "";
+    height: 16px;
+    left: 4px;
+    position: absolute;
+    transition: 0.4s;
+    width: 16px;
+}
+
+input:checked + .slider {
+    background-color: var(--md-sys-color-primary);
+}
+
+input:checked + .slider::before {
+    transform: translateX(24px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round::before {
+    border-radius: 50%;
 }
 
 .header-right {
@@ -129,9 +204,20 @@ body.theme-dark {
 /* Cards */
 .card {
     background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
     border-radius: var(--md-sys-shape-medium);
     padding: var(--md-sys-spacing-2);
     border: 1px solid var(--md-sys-color-outline-variant);
+    border-left: 4px solid var(--md-sys-color-primary);
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.config-section.card {
+    border-left-color: var(--md-sys-color-tertiary);
+}
+
+.preview-section.card {
+    border-left-color: var(--md-sys-color-secondary);
 }
 
 .section-title {
@@ -279,6 +365,7 @@ textarea {
     line-height: 1.5;
     resize: none;
     outline: none;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 /* Preview Area */
@@ -293,6 +380,41 @@ textarea {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.preview-color-selector {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.preview-color-selector label {
+    font-size: 0.8rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.color-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.color-preset {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-preset:hover {
+    transform: scale(1.2);
+}
+
+.color-preset.active {
+    border-color: var(--md-sys-color-on-surface);
 }
 
 .icon-btn {

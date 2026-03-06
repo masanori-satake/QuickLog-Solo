@@ -20,6 +20,14 @@
                     <span class="material-symbols-outlined">arrow_back</span>
                 </a>
                 <h1 data-i18n="studio-title">QuickLog Anim Studio</h1>
+                <div class="theme-switch-wrapper">
+                    <span class="material-symbols-outlined">light_mode</span>
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider round"></div>
+                    </label>
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </div>
             </div>
             <div class="header-right">
                 <select id="sample-select" class="sample-select">
@@ -147,6 +155,12 @@
                                     <input type="checkbox" id="show-metrics" checked>
                                     <span data-i18n="label-show-metrics">Metrics</span>
                                 </label>
+                            </div>
+                        </div>
+                        <div class="preview-color-selector">
+                            <label data-i18n="label-preview-color">Preview Color</label>
+                            <div id="preview-color-presets" class="color-presets">
+                                <!-- JS will populate this -->
                             </div>
                         </div>
                         <div id="preview-container">

@@ -17,10 +17,13 @@ let isTesting = false;
 let isDirty = false;
 let startTime = 0;
 let workerUrl = null;
+let currentPreviewColor = '#0056d2'; // Default primary
+let currentTheme = 'dark';
 
 // DOM Elements
 const sampleSelect = document.getElementById('sample-select');
 const langSelect = document.getElementById('lang-select-studio');
+const themeToggle = document.getElementById('theme-toggle');
 const metaLangSelect = document.getElementById('meta-lang-select');
 const codeTabs = document.querySelectorAll('.code-tab');
 const editors = document.querySelectorAll('.editor-container');
@@ -52,6 +55,7 @@ const showExclusionCheck = document.getElementById('show-exclusion');
 const shrinkPreviewBtn = document.getElementById('shrink-preview');
 const expandPreviewBtn = document.getElementById('expand-preview');
 const previewContainer = document.getElementById('preview-container');
+const colorPresetsContainer = document.getElementById('preview-color-presets');
 
 const metricLatency = document.getElementById('metric-latency');
 const metricDensity = document.getElementById('metric-density');
@@ -61,10 +65,26 @@ const metricStatus = document.getElementById('metric-status');
 // Initialize
 function init() {
     setupLanguage();
+    setupTheme();
     setupEngine();
     populateSamples();
+    setupColorPresets();
     setupEventListeners();
     setupDraggableResizable();
+}
+
+function setupTheme() {
+    const savedTheme = localStorage.getItem('studio-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    applyTheme();
+    themeToggle.checked = (currentTheme === 'dark');
+}
+
+function applyTheme() {
+    document.body.classList.remove('theme-light', 'theme-dark');
+    document.body.classList.add(`theme-${currentTheme}`);
 }
 
 function setupLanguage() {
@@ -124,6 +144,32 @@ function setupEngine() {
     engine = new AnimationEngine(canvas);
 }
 
+function setupColorPresets() {
+    const colors = [
+        '#0056d2', '#1976d2', '#039be5', '#0097a7', '#00796b', '#388e3c',
+        '#7cb342', '#fbc02d', '#ffa000', '#f57c00', '#d32f2f', '#c2185b',
+        '#8e24aa', '#5e35b1', '#303f9f'
+    ];
+
+    colors.forEach(color => {
+        const div = document.createElement('div');
+        div.className = 'color-preset';
+        if (color === currentPreviewColor) div.classList.add('active');
+        div.style.backgroundColor = color;
+        div.addEventListener('click', () => {
+            currentPreviewColor = color;
+            document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+            div.classList.add('active');
+            if (isTesting) {
+                // Hot restart if testing
+                stopTest();
+                startTest();
+            }
+        });
+        colorPresetsContainer.appendChild(div);
+    });
+}
+
 function populateSamples() {
     animations.forEach(anim => {
         const option = document.createElement('option');
@@ -144,6 +190,12 @@ function setupEventListeners() {
         updateTranslations(); // Refill placeholder
         populateSamples();
         sampleSelect.value = val;
+    });
+
+    themeToggle.addEventListener('change', () => {
+        currentTheme = themeToggle.checked ? 'dark' : 'light';
+        localStorage.setItem('studio-theme', currentTheme);
+        applyTheme();
     });
 
     metaLangSelect.addEventListener('change', (e) => {
@@ -422,7 +474,7 @@ function startTest() {
     };
 
     updateExclusionAreas();
-    engine.start('test', startTime, '#1976d2');
+    engine.start('test', startTime, currentPreviewColor);
 
     metricStatus.textContent = getMsg('status-running');
     metricStatus.style.color = '#4caf50';
