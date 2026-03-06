@@ -39,6 +39,54 @@ body.theme-light {
     --preview-bg: #fff;
 }
 
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.primary-btn, .secondary-btn, .tertiary-btn, .danger-btn {
+    padding: 12px 24px;
+    border-radius: var(--md-sys-shape-full);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.primary-btn {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.secondary-btn {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.tertiary-btn {
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+
+.danger-btn {
+    background-color: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+}
+
+.primary-btn:hover, .secondary-btn:hover, .tertiary-btn:hover, .danger-btn:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--md-sys-elevation-1);
+    transform: translateY(-1px);
+}
+
+.primary-btn:active, .secondary-btn:active, .tertiary-btn:active, .danger-btn:active {
+    transform: translateY(0);
+}
+
 #studio-app {
     display: flex;
     flex-direction: column;
@@ -784,53 +832,6 @@ body.theme-light .hl-bracket { color: #af00db; }
     width: 100%;
 }
 
-button {
-    font-family: inherit;
-    cursor: pointer;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.primary-btn, .secondary-btn, .tertiary-btn, .danger-btn {
-    padding: 12px 24px;
-    border-radius: var(--md-sys-shape-full);
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-.primary-btn {
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-}
-
-.secondary-btn {
-    background-color: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
-}
-
-.tertiary-btn {
-    background-color: var(--md-sys-color-tertiary-container);
-    color: var(--md-sys-color-on-tertiary-container);
-}
-
-.danger-btn {
-    background-color: var(--md-sys-color-error);
-    color: var(--md-sys-color-on-error);
-}
-
-.primary-btn:hover, .secondary-btn:hover, .tertiary-btn:hover, .danger-btn:hover {
-    filter: brightness(1.1);
-    box-shadow: var(--md-sys-elevation-1);
-    transform: translateY(-1px);
-}
-
-.primary-btn:active, .secondary-btn:active, .tertiary-btn:active, .danger-btn:active {
-    transform: translateY(0);
-}
 
 /* Modal */
 .modal {
