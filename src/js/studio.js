@@ -394,7 +394,7 @@ export default class CustomAnimation extends AnimationBase {
         ${inputSetup.value}
     }
 
-    draw(ctx, params) {
+    draw(ctx, { width, height, canvasWidth, elapsedMs, progress, step, exclusionAreas, realExclusionAreas }) {
         ${inputDraw.value}
     }
 
@@ -471,6 +471,7 @@ function startMetricsCollection() {
                 lastLatency = performance.now() - this.lastDrawRequestTime;
             } else if (e.data.type === 'error') {
                 showToast('Animation Error: ' + e.data.payload);
+                stopTest();
             }
             original.call(this, e);
         };
