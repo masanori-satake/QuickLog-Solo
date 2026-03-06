@@ -333,15 +333,19 @@ function buildModuleCode() {
     const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
     const animationBaseUrl = `${baseUrl}/js/animation_base.js`;
 
+    const escapeJSString = (str) => {
+        return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    };
+
     return `
 import { AnimationBase } from '${animationBaseUrl}';
 
 export default class CustomAnimation extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
-        name: "${metaName.value.replace(/"/g, '\\"')}",
-        description: "${metaDesc.value.replace(/"/g, '\\"')}",
-        author: "${metaAuthor.value.replace(/"/g, '\\"')}"
+        name: "${escapeJSString(metaName.value)}",
+        description: "${escapeJSString(metaDesc.value)}",
+        author: "${escapeJSString(metaAuthor.value)}"
     };
 
     config = {
