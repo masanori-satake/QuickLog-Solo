@@ -440,10 +440,6 @@ function buildModuleCode() {
         return code.split('\n').map(line => ' '.repeat(spaces) + line).join('\n').trimStart();
     };
 
-    const formatMetaData = (obj) => {
-        return JSON.stringify(obj, null, 8).replace(/^{/, '').replace(/}$/, '').trim();
-    };
-
     saveCurrentMetaData();
 
     return `import { AnimationBase } from '${animationBaseUrl}';
