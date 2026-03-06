@@ -54,9 +54,13 @@ const exclusionSim = document.getElementById('exclusion-simulator');
 const metricsPanel = document.getElementById('metrics-panel');
 const showMetricsCheck = document.getElementById('show-metrics');
 const showExclusionCheck = document.getElementById('show-exclusion');
+const showCanvasLabel = document.getElementById('show-canvas-label');
+const showCanvasCheck = document.getElementById('show-canvas');
 const shrinkPreviewBtn = document.getElementById('shrink-preview');
 const expandPreviewBtn = document.getElementById('expand-preview');
 const previewContainer = document.getElementById('preview-container');
+const rawCanvasContainer = document.getElementById('raw-canvas-container');
+const rawCanvas = document.getElementById('raw-canvas');
 const colorPresetsContainer = document.getElementById('preview-color-presets');
 const speedSlider = document.getElementById('preview-speed');
 const speedValue = document.getElementById('speed-value');
@@ -243,7 +247,10 @@ function setupEventListeners() {
         markDirty();
     });
     metaAuthor.addEventListener('input', markDirty);
-    configMode.addEventListener('change', markDirty);
+    configMode.addEventListener('change', () => {
+        markDirty();
+        updateCanvasControlVisibility();
+    });
     configPseudo.addEventListener('change', markDirty);
 
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
@@ -259,6 +266,7 @@ function setupEventListeners() {
 
     sampleSelect.addEventListener('change', (e) => {
         if (e.target.value) {
+            resetStudioUI();
             loadSample(e.target.value);
         }
     });
@@ -296,6 +304,12 @@ function setupEventListeners() {
     showExclusionCheck.addEventListener('change', (e) => {
         exclusionSim.style.display = e.target.checked ? 'flex' : 'none';
         updateExclusionAreas();
+    });
+
+    showCanvasCheck.addEventListener('change', (e) => {
+        const checked = e.target.checked;
+        rawCanvasContainer.classList.toggle('hidden', !checked);
+        if (engine) engine.requestRawBitmap = checked;
     });
 
     window.addEventListener('beforeunload', (e) => {
@@ -377,10 +391,73 @@ function markDirty() {
     isDirty = true;
 }
 
+function updateCanvasControlVisibility() {
+    const isCanvasMode = configMode.value === 'canvas';
+    showCanvasLabel.style.display = isCanvasMode ? 'flex' : 'none';
+    if (!isCanvasMode) {
+        showCanvasCheck.checked = false;
+        rawCanvasContainer.classList.add('hidden');
+    }
+}
+
+function resetStudioUI() {
+    // 1. Metadata - Editor Language (metaLang)
+    metaLang = currentLang;
+    metaLangSelect.value = currentLang;
+    metaData = {
+        name: {},
+        description: {}
+    };
+    metaName.value = '';
+    metaAuthor.value = '';
+    metaDesc.value = '';
+
+    // 2. Configuration
+    showCanvasCheck.checked = false;
+    rawCanvasContainer.classList.add('hidden');
+    showCanvasLabel.style.display = 'none';
+    if (engine) engine.requestRawBitmap = false;
+
+    // 3. Preview
+    // Reset Color
+    const defaultColor = '#0056d2';
+    currentPreviewColor = defaultColor;
+    document.querySelectorAll('.color-preset').forEach(p => {
+        const isDefault = p.style.backgroundColor === 'rgb(0, 86, 210)'; // #0056d2
+        p.classList.toggle('active', isDefault);
+    });
+    if (isTesting && engine) engine.color = defaultColor;
+
+    // Reset Speed
+    currentSpeed = 1.0;
+    speedSlider.value = 1.0;
+    speedValue.textContent = '1.0';
+
+    // Reset Checkboxes
+    showMetricsCheck.checked = true;
+    metricsPanel.style.display = 'grid';
+    showExclusionCheck.checked = true;
+    exclusionSim.style.display = 'flex';
+
+    // Reset Preview Height
+    previewContainer.style.height = '150px';
+    rawCanvasContainer.style.height = '150px';
+
+    // Reset Simulator position/size
+    exclusionSim.style.top = '40px';
+    exclusionSim.style.left = '40px';
+    exclusionSim.style.width = '120px';
+    exclusionSim.style.height = '40px';
+
+    if (engine) engine.resize();
+    updateExclusionAreas();
+}
+
 function adjustPreviewHeight(delta) {
     const currentHeight = previewContainer.offsetHeight;
     const newHeight = Math.max(100, Math.min(600, currentHeight + delta));
     previewContainer.style.height = `${newHeight}px`;
+    rawCanvasContainer.style.height = `${newHeight}px`;
     if (engine) engine.resize();
 }
 
@@ -393,6 +470,7 @@ async function loadSample(id) {
         const response = await fetch(`./js/animation/${id}.js`);
         const text = await response.text();
         parseAndPopulate(text, anim.metadata);
+        updateCanvasControlVisibility();
         updateAllGutter();
         updateAllHighlight();
     } catch {
@@ -582,6 +660,17 @@ function startTest() {
         this.perfViolations = 0;
         this.isMonitoring = true;
         this.isDrawPending = false;
+        this.requestRawBitmap = showCanvasCheck.checked;
+        this.onRawBitmapDraw = (bitmap) => {
+            const ctx = rawCanvas.getContext('2d');
+            if (rawCanvas.width !== engine.canvas.width || rawCanvas.height !== engine.canvas.height) {
+                rawCanvas.width = engine.canvas.width;
+                rawCanvas.height = engine.canvas.height;
+            }
+            ctx.clearRect(0, 0, rawCanvas.width, rawCanvas.height);
+            ctx.drawImage(bitmap, 0, 0);
+            bitmap.close();
+        };
 
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
@@ -860,6 +949,11 @@ function setupDraggableResizable() {
 
 function updateExclusionAreas() {
     if (!engine) return;
+
+    if (rawCanvas.width !== engine.canvas.width || rawCanvas.height !== engine.canvas.height) {
+        rawCanvas.width = engine.canvas.width;
+        rawCanvas.height = engine.canvas.height;
+    }
 
     if (showExclusionCheck.checked) {
         const rect = exclusionSim.getBoundingClientRect();

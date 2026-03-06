@@ -64,14 +64,20 @@ self.onmessage = async (e) => {
 
             case 'draw': {
                 if (!animation) return;
-                const dots = performDraw(payload);
-                self.postMessage({
+                const { dots, rawBitmap } = performDraw(payload);
+                const response = {
                     type: 'drawResponse',
                     payload: {
                         dots,
+                        rawBitmap,
                         elapsedMs: payload.elapsedMs
                     }
-                });
+                };
+                if (rawBitmap) {
+                    self.postMessage(response, [rawBitmap]);
+                } else {
+                    self.postMessage(response);
+                }
                 break;
             }
 
@@ -123,7 +129,7 @@ function _isInExclusion(x, y, exclusionAreas) {
 }
 
 function performDraw(params) {
-    const { width, height, canvasWidth, exclusionAreas, realExclusionAreas, elapsedMs } = params;
+    const { width, height, canvasWidth, exclusionAreas, realExclusionAreas, elapsedMs, requestRawBitmap } = params;
 
     // Apply speed factor to elapsed time
     const modifiedElapsedMs = elapsedMs * speedFactor;
@@ -144,6 +150,7 @@ function performDraw(params) {
     const physicalMask = realExclusionAreas || exclusionAreas;
 
     let dots = [];
+    let rawBitmap = null;
 
     if (config.mode === 'matrix') {
         const matrix = animation.draw(null, modifiedParams);
@@ -263,6 +270,10 @@ function performDraw(params) {
                 }
             }
         }
+
+        if (requestRawBitmap) {
+            rawBitmap = offscreenCanvas.transferToImageBitmap();
+        }
     }
-    return dots;
+    return { dots, rawBitmap };
 }

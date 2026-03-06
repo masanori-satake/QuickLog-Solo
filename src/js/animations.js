@@ -22,6 +22,8 @@ export class AnimationEngine {
         this.activeAnimationId = null;
         this.config = { usePseudoSpace: false };
         this.initialized = false;
+        this.requestRawBitmap = false;
+        this.onRawBitmapDraw = null;
 
         this.perfThreshold = 100; // ms
         this.perfViolations = 0;
@@ -151,6 +153,9 @@ export class AnimationEngine {
                 this.perfViolations = Math.max(0, this.perfViolations - 1);
             }
 
+            if (payload.rawBitmap && typeof this.onRawBitmapDraw === 'function') {
+                this.onRawBitmapDraw(payload.rawBitmap);
+            }
             this._renderDots(payload.dots);
         } else if (type === 'error') {
             console.error('Animation Worker Error:', payload);
@@ -218,7 +223,8 @@ export class AnimationEngine {
             progress,
             step: Math.floor(progress * 240),
             exclusionAreas: this._getVirtualExclusionAreas(),
-            realExclusionAreas: this.exclusionAreas
+            realExclusionAreas: this.exclusionAreas,
+            requestRawBitmap: this.requestRawBitmap
         };
 
         this.lastDrawRequestTime = performance.now();
