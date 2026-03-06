@@ -17,6 +17,9 @@ on:
       - 'LICENSE'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
