@@ -1,5 +1,5 @@
 /**
- * QuickLog Anim Studio Logic
+ * QL-Animation Studio Logic
  */
 
 import { animations } from './animation_registry.js';

@@ -309,9 +309,9 @@ export default class Ripple extends AnimationBase {
 
 ---
 
-## 10. QuickLog Anim Studio (Playground)
+## 10. QL-Animation Studio (Playground)
 
-開発者がブラウザ上でアニメーションモジュールを試行錯誤しながら作成できる [QuickLog Anim Studio](../src/studio.html) を提供しています。
+開発者がブラウザ上でアニメーションモジュールを試行錯誤しながら作成できる [QL-Animation Studio](../src/studio.html) を提供しています。
 このスタジオでは、既存のサンプルをベースにコードを修正し、リアルタイムで動作確認やパフォーマンス計測（密度、変化量等）を行うことができ、そのまま PR 用のファイルをダウンロードすることが可能です。
 
 ---
