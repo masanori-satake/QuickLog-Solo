@@ -218,6 +218,10 @@
                                     <input type="checkbox" id="show-metrics" checked>
                                     <span data-i18n="label-show-metrics">Metrics</span>
                                 </label>
+                                <label id="show-canvas-label" class="checkbox-label" style="display: none;">
+                                    <input type="checkbox" id="show-canvas">
+                                    <span data-i18n="label-show-canvas">Canvas</span>
+                                </label>
                             </div>
                         </div>
                         <div class="preview-color-selector">
@@ -241,6 +245,9 @@
                                 <div class="resizer sw"></div>
                                 <div class="resizer se"></div>
                             </div>
+                        </div>
+                        <div id="raw-canvas-container" class="hidden">
+                            <canvas id="raw-canvas"></canvas>
                         </div>
                         <div id="metrics-panel" class="metrics-grid">
                             <div class="metric-item">
