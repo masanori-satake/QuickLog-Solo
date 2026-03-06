@@ -85,6 +85,15 @@ function updateTranslations() {
         }
     });
 
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const key = el.getAttribute('data-i18n-html');
+        if (messages[currentLang] && messages[currentLang][key]) {
+            el.innerHTML = messages[currentLang][key];
+        } else if (messages.en[key]) {
+            el.innerHTML = messages.en[key];
+        }
+    });
+
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
         const key = el.getAttribute('data-i18n-title');
         if (messages[currentLang] && messages[currentLang][key]) {
@@ -187,7 +196,6 @@ async function loadSample(id) {
 }
 
 function parseAndPopulate(code, metadata) {
-    // Basic regex-based parsing (simplified)
     metaName.value = typeof metadata.name === 'object' ? metadata.name.en : metadata.name;
     metaAuthor.value = metadata.author || '';
     metaDesc.value = typeof metadata.description === 'object' ? metadata.description.en : (metadata.description || '');
@@ -197,62 +205,57 @@ function parseAndPopulate(code, metadata) {
     configMode.value = modeMatch ? modeMatch[1] : 'canvas';
     configPseudo.checked = /usePseudoSpace:\s*true/.test(code);
 
-    // Extract methods
-    inputSetup.value = extractMethod(code, 'setup');
-    inputDraw.value = extractMethod(code, 'draw');
-
-    const onClick = extractMethod(code, 'onClick');
-    const onMouseMove = extractMethod(code, 'onMouseMove');
-    inputInteraction.value = (onClick ? `onClick(x, y) {\n${onClick}\n}\n\n` : '') +
-                             (onMouseMove ? `onMouseMove(x, y) {\n${onMouseMove}\n}` : '');
-    if (inputInteraction.value === '') {
-        inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
-    }
-
-    // Extract variables (everything inside class but outside methods and metadata)
+    // Find class body
     const classMatch = code.match(/export\s+default\s+class\s+\w+\s+extends\s+AnimationBase\s*\{/);
     if (!classMatch) return;
 
-    let pos = classMatch.index + classMatch[0].length;
-    let classContent = "";
-    let braceCount = 1;
-    while (braceCount > 0 && pos < code.length) {
-        if (code[pos] === '{') braceCount++;
-        else if (code[pos] === '}') braceCount--;
-        if (braceCount > 0) classContent += code[pos];
+    let classStart = classMatch.index + classMatch[0].length;
+    let bCount = 1;
+    let pos = classStart;
+    while (bCount > 0 && pos < code.length) {
+        if (code[pos] === '{') bCount++;
+        else if (code[pos] === '}') bCount--;
         pos++;
     }
+    let classContent = code.substring(classStart, pos - 1);
 
+    // Extract specific methods
+    inputSetup.value = extractMethod(classContent, 'setup');
+    inputDraw.value = extractMethod(classContent, 'draw');
+
+    const onClick = extractMethod(classContent, 'onClick');
+    const onMouseMove = extractMethod(classContent, 'onMouseMove');
+    inputInteraction.value = (onClick ? onClick + '\n\n' : '') + (onMouseMove ? onMouseMove : '');
+
+    if (!inputSetup.value) inputSetup.value = 'setup(width, height) {\n  \n}';
+    if (!inputDraw.value) inputDraw.value = 'draw(ctx, params) {\n  \n}';
+    if (!inputInteraction.value) inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
+
+    // Remove extracted parts from classContent to get variables/other members
     let vars = classContent;
-    const toRemove = ['static\\s+metadata', 'config', 'constructor', 'setup', 'draw', 'onClick', 'onMouseMove'];
+    const toRemove = ['metadata', 'config', 'setup', 'draw', 'onClick', 'onMouseMove'];
 
-    let changed = true;
-    while (changed) {
-        changed = false;
-        for (const name of toRemove) {
-            const range = findRange(vars, name);
-            if (range) {
-                vars = vars.substring(0, range.start) + vars.substring(range.end);
-                changed = true;
-                break;
-            }
-        }
-    }
+    let ranges = [];
+    toRemove.forEach(name => {
+        const r = findRange(vars, name);
+        if (r) ranges.push(r);
+    });
+
+    ranges.sort((a, b) => b.start - a.start);
+    ranges.forEach(r => {
+        vars = vars.substring(0, r.start) + vars.substring(r.end);
+    });
+
+    // Clean up empty semicolons and multiple newlines left behind
+    vars = vars.replace(/^\s*;+/gm, '').replace(/;+\s*$/gm, '').replace(/\n\s*\n\s*\n/g, '\n\n');
 
     inputVars.value = vars.trim();
 }
 
 function extractMethod(code, name) {
     const range = findRange(code, name);
-    if (!range || range.bodyStart === undefined) return '';
-
-    // Extract body content between the identified braces
-    let body = code.substring(range.bodyStart + 1, range.end);
-    let lastBrace = body.lastIndexOf('}');
-    if (lastBrace !== -1) {
-        body = body.substring(0, lastBrace);
-    }
-    return deindent(body).trim();
+    if (!range) return '';
+    return deindent(code.substring(range.start, range.end)).trim();
 }
 
 function deindent(text) {
@@ -273,49 +276,42 @@ function deindent(text) {
 }
 
 function findRange(text, namePattern) {
-    const regex = new RegExp(`\\b${namePattern}\\b\\s*[=(]`, 'g');
+    const regex = new RegExp(`(?:^|\\s)(static\\s+)?${namePattern}\\b`, 'g');
     let match;
-    let found = null;
     while ((match = regex.exec(text)) !== null) {
-        if (match.index > 0 && text[match.index - 1] === '.') continue;
-        found = match;
-        break;
-    }
-    if (!found) return null;
+        let actualStart = match.index;
+        if (/\s/.test(text[match.index])) actualStart++;
+        if (actualStart > 0 && text[actualStart - 1] === '.') continue;
 
-    let start = found.index;
-    let pos = found.index + found[0].length;
-    let bodyStart;
+        let pos = actualStart;
+        let braceCount = 0;
+        let parenCount = 0;
+        let started = false;
 
-    if (found[0].endsWith('(')) {
-        let pCount = 1;
-        while (pCount > 0 && pos < text.length) {
-            if (text[pos] === '(') pCount++;
-            else if (text[pos] === ')') pCount--;
-            pos++;
+        for (let i = pos; i < text.length; i++) {
+            const char = text[i];
+            if (char === '(') parenCount++;
+            else if (char === ')') parenCount--;
+            else if (char === '{') {
+                if (parenCount === 0) {
+                    braceCount++;
+                    started = true;
+                }
+            } else if (char === '}') {
+                if (parenCount === 0) {
+                    braceCount--;
+                    if (started && braceCount === 0) {
+                        return { start: actualStart, end: i + 1 };
+                    }
+                }
+            } else if (char === ';' && braceCount === 0 && parenCount === 0) {
+                if (started || i > actualStart + namePattern.length) {
+                    return { start: actualStart, end: i + 1 };
+                }
+            }
         }
     }
-
-    while (pos < text.length && text[pos] !== '{' && text[pos] !== ';') {
-        pos++;
-    }
-    if (pos >= text.length) return null;
-
-    if (text[pos] === '{') {
-        bodyStart = pos;
-        let bCount = 1;
-        pos++;
-        while (bCount > 0 && pos < text.length) {
-            if (text[pos] === '{') bCount++;
-            else if (text[pos] === '}') bCount--;
-            pos++;
-        }
-        if (pos < text.length && text[pos] === ';') pos++;
-    } else {
-        pos++;
-    }
-
-    return { start, end: pos, bodyStart };
+    return null;
 }
 
 function toggleTest() {
@@ -402,6 +398,7 @@ function buildModuleCode() {
     };
 
     const indentCode = (code, spaces) => {
+        if (!code || !code.trim()) return '';
         return code.split('\n').map(line => ' '.repeat(spaces) + line).join('\n').trimStart();
     };
 
@@ -422,13 +419,9 @@ export default class CustomAnimation extends AnimationBase {
 
     ${indentCode(inputVars.value, 4)}
 
-    setup(width, height) {
-        ${indentCode(inputSetup.value, 8)}
-    }
+    ${indentCode(inputSetup.value, 4)}
 
-    draw(ctx, { width, height, canvasWidth, elapsedMs, progress, step, exclusionAreas, realExclusionAreas }) {
-        ${indentCode(inputDraw.value, 8)}
-    }
+    ${indentCode(inputDraw.value, 4)}
 
     ${indentCode(inputInteraction.value, 4)}
 }`;
