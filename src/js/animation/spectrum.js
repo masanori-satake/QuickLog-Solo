@@ -59,7 +59,7 @@ export default class Spectrum extends AnimationBase {
      * Main drawing loop
      * 描画ループ
      */
-    draw(ctx, { progress = 0 } = {}) {
+    draw(ctx) {
         const sprites = [];
         const width = this.width;
         const height = this.height;

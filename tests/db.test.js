@@ -152,6 +152,16 @@ describe('DB Module', () => {
             expect(result.find(c => c.name === 'New').order).toBeGreaterThan(0);
         });
 
+        test('dbImportCategories handles invalid colors by falling back to primary', async () => {
+            await openDatabase();
+            const items = [
+                { name: 'Invalid Color', color: 'super-red' }
+            ];
+            await dbImportCategories(items, 'append');
+            const result = await dbGetAll(STORE_CATEGORIES);
+            expect(result.find(c => c.name === 'Invalid Color').color).toBe('primary');
+        });
+
         test('imports categories in overwrite mode', async () => {
             await openDatabase();
             await dbAdd(STORE_CATEGORIES, { name: 'Old', color: 'primary', order: 0 });
