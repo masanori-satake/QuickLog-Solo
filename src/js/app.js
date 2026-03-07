@@ -256,6 +256,9 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
         if (currentActiveAnimation !== animStateKey) {
             animationEngine.start(activeAnimation, activeTask.startTime, colorCode);
             currentActiveAnimation = animStateKey;
+        } else if (!animationEngine.worker) {
+            // Guard against the case where engine was stopped but currentActiveAnimation wasn't reset
+            animationEngine.start(activeAnimation, activeTask.startTime, colorCode);
         }
         display?.classList.add('anim-active');
         const base = getEl('current-task-display-base');

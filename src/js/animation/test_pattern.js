@@ -14,17 +14,18 @@ export default class TestPattern extends AnimationBase {
             zh: "验证模式"
         },
         description: {
-            en: "A completely static pattern for bit-perfect visual verification. (Excluded from release)",
-            ja: "ビット単位での完全一致を確認するための、完全に静止したパターンです。（製品版には含まれません）",
-            de: "Ein vollständig statisches Muster für eine bitgenaue visuelle Verifizierung. (Nicht im Release enthalten)",
-            es: "Un patrón completamente estático para una verificación visual perfecta. (Excluido del lanzamiento)",
-            fr: "Un motif complètement statique pour une vérification visuelle parfaite bit à bit. (Exclu de la version finale)",
-            pt: "Um padrão completamente estático para verificação visual perfecta bit a bit. (Excluído do lançamento)",
-            ko: "비트 단위의 완전 일치를 확인하기 위한, 완전히 정지된 패턴입니다. (릴리스 제외)",
-            zh: "用于位对位完全一致验证的完全静态模式。（不包含在发布版本中）"
+            en: "A high-visibility static pattern for bit-perfect visual verification. (Excluded from release)",
+            ja: "ビット単位での完全一致を確認するための、視認性の高い完全に静止したパターンです。（製品版には含まれません）",
+            de: "Ein hochsichtbares statisches Muster für eine bitgenaue visuelle Verifizierung. (Nicht im Release enthalten)",
+            es: "Un patrón estático de alta visibilidad para una verificación visual perfecta. (Excluido del lanzamiento)",
+            fr: "Un motif statique à haute visibilité pour une vérification visuelle parfaite bit à bit. (Exclu de la version finale)",
+            pt: "Um padrão estático de alta visibilidade para verificação visual perfecta bit a bit. (Excluído do lançamento)",
+            ko: "비트 단위의 완전 일치를 확인하기 위한, 시인성이 높은 완전히 정지된 패턴입니다. (릴리스 제외)",
+            zh: "用于位对位完全一致验证的高可见性静态模式。（不包含在发布版本中）"
         },
         author: "QuickLog-Solo",
-        devOnly: true
+        devOnly: true,
+        ignoreExclusion: true
     };
 
     config = { mode: 'sprite', usePseudoSpace: false };
@@ -32,12 +33,32 @@ export default class TestPattern extends AnimationBase {
     setup(width, height) {
         this.dots = [];
         const step = 6;
+        const thickness = 2; // Thickness in cells
+
         for (let x = 0; x <= width; x += step) {
             for (let y = 0; y <= height; y += step) {
-                // Draw a border and a large cross for unmistakable verification
-                const isBorder = x === 0 || y === 0 || x >= width - step || y >= height - step;
-                const isCross = Math.abs(x - y) < step || Math.abs(x - (width - y)) < step;
-                if (isBorder || isCross) {
+                const col = x / step;
+                const row = y / step;
+                const maxCol = Math.floor(width / step);
+                const maxRow = Math.floor(height / step);
+
+                // 1. Thick border (outermost 2 cells)
+                const isBorder = col < thickness || row < thickness ||
+                                 col > maxCol - thickness || row > maxRow - thickness;
+
+                // 2. Large thick central cross
+                const centerX = Math.floor(maxCol / 2);
+                const centerY = Math.floor(maxRow / 2);
+                const isCross = Math.abs(col - centerX) < thickness ||
+                                Math.abs(row - centerY) < thickness;
+
+                // 3. Corner markers (larger dots)
+                const isCorner = (col < thickness && row < thickness) ||
+                                 (col > maxCol - thickness && row < thickness) ||
+                                 (col < thickness && row > maxRow - thickness) ||
+                                 (col > maxCol - thickness && row > maxRow - thickness);
+
+                if (isBorder || isCross || isCorner) {
                     this.dots.push({ x, y, size: 3 });
                 }
             }
