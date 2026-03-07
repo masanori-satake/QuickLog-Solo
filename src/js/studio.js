@@ -400,6 +400,13 @@ function setupEventListeners() {
             if (!searchBar.classList.contains('hidden')) {
                 searchInput.focus();
             }
+        } else if (e.key === 'Escape') {
+            if (!prModal.classList.contains('hidden')) {
+                prModal.classList.add('hidden');
+            }
+            if (!searchBar.classList.contains('hidden')) {
+                searchBar.classList.add('hidden');
+            }
         }
     });
 
