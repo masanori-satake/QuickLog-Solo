@@ -1141,6 +1141,16 @@ body.theme-dark .tape-btn.primary {
     border-radius: 4px;
 }
 
+.pr-guide-body a {
+    color: var(--md-sys-color-primary);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.pr-guide-body a:hover {
+    filter: brightness(1.2);
+}
+
 .note {
     font-size: 0.9rem;
     color: var(--md-sys-color-on-surface-variant);
