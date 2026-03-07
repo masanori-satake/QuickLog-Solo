@@ -86,7 +86,6 @@ export default class Cats extends AnimationBase {
      */
     draw(ctx, { elapsedMs = 0, exclusionAreas = [] } = {}) {
         const width = this.width;
-        const height = this.height;
 
         // 1. Update Food state
         // 1. 餌の状態更新
