@@ -25,7 +25,7 @@ export default class NewtonsCradle extends AnimationBase {
             es: "Una simulación del clásico juguete físico de oficina.",
             fr: "Une simulation du jouet de bureau physique classique.",
             pt: "Uma simulação do clássico brinquedo físico de escritório.",
-            ko: "고전적인 물리 사무용 장난감인 '뉴턴의 요람' 시ミュ레이션입니다。",
+            ko: "고전적인 물리 사무용 장난감인 '뉴턴의 요람' 시뮬레이션입니다.",
             zh: "经典办公物理玩具的模拟。"
         },
         author: "QuickLog-Solo"
