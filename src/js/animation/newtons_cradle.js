@@ -21,7 +21,7 @@ export default class NewtonsCradle extends AnimationBase {
         description: {
             en: "A simulation of the classic physical office toy.",
             ja: "古典的な物理玩具である「ニュートンのゆりかご」のシミュレーションです。",
-            de: "Eine simulation des klassischen physikalischen Bürospielzeugs.",
+            de: "Eine Simulation des klassischen physikalischen Bürospielzeugs.",
             es: "Una simulación del clásico juguete físico de oficina.",
             fr: "Une simulation du jouet de bureau physique classique.",
             pt: "Uma simulação do clássico brinquedo físico de escritório.",
