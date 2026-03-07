@@ -31,7 +31,7 @@ export default class MigratingBirds extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'sprite', usePseudoSpace: true };
+    config = { mode: 'sprite', usePseudoSpace: true, rewindable: true };
 
     /**
      * Initial setup and resizing
@@ -55,7 +55,7 @@ export default class MigratingBirds extends AnimationBase {
      * Main drawing loop
      * 描画ループ
      */
-    draw(ctx, { progress = 0 } = {}) {
+    draw(ctx, { elapsedMs = 0, progress = 0 } = {}) {
         const sprites = [];
         const width = this.width;
         const height = this.height;
@@ -72,7 +72,7 @@ export default class MigratingBirds extends AnimationBase {
             const by = this.yBase + offset * this.spacing * 0.5;
 
             // Wing flap animation / 羽ばたきのアニメーション
-            const flap = Math.sin(Date.now() / 150 + i) > 0;
+            const flap = Math.sin(elapsedMs / 150 + i) > 0;
 
             // Represent bird with 3 dots (body and wing tips)
             // 鳥を3つのドット（体と翼の先端）で表現
@@ -93,7 +93,7 @@ export default class MigratingBirds extends AnimationBase {
         if (progress > 0.4 && progress < 0.6) {
             const sx = width + 100 - (width + 200) * (progress - 0.4) * 5;
             const sy = height * 0.2;
-            const flap = Math.sin(Date.now() / 120) > 0;
+            const flap = Math.sin(elapsedMs / 120) > 0;
             sprites.push({ x: sx, y: sy, size: 2 });
             if (flap) {
                 sprites.push({ x: sx + 8, y: sy - 4, size: 1 });

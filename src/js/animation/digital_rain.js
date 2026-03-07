@@ -73,7 +73,7 @@ export default class DigitalRain extends AnimationBase {
      * Main drawing loop
      * 描画ループ
      */
-    draw(ctx, { speed = 1 } = {}) {
+    draw(ctx, { elapsedMs = 0, speed = 1 } = {}) {
         const sprites = [];
         const spacing = 6;
         const height = this.height;

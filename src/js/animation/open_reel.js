@@ -31,7 +31,7 @@ export default class OpenReel extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false };
+    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
 
     /**
      * Initial setup and resizing
@@ -46,10 +46,10 @@ export default class OpenReel extends AnimationBase {
      * Main drawing loop
      * 描画ループ
      */
-    draw(ctx, { exclusionAreas = [] } = {}) {
+    draw(ctx, { elapsedMs = 0, exclusionAreas = [] } = {}) {
         const width = this.width;
         const height = this.height;
-        const time = Date.now() / 1000;
+        const time = elapsedMs / 1000;
 
         // 1. Reel placement (Avoid UI)
         // 1. リールの配置（UIを避ける）

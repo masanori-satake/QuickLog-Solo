@@ -84,7 +84,7 @@ export default class Cats extends AnimationBase {
      * Main drawing and update loop
      * 描画および更新ループ
      */
-    draw(ctx, { exclusionAreas = [] } = {}) {
+    draw(ctx, { elapsedMs = 0, exclusionAreas = [] } = {}) {
         const width = this.width;
         const height = this.height;
 
@@ -155,7 +155,7 @@ export default class Cats extends AnimationBase {
 
             // Draw the cat (Pixel art style)
             // 猫の描画（ドット絵スタイル）
-            this.drawCat(ctx, cat);
+            this.drawCat(ctx, cat, elapsedMs);
         });
 
         // 4. Draw Food
@@ -171,7 +171,7 @@ export default class Cats extends AnimationBase {
      * Helper to draw a pixel art cat
      * 猫の描画ヘルパー関数
      */
-    drawCat(ctx, cat) {
+    drawCat(ctx, cat, elapsedMs) {
         ctx.save();
         ctx.translate(cat.x, cat.y);
         ctx.scale(cat.scale, cat.scale);
@@ -191,7 +191,7 @@ export default class Cats extends AnimationBase {
 
         // Legs (Walking animation)
         if (cat.state === 'walking') {
-            const legOffset = Math.sin(Date.now() / 100) * 2;
+            const legOffset = Math.sin(elapsedMs / 100) * 2;
             ctx.fillRect(-5, 0, 2, 2 + legOffset);
             ctx.fillRect(2, 0, 2, 2 - legOffset);
         } else {
@@ -200,7 +200,7 @@ export default class Cats extends AnimationBase {
         }
 
         // Tail
-        const tailAngle = Math.sin(Date.now() / 300) * 0.5;
+        const tailAngle = Math.sin(elapsedMs / 300) * 0.5;
         ctx.save();
         ctx.translate(-6, -4);
         ctx.rotate(tailAngle);

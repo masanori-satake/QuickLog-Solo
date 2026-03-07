@@ -20,7 +20,8 @@ export class AnimationBase {
      */
     config = {
         mode: 'canvas',
-        usePseudoSpace: false
+        usePseudoSpace: false,
+        rewindable: false
     };
 
     /**

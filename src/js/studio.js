@@ -64,6 +64,7 @@ const metaAuthor = document.getElementById('meta-author');
 const metaDesc = document.getElementById('meta-desc');
 const configMode = document.getElementById('config-mode');
 const configPseudo = document.getElementById('config-pseudo');
+const configRewindable = document.getElementById('config-rewindable');
 
 const canvas = document.getElementById('animation-canvas');
 const exclusionSim = document.getElementById('exclusion-simulator');
@@ -274,6 +275,10 @@ function setupEventListeners() {
         updateCanvasControlVisibility();
     });
     configPseudo.addEventListener('change', markDirty);
+    configRewindable.addEventListener('change', () => {
+        markDirty();
+        updateTapeControlState();
+    });
 
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
         el.addEventListener('input', () => {
@@ -478,6 +483,8 @@ function resetStudioUI(full = true) {
     }
 
     // 2. Configuration
+    configRewindable.checked = false;
+    updateTapeControlState();
     showCanvasCheck.checked = true;
     rawCanvasContainer.classList.remove('hidden');
     showCanvasLabel.style.display = 'none'; // Will be updated by updateCanvasControlVisibility
@@ -569,6 +576,8 @@ function parseAndPopulate(code, metadata) {
     const modeMatch = code.match(/mode:\s*['"](canvas|matrix|sprite)['"]/);
     configMode.value = modeMatch ? modeMatch[1] : 'canvas';
     configPseudo.checked = /usePseudoSpace:\s*true/.test(code);
+    configRewindable.checked = /rewindable:\s*true/.test(code);
+    updateTapeControlState();
 
     // Find class body
     const classMatch = code.match(/export\s+default\s+class\s+\w+\s+extends\s+AnimationBase\s*\{/);
@@ -714,7 +723,8 @@ function startTest() {
     // Configure engine for testing
     engine.config = {
         mode: configMode.value,
-        usePseudoSpace: configPseudo.checked
+        usePseudoSpace: configPseudo.checked,
+        rewindable: configRewindable.checked
     };
 
     updateExclusionAreas();
@@ -920,8 +930,12 @@ function updateTapeCounter() {
     tapeCounterEl.textContent = String(totalSeconds % 10000).padStart(4, '0');
 }
 
+function updateTapeControlState() {
+    rewindBtn.disabled = !configRewindable.checked;
+}
+
 function setInputDisabled(disabled) {
-    [metaName, metaAuthor, metaDesc, configMode, configPseudo, inputVars, inputSetup, inputDraw, inputInteraction, sampleSelect].forEach(el => {
+    [metaName, metaAuthor, metaDesc, configMode, configPseudo, configRewindable, inputVars, inputSetup, inputDraw, inputInteraction, sampleSelect].forEach(el => {
         el.disabled = disabled;
     });
 }
@@ -953,7 +967,8 @@ export default class CustomAnimation extends AnimationBase {
 
     config = {
         mode: '${configMode.value}',
-        usePseudoSpace: ${configPseudo.checked}
+        usePseudoSpace: ${configPseudo.checked},
+        rewindable: ${configRewindable.checked}
     };
 
     ${indentCode(inputVars.value, 4)}
@@ -998,6 +1013,8 @@ function handleUpload(e) {
                 metaAuthor.value = data.author || '';
                 configMode.value = data.mode || 'canvas';
                 configPseudo.checked = !!data.usePseudoSpace;
+                configRewindable.checked = !!data.rewindable;
+                updateTapeControlState();
                 inputVars.value = data.vars || '';
                 inputSetup.value = data.setup || '';
                 inputDraw.value = data.draw || '';
