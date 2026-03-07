@@ -31,7 +31,7 @@ export default class RightToLeft extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'sprite', usePseudoSpace: true };
+    config = { mode: 'sprite', usePseudoSpace: true, rewindable: true };
 
     /**
      * Initial setup and resizing

@@ -75,6 +75,59 @@ graph TD
 
 ## 2. 主要な振る舞い
 
+### アニメーション・スタジオの状態遷移 (Cassette Deck Style)
+
+QL-Animation Studio のテスト実行環境は、カセットテープレコーダーを模した 3 つの状態を持ちます。
+
+```mermaid
+stateDiagram-v2
+    [*] --> STOPPED
+
+    STOPPED --> PLAYING : Play (Start)
+    STOPPED --> STOPPED : Eject (Reset Sample)
+
+    PLAYING --> STOPPED : Stop
+    PLAYING --> PAUSED : Pause
+    PLAYING --> PLAYING : Rewind / FF (Scrub)
+
+    PAUSED --> PLAYING : Play / Pause (Resume)
+    PAUSED --> STOPPED : Stop
+    PAUSED --> PAUSED : Rewind / FF (Scrub)
+
+    note right of PLAYING
+      draw() が継続的に呼ばれる
+      仮想時間が進行する
+    end note
+
+    note right of PAUSED
+      draw() の呼び出しが止まる
+      画面は維持される
+    end note
+```
+
+#### 各状態の説明
+
+- **STOPPED (停止中):**
+    - アニメーションは実行されておらず、Canvas はクリアまたは初期状態です。
+    - 設定の変更やサンプルの選択が可能です。
+    - `Eject` ボタンでサンプル選択をリセットできます。
+- **PLAYING (再生中):**
+    - `draw()` がフレーム毎に呼び出され、アニメーションが進行します。
+    - 設定変更はロックされます。
+    - 内部的な「仮想経過時間」が実時間と同期して進行します。
+- **PAUSED (一時停止中):**
+    - `draw()` の呼び出しを一時停止し、現在の描画内容を Canvas に維持します。
+    - Worker は終了せず、内部状態（変数など）は保持されます。
+    - 設定変更は PLAYING 同様ロックされます。
+    - `Play` または `Pause` ボタンで PLAYING に戻ります。
+
+#### 特殊操作
+
+- **巻き戻し (Rewind) / 先送り (Fast Forward):**
+    - 実行中または一時停止中に使用可能です。
+    - 10ms 間隔で 10 回 `draw()` を呼び出し、仮想時間を進退させます。
+    - 操作完了後は、操作前の状態（PLAYING または PAUSED）を維持します。
+
 ### タスクの開始・切り替えフロー
 
 ```mermaid

@@ -31,7 +31,7 @@ export default class DotTyping extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'sprite', usePseudoSpace: true };
+    config = { mode: 'sprite', usePseudoSpace: true, rewindable: true };
 
     constructor() {
         super();
@@ -52,7 +52,7 @@ export default class DotTyping extends AnimationBase {
      * Main drawing loop
      * 描画ループ
      */
-    draw(ctx, { progress = 0 } = {}) {
+    draw(ctx, { elapsedMs = 0, progress = 0 } = {}) {
         const sprites = [];
         const totalChars = this.rows * this.cols;
 
@@ -89,7 +89,7 @@ export default class DotTyping extends AnimationBase {
 
         // Draw blinking cursor
         // 点滅するカーソルの描画
-        if (Math.floor(Date.now() / 500) % 2 === 0) {
+        if (Math.floor(elapsedMs / 500) % 2 === 0) {
             const lastIdx = buffer.length;
             const r = Math.floor(lastIdx / this.cols);
             const c = lastIdx % this.cols;

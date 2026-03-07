@@ -31,7 +31,7 @@ export default class NewtonsCradle extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false };
+    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
 
     /**
      * Initial setup and resizing
@@ -52,7 +52,7 @@ export default class NewtonsCradle extends AnimationBase {
      * Main drawing loop
      * 描画ループ
      */
-    draw(ctx, { progress = 0, exclusionAreas = [] } = {}) {
+    draw(ctx, { elapsedMs = 0, progress = 0, exclusionAreas = [] } = {}) {
         const width = this.width;
         const height = this.height;
         const stringLength = this.stringLength;
@@ -94,7 +94,7 @@ export default class NewtonsCradle extends AnimationBase {
         // Swing amplitude fluctuates slightly over time
         // 振幅を時間とともにわずかに変化させる
         const amplitude = Math.PI / 6 * (1 + 0.2 * Math.sin(progress * Math.PI * 10));
-        const time = Date.now() / 300;
+        const time = elapsedMs / 300;
         const angle = Math.sin(time);
 
         // Draw each ball and its string

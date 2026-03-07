@@ -110,6 +110,20 @@
                                     <span class="switch-label" data-i18n="pseudo-desc">Use virtual width</span>
                                 </div>
                             </div>
+                            <div class="input-group">
+                                <label data-i18n="label-rewindable">Rewindable</label>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="config-rewindable">
+                                    <span class="switch-label" data-i18n="rewindable-desc">Supports drawing past frames</span>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label data-i18n="label-ignore-exclusion">Ignore Exclusion</label>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="config-ignore-exclusion">
+                                    <span class="switch-label" data-i18n="ignore-exclusion-desc">For technical modules (e.g. Test Pattern)</span>
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -251,29 +265,71 @@
                         </div>
                         <div id="metrics-panel" class="metrics-grid">
                             <div class="metric-item">
-                                <span class="metric-label" data-i18n="label-latency">Latency</span>
-                                <span id="metric-latency" class="metric-value">-- ms</span>
+                                <div class="metric-text">
+                                    <span class="metric-label" data-i18n="label-latency">Latency</span>
+                                    <span id="metric-latency" class="metric-value">-- ms</span>
+                                </div>
+                                <div class="analog-meter" id="meter-latency">
+                                    <div class="meter-needle"></div>
+                                </div>
                             </div>
                             <div class="metric-item">
-                                <span class="metric-label" data-i18n="label-density">Density</span>
-                                <span id="metric-density" class="metric-value">-- %</span>
+                                <div class="metric-text">
+                                    <span class="metric-label" data-i18n="label-density">Density</span>
+                                    <span id="metric-density" class="metric-value">-- %</span>
+                                </div>
+                                <div class="analog-meter" id="meter-density">
+                                    <div class="meter-needle"></div>
+                                </div>
                             </div>
                             <div class="metric-item">
-                                <span class="metric-label" data-i18n="label-change-rate">Change Rate</span>
-                                <span id="metric-change" class="metric-value">-- %</span>
+                                <div class="metric-text">
+                                    <span class="metric-label" data-i18n="label-change-rate">Change Rate</span>
+                                    <span id="metric-change" class="metric-value">-- %</span>
+                                </div>
+                                <div class="analog-meter" id="meter-change">
+                                    <div class="meter-needle"></div>
+                                </div>
                             </div>
                             <div class="metric-item">
-                                <span class="metric-label" data-i18n="label-status">Status</span>
-                                <span id="metric-status" class="metric-value" data-i18n="status-ready">Ready</span>
+                                <div class="metric-text">
+                                    <span class="metric-label" data-i18n="label-status">Status</span>
+                                    <span id="metric-status" class="metric-value" data-i18n="status-ready">Ready</span>
+                                </div>
+                                <div class="tape-counter-wrapper">
+                                    <div id="tape-counter" class="tape-counter">0000</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tape-deck">
+                            <div class="tape-controls-frame">
+                                <div class="tape-controls">
+                                    <button id="stop-btn" class="tape-btn" data-i18n-title="tooltip-stop">
+                                        <span class="material-symbols-outlined">stop</span>
+                                    </button>
+                                    <button id="rewind-btn" class="tape-btn" data-i18n-title="tooltip-rewind">
+                                        <span class="material-symbols-outlined">fast_rewind</span>
+                                    </button>
+                                    <button id="play-btn" class="tape-btn primary" data-i18n-title="tooltip-play">
+                                        <span class="material-symbols-outlined">play_arrow</span>
+                                    </button>
+                                    <button id="ff-btn" class="tape-btn" data-i18n-title="tooltip-fast-forward">
+                                        <span class="material-symbols-outlined">fast_forward</span>
+                                    </button>
+                                    <button id="pause-btn" class="tape-btn" data-i18n-title="tooltip-pause">
+                                        <span class="material-symbols-outlined">pause</span>
+                                    </button>
+                                    <button id="eject-btn" class="tape-btn" data-i18n-title="tooltip-eject">
+                                        <span class="material-symbols-outlined">eject</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </section>
 
-                    <section class="action-section">
-                        <button id="test-btn" class="primary-btn full-width">
-                            <span class="material-symbols-outlined">play_arrow</span>
-                            <span data-i18n="btn-test">Test Animation</span>
-                        </button>
+                    <div class="action-footer-spacer"></div>
+                    <section class="action-section sticky-footer">
                         <div class="action-grid">
                             <button id="download-btn" class="secondary-btn">
                                 <span class="material-symbols-outlined">download</span>

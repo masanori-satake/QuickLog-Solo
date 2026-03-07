@@ -132,7 +132,7 @@ export default class TetrisBuilding extends AnimationBase {
             for (let c = 0; c < this.cols; c++) {
                 if (this.grid[r][c]) {
                     // Flash line when clearing / 消去中の行は点滅
-                    if (r === this.clearingLine && Math.floor(Date.now() / 100) % 2 === 0) continue;
+                    if (r === this.clearingLine && Math.floor(progress * 10000 / 100) % 2 === 0) continue;
 
                     // Each block is 2x2 in the matrix
                     // 1ブロックを2x2のドットで描画

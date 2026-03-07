@@ -31,7 +31,7 @@ export default class CoffeeDrip extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false };
+    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
 
     /**
      * Initial setup and resizing
@@ -46,7 +46,7 @@ export default class CoffeeDrip extends AnimationBase {
      * Main drawing loop
      * 描画ループ
      */
-    draw(ctx, { progress = 0, exclusionAreas = [] } = {}) {
+    draw(ctx, { elapsedMs = 0, progress = 0, exclusionAreas = [] } = {}) {
         const width = this.width;
 
         // Find a horizontal center that doesn't overlap with UI text
@@ -105,7 +105,7 @@ export default class CoffeeDrip extends AnimationBase {
 
         // 3. Drip droplets
         // 3. 滴下するしずく
-        const dropP = (Date.now() / 1000) % 1;
+        const dropP = (elapsedMs / 1000) % 1;
         ctx.globalAlpha = 0.8;
         ctx.beginPath();
         ctx.arc(centerX, 50 + dropP * 15, 2, 0, Math.PI * 2);

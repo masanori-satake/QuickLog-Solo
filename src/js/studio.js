@@ -13,9 +13,18 @@ let metaData = {
     description: {}
 };
 let engine = null;
-let isTesting = false;
+const StudioState = {
+    STOPPED: 'STOPPED',
+    PLAYING: 'PLAYING',
+    PAUSED: 'PAUSED'
+};
+let currentState = StudioState.STOPPED;
+let isScrubbing = false;
+let studioIgnoreExclusion = false;
+let virtualElapsedMs = 0;
+let lastFrameTime = 0;
+
 let isDirty = false;
-let startTime = 0;
 let workerUrl = null;
 let currentPreviewColor = '#0056d2'; // Default primary
 let currentTheme = 'dark';
@@ -29,7 +38,15 @@ const themeToggle = document.getElementById('theme-toggle');
 const metaLangSelect = document.getElementById('meta-lang-select');
 const codeTabs = document.querySelectorAll('.code-tab');
 const editors = document.querySelectorAll('.editor-container');
-const testBtn = document.getElementById('test-btn');
+
+const stopBtn = document.getElementById('stop-btn');
+const rewindBtn = document.getElementById('rewind-btn');
+const playBtn = document.getElementById('play-btn');
+const ffBtn = document.getElementById('ff-btn');
+const pauseBtn = document.getElementById('pause-btn');
+const ejectBtn = document.getElementById('eject-btn');
+const tapeCounterEl = document.getElementById('tape-counter');
+
 const downloadBtn = document.getElementById('download-btn');
 const uploadBtn = document.getElementById('upload-btn');
 const uploadInput = document.getElementById('studio-upload-input');
@@ -48,6 +65,8 @@ const metaAuthor = document.getElementById('meta-author');
 const metaDesc = document.getElementById('meta-desc');
 const configMode = document.getElementById('config-mode');
 const configPseudo = document.getElementById('config-pseudo');
+const configRewindable = document.getElementById('config-rewindable');
+const configIgnoreExclusion = document.getElementById('config-ignore-exclusion');
 
 const canvas = document.getElementById('animation-canvas');
 const exclusionSim = document.getElementById('exclusion-simulator');
@@ -69,6 +88,10 @@ const metricLatency = document.getElementById('metric-latency');
 const metricDensity = document.getElementById('metric-density');
 const metricChange = document.getElementById('metric-change');
 const metricStatus = document.getElementById('metric-status');
+
+const needleLatency = document.getElementById('meter-latency').querySelector('.meter-needle');
+const needleDensity = document.getElementById('meter-density').querySelector('.meter-needle');
+const needleChange = document.getElementById('meter-change').querySelector('.meter-needle');
 
 const toggleWrapBtn = document.getElementById('toggle-wrap');
 const showSearchBtn = document.getElementById('show-search');
@@ -165,6 +188,8 @@ function updateTranslations() {
         const key = el.getAttribute('data-i18n-title');
         if (messages[currentLang] && messages[currentLang][key]) {
             el.title = messages[currentLang][key];
+        } else if (messages.en[key] !== undefined) {
+            el.title = messages.en[key];
         }
     });
 
@@ -196,7 +221,7 @@ function setupColorPresets() {
             currentPreviewColor = color;
             document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
             div.classList.add('active');
-            if (isTesting && engine) {
+            if (currentState !== StudioState.STOPPED && engine) {
                 engine.color = color;
             }
         });
@@ -252,6 +277,15 @@ function setupEventListeners() {
         updateCanvasControlVisibility();
     });
     configPseudo.addEventListener('change', markDirty);
+    configRewindable.addEventListener('change', () => {
+        markDirty();
+        updateTapeControlState();
+    });
+    configIgnoreExclusion.addEventListener('change', () => {
+        markDirty();
+        studioIgnoreExclusion = configIgnoreExclusion.checked;
+        updateExclusionAreas();
+    });
 
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
         el.addEventListener('input', () => {
@@ -266,7 +300,10 @@ function setupEventListeners() {
 
     sampleSelect.addEventListener('change', (e) => {
         if (e.target.value) {
-            resetStudioUI();
+            if (currentState !== StudioState.STOPPED) {
+                stopTest();
+            }
+            resetStudioUI(false); // Don't reset everything if just changing sample
             loadSample(e.target.value);
         }
     });
@@ -290,7 +327,34 @@ function setupEventListeners() {
         });
     });
 
-    testBtn.addEventListener('click', toggleTest);
+    playBtn.addEventListener('click', () => {
+        if (currentState === StudioState.STOPPED) {
+            startTest();
+        } else if (currentState === StudioState.PAUSED) {
+            resumeTest();
+        }
+    });
+
+    stopBtn.addEventListener('click', stopTest);
+
+    pauseBtn.addEventListener('click', () => {
+        if (currentState === StudioState.PLAYING) {
+            pauseTest();
+        } else if (currentState === StudioState.PAUSED) {
+            resumeTest();
+        }
+    });
+
+    rewindBtn.addEventListener('click', () => scrub(-1));
+    ffBtn.addEventListener('click', () => scrub(1));
+
+    ejectBtn.addEventListener('click', () => {
+        if (currentState === StudioState.STOPPED) {
+            sampleSelect.value = '';
+            resetStudioUI(true);
+        }
+    });
+
     downloadBtn.addEventListener('click', downloadAnimation);
     uploadBtn.addEventListener('click', () => uploadInput.click());
     uploadInput.addEventListener('change', handleUpload);
@@ -341,9 +405,7 @@ function setupEventListeners() {
     speedSlider.addEventListener('input', (e) => {
         currentSpeed = parseFloat(e.target.value);
         speedValue.textContent = currentSpeed.toFixed(1);
-        if (isTesting && engine && engine.worker) {
-            engine.worker.postMessage({ type: 'setSpeed', payload: currentSpeed });
-        }
+        // Speed is now handled in engine.draw override for testing
     });
 
     toggleWrapBtn.addEventListener('click', () => {
@@ -393,8 +455,9 @@ function markDirty() {
 
 function updateCanvasControlVisibility() {
     const isCanvasMode = configMode.value === 'canvas';
+    const hasSample = !!sampleSelect.value;
     showCanvasLabel.style.display = isCanvasMode ? 'flex' : 'none';
-    if (isCanvasMode) {
+    if (isCanvasMode && hasSample) {
         showCanvasCheck.checked = true;
         rawCanvasContainer.classList.remove('hidden');
         if (engine) engine.requestRawBitmap = true;
@@ -405,23 +468,34 @@ function updateCanvasControlVisibility() {
     }
 }
 
-function resetStudioUI() {
-    // 1. Metadata - Editor Language (metaLang)
-    metaLang = currentLang;
-    metaLangSelect.value = currentLang;
-    metaData = {
-        name: {},
-        description: {}
-    };
-    metaName.value = '';
-    metaAuthor.value = '';
-    metaDesc.value = '';
+function resetStudioUI(full = true) {
+    if (full) {
+        // 1. Metadata - Editor Language (metaLang)
+        metaLang = currentLang;
+        metaLangSelect.value = currentLang;
+        metaData = {
+            name: {},
+            description: {}
+        };
+        metaName.value = '';
+        metaAuthor.value = '';
+        metaDesc.value = '';
+
+        // Reset inputs
+        inputVars.value = '';
+        inputSetup.value = '';
+        inputDraw.value = '';
+        inputInteraction.value = '';
+        updateAllHighlight();
+        updateAllGutter();
+    }
 
     // 2. Configuration
-    showCanvasCheck.checked = true;
-    rawCanvasContainer.classList.remove('hidden');
-    showCanvasLabel.style.display = 'none'; // Will be updated by updateCanvasControlVisibility
-    if (engine) engine.requestRawBitmap = true;
+    configRewindable.checked = false;
+    configIgnoreExclusion.checked = false;
+    studioIgnoreExclusion = false;
+    updateTapeControlState();
+    updateCanvasControlVisibility();
 
     // 3. Preview
     // Reset Color
@@ -431,7 +505,7 @@ function resetStudioUI() {
         const isDefault = p.style.backgroundColor === 'rgb(0, 86, 210)'; // #0056d2
         p.classList.toggle('active', isDefault);
     });
-    if (isTesting && engine) engine.color = defaultColor;
+    if (currentState !== StudioState.STOPPED && engine) engine.color = defaultColor;
 
     // Reset Speed
     currentSpeed = 1.0;
@@ -453,6 +527,10 @@ function resetStudioUI() {
     exclusionSim.style.left = '40px';
     exclusionSim.style.width = '120px';
     exclusionSim.style.height = '40px';
+
+    // Reset Tape Counter
+    virtualElapsedMs = 0;
+    updateTapeCounter();
 
     if (engine) engine.resize();
     updateExclusionAreas();
@@ -500,11 +578,16 @@ function parseAndPopulate(code, metadata) {
     loadCurrentMetaData();
 
     metaAuthor.value = metadata.author || '';
+    studioIgnoreExclusion = !!metadata.ignoreExclusion;
 
     // Extract config
     const modeMatch = code.match(/mode:\s*['"](canvas|matrix|sprite)['"]/);
     configMode.value = modeMatch ? modeMatch[1] : 'canvas';
     configPseudo.checked = /usePseudoSpace:\s*true/.test(code);
+    configRewindable.checked = /rewindable:\s*true/.test(code);
+    configIgnoreExclusion.checked = /ignoreExclusion:\s*true/.test(code);
+    studioIgnoreExclusion = configIgnoreExclusion.checked;
+    updateTapeControlState();
 
     // Find class body
     const classMatch = code.match(/export\s+default\s+class\s+\w+\s+extends\s+AnimationBase\s*\{/);
@@ -626,22 +709,14 @@ function findRange(text, namePattern) {
     return null;
 }
 
-function toggleTest() {
-    if (isTesting) {
-        stopTest();
-    } else {
-        startTest();
-    }
-}
-
 function getMsg(key) {
     return (messages[currentLang] && messages[currentLang][key]) || messages.en[key] || key;
 }
 
 function startTest() {
-    isTesting = true;
-    testBtn.innerHTML = `<span class="material-symbols-outlined">stop</span> <span>${getMsg('btn-stop-test')}</span>`;
-    testBtn.classList.replace('primary-btn', 'danger-btn');
+    currentState = StudioState.PLAYING;
+    playBtn.classList.add('active');
+    pauseBtn.classList.remove('active');
 
     // Disable inputs
     setInputDisabled(true);
@@ -652,12 +727,14 @@ function startTest() {
     if (workerUrl) URL.revokeObjectURL(workerUrl);
     workerUrl = URL.createObjectURL(blob);
 
-    startTime = Date.now();
+    virtualElapsedMs = 0;
+    lastFrameTime = performance.now();
 
     // Configure engine for testing
     engine.config = {
         mode: configMode.value,
-        usePseudoSpace: configPseudo.checked
+        usePseudoSpace: configPseudo.checked,
+        rewindable: configRewindable.checked
     };
 
     updateExclusionAreas();
@@ -667,6 +744,22 @@ function startTest() {
     // But since the engine normally constructs the path, we'll patch it to use our blob.
 
     const originalStart = engine.start;
+    const originalDraw = engine.draw;
+
+    engine.draw = function() {
+        if (currentState === StudioState.PAUSED || isScrubbing) return;
+
+        const now = performance.now();
+        if (currentState === StudioState.PLAYING) {
+            const delta = (now - lastFrameTime) * currentSpeed;
+            virtualElapsedMs += delta;
+        }
+        lastFrameTime = now;
+
+        updateTapeCounter();
+        _requestStudioDraw(virtualElapsedMs);
+    };
+
     engine.start = function(name, startTime, color) {
         this.stop();
         this.activeAnimationId = 'test'; // Identifier
@@ -676,6 +769,7 @@ function startTest() {
         this.perfViolations = 0;
         this.isMonitoring = true;
         this.isDrawPending = false;
+        this.ignoreExclusion = studioIgnoreExclusion;
         this.requestRawBitmap = showCanvasCheck.checked;
         this.onRawBitmapDraw = (bitmap) => {
             const ctx = rawCanvas.getContext('2d');
@@ -692,11 +786,14 @@ function startTest() {
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
         this.worker.postMessage({ type: 'init', payload: { modulePath: workerUrl } });
-        this.worker.postMessage({ type: 'setSpeed', payload: currentSpeed });
+        this.worker.postMessage({ type: 'setSpeed', payload: 1.0 }); // Speed handled in virtual time
     };
 
-    engine.start('test', startTime, currentPreviewColor);
-    engine.start = originalStart; // Restore after one-time use
+    engine.start('test', Date.now(), currentPreviewColor);
+
+    // Keep references to restore later if needed, though stopTest will handle it
+    engine._originalStart = originalStart;
+    engine._originalDraw = originalDraw;
 
     metricStatus.textContent = getMsg('status-running');
     metricStatus.style.color = '#4caf50';
@@ -705,13 +802,17 @@ function startTest() {
 }
 
 function stopTest() {
-    isTesting = false;
-    testBtn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> <span data-i18n="btn-test">Test Animation</span>';
-    testBtn.classList.replace('danger-btn', 'primary-btn');
-    updateTranslations();
+    currentState = StudioState.STOPPED;
+    playBtn.classList.remove('active');
+    pauseBtn.classList.remove('active');
 
     setInputDisabled(false);
-    engine.stop();
+    if (engine) {
+        engine.stop();
+        // Restore original methods
+        if (engine._originalStart) engine.start = engine._originalStart;
+        if (engine._originalDraw) engine.draw = engine._originalDraw;
+    }
 
     // Clear raw canvas on stop
     const ctx = rawCanvas.getContext('2d');
@@ -721,10 +822,125 @@ function stopTest() {
     metricStatus.textContent = getMsg('status-ready');
     metricStatus.style.color = 'inherit';
     stopMetricsCollection();
+    resetMeters();
+}
+
+function pauseTest() {
+    if (currentState !== StudioState.PLAYING) return;
+    currentState = StudioState.PAUSED;
+    pauseBtn.classList.add('active');
+    playBtn.classList.remove('active');
+
+    metricStatus.textContent = getMsg('status-paused');
+    metricStatus.style.color = '#ffa000';
+}
+
+function resumeTest() {
+    if (currentState !== StudioState.PAUSED && currentState !== StudioState.STOPPED) return;
+    if (currentState === StudioState.STOPPED) {
+        startTest();
+        return;
+    }
+    currentState = StudioState.PLAYING;
+    pauseBtn.classList.remove('active');
+    playBtn.classList.add('active');
+    lastFrameTime = performance.now();
+
+    metricStatus.textContent = getMsg('status-running');
+    metricStatus.style.color = '#4caf50';
+}
+
+/**
+ * Scrubbing logic (Rewind / Fast Forward)
+ * @param {number} direction -1 for rewind, 1 for fast forward
+ */
+async function scrub(direction) {
+    if (currentState === StudioState.STOPPED || isScrubbing) return;
+    if (direction === -1 && rewindBtn.disabled) return;
+
+    isScrubbing = true;
+    const originalState = currentState;
+    const btn = direction === -1 ? rewindBtn : ffBtn;
+    btn.classList.add('active');
+
+    const interval = 10; // min interval 10ms
+    const count = 10;
+    const stepSize = 100 * currentSpeed; // 100ms per step
+
+    for (let i = 0; i < count; i++) {
+        // Handle stop during scrubbing
+        if (currentState === StudioState.STOPPED) break;
+
+        if (direction === -1) {
+            virtualElapsedMs = Math.max(0, virtualElapsedMs - stepSize);
+        } else {
+            virtualElapsedMs += stepSize;
+        }
+
+        updateTapeCounter();
+
+        // Ensure worker is ready (best effort)
+        const startWait = performance.now();
+        while (engine.isDrawPending && performance.now() - startWait < 50) {
+            await new Promise(r => setTimeout(r, 2));
+        }
+
+        _requestStudioDraw(virtualElapsedMs);
+        await new Promise(resolve => setTimeout(resolve, interval));
+    }
+
+    btn.classList.remove('active');
+    isScrubbing = false;
+
+    // Restore state if not stopped
+    if (currentState !== StudioState.STOPPED) {
+        if (originalState === StudioState.PLAYING) {
+            lastFrameTime = performance.now();
+        }
+    }
+}
+
+/**
+ * Shared drawing request logic for Studio test mode
+ */
+function _requestStudioDraw(elapsed) {
+    if (!engine || !engine.worker || !engine.initialized || engine.isDrawPending) return;
+
+    const progress = (elapsed % engine.cycleMs) / engine.cycleMs;
+    let drawWidth = engine.canvas.width;
+    if (engine.config.usePseudoSpace) {
+        drawWidth = engine._getPseudoInfo().totalWidth;
+    }
+
+    const params = {
+        width: drawWidth,
+        height: engine.canvas.height,
+        canvasWidth: engine.canvas.width,
+        elapsedMs: elapsed,
+        progress,
+        step: Math.floor(progress * 240),
+        exclusionAreas: engine.ignoreExclusion ? [] : engine._getVirtualExclusionAreas(),
+        realExclusionAreas: engine.ignoreExclusion ? [] : engine.exclusionAreas,
+        requestRawBitmap: engine.requestRawBitmap
+    };
+
+    engine.lastDrawRequestTime = performance.now();
+    engine.isDrawPending = true;
+    engine.worker.postMessage({ type: 'draw', payload: params });
+}
+
+function updateTapeCounter() {
+    const totalSeconds = Math.floor(virtualElapsedMs / 1000);
+    // Use 4 digits for a "mechanical" look as requested
+    tapeCounterEl.textContent = String(totalSeconds % 10000).padStart(4, '0');
+}
+
+function updateTapeControlState() {
+    rewindBtn.disabled = !configRewindable.checked;
 }
 
 function setInputDisabled(disabled) {
-    [metaName, metaAuthor, metaDesc, configMode, configPseudo, inputVars, inputSetup, inputDraw, inputInteraction, sampleSelect].forEach(el => {
+    [metaName, metaAuthor, metaDesc, configMode, configPseudo, configRewindable, inputVars, inputSetup, inputDraw, inputInteraction, sampleSelect].forEach(el => {
         el.disabled = disabled;
     });
 }
@@ -756,7 +972,9 @@ export default class CustomAnimation extends AnimationBase {
 
     config = {
         mode: '${configMode.value}',
-        usePseudoSpace: ${configPseudo.checked}
+        usePseudoSpace: ${configPseudo.checked},
+        rewindable: ${configRewindable.checked},
+        ignoreExclusion: ${configIgnoreExclusion.checked}
     };
 
     ${indentCode(inputVars.value, 4)}
@@ -801,6 +1019,10 @@ function handleUpload(e) {
                 metaAuthor.value = data.author || '';
                 configMode.value = data.mode || 'canvas';
                 configPseudo.checked = !!data.usePseudoSpace;
+                configRewindable.checked = !!data.rewindable;
+                configIgnoreExclusion.checked = !!data.ignoreExclusion;
+                studioIgnoreExclusion = configIgnoreExclusion.checked;
+                updateTapeControlState();
                 inputVars.value = data.vars || '';
                 inputSetup.value = data.setup || '';
                 inputDraw.value = data.draw || '';
@@ -885,14 +1107,18 @@ function startMetricsCollection() {
 
         const density = (nonZero / (width * height)) * 100;
         metricDensity.textContent = `${density.toFixed(1)} %`;
+        updateMeter(needleDensity, density, 100);
 
         if (lastImageData) {
             const changeRate = (changed / (width * height)) * 100;
             metricChange.textContent = `${changeRate.toFixed(1)} %`;
+            updateMeter(needleChange, changeRate, 50); // 50% as max for change rate scaling
         }
         lastImageData = imgData;
 
         metricLatency.textContent = `${lastLatency.toFixed(1)} ms`;
+        updateMeter(needleLatency, lastLatency, 100); // 100ms as max for meter scaling
+
         if (lastLatency > 50) {
             metricLatency.style.color = '#f44336';
         } else if (lastLatency > 16) {
@@ -906,6 +1132,23 @@ function startMetricsCollection() {
 
 function stopMetricsCollection() {
     clearInterval(metricsInterval);
+}
+
+function updateMeter(needle, value, max) {
+    if (!needle) return;
+    // Map 0 -> max to -45deg -> +45deg (based on user request)
+    const percent = Math.min(1, value / max);
+    const angle = -45 + (percent * 90);
+    needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+}
+
+function resetMeters() {
+    [needleLatency, needleDensity, needleChange].forEach(needle => {
+        if (needle) needle.style.transform = 'translateX(-50%) rotate(-45deg)';
+    });
+    metricLatency.textContent = '-- ms';
+    metricDensity.textContent = '-- %';
+    metricChange.textContent = '-- %';
 }
 
 // Draggable Resizable Exclusion Simulator
@@ -992,7 +1235,7 @@ function updateExclusionAreas() {
         engine.setExclusionAreas([]);
     }
 
-    if (isTesting && engine.initialized) {
+    if (currentState !== StudioState.STOPPED && engine.initialized) {
         // Just trigger a resize to update worker state without full restart
         engine.resize();
     }

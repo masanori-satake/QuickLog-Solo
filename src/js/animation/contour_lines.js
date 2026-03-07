@@ -31,7 +31,7 @@ export default class ContourLines extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false };
+    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
 
     /**
      * Initial setup and resizing
@@ -50,7 +50,7 @@ export default class ContourLines extends AnimationBase {
      * Main drawing loop
      * 描画ループ
      */
-    draw(ctx, { progress = 0 } = {}) {
+    draw(ctx, { elapsedMs = 0, progress = 0 } = {}) {
         const width = this.width;
         const height = this.height;
 
@@ -60,7 +60,7 @@ export default class ContourLines extends AnimationBase {
 
         // Slow time factor for smooth animation
         // 滑らかなアニメーションのための時間係数
-        const time = Date.now() / 3000;
+        const time = elapsedMs / 3000;
 
         for (let i = 0; i < this.lineCount; i++) {
             // Base radius for each line

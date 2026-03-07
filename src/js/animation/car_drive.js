@@ -31,7 +31,7 @@ export default class CarDrive extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false };
+    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
 
     /**
      * Initial setup and resizing

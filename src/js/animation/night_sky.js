@@ -52,7 +52,7 @@ export default class NightSky extends AnimationBase {
         }));
     }
 
-    config = { mode: 'sprite', usePseudoSpace: true };
+    config = { mode: 'sprite', usePseudoSpace: true, rewindable: true };
 
     /**
      * Initial setup and resizing
@@ -67,7 +67,7 @@ export default class NightSky extends AnimationBase {
      * Main drawing loop
      * 描画ループ
      */
-    draw(ctx, { progress = 0 } = {}) {
+    draw(ctx, { elapsedMs = 0, progress = 0 } = {}) {
         const sprites = [];
         const width = this.width;
         const height = this.height;
@@ -75,7 +75,7 @@ export default class NightSky extends AnimationBase {
         // 1. Background Stars (twinkling)
         // 1. 背景の星（きらめき）
         this.backgroundStars.forEach((star) => {
-            const twinkle = Math.sin(Date.now() / 1000 + star.twinkleOffset) > 0;
+            const twinkle = Math.sin(elapsedMs / 1000 + star.twinkleOffset) > 0;
             if (twinkle) {
                 sprites.push({ x: star.x * width, y: star.y * height, size: star.size > 1.5 ? 2 : 1 });
             }
@@ -108,7 +108,7 @@ export default class NightSky extends AnimationBase {
 
         // 3. UFO & Abduction Event (Surprise element)
         // 3. UFOと連れ去りイベント（おまけ要素）
-        this.drawUFO(sprites, width, height);
+        this.drawUFO(sprites, width, height, elapsedMs);
 
         return sprites;
     }
@@ -117,8 +117,8 @@ export default class NightSky extends AnimationBase {
      * UFO drawing logic
      * UFOの描画ロジック
      */
-    drawUFO(sprites, width, height) {
-        const ufoCycle = (Date.now() / 15000) % 3; // 45 sec total / 計45秒サイクル
+    drawUFO(sprites, width, height, elapsedMs) {
+        const ufoCycle = (elapsedMs / 15000) % 3; // 45 sec total / 計45秒サイクル
         if (ufoCycle < 1) {
             const p = ufoCycle;
             let ufoX;
