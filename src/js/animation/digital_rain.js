@@ -1,5 +1,10 @@
 import { AnimationBase } from '../animation_base.js';
 
+/**
+ * Digital Rain Animation
+ * Falling code effect inspired by science fiction.
+ * SF映画のような、コードが降り注ぐエフェクトです。
+ */
 export default class DigitalRain extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
@@ -33,40 +38,77 @@ export default class DigitalRain extends AnimationBase {
         this.columns = [];
     }
 
+    /**
+     * Initial setup and resizing
+     * 初期設定およびリサイズ時の処理
+     */
     setup(width, height) {
+        this.width = width;
+        this.height = height;
+
         const spacing = 6;
-        const cols = Math.floor(width / spacing);
-        if (this.columns.length !== cols) {
-            this.columns = Array(cols).fill(0).map(() => ({
-                y: Math.random() * height,
-                speed: 1 + Math.random() * 3,
-                maxDots: 10 + Math.random() * 20,
-                dots: []
-            }));
+        const colCount = Math.floor(width / spacing);
+
+        // Initialize columns only if the count has changed (e.g., resizing)
+        // 列の数が変わった場合のみ初期化（リサイズ対応）
+        if (this.columns.length !== colCount) {
+            this.columns = Array(colCount).fill(0).map(() => this.createColumn(height));
         }
     }
 
-    draw(ctx, { height, speed }) {
+    /**
+     * Create a single rain column
+     * 1つのレイン列を作成
+     */
+    createColumn(height) {
+        return {
+            y: Math.random() * (height + 200) - 100,
+            speed: 1 + Math.random() * 3,
+            maxDots: 10 + Math.random() * 20,
+            dots: []
+        };
+    }
+
+    /**
+     * Main drawing loop
+     * 描画ループ
+     */
+    draw(ctx, { speed = 1 } = {}) {
         const sprites = [];
         const spacing = 6;
+        const height = this.height;
 
         this.columns.forEach((col, i) => {
+            // Update vertical position
+            // 垂直位置の更新
             col.y += col.speed * speed;
+
+            // Wrap around top if it goes off bottom
+            // 画面下端を超えたら上に戻す
             if (col.y > height + 100) {
-                col.y = -100;
-                col.speed = 1 + Math.random() * 3;
-                col.maxDots = 10 + Math.random() * 20;
+                const newCol = this.createColumn(height);
+                newCol.y = -100;
+                Object.assign(col, newCol);
             }
 
-            // Add leading dot
+            // Record trail position
+            // 軌跡の位置を記録
             col.dots.push({ y: col.y });
-            if (col.dots.length > col.maxDots) col.dots.shift();
+            if (col.dots.length > col.maxDots) {
+                col.dots.shift();
+            }
 
+            // Generate sprites for the trail
+            // 軌跡のスプライトを生成
             col.dots.forEach((dot, idx) => {
-                const size = idx === col.dots.length - 1 ? 3 : (idx > col.dots.length - 6 ? 2 : 1);
+                // Leading dot is larger
+                // 先頭のドットを大きくする
+                const isLead = idx === col.dots.length - 1;
+                const size = isLead ? 3 : (idx > col.dots.length - 6 ? 2 : 1);
                 sprites.push({ x: i * spacing, y: dot.y, size: size });
             });
         });
+
         return sprites;
     }
 }

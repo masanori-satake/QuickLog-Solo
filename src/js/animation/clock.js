@@ -1,5 +1,10 @@
 import { AnimationBase } from '../animation_base.js';
 
+/**
+ * Clock Animation
+ * A simple circular progress indicator using a clock motif.
+ * 時計をモチーフにしたシンプルな円形の進捗インジケーターです。
+ */
 export default class Clock extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
@@ -28,18 +33,35 @@ export default class Clock extends AnimationBase {
 
     config = { mode: 'canvas', usePseudoSpace: false };
 
+    /**
+     * Initial setup and resizing
+     * 初期設定およびリサイズ時の処理
+     */
     setup(width, height) {
         this.width = width;
         this.height = height;
+
+        // Calculate the radius based on current area size
+        // 描画領域のサイズに基づいて半径を計算
         this.radius = Math.min(width, height) * 0.4;
     }
 
-    draw(ctx, { width, height, progress, exclusionAreas }) {
-        const angle = progress * Math.PI * 2;
+    /**
+     * Main drawing loop
+     * 描画ループ
+     */
+    draw(ctx, { progress, exclusionAreas = [] } = {}) {
+        const width = this.width;
+        const height = this.height;
+        const angle = (progress || 0) * Math.PI * 2;
 
+        // Default position: center
+        // デフォルト位置：中央
         let cx = width / 2;
         let cy = height / 2;
 
+        // Smart placement logic: avoid UI text areas if they overlap with the center
+        // 回避ロジック：中央がテキスト領域と重なる場合、四隅の空いている場所を探す
         if (exclusionAreas && exclusionAreas.length > 0) {
             const margin = this.radius + 10;
             const spots = [
@@ -63,6 +85,8 @@ export default class Clock extends AnimationBase {
             }
         }
 
+        // Draw the progress arc
+        // 進捗を示す扇形の描画
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.moveTo(cx, cy);

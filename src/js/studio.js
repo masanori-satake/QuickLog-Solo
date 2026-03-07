@@ -524,12 +524,18 @@ function parseAndPopulate(code, metadata) {
     inputSetup.value = extractMethod(classContent, 'setup');
     inputDraw.value = extractMethod(classContent, 'draw');
 
+    // Cleanup draw parameters if they still include width/height from old versions
+    if (inputDraw.value) {
+        inputDraw.value = inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*,\s*/, 'draw(ctx, { ');
+        inputDraw.value = inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*\}\s*\)/, 'draw(ctx, params)');
+    }
+
     const onClick = extractMethod(classContent, 'onClick');
     const onMouseMove = extractMethod(classContent, 'onMouseMove');
     inputInteraction.value = (onClick ? onClick + '\n\n' : '') + (onMouseMove ? onMouseMove : '');
 
-    if (!inputSetup.value) inputSetup.value = 'setup(width, height) {\n  \n}';
-    if (!inputDraw.value) inputDraw.value = 'draw(ctx, params) {\n  \n}';
+    if (!inputSetup.value) inputSetup.value = 'setup(width, height) {\n  this.width = width;\n  this.height = height;\n}';
+    if (!inputDraw.value) inputDraw.value = 'draw(ctx, { elapsedMs, progress, step, exclusionAreas }) {\n  \n}';
     if (!inputInteraction.value) inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
 
     // Remove extracted parts from classContent to get variables/other members
@@ -553,6 +559,12 @@ function parseAndPopulate(code, metadata) {
     inputVars.value = vars.trim();
 }
 
+/**
+ * Extracts a method body from class content.
+ * @param {string} code
+ * @param {string} name
+ * @returns {string}
+ */
 function extractMethod(code, name) {
     const range = findRange(code, name);
     if (!range) return '';

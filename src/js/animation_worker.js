@@ -130,19 +130,21 @@ function _isInExclusion(x, y, exclusionAreas) {
 }
 
 function performDraw(params) {
-    const { width, height, canvasWidth, exclusionAreas, realExclusionAreas, elapsedMs, requestRawBitmap } = params;
+    const { width, height, canvasWidth, exclusionAreas = [], realExclusionAreas, elapsedMs, requestRawBitmap } = params;
 
     // Apply speed factor to elapsed time
     const modifiedElapsedMs = elapsedMs * speedFactor;
     const cycleMs = 120000; // 2 minutes cycle
     const progress = (modifiedElapsedMs % cycleMs) / cycleMs;
 
-    const modifiedParams = {
-        ...params,
+    // Parameters passed to the animation's draw method.
+    // Width and height are intentionally excluded to encourage use of setup().
+    const animationParams = {
         elapsedMs: modifiedElapsedMs,
         progress: progress,
         step: Math.floor(progress * 240),
-        speed: speedFactor // Ensure speed is passed for legacy or manual use
+        exclusionAreas: exclusionAreas,
+        speed: speedFactor
     };
     const config = animation.config || { mode: 'canvas' };
     const usePseudoSpace = !!config.usePseudoSpace;
@@ -154,7 +156,7 @@ function performDraw(params) {
     let rawBitmap = null;
 
     if (config.mode === 'matrix') {
-        const matrix = animation.draw(null, modifiedParams);
+        const matrix = animation.draw(null, animationParams);
         if (!matrix || !Array.isArray(matrix)) return { dots: [], rawBitmap: null };
         const rows = Math.ceil(height / CELL_SIZE);
         const cols = Math.ceil(canvasWidth / CELL_SIZE);
@@ -191,7 +193,7 @@ function performDraw(params) {
             }
         }
     } else if (config.mode === 'sprite') {
-        const sprites = animation.draw(null, modifiedParams);
+        const sprites = animation.draw(null, animationParams);
         if (!sprites || !Array.isArray(sprites)) return { dots: [], rawBitmap: null };
 
         sprites.forEach(sprite => {
@@ -219,7 +221,7 @@ function performDraw(params) {
             offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
         }
         offscreenCtx.clearRect(0, 0, width, height);
-        animation.draw(offscreenCtx, modifiedParams);
+        animation.draw(offscreenCtx, animationParams);
 
         const imgData = offscreenCtx.getImageData(0, 0, width, height).data;
         const rows = Math.ceil(height / CELL_SIZE);

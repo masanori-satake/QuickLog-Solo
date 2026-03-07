@@ -1,5 +1,10 @@
 import { AnimationBase } from '../animation_base.js';
 
+/**
+ * CoffeeDrip Animation
+ * A relaxing coffee brewing animation that fills the pot.
+ * ポットにコーヒーが溜まっていく、リラックスできるドリップアニメーションです。
+ */
 export default class CoffeeDrip extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
@@ -28,15 +33,29 @@ export default class CoffeeDrip extends AnimationBase {
 
     config = { mode: 'canvas', usePseudoSpace: false };
 
-    setup(width) {
+    /**
+     * Initial setup and resizing
+     * 初期設定およびリサイズ時の処理
+     */
+    setup(width, height) {
         this.width = width;
+        this.height = height;
     }
 
-    draw(ctx, { width, progress, exclusionAreas }) {
-        this.width = width;
-        let centerX = width * 0.2; // Default to left side
+    /**
+     * Main drawing loop
+     * 描画ループ
+     */
+    draw(ctx, { progress = 0, exclusionAreas = [] } = {}) {
+        const width = this.width;
+
+        // Find a horizontal center that doesn't overlap with UI text
+        // UIテキストと重ならない中央位置を探す
+        let centerX = width * 0.2; // Default to left side / デフォルトは左側
 
         if (exclusionAreas && exclusionAreas.length > 0) {
+            // Test several spots to find one with no overlap
+            // いくつかの候補点を確認し、重なりのない場所を選ぶ
             const spots = [width * 0.15, width * 0.85, width * 0.25, width * 0.75];
             for (const spot of spots) {
                 const overlap = exclusionAreas.some(area => {
@@ -50,8 +69,10 @@ export default class CoffeeDrip extends AnimationBase {
         }
 
         ctx.fillStyle = '#fff';
+        ctx.strokeStyle = '#fff';
 
-        // Filter/Dripper shape
+        // 1. Filter/Dripper shape
+        // 1. ドリッパーの形状
         ctx.globalAlpha = 0.3;
         ctx.beginPath();
         ctx.moveTo(centerX - 30, 20);
@@ -61,13 +82,14 @@ export default class CoffeeDrip extends AnimationBase {
         ctx.closePath();
         ctx.fill();
 
-        // Server/Cup shape
+        // 2. Server/Cup shape
+        // 2. サーバー/カップの形状
         const cupY = 60;
         const cupWidth = 40;
         const cupHeight = 30;
 
         ctx.globalAlpha = 1.0;
-        // Cup Body
+        // Cup Body / 本体
         ctx.beginPath();
         ctx.moveTo(centerX - cupWidth / 2, cupY);
         ctx.lineTo(centerX + cupWidth / 2, cupY);
@@ -76,19 +98,21 @@ export default class CoffeeDrip extends AnimationBase {
         ctx.closePath();
         ctx.stroke();
 
-        // Handle
+        // Handle / 持ち手
         ctx.beginPath();
         ctx.arc(centerX + cupWidth / 2 - 2, cupY + cupHeight / 2, 8, -Math.PI / 2, Math.PI / 2);
         ctx.stroke();
 
-        // Drip droplets
+        // 3. Drip droplets
+        // 3. 滴下するしずく
         const dropP = (Date.now() / 1000) % 1;
         ctx.globalAlpha = 0.8;
         ctx.beginPath();
         ctx.arc(centerX, 50 + dropP * 15, 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Filling coffee
+        // 4. Filling coffee
+        // 4. 溜まっていくコーヒー
         ctx.globalAlpha = 0.6;
         const fillMaxHeight = cupHeight - 4;
         const fillHeight = fillMaxHeight * progress;
@@ -99,6 +123,7 @@ export default class CoffeeDrip extends AnimationBase {
         ctx.lineTo(centerX - cupWidth / 2 + 2, cupY + cupHeight - 2 - fillHeight);
         ctx.closePath();
         ctx.fill();
+
         ctx.globalAlpha = 1.0;
     }
 }
