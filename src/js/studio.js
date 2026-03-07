@@ -455,8 +455,9 @@ function markDirty() {
 
 function updateCanvasControlVisibility() {
     const isCanvasMode = configMode.value === 'canvas';
+    const hasSample = !!sampleSelect.value;
     showCanvasLabel.style.display = isCanvasMode ? 'flex' : 'none';
-    if (isCanvasMode) {
+    if (isCanvasMode && hasSample) {
         showCanvasCheck.checked = true;
         rawCanvasContainer.classList.remove('hidden');
         if (engine) engine.requestRawBitmap = true;
@@ -494,10 +495,7 @@ function resetStudioUI(full = true) {
     configIgnoreExclusion.checked = false;
     studioIgnoreExclusion = false;
     updateTapeControlState();
-    showCanvasCheck.checked = true;
-    rawCanvasContainer.classList.remove('hidden');
-    showCanvasLabel.style.display = 'none'; // Will be updated by updateCanvasControlVisibility
-    if (engine) engine.requestRawBitmap = true;
+    updateCanvasControlVisibility();
 
     // 3. Preview
     // Reset Color
@@ -1138,15 +1136,15 @@ function stopMetricsCollection() {
 
 function updateMeter(needle, value, max) {
     if (!needle) return;
-    // Map 0 -> max to -70deg -> +70deg
+    // Map 0 -> max to -45deg -> +45deg (based on user request)
     const percent = Math.min(1, value / max);
-    const angle = -70 + (percent * 140);
+    const angle = -45 + (percent * 90);
     needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
 }
 
 function resetMeters() {
     [needleLatency, needleDensity, needleChange].forEach(needle => {
-        if (needle) needle.style.transform = 'translateX(-50%) rotate(-70deg)';
+        if (needle) needle.style.transform = 'translateX(-50%) rotate(-45deg)';
     });
     metricLatency.textContent = '-- ms';
     metricDensity.textContent = '-- %';
