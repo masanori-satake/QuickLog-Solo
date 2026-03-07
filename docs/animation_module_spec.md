@@ -76,7 +76,7 @@ sequenceDiagram
         C_Loop->>C_Loop: progress (0-1) / step (0-239) 等の算出
         C_Loop->>C_Loop: テキスト遮蔽領域 (Exclusion Areas) の座標計算
         C_Loop->>W_Loop: draw(params) を postMessage
-        W_Loop->>M_Loop: draw(offscreenCtx/null, params)
+        W_Loop->>M_Loop: draw(offscreenCtx/null, params_without_size)
         M_Loop-->>W_Loop: 描画データまたは Canvas 描画
         W_Loop->>W_Loop: LCD ドット変換 & Exclusion 処理
         W_Loop-->>C_Loop: ドット座標データの配列を返却
@@ -185,7 +185,6 @@ sequenceDiagram
 
 #### B. 描画時 (`draw(ctx, params)`)
 `params` オブジェクトを通じて以下の情報が提供される。
-- `width / height`: 現在の領域サイズ。
 - `elapsedMs`: タスク開始時からの総経過時間 (ms)。
 - `progress`: 現在の 120秒周期の進捗率 (0.0 ～ 1.0)。
 - `step`: 現在の計時ステップ (0 ～ 239)。

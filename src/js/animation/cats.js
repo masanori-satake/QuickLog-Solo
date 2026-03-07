@@ -1,5 +1,10 @@
 import { AnimationBase } from '../animation_base.js';
 
+/**
+ * Cats Animation
+ * Pixel art cats walking around and eating food.
+ * 猫たちが歩き回ったり、餌を食べたりするピクセルアート・アニメーションです。
+ */
 export default class Cats extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
@@ -28,10 +33,20 @@ export default class Cats extends AnimationBase {
 
     config = { mode: 'canvas', usePseudoSpace: true };
 
+    /**
+     * Initial setup and resizing
+     * 初期設定およびリサイズ時の処理
+     */
     setup(width, height) {
         this.width = width;
         this.height = height;
+
+        // The Y coordinate where cats stand
+        // 猫が立つ地面の高さ
         this.groundY = height - 15;
+
+        // Initialize cat instances
+        // 猫のインスタンスを初期化
         this.cats = [
             { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'walking', timer: 0, color: '#fff', scale: 1.5, interested: true },
             { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'sitting', timer: 100, color: '#aaa', scale: 1.4, interested: false },
@@ -41,13 +56,20 @@ export default class Cats extends AnimationBase {
         this.lastPlatforms = [];
     }
 
+    /**
+     * Interaction: User places food by clicking
+     * インタラクション：クリックで餌を置く
+     */
     onClick(x, y) {
+        // If no UI text "platforms" exist, just drop on ground level
+        // UIテキストの「足場」がない場合は、そのままの高さで置く
         if (this.lastPlatforms.length === 0) {
             this.foods.push({ x, y, life: 300 });
             return;
         }
 
-        // Snap food to the nearest platform
+        // Snap food to the nearest platform (UI text or ground)
+        // 最も近い足場（テキスト領域または地面）に吸着させる
         const nearestP = this.lastPlatforms.reduce((closest, current) => {
             const dCurrent = Math.abs(y - current.y);
             const dClosest = Math.abs(y - closest.y);
@@ -58,14 +80,20 @@ export default class Cats extends AnimationBase {
         this.foods.push({ x: snappedX, y: nearestP.y, life: 300 });
     }
 
-    draw(ctx, { width, height, exclusionAreas }) {
-        this.width = width;
-        this.height = height;
-        this.groundY = height - 15;
+    /**
+     * Main drawing and update loop
+     * 描画および更新ループ
+     */
+    draw(ctx, { exclusionAreas = [] } = {}) {
+        const width = this.width;
+        const height = this.height;
 
-        // Draw food
+        // 1. Update Food state
+        // 1. 餌の状態更新
         this.foods = this.foods.filter(f => f.life > 0);
 
+        // 2. Define platforms (Top of UI text boxes + ground)
+        // 2. 足場の定義（テキスト領域の上端 + 地面）
         const platforms = exclusionAreas.map(area => ({
             y: area.y,
             xStart: area.x,
@@ -75,11 +103,17 @@ export default class Cats extends AnimationBase {
         const allPlatforms = [...platforms, { y: this.groundY, xStart: 0, xEnd: width }];
         this.lastPlatforms = allPlatforms;
 
+        // 3. Update and Draw Cats
+        // 3. 猫の更新と描画
         this.cats.forEach((cat) => {
             if (cat.timer > 0) cat.timer--;
 
+            // Find current platform the cat is on
+            // 現在乗っている足場を確認
             const currentPlatform = allPlatforms.find(p => Math.abs(cat.y - p.y) < 5 && cat.x >= p.xStart && cat.x <= p.xEnd);
 
+            // Food detection logic
+            // 餌の検知ロジック
             if (cat.interested && this.foods.length > 0 && cat.state !== 'eating') {
                 const food = this.foods[0];
                 if (Math.abs(cat.y - food.y) < 20) {
@@ -92,8 +126,10 @@ export default class Cats extends AnimationBase {
                 }
             }
 
+            // State management: walking, sitting, eating
+            // 状態管理：歩く、座る、食べる
             if (cat.state === 'walking') {
-                const speed = (cat.state === 'walking' && cat.interested && this.foods.length > 0) ? 1.2 : 0.8;
+                const speed = (cat.interested && this.foods.length > 0) ? 1.2 : 0.8;
                 if (cat.x < cat.targetX) cat.x += speed; else cat.x -= speed;
 
                 const atEdge = currentPlatform && (cat.x <= currentPlatform.xStart + 5 || cat.x >= currentPlatform.xEnd - 5);
@@ -113,48 +149,68 @@ export default class Cats extends AnimationBase {
                     if (this.foods.length > 0) this.foods[0].life -= 50;
                     cat.state = 'sitting';
                     cat.timer = 60;
-                    // Move away after eating
-                    cat.targetX = Math.random() * width;
+                    cat.targetX = Math.random() * width; // Move away after eating
                 }
             }
 
-            ctx.save();
-            ctx.translate(cat.x, cat.y);
-            ctx.scale(cat.scale, cat.scale);
-            ctx.fillStyle = cat.color;
-
-            if (cat.x > cat.targetX && cat.state === 'walking') {
-                ctx.scale(-1, 1);
-            }
-
-            ctx.fillRect(-6, -6, 10, 6);
-            ctx.fillRect(2, -10, 6, 6);
-            ctx.fillRect(3, -12, 2, 2);
-            ctx.fillRect(6, -12, 2, 2);
-            if (cat.state === 'walking') {
-                const legOffset = Math.sin(Date.now() / 100) * 2;
-                ctx.fillRect(-5, 0, 2, 2 + legOffset);
-                ctx.fillRect(2, 0, 2, 2 - legOffset);
-            } else {
-                ctx.fillRect(-5, 0, 2, 2);
-                ctx.fillRect(2, 0, 2, 2);
-            }
-            const tailAngle = Math.sin(Date.now() / 300) * 0.5;
-            ctx.save();
-            ctx.translate(-6, -4);
-            ctx.rotate(tailAngle);
-            ctx.fillRect(-4, 0, 4, 2);
-            ctx.restore();
-            ctx.fillStyle = '#000';
-            ctx.fillRect(6, -8, 1, 1);
-            ctx.restore();
+            // Draw the cat (Pixel art style)
+            // 猫の描画（ドット絵スタイル）
+            this.drawCat(ctx, cat);
         });
 
-        // Draw food
+        // 4. Draw Food
+        // 4. 餌の描画
         this.foods.forEach(f => {
             ctx.fillStyle = '#ffa';
             ctx.fillRect(f.x - 2, f.y - 2, 4, 2);
             ctx.fillRect(f.x - 1, f.y - 4, 2, 2);
         });
+    }
+
+    /**
+     * Helper to draw a pixel art cat
+     * 猫の描画ヘルパー関数
+     */
+    drawCat(ctx, cat) {
+        ctx.save();
+        ctx.translate(cat.x, cat.y);
+        ctx.scale(cat.scale, cat.scale);
+        ctx.fillStyle = cat.color;
+
+        // Flip horizontally based on movement direction
+        // 移動方向に基づいて左右反転
+        if (cat.x > cat.targetX && cat.state === 'walking') {
+            ctx.scale(-1, 1);
+        }
+
+        // Body, Head, Ears
+        ctx.fillRect(-6, -6, 10, 6); // Body
+        ctx.fillRect(2, -10, 6, 6);  // Head
+        ctx.fillRect(3, -12, 2, 2);  // Ear L
+        ctx.fillRect(6, -12, 2, 2);  // Ear R
+
+        // Legs (Walking animation)
+        if (cat.state === 'walking') {
+            const legOffset = Math.sin(Date.now() / 100) * 2;
+            ctx.fillRect(-5, 0, 2, 2 + legOffset);
+            ctx.fillRect(2, 0, 2, 2 - legOffset);
+        } else {
+            ctx.fillRect(-5, 0, 2, 2);
+            ctx.fillRect(2, 0, 2, 2);
+        }
+
+        // Tail
+        const tailAngle = Math.sin(Date.now() / 300) * 0.5;
+        ctx.save();
+        ctx.translate(-6, -4);
+        ctx.rotate(tailAngle);
+        ctx.fillRect(-4, 0, 4, 2);
+        ctx.restore();
+
+        // Eye
+        ctx.fillStyle = '#000';
+        ctx.fillRect(6, -8, 1, 1);
+
+        ctx.restore();
     }
 }

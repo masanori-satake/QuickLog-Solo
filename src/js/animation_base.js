@@ -33,7 +33,7 @@ export class AnimationBase {
     /**
      * Called every frame to draw the animation.
      * @param {CanvasRenderingContext2D} _ctx - Offscreen context (Canvas Mode only).
-     * @param {Object} _params - Animation parameters (width, height, elapsedMs, progress, step, exclusionAreas).
+     * @param {Object} _params - Animation parameters (elapsedMs, progress, step, exclusionAreas).
      * @returns {number[][]|Array<{x,y,size}>|void} - Data based on the selected mode.
      */
     draw(_ctx, _params) {}

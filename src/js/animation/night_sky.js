@@ -1,5 +1,10 @@
 import { AnimationBase } from '../animation_base.js';
 
+/**
+ * NightSky Animation
+ * A peaceful night sky with twinkling stars, a moon, and a forming constellation.
+ * きらめく星々と月、星座が形作られていく静かな夜空のアニメーションです。
+ */
 export default class NightSky extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
@@ -20,7 +25,7 @@ export default class NightSky extends AnimationBase {
             es: "Un cielo nocturno tranquilo donde las estrellas centelleantes y la luna forman lentamente una constelación.",
             fr: "Un ciel nocturne paisible où les étoiles scintillantes et la lune forment lentement une constellation.",
             pt: "Um céu noturno tranquilo onde estrelas cintilantes e a lua formam lentamente uma constelação.",
-            ko: "반짝이는 별들과 달이 천천히 별자리를 형성하는 평화로운 밤하늘입니다.",
+            ko: "반짝이는 별들과 달이 천천히 별자리를 형성하는 평화로운 밤하늘입니다。",
             zh: "宁静的夜空，闪烁的星星和月亮慢慢形成一个星座。"
         },
         author: "QuickLog-Solo"
@@ -28,11 +33,17 @@ export default class NightSky extends AnimationBase {
 
     constructor() {
         super();
+
+        // Coordinates for the constellation (percentage of width/height)
+        // 星座の各点の座標（幅・高さに対する割合）
         this.constellationPoints = [
             {x: 0.2, y: 0.2}, {x: 0.3, y: 0.4}, {x: 0.5, y: 0.3},
             {x: 0.7, y: 0.5}, {x: 0.8, y: 0.2}, {x: 0.6, y: 0.7},
             {x: 0.4, y: 0.8}, {x: 0.2, y: 0.6}, {x: 0.2, y: 0.2}
         ];
+
+        // Random background stars
+        // 背景のランダムな星々
         this.backgroundStars = Array(50).fill(0).map(() => ({
             x: Math.random(),
             y: Math.random(),
@@ -43,81 +54,101 @@ export default class NightSky extends AnimationBase {
 
     config = { mode: 'sprite', usePseudoSpace: true };
 
+    /**
+     * Initial setup and resizing
+     * 初期設定およびリサイズ時の処理
+     */
     setup(width, height) {
-        this.w = width;
-        this.h = height;
+        this.width = width;
+        this.height = height;
     }
 
-    draw(ctx, { progress }) {
+    /**
+     * Main drawing loop
+     * 描画ループ
+     */
+    draw(ctx, { progress = 0 } = {}) {
         const sprites = [];
+        const width = this.width;
+        const height = this.height;
 
-        // Stars
+        // 1. Background Stars (twinkling)
+        // 1. 背景の星（きらめき）
         this.backgroundStars.forEach((star) => {
             const twinkle = Math.sin(Date.now() / 1000 + star.twinkleOffset) > 0;
             if (twinkle) {
-                sprites.push({ x: star.x * this.w, y: star.y * this.h, size: star.size > 1.5 ? 2 : 1 });
+                sprites.push({ x: star.x * width, y: star.y * height, size: star.size > 1.5 ? 2 : 1 });
             }
         });
 
-        // Constellation
+        // 2. Constellation (forms over progress)
+        // 2. 星座（進捗に合わせて形作られる）
         const linesToDraw = Math.floor(progress * (this.constellationPoints.length - 1));
         for (let i = 0; i <= linesToDraw; i++) {
             const pt1 = this.constellationPoints[i];
-            sprites.push({ x: pt1.x * this.w, y: pt1.y * this.h, size: 2 });
+            sprites.push({ x: pt1.x * width, y: pt1.y * height, size: 2 });
 
             if (i < linesToDraw) {
                 const pt2 = this.constellationPoints[i+1];
-                // Draw dotted line between points
-                const dx = (pt2.x - pt1.x) * this.w;
-                const dy = (pt2.y - pt1.y) * this.h;
+                // Draw dotted line between constellation points
+                // 星座の点と点の間に点線を描画
+                const dx = (pt2.x - pt1.x) * width;
+                const dy = (pt2.y - pt1.y) * height;
                 const dist = Math.sqrt(dx*dx + dy*dy);
                 const steps = Math.floor(dist / 8);
                 for (let s = 1; s < steps; s++) {
                     sprites.push({
-                        x: pt1.x * this.w + dx * (s / steps),
-                        y: pt1.y * this.h + dy * (s / steps),
+                        x: pt1.x * width + dx * (s / steps),
+                        y: pt1.y * height + dy * (s / steps),
                         size: 1
                     });
                 }
             }
         }
 
-        // UFO & Cattle Mutilation
-        // Cycle: 0-0.3: Fly In, 0.3-0.7: Abduct (Stop), 0.7-1.0: Fly Out
-        const ufoCycle = (Date.now() / 15000) % 3; // 45 sec total, 15 sec active
+        // 3. UFO & Abduction Event (Surprise element)
+        // 3. UFOと連れ去りイベント（おまけ要素）
+        this.drawUFO(sprites, width, height);
+
+        return sprites;
+    }
+
+    /**
+     * UFO drawing logic
+     * UFOの描画ロジック
+     */
+    drawUFO(sprites, width, height) {
+        const ufoCycle = (Date.now() / 15000) % 3; // 45 sec total / 計45秒サイクル
         if (ufoCycle < 1) {
             const p = ufoCycle;
             let ufoX;
-            const ufoY = this.h * 0.15;
+            const ufoY = height * 0.15;
 
+            // Movement logic: In -> Stop -> Out
             if (p < 0.3) {
-                // Fly In
-                ufoX = this.w * (p / 0.3 * 0.95 - 0.2);
+                ufoX = width * (p / 0.3 * 0.95 - 0.2); // Fly In / 飛来
             } else if (p < 0.7) {
-                // Stop and Abduct (Right half)
-                ufoX = this.w * 0.75;
+                ufoX = width * 0.75; // Stop / 停止
             } else {
-                // Fly Out
-                ufoX = this.w * (0.75 + (p - 0.7) / 0.3 * 0.45);
+                ufoX = width * (0.75 + (p - 0.7) / 0.3 * 0.45); // Fly Out / 退去
             }
 
-            // UFO Body
+            // UFO Body / UFO本体
             for (let i = -5; i <= 5; i++) sprites.push({ x: ufoX + i * 4, y: ufoY, size: 2 });
             for (let i = -2; i <= 2; i++) sprites.push({ x: ufoX + i * 4, y: ufoY - 4, size: 2 });
 
-            // Abduction Beam & Cow
+            // Abduction Beam & Cow / 光線と牛
             if (p >= 0.3 && p <= 0.7) {
-                const beamP = (p - 0.3) / 0.4;
-                // Beam
-                for (let y = ufoY + 4; y < this.h; y += 8) {
+                const beamProgress = (p - 0.3) / 0.4;
+                // Beam / 光線
+                for (let y = ufoY + 4; y < height; y += 8) {
                     for (let x = -2; x <= 2; x++) {
                         if (Math.random() > 0.4) sprites.push({ x: ufoX + x * 6, y: y, size: 1 });
                     }
                 }
-                // Cow (being sucked up)
-                const cowY = this.h - (this.h - ufoY) * beamP;
+                // Cow shape being sucked up / 吸い上げられる牛の形状
+                const cowY = height - (height - ufoY) * beamProgress;
                 if (cowY > ufoY) {
-                    // Cow shape (pixel art)
                     sprites.push({ x: ufoX - 4, y: cowY, size: 2 });
                     sprites.push({ x: ufoX, y: cowY, size: 2 });
                     sprites.push({ x: ufoX + 4, y: cowY, size: 2 });
@@ -125,7 +156,5 @@ export default class NightSky extends AnimationBase {
                 }
             }
         }
-
-        return sprites;
     }
 }
