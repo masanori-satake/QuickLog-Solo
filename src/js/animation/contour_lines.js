@@ -25,7 +25,7 @@ export default class ContourLines extends AnimationBase {
             es: "Líneas abstractas y orgánicas de estilo topográfico que fluyen suavemente.",
             fr: "Lignes abstraites et organiques de style topographique qui coulent doucement.",
             pt: "Linhas abstratas e orgânicas de estilo topográfico que fluem suavemente.",
-            ko: "부드럽게 흐르는 추상적이고 유기적인 지형 스타일의 선です。",
+            ko: "부드럽게 흐르는 추상적이고 유기적인 지형 스타일의 선입니다.",
             zh: "抽象、有机的地形风格线条，流动平滑。"
         },
         author: "QuickLog-Solo"
