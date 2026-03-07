@@ -701,7 +701,10 @@ main {
 }
 
 .primary-btn:hover {
-    background-color: color-mix(in srgb, var(--md-sys-color-primary), black 15%);
+    /* DO NOT REMOVE !important: Matches the hover behavior of Tag Aggregation copy buttons
+       and ensures visibility in both themes by using tonal inversion. */
+    background-color: var(--md-sys-color-primary-container) !important;
+    color: var(--md-sys-color-on-primary-container) !important;
     box-shadow: var(--md-sys-elevation-1);
 }
 
