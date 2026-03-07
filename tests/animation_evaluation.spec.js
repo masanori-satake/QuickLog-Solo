@@ -8,8 +8,8 @@ const animationDir = path.join(process.cwd(), 'src/js/animation');
 const animationFiles = fs.readdirSync(animationDir).filter(f => {
     if (!f.endsWith('.js')) return false;
     const content = fs.readFileSync(path.join(animationDir, f), 'utf-8');
-    // Skip animations explicitly marked as development-only
-    return !content.includes('devOnly: true');
+    // 正規表現を使い、より堅牢な方法で開発専用モジュールをスキップします
+    return !/devOnly:\s*true/.test(content);
 });
 const animationIds = animationFiles.map(f => f.replace('.js', ''));
 
