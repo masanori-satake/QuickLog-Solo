@@ -367,16 +367,13 @@ describe('Logic Module', () => {
                 { startTime: 1000000, endTime: 1100000, category: 'Task' }
             ];
             // adjust: 'none' -> 0 ms interval
-            const reportNone = generateReport(logs, { ...defaultOptions, adjust: 'none' });
-            expect(reportNone).toBeDefined();
+            const expected = generateReport(logs, { ...defaultOptions, adjust: 'none' });
 
             // adjust: '0' -> 0 ms interval
-            const reportZero = generateReport(logs, { ...defaultOptions, adjust: '0' });
-            expect(reportZero).toBeDefined();
+            expect(generateReport(logs, { ...defaultOptions, adjust: '0' })).toBe(expected);
 
             // adjust: invalid string -> 0 ms interval
-            const reportInvalid = generateReport(logs, { ...defaultOptions, adjust: 'abc' });
-            expect(reportInvalid).toBeDefined();
+            expect(generateReport(logs, { ...defaultOptions, adjust: 'abc' })).toBe(expected);
         });
 
         test('handles very large adjust values', () => {
@@ -384,9 +381,10 @@ describe('Logic Module', () => {
                 { startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T11:00:00').getTime(), category: 'Task 1' },
                 { startTime: new Date('2026-03-03T11:00:00').getTime(), endTime: new Date('2026-03-03T12:00:00').getTime(), category: 'Task 2' }
             ];
-            // Adjust to 1440m (24h). Since first and last are preserved, it shouldn't crash.
+            // Adjust to 1440m (24h). Since first and last are preserved, boundaries should remain.
             const report = generateReport(logs, { ...defaultOptions, adjust: '1440', endTime: 'show' });
-            expect(report).toBeDefined();
+            expect(report).toContain('10:00');
+            expect(report).toContain('12:00');
         });
 
         test('returns empty string for unknown format', () => {
