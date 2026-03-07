@@ -1,9 +1,14 @@
-name: Manual Animation Quality Evaluation
+name: Animation Quality Evaluation
 
 permissions:
   contents: read
 
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/js/animation/**'
   workflow_dispatch:
 
 jobs:

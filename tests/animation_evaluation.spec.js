@@ -3,9 +3,14 @@ import fs from 'fs';
 import path from 'path';
 import { EVAL_CONFIG } from './animation_eval_config.js';
 
-// Helper to get animation IDs from the filesystem
+// Helper to get animation IDs from the filesystem, excluding development-only modules
 const animationDir = path.join(process.cwd(), 'src/js/animation');
-const animationFiles = fs.readdirSync(animationDir).filter(f => f.endsWith('.js'));
+const animationFiles = fs.readdirSync(animationDir).filter(f => {
+    if (!f.endsWith('.js')) return false;
+    const content = fs.readFileSync(path.join(animationDir, f), 'utf-8');
+    // 正規表現を使い、より堅牢な方法で開発専用モジュールをスキップします
+    return !/devOnly:\s*true/.test(content);
+});
 const animationIds = animationFiles.map(f => f.replace('.js', ''));
 
 test.describe('Animation Quality Evaluation', () => {
