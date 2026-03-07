@@ -25,7 +25,7 @@ export default class OpenReel extends AnimationBase {
             es: "Grabadora de cinta antigua con carretes giratorios y medidores VU móviles.",
             fr: "Magnétophone vintage avec bobines rotatives et VU-mètres mobiles.",
             pt: "Gravador de rolo vintage com carretéis giratórios e medidores VU móveis.",
-            ko: "회전하는 릴과 움직이는 VU 미터가 있는 빈티지 테이프 레코더입니다.",
+            ko: "회전하는 릴과 움직이는 VU 미터가 있는 빈티지 테이프 レコーダーです。",
             zh: "带有旋转带盘和移动 VU 表的复古磁带录音机。"
         },
         author: "QuickLog-Solo"

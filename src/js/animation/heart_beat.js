@@ -25,7 +25,7 @@ export default class HeartBeat extends AnimationBase {
             es: "Una forma de onda de ECG rítmica con un rastro brillante. El ritmo puede fluctuar ocasionalmente después de un minuto.",
             fr: "Une forme d'onde ECG rythmique avec une trace lumineuse. Le rythme peut fluctuer occasionnellement après une minute.",
             pt: "Uma forma de onda de ECG rítmica con um rastro brillante. O ritmo pode flutuar ocasionalmente após um minuto.",
-            ko: "화면을 따라 흐르는 리드미컬한 ECG 파형입니다. 빛의 궤적이 남으며 1分 정도 지나면 때때로 리듬이 불규칙해집니다.",
+            ko: "화면을 따라 흐르는 리드미컬한 ECG 파형입니다. 빛의 궤적이 남으며 1分 정도 지나면 때때로 리듬이 불규칙해집니다。",
             zh: "屏幕上律动的心电图波形，带有发光轨迹。一分钟后节奏可能会偶尔波动。"
         },
         author: "QuickLog-Solo"

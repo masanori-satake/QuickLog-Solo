@@ -94,7 +94,7 @@ export default class Cats extends AnimationBase {
 
         // 2. Define platforms (Top of UI text boxes + ground)
         // 2. 足場の定義（テキスト領域の上端 + 地面）
-        const platforms = (exclusionAreas || []).map(area => ({
+        const platforms = exclusionAreas.map(area => ({
             y: area.y,
             xStart: area.x,
             xEnd: area.x + area.width
