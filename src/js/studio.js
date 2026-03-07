@@ -589,9 +589,8 @@ function parseAndPopulate(code, metadata) {
     loadCurrentMetaData();
 
     metaAuthor.value = metadata.author || '';
-    studioIgnoreExclusion = !!metadata.ignoreExclusion;
 
-    // Extract config
+    // Extract config & metadata
     const modeMatch = code.match(/mode:\s*['"](canvas|matrix|sprite)['"]/);
     configMode.value = modeMatch ? modeMatch[1] : 'canvas';
     configPseudo.checked = /usePseudoSpace:\s*true/.test(code);
@@ -599,6 +598,7 @@ function parseAndPopulate(code, metadata) {
     configIgnoreExclusion.checked = /ignoreExclusion:\s*true/.test(code);
     studioIgnoreExclusion = configIgnoreExclusion.checked;
     updateTapeControlState();
+    updateExclusionAreas();
 
     // Find class body
     const classMatch = code.match(/export\s+default\s+class\s+\w+\s+extends\s+AnimationBase\s*\{/);
@@ -745,7 +745,7 @@ function startTest() {
     engine.config = {
         mode: configMode.value,
         usePseudoSpace: configPseudo.checked,
-        rewindable: configRewindable.checked
+        ignoreExclusion: configIgnoreExclusion.checked
     };
 
     updateExclusionAreas();
@@ -978,13 +978,13 @@ export default class CustomAnimation extends AnimationBase {
         specVersion: '1.0',
         name: ${JSON.stringify(metaData.name, null, 8).trimStart()},
         description: ${JSON.stringify(metaData.description, null, 8).trimStart()},
-        author: "${escapeJSString(metaAuthor.value)}"
+        author: "${escapeJSString(metaAuthor.value)}",
+        rewindable: ${configRewindable.checked}
     };
 
     config = {
         mode: '${configMode.value}',
         usePseudoSpace: ${configPseudo.checked},
-        rewindable: ${configRewindable.checked},
         ignoreExclusion: ${configIgnoreExclusion.checked}
     };
 

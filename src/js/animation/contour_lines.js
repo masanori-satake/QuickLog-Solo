@@ -28,10 +28,11 @@ export default class ContourLines extends AnimationBase {
             ko: "부드럽게 흐르는 추상적이고 유기적인 지형 스타일의 선です。",
             zh: "抽象、有机的地形风格线条，流动平滑。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
+    config = { mode: 'canvas', usePseudoSpace: false };
 
     /**
      * Initial setup and resizing

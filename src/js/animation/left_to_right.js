@@ -28,10 +28,11 @@ export default class LeftToRight extends AnimationBase {
             ko: "왼쪽에서 오른쪽으로 진행되는 간단한 선형 채우기입니다。",
             zh: "一种简单的线性填充，从左向右推进。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'sprite', usePseudoSpace: true, rewindable: true };
+    config = { mode: 'sprite', usePseudoSpace: true };
 
     /**
      * Initial setup and resizing

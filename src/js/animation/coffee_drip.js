@@ -28,10 +28,11 @@ export default class CoffeeDrip extends AnimationBase {
             ko: "포트에 커피가 차오르는 편안한 드립 애니메이션입니다.",
             zh: "一种放松的咖啡冲泡动画，咖啡壶逐渐装满。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
+    config = { mode: 'canvas', usePseudoSpace: false };
 
     /**
      * Initial setup and resizing

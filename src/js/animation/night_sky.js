@@ -28,7 +28,8 @@ export default class NightSky extends AnimationBase {
             ko: "반짝이는 별들과 달이 천천히 별자리를 형성하는 평화로운 밤하늘입니다。",
             zh: "宁静的夜空，闪烁的星星和月亮慢慢形成一个星座。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
     constructor() {
@@ -52,7 +53,7 @@ export default class NightSky extends AnimationBase {
         }));
     }
 
-    config = { mode: 'sprite', usePseudoSpace: true, rewindable: true };
+    config = { mode: 'sprite', usePseudoSpace: true };
 
     /**
      * Initial setup and resizing

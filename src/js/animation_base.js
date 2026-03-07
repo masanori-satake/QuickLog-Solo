@@ -10,18 +10,20 @@ export class AnimationBase {
         specVersion: '1.0',
         name: 'Base Animation',
         description: 'Template for animations',
-        author: 'QuickLog-Solo'
+        author: 'QuickLog-Solo',
+        rewindable: false
     };
 
     /**
      * Animation Configuration.
      * mode: 'canvas' (default), 'matrix', or 'sprite'
      * usePseudoSpace: If true, the engine provides a virtual width excluding the widest exclusion area.
+     * ignoreExclusion: If true, the animation is drawn over the entire canvas, ignoring exclusion areas.
      */
     config = {
         mode: 'canvas',
         usePseudoSpace: false,
-        rewindable: false
+        ignoreExclusion: false
     };
 
     /**
