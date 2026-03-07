@@ -20,6 +20,7 @@ const StudioState = {
 };
 let currentState = StudioState.STOPPED;
 let isScrubbing = false;
+let studioIgnoreExclusion = false;
 let virtualElapsedMs = 0;
 let lastFrameTime = 0;
 
@@ -65,6 +66,7 @@ const metaDesc = document.getElementById('meta-desc');
 const configMode = document.getElementById('config-mode');
 const configPseudo = document.getElementById('config-pseudo');
 const configRewindable = document.getElementById('config-rewindable');
+const configIgnoreExclusion = document.getElementById('config-ignore-exclusion');
 
 const canvas = document.getElementById('animation-canvas');
 const exclusionSim = document.getElementById('exclusion-simulator');
@@ -279,6 +281,11 @@ function setupEventListeners() {
         markDirty();
         updateTapeControlState();
     });
+    configIgnoreExclusion.addEventListener('change', () => {
+        markDirty();
+        studioIgnoreExclusion = configIgnoreExclusion.checked;
+        updateExclusionAreas();
+    });
 
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
         el.addEventListener('input', () => {
@@ -484,6 +491,8 @@ function resetStudioUI(full = true) {
 
     // 2. Configuration
     configRewindable.checked = false;
+    configIgnoreExclusion.checked = false;
+    studioIgnoreExclusion = false;
     updateTapeControlState();
     showCanvasCheck.checked = true;
     rawCanvasContainer.classList.remove('hidden');
@@ -571,12 +580,15 @@ function parseAndPopulate(code, metadata) {
     loadCurrentMetaData();
 
     metaAuthor.value = metadata.author || '';
+    studioIgnoreExclusion = !!metadata.ignoreExclusion;
 
     // Extract config
     const modeMatch = code.match(/mode:\s*['"](canvas|matrix|sprite)['"]/);
     configMode.value = modeMatch ? modeMatch[1] : 'canvas';
     configPseudo.checked = /usePseudoSpace:\s*true/.test(code);
     configRewindable.checked = /rewindable:\s*true/.test(code);
+    configIgnoreExclusion.checked = /ignoreExclusion:\s*true/.test(code);
+    studioIgnoreExclusion = configIgnoreExclusion.checked;
     updateTapeControlState();
 
     // Find class body
@@ -737,9 +749,7 @@ function startTest() {
     const originalDraw = engine.draw;
 
     engine.draw = function() {
-        if (!this.worker || !this.initialized) return;
-        if (this.isDrawPending) return;
-        if (currentState === StudioState.PAUSED) return;
+        if (currentState === StudioState.PAUSED || isScrubbing) return;
 
         const now = performance.now();
         if (currentState === StudioState.PLAYING) {
@@ -749,29 +759,7 @@ function startTest() {
         lastFrameTime = now;
 
         updateTapeCounter();
-
-        const progress = (virtualElapsedMs % this.cycleMs) / this.cycleMs;
-
-        let drawWidth = this.canvas.width;
-        if (this.config.usePseudoSpace) {
-            drawWidth = this._getPseudoInfo().totalWidth;
-        }
-
-        const params = {
-            width: drawWidth,
-            height: this.canvas.height,
-            canvasWidth: this.canvas.width,
-            elapsedMs: virtualElapsedMs,
-            progress,
-            step: Math.floor(progress * 240),
-            exclusionAreas: this.ignoreExclusion ? [] : this._getVirtualExclusionAreas(),
-            realExclusionAreas: this.ignoreExclusion ? [] : this.exclusionAreas,
-            requestRawBitmap: this.requestRawBitmap
-        };
-
-        this.lastDrawRequestTime = performance.now();
-        this.isDrawPending = true;
-        this.worker.postMessage({ type: 'draw', payload: params });
+        _requestStudioDraw(virtualElapsedMs);
     };
 
     engine.start = function(name, startTime, color) {
@@ -783,6 +771,7 @@ function startTest() {
         this.perfViolations = 0;
         this.isMonitoring = true;
         this.isDrawPending = false;
+        this.ignoreExclusion = studioIgnoreExclusion;
         this.requestRawBitmap = showCanvasCheck.checked;
         this.onRawBitmapDraw = (bitmap) => {
             const ctx = rawCanvas.getContext('2d');
@@ -799,7 +788,7 @@ function startTest() {
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
         this.worker.postMessage({ type: 'init', payload: { modulePath: workerUrl } });
-        this.worker.postMessage({ type: 'setSpeed', payload: 1.0 }); // Speed handled in engine.draw override
+        this.worker.postMessage({ type: 'setSpeed', payload: 1.0 }); // Speed handled in virtual time
     };
 
     engine.start('test', Date.now(), currentPreviewColor);
@@ -869,16 +858,21 @@ function resumeTest() {
  */
 async function scrub(direction) {
     if (currentState === StudioState.STOPPED || isScrubbing) return;
+    if (direction === -1 && rewindBtn.disabled) return;
 
     isScrubbing = true;
     const originalState = currentState;
-    currentState = StudioState.PAUSED; // Temp pause for high-freq draw
+    const btn = direction === -1 ? rewindBtn : ffBtn;
+    btn.classList.add('active');
 
-    const interval = 10; // 10ms
+    const interval = 10; // min interval 10ms
     const count = 10;
     const stepSize = 100 * currentSpeed; // 100ms per step
 
     for (let i = 0; i < count; i++) {
+        // Handle stop during scrubbing
+        if (currentState === StudioState.STOPPED) break;
+
         if (direction === -1) {
             virtualElapsedMs = Math.max(0, virtualElapsedMs - stepSize);
         } else {
@@ -886,19 +880,32 @@ async function scrub(direction) {
         }
 
         updateTapeCounter();
-        manualDraw(virtualElapsedMs);
 
+        // Ensure worker is ready (best effort)
+        const startWait = performance.now();
+        while (engine.isDrawPending && performance.now() - startWait < 50) {
+            await new Promise(r => setTimeout(r, 2));
+        }
+
+        _requestStudioDraw(virtualElapsedMs);
         await new Promise(resolve => setTimeout(resolve, interval));
     }
 
-    currentState = originalState;
+    btn.classList.remove('active');
     isScrubbing = false;
-    if (currentState === StudioState.PLAYING) {
-        lastFrameTime = performance.now();
+
+    // Restore state if not stopped
+    if (currentState !== StudioState.STOPPED) {
+        if (originalState === StudioState.PLAYING) {
+            lastFrameTime = performance.now();
+        }
     }
 }
 
-function manualDraw(elapsed) {
+/**
+ * Shared drawing request logic for Studio test mode
+ */
+function _requestStudioDraw(elapsed) {
     if (!engine || !engine.worker || !engine.initialized || engine.isDrawPending) return;
 
     const progress = (elapsed % engine.cycleMs) / engine.cycleMs;
@@ -968,7 +975,8 @@ export default class CustomAnimation extends AnimationBase {
     config = {
         mode: '${configMode.value}',
         usePseudoSpace: ${configPseudo.checked},
-        rewindable: ${configRewindable.checked}
+        rewindable: ${configRewindable.checked},
+        ignoreExclusion: ${configIgnoreExclusion.checked}
     };
 
     ${indentCode(inputVars.value, 4)}
@@ -1014,6 +1022,8 @@ function handleUpload(e) {
                 configMode.value = data.mode || 'canvas';
                 configPseudo.checked = !!data.usePseudoSpace;
                 configRewindable.checked = !!data.rewindable;
+                configIgnoreExclusion.checked = !!data.ignoreExclusion;
+                studioIgnoreExclusion = configIgnoreExclusion.checked;
                 updateTapeControlState();
                 inputVars.value = data.vars || '';
                 inputSetup.value = data.setup || '';
