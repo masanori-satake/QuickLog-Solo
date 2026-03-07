@@ -13,9 +13,17 @@ let metaData = {
     description: {}
 };
 let engine = null;
-let isTesting = false;
+const StudioState = {
+    STOPPED: 'STOPPED',
+    PLAYING: 'PLAYING',
+    PAUSED: 'PAUSED'
+};
+let currentState = StudioState.STOPPED;
+let isScrubbing = false;
+let virtualElapsedMs = 0;
+let lastFrameTime = 0;
+
 let isDirty = false;
-let startTime = 0;
 let workerUrl = null;
 let currentPreviewColor = '#0056d2'; // Default primary
 let currentTheme = 'dark';
@@ -29,7 +37,15 @@ const themeToggle = document.getElementById('theme-toggle');
 const metaLangSelect = document.getElementById('meta-lang-select');
 const codeTabs = document.querySelectorAll('.code-tab');
 const editors = document.querySelectorAll('.editor-container');
-const testBtn = document.getElementById('test-btn');
+
+const stopBtn = document.getElementById('stop-btn');
+const rewindBtn = document.getElementById('rewind-btn');
+const playBtn = document.getElementById('play-btn');
+const ffBtn = document.getElementById('ff-btn');
+const pauseBtn = document.getElementById('pause-btn');
+const ejectBtn = document.getElementById('eject-btn');
+const tapeCounterEl = document.getElementById('tape-counter');
+
 const downloadBtn = document.getElementById('download-btn');
 const uploadBtn = document.getElementById('upload-btn');
 const uploadInput = document.getElementById('studio-upload-input');
@@ -69,6 +85,10 @@ const metricLatency = document.getElementById('metric-latency');
 const metricDensity = document.getElementById('metric-density');
 const metricChange = document.getElementById('metric-change');
 const metricStatus = document.getElementById('metric-status');
+
+const needleLatency = document.getElementById('meter-latency').querySelector('.meter-needle');
+const needleDensity = document.getElementById('meter-density').querySelector('.meter-needle');
+const needleChange = document.getElementById('meter-change').querySelector('.meter-needle');
 
 const toggleWrapBtn = document.getElementById('toggle-wrap');
 const showSearchBtn = document.getElementById('show-search');
@@ -165,6 +185,8 @@ function updateTranslations() {
         const key = el.getAttribute('data-i18n-title');
         if (messages[currentLang] && messages[currentLang][key]) {
             el.title = messages[currentLang][key];
+        } else if (messages.en[key] !== undefined) {
+            el.title = messages.en[key];
         }
     });
 
@@ -196,7 +218,7 @@ function setupColorPresets() {
             currentPreviewColor = color;
             document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
             div.classList.add('active');
-            if (isTesting && engine) {
+            if (currentState !== StudioState.STOPPED && engine) {
                 engine.color = color;
             }
         });
@@ -266,7 +288,10 @@ function setupEventListeners() {
 
     sampleSelect.addEventListener('change', (e) => {
         if (e.target.value) {
-            resetStudioUI();
+            if (currentState !== StudioState.STOPPED) {
+                stopTest();
+            }
+            resetStudioUI(false); // Don't reset everything if just changing sample
             loadSample(e.target.value);
         }
     });
@@ -290,7 +315,34 @@ function setupEventListeners() {
         });
     });
 
-    testBtn.addEventListener('click', toggleTest);
+    playBtn.addEventListener('click', () => {
+        if (currentState === StudioState.STOPPED) {
+            startTest();
+        } else if (currentState === StudioState.PAUSED) {
+            resumeTest();
+        }
+    });
+
+    stopBtn.addEventListener('click', stopTest);
+
+    pauseBtn.addEventListener('click', () => {
+        if (currentState === StudioState.PLAYING) {
+            pauseTest();
+        } else if (currentState === StudioState.PAUSED) {
+            resumeTest();
+        }
+    });
+
+    rewindBtn.addEventListener('click', () => scrub(-1));
+    ffBtn.addEventListener('click', () => scrub(1));
+
+    ejectBtn.addEventListener('click', () => {
+        if (currentState === StudioState.STOPPED) {
+            sampleSelect.value = '';
+            resetStudioUI(true);
+        }
+    });
+
     downloadBtn.addEventListener('click', downloadAnimation);
     uploadBtn.addEventListener('click', () => uploadInput.click());
     uploadInput.addEventListener('change', handleUpload);
@@ -341,9 +393,7 @@ function setupEventListeners() {
     speedSlider.addEventListener('input', (e) => {
         currentSpeed = parseFloat(e.target.value);
         speedValue.textContent = currentSpeed.toFixed(1);
-        if (isTesting && engine && engine.worker) {
-            engine.worker.postMessage({ type: 'setSpeed', payload: currentSpeed });
-        }
+        // Speed is now handled in engine.draw override for testing
     });
 
     toggleWrapBtn.addEventListener('click', () => {
@@ -405,17 +455,27 @@ function updateCanvasControlVisibility() {
     }
 }
 
-function resetStudioUI() {
-    // 1. Metadata - Editor Language (metaLang)
-    metaLang = currentLang;
-    metaLangSelect.value = currentLang;
-    metaData = {
-        name: {},
-        description: {}
-    };
-    metaName.value = '';
-    metaAuthor.value = '';
-    metaDesc.value = '';
+function resetStudioUI(full = true) {
+    if (full) {
+        // 1. Metadata - Editor Language (metaLang)
+        metaLang = currentLang;
+        metaLangSelect.value = currentLang;
+        metaData = {
+            name: {},
+            description: {}
+        };
+        metaName.value = '';
+        metaAuthor.value = '';
+        metaDesc.value = '';
+
+        // Reset inputs
+        inputVars.value = '';
+        inputSetup.value = '';
+        inputDraw.value = '';
+        inputInteraction.value = '';
+        updateAllHighlight();
+        updateAllGutter();
+    }
 
     // 2. Configuration
     showCanvasCheck.checked = true;
@@ -431,7 +491,7 @@ function resetStudioUI() {
         const isDefault = p.style.backgroundColor === 'rgb(0, 86, 210)'; // #0056d2
         p.classList.toggle('active', isDefault);
     });
-    if (isTesting && engine) engine.color = defaultColor;
+    if (currentState !== StudioState.STOPPED && engine) engine.color = defaultColor;
 
     // Reset Speed
     currentSpeed = 1.0;
@@ -453,6 +513,10 @@ function resetStudioUI() {
     exclusionSim.style.left = '40px';
     exclusionSim.style.width = '120px';
     exclusionSim.style.height = '40px';
+
+    // Reset Tape Counter
+    virtualElapsedMs = 0;
+    updateTapeCounter();
 
     if (engine) engine.resize();
     updateExclusionAreas();
@@ -626,22 +690,14 @@ function findRange(text, namePattern) {
     return null;
 }
 
-function toggleTest() {
-    if (isTesting) {
-        stopTest();
-    } else {
-        startTest();
-    }
-}
-
 function getMsg(key) {
     return (messages[currentLang] && messages[currentLang][key]) || messages.en[key] || key;
 }
 
 function startTest() {
-    isTesting = true;
-    testBtn.innerHTML = `<span class="material-symbols-outlined">stop</span> <span>${getMsg('btn-stop-test')}</span>`;
-    testBtn.classList.replace('primary-btn', 'danger-btn');
+    currentState = StudioState.PLAYING;
+    playBtn.classList.add('active');
+    pauseBtn.classList.remove('active');
 
     // Disable inputs
     setInputDisabled(true);
@@ -652,7 +708,8 @@ function startTest() {
     if (workerUrl) URL.revokeObjectURL(workerUrl);
     workerUrl = URL.createObjectURL(blob);
 
-    startTime = Date.now();
+    virtualElapsedMs = 0;
+    lastFrameTime = performance.now();
 
     // Configure engine for testing
     engine.config = {
@@ -667,6 +724,46 @@ function startTest() {
     // But since the engine normally constructs the path, we'll patch it to use our blob.
 
     const originalStart = engine.start;
+    const originalDraw = engine.draw;
+
+    engine.draw = function() {
+        if (!this.worker || !this.initialized) return;
+        if (this.isDrawPending) return;
+        if (currentState === StudioState.PAUSED) return;
+
+        const now = performance.now();
+        if (currentState === StudioState.PLAYING) {
+            const delta = (now - lastFrameTime) * currentSpeed;
+            virtualElapsedMs += delta;
+        }
+        lastFrameTime = now;
+
+        updateTapeCounter();
+
+        const progress = (virtualElapsedMs % this.cycleMs) / this.cycleMs;
+
+        let drawWidth = this.canvas.width;
+        if (this.config.usePseudoSpace) {
+            drawWidth = this._getPseudoInfo().totalWidth;
+        }
+
+        const params = {
+            width: drawWidth,
+            height: this.canvas.height,
+            canvasWidth: this.canvas.width,
+            elapsedMs: virtualElapsedMs,
+            progress,
+            step: Math.floor(progress * 240),
+            exclusionAreas: this.ignoreExclusion ? [] : this._getVirtualExclusionAreas(),
+            realExclusionAreas: this.ignoreExclusion ? [] : this.exclusionAreas,
+            requestRawBitmap: this.requestRawBitmap
+        };
+
+        this.lastDrawRequestTime = performance.now();
+        this.isDrawPending = true;
+        this.worker.postMessage({ type: 'draw', payload: params });
+    };
+
     engine.start = function(name, startTime, color) {
         this.stop();
         this.activeAnimationId = 'test'; // Identifier
@@ -692,11 +789,14 @@ function startTest() {
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
         this.worker.postMessage({ type: 'init', payload: { modulePath: workerUrl } });
-        this.worker.postMessage({ type: 'setSpeed', payload: currentSpeed });
+        this.worker.postMessage({ type: 'setSpeed', payload: 1.0 }); // Speed handled in engine.draw override
     };
 
-    engine.start('test', startTime, currentPreviewColor);
-    engine.start = originalStart; // Restore after one-time use
+    engine.start('test', Date.now(), currentPreviewColor);
+
+    // Keep references to restore later if needed, though stopTest will handle it
+    engine._originalStart = originalStart;
+    engine._originalDraw = originalDraw;
 
     metricStatus.textContent = getMsg('status-running');
     metricStatus.style.color = '#4caf50';
@@ -705,13 +805,17 @@ function startTest() {
 }
 
 function stopTest() {
-    isTesting = false;
-    testBtn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> <span data-i18n="btn-test">Test Animation</span>';
-    testBtn.classList.replace('danger-btn', 'primary-btn');
-    updateTranslations();
+    currentState = StudioState.STOPPED;
+    playBtn.classList.remove('active');
+    pauseBtn.classList.remove('active');
 
     setInputDisabled(false);
-    engine.stop();
+    if (engine) {
+        engine.stop();
+        // Restore original methods
+        if (engine._originalStart) engine.start = engine._originalStart;
+        if (engine._originalDraw) engine.draw = engine._originalDraw;
+    }
 
     // Clear raw canvas on stop
     const ctx = rawCanvas.getContext('2d');
@@ -721,6 +825,99 @@ function stopTest() {
     metricStatus.textContent = getMsg('status-ready');
     metricStatus.style.color = 'inherit';
     stopMetricsCollection();
+    resetMeters();
+}
+
+function pauseTest() {
+    if (currentState !== StudioState.PLAYING) return;
+    currentState = StudioState.PAUSED;
+    pauseBtn.classList.add('active');
+    playBtn.classList.remove('active');
+
+    metricStatus.textContent = getMsg('status-paused');
+    metricStatus.style.color = '#ffa000';
+}
+
+function resumeTest() {
+    if (currentState !== StudioState.PAUSED && currentState !== StudioState.STOPPED) return;
+    if (currentState === StudioState.STOPPED) {
+        startTest();
+        return;
+    }
+    currentState = StudioState.PLAYING;
+    pauseBtn.classList.remove('active');
+    playBtn.classList.add('active');
+    lastFrameTime = performance.now();
+
+    metricStatus.textContent = getMsg('status-running');
+    metricStatus.style.color = '#4caf50';
+}
+
+/**
+ * Scrubbing logic (Rewind / Fast Forward)
+ * @param {number} direction -1 for rewind, 1 for fast forward
+ */
+async function scrub(direction) {
+    if (currentState === StudioState.STOPPED || isScrubbing) return;
+
+    isScrubbing = true;
+    const originalState = currentState;
+    currentState = StudioState.PAUSED; // Temp pause for high-freq draw
+
+    const interval = 10; // 10ms
+    const count = 10;
+    const stepSize = 100 * currentSpeed; // 100ms per step
+
+    for (let i = 0; i < count; i++) {
+        if (direction === -1) {
+            virtualElapsedMs = Math.max(0, virtualElapsedMs - stepSize);
+        } else {
+            virtualElapsedMs += stepSize;
+        }
+
+        updateTapeCounter();
+        manualDraw(virtualElapsedMs);
+
+        await new Promise(resolve => setTimeout(resolve, interval));
+    }
+
+    currentState = originalState;
+    isScrubbing = false;
+    if (currentState === StudioState.PLAYING) {
+        lastFrameTime = performance.now();
+    }
+}
+
+function manualDraw(elapsed) {
+    if (!engine || !engine.worker || !engine.initialized || engine.isDrawPending) return;
+
+    const progress = (elapsed % engine.cycleMs) / engine.cycleMs;
+    let drawWidth = engine.canvas.width;
+    if (engine.config.usePseudoSpace) {
+        drawWidth = engine._getPseudoInfo().totalWidth;
+    }
+
+    const params = {
+        width: drawWidth,
+        height: engine.canvas.height,
+        canvasWidth: engine.canvas.width,
+        elapsedMs: elapsed,
+        progress,
+        step: Math.floor(progress * 240),
+        exclusionAreas: engine.ignoreExclusion ? [] : engine._getVirtualExclusionAreas(),
+        realExclusionAreas: engine.ignoreExclusion ? [] : engine.exclusionAreas,
+        requestRawBitmap: engine.requestRawBitmap
+    };
+
+    engine.lastDrawRequestTime = performance.now();
+    engine.isDrawPending = true;
+    engine.worker.postMessage({ type: 'draw', payload: params });
+}
+
+function updateTapeCounter() {
+    const totalSeconds = Math.floor(virtualElapsedMs / 1000);
+    // Use 4 digits for a "mechanical" look as requested
+    tapeCounterEl.textContent = String(totalSeconds % 10000).padStart(4, '0');
 }
 
 function setInputDisabled(disabled) {
@@ -885,14 +1082,18 @@ function startMetricsCollection() {
 
         const density = (nonZero / (width * height)) * 100;
         metricDensity.textContent = `${density.toFixed(1)} %`;
+        updateMeter(needleDensity, density, 100);
 
         if (lastImageData) {
             const changeRate = (changed / (width * height)) * 100;
             metricChange.textContent = `${changeRate.toFixed(1)} %`;
+            updateMeter(needleChange, changeRate, 50); // 50% as max for change rate scaling
         }
         lastImageData = imgData;
 
         metricLatency.textContent = `${lastLatency.toFixed(1)} ms`;
+        updateMeter(needleLatency, lastLatency, 100); // 100ms as max for meter scaling
+
         if (lastLatency > 50) {
             metricLatency.style.color = '#f44336';
         } else if (lastLatency > 16) {
@@ -906,6 +1107,23 @@ function startMetricsCollection() {
 
 function stopMetricsCollection() {
     clearInterval(metricsInterval);
+}
+
+function updateMeter(needle, value, max) {
+    if (!needle) return;
+    // Map 0 -> max to -70deg -> +70deg
+    const percent = Math.min(1, value / max);
+    const angle = -70 + (percent * 140);
+    needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+}
+
+function resetMeters() {
+    [needleLatency, needleDensity, needleChange].forEach(needle => {
+        if (needle) needle.style.transform = 'translateX(-50%) rotate(-70deg)';
+    });
+    metricLatency.textContent = '-- ms';
+    metricDensity.textContent = '-- %';
+    metricChange.textContent = '-- %';
 }
 
 // Draggable Resizable Exclusion Simulator
@@ -992,7 +1210,7 @@ function updateExclusionAreas() {
         engine.setExclusionAreas([]);
     }
 
-    if (isTesting && engine.initialized) {
+    if (currentState !== StudioState.STOPPED && engine.initialized) {
         // Just trigger a resize to update worker state without full restart
         engine.resize();
     }
