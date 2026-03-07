@@ -1474,7 +1474,7 @@ function setupEventListeners() {
         });
     });
 
-    getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', async (e) => {
+    getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', async () => {
         const text = getEl(ID_REPORT_PREVIEW).textContent;
         if (reportSettings.format === 'html') {
             const htmlType = 'text/html';
@@ -1490,15 +1490,6 @@ function setupEventListeners() {
             await navigator.clipboard.writeText(text);
         }
 
-        const btn = e.currentTarget;
-        const span = btn.querySelector('[data-i18n]');
-        if (span) {
-            const originalText = t('btn-copy');
-            span.textContent = t('toast-copied');
-            setTimeout(() => {
-                span.textContent = originalText;
-            }, 2000);
-        }
         showToast(t('toast-copied'));
     });
 
