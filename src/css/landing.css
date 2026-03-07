@@ -167,8 +167,8 @@ h1 {
 
 .policy-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--md-sys-spacing-3);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--md-sys-spacing-2);
 }
 
 .policy-item {
