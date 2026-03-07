@@ -28,10 +28,11 @@ export default class SandClock extends AnimationBase {
             ko: "모래가 위에서 아래로 서서히 흐르는 디지털 모래시계 애니메이션입니다。",
             zh: "一种数字沙漏，沙子逐渐从顶部流到底部。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
+    config = { mode: 'canvas', usePseudoSpace: false };
 
     /**
      * Initial setup and resizing

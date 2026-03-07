@@ -28,10 +28,11 @@ export default class HeartBeat extends AnimationBase {
             ko: "화면을 따라 흐르는 리드미컬한 ECG 파형입니다. 빛의 궤적이 남으며 1分 정도 지나면 때때로 리듬이 불규칙해집니다。",
             zh: "屏幕上律动的心电图波形，带有发光轨迹。一分钟后节奏可能会偶尔波动。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'sprite', usePseudoSpace: true, rewindable: true };
+    config = { mode: 'sprite', usePseudoSpace: true };
 
     /**
      * Initial setup and resizing

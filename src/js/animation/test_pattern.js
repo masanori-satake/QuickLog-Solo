@@ -25,10 +25,10 @@ export default class TestPattern extends AnimationBase {
         },
         author: "QuickLog-Solo",
         devOnly: true,
-        ignoreExclusion: true
+        rewindable: true
     };
 
-    config = { mode: 'sprite', usePseudoSpace: false, rewindable: true };
+    config = { mode: 'sprite', usePseudoSpace: false, ignoreExclusion: true };
 
     setup(width, height) {
         this.dots = [];

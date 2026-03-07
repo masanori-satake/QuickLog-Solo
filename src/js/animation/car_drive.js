@@ -28,10 +28,11 @@ export default class CarDrive extends AnimationBase {
             ko: "90년대 스타일의 의사 3D 드라이빙 게임입니다. UI 텍스트와 나무가 도로변의 오브ジェクト로 나타납니다.",
             zh: "90年代风格的伪3D驾驶游戏。UI文本和树木显示为路边物体。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
+    config = { mode: 'canvas', usePseudoSpace: false };
 
     /**
      * Initial setup and resizing

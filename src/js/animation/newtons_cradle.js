@@ -28,10 +28,11 @@ export default class NewtonsCradle extends AnimationBase {
             ko: "고전적인 물리 사무용 장난감인 '뉴턴의 요람' 시ミュ레이션입니다。",
             zh: "经典办公物理玩具的模拟。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
+    config = { mode: 'canvas', usePseudoSpace: false };
 
     /**
      * Initial setup and resizing

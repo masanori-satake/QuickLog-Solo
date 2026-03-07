@@ -28,10 +28,11 @@ export default class OpenReel extends AnimationBase {
             ko: "회전하는 릴과 움직이는 VU 미터가 있는 빈티지 테이프 レコーダーです。",
             zh: "带有旋转带盘和移动 VU 表的复古磁带录音机。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
+    config = { mode: 'canvas', usePseudoSpace: false };
 
     /**
      * Initial setup and resizing

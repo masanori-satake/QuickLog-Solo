@@ -28,10 +28,11 @@ export default class Clock extends AnimationBase {
             ko: "시계를 모티브로 한 심플한 원형 진행 표시기입니다.",
             zh: "使用时钟图案的简单圆形进度指示器。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false, rewindable: true };
+    config = { mode: 'canvas', usePseudoSpace: false };
 
     /**
      * Initial setup and resizing

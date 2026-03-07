@@ -28,10 +28,11 @@ export default class DotTyping extends AnimationBase {
             ko: "복고풍 터미널 스타일의 애니메이션으로, 문자가 입력되고 때때로 백ス페이스로 지워집니다。",
             zh: "复古终端风格动画，字符被输入，偶尔会被退格删除。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'sprite', usePseudoSpace: true, rewindable: true };
+    config = { mode: 'sprite', usePseudoSpace: true };
 
     constructor() {
         super();

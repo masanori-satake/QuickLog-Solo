@@ -129,7 +129,7 @@ export class AnimationEngine {
 
         const animInstance = new entry.class();
         this.config = animInstance.config || { mode: 'canvas', usePseudoSpace: false };
-        this.ignoreExclusion = !!entry.class.metadata?.ignoreExclusion;
+        this.ignoreExclusion = !!this.config.ignoreExclusion;
 
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);

@@ -28,10 +28,11 @@ export default class MigratingBirds extends AnimationBase {
             ko: "화면을 가로질러 클래식한 V자 대형으로 날아가는 철새 떼입니다。",
             zh: "候鸟以经典的V字形飞过屏幕。"
         },
-        author: "QuickLog-Solo"
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
-    config = { mode: 'sprite', usePseudoSpace: true, rewindable: true };
+    config = { mode: 'sprite', usePseudoSpace: true };
 
     /**
      * Initial setup and resizing

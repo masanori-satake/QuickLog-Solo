@@ -137,17 +137,19 @@ function performDraw(params) {
     const cycleMs = 120000; // 2 minutes cycle
     const progress = (modifiedElapsedMs % cycleMs) / cycleMs;
 
+    const config = animation.config || { mode: 'canvas' };
+    const usePseudoSpace = !!config.usePseudoSpace;
+    const ignoreExclusion = !!config.ignoreExclusion;
+
     // Parameters passed to the animation's draw method.
     // Width and height are intentionally excluded to encourage use of setup().
     const animationParams = {
         elapsedMs: modifiedElapsedMs,
         progress: progress,
         step: Math.floor(progress * 240),
-        exclusionAreas: exclusionAreas,
+        exclusionAreas: (ignoreExclusion || usePseudoSpace) ? [] : exclusionAreas,
         speed: speedFactor
     };
-    const config = animation.config || { mode: 'canvas' };
-    const usePseudoSpace = !!config.usePseudoSpace;
 
     // Use raw exclusion areas for physical masking to prevent drawing over UI
     const physicalMask = realExclusionAreas || exclusionAreas;
