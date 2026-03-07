@@ -224,6 +224,8 @@ main {
 }
 
 #current-task-display.anim-active {
+    /* DO NOT REMOVE !important: Ensures the container is transparent to show the #animation-canvas behind it,
+       overriding category-specific styles that would otherwise mask the animation. */
     background-color: transparent !important;
     box-shadow: none;
 }
@@ -247,10 +249,13 @@ main {
 }
 
 #current-task-display-base.anim-active {
+    /* DO NOT REMOVE !important: Prevents opaque category background colors from masking the animation canvas. */
     background-color: transparent !important;
     backdrop-filter: none;
 }
 
+/* DO NOT REMOVE !important in the block below: These rules enforce high transparency (95%) when an animation is active,
+   ensuring the UI overlay remains legible without obscuring the background animation. */
 #current-task-display-base.cat-primary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%) !important; }
 #current-task-display-base.cat-secondary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%) !important; }
 #current-task-display-base.cat-tertiary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%) !important; }
@@ -814,7 +819,9 @@ body.theme-dark button:active {
     background-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Category Colors */
+/* Category Colors: !important is used here to ensure category-specific colors
+   consistently override default component styles (e.g., buttons, backgrounds)
+   without requiring excessive selector nesting. */
 .cat-primary {
     background-color: var(--custom-cat-primary-container) !important;
     color: var(--custom-cat-on-primary-container) !important;
