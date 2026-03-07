@@ -22,7 +22,19 @@ def create_zip(zip_filepath, includes, manifest_src):
 
             src_path = os.path.join("src", item)
             if os.path.isdir(src_path):
-                shutil.copytree(src_path, os.path.join(temp_dir, item))
+                def ignore_dev_only(path, names):
+                    ignored = []
+                    # Only ignore modules inside src/js/animation/
+                    if os.path.normpath(path).endswith(os.path.join('js', 'animation')):
+                        for name in names:
+                            full_path = os.path.join(path, name)
+                            if os.path.isfile(full_path) and name.endswith('.js'):
+                                with open(full_path, 'r', encoding='utf-8') as f:
+                                    if 'devOnly: true' in f.read():
+                                        ignored.append(name)
+                    return ignored
+
+                shutil.copytree(src_path, os.path.join(temp_dir, item), ignore=ignore_dev_only)
                 print(f"  Added: {item}/ (from src/{item})")
             elif os.path.isfile(src_path):
                 shutil.copy2(src_path, os.path.join(temp_dir, item))
@@ -56,6 +68,9 @@ def create_packages():
     if not os.path.exists(dist_dir):
         os.makedirs(dist_dir)
 
+    print("Generating production registry (excluding development animations)...")
+    subprocess.run(["python3", "scripts/generate_animation_registry.py", "--exclude-dev"], check=True)
+
     common_includes = [
         "app.html",
         "version.json",
@@ -72,6 +87,9 @@ def create_packages():
     # Firefox Package
     firefox_zip = os.path.join(dist_dir, f"{package_name}-Firefox.zip")
     success_firefox = create_zip(firefox_zip, common_includes, "manifest.firefox.json")
+
+    print("Restoring full development registry...")
+    subprocess.run(["python3", "scripts/generate_animation_registry.py"], check=True)
 
     if success_chrome and success_firefox:
         return True

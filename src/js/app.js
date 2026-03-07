@@ -510,6 +510,9 @@ function initAnimationEngine() {
     const canvas = getEl('animation-canvas');
     if (canvas) {
         animationEngine = new AnimationEngine(canvas);
+        animationEngine.onStop = () => {
+            currentActiveAnimation = null;
+        };
         animations.forEach(anim => {
             animationEngine.register(anim.id, anim.class, anim.id);
         });
@@ -639,6 +642,7 @@ function updateAnimationSelect() {
         animSelect.appendChild(noneOpt);
 
         animations.forEach(anim => {
+            if (anim.devOnly) return;
             const opt = createEl('option');
             opt.value = anim.id;
             if (typeof anim.metadata.name === 'object') {
@@ -1128,7 +1132,7 @@ async function renderCategoryEditor() {
             const animOptions = [
                 { value: 'none', label: t('anim-none'), tooltip: '' },
                 { value: 'default', label: t('anim-default'), tooltip: '' },
-                ...animations.map(anim => {
+                ...animations.filter(anim => !anim.devOnly).map(anim => {
                     return {
                         value: anim.id,
                         label: getAnimLabel(anim),

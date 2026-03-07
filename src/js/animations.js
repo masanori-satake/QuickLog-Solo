@@ -24,10 +24,11 @@ export class AnimationEngine {
         this.initialized = false;
         this.requestRawBitmap = false;
         this.onRawBitmapDraw = null;
+        this.onStop = null;
 
-        this.perfThreshold = 100; // ms
+        this.perfThreshold = 200; // ms
         this.perfViolations = 0;
-        this.maxViolations = 10;
+        this.maxViolations = 20;
         this.isMonitoring = false;
         this.isDrawPending = false;
 
@@ -146,9 +147,11 @@ export class AnimationEngine {
             if (latency > this.perfThreshold) {
                 this.perfViolations++;
                 if (this.perfViolations > this.maxViolations) {
-                    console.error('Animation performance too low. Stopping.');
+                    console.warn(`QuickLog-Solo: Animation performance below threshold (${this.perfThreshold}ms). Auto-stopping to save resources.`);
                     this.stop();
-                    // Alert user?
+                    if (typeof this.onStop === 'function') {
+                        this.onStop();
+                    }
                     return;
                 }
             } else {

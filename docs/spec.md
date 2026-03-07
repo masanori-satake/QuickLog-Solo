@@ -99,6 +99,7 @@
 ### 背景アニメーション
 - 2分周期の LCD ドットマトリクス・スタイルを採用。
 - Web Worker によるサンドボックス化と自動遮蔽機能を備える。
+- 低スペック環境への配慮として、200ms 以上の遅延が 20回連続した場合に自動停止するガードレールを実装（v0.9.1）。
 - 詳細は [animation_module_spec.md](animation_module_spec.md) を参照。
 
 ### QL-Animation Studio (β版)
