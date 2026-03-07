@@ -52,8 +52,7 @@ const uploadBtn = document.getElementById('upload-btn');
 const uploadInput = document.getElementById('studio-upload-input');
 const prBtn = document.getElementById('pr-btn');
 const prModal = document.getElementById('pr-modal');
-const closePrBtn = document.querySelector('.close-modal-btn');
-const closePrX = document.querySelector('#pr-modal .close-btn');
+const closePrBtns = document.querySelectorAll('.close-modal-btn');
 
 const inputVars = document.getElementById('input-vars');
 const inputSetup = document.getElementById('input-setup');
@@ -359,7 +358,12 @@ function setupEventListeners() {
     uploadBtn.addEventListener('click', () => uploadInput.click());
     uploadInput.addEventListener('change', handleUpload);
     prBtn.addEventListener('click', () => prModal.classList.remove('hidden'));
-    [closePrBtn, closePrX].forEach(btn => btn.addEventListener('click', () => prModal.classList.add('hidden')));
+    closePrBtns.forEach(btn => btn.addEventListener('click', () => prModal.classList.add('hidden')));
+    prModal.addEventListener('click', (e) => {
+        if (e.target === prModal) {
+            prModal.classList.add('hidden');
+        }
+    });
 
     showMetricsCheck.addEventListener('change', (e) => {
         metricsPanel.style.display = e.target.checked ? 'grid' : 'none';
