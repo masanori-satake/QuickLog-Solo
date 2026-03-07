@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Verification Pattern (TestPattern) Rendering', () => {
-    test('should render Verification Pattern and produce visible content without being obscured', async ({ page }) => {
+    test('should render Verification Pattern and ensure it is not obscured by opaque backgrounds', async ({ page }) => {
         await page.goto('http://localhost:8080/src/app.html');
 
         // Select Verification Pattern
@@ -10,56 +10,61 @@ test.describe('Verification Pattern (TestPattern) Rendering', () => {
         await page.selectOption('#animation-select', 'test_pattern');
         await page.click('#settings-popup .close-btn');
 
-        // Start a task to trigger animation
-        await page.click('.category-btn:nth-child(2)');
+        // Start a task (second category usually has a color) to trigger animation
+        const categoryBtn = page.locator('.category-btn:nth-child(2)');
+        await categoryBtn.click();
 
-        // Wait for worker to initialize and draw (giving it enough time for the new grace period)
+        // Wait for worker to initialize and draw
         await page.waitForTimeout(4000);
 
-        // Verify that the engine is active
+        // 1. Verify that the engine is active
         const displayBase = page.locator('#current-task-display-base');
         await expect(displayBase).toHaveClass(/anim-active/);
 
-        // Check if canvas has some content
+        // 2. Check if canvas has some content
         const hasContent = await page.evaluate(() => {
             const canvas = document.getElementById('animation-canvas');
             const ctx = canvas.getContext('2d');
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
             return imgData.some(p => p !== 0);
         });
-
         expect(hasContent).toBe(true);
 
-        // Check if any opaque element is obscuring the canvas
-        // We pick a point where we expect the pattern to be (e.g., center)
-        const isObscured = await page.evaluate(() => {
-            const canvas = document.getElementById('animation-canvas');
-            const rect = canvas.getBoundingClientRect();
-            const x = rect.left + rect.width / 2;
-            const y = rect.top + rect.height / 2;
+        // 3. Specifically verify transparency of overlaying elements
+        const transparencyInfo = await page.evaluate(() => {
+            const getAlpha = (color) => {
+                // Support color(srgb ... / alpha)
+                const srgbMatch = color.match(/color\(srgb.*\/ ([\d.]+)\)/);
+                if (srgbMatch) return parseFloat(srgbMatch[1]);
 
-            // Check elements at the center of the canvas
-            const elements = document.elementsFromPoint(x, y);
+                // Support rgba(..., alpha)
+                const rgbaMatch = color.match(/rgba?\(.*,\s*([\d.]+)\)/);
+                if (rgbaMatch) return parseFloat(rgbaMatch[1]);
 
-            // We expect #animation-canvas to be there, and potentially #current-task-display-base
-            // #current-task-display-base should have pointer-events: none (which makes it invisible to elementsFromPoint)
-            // or be transparent.
+                if (color === 'transparent' || color === 'rgba(0, 0, 0, 0)') return 0;
+                return 1;
+            };
 
-            const topElement = elements[0];
-            if (!topElement) return false;
+            const display = document.getElementById('current-task-display');
+            const base = document.getElementById('current-task-display-base');
 
-            // If the top element is not the canvas or a known transparent/pass-through container,
-            // check its opacity and visibility
-            if (topElement.id !== 'animation-canvas' && topElement.id !== 'current-task-display') {
-                const style = window.getComputedStyle(topElement);
-                if (parseFloat(style.opacity) > 0.9 && style.backgroundColor !== 'transparent' && style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-                    return true; // Likely obscuring
-                }
-            }
-            return false;
+            const displayStyle = window.getComputedStyle(display);
+            const baseStyle = window.getComputedStyle(base);
+
+            return {
+                displayBg: displayStyle.backgroundColor,
+                displayAlpha: getAlpha(displayStyle.backgroundColor),
+                baseBg: baseStyle.backgroundColor,
+                baseAlpha: getAlpha(baseStyle.backgroundColor)
+            };
         });
 
-        expect(isObscured).toBe(false);
+        console.log('Transparency Info:', transparencyInfo);
+
+        // We expect background-colors to be either transparent (alpha 0)
+        // or very high transparency (alpha < 0.1 for the tint)
+        expect(transparencyInfo.displayAlpha).toBeLessThan(0.1);
+        expect(transparencyInfo.baseAlpha).toBeLessThan(0.1);
 
         // Take a screenshot for visual confirmation
         await page.screenshot({ path: 'tests/screenshots/test-pattern-verification.png' });
