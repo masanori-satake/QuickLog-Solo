@@ -361,5 +361,59 @@ describe('Logic Module', () => {
             expect(report).toContain('(30m)');
             expect(report).toContain('\n  (30m)');
         });
+
+        test('handles invalid adjust values gracefully', () => {
+            const logs = [
+                { startTime: 1000000, endTime: 1100000, category: 'Task' }
+            ];
+            // adjust: 'none' -> 0 ms interval
+            const reportNone = generateReport(logs, { ...defaultOptions, adjust: 'none' });
+            expect(reportNone).toBeDefined();
+
+            // adjust: '0' -> 0 ms interval
+            const reportZero = generateReport(logs, { ...defaultOptions, adjust: '0' });
+            expect(reportZero).toBeDefined();
+
+            // adjust: invalid string -> 0 ms interval
+            const reportInvalid = generateReport(logs, { ...defaultOptions, adjust: 'abc' });
+            expect(reportInvalid).toBeDefined();
+        });
+
+        test('handles very large adjust values', () => {
+            const logs = [
+                { startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T11:00:00').getTime(), category: 'Task 1' },
+                { startTime: new Date('2026-03-03T11:00:00').getTime(), endTime: new Date('2026-03-03T12:00:00').getTime(), category: 'Task 2' }
+            ];
+            // Adjust to 1440m (24h). Since first and last are preserved, it shouldn't crash.
+            const report = generateReport(logs, { ...defaultOptions, adjust: '1440', endTime: 'show' });
+            expect(report).toBeDefined();
+        });
+
+        test('returns empty string for unknown format', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'unknown' });
+            expect(report).toBe('');
+        });
+    });
+
+    describe('calculateTagAggregation Edge Cases', () => {
+        test('handles empty logs', () => {
+            expect(calculateTagAggregation([], 'None')).toEqual({});
+        });
+
+        test('handles logs with only ignored categories', () => {
+            const logs = [
+                { startTime: 0, endTime: 1000, category: SYSTEM_CATEGORY_IDLE },
+                { startTime: 1000, endTime: 2000, category: 'Work', isManualStop: true }
+            ];
+            expect(calculateTagAggregation(logs, 'None')).toEqual({});
+        });
+
+        test('handles zero or negative duration logs', () => {
+            const logs = [
+                { startTime: 1000, endTime: 1000, category: 'Zero', tags: 'A' },
+                { startTime: 2000, endTime: 1000, category: 'Negative', tags: 'B' }
+            ];
+            expect(calculateTagAggregation(logs, 'None')).toEqual({});
+        });
     });
 });

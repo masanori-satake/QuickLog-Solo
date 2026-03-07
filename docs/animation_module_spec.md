@@ -246,9 +246,9 @@ export default class ShootingStar extends AnimationBase {
         }));
     }
 
-    draw(ctx, { width }) {
+    draw(ctx) {
         return this.stars.map(star => {
-            star.x = (star.x + star.speed) % width;
+            star.x = (star.x + star.speed) % this.width;
             return { x: star.x, y: star.y, size: 2 };
         });
     }

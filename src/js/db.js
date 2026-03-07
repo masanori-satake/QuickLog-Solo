@@ -1,4 +1,4 @@
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPassed } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPassed, isValidColor } from './utils.js';
 import { t, setLanguage } from './i18n.js';
 
 export let DB_NAME = 'QuickLogSoloDB';
@@ -99,9 +99,10 @@ export function dbImportCategories(items, importMode) {
                         const existing = currentCategories.find(c => c.name === item.name);
                         if (existing) continue;
                     }
+                    const color = (item.color && isValidColor(item.color)) ? item.color : 'primary';
                     store.add({
                         name: item.name,
-                        color: item.color || 'primary',
+                        color: color,
                         order: ++maxOrder,
                         tags: item.tags || '',
                         animation: item.animation || 'default'

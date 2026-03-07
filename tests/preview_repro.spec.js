@@ -13,7 +13,6 @@ test('Preview animations on landing page', async ({ page }) => {
 
     // Wait for modal and iframe
     await page.waitForSelector('.preview-iframe');
-    const frameElement = await page.locator('.preview-iframe');
     const frame = page.frame({ url: /app.html/ });
 
     if (!frame) {
