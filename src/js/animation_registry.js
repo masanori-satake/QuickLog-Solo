@@ -20,6 +20,7 @@ import Ripple from './animation/ripple.js';
 import SandClock from './animation/sand_clock.js';
 import Smoke from './animation/smoke.js';
 import Spectrum from './animation/spectrum.js';
+import TestPattern from './animation/test_pattern.js';
 import TetrisBuilding from './animation/tetris_building.js';
 
 export const animations = [
@@ -42,5 +43,6 @@ export const animations = [
     { id: 'sand_clock', class: SandClock, metadata: SandClock.metadata },
     { id: 'smoke', class: Smoke, metadata: Smoke.metadata },
     { id: 'spectrum', class: Spectrum, metadata: Spectrum.metadata },
+    { id: 'test_pattern', class: TestPattern, metadata: TestPattern.metadata, devOnly: true },
     { id: 'tetris_building', class: TetrisBuilding, metadata: TetrisBuilding.metadata }
 ];

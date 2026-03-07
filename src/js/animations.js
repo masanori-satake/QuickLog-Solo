@@ -24,12 +24,16 @@ export class AnimationEngine {
         this.initialized = false;
         this.requestRawBitmap = false;
         this.onRawBitmapDraw = null;
+        this.onStop = null;
+        this.ignoreExclusion = false;
 
-        this.perfThreshold = 100; // ms
+        this.perfThreshold = 200; // ms
         this.perfViolations = 0;
-        this.maxViolations = 10;
+        this.maxViolations = 20;
         this.isMonitoring = false;
         this.isDrawPending = false;
+        this.warmupFrames = 0;
+        this.WARMUP_LIMIT = 180; // 3 seconds @ 60fps
 
         this._initListeners();
     }
@@ -116,11 +120,16 @@ export class AnimationEngine {
         this.color = color;
         this.initialized = false;
         this.perfViolations = 0;
+        this.warmupFrames = 0;
+
+        // Ensure we have correct dimensions before starting
+        this.resize();
         this.isMonitoring = true;
         this.isDrawPending = false;
 
         const animInstance = new entry.class();
         this.config = animInstance.config || { mode: 'canvas', usePseudoSpace: false };
+        this.ignoreExclusion = !!entry.class.metadata?.ignoreExclusion;
 
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
@@ -143,13 +152,23 @@ export class AnimationEngine {
             const now = performance.now();
             const latency = now - this.lastDrawRequestTime;
 
+            // Count every frame towards warmup
+            if (this.warmupFrames < this.WARMUP_LIMIT) {
+                this.warmupFrames++;
+            }
+
             if (latency > this.perfThreshold) {
-                this.perfViolations++;
-                if (this.perfViolations > this.maxViolations) {
-                    console.error('Animation performance too low. Stopping.');
-                    this.stop();
-                    // Alert user?
-                    return;
+                // Only count violations after the grace period (warmup)
+                if (this.warmupFrames >= this.WARMUP_LIMIT) {
+                    this.perfViolations++;
+                    if (this.perfViolations > this.maxViolations) {
+                        console.warn(`QuickLog-Solo: Animation performance below threshold (${this.perfThreshold}ms, latency: ${Math.round(latency)}ms). Auto-stopping to save resources.`);
+                        this.stop();
+                        if (typeof this.onStop === 'function') {
+                            this.onStop();
+                        }
+                        return;
+                    }
                 }
             } else {
                 this.perfViolations = Math.max(0, this.perfViolations - 1);
@@ -162,6 +181,9 @@ export class AnimationEngine {
         } else if (type === 'error') {
             console.error('Animation Worker Error:', payload);
             this.stop();
+            if (typeof this.onStop === 'function') {
+                this.onStop();
+            }
         }
     }
 
@@ -224,8 +246,8 @@ export class AnimationEngine {
             elapsedMs: elapsed,
             progress,
             step: Math.floor(progress * 240),
-            exclusionAreas: this._getVirtualExclusionAreas(),
-            realExclusionAreas: this.exclusionAreas,
+            exclusionAreas: this.ignoreExclusion ? [] : this._getVirtualExclusionAreas(),
+            realExclusionAreas: this.ignoreExclusion ? [] : this.exclusionAreas,
             requestRawBitmap: this.requestRawBitmap
         };
 

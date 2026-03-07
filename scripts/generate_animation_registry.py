@@ -1,9 +1,10 @@
 import os
 import re
 import sys
+import argparse
 from animation_utils import validate_metadata_text, extract_metadata_block
 
-def generate_registry():
+def generate_registry(exclude_dev=False):
     animation_dir = 'src/js/animation'
     registry_file = 'src/js/animation_registry.js'
 
@@ -22,6 +23,10 @@ def generate_registry():
         filepath = os.path.join(animation_dir, filename)
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
+
+        is_dev_only = 'devOnly: true' in content
+        if is_dev_only and exclude_dev:
+            continue
 
         metadata_text = extract_metadata_block(content)
         if not metadata_text:
@@ -44,7 +49,11 @@ def generate_registry():
             alias = class_name
 
             imports.append(f"import {alias} from './animation/{filename}';")
-            entries.append(f"    {{ id: '{module_id}', class: {alias}, metadata: {alias}.metadata }}")
+            entry = f"    {{ id: '{module_id}', class: {alias}, metadata: {alias}.metadata"
+            if is_dev_only:
+                entry += ", devOnly: true"
+            entry += " }"
+            entries.append(entry)
 
     if has_error:
         print("Registry generation failed due to metadata validation errors.")
@@ -63,7 +72,10 @@ export const animations = [
     with open(registry_file, 'w', encoding='utf-8') as f:
         f.write(registry_content)
 
-    print(f"Generated {registry_file} with {len(entries)} animations.")
+    print(f"Generated {registry_file} with {len(entries)} animations (exclude_dev={exclude_dev}).")
 
 if __name__ == "__main__":
-    generate_registry()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--exclude-dev', action='store_true', help='Exclude development-only animations')
+    args = parser.parse_args()
+    generate_registry(exclude_dev=args.exclude_dev)

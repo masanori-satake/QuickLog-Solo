@@ -31,6 +31,10 @@ def verify_animations():
         with open(filepath, 'r', encoding='utf-8') as f:
             raw_content = f.read()
 
+            if 'devOnly: true' in raw_content:
+                print(f"Skipping verification for development-only module: {filename}")
+                continue
+
             # 1. Extract and verify metadata block
             metadata_text = extract_metadata_block(raw_content)
             if not metadata_text:
