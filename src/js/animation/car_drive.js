@@ -25,7 +25,7 @@ export default class CarDrive extends AnimationBase {
             es: "Juego de conducción pseudo-3D al estilo de los 90. El texto de la interfaz y los árboles aparecen como objetos al borde de la carretera.",
             fr: "Jeu de conduite pseudo-3D de style années 90. El texte de l'interface et les arbres apparaissent comme des objets au bord de la route.",
             pt: "Jogo de condução pseudo-3D no estilo dos anos 90. O texto da interface e as árvores aparecem como objetos à beira da estrada.",
-            ko: "90년대 스타일의 의사 3D 드라이빙 게임입니다. UI 텍스트와 나무가 도로변의 오브ジェクト로 나타납니다.",
+            ko: "90년대 스타일의 의사 3D 드라이빙 게임입니다. UI 텍스트와 나무가 도로변의 오브젝트로 나타납니다.",
             zh: "90年代风格的伪3D驾驶游戏。UI文本和树木显示为路边物体。"
         },
         author: "QuickLog-Solo"
