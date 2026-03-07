@@ -31,6 +31,8 @@ export class AnimationEngine {
         this.maxViolations = 20;
         this.isMonitoring = false;
         this.isDrawPending = false;
+        this.warmupFrames = 0;
+        this.WARMUP_LIMIT = 60; // 1 second @ 60fps
 
         this._initListeners();
     }
@@ -117,6 +119,7 @@ export class AnimationEngine {
         this.color = color;
         this.initialized = false;
         this.perfViolations = 0;
+        this.warmupFrames = 0;
         this.isMonitoring = true;
         this.isDrawPending = false;
 
@@ -145,16 +148,22 @@ export class AnimationEngine {
             const latency = now - this.lastDrawRequestTime;
 
             if (latency > this.perfThreshold) {
-                this.perfViolations++;
-                if (this.perfViolations > this.maxViolations) {
-                    console.warn(`QuickLog-Solo: Animation performance below threshold (${this.perfThreshold}ms). Auto-stopping to save resources.`);
-                    this.stop();
-                    if (typeof this.onStop === 'function') {
-                        this.onStop();
+                // Ignore performance hits during warmup (e.g., worker loading/compilation)
+                if (this.warmupFrames < this.WARMUP_LIMIT) {
+                    this.warmupFrames++;
+                } else {
+                    this.perfViolations++;
+                    if (this.perfViolations > this.maxViolations) {
+                        console.warn(`QuickLog-Solo: Animation performance below threshold (${this.perfThreshold}ms, latency: ${Math.round(latency)}ms). Auto-stopping to save resources.`);
+                        this.stop();
+                        if (typeof this.onStop === 'function') {
+                            this.onStop();
+                        }
+                        return;
                     }
-                    return;
                 }
             } else {
+                if (this.warmupFrames < this.WARMUP_LIMIT) this.warmupFrames++;
                 this.perfViolations = Math.max(0, this.perfViolations - 1);
             }
 
