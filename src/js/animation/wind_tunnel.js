@@ -42,9 +42,10 @@ export default class WindTunnel extends AnimationBase {
     // --- シミュレーション定数（マジックナンバーを避ける） ---
 
     BASE_WIND_SPEED = 1.5;      // Horizontal speed of the air
+    MIN_WIND_SPEED = 0.8;       // Minimum horizontal speed to prevent accumulation
     EMISSION_RATE = 0.15;       // Probability of emitting a particle per frame per injector
-    REPULSION_DISTANCE = 20;    // How far away particles start to steer
-    REPULSION_FORCE = 0.4;      // Strength of the steering away from obstacles
+    REPULSION_DISTANCE = 30;    // How far away particles start to steer
+    REPULSION_FORCE = 0.6;      // Strength of the steering away from obstacles
     VORTEX_INTENSITY = 0.3;     // Strength of the oscillation behind obstacles
     MAX_PARTICLES = 400;        // Performance ceiling
     PARTICLE_LIFE_DECAY = 0.002; // How fast particles fade out
@@ -142,11 +143,6 @@ export default class WindTunnel extends AnimationBase {
                         // Increase push force as it gets closer to the front/sides
                         const proximity = 1.0 - Math.min(Math.abs(distToCenterY) / (area.height / 2 + this.REPULSION_DISTANCE), 1.0);
                         ay += pushDir * this.REPULSION_FORCE * proximity;
-
-                        // Slow down slightly when approaching from the front
-                        if (p.x < area.x) {
-                            ax -= 0.05;
-                        }
                     }
 
                     // 2. Karman Vortex (Oscillation in the wake behind the obstacle)
@@ -171,6 +167,11 @@ export default class WindTunnel extends AnimationBase {
             // Apply friction/drag to keep things stable
             p.vx *= 0.99;
             p.vy *= 0.98;
+
+            // Prevent stalling: ensure a minimum rightward velocity
+            if (p.vx < this.MIN_WIND_SPEED) {
+                p.vx = this.MIN_WIND_SPEED;
+            }
 
             // Update position
             p.x += p.vx * dt;
