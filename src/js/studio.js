@@ -232,7 +232,8 @@ function populateSamples() {
         const option = document.createElement('option');
         option.value = anim.id;
         const name = typeof anim.metadata.name === 'object' ? anim.metadata.name[currentLang] || anim.metadata.name.en : anim.metadata.name;
-        option.textContent = name;
+        const glyph = anim.devOnly ? '\u3000 ' : '📦 ';
+        option.textContent = glyph + name;
         sampleSelect.appendChild(option);
     });
 }
