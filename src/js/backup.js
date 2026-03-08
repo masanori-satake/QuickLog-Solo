@@ -7,9 +7,10 @@ const FILE_NAME_SETTINGS = 'settings.ndjson';
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 
 export const BACKUP_STATUS = {
-    IDLE: 'idle',
+    DISABLED: 'disabled',
     SYNCING: 'syncing',
     SUCCESS: 'success',
+    DIRTY: 'dirty',
     FAILED: 'failed'
 };
 
@@ -21,10 +22,13 @@ class BackupManager {
             interval: '5m', // 'immediate', '5m', '1h'
             lastBackupTime: null
         };
-        this.status = BACKUP_STATUS.IDLE;
+        this.status = BACKUP_STATUS.DISABLED;
         this.onStatusChange = null;
         this.backupTimer = null;
         this.isSyncing = false;
+        this.isDirty = false;
+        this.dirtyStartTime = 0;
+        this._dirtyCheckInterval = null;
     }
 
     async init() {
@@ -36,11 +40,33 @@ class BackupManager {
         if (this.config.enabled) {
             await this.tryRestoreHandle();
             if (this.directoryHandle) {
+                this.status = BACKUP_STATUS.SUCCESS;
                 this.scheduleBackup();
             } else {
                 this.status = BACKUP_STATUS.FAILED;
             }
+        } else {
+            this.status = BACKUP_STATUS.DISABLED;
         }
+
+        this._startDirtyMonitor();
+    }
+
+    _startDirtyMonitor() {
+        if (this._dirtyCheckInterval) clearInterval(this._dirtyCheckInterval);
+        this._dirtyCheckInterval = setInterval(() => {
+            if (this.isDirty && !this.isSyncing) {
+                const now = Date.now();
+                // Ensure dirty state is visible for at least 2 seconds
+                if (now - this.dirtyStartTime >= 2000) {
+                    // Update status to dirty if it was SUCCESS
+                    if (this.status === BACKUP_STATUS.SUCCESS) {
+                        this.status = BACKUP_STATUS.DIRTY;
+                        if (this.onStatusChange) this.onStatusChange(this.status);
+                    }
+                }
+            }
+        }, 500);
     }
 
     async tryRestoreHandle() {
@@ -62,7 +88,11 @@ class BackupManager {
     async setDirectory(handle) {
         this.directoryHandle = handle;
         await dbPut(STORE_SETTINGS, { key: 'backupDirectoryHandle', value: handle });
-        this.status = BACKUP_STATUS.IDLE;
+        if (this.config.enabled) {
+            this.status = BACKUP_STATUS.SUCCESS;
+        } else {
+            this.status = BACKUP_STATUS.DISABLED;
+        }
         if (this.onStatusChange) this.onStatusChange(this.status);
     }
 
@@ -71,15 +101,20 @@ class BackupManager {
         await this.saveConfig();
         if (enabled) {
             if (this.directoryHandle) {
+                this.status = BACKUP_STATUS.SUCCESS;
                 await this.sync();
                 this.scheduleBackup();
+            } else {
+                this.status = BACKUP_STATUS.FAILED;
             }
         } else {
+            this.status = BACKUP_STATUS.DISABLED;
             if (this.backupTimer) {
                 clearTimeout(this.backupTimer);
                 this.backupTimer = null;
             }
         }
+        if (this.onStatusChange) this.onStatusChange(this.status);
     }
 
     async setInterval(interval) {
@@ -123,6 +158,7 @@ class BackupManager {
             this.config.lastBackupTime = Date.now();
             await this.saveConfig();
             this.status = BACKUP_STATUS.SUCCESS;
+            this.isDirty = false;
         } catch (e) {
             console.error('QuickLog-Solo: Backup failed', e);
             this.status = BACKUP_STATUS.FAILED;
@@ -265,10 +301,23 @@ class BackupManager {
     }
 
     requestImmediateBackup() {
-        if (this.config.enabled && this.config.interval === 'immediate') {
-            // Debounce immediate backup
-            if (this._immediateTimer) clearTimeout(this._immediateTimer);
-            this._immediateTimer = setTimeout(() => this.sync(), 2000);
+        if (this.config.enabled) {
+            if (!this.isDirty) {
+                this.isDirty = true;
+                this.dirtyStartTime = Date.now();
+            }
+
+            if (this.config.interval === 'immediate') {
+                // Debounce immediate backup
+                if (this._immediateTimer) clearTimeout(this._immediateTimer);
+                this._immediateTimer = setTimeout(() => this.sync(), 2000);
+            }
+        }
+    }
+
+    async flush() {
+        if (this.config.enabled && this.directoryHandle) {
+            await this.sync();
         }
     }
 }

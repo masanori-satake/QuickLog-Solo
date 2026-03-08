@@ -115,6 +115,7 @@ export const messages = {
         'backup-status-label': '現在のステータス',
         'backup-status-synced': '同期済み',
         'backup-status-syncing': '同期中',
+        'backup-status-dirty': '未保存の変更あり',
         'backup-status-failed': '同期失敗',
         'backup-last-time': '最終同期時刻',
         'backup-directory': '保存先',
@@ -124,6 +125,8 @@ export const messages = {
         'backup-description': 'ブラウザのキャッシュクリアに備えて、指定したローカルフォルダに日付ごとのファイルを自動保存します。アプリの「40日以前の記録を削除する」ポリシーはここでも適用されます。',
         'backup-permission-request': 'ブラウザ再起動後のバックアップを継続するには、フォルダへのアクセスを再度許可する必要があります。',
         'btn-grant-permission': 'アクセスを許可する',
+        'btn-sync-now': '今すぐ同期',
+        'tooltip-backup-status': 'バックアップ状態',
         'toast-backup-enabled': 'バックアップを有効にしました。履歴を同期しています...',
         'toast-backup-disabled': 'バックアップを無効にしました。',
 
@@ -376,6 +379,7 @@ export const messages = {
         'backup-status-label': 'Current Status',
         'backup-status-synced': 'Synchronized',
         'backup-status-syncing': 'Synchronizing',
+        'backup-status-dirty': 'Unsaved Changes',
         'backup-status-failed': 'Sync Failed',
         'backup-last-time': 'Last Sync Time',
         'backup-directory': 'Directory',
@@ -385,6 +389,8 @@ export const messages = {
         'backup-description': 'Automatically saves daily files to a local folder to protect against browser cache clearing. The "delete records older than 40 days" policy also applies here.',
         'backup-permission-request': 'To continue backup after a browser restart, you need to re-grant access to the folder.',
         'btn-grant-permission': 'Grant Access',
+        'btn-sync-now': 'Sync Now',
+        'tooltip-backup-status': 'Backup Status',
         'toast-backup-enabled': 'Backup enabled. Syncing history...',
         'toast-backup-disabled': 'Backup disabled.',
 

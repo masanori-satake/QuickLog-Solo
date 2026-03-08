@@ -17,6 +17,7 @@
 <body class="theme-light">
     <div id="app">
         <header>
+            <div id="backup-status-circle" class="status-circle" data-i18n-title="tooltip-backup-status"></div>
             <div id="header-btns">
                 <button id="copy-report-btn" data-i18n-title="tooltip-copy-report"><span class="material-symbols-outlined">content_paste</span></button>
                 <button id="copy-aggregation-btn" data-i18n-title="tooltip-copy-aggregation"><span class="material-symbols-outlined">functions</span></button>
@@ -303,12 +304,12 @@
                 </div>
 
                 <div id="backup-tab" class="tab-content hidden">
-                    <div class="setting-item">
+                    <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center;">
                         <label data-i18n="setting-backup-enable">ローカルバックアップ</label>
-                        <select id="backup-enable-select">
-                            <option value="false" data-i18n="setting-disabled">無効 (OFF)</option>
-                            <option value="true" data-i18n="setting-enabled">有効 (ON)</option>
-                        </select>
+                        <label class="switch">
+                            <input type="checkbox" id="backup-enable-toggle">
+                            <span class="slider round"></span>
+                        </label>
                     </div>
 
                     <div id="backup-options-container" class="disabled-group">
@@ -338,6 +339,12 @@
                             <div class="status-row">
                                 <span data-i18n="backup-status-label">現在のステータス</span>
                                 <span id="backup-status-indicator" class="status-badge idle">-</span>
+                            </div>
+                            <div class="status-row" style="margin-top: 12px;">
+                                <button id="backup-sync-now-btn" class="primary-btn" style="padding: 6px 12px; font-size: 0.75rem;">
+                                    <span class="material-symbols-outlined" style="font-size: 1rem;">sync</span>
+                                    <span data-i18n="btn-sync-now">今すぐ同期</span>
+                                </button>
                             </div>
                             <div class="status-row">
                                 <span data-i18n="backup-last-time">最終同期時刻</span>

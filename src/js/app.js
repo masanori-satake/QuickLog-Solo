@@ -46,7 +46,9 @@ const ID_END_BTN = 'end-btn';
 const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
 const ID_TOAST = 'toast';
 
-const ID_BACKUP_ENABLE_SELECT = 'backup-enable-select';
+const ID_BACKUP_STATUS_CIRCLE = 'backup-status-circle';
+const ID_BACKUP_ENABLE_TOGGLE = 'backup-enable-toggle';
+const ID_BACKUP_SYNC_NOW_BTN = 'backup-sync-now-btn';
 const ID_BACKUP_INTERVAL_SELECT = 'backup-interval-select';
 const ID_BACKUP_SELECT_DIR_BTN = 'backup-select-dir-btn';
 const ID_BACKUP_GRANT_PERMISSION_BTN = 'backup-grant-permission-btn';
@@ -1111,8 +1113,8 @@ function getColorCode(color) {
 
 function updateBackupUI() {
     const config = backupManager.config;
-    const enableSelect = getEl(ID_BACKUP_ENABLE_SELECT);
-    if (enableSelect) enableSelect.value = config.enabled.toString();
+    const enableToggle = getEl(ID_BACKUP_ENABLE_TOGGLE);
+    if (enableToggle) enableToggle.checked = config.enabled;
 
     const intervalSelect = getEl(ID_BACKUP_INTERVAL_SELECT);
     if (intervalSelect) intervalSelect.value = config.interval;
@@ -1141,13 +1143,32 @@ function updateBackupUI() {
     }
 
     const indicator = getEl(ID_BACKUP_STATUS_INDICATOR);
+    const circle = getEl(ID_BACKUP_STATUS_CIRCLE);
+
     if (indicator) {
         indicator.className = `status-badge ${backupManager.status}`;
         switch (backupManager.status) {
-            case BACKUP_STATUS.IDLE: indicator.textContent = '-'; break;
+            case BACKUP_STATUS.DISABLED: indicator.textContent = '-'; break;
             case BACKUP_STATUS.SYNCING: indicator.textContent = t('backup-status-syncing'); break;
             case BACKUP_STATUS.SUCCESS: indicator.textContent = t('backup-status-synced'); break;
+            case BACKUP_STATUS.DIRTY: indicator.textContent = t('backup-status-dirty') || 'Unsaved Changes'; break;
             case BACKUP_STATUS.FAILED: indicator.textContent = t('backup-status-failed'); break;
+        }
+    }
+
+    if (circle) {
+        circle.className = 'status-circle';
+        switch (backupManager.status) {
+            case BACKUP_STATUS.SYNCING:
+            case BACKUP_STATUS.SUCCESS:
+                circle.classList.add('active');
+                break;
+            case BACKUP_STATUS.DIRTY:
+                circle.classList.add('dirty');
+                break;
+            case BACKUP_STATUS.FAILED:
+                circle.classList.add('error');
+                break;
         }
     }
 
@@ -1573,16 +1594,29 @@ function setupEventListeners() {
         };
     });
 
+    // Backup UI listeners
+    getEl(ID_BACKUP_STATUS_CIRCLE)?.addEventListener('click', async () => {
+        if (backupManager.status === BACKUP_STATUS.DIRTY) {
+            await backupManager.flush();
+            updateBackupUI();
+        }
+    });
+
+    getEl(ID_BACKUP_SYNC_NOW_BTN)?.addEventListener('click', async () => {
+        await backupManager.flush();
+        updateBackupUI();
+    });
+
     // Backup tab listeners
-    getEl(ID_BACKUP_ENABLE_SELECT)?.addEventListener('change', async (e) => {
-        const enabled = e.target.value === 'true';
+    getEl(ID_BACKUP_ENABLE_TOGGLE)?.addEventListener('change', async (e) => {
+        const enabled = e.target.checked;
         if (enabled && !backupManager.directoryHandle) {
             try {
                 const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
                 await backupManager.setDirectory(handle);
             } catch (err) {
                 console.warn('Directory selection cancelled or failed', err);
-                e.target.value = 'false';
+                e.target.checked = false;
                 return;
             }
         }
@@ -1871,6 +1905,11 @@ function setupEventListeners() {
             location.reload();
         });
     });
+}
+
+// Expose for testing
+if (window.location.hostname === 'localhost') {
+    window.backupManager = backupManager;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
