@@ -28,7 +28,7 @@ export default class TestPattern extends AnimationBase {
         rewindable: true
     };
 
-    config = { mode: 'sprite', usePseudoSpace: false, ignoreExclusion: true };
+    config = { mode: 'sprite', exclusionStrategy: 'freedom' };
 
     setup(width, height) {
         this.dots = [];

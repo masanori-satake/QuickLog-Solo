@@ -32,7 +32,7 @@ export default class RightToLeft extends AnimationBase {
         rewindable: true
     };
 
-    config = { mode: 'sprite', usePseudoSpace: true };
+    config = { mode: 'sprite', exclusionStrategy: 'jump' };
 
     /**
      * Initial setup and resizing

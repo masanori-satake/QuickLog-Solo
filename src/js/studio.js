@@ -63,9 +63,8 @@ const metaName = document.getElementById('meta-name');
 const metaAuthor = document.getElementById('meta-author');
 const metaDesc = document.getElementById('meta-desc');
 const configMode = document.getElementById('config-mode');
-const configPseudo = document.getElementById('config-pseudo');
+const configExclusionStrategy = document.getElementById('config-exclusion-strategy');
 const configRewindable = document.getElementById('config-rewindable');
-const configIgnoreExclusion = document.getElementById('config-ignore-exclusion');
 
 const canvas = document.getElementById('animation-canvas');
 const exclusionSim = document.getElementById('exclusion-simulator');
@@ -275,15 +274,14 @@ function setupEventListeners() {
         markDirty();
         updateCanvasControlVisibility();
     });
-    configPseudo.addEventListener('change', markDirty);
+    configExclusionStrategy.addEventListener('change', () => {
+        markDirty();
+        studioIgnoreExclusion = (configExclusionStrategy.value === 'freedom');
+        updateExclusionAreas();
+    });
     configRewindable.addEventListener('change', () => {
         markDirty();
         updateTapeControlState();
-    });
-    configIgnoreExclusion.addEventListener('change', () => {
-        markDirty();
-        studioIgnoreExclusion = configIgnoreExclusion.checked;
-        updateExclusionAreas();
     });
 
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
@@ -443,6 +441,7 @@ function setupEventListeners() {
         searchBar.classList.add('hidden');
     });
 
+
     btnReplace.addEventListener('click', () => handleReplace(false));
     btnReplaceAll.addEventListener('click', () => handleReplace(true));
 
@@ -503,7 +502,7 @@ function resetStudioUI(full = true) {
 
     // 2. Configuration
     configRewindable.checked = false;
-    configIgnoreExclusion.checked = false;
+    configExclusionStrategy.value = 'mask';
     studioIgnoreExclusion = false;
     updateTapeControlState();
     updateCanvasControlVisibility();
@@ -593,10 +592,12 @@ function parseAndPopulate(code, metadata) {
     // Extract config & metadata
     const modeMatch = code.match(/mode:\s*['"](canvas|matrix|sprite)['"]/);
     configMode.value = modeMatch ? modeMatch[1] : 'canvas';
-    configPseudo.checked = /usePseudoSpace:\s*true/.test(code);
+
+    const strategyMatch = code.match(/exclusionStrategy:\s*['"](mask|jump|freedom)['"]/);
+    configExclusionStrategy.value = strategyMatch ? strategyMatch[1] : 'mask';
+
     configRewindable.checked = /rewindable:\s*true/.test(code);
-    configIgnoreExclusion.checked = /ignoreExclusion:\s*true/.test(code);
-    studioIgnoreExclusion = configIgnoreExclusion.checked;
+    studioIgnoreExclusion = (configExclusionStrategy.value === 'freedom');
     updateTapeControlState();
     updateExclusionAreas();
 
@@ -624,6 +625,10 @@ function parseAndPopulate(code, metadata) {
         inputDraw.value = inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*\}\s*\)/, 'draw(ctx, params)');
     }
 
+    // Cleanup legacy config properties
+    classContent = classContent.replace(/usePseudoSpace:\s*(true|false),?\s*/g, '');
+    classContent = classContent.replace(/ignoreExclusion:\s*(true|false),?\s*/g, '');
+
     const onClick = extractMethod(classContent, 'onClick');
     const onMouseMove = extractMethod(classContent, 'onMouseMove');
     inputInteraction.value = (onClick ? onClick + '\n\n' : '') + (onMouseMove ? onMouseMove : '');
@@ -633,18 +638,16 @@ function parseAndPopulate(code, metadata) {
     if (!inputInteraction.value) inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
 
     // Remove extracted parts from classContent to get variables/other members
+    // We do this aggressively to avoid duplicate declarations in the exported file
     let vars = classContent;
     const toRemove = ['metadata', 'config', 'setup', 'draw', 'onClick', 'onMouseMove'];
 
-    let ranges = [];
     toRemove.forEach(name => {
-        const r = findRange(vars, name);
-        if (r) ranges.push(r);
-    });
-
-    ranges.sort((a, b) => b.start - a.start);
-    ranges.forEach(r => {
-        vars = vars.substring(0, r.start) + vars.substring(r.end);
+        let r;
+        // Use a while loop to remove all occurrences of the property/method name
+        while ((r = findRange(vars, name)) !== null) {
+            vars = vars.substring(0, r.start) + vars.substring(r.end);
+        }
     });
 
     // Clean up empty semicolons and multiple newlines left behind
@@ -707,7 +710,12 @@ function findRange(text, namePattern) {
                 if (parenCount === 0) {
                     braceCount--;
                     if (started && braceCount === 0) {
-                        return { start: actualStart, end: i + 1 };
+                        // Look ahead for optional semicolon
+                        let end = i + 1;
+                        while (end < text.length && (text[end] === ';' || text[end] === ' ' || text[end] === '\t')) {
+                            end++;
+                        }
+                        return { start: actualStart, end };
                     }
                 }
             } else if (char === ';' && braceCount === 0 && parenCount === 0) {
@@ -744,8 +752,7 @@ function startTest() {
     // Configure engine for testing
     engine.config = {
         mode: configMode.value,
-        usePseudoSpace: configPseudo.checked,
-        ignoreExclusion: configIgnoreExclusion.checked
+        exclusionStrategy: configExclusionStrategy.value
     };
 
     updateExclusionAreas();
@@ -919,7 +926,7 @@ function _requestStudioDraw(elapsed) {
 
     const progress = (elapsed % engine.cycleMs) / engine.cycleMs;
     let drawWidth = engine.canvas.width;
-    if (engine.config.usePseudoSpace) {
+    if (engine.config.exclusionStrategy === 'jump') {
         drawWidth = engine._getPseudoInfo().totalWidth;
     }
 
@@ -930,8 +937,8 @@ function _requestStudioDraw(elapsed) {
         elapsedMs: elapsed,
         progress,
         step: Math.floor(progress * 240),
-        exclusionAreas: engine.ignoreExclusion ? [] : engine._getVirtualExclusionAreas(),
-        realExclusionAreas: engine.ignoreExclusion ? [] : engine.exclusionAreas,
+        exclusionAreas: engine.config.exclusionStrategy === 'jump' ? [] : engine._getVirtualExclusionAreas(),
+        realExclusionAreas: engine.exclusionAreas,
         requestRawBitmap: engine.requestRawBitmap
     };
 
@@ -951,7 +958,7 @@ function updateTapeControlState() {
 }
 
 function setInputDisabled(disabled) {
-    [metaName, metaAuthor, metaDesc, configMode, configPseudo, configRewindable, inputVars, inputSetup, inputDraw, inputInteraction, sampleSelect].forEach(el => {
+    [metaName, metaAuthor, metaDesc, configMode, configExclusionStrategy, configRewindable, inputVars, inputSetup, inputDraw, inputInteraction, sampleSelect].forEach(el => {
         el.disabled = disabled;
     });
 }
@@ -984,8 +991,7 @@ export default class CustomAnimation extends AnimationBase {
 
     config = {
         mode: '${configMode.value}',
-        usePseudoSpace: ${configPseudo.checked},
-        ignoreExclusion: ${configIgnoreExclusion.checked}
+        exclusionStrategy: '${configExclusionStrategy.value}'
     };
 
     ${indentCode(inputVars.value, 4)}
@@ -1029,10 +1035,9 @@ function handleUpload(e) {
                 loadCurrentMetaData();
                 metaAuthor.value = data.author || '';
                 configMode.value = data.mode || 'canvas';
-                configPseudo.checked = !!data.usePseudoSpace;
+                configExclusionStrategy.value = data.exclusionStrategy || 'mask';
                 configRewindable.checked = !!data.rewindable;
-                configIgnoreExclusion.checked = !!data.ignoreExclusion;
-                studioIgnoreExclusion = configIgnoreExclusion.checked;
+                studioIgnoreExclusion = (configExclusionStrategy.value === 'freedom');
                 updateTapeControlState();
                 inputVars.value = data.vars || '';
                 inputSetup.value = data.setup || '';
@@ -1380,6 +1385,7 @@ function updateAllHighlight() {
 function updateAllGutter() {
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateGutter(ta));
 }
+
 
 function handleReplace(all) {
     const activeTab = document.querySelector('.code-tab.active');

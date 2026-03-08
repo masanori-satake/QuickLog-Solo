@@ -20,12 +20,11 @@ export class AnimationEngine {
         this.cycleMs = 120000; // 2 minutes cycle
         this.exclusionAreas = [];
         this.activeAnimationId = null;
-        this.config = { usePseudoSpace: false };
+        this.config = { exclusionStrategy: 'mask' };
         this.initialized = false;
         this.requestRawBitmap = false;
         this.onRawBitmapDraw = null;
         this.onStop = null;
-        this.ignoreExclusion = false;
 
         this.perfThreshold = 200; // ms
         this.perfViolations = 0;
@@ -73,7 +72,7 @@ export class AnimationEngine {
     }
 
     _mapToVirtualX(realX) {
-        if (!this.config.usePseudoSpace) return realX;
+        if (this.config.exclusionStrategy !== 'jump') return realX;
         const info = this._getPseudoInfo();
         if (realX < info.left) return realX;
         if (realX < info.left + info.width) return info.left;
@@ -81,7 +80,7 @@ export class AnimationEngine {
     }
 
     _getVirtualExclusionAreas() {
-        if (!this.config.usePseudoSpace) return this.exclusionAreas;
+        if (this.config.exclusionStrategy !== 'jump') return this.exclusionAreas;
         const info = this._getPseudoInfo();
         return this.exclusionAreas.map(area => {
             const vX = this._mapToVirtualX(area.x);
@@ -128,8 +127,7 @@ export class AnimationEngine {
         this.isDrawPending = false;
 
         const animInstance = new entry.class();
-        this.config = animInstance.config || { mode: 'canvas', usePseudoSpace: false };
-        this.ignoreExclusion = !!this.config.ignoreExclusion;
+        this.config = animInstance.config || { mode: 'canvas', exclusionStrategy: 'mask' };
 
         this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
@@ -235,7 +233,7 @@ export class AnimationEngine {
         const progress = (elapsed % this.cycleMs) / this.cycleMs;
 
         let drawWidth = this.canvas.width;
-        if (this.config.usePseudoSpace) {
+        if (this.config.exclusionStrategy === 'jump') {
             drawWidth = this._getPseudoInfo().totalWidth;
         }
 
@@ -246,8 +244,8 @@ export class AnimationEngine {
             elapsedMs: elapsed,
             progress,
             step: Math.floor(progress * 240),
-            exclusionAreas: this.ignoreExclusion ? [] : this._getVirtualExclusionAreas(),
-            realExclusionAreas: this.ignoreExclusion ? [] : this.exclusionAreas,
+            exclusionAreas: this.config.exclusionStrategy === 'jump' ? [] : this._getVirtualExclusionAreas(),
+            realExclusionAreas: this.exclusionAreas,
             requestRawBitmap: this.requestRawBitmap
         };
 
@@ -271,7 +269,7 @@ export class AnimationEngine {
 
         if (this.worker && this.initialized) {
             let w = this.canvas.width;
-            if (this.config.usePseudoSpace) {
+            if (this.config.exclusionStrategy === 'jump') {
                 w = this._getPseudoInfo().totalWidth;
             }
             this.worker.postMessage({ type: 'setup', payload: { width: w, height: this.canvas.height } });

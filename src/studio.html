@@ -63,6 +63,10 @@
                         <div class="section-header-row">
                             <h2 class="section-title"><span class="material-symbols-outlined">info</span> <span data-i18n="section-metadata">Metadata</span></h2>
                             <div class="input-group-inline">
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" id="config-rewindable">
+                                    <span data-i18n="label-rewindable">Rewindable</span>
+                                </label>
                                 <label data-i18n="label-metadata-lang">Editor Language</label>
                                 <select id="meta-lang-select" class="lang-select-small">
                                     <option value="en" data-i18n="lang-en-native">🇺🇸 English</option>
@@ -89,13 +93,6 @@
                                 <label data-i18n="label-description">Description</label>
                                 <input type="text" id="meta-desc" placeholder="Brief explanation of your animation">
                             </div>
-                            <div class="input-group">
-                                <label data-i18n="label-rewindable">Rewindable</label>
-                                <div class="switch-container">
-                                    <input type="checkbox" id="config-rewindable">
-                                    <span class="switch-label" data-i18n="rewindable-desc">Supports drawing past frames</span>
-                                </div>
-                            </div>
                         </div>
                     </section>
 
@@ -111,18 +108,12 @@
                                 </select>
                             </div>
                             <div class="input-group">
-                                <label data-i18n="label-pseudo">Pseudo Space</label>
-                                <div class="switch-container">
-                                    <input type="checkbox" id="config-pseudo">
-                                    <span class="switch-label" data-i18n="pseudo-desc">Use virtual width</span>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label data-i18n="label-ignore-exclusion">Ignore Exclusion</label>
-                                <div class="switch-container">
-                                    <input type="checkbox" id="config-ignore-exclusion">
-                                    <span class="switch-label" data-i18n="ignore-exclusion-desc">For technical modules (e.g. Test Pattern)</span>
-                                </div>
+                                <label data-i18n="label-exclusion-strategy">Exclusion Strategy</label>
+                                <select id="config-exclusion-strategy">
+                                    <option value="mask" data-i18n="strategy-mask">Mask (Standard)</option>
+                                    <option value="jump" data-i18n="strategy-jump">Pseudo Space (Jump UI)</option>
+                                    <option value="freedom" data-i18n="strategy-freedom">Ignore (Draw All)</option>
+                                </select>
                             </div>
                         </div>
                     </section>

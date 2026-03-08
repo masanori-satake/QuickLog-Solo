@@ -17,18 +17,16 @@ export class AnimationBase {
     /**
      * Animation Configuration.
      * mode: 'canvas' (default), 'matrix', or 'sprite'
-     * usePseudoSpace: If true, the engine provides a virtual width excluding the widest exclusion area.
-     * ignoreExclusion: If true, the animation is drawn over the entire canvas, ignoring exclusion areas.
+     * exclusionStrategy: 'mask' (default), 'jump', or 'freedom'
      */
     config = {
         mode: 'canvas',
-        usePseudoSpace: false,
-        ignoreExclusion: false
+        exclusionStrategy: 'mask'
     };
 
     /**
      * Called when the animation starts or the viewport is resized.
-     * @param {number} _width - Viewport width (mapped if usePseudoSpace is true)
+     * @param {number} _width - Viewport width (mapped if exclusionStrategy is 'jump')
      * @param {number} _height - Viewport height
      */
     setup(_width, _height) {}

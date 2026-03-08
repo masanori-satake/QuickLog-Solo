@@ -32,7 +32,7 @@ export default class Clock extends AnimationBase {
         rewindable: true
     };
 
-    config = { mode: 'canvas', usePseudoSpace: false };
+    config = { mode: 'canvas', exclusionStrategy: 'mask' };
 
     /**
      * Initial setup and resizing

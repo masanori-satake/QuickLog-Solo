@@ -299,8 +299,16 @@ input:checked + .slider::before {
 .input-group-inline {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 16px;
     font-size: 0.85rem;
+}
+
+.checkbox-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
 }
 
 .lang-select-small {
@@ -319,7 +327,7 @@ input:checked + .slider::before {
 /* Inputs */
 .input-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--md-sys-spacing-1-5);
 }
 
@@ -344,6 +352,7 @@ input:checked + .slider::before {
     border: 1px solid var(--md-sys-color-outline-variant);
     background-color: var(--md-sys-color-surface-container-lowest);
     color: var(--md-sys-color-on-surface);
+    width: 100%;
 }
 
 .switch-container {
@@ -404,6 +413,7 @@ input:checked + .slider::before {
     gap: 4px;
     padding: 0 8px;
 }
+
 
 .search-bar {
     background-color: var(--md-sys-color-surface-container-high);
