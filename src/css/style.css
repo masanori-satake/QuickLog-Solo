@@ -256,20 +256,61 @@ main {
 
 /* DO NOT REMOVE !important in the block below: These rules enforce high transparency (95%) when an animation is active,
    ensuring the UI overlay remains legible without obscuring the background animation. */
-#current-task-display-base.cat-primary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%) !important; }
-#current-task-display-base.cat-secondary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%) !important; }
-#current-task-display-base.cat-tertiary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%) !important; }
-#current-task-display-base.cat-error.anim-active { background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 95%) !important; }
-#current-task-display-base.cat-neutral.anim-active { background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 95%) !important; }
-#current-task-display-base.cat-outline.anim-active { background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 95%) !important; }
-#current-task-display-base.cat-teal.anim-active { background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 95%) !important; }
-#current-task-display-base.cat-green.anim-active { background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 95%) !important; }
-#current-task-display-base.cat-yellow.anim-active { background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 95%) !important; }
-#current-task-display-base.cat-orange.anim-active { background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 95%) !important; }
-#current-task-display-base.cat-pink.anim-active { background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 95%) !important; }
-#current-task-display-base.cat-indigo.anim-active { background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 95%) !important; }
-#current-task-display-base.cat-brown.anim-active { background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%) !important; }
-#current-task-display-base.cat-cyan.anim-active { background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%) !important; }
+#current-task-display-base.cat-primary.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-secondary.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-tertiary.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-error.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-neutral.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-outline.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-teal.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-green.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-yellow.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-orange.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-pink.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-indigo.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-brown.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%) !important;
+}
+
+#current-task-display-base.cat-cyan.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%) !important;
+}
 
 #current-task-name {
     font-size: var(--md-sys-typescale-title-medium-size);
@@ -1315,10 +1356,25 @@ body.theme-dark button:active {
     font-size: 0.75rem;
 }
 
-.status-badge.idle { background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant); }
-.status-badge.syncing { background-color: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
-.status-badge.success { background-color: #dcfce7; color: #166534; }
-.status-badge.failed { background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
+.status-badge.idle {
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.status-badge.syncing {
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+
+.status-badge.success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.failed {
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
 
 .setting-description {
     font-size: 0.7rem;

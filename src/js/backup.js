@@ -165,8 +165,8 @@ class BackupManager {
             for (const fc of fileCategories) {
                 // Skip system categories and existing ones
                 if (fc.name && !fc.name.startsWith('__SYSTEM_') && !dbCategories.find(dc => dc.name === fc.name)) {
-                    const { id: _, ...catWithoutId } = fc;
-                    await dbPut(STORE_CATEGORIES, catWithoutId);
+                    delete fc.id;
+                    await dbPut(STORE_CATEGORIES, fc);
                 }
             }
         }
@@ -196,8 +196,8 @@ class BackupManager {
                         // Avoid adding very old logs that should have been cleaned up
                         if (fl.startTime >= threshold) {
                             // Remove ID to avoid collision and let IndexedDB assign a new one
-                            const { id: _, ...logWithoutId } = fl;
-                            await dbPut(STORE_LOGS, logWithoutId);
+                            delete fl.id;
+                            await dbPut(STORE_LOGS, fl);
                         }
                     }
                 }
@@ -232,7 +232,7 @@ class BackupManager {
             const file = await fileHandle.getFile();
             const text = await file.text();
             return text.split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
-        } catch (_unusedError) {
+        } catch {
             return [];
         }
     }
