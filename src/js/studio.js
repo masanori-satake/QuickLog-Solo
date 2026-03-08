@@ -1032,7 +1032,6 @@ function handleUpload(e) {
                 configMode.value = data.mode || 'canvas';
                 configExclusionStrategy.value = data.exclusionStrategy || 'mask';
                 configRewindable.checked = !!data.rewindable;
-                studioIgnoreExclusion = (configExclusionStrategy.value === 'freedom');
                 updateTapeControlState();
                 inputVars.value = data.vars || '';
                 inputSetup.value = data.setup || '';
