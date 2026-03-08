@@ -1247,3 +1247,81 @@ body.theme-dark button:active {
     header { min-height: 40px; }
     #current-task-display { height: 60px; }
 }
+
+/* Backup Tab Styles */
+.disabled-group {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(0.5);
+    transition: all 0.3s;
+}
+
+.disabled-group.enabled {
+    opacity: 1;
+    pointer-events: auto;
+    filter: none;
+}
+
+.path-display {
+    font-size: 0.7rem;
+    font-family: 'Roboto Mono', monospace;
+    color: var(--md-sys-color-on-surface-variant);
+    word-break: break-all;
+    background: var(--md-sys-color-surface-container-low);
+    padding: 4px 8px;
+    border-radius: var(--md-sys-shape-extra-small);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    margin-top: -8px;
+    margin-bottom: 8px;
+}
+
+.alert-box {
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    padding: 12px;
+    border-radius: var(--md-sys-shape-small);
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+}
+
+.alert-box p {
+    margin-bottom: 8px;
+}
+
+.backup-status-panel {
+    background-color: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-small);
+    padding: 12px;
+    margin-bottom: 1rem;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+}
+
+.status-row:last-child {
+    margin-bottom: 0;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: var(--md-sys-shape-full);
+    font-weight: bold;
+    font-size: 0.75rem;
+}
+
+.status-badge.idle { background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant); }
+.status-badge.syncing { background-color: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
+.status-badge.success { background-color: #dcfce7; color: #166534; }
+.status-badge.failed { background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
+
+.setting-description {
+    font-size: 0.7rem;
+    line-height: 1.4;
+    color: var(--md-sys-color-on-surface-variant);
+}

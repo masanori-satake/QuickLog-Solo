@@ -31,6 +31,7 @@ graph TD
         AppJS[js/app.js <br/>UI Orchestrator]
         Logic[js/logic.js <br/>Business Logic]
         DB[js/db.js <br/>Data Access Layer]
+        Backup[js/backup.js <br/>File Backup]
         Utils[js/utils.js <br/>Utilities]
         I18n[js/i18n.js <br/>Internationalization]
         Anim[js/animations.js <br/>Animation Engine]
@@ -47,7 +48,9 @@ graph TD
     AppJS --> Utils
     AppJS --> I18n
     AppJS --> Anim
+    AppJS --> Backup
     Logic --> DB
+    Backup --> DB
     Anim --> AnimWorker
     AnimWorker --> AnimModules
 ```
@@ -68,6 +71,9 @@ graph TD
     -   CRUD操作、初期化、マイグレーション、クリーンアップ、自動修復。
 -   **js/animations.js (描画エンジン):**
     -   Canvas 描画の統括、Web Worker (`animation_worker.js`) との通信。
+-   **js/backup.js (バックアップ層):**
+    -   File System Access API を使用したローカルファイルへの同期。
+    -   日付ごとの NDJSON 形式での履歴保存。
 -   **js/utils.js:** 共通定数、バリデーション、セキュリティ（HTMLエスケープ）。
 -   **js/i18n.js / messages.js:** 多言語対応ロジックと翻訳データ。
 
@@ -166,6 +172,25 @@ sequenceDiagram
 - **LCD スタイル:** 全てのアニメーションは 4 段階のドットサイズを持つ LCD ドットマトリクススタイルで描画されます。
 - **自動遮蔽 (Exclusion Areas):** 前面のテキスト（カテゴリ名、タイマー）が隠れないよう、エンジン側で描画を回避します。
 詳細な仕様は [animation_module_spec.md](animation_module_spec.md) を参照してください。
+
+### ローカルファイルバックアップ
+
+ブラウザのキャッシュクリア等によるデータ消失を防ぐため、File System Access API を利用してローカルディレクトリにデータを同期します。
+
+#### 同期メカニズム
+- **形式:** NDJSON (Newline Delimited JSON)。1行1レコードの形式で、一部が破損しても他の行への影響を最小限に抑えます。
+- **ファイル分割:** 履歴（ログ）は `YYYY-MM-DD.ndjson` の形式で、1日1ファイルに分割されます。カテゴリと設定はそれぞれ `categories.ndjson`, `settings.ndjson` に保存されます。
+- **同期のタイミング:**
+    - **即時 (Immediate):** データ更新から2秒後（デバウンス処理あり）。
+    - **5分 / 1時間:** 設定された間隔で定期実行。
+- **双方向の統合 (Merge):**
+    - 同期実行時、まずファイル側の内容を IndexedDB に読み込みます（IndexedDB に存在しないデータのみ追加）。
+    - その後、IndexedDB の最新状態をファイルに書き出します。
+- **40日間保持ポリシー:**
+    - IndexedDB のクリーンアップに合わせ、ファイル側も40日以前のものは自動的に削除されます。
+
+#### セキュリティと制限
+- ブラウザのセキュリティ仕様により、ブラウザの再起動後はユーザーが明示的に「アクセスを許可する」ボタンを押すまで、フォルダへの書き込み権限が一時的に失われます。
 
 ---
 

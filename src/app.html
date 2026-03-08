@@ -185,6 +185,7 @@
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="general" data-i18n="tab-general">一般</button>
                     <button class="tab-btn" data-tab="categories" data-i18n="tab-categories">カテゴリ</button>
+                    <button class="tab-btn" data-tab="backup" data-i18n="tab-backup">バックアップ</button>
                     <button class="tab-btn" data-tab="maintenance" data-i18n="tab-maintenance">メンテナンス</button>
                     <button class="tab-btn" data-tab="about" data-i18n="tab-about">About</button>
                 </div>
@@ -297,6 +298,59 @@
                         </p>
                         <p style="font-size: 0.75rem; line-height: 1.4; color: var(--md-sys-color-on-surface-variant); font-style: italic;" data-i18n="about-disclaimer">
                             【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。
+                        </p>
+                    </div>
+                </div>
+
+                <div id="backup-tab" class="tab-content hidden">
+                    <div class="setting-item">
+                        <label data-i18n="setting-backup-enable">ローカルバックアップ</label>
+                        <select id="backup-enable-select">
+                            <option value="false" data-i18n="setting-disabled">無効 (OFF)</option>
+                            <option value="true" data-i18n="setting-enabled">有効 (ON)</option>
+                        </select>
+                    </div>
+
+                    <div id="backup-options-container" class="disabled-group">
+                        <div class="setting-item">
+                            <label data-i18n="setting-backup-interval">同期頻度</label>
+                            <select id="backup-interval-select">
+                                <option value="immediate" data-i18n="interval-immediate">即時 (安全性重視)</option>
+                                <option value="5m" data-i18n="interval-5m">5分毎 (バランス)</option>
+                                <option value="1h" data-i18n="interval-1h">1時間毎 (負荷低減)</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-item">
+                            <label data-i18n="backup-directory">保存先</label>
+                            <div class="maintenance-btns">
+                                <button id="backup-select-dir-btn" data-i18n="btn-select-directory">フォルダを選択</button>
+                            </div>
+                            <p id="backup-dir-path" class="path-display">-</p>
+                        </div>
+
+                        <div id="backup-permission-alert" class="alert-box hidden">
+                            <p data-i18n="backup-permission-request">ブラウザ再起動後のバックアップを継続するには、フォルダへのアクセスを再度許可する必要があります。</p>
+                            <button id="backup-grant-permission-btn" class="primary-btn" data-i18n="btn-grant-permission">アクセスを許可する</button>
+                        </div>
+
+                        <div class="backup-status-panel">
+                            <div class="status-row">
+                                <span data-i18n="backup-status-label">現在のステータス</span>
+                                <span id="backup-status-indicator" class="status-badge idle">-</span>
+                            </div>
+                            <div class="status-row">
+                                <span data-i18n="backup-last-time">最終同期時刻</span>
+                                <span id="backup-last-time-display">-</span>
+                            </div>
+                            <div class="status-row">
+                                <span data-i18n="backup-file-count">ファイル数</span>
+                                <span><span id="backup-file-count-display">0</span> <span data-i18n="backup-file-count-unit">日分</span></span>
+                            </div>
+                        </div>
+
+                        <p class="setting-description" data-i18n="backup-description">
+                            ブラウザのキャッシュクリアに備えて、指定したローカルフォルダに日付ごとのファイルを自動保存します。アプリの「40日以前の記録を削除する」ポリシーはここでも適用されます。
                         </p>
                     </div>
                 </div>
