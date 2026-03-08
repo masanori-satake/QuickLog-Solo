@@ -45,6 +45,14 @@ export default class LiesegangRings extends AnimationBase {
     REACTION_RATE = 0.05;       // Speed of precipitation reaction
     PRECIPITATION_THRESHOLD = 0.6; // Minimum concentration to form a "ring"
 
+    // --- Advanced Tuning Constants (Junior Engineer reference) ---
+    AMBIENT_B_INFLUX = 0.006;   // Natural chemical B added to the gel each step
+    MIN_REACTION_STRENGTH = 0.01; // Minimum reaction result to trigger changes
+    CONSUMPTION_RATIO = 0.1;    // Percentage of concentration remaining after precipitate forms
+    MAX_CONCENTRATION = 2.0;    // Cap for concentration levels
+    VISIBLE_THRESHOLD = 0.05;   // Concentration level to start drawing background color
+    MAX_BG_ALPHA = 0.2;         // Maximum opacity for the background concentration view
+
     constructor() {
         super();
         this.gridA = null;       // Concentration of chemical A
@@ -156,22 +164,22 @@ export default class LiesegangRings extends AnimationBase {
 
                 // Reaction and Precipitation Logic
                 const reaction = a * b * this.REACTION_RATE;
-                if (reaction > 0.01) {
+                if (reaction > this.MIN_REACTION_STRENGTH) {
                     a -= reaction;
                     b -= reaction;
                     // If combined concentration is high enough, it forms a ring (precipitate)
                     if (a + b > this.PRECIPITATION_THRESHOLD) {
                         this.precipitate[idx] = 1;
-                        a *= 0.1; // Consumed in the reaction
-                        b *= 0.1;
+                        a *= this.CONSUMPTION_RATIO; // Consumed in the reaction
+                        b *= this.CONSUMPTION_RATIO;
                     }
                 }
 
                 // Natural ambient chemical B present in the gel
-                b += 0.006;
+                b += this.AMBIENT_B_INFLUX;
 
-                this.gridA[idx] = Math.min(2.0, a);
-                this.gridB[idx] = Math.min(2.0, b);
+                this.gridA[idx] = Math.min(this.MAX_CONCENTRATION, a);
+                this.gridB[idx] = Math.min(this.MAX_CONCENTRATION, b);
             }
         }
     }
@@ -187,8 +195,8 @@ export default class LiesegangRings extends AnimationBase {
                     ctx.fillRect(x * this.GRID_SIZE, y * this.GRID_SIZE, this.GRID_SIZE, this.GRID_SIZE);
                 } else {
                     const concentration = this.gridA[idx];
-                    if (concentration > 0.05) {
-                        ctx.fillStyle = `rgba(139, 69, 19, ${Math.min(0.2, concentration)})`; // Soft brown
+                    if (concentration > this.VISIBLE_THRESHOLD) {
+                        ctx.fillStyle = `rgba(139, 69, 19, ${Math.min(this.MAX_BG_ALPHA, concentration)})`; // Soft brown
                         ctx.fillRect(x * this.GRID_SIZE, y * this.GRID_SIZE, this.GRID_SIZE, this.GRID_SIZE);
                     }
                 }

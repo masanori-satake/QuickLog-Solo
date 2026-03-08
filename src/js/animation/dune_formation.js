@@ -46,6 +46,14 @@ export default class DuneFormation extends AnimationBase {
     ROLL_PROBABILITY = 0.3;     // Chance to roll forward instead of stopping
     MAX_HEIGHT = 15;            // Maximum sand height per cell
 
+    // --- Visual & Behavior Tuning ---
+    SAND_TRAP_THRESHOLD = 8;    // Height threshold where sand starts trapping other grains
+    CREEP_VELOCITY_REDUCTION = 0.4; // How much velocity is lost when rolling/creeping
+    CREEP_VERTICAL_JITTER = 2.0;    // Random vertical force when rolling
+    EMISSION_OFFSET = -10;      // Start X position for new grains
+    OUT_OF_BOUNDS_PADDING = 10; // Extra space around edges before cleanup
+    MIN_SAND_ALPHA = 0.2;       // Starting opacity for the first layer of sand
+
     constructor() {
         super();
         this.particles = [];
@@ -94,7 +102,7 @@ export default class DuneFormation extends AnimationBase {
 
         // Emission: Keep particle count up
         while (this.particles.length < this.MAX_PARTICLES) {
-            this.particles.push(this.createParticle(-10, Math.random() * this.height));
+            this.particles.push(this.createParticle(this.EMISSION_OFFSET, Math.random() * this.height));
         }
 
         // Update Particles
@@ -105,7 +113,9 @@ export default class DuneFormation extends AnimationBase {
             p.y += p.vy * dt;
 
             // Out of bounds cleanup
-            if (p.x > this.width + 10 || p.y < -10 || p.y > this.height + 10) {
+            if (p.x > this.width + this.OUT_OF_BOUNDS_PADDING ||
+                p.y < -this.OUT_OF_BOUNDS_PADDING ||
+                p.y > this.height + this.OUT_OF_BOUNDS_PADDING) {
                 this.particles.splice(i, 1);
                 continue;
             }
@@ -124,7 +134,7 @@ export default class DuneFormation extends AnimationBase {
                 );
 
                 // Probability of settling increases with existing height (sand traps sand)
-                const isHitSand = currentHeight > (Math.random() * 8);
+                const isHitSand = currentHeight > (Math.random() * this.SAND_TRAP_THRESHOLD);
 
                 if (isHitObstacle || isHitSand) {
                     const r = Math.random();
@@ -134,8 +144,8 @@ export default class DuneFormation extends AnimationBase {
                         continue;
                     } else if (r < this.SETTLE_PROBABILITY + this.ROLL_PROBABILITY) {
                         // Creep/Roll: redirect velocity
-                        p.vx *= 0.4;
-                        p.vy += (Math.random() - 0.5) * 2;
+                        p.vx *= this.CREEP_VELOCITY_REDUCTION;
+                        p.vy += (Math.random() - 0.5) * this.CREEP_VERTICAL_JITTER;
                         // Avoid getting stuck deep in a height/obstacle
                         p.x += p.vx;
                         p.y += p.vy;
@@ -153,7 +163,7 @@ export default class DuneFormation extends AnimationBase {
             for (let x = 0; x < this.cols; x++) {
                 const h = this.grid[y * this.cols + x];
                 if (h > 0) {
-                    const alpha = Math.min(1.0, 0.2 + h / this.MAX_HEIGHT);
+                    const alpha = Math.min(1.0, this.MIN_SAND_ALPHA + h / this.MAX_HEIGHT);
                     ctx.globalAlpha = alpha;
                     ctx.fillRect(x * this.GRID_SIZE, y * this.GRID_SIZE, this.GRID_SIZE - 1, this.GRID_SIZE - 1);
                 }

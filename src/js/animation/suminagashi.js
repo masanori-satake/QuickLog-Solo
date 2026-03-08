@@ -45,6 +45,13 @@ export default class Suminagashi extends AnimationBase {
     MAX_PARTICLES = 2500;       // Total number of ink dots
     MOUSE_FORCE = 2.0;          // Strength of mouse stirring
 
+    // --- Advanced Behavior Tuning ---
+    OBSTACLE_JITTER = 6.0;      // Random push when a particle hits an obstacle
+    INK_SPLASH_COUNT = 150;     // Number of particles added on click
+    INK_SPLASH_RADIUS = 30;     // Maximum radius of a splash
+    ABSOLUTE_MAX_PARTICLES = 5000; // Hard limit for memory safety
+    INITIAL_CIRCLE_SCALE = 0.35; // Size of the initial ink distribution
+
     constructor() {
         super();
         this.particles = [];
@@ -82,7 +89,7 @@ export default class Suminagashi extends AnimationBase {
         const centerY = height / 2;
         for (let i = 0; i < this.MAX_PARTICLES; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const radius = Math.random() * Math.min(width, height) * 0.35;
+            const radius = Math.random() * Math.min(width, height) * this.INITIAL_CIRCLE_SCALE;
             this.particles.push({
                 x: centerX + Math.cos(angle) * radius,
                 y: centerY + Math.sin(angle) * radius,
@@ -127,8 +134,8 @@ export default class Suminagashi extends AnimationBase {
 
                 // If still inside obstacle, jitter out
                 if (isInside) {
-                    p.x += (Math.random() - 0.5) * 6;
-                    p.y += (Math.random() - 0.5) * 6;
+                    p.x += (Math.random() - 0.5) * this.OBSTACLE_JITTER;
+                    p.y += (Math.random() - 0.5) * this.OBSTACLE_JITTER;
                 }
             }
 
@@ -208,15 +215,17 @@ export default class Suminagashi extends AnimationBase {
 
     onClick(x, y) {
         // Splash more ink
-        for (let i = 0; i < 150; i++) {
+        for (let i = 0; i < this.INK_SPLASH_COUNT; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const dist = Math.random() * 30;
+            const dist = Math.random() * this.INK_SPLASH_RADIUS;
             this.particles.push({
                 x: x + Math.cos(angle) * dist,
                 y: y + Math.sin(angle) * dist,
                 color: '#000'
             });
         }
-        if (this.particles.length > 5000) this.particles.splice(0, 150);
+        if (this.particles.length > this.ABSOLUTE_MAX_PARTICLES) {
+            this.particles.splice(0, this.INK_SPLASH_COUNT);
+        }
     }
 }

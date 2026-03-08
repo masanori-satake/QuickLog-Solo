@@ -9,13 +9,13 @@ import { AnimationBase } from '../animation_base.js';
  * 1. Cellular Automata: Each grid cell's state depends on its neighbors and fixed rules.
  * 2. TypedArray Optimization: Using Uint8Array to store states efficiently.
  * 3. Directional Influence (Wind): Modifying spreading probabilities based on direction.
- * 4. State Management: Managing 'Empty', 'Tree', 'Burning', and 'Burnt' states.
+ * 4. Loop Optimization: Pre-calculating neighbor offsets and weights outside the main loop to minimize object creation and GC overhead.
  *
  * ジュニアエンジニア向けのポイント:
  * 1. セル・オートマトン: 各グリッドセルの状態は、隣接するセルの状態と決まったルールに従って変化します。
  * 2. TypedArrayによる最適化: 状態を効率的に保存するためにUint8Arrayを使用します。
  * 3. 方向性の影響（風）: 方向によって延焼確率を変化させます。
- * 4. 状態管理: 「空」「木」「燃焼中」「燃焼済み」などの状態を管理します。
+ * 4. ループの最適化: オブジェクト作成とGC（ガベージコレクション）のオーバーヘッドを最小限に抑えるため、メインループの外で隣接オフセットと重みを事前計算します。
  */
 export default class ForestFire extends AnimationBase {
     static metadata = {
@@ -51,6 +51,13 @@ export default class ForestFire extends AnimationBase {
     WIND_Y = 0.05;              // Extra probability in vertical direction (downward)
     BURN_TIME = 12;             // How many frames a cell stays burning
 
+    // --- Advanced Behavior Tuning ---
+    INITIAL_TREE_COVERAGE = 0.8; // Initial percentage of the grid filled with trees
+    SIMULATION_FPS = 15;        // Approximate updates per second
+    REPLANT_RADIUS = 4;         // Radius of the area replanted on click
+    CELL_GAP = 0.5;             // Gap between grid cells when rendering
+    FLICKER_THRESHOLD = 0.5;    // Probability threshold for fire color flickering
+
     constructor() {
         super();
         this.grid = null;        // Current state
@@ -61,6 +68,9 @@ export default class ForestFire extends AnimationBase {
         this.width = 0;
         this.height = 0;
         this.lastUpdateMs = 0;
+
+        // Optimized neighbor structure to avoid object creation in hot loops
+        this.neighbors = [];
     }
 
     /**
@@ -80,9 +90,17 @@ export default class ForestFire extends AnimationBase {
 
         for (let i = 0; i < size; i++) {
             // Populate with trees (approx 80% coverage)
-            this.grid[i] = Math.random() < 0.8 ? this.TREE : this.EMPTY;
+            this.grid[i] = Math.random() < this.INITIAL_TREE_COVERAGE ? this.TREE : this.EMPTY;
         }
         this.gridBuffer.set(this.grid);
+
+        // Pre-calculate neighbor info
+        this.neighbors = [
+            { dx: -1, dy: 0, w: 1.0 - this.WIND_X }, // West
+            { dx: 1, dy: 0, w: 1.0 + this.WIND_X },  // East
+            { dx: 0, dy: -1, w: 1.0 - this.WIND_Y }, // North
+            { dx: 0, dy: 1, w: 1.0 + this.WIND_Y }   // South
+        ];
     }
 
     /**
@@ -90,8 +108,8 @@ export default class ForestFire extends AnimationBase {
      * @param {Object} params
      */
     draw(ctx, { elapsedMs, exclusionAreas = [], speed = 1 } = {}) {
-        // Run update logic at a fixed interval (approx 15 FPS simulation rate)
-        const updateThreshold = 66 / speed;
+        // Run update logic at a fixed interval
+        const updateThreshold = (1000 / this.SIMULATION_FPS) / speed;
         if (elapsedMs - this.lastUpdateMs > updateThreshold) {
             this.update(exclusionAreas);
             this.lastUpdateMs = elapsedMs;
@@ -135,22 +153,17 @@ export default class ForestFire extends AnimationBase {
                     }
 
                     // Spread fire to 4-way neighbors
-                    const neighbors = [
-                        { dx: -1, dy: 0, w: 1.0 - this.WIND_X }, // West
-                        { dx: 1, dy: 0, w: 1.0 + this.WIND_X },  // East
-                        { dx: 0, dy: -1, w: 1.0 - this.WIND_Y }, // North
-                        { dx: 0, dy: 1, w: 1.0 + this.WIND_Y }   // South
-                    ];
-
-                    for (const n of neighbors) {
+                    // Use pre-calculated neighbor structure for performance
+                    for (let nIdx = 0; nIdx < this.neighbors.length; nIdx++) {
+                        const n = this.neighbors[nIdx];
                         const nx = x + n.dx;
                         const ny = y + n.dy;
                         if (nx >= 0 && nx < this.cols && ny >= 0 && ny < this.rows) {
-                            const nidx = ny * this.cols + nx;
-                            if (this.grid[nidx] === this.TREE) {
+                            const targetIdx = ny * this.cols + nx;
+                            if (this.grid[targetIdx] === this.TREE) {
                                 if (Math.random() < (this.SPREAD_PROBABILITY * n.w)) {
-                                    this.gridBuffer[nidx] = this.BURNING;
-                                    this.timers[nidx] = this.BURN_TIME;
+                                    this.gridBuffer[targetIdx] = this.BURNING;
+                                    this.timers[targetIdx] = this.BURN_TIME;
                                 }
                             }
                         }
@@ -175,13 +188,13 @@ export default class ForestFire extends AnimationBase {
                         break;
                     case this.BURNING:
                         // Visual flicker
-                        ctx.fillStyle = Math.random() > 0.5 ? '#ff4500' : '#ffa500';
+                        ctx.fillStyle = Math.random() > this.FLICKER_THRESHOLD ? '#ff4500' : '#ffa500';
                         break;
                     case this.BURNT:
                         ctx.fillStyle = '#3a3a3a'; // Charcoal
                         break;
                 }
-                ctx.fillRect(x * this.GRID_SIZE, y * this.GRID_SIZE, this.GRID_SIZE - 0.5, this.GRID_SIZE - 0.5);
+                ctx.fillRect(x * this.GRID_SIZE, y * this.GRID_SIZE, this.GRID_SIZE - this.CELL_GAP, this.GRID_SIZE - this.CELL_GAP);
             }
         }
     }
@@ -198,7 +211,7 @@ export default class ForestFire extends AnimationBase {
                 this.timers[idx] = this.BURN_TIME;
             } else {
                 // Plant area
-                const r = 4;
+                const r = this.REPLANT_RADIUS;
                 for (let j = -r; j <= r; j++) {
                     for (let i = -r; i <= r; i++) {
                         const nx = gx + i;

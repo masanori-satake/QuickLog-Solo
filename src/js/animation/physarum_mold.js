@@ -48,6 +48,15 @@ export default class PhysarumMold extends AnimationBase {
     DIFFUSION_RATE = 0.12;      // Pheromone spread rate
     GRID_SIZE = 4;              // Resolution of the pheromone map
 
+    // --- Advanced Behavior & Visual Tuning ---
+    PHEROMONE_DEPOSIT_RATE = 0.4; // Amount of pheromone dropped by an agent per frame
+    MAX_PHEROMONE_LEVEL = 2.5;    // Cap for pheromone concentration in a cell
+    FOOD_ATTRACTION_FORCE = 6.0;  // Multiplier for food intensity during sensing
+    FOOD_DECAY_RATE = 0.999;      // Speed at which placed food disappears
+    TRAIL_VISIBILITY_THRESHOLD = 0.05; // Pheromone level to start drawing
+    FOOD_VISIBILITY_THRESHOLD = 0.1;   // Food level to start drawing
+    MAX_TRAIL_ALPHA = 0.7;        // Maximum opacity for the slime network
+
     constructor() {
         super();
         this.agents = [];
@@ -104,6 +113,7 @@ export default class PhysarumMold extends AnimationBase {
             if (v2 > v1 && v2 > v3) {
                 // Front is best
             } else if (v2 < v1 && v2 < v3) {
+                // Jitter turn
                 a.angle += (Math.random() - 0.5) * 2 * this.TURN_SPEED * dt;
             } else if (v1 > v3) {
                 a.angle -= this.TURN_SPEED * dt;
@@ -133,7 +143,7 @@ export default class PhysarumMold extends AnimationBase {
             const gy = Math.floor(a.y / this.GRID_SIZE);
             if (gx >= 0 && gx < this.cols && gy >= 0 && gy < this.rows) {
                 const idx = gy * this.cols + gx;
-                this.trailMap[idx] = Math.min(2.5, this.trailMap[idx] + 0.4 * dt);
+                this.trailMap[idx] = Math.min(this.MAX_PHEROMONE_LEVEL, this.trailMap[idx] + this.PHEROMONE_DEPOSIT_RATE * dt);
             }
         }
 
@@ -154,7 +164,7 @@ export default class PhysarumMold extends AnimationBase {
         if (gx >= 0 && gx < this.cols && gy >= 0 && gy < this.rows) {
             const idx = gy * this.cols + gx;
             // Food is a very strong attraction factor
-            return this.trailMap[idx] + this.foodMap[idx] * 6.0;
+            return this.trailMap[idx] + this.foodMap[idx] * this.FOOD_ATTRACTION_FORCE;
         }
         return -1;
     }
@@ -177,7 +187,7 @@ export default class PhysarumMold extends AnimationBase {
             this.trailMap[i] = this.trailMapBuffer[i] * evap;
 
             // Gradually decay placed food
-            if (this.foodMap[i] > 0) this.foodMap[i] *= 0.999;
+            if (this.foodMap[i] > 0) this.foodMap[i] *= this.FOOD_DECAY_RATE;
         }
     }
 
@@ -191,14 +201,14 @@ export default class PhysarumMold extends AnimationBase {
                 const trail = this.trailMap[idx];
                 const food = this.foodMap[idx];
 
-                if (food > 0.1) {
+                if (food > this.FOOD_VISIBILITY_THRESHOLD) {
                     ctx.fillStyle = `rgba(255, 255, 180, ${food})`;
                     ctx.fillRect(x * this.GRID_SIZE, y * this.GRID_SIZE, this.GRID_SIZE, this.GRID_SIZE);
                 }
 
-                if (trail > 0.05) {
+                if (trail > this.TRAIL_VISIBILITY_THRESHOLD) {
                     // Slime mold network: greenish/yellow glow
-                    ctx.fillStyle = `rgba(180, 255, 80, ${Math.min(0.7, trail)})`;
+                    ctx.fillStyle = `rgba(180, 255, 80, ${Math.min(this.MAX_TRAIL_ALPHA, trail)})`;
                     ctx.fillRect(x * this.GRID_SIZE, y * this.GRID_SIZE, this.GRID_SIZE, this.GRID_SIZE);
                 }
             }
