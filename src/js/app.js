@@ -4,6 +4,7 @@ import {
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
 } from './db.js';
+import { backupManager, BACKUP_STATUS } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from './i18n.js';
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation } from './logic.js';
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPassed } from './utils.js';
@@ -44,6 +45,20 @@ const ID_PAUSE_BTN = 'pause-btn';
 const ID_END_BTN = 'end-btn';
 const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
 const ID_TOAST = 'toast';
+
+const ID_BACKUP_STATUS_CIRCLE = 'backup-status-circle';
+const ID_BACKUP_ENABLE_TOGGLE = 'backup-enable-toggle';
+const ID_BACKUP_SYNC_NOW_BTN = 'backup-sync-now-btn';
+const ID_BACKUP_INTERVAL_SELECT = 'backup-interval-select';
+const ID_BACKUP_SELECT_DIR_BTN = 'backup-select-dir-btn';
+const ID_BACKUP_GRANT_PERMISSION_BTN = 'backup-grant-permission-btn';
+const ID_BACKUP_STATUS_INDICATOR = 'backup-status-indicator';
+const ID_BACKUP_LAST_TIME_DISPLAY = 'backup-last-time-display';
+const ID_BACKUP_FILE_COUNT_DISPLAY = 'backup-file-count-display';
+const ID_BACKUP_DIR_PATH = 'backup-dir-path';
+const ID_BACKUP_PERMISSION_ALERT = 'backup-permission-alert';
+const ID_BACKUP_OPTIONS_CONTAINER = 'backup-options-container';
+
 const ID_CONFIRM_MODAL = 'confirm-modal';
 const ID_CONFIRM_MESSAGE = 'confirm-message';
 const ID_CONFIRM_OK_BTN = 'confirm-ok-btn';
@@ -149,6 +164,7 @@ async function startTask(categoryName, resumableCategory = null) {
     activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
     updateUI();
     broadcastSync();
+    backupManager.requestImmediateBackup();
 }
 
 async function pauseTask() {
@@ -156,12 +172,14 @@ async function pauseTask() {
     activeTask = await pauseTaskLogic(activeTask);
     updateUI();
     broadcastSync();
+    backupManager.requestImmediateBackup();
 }
 
 async function stopTask() {
     if (syncTimeout) clearTimeout(syncTimeout);
     activeTask = await stopTaskLogic(activeTask, true);
     broadcastSync();
+    backupManager.requestImmediateBackup();
 }
 
 async function endTask() {
@@ -552,6 +570,9 @@ function broadcastSync(type = 'sync') {
 async function syncState() {
     if (!isAppInitialized) return;
     const state = await getCurrentAppState();
+
+    // Backup UI sync
+    updateBackupUI();
 
     // Migration: Update 'matrix_code' to 'digital_rain' for existing users
     if (state.animation === 'matrix_code') {
@@ -1090,6 +1111,73 @@ function getColorCode(color) {
     return codes[color] || '#1976d2';
 }
 
+function updateBackupUI() {
+    const config = backupManager.config;
+    const enableToggle = getEl(ID_BACKUP_ENABLE_TOGGLE);
+    if (enableToggle) enableToggle.checked = config.enabled;
+
+    const intervalSelect = getEl(ID_BACKUP_INTERVAL_SELECT);
+    if (intervalSelect) intervalSelect.value = config.interval;
+
+    const optionsContainer = getEl(ID_BACKUP_OPTIONS_CONTAINER);
+    if (optionsContainer) {
+        if (config.enabled) optionsContainer.classList.add('enabled');
+        else optionsContainer.classList.remove('enabled');
+    }
+
+    const dirPath = getEl(ID_BACKUP_DIR_PATH);
+    if (dirPath) dirPath.textContent = backupManager.directoryHandle ? backupManager.directoryHandle.name : '-';
+
+    const permissionAlert = getEl(ID_BACKUP_PERMISSION_ALERT);
+    if (permissionAlert) {
+        if (config.enabled && !backupManager.directoryHandle) {
+            permissionAlert.classList.remove('hidden');
+        } else {
+            permissionAlert.classList.add('hidden');
+        }
+    }
+
+    const lastTimeDisplay = getEl(ID_BACKUP_LAST_TIME_DISPLAY);
+    if (lastTimeDisplay) {
+        lastTimeDisplay.textContent = config.lastBackupTime ? new Date(config.lastBackupTime).toLocaleString() : '-';
+    }
+
+    const indicator = getEl(ID_BACKUP_STATUS_INDICATOR);
+    const circle = getEl(ID_BACKUP_STATUS_CIRCLE);
+
+    if (indicator) {
+        indicator.className = `status-badge ${backupManager.status}`;
+        switch (backupManager.status) {
+            case BACKUP_STATUS.DISABLED: indicator.textContent = '-'; break;
+            case BACKUP_STATUS.SYNCING: indicator.textContent = t('backup-status-syncing'); break;
+            case BACKUP_STATUS.SUCCESS: indicator.textContent = t('backup-status-synced'); break;
+            case BACKUP_STATUS.DIRTY: indicator.textContent = t('backup-status-dirty') || 'Unsaved Changes'; break;
+            case BACKUP_STATUS.FAILED: indicator.textContent = t('backup-status-failed'); break;
+        }
+    }
+
+    if (circle) {
+        circle.className = 'status-circle';
+        switch (backupManager.status) {
+            case BACKUP_STATUS.SYNCING:
+            case BACKUP_STATUS.SUCCESS:
+                circle.classList.add('active');
+                break;
+            case BACKUP_STATUS.DIRTY:
+                circle.classList.add('dirty');
+                break;
+            case BACKUP_STATUS.FAILED:
+                circle.classList.add('error');
+                break;
+        }
+    }
+
+    backupManager.getFileCount().then(count => {
+        const fileCountDisplay = getEl(ID_BACKUP_FILE_COUNT_DISPLAY);
+        if (fileCountDisplay) fileCountDisplay.textContent = count.toString();
+    });
+}
+
 async function renderCategoryEditor() {
     const list = getEl(ID_CATEGORY_EDITOR_LIST);
     if (!list) return;
@@ -1502,8 +1590,79 @@ function setupEventListeners() {
             const target = getEl(`${btn.dataset.tab}-tab`);
             if (target) target.classList.remove('hidden');
             if (btn.dataset.tab === 'categories') renderCategoryEditor();
+            if (btn.dataset.tab === 'backup') updateBackupUI();
         };
     });
+
+    // Backup UI listeners
+    getEl(ID_BACKUP_STATUS_CIRCLE)?.addEventListener('click', async () => {
+        if (backupManager.status === BACKUP_STATUS.DIRTY) {
+            await backupManager.flush();
+            updateBackupUI();
+        }
+    });
+
+    getEl(ID_BACKUP_SYNC_NOW_BTN)?.addEventListener('click', async () => {
+        await backupManager.flush();
+        updateBackupUI();
+    });
+
+    // Backup tab listeners
+    getEl(ID_BACKUP_ENABLE_TOGGLE)?.addEventListener('change', async (e) => {
+        const enabled = e.target.checked;
+        if (enabled && !backupManager.directoryHandle) {
+            try {
+                const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                await backupManager.setDirectory(handle);
+            } catch (err) {
+                console.warn('Directory selection cancelled or failed', err);
+                e.target.checked = false;
+                return;
+            }
+        }
+        await backupManager.enable(enabled);
+        showToast(enabled ? t('toast-backup-enabled') : t('toast-backup-disabled'));
+        updateBackupUI();
+        broadcastSync();
+    });
+
+    getEl(ID_BACKUP_INTERVAL_SELECT)?.addEventListener('change', async (e) => {
+        await backupManager.setInterval(e.target.value);
+        updateBackupUI();
+        broadcastSync();
+    });
+
+    getEl(ID_BACKUP_SELECT_DIR_BTN)?.addEventListener('click', async () => {
+        try {
+            const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+            await backupManager.setDirectory(handle);
+            if (backupManager.config.enabled) {
+                await backupManager.sync();
+            }
+            updateBackupUI();
+            broadcastSync();
+        } catch (err) {
+            console.warn('Directory selection cancelled or failed', err);
+        }
+    });
+
+    getEl(ID_BACKUP_GRANT_PERMISSION_BTN)?.addEventListener('click', async () => {
+        try {
+            const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+            await backupManager.setDirectory(handle);
+            if (backupManager.config.enabled) {
+                await backupManager.sync();
+            }
+            updateBackupUI();
+            broadcastSync();
+        } catch (err) {
+            console.warn('Permission grant failed', err);
+        }
+    });
+
+    backupManager.onStatusChange = () => {
+        updateBackupUI();
+    };
 
     // Settings listeners
     getEl(ID_LANGUAGE_SELECT)?.addEventListener('change', async (e) => {
@@ -1541,6 +1700,7 @@ function setupEventListeners() {
             applyFont(fontValue);
             await updateUI();
             broadcastSync();
+            backupManager.requestImmediateBackup();
         });
     }
 
@@ -1553,6 +1713,7 @@ function setupEventListeners() {
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: animType });
             await updateUI();
             broadcastSync();
+            backupManager.requestImmediateBackup();
         });
     }
 
@@ -1576,6 +1737,7 @@ function setupEventListeners() {
             renderCategories();
             renderCategoryEditor();
             broadcastSync();
+            backupManager.requestImmediateBackup();
         }
     });
 
@@ -1590,6 +1752,7 @@ function setupEventListeners() {
         renderCategories();
         renderCategoryEditor();
         broadcastSync();
+        backupManager.requestImmediateBackup();
     });
 
     // Category Import/Export
@@ -1744,6 +1907,11 @@ function setupEventListeners() {
     });
 }
 
+// Expose for testing
+if (window.location.hostname === 'localhost') {
+    window.backupManager = backupManager;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('QuickLog-Solo: DOMContentLoaded');
     const urlParams = new URLSearchParams(window.location.search);
@@ -1765,6 +1933,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('QuickLog-Solo: DB Initialized');
 
         initAnimationEngine();
+        await backupManager.init();
         setupBroadcastChannel();
         setupEventListeners();
         await handleTestParameters();

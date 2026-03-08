@@ -1,4 +1,4 @@
-[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.18.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
+[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.19.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
 
 # QuickLog-Solo
 
@@ -13,6 +13,7 @@
 - **Visual Healing（視覚的癒やし）:** 20種類以上のLCDドットマトリクス風アニメーションを搭載。「1秒の重み」を緩やかな変化で表現し、作業中のストレスを軽減する心地よい体験を提供します。
 - **タグ別集計:** カテゴリにタグを紐付けることで、複数のカテゴリにまたがるプロジェクト横断の工数集計を一瞬で行えます。
 - **終了忘れ防止（Auto-stop）:** 毎日23:59:59に自動終了し、翌日の記録がクリーンに始められるようガードします。
+- **ローカルファイルバックアップ:** 指定したローカルフォルダへの自動同期に対応。ブラウザのキャッシュクリア等による予期せぬデータ消失から記録を守ります（File System Access API を利用）。同期状況はヘッダー右側のインジケーターで一目で確認可能です。
 - **徹底したプライバシーと透明性:**
     - **完全ローカル:** 記録されたデータはすべてブラウザ内の IndexedDB にのみ保存されます。
     - **外部通信ゼロ:** CSP（Content Security Policy）により技術的に外部通信を遮断しています。
@@ -42,7 +43,7 @@
 
 ## データの保存場所
 - ブラウザ内ストレージ（IndexedDB）に保存されます。
-- **バックアップ:** ブラウザのサイトデータ消去などでデータが消える可能性があるため、重要なデータは定期的にCSVエクスポートを行うことを推奨します。
+- **バックアップ:** ブラウザのサイトデータ消去などでデータが消える可能性があるため、設定の「バックアップ」タブからローカルフォルダへの自動同期を有効にすることを推奨します。また、従来通りCSV形式での手動エクスポートも可能です。
 
 ## プライバシーとセキュリティ
 - **Local Only:** 本アプリは、外部への通信を一切行いません。

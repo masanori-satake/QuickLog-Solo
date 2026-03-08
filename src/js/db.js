@@ -72,6 +72,23 @@ export function dbGet(storeName, key) {
     });
 }
 
+export function dbAddMultiple(storeName, items) {
+    return new Promise((resolve, reject) => {
+        if (!db) { reject(new Error('DB not initialized')); return; }
+        if (items.length === 0) { resolve(); return; }
+
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e.target.error);
+
+        for (const item of items) {
+            store.add(item);
+        }
+    });
+}
+
 /**
  * Imports categories in a single transaction.
  * @param {Array} items
