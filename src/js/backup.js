@@ -3,7 +3,7 @@ import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, ST
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 
 const FILE_NAME_CATEGORIES = 'categories.ndjson';
-const FILE_NAME_SETTINGS = 'settings.json';
+const FILE_NAME_SETTINGS = 'settings.ndjson';
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 
 export const BACKUP_STATUS = {
@@ -177,7 +177,7 @@ class BackupManager {
         // Backup Settings (excluding backup-specific ones to avoid loops)
         const allSettings = await dbGetAll(STORE_SETTINGS);
         const filteredSettings = allSettings.filter(s => s.key !== 'backupDirectoryHandle' && s.key !== SETTING_KEY_BACKUP_CONFIG);
-        await this.writeJson(FILE_NAME_SETTINGS, filteredSettings);
+        await this.writeNdjson(FILE_NAME_SETTINGS, filteredSettings);
 
         // Backup Logs
         const logs = await dbGetAll(STORE_LOGS);
@@ -210,7 +210,7 @@ class BackupManager {
         }
 
         // --- Settings ---
-        const fileSettings = await this.readJson(FILE_NAME_SETTINGS);
+        const fileSettings = await this.readNdjson(FILE_NAME_SETTINGS);
         if (fileSettings.length > 0) {
             const dbSettings = await dbGetAll(STORE_SETTINGS);
             const newSettings = [];
@@ -276,43 +276,8 @@ class BackupManager {
             const fileHandle = await this.directoryHandle.getFileHandle(fileName);
             const file = await fileHandle.getFile();
             const text = await file.text();
-            return text.split('\n')
-                .filter(line => line.trim())
-                .map(line => {
-                    try {
-                        return JSON.parse(line);
-                    } catch (e) {
-                        console.error(`QuickLog-Solo: Failed to parse NDJSON line in ${fileName}`, e);
-                        return null;
-                    }
-                })
-                .filter(item => item !== null);
-        } catch (e) {
-            if (e.name !== 'NotFoundError') {
-                console.error(`QuickLog-Solo: Failed to read NDJSON file ${fileName}`, e);
-            }
-            return [];
-        }
-    }
-
-    async writeJson(fileName, data) {
-        const fileHandle = await this.directoryHandle.getFileHandle(fileName, { create: true });
-        const writable = await fileHandle.createWritable();
-        const content = JSON.stringify(data, null, 4);
-        await writable.write(content);
-        await writable.close();
-    }
-
-    async readJson(fileName) {
-        try {
-            const fileHandle = await this.directoryHandle.getFileHandle(fileName);
-            const file = await fileHandle.getFile();
-            const text = await file.text();
-            return JSON.parse(text);
-        } catch (e) {
-            if (e.name !== 'NotFoundError') {
-                console.error(`QuickLog-Solo: Failed to read or parse JSON file ${fileName}`, e);
-            }
+            return text.split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
+        } catch {
             return [];
         }
     }
