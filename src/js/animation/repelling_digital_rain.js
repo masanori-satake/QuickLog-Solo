@@ -23,6 +23,13 @@ export default class RepellingDigitalRain extends AnimationBase {
 
     config = { mode: 'sprite', exclusionStrategy: 'freedom' };
 
+    // Constants to avoid "Magic Numbers" - Good practice for junior developers
+    // クラスのプロパティとして定数を定義します（マジックナンバーを避ける良い習慣です）
+    spacing = 6;
+    gravity = 0.2;
+    lifeDecay = 0.04;
+    resetY = -100;
+
     constructor() {
         super();
         this.columns = [];
@@ -31,20 +38,31 @@ export default class RepellingDigitalRain extends AnimationBase {
 
     /**
      * Initial setup and resizing
+     * 初期設定およびリサイズ時の処理
+     * @param {number} width - Canvas width
+     * @param {number} height - Canvas height
      */
     setup(width, height) {
         this.width = width;
         this.height = height;
 
-        const spacing = 6;
-        const colCount = Math.floor(width / spacing);
+        const colCount = Math.floor(width / this.spacing);
 
+        // Initialize or update columns based on width
+        // 幅に合わせて列を初期化または更新します
         if (this.columns.length !== colCount) {
             this.columns = Array(colCount).fill(0).map(() => this.createColumn(height));
         }
+        // Clear particles on setup/resize
         this.particles = [];
     }
 
+    /**
+     * Create a single vertical rain column
+     * 1つの垂直なレイン列を作成します
+     * @param {number} height - Canvas height
+     * @returns {Object} Column state
+     */
     createColumn(height) {
         return {
             y: Math.random() * (height + 200) - 100,
@@ -54,19 +72,34 @@ export default class RepellingDigitalRain extends AnimationBase {
         };
     }
 
+    /**
+     * Create a repelled particle
+     * はじけ飛ぶパーティクルを作成します
+     * @param {number} x - Current x position
+     * @param {number} y - Current y position
+     * @param {number} vx - Initial horizontal velocity
+     * @returns {Object} Particle state
+     */
     createParticle(x, y, vx) {
         return {
             x,
             y,
+            // If vx is not provided, use a random horizontal spread
             vx: vx || (Math.random() - 0.5) * 4,
+            // Upward initial velocity for the bounce
             vy: -1 - Math.random() * 2,
             life: 1.0,
-            size: 2 + Math.floor(Math.random() * 2) // Larger dots (2 or 3)
+            size: 2 + Math.floor(Math.random() * 2) // Larger dots (2 or 3) for visibility
         };
     }
 
     /**
-     * Simple collision detection
+     * Check if a point (x, y) is inside any exclusion area
+     * 指定した座標が排他領域内にあるかチェックします
+     * @param {number} x - X coordinate
+     * @param {number} y - Y coordinate
+     * @param {Array} exclusionAreas - List of areas to avoid
+     * @returns {Object|null} The area hit, or null
      */
     getHitExclusion(x, y, exclusionAreas) {
         if (!exclusionAreas || exclusionAreas.length === 0) return null;
@@ -78,72 +111,91 @@ export default class RepellingDigitalRain extends AnimationBase {
 
     /**
      * Main drawing loop
+     * メインの描画ルーチンです
+     * @param {CanvasRenderingContext2D} ctx - Context (unused in sprite mode)
+     * @param {Object} params - Animation parameters
+     * @returns {Array} List of sprites to draw
      */
     draw(ctx, { exclusionAreas, speed = 1 } = {}) {
         const sprites = [];
-        const spacing = 6;
         const height = this.height;
-        const gravity = 0.2;
 
+        // 1. Update and Draw Rain Columns
         this.columns.forEach((col, i) => {
-            const x = i * spacing;
+            const x = i * this.spacing;
             const nextY = col.y + col.speed * speed;
 
-            // 衝突判定：頭が排他領域に入ったか
+            // Collision detection: check if the lead drop hits an exclusion area
+            // 衝突判定：先頭のドットが排他領域に当たったか
             const hitArea = this.getHitExclusion(x, nextY, exclusionAreas);
             if (hitArea) {
-                // 領域の中心からの相対位置で跳ね返る方向を決める
+                // Determine bounce direction relative to the center of the hit area
+                // 領域の中心からの相対位置で跳ね返る方向（左か右か）を決めます
                 const centerX = hitArea.x + hitArea.width / 2;
                 const dir = x < centerX ? -1 : 1;
-                const vx = dir * (1 + Math.random() * 3);
+                const baseVx = dir * (1 + Math.random() * 3);
 
-                // はじけ飛ぶパーティクルを生成 (強調のため多めに)
+                // Spawn multiple particles for visual emphasis
+                // 視覚的な強調のため、複数のパーティクルを生成します
                 for (let p = 0; p < 4; p++) {
-                    this.particles.push(this.createParticle(x, nextY, vx + (Math.random() - 0.5) * 2));
+                    const vx = baseVx + (Math.random() - 0.5) * 2;
+                    this.particles.push(this.createParticle(x, nextY, vx));
                 }
-                // 頭をリセット
-                col.y = -100;
+
+                // Reset the column to the top to simulate it being "blocked"
+                // 列を上端にリセットし、遮られたように見せます
+                col.y = this.resetY;
                 col.speed = 1 + Math.random() * 3;
             } else {
                 col.y = nextY;
             }
 
+            // Wrap around if it leaves the bottom
             if (col.y > height + 100) {
-                col.y = -100;
+                col.y = this.resetY;
                 col.speed = 1 + Math.random() * 3;
             }
 
-            // 軌跡を記録
+            // Record trail position for the digital rain effect
+            // デジタル・レインの軌跡を記録します
             col.dots.push({ y: col.y });
             if (col.dots.length > col.maxDots) {
                 col.dots.shift();
             }
 
-            // 軌跡の描画
+            // Add trail dots to the sprite list
             col.dots.forEach((dot, idx) => {
                 if (dot.y < 0 || dot.y > height) return;
 
-                // 排他領域の中には描画しない（壁として扱う）
+                // Do not draw inside exclusion areas (Treating them as solid walls)
+                // 排他領域の中には描画しません（壁として扱います）
                 if (this.getHitExclusion(x, dot.y, exclusionAreas)) return;
 
                 const isLead = idx === col.dots.length - 1;
+                // Head is larger (3), middle is medium (2), tail is small (1)
                 const size = isLead ? 3 : (idx > col.dots.length - 6 ? 2 : 1);
                 sprites.push({ x, y: dot.y, size });
             });
         });
 
-        // パーティクルの更新と描画
+        // 2. Update and Draw Particles (The "Repelled" Drops)
+        // はじけ飛んだドット（パーティクル）の更新と描画
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
+
+            // Physics simulation: Apply velocity and gravity
+            // 物理シミュレーション：速度と重力を適用します
             p.x += p.vx * speed;
             p.y += p.vy * speed;
-            p.vy += gravity * speed;
-            p.life -= 0.04 * speed; // Slightly longer life
+            p.vy += this.gravity * speed;
+            p.life -= this.lifeDecay * speed;
 
+            // Remove dead or off-screen particles
             if (p.life <= 0 || p.y > height) {
                 this.particles.splice(i, 1);
             } else {
-                // パーティクル自体は排他領域に入っても消さない（放物線を見せるため）
+                // Particles are allowed to pass through exclusion areas to show the parabolic path
+                // パーティクル自体は放物線を見せるため、排他領域内でも描画を許可します
                 sprites.push({ x: p.x, y: p.y, size: p.size });
             }
         }
