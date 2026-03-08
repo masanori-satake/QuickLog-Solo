@@ -47,8 +47,16 @@ export default class WindTunnel extends AnimationBase {
     REPULSION_DISTANCE = 30;    // How far away particles start to steer
     REPULSION_FORCE = 0.6;      // Strength of the steering away from obstacles
     VORTEX_INTENSITY = 0.3;     // Strength of the oscillation behind obstacles
+    VORTEX_DISTANCE = 120;      // Influence range of the wake
+    VORTEX_PHASE_SPEED = 0.008; // Oscillation frequency factor
+    VORTEX_SPATIAL_FREQ = 0.1;  // Wavelength factor in the wake
+
+    DRAG_X = 0.99;              // Horizontal friction
+    DRAG_Y = 0.98;              // Vertical friction
+
     MAX_PARTICLES = 400;        // Performance ceiling
     PARTICLE_LIFE_DECAY = 0.002; // How fast particles fade out
+    OFFSCREEN_MARGIN = 50;      // Boundary for removing particles
 
     constructor() {
         super();
@@ -121,13 +129,14 @@ export default class WindTunnel extends AnimationBase {
             // Base acceleration
             let ax = 0;
             // Slight natural swaying (ambient turbulence)
-            let ay = Math.sin(elapsedMs * 0.004 + p.x * 0.02) * 0.01;
+            const turbulencePhase = elapsedMs * 0.004 + p.x * 0.02;
+            let ay = Math.sin(turbulencePhase) * 0.01;
 
             // Obstacle Interaction Logic
             // 障害物（排他領域）との相互作用ロジック
             exclusionAreas.forEach(area => {
                 // Determine if particle is in the influence zone of this area
-                const isNearX = p.x > area.x - this.REPULSION_DISTANCE && p.x < area.x + area.width + 100;
+                const isNearX = p.x > area.x - this.REPULSION_DISTANCE && p.x < area.x + area.width + this.VORTEX_DISTANCE;
                 const isNearY = p.y > area.y - this.REPULSION_DISTANCE && p.y < area.y + area.height + this.REPULSION_DISTANCE;
 
                 if (isNearX && isNearY) {
@@ -149,12 +158,13 @@ export default class WindTunnel extends AnimationBase {
                     // カルマン渦（障害物の背後の航跡での振動）
                     if (p.x > area.x + area.width) {
                         const distFromBack = p.x - (area.x + area.width);
-                        if (distFromBack < 120) {
+                        if (distFromBack < this.VORTEX_DISTANCE) {
                             // Alternating vortex phase based on time and vertical position
-                            const phase = (elapsedMs * 0.008) + (area.y * 0.5);
+                            const phase = (elapsedMs * this.VORTEX_PHASE_SPEED) + (area.y * 0.5);
                             // The oscillation dampens as it moves further away
-                            const dampen = Math.max(0, 1.0 - distFromBack / 120);
-                            ay += Math.sin(phase - distFromBack * 0.1) * this.VORTEX_INTENSITY * dampen;
+                            const dampen = Math.max(0, 1.0 - distFromBack / this.VORTEX_DISTANCE);
+                            const oscillation = Math.sin(phase - distFromBack * this.VORTEX_SPATIAL_FREQ);
+                            ay += oscillation * this.VORTEX_INTENSITY * dampen;
                         }
                     }
                 }
@@ -165,8 +175,8 @@ export default class WindTunnel extends AnimationBase {
             p.vy += ay * dt;
 
             // Apply friction/drag to keep things stable
-            p.vx *= 0.99;
-            p.vy *= 0.98;
+            p.vx *= this.DRAG_X;
+            p.vy *= this.DRAG_Y;
 
             // Prevent stalling: ensure a minimum rightward velocity
             if (p.vx < this.MIN_WIND_SPEED) {
@@ -181,7 +191,9 @@ export default class WindTunnel extends AnimationBase {
             p.life -= this.PARTICLE_LIFE_DECAY * dt;
 
             // Removal conditions
-            const isOffScreen = p.x > this.width + 50 || p.y < -50 || p.y > this.height + 50;
+            const isOffScreen = p.x > this.width + this.OFFSCREEN_MARGIN ||
+                               p.y < -this.OFFSCREEN_MARGIN ||
+                               p.y > this.height + this.OFFSCREEN_MARGIN;
             if (isOffScreen || p.life <= 0) {
                 this.particles.splice(i, 1);
                 continue;
