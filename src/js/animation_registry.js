@@ -8,19 +8,25 @@ import CoffeeDrip from './animation/coffee_drip.js';
 import ContourLines from './animation/contour_lines.js';
 import DigitalRain from './animation/digital_rain.js';
 import DotTyping from './animation/dot_typing.js';
+import DuneFormation from './animation/dune_formation.js';
+import ForestFire from './animation/forest_fire.js';
 import HeartBeat from './animation/heart_beat.js';
 import HeroPot from './animation/hero_pot.js';
 import LeftToRight from './animation/left_to_right.js';
+import LiesegangRings from './animation/liesegang_rings.js';
 import MigratingBirds from './animation/migrating_birds.js';
 import NewtonsCradle from './animation/newtons_cradle.js';
 import NightSky from './animation/night_sky.js';
 import OpenReel from './animation/open_reel.js';
+import PhysarumMold from './animation/physarum_mold.js';
+import PlasmaDischarge from './animation/plasma_discharge.js';
 import RepellingDigitalRain from './animation/repelling_digital_rain.js';
 import RightToLeft from './animation/right_to_left.js';
 import Ripple from './animation/ripple.js';
 import SandClock from './animation/sand_clock.js';
 import Smoke from './animation/smoke.js';
 import Spectrum from './animation/spectrum.js';
+import Suminagashi from './animation/suminagashi.js';
 import TestPattern from './animation/test_pattern.js';
 import TetrisBuilding from './animation/tetris_building.js';
 import WindTunnel from './animation/wind_tunnel.js';
@@ -33,19 +39,25 @@ export const animations = [
     { id: 'contour_lines', class: ContourLines, metadata: ContourLines.metadata },
     { id: 'digital_rain', class: DigitalRain, metadata: DigitalRain.metadata },
     { id: 'dot_typing', class: DotTyping, metadata: DotTyping.metadata },
+    { id: 'dune_formation', class: DuneFormation, metadata: DuneFormation.metadata, devOnly: true },
+    { id: 'forest_fire', class: ForestFire, metadata: ForestFire.metadata, devOnly: true },
     { id: 'heart_beat', class: HeartBeat, metadata: HeartBeat.metadata },
     { id: 'hero_pot', class: HeroPot, metadata: HeroPot.metadata },
     { id: 'left_to_right', class: LeftToRight, metadata: LeftToRight.metadata },
+    { id: 'liesegang_rings', class: LiesegangRings, metadata: LiesegangRings.metadata, devOnly: true },
     { id: 'migrating_birds', class: MigratingBirds, metadata: MigratingBirds.metadata },
     { id: 'newtons_cradle', class: NewtonsCradle, metadata: NewtonsCradle.metadata },
     { id: 'night_sky', class: NightSky, metadata: NightSky.metadata },
     { id: 'open_reel', class: OpenReel, metadata: OpenReel.metadata },
+    { id: 'physarum_mold', class: PhysarumMold, metadata: PhysarumMold.metadata, devOnly: true },
+    { id: 'plasma_discharge', class: PlasmaDischarge, metadata: PlasmaDischarge.metadata, devOnly: true },
     { id: 'repelling_digital_rain', class: RepellingDigitalRain, metadata: RepellingDigitalRain.metadata, devOnly: true },
     { id: 'right_to_left', class: RightToLeft, metadata: RightToLeft.metadata },
     { id: 'ripple', class: Ripple, metadata: Ripple.metadata },
     { id: 'sand_clock', class: SandClock, metadata: SandClock.metadata },
     { id: 'smoke', class: Smoke, metadata: Smoke.metadata },
     { id: 'spectrum', class: Spectrum, metadata: Spectrum.metadata },
+    { id: 'suminagashi', class: Suminagashi, metadata: Suminagashi.metadata, devOnly: true },
     { id: 'test_pattern', class: TestPattern, metadata: TestPattern.metadata, devOnly: true },
     { id: 'tetris_building', class: TetrisBuilding, metadata: TetrisBuilding.metadata },
     { id: 'wind_tunnel', class: WindTunnel, metadata: WindTunnel.metadata, devOnly: true }
