@@ -1,4 +1,4 @@
-import { dbGetAll, dbGet, dbPut, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from './db.js';
+import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from './db.js';
 
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 
@@ -158,51 +158,60 @@ class BackupManager {
     }
 
     async restoreFromFiles() {
-        // Categories
+        // --- Categories ---
         const fileCategories = await this.readNdjson(FILE_NAME_CATEGORIES);
         if (fileCategories.length > 0) {
             const dbCategories = await dbGetAll(STORE_CATEGORIES);
+            const newCategories = [];
             for (const fc of fileCategories) {
                 // Skip system categories and existing ones
                 if (fc.name && !fc.name.startsWith('__SYSTEM_') && !dbCategories.find(dc => dc.name === fc.name)) {
                     delete fc.id;
-                    await dbPut(STORE_CATEGORIES, fc);
+                    newCategories.push(fc);
                 }
             }
+            if (newCategories.length > 0) await dbAddMultiple(STORE_CATEGORIES, newCategories);
         }
 
-        // Settings
+        // --- Settings ---
         const fileSettings = await this.readNdjson(FILE_NAME_SETTINGS);
         if (fileSettings.length > 0) {
+            const dbSettings = await dbGetAll(STORE_SETTINGS);
+            const newSettings = [];
             for (const fs of fileSettings) {
-                const dbS = await dbGet(STORE_SETTINGS, fs.key);
-                if (!dbS) {
-                    await dbPut(STORE_SETTINGS, fs);
+                if (!dbSettings.find(ds => ds.key === fs.key)) {
+                    newSettings.push(fs);
                 }
             }
+            if (newSettings.length > 0) await dbAddMultiple(STORE_SETTINGS, newSettings);
         }
 
-        // Logs
+        // --- Logs ---
         const threshold = Date.now() - LOG_CLEANUP_THRESHOLD_MS;
+        const dbLogs = await dbGetAll(STORE_LOGS);
+        const dbLogKeys = new Set(dbLogs.map(l => `${l.startTime}|${l.category}`));
+        const newLogs = [];
+
         for await (const entry of this.directoryHandle.values()) {
             if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
                 const dateStr = entry.name.replace('.ndjson', '');
                 if (new Date(dateStr).getTime() < threshold - 86400000) continue; // Skip very old files
 
                 const fileLogs = await this.readNdjson(entry.name);
-                const dbLogs = await dbGetAll(STORE_LOGS); // Optimization potential here
                 for (const fl of fileLogs) {
-                    if (!dbLogs.find(dl => dl.startTime === fl.startTime && dl.category === fl.category)) {
+                    const key = `${fl.startTime}|${fl.category}`;
+                    if (!dbLogKeys.has(key)) {
                         // Avoid adding very old logs that should have been cleaned up
                         if (fl.startTime >= threshold) {
-                            // Remove ID to avoid collision and let IndexedDB assign a new one
                             delete fl.id;
-                            await dbPut(STORE_LOGS, fl);
+                            newLogs.push(fl);
+                            dbLogKeys.add(key); // Avoid adding same log multiple times from different files if any
                         }
                     }
                 }
             }
         }
+        if (newLogs.length > 0) await dbAddMultiple(STORE_LOGS, newLogs);
     }
 
     async cleanupOldFiles() {
