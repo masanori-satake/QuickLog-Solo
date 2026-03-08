@@ -18,16 +18,22 @@ test.describe('Animation Rendering Verification', () => {
         // Wait for worker to initialize and draw
         await page.waitForTimeout(3000);
 
-        // Check if canvas has some content (not empty)
-        const canvasContent = await page.evaluate(() => {
+        // Check if canvas has significant content (not empty or just a few pixels)
+        const canvasStats = await page.evaluate(() => {
             const canvas = document.getElementById('animation-canvas');
             const ctx = canvas.getContext('2d');
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-            // Check if there are any non-zero pixels
-            return imgData.some(pixel => pixel !== 0);
+            let nonZero = 0;
+            for (let i = 0; i < imgData.length; i += 4) {
+                if (imgData[i] + imgData[i+1] + imgData[i+2] > 0) {
+                    nonZero++;
+                }
+            }
+            return { nonZero, total: canvas.width * canvas.height };
         });
 
-        expect(canvasContent).toBe(true);
+        // We expect at least 10 non-zero pixels for a valid animation frame
+        expect(canvasStats.nonZero).toBeGreaterThanOrEqual(10);
 
         // Take a screenshot for visual confirmation
         await page.screenshot({ path: 'tests/screenshots/animation-verification.png' });

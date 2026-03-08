@@ -117,5 +117,22 @@ def main():
         else:
             print(f"Warning: {filepath} not found.")
 
+    # Special handling for README.md version badge
+    readme_path = 'README.md'
+    if os.path.exists(readme_path):
+        with open(readme_path, 'r') as f:
+            content = f.read()
+
+        new_content = re.sub(
+            r'(img\.shields\.io/badge/version-)[0-9.]+(-blue)',
+            r'\g<1>' + new_version + r'\g<2>',
+            content
+        )
+
+        if content != new_content:
+            with open(readme_path, 'w') as f:
+                f.write(new_content)
+            print(f"Updated version badge in {readme_path}")
+
 if __name__ == "__main__":
     main()
