@@ -109,7 +109,7 @@ export default class PlasmaDischarge extends AnimationBase {
      * @param {CanvasRenderingContext2D} ctx
      * @param {Object} params
      */
-    draw(ctx, { elapsedMs, exclusionAreas = [], speed = 1 } = {}) {
+    draw(ctx, { elapsedMs: _, exclusionAreas = [], speed = 1 } = {}) {
         const dt = speed;
         // Perform multiple steps per frame to increase growth speed
         for (let s = 0; s < this.STEPS_PER_FRAME * dt; s++) {

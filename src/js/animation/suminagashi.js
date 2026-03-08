@@ -102,7 +102,7 @@ export default class Suminagashi extends AnimationBase {
      * @param {CanvasRenderingContext2D} ctx
      * @param {Object} params
      */
-    draw(ctx, { elapsedMs, exclusionAreas = [], speed = 1 } = {}) {
+    draw(ctx, { elapsedMs: _, exclusionAreas = [], speed = 1 } = {}) {
         const dt = speed;
 
         this.updateVelocityField(dt, exclusionAreas);

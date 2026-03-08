@@ -12,9 +12,12 @@ export const EVAL_CONFIG = {
     SUSTAINED_ACTIVITY_CHECK_MS: 8000,
 
     // Minimum average number of "active" dots (non-zero pixels in LCD style) per sample.
-    MIN_AVERAGE_DOTS: 5,
+    // Increased from 5 to 10 to ensure more reliable activity detection.
+    MIN_AVERAGE_DOTS: 10,
 
     // Minimum percentage of pixel change between samples to be considered "active".
+    // Reverted to 0.0001 to accommodate slower animations (like sand_clock) while
+    // maintaining the higher MIN_AVERAGE_DOTS to prevent false positives.
     MIN_CHANGE_RATE: 0.0001,
 
     // Interval (ms) between evaluation samples.
