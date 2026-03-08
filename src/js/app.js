@@ -64,6 +64,8 @@ const ID_CONFIRM_MESSAGE = 'confirm-message';
 const ID_CONFIRM_OK_BTN = 'confirm-ok-btn';
 const ID_CONFIRM_CANCEL_BTN = 'confirm-cancel-btn';
 const ID_VERSION_DISPLAY = 'version-display';
+const ID_STATS_LOG_COUNT = 'stats-log-count';
+const ID_STATS_CATEGORY_COUNT = 'stats-category-count';
 const ID_CATEGORY_EDITOR_LIST = 'category-editor-list';
 const ID_NEW_CATEGORY_NAME_SETTINGS = 'new-category-name-settings';
 const ID_COPY_REPORT_BTN = 'copy-report-btn';
@@ -627,13 +629,36 @@ async function syncState() {
 
     await updateUI();
 
-    // Settings popup logic: Refresh category editor if the categories tab is active
+    // Settings popup logic: Refresh content if tab is active
     const settingsPopup = getEl(ID_SETTINGS_POPUP);
     if (settingsPopup && !settingsPopup.classList.contains('hidden')) {
         const categoriesTab = getEl('categories-tab');
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
             await renderCategoryEditor();
         }
+        const aboutTab = getEl('about-tab');
+        if (aboutTab && !aboutTab.classList.contains('hidden')) {
+            await updateAboutStats();
+        }
+    }
+}
+
+async function updateAboutStats() {
+    try {
+        const logs = await dbGetAll(STORE_LOGS);
+        const categories = await dbGetAll(STORE_CATEGORIES);
+        // Exclude system categories and page breaks from count if desired,
+        // but simple count is fine for debugging
+        const logCount = logs.length;
+        const categoryCount = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).length;
+
+        const logCountEl = getEl(ID_STATS_LOG_COUNT);
+        if (logCountEl) logCountEl.textContent = logCount.toLocaleString();
+
+        const catCountEl = getEl(ID_STATS_CATEGORY_COUNT);
+        if (catCountEl) catCountEl.textContent = categoryCount.toLocaleString();
+    } catch (e) {
+        console.error('Failed to update About stats:', e);
     }
 }
 
@@ -1591,6 +1616,7 @@ function setupEventListeners() {
             if (target) target.classList.remove('hidden');
             if (btn.dataset.tab === 'categories') renderCategoryEditor();
             if (btn.dataset.tab === 'backup') updateBackupUI();
+            if (btn.dataset.tab === 'about') updateAboutStats();
         };
     });
 
