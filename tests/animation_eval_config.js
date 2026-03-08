@@ -16,8 +16,9 @@ export const EVAL_CONFIG = {
     MIN_AVERAGE_DOTS: 10,
 
     // Minimum percentage of pixel change between samples to be considered "active".
-    // Increased from 0.0001 to 0.0005 for higher sensitivity to actual movement.
-    MIN_CHANGE_RATE: 0.0005,
+    // Reverted to 0.0001 to accommodate slower animations (like sand_clock) while
+    // maintaining the higher MIN_AVERAGE_DOTS to prevent false positives.
+    MIN_CHANGE_RATE: 0.0001,
 
     // Interval (ms) between evaluation samples.
     SAMPLE_INTERVAL_MS: 500,
