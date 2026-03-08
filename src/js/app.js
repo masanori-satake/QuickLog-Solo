@@ -1,5 +1,5 @@
 import {
-    initDB, getCurrentAppState, dbGetByName, dbGetAll, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
+    initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
@@ -645,11 +645,9 @@ async function syncState() {
 
 async function updateAboutStats() {
     try {
-        const logs = await dbGetAll(STORE_LOGS);
+        const logCount = await dbCount(STORE_LOGS);
         const categories = await dbGetAll(STORE_CATEGORIES);
-        // Exclude system categories and page breaks from count if desired,
-        // but simple count is fine for debugging
-        const logCount = logs.length;
+        // Exclude system categories and page breaks from count
         const categoryCount = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).length;
 
         const logCountEl = getEl(ID_STATS_LOG_COUNT);

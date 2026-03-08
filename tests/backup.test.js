@@ -68,20 +68,14 @@ describe('BackupManager', () => {
     }, 10000);
 
     test('sync clears dirty state', async () => {
-        const mockFileHandle = {
-            getFile: jest.fn().mockImplementation(() => {
-                const error = new Error('File not found');
-                error.name = 'NotFoundError';
-                return Promise.reject(error);
-            }),
-            createWritable: jest.fn().mockResolvedValue({
-                write: jest.fn(),
-                close: jest.fn()
-            })
-        };
         backupManager.directoryHandle = {
             values: async function* () { yield* []; },
-            getFileHandle: jest.fn().mockResolvedValue(mockFileHandle)
+            getFileHandle: jest.fn().mockResolvedValue({
+                createWritable: jest.fn().mockResolvedValue({
+                    write: jest.fn(),
+                    close: jest.fn()
+                })
+            })
         };
         db.dbGetAll.mockResolvedValue([]);
         backupManager.config.enabled = true;

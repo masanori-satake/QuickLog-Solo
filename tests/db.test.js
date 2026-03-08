@@ -1,5 +1,5 @@
 import {
-    openDatabase, dbAdd, dbGet, dbGetAll, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
+    openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
 } from '../src/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../src/js/utils.js';
@@ -64,6 +64,14 @@ describe('DB Module', () => {
         await dbDelete(STORE_LOGS, 1);
         const log = await dbGet(STORE_LOGS, 1);
         expect(log).toBeUndefined();
+    });
+
+    test('dbCount returns correct count', async () => {
+        await openDatabase();
+        await dbAdd(STORE_LOGS, { category: 'Test 1', startTime: 100 });
+        await dbAdd(STORE_LOGS, { category: 'Test 2', startTime: 200 });
+        const count = await dbCount(STORE_LOGS);
+        expect(count).toBe(2);
     });
 
     test('initDB sets up initial data', async () => {

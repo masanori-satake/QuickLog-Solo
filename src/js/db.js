@@ -205,6 +205,17 @@ export function dbDelete(storeName, key) {
     });
 }
 
+export function dbCount(storeName) {
+    return new Promise((resolve, reject) => {
+        if (!db) { reject(new Error('DB not initialized')); return; }
+        const tx = db.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
+        const request = store.count();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
 export function closeDatabase() {
     if (db) {
         db.close();
