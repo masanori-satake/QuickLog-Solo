@@ -11,8 +11,8 @@
 - **1秒で記録、1秒で集計:** カテゴリを選ぶだけで即座に計測開始。前後のタスクは自動的に連結・終了処理され、日報や集計データもワンクリックで作成できます。
 - **ブラウザ・サイドバー常駐:** Chrome, Edge, Firefoxのサイドパネルに対応。作業を妨げず、いつでもブラウザの傍らでクイックに記録可能です。
 - **Visual Healing（視覚的癒やし）:** 20種類以上のLCDドットマトリクス風アニメーションを搭載。「1秒の重み」を緩やかな変化で表現し、作業中のストレスを軽減する心地よい体験を提供します。
-- **タグ別集計:** カテゴリにタグを紐付けることで、複数のカテゴリにまたがるプロジェクト横断の工数集計を一瞬で行えます。
-- **終了忘れ防止（Auto-stop）:** 毎日23:59:59に自動終了し、翌日の記録がクリーンに始められるようガードします。
+- **タグ別集計:** カテゴリにタグを紐付けることで、複数のカテゴリにまたがるプロジェクト横断の工数集計を一瞬で行えます。ヘッダーの「📊」ボタンから利用可能です。
+- **一日の終わりの自動停止:** 毎日23:59:59に自動終了し、翌日の記録がクリーンに始められるようガードします。
 - **ローカルファイルバックアップ:** 指定したローカルフォルダへの自動同期に対応。ブラウザのキャッシュクリア等による予期せぬデータ消失から記録を守ります（File System Access API を利用）。同期状況はヘッダー右側のインジケーターで一目で確認可能です。
 - **徹底したプライバシーと透明性:**
     - **完全ローカル:** 記録されたデータはすべてブラウザ内の IndexedDB にのみ保存されます。
@@ -38,15 +38,26 @@
 - **タスク開始:** カテゴリボタンをクリックすると、即座に計測が始まります。
 - **一時停止/再開:** 「一時停止」ボタンで休憩や割り込みに対応。再度クリックで元のタスクを再開します。
 - **タスク終了:** 「終了」ボタンで現在の作業を完了します。
-- **データ出力:** 設定（⚙️）から日報形式や集計データをコピーしたり、CSVとしてエクスポートできます。
+- **データ出力:**
+    - **日報・集計:** ヘッダーのボタン（📋, 📊）から、日報形式やタグ別の集計結果をクリップボードにコピーできます。
+    - **CSVエクスポート:** 設定（⚙️）の「一般」タブから、過去の全履歴をCSVとしてエクスポート/インポートできます。
+- **メンテナンス:** 設定（⚙️）の「メンテナンス」タブから、ログの一括削除や、カテゴリ・設定の初期化（リセット）が行えます。不具合発生時や環境をクリーンにしたい場合に使用します。
 
-## データの保存場所
-- ブラウザ内ストレージ（IndexedDB）に保存されます。
-- **バックアップ:** ブラウザのサイトデータ消去などでデータが消える可能性があるため、設定の「バックアップ」タブからローカルフォルダへの自動同期を有効にすることを推奨します。また、従来通りCSV形式での手動エクスポートも可能です。
+## データの保存場所とリスク (Data Storage & Risks)
+- **データの保存先:** 記録されたデータはすべてブラウザ内の **IndexedDB** にのみ保存されます。
+- **消失リスク:** ブラウザの「閲覧履歴の消去」やキャッシュクリア、またはブラウザ自体の仕様により、データが予期せず削除される可能性があります。
+- **推奨事項:** 大切な記録を守るため、設定の「バックアップ」タブから **「ローカルファイルバックアップ」** を有効にし、ローカルフォルダへの自動同期設定を行うことを強く推奨します。
+- **Data Storage:** All recorded data is stored exclusively in the browser's **IndexedDB**.
+- **Data Loss Risk:** Data may be unexpectedly deleted due to browser "Clear browsing history," cache clearing, or browser-specific storage policies.
+- **Recommendation:** To protect your valuable records, we strongly recommend enabling **"Local File Backup"** in the "Backup" tab of the settings to automatically sync data to a local folder.
 
-## プライバシーとセキュリティ
-- **Local Only:** 本アプリは、外部への通信を一切行いません。
-- **透明性:** 開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。
+## プライバシーとセキュリティ (Privacy & Security)
+- **Local Only:** 本アプリは、CSP（Content Security Policy）により技術的に外部への通信を一切行わないことが保証されています。
+- **トラッキングなし:** アクセス解析や広告、外部サービスへのデータ送信は一切行いません。
+- **透明性:** プログラムは Vanilla JS で記述されており、依存関係によるブラックボックスがありません。また、開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。
+- **Local Only:** This app is guaranteed by CSP (Content Security Policy) to technically block all external communications.
+- **No Tracking:** No analytics, advertisements, or data transmission to external services are performed.
+- **Transparency:** The program is written in Vanilla JS with no hidden dependencies. You can directly inspect the contents of IndexedDB using browser developer tools (F12).
 
 ## カスタマイズ
 - **テーマ:** ライトモード / ダークモードの切り替えが可能です。
@@ -55,16 +66,16 @@
 - **背景アニメーション:** 20 種類以上の LCD ドットマトリクス風アニメーションを搭載。
 
 ## QL-Animation Studio (β版)
-ブラウザ上でオリジナルの背景アニメーションを作成・テストできる [開発環境](https://quicklog-solo.vercel.app/src/studio.html) を公開しています。自分の作品を製品に組み込むことも可能です。
+ブラウザ上でオリジナルの背景アニメーションを作成・テストできる [開発環境](https://quicklog-solo.vercel.app/src/studio.html) を公開しています。作成した作品を製品に組み込むための Pull Request も受け付けています。
 
 ## 開発者向け情報
 開発環境の構築、ディレクトリ構成、テスト方法などの技術的な詳細は [docs/README_DEV.md](docs/README_DEV.md) を参照してください。
 
 ## 免責事項 (Disclaimer)
-本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトです。
-利用に際して生じたいかなる損害についても、開発者は一切の責任を負いません。
-MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。
+本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証**です。
+利用に際して生じたいかなる損害（データの消失、業務の中断など）についても、開発者は一切の責任を負いません。
+MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
 
-This software is a personal open-source project.
-The developer shall not be liable for any damages arising from the use of this software.
-It is provided "AS IS" without warranty of any kind, as per the MIT License.
+This software is a personal open-source project and is provided **"AS IS"** without warranty of any kind.
+The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from the use of this software.
+Use at your own risk, as per the MIT License.
