@@ -20,7 +20,6 @@ const StudioState = {
 };
 let currentState = StudioState.STOPPED;
 let isScrubbing = false;
-let studioIgnoreExclusion = false;
 let virtualElapsedMs = 0;
 let lastFrameTime = 0;
 
@@ -277,7 +276,6 @@ function setupEventListeners() {
     });
     configExclusionStrategy.addEventListener('change', () => {
         markDirty();
-        studioIgnoreExclusion = (configExclusionStrategy.value === 'freedom');
         updateExclusionAreas();
     });
     configRewindable.addEventListener('change', () => {
@@ -504,7 +502,6 @@ function resetStudioUI(full = true) {
     // 2. Configuration
     configRewindable.checked = false;
     configExclusionStrategy.value = 'mask';
-    studioIgnoreExclusion = false;
     updateTapeControlState();
     updateCanvasControlVisibility();
 
@@ -598,7 +595,6 @@ function parseAndPopulate(code, metadata) {
     configExclusionStrategy.value = strategyMatch ? strategyMatch[1] : 'mask';
 
     configRewindable.checked = /rewindable:\s*true/.test(code);
-    studioIgnoreExclusion = (configExclusionStrategy.value === 'freedom');
     updateTapeControlState();
     updateExclusionAreas();
 
@@ -786,9 +782,7 @@ function startTest() {
         this.color = color;
         this.initialized = false;
         this.perfViolations = 0;
-        this.isMonitoring = true;
         this.isDrawPending = false;
-        this.ignoreExclusion = studioIgnoreExclusion;
         this.requestRawBitmap = showCanvasCheck.checked;
         this.onRawBitmapDraw = (bitmap) => {
             const ctx = rawCanvas.getContext('2d');

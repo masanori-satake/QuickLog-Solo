@@ -64,6 +64,8 @@ describe('Logic Module', () => {
             expect(formatLogDuration(60 * 60000 + 30000)).toBe('1h 1m'); // 60.5m -> 61m -> 1h 1m (space because < 10)
             expect(formatLogDuration(61 * 60000)).toBe('1h 1m');
             expect(formatLogDuration(69 * 60000)).toBe('1h 9m');
+            expect(formatLogDuration(69 * 60000 + 29999)).toBe('1h 9m');
+            expect(formatLogDuration(69 * 60000 + 30000)).toBe('1h10m'); // 69.5m -> 70m -> 1h10m (no space)
             expect(formatLogDuration(70 * 60000)).toBe('1h10m'); // No space because >= 10
             expect(formatLogDuration(75 * 60000)).toBe('1h15m');
             expect(formatLogDuration(120 * 60000)).toBe('2h');
