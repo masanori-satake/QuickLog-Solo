@@ -121,7 +121,7 @@ sequenceDiagram
 
 #### 同期メカズム
 - **形式:** NDJSON (Newline Delimited JSON)。1行1レコードの形式で、一部が破損しても他の行への影響を最小限に抑えます。
-- **ファイル分割:** 履歴（ログ）は `YYYY-MM-DD.ndjson` の形式で、1日1ファイルに分割されます。カテゴリと設定はそれぞれ `categories.ndjson`, `settings.ndjson` に保存されます。
+- **ファイル分割:** 履歴（ログ）は `YYYY-MM-DD.ndjson` の形式で、1日1ファイルに分割されます。カテゴリは `categories.ndjson`、設定は `settings.json` に保存されます。
 - **同期のタイミング:**
     - **即時 (Immediate):** データ更新を検知すると「Dirty（未保存）」状態となり、2秒後に自動的に同期が実行されます。
     - **5分 / 1時間:** 設定された間隔で定期実行されます。
