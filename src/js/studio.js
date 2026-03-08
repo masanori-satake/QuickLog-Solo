@@ -593,18 +593,7 @@ function parseAndPopulate(code, metadata) {
     configMode.value = modeMatch ? modeMatch[1] : 'canvas';
 
     const strategyMatch = code.match(/exclusionStrategy:\s*['"](mask|pseudo|ignore)['"]/);
-    if (strategyMatch) {
-        configExclusionStrategy.value = strategyMatch[1];
-    } else {
-        // Legacy support during transition if some files aren't updated yet
-        if (/usePseudoSpace:\s*true/.test(code)) {
-            configExclusionStrategy.value = 'pseudo';
-        } else if (/ignoreExclusion:\s*true/.test(code)) {
-            configExclusionStrategy.value = 'ignore';
-        } else {
-            configExclusionStrategy.value = 'mask';
-        }
-    }
+    configExclusionStrategy.value = strategyMatch ? strategyMatch[1] : 'mask';
 
     configRewindable.checked = /rewindable:\s*true/.test(code);
     studioIgnoreExclusion = (configExclusionStrategy.value === 'ignore');
@@ -1042,13 +1031,7 @@ function handleUpload(e) {
                 loadCurrentMetaData();
                 metaAuthor.value = data.author || '';
                 configMode.value = data.mode || 'canvas';
-                if (data.exclusionStrategy) {
-                    configExclusionStrategy.value = data.exclusionStrategy;
-                } else {
-                    if (data.usePseudoSpace) configExclusionStrategy.value = 'pseudo';
-                    else if (data.ignoreExclusion) configExclusionStrategy.value = 'ignore';
-                    else configExclusionStrategy.value = 'mask';
-                }
+                configExclusionStrategy.value = data.exclusionStrategy || 'mask';
                 configRewindable.checked = !!data.rewindable;
                 studioIgnoreExclusion = (configExclusionStrategy.value === 'ignore');
                 updateTapeControlState();
