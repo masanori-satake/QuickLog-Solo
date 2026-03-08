@@ -15,6 +15,7 @@ import MigratingBirds from './animation/migrating_birds.js';
 import NewtonsCradle from './animation/newtons_cradle.js';
 import NightSky from './animation/night_sky.js';
 import OpenReel from './animation/open_reel.js';
+import RepellingDigitalRain from './animation/repelling_digital_rain.js';
 import RightToLeft from './animation/right_to_left.js';
 import Ripple from './animation/ripple.js';
 import SandClock from './animation/sand_clock.js';
@@ -38,6 +39,7 @@ export const animations = [
     { id: 'newtons_cradle', class: NewtonsCradle, metadata: NewtonsCradle.metadata },
     { id: 'night_sky', class: NightSky, metadata: NightSky.metadata },
     { id: 'open_reel', class: OpenReel, metadata: OpenReel.metadata },
+    { id: 'repelling_digital_rain', class: RepellingDigitalRain, metadata: RepellingDigitalRain.metadata, devOnly: true },
     { id: 'right_to_left', class: RightToLeft, metadata: RightToLeft.metadata },
     { id: 'ripple', class: Ripple, metadata: Ripple.metadata },
     { id: 'sand_clock', class: SandClock, metadata: SandClock.metadata },
