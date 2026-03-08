@@ -276,8 +276,21 @@ class BackupManager {
             const fileHandle = await this.directoryHandle.getFileHandle(fileName);
             const file = await fileHandle.getFile();
             const text = await file.text();
-            return text.split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
-        } catch {
+            return text.split('\n')
+                .filter(line => line.trim())
+                .map(line => {
+                    try {
+                        return JSON.parse(line);
+                    } catch (e) {
+                        console.error(`QuickLog-Solo: Failed to parse NDJSON line in ${fileName}`, e);
+                        return null;
+                    }
+                })
+                .filter(item => item !== null);
+        } catch (e) {
+            if (e.name !== 'NotFoundError') {
+                console.error(`QuickLog-Solo: Failed to read NDJSON file ${fileName}`, e);
+            }
             return [];
         }
     }
@@ -296,7 +309,10 @@ class BackupManager {
             const file = await fileHandle.getFile();
             const text = await file.text();
             return JSON.parse(text);
-        } catch {
+        } catch (e) {
+            if (e.name !== 'NotFoundError') {
+                console.error(`QuickLog-Solo: Failed to read or parse JSON file ${fileName}`, e);
+            }
             return [];
         }
     }
