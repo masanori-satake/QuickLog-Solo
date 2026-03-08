@@ -63,6 +63,10 @@
                         <div class="section-header-row">
                             <h2 class="section-title"><span class="material-symbols-outlined">info</span> <span data-i18n="section-metadata">Metadata</span></h2>
                             <div class="input-group-inline">
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" id="config-rewindable">
+                                    <span data-i18n="label-rewindable">Rewindable</span>
+                                </label>
                                 <label data-i18n="label-metadata-lang">Editor Language</label>
                                 <select id="meta-lang-select" class="lang-select-small">
                                     <option value="en" data-i18n="lang-en-native">🇺🇸 English</option>
@@ -88,13 +92,6 @@
                             <div class="input-group full-width">
                                 <label data-i18n="label-description">Description</label>
                                 <input type="text" id="meta-desc" placeholder="Brief explanation of your animation">
-                            </div>
-                            <div class="input-group">
-                                <label data-i18n="label-rewindable">Rewindable</label>
-                                <div class="switch-container">
-                                    <input type="checkbox" id="config-rewindable">
-                                    <span class="switch-label" data-i18n="rewindable-desc">Supports drawing past frames</span>
-                                </div>
                             </div>
                         </div>
                     </section>
@@ -137,17 +134,6 @@
                             <button id="show-search" class="icon-btn" data-i18n-title="btn-search">
                                 <span class="material-symbols-outlined">search</span>
                             </button>
-                            <div class="snippet-menu-wrapper">
-                                <button id="show-snippets" class="icon-btn" data-i18n-title="btn-magic">
-                                    <span class="material-symbols-outlined">magic_button</span>
-                                </button>
-                                <div id="snippet-menu" class="snippet-menu hidden">
-                                    <div class="snippet-item" data-snippet="bouncing-star" data-i18n="snippet-bouncing-star">Bouncing Star</div>
-                                    <div class="snippet-item" data-snippet="digital-snow" data-i18n="snippet-digital-snow">Digital Snow</div>
-                                    <div class="snippet-item" data-snippet="heartbeat" data-i18n="snippet-heartbeat">Heartbeat</div>
-                                    <div class="snippet-item" data-snippet="wave" data-i18n="snippet-wave">Wave</div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     <div id="search-bar" class="search-bar hidden">
