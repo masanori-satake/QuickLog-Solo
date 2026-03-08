@@ -31,7 +31,7 @@ export default class Spectrum extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'sprite', exclusionStrategy: 'pseudo' };
+    config = { mode: 'sprite', exclusionStrategy: 'jump' };
 
     /**
      * Initial setup and resizing

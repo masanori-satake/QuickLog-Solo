@@ -32,7 +32,7 @@ export default class HeartBeat extends AnimationBase {
         rewindable: true
     };
 
-    config = { mode: 'sprite', exclusionStrategy: 'pseudo' };
+    config = { mode: 'sprite', exclusionStrategy: 'jump' };
 
     /**
      * Initial setup and resizing

@@ -93,6 +93,8 @@ const needleChange = document.getElementById('meter-change').querySelector('.met
 
 const toggleWrapBtn = document.getElementById('toggle-wrap');
 const showSearchBtn = document.getElementById('show-search');
+const showSnippetsBtn = document.getElementById('show-snippets');
+const snippetMenu = document.getElementById('snippet-menu');
 const searchBar = document.getElementById('search-bar');
 const searchInput = document.getElementById('search-input');
 const replaceInput = document.getElementById('replace-input');
@@ -276,7 +278,7 @@ function setupEventListeners() {
     });
     configExclusionStrategy.addEventListener('change', () => {
         markDirty();
-        studioIgnoreExclusion = (configExclusionStrategy.value === 'ignore');
+        studioIgnoreExclusion = (configExclusionStrategy.value === 'freedom');
         updateExclusionAreas();
     });
     configRewindable.addEventListener('change', () => {
@@ -441,6 +443,23 @@ function setupEventListeners() {
         searchBar.classList.add('hidden');
     });
 
+    showSnippetsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        snippetMenu.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', () => {
+        snippetMenu.classList.add('hidden');
+    });
+
+    document.querySelectorAll('.snippet-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            insertSnippet(item.dataset.snippet);
+            snippetMenu.classList.add('hidden');
+        });
+    });
+
     btnReplace.addEventListener('click', () => handleReplace(false));
     btnReplaceAll.addEventListener('click', () => handleReplace(true));
 
@@ -592,11 +611,11 @@ function parseAndPopulate(code, metadata) {
     const modeMatch = code.match(/mode:\s*['"](canvas|matrix|sprite)['"]/);
     configMode.value = modeMatch ? modeMatch[1] : 'canvas';
 
-    const strategyMatch = code.match(/exclusionStrategy:\s*['"](mask|pseudo|ignore)['"]/);
+    const strategyMatch = code.match(/exclusionStrategy:\s*['"](mask|jump|freedom)['"]/);
     configExclusionStrategy.value = strategyMatch ? strategyMatch[1] : 'mask';
 
     configRewindable.checked = /rewindable:\s*true/.test(code);
-    studioIgnoreExclusion = (configExclusionStrategy.value === 'ignore');
+    studioIgnoreExclusion = (configExclusionStrategy.value === 'freedom');
     updateTapeControlState();
     updateExclusionAreas();
 
@@ -637,18 +656,16 @@ function parseAndPopulate(code, metadata) {
     if (!inputInteraction.value) inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
 
     // Remove extracted parts from classContent to get variables/other members
+    // We do this aggressively to avoid duplicate declarations in the exported file
     let vars = classContent;
     const toRemove = ['metadata', 'config', 'setup', 'draw', 'onClick', 'onMouseMove'];
 
-    let ranges = [];
     toRemove.forEach(name => {
-        const r = findRange(vars, name);
-        if (r) ranges.push(r);
-    });
-
-    ranges.sort((a, b) => b.start - a.start);
-    ranges.forEach(r => {
-        vars = vars.substring(0, r.start) + vars.substring(r.end);
+        let r;
+        // Use a while loop to remove all occurrences of the property/method name
+        while ((r = findRange(vars, name)) !== null) {
+            vars = vars.substring(0, r.start) + vars.substring(r.end);
+        }
     });
 
     // Clean up empty semicolons and multiple newlines left behind
@@ -711,7 +728,12 @@ function findRange(text, namePattern) {
                 if (parenCount === 0) {
                     braceCount--;
                     if (started && braceCount === 0) {
-                        return { start: actualStart, end: i + 1 };
+                        // Look ahead for optional semicolon
+                        let end = i + 1;
+                        while (end < text.length && (text[end] === ';' || text[end] === ' ' || text[end] === '\t')) {
+                            end++;
+                        }
+                        return { start: actualStart, end };
                     }
                 }
             } else if (char === ';' && braceCount === 0 && parenCount === 0) {
@@ -922,7 +944,7 @@ function _requestStudioDraw(elapsed) {
 
     const progress = (elapsed % engine.cycleMs) / engine.cycleMs;
     let drawWidth = engine.canvas.width;
-    if (engine.config.exclusionStrategy === 'pseudo') {
+    if (engine.config.exclusionStrategy === 'jump') {
         drawWidth = engine._getPseudoInfo().totalWidth;
     }
 
@@ -933,7 +955,7 @@ function _requestStudioDraw(elapsed) {
         elapsedMs: elapsed,
         progress,
         step: Math.floor(progress * 240),
-        exclusionAreas: engine.config.exclusionStrategy === 'pseudo' ? [] : engine._getVirtualExclusionAreas(),
+        exclusionAreas: engine.config.exclusionStrategy === 'jump' ? [] : engine._getVirtualExclusionAreas(),
         realExclusionAreas: engine.exclusionAreas,
         requestRawBitmap: engine.requestRawBitmap
     };
@@ -1033,7 +1055,7 @@ function handleUpload(e) {
                 configMode.value = data.mode || 'canvas';
                 configExclusionStrategy.value = data.exclusionStrategy || 'mask';
                 configRewindable.checked = !!data.rewindable;
-                studioIgnoreExclusion = (configExclusionStrategy.value === 'ignore');
+                studioIgnoreExclusion = (configExclusionStrategy.value === 'freedom');
                 updateTapeControlState();
                 inputVars.value = data.vars || '';
                 inputSetup.value = data.setup || '';
@@ -1380,6 +1402,46 @@ function updateAllHighlight() {
 
 function updateAllGutter() {
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateGutter(ta));
+}
+
+const SNIPPETS = {
+    'bouncing-star': {
+        vars: '// Bouncing Star Variables\nthis.starX = 0;\nthis.starY = 0;\nthis.starDX = 2;\nthis.starDY = 1.5;',
+        setup: 'setup(width, height) {\n  this.width = width;\n  this.height = height;\n  this.starX = width / 2;\n  this.starY = height / 2;\n}',
+        draw: 'draw(ctx, { elapsedMs, progress, step, exclusionAreas }) {\n  // Move star\n  this.starX += this.starDX;\n  this.starY += this.starDY;\n\n  // Bounce off walls\n  if (this.starX <= 0 || this.starX >= this.width) this.starDX *= -1;\n  if (this.starY <= 0 || this.starY >= this.height) this.starDY *= -1;\n\n  // Draw star (Dot Size 3)\n  ctx.fillStyle = this.color;\n  ctx.fillRect(Math.floor(this.starX), Math.floor(this.starY), 3, 3);\n}'
+    },
+    'digital-snow': {
+        vars: '// Digital Snow Variables\nthis.flakes = [];',
+        setup: 'setup(width, height) {\n  this.width = width;\n  this.height = height;\n  for (let i = 0; i < 50; i++) {\n    this.flakes.push({ x: Math.random() * width, y: Math.random() * height, s: Math.random() * 0.5 + 0.5 });\n  }\n}',
+        draw: 'draw(ctx, { elapsedMs, progress, step, exclusionAreas }) {\n  ctx.fillStyle = this.color;\n  this.flakes.forEach(f => {\n    f.y += f.s;\n    if (f.y > this.height) f.y = -2;\n    ctx.fillRect(Math.floor(f.x), Math.floor(f.y), 1, 1);\n  });\n}'
+    },
+    'heartbeat': {
+        vars: '// Heartbeat Variables',
+        setup: 'setup(width, height) {\n  this.width = width;\n  this.height = height;\n}',
+        draw: 'draw(ctx, { elapsedMs, progress, step, exclusionAreas }) {\n  const pulse = (Math.sin(elapsedMs / 200) + 1) / 2;\n  const size = 10 + pulse * 20;\n  \n  ctx.fillStyle = this.color;\n  const cx = this.width / 2;\n  const cy = this.height / 2;\n  \n  // Simple Diamond as Heart\n  ctx.beginPath();\n  ctx.moveTo(cx, cy - size/2);\n  ctx.lineTo(cx + size/2, cy);\n  ctx.lineTo(cx, cy + size/2);\n  ctx.lineTo(cx - size/2, cy);\n  ctx.fill();\n}'
+    },
+    'wave': {
+        vars: '// Wave Variables',
+        setup: 'setup(width, height) {\n  this.width = width;\n  this.height = height;\n}',
+        draw: 'draw(ctx, { elapsedMs, progress, step, exclusionAreas }) {\n  ctx.fillStyle = this.color;\n  for (let x = 0; x < this.width; x += 2) {\n    const y = this.height / 2 + Math.sin(x * 0.1 + elapsedMs * 0.005) * 10;\n    ctx.fillRect(x, Math.floor(y), 2, 2);\n  }\n}'
+    }
+};
+
+function insertSnippet(id) {
+    const snippet = SNIPPETS[id];
+    if (!snippet) return;
+
+    if (inputVars.value.trim() && !confirm(getMsg('confirm-snippet-overwrite'))) return;
+
+    inputVars.value = snippet.vars;
+    inputSetup.value = snippet.setup;
+    inputDraw.value = snippet.draw;
+    inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
+
+    updateAllHighlight();
+    updateAllGutter();
+    markDirty();
+    showToast(getMsg('toast-snippet-inserted'));
 }
 
 function handleReplace(all) {

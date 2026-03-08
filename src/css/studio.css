@@ -405,6 +405,40 @@ input:checked + .slider::before {
     padding: 0 8px;
 }
 
+.snippet-menu-wrapper {
+    position: relative;
+}
+
+.snippet-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--md-sys-color-surface-container-high);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-small);
+    box-shadow: var(--md-sys-elevation-2);
+    z-index: 1000;
+    width: 180px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+.snippet-menu.hidden {
+    display: none;
+}
+
+.snippet-item {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: var(--md-sys-color-on-surface);
+}
+
+.snippet-item:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
 .search-bar {
     background-color: var(--md-sys-color-surface-container-high);
     padding: 8px;

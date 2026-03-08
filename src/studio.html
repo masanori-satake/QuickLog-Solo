@@ -114,8 +114,8 @@
                                 <label data-i18n="label-exclusion-strategy">Exclusion Strategy</label>
                                 <select id="config-exclusion-strategy">
                                     <option value="mask" data-i18n="strategy-mask">Mask (Standard)</option>
-                                    <option value="pseudo" data-i18n="strategy-pseudo">Pseudo Space (Jump UI)</option>
-                                    <option value="ignore" data-i18n="strategy-ignore">Ignore (Draw All)</option>
+                                    <option value="jump" data-i18n="strategy-jump">Pseudo Space (Jump UI)</option>
+                                    <option value="freedom" data-i18n="strategy-freedom">Ignore (Draw All)</option>
                                 </select>
                             </div>
                         </div>
@@ -137,6 +137,17 @@
                             <button id="show-search" class="icon-btn" data-i18n-title="btn-search">
                                 <span class="material-symbols-outlined">search</span>
                             </button>
+                            <div class="snippet-menu-wrapper">
+                                <button id="show-snippets" class="icon-btn" data-i18n-title="btn-magic">
+                                    <span class="material-symbols-outlined">magic_button</span>
+                                </button>
+                                <div id="snippet-menu" class="snippet-menu hidden">
+                                    <div class="snippet-item" data-snippet="bouncing-star" data-i18n="snippet-bouncing-star">Bouncing Star</div>
+                                    <div class="snippet-item" data-snippet="digital-snow" data-i18n="snippet-digital-snow">Digital Snow</div>
+                                    <div class="snippet-item" data-snippet="heartbeat" data-i18n="snippet-heartbeat">Heartbeat</div>
+                                    <div class="snippet-item" data-snippet="wave" data-i18n="snippet-wave">Wave</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div id="search-bar" class="search-bar hidden">

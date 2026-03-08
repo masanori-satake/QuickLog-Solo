@@ -31,7 +31,7 @@ export default class DigitalRain extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'sprite', exclusionStrategy: 'pseudo' };
+    config = { mode: 'sprite', exclusionStrategy: 'jump' };
 
     constructor() {
         super();

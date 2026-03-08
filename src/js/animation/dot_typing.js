@@ -32,7 +32,7 @@ export default class DotTyping extends AnimationBase {
         rewindable: true
     };
 
-    config = { mode: 'sprite', exclusionStrategy: 'pseudo' };
+    config = { mode: 'sprite', exclusionStrategy: 'jump' };
 
     constructor() {
         super();

@@ -53,7 +53,7 @@ export default class NightSky extends AnimationBase {
         }));
     }
 
-    config = { mode: 'sprite', exclusionStrategy: 'pseudo' };
+    config = { mode: 'sprite', exclusionStrategy: 'jump' };
 
     /**
      * Initial setup and resizing

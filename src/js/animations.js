@@ -72,7 +72,7 @@ export class AnimationEngine {
     }
 
     _mapToVirtualX(realX) {
-        if (this.config.exclusionStrategy !== 'pseudo') return realX;
+        if (this.config.exclusionStrategy !== 'jump') return realX;
         const info = this._getPseudoInfo();
         if (realX < info.left) return realX;
         if (realX < info.left + info.width) return info.left;
@@ -80,7 +80,7 @@ export class AnimationEngine {
     }
 
     _getVirtualExclusionAreas() {
-        if (this.config.exclusionStrategy !== 'pseudo') return this.exclusionAreas;
+        if (this.config.exclusionStrategy !== 'jump') return this.exclusionAreas;
         const info = this._getPseudoInfo();
         return this.exclusionAreas.map(area => {
             const vX = this._mapToVirtualX(area.x);
@@ -233,7 +233,7 @@ export class AnimationEngine {
         const progress = (elapsed % this.cycleMs) / this.cycleMs;
 
         let drawWidth = this.canvas.width;
-        if (this.config.exclusionStrategy === 'pseudo') {
+        if (this.config.exclusionStrategy === 'jump') {
             drawWidth = this._getPseudoInfo().totalWidth;
         }
 
@@ -244,7 +244,7 @@ export class AnimationEngine {
             elapsedMs: elapsed,
             progress,
             step: Math.floor(progress * 240),
-            exclusionAreas: this.config.exclusionStrategy === 'pseudo' ? [] : this._getVirtualExclusionAreas(),
+            exclusionAreas: this.config.exclusionStrategy === 'jump' ? [] : this._getVirtualExclusionAreas(),
             realExclusionAreas: this.exclusionAreas,
             requestRawBitmap: this.requestRawBitmap
         };
@@ -269,7 +269,7 @@ export class AnimationEngine {
 
         if (this.worker && this.initialized) {
             let w = this.canvas.width;
-            if (this.config.exclusionStrategy === 'pseudo') {
+            if (this.config.exclusionStrategy === 'jump') {
                 w = this._getPseudoInfo().totalWidth;
             }
             this.worker.postMessage({ type: 'setup', payload: { width: w, height: this.canvas.height } });

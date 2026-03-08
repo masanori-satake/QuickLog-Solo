@@ -17,7 +17,7 @@ export class AnimationBase {
     /**
      * Animation Configuration.
      * mode: 'canvas' (default), 'matrix', or 'sprite'
-     * exclusionStrategy: 'mask' (default), 'pseudo', or 'ignore'
+     * exclusionStrategy: 'mask' (default), 'jump', or 'freedom'
      */
     config = {
         mode: 'canvas',
@@ -26,7 +26,7 @@ export class AnimationBase {
 
     /**
      * Called when the animation starts or the viewport is resized.
-     * @param {number} _width - Viewport width (mapped if exclusionStrategy is 'pseudo')
+     * @param {number} _width - Viewport width (mapped if exclusionStrategy is 'jump')
      * @param {number} _height - Viewport height
      */
     setup(_width, _height) {}
