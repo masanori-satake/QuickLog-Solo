@@ -54,23 +54,23 @@ export default class RepellingDigitalRain extends AnimationBase {
         };
     }
 
-    createParticle(x, y) {
+    createParticle(x, y, vx) {
         return {
             x,
             y,
-            vx: (Math.random() - 0.5) * 4,
+            vx: vx || (Math.random() - 0.5) * 4,
             vy: -1 - Math.random() * 2,
             life: 1.0,
-            size: 1 + Math.floor(Math.random() * 2)
+            size: 2 + Math.floor(Math.random() * 2) // Larger dots (2 or 3)
         };
     }
 
     /**
      * Simple collision detection
      */
-    isInExclusion(x, y, exclusionAreas) {
-        if (!exclusionAreas || exclusionAreas.length === 0) return false;
-        return exclusionAreas.some(area =>
+    getHitExclusion(x, y, exclusionAreas) {
+        if (!exclusionAreas || exclusionAreas.length === 0) return null;
+        return exclusionAreas.find(area =>
             x >= area.x && x <= area.x + area.width &&
             y >= area.y && y <= area.y + area.height
         );
@@ -90,10 +90,16 @@ export default class RepellingDigitalRain extends AnimationBase {
             const nextY = col.y + col.speed * speed;
 
             // 衝突判定：頭が排他領域に入ったか
-            if (this.isInExclusion(x, nextY, exclusionAreas)) {
-                // はじけ飛ぶパーティクルを生成
-                for (let p = 0; p < 2; p++) {
-                    this.particles.push(this.createParticle(x, nextY));
+            const hitArea = this.getHitExclusion(x, nextY, exclusionAreas);
+            if (hitArea) {
+                // 領域の中心からの相対位置で跳ね返る方向を決める
+                const centerX = hitArea.x + hitArea.width / 2;
+                const dir = x < centerX ? -1 : 1;
+                const vx = dir * (1 + Math.random() * 3);
+
+                // はじけ飛ぶパーティクルを生成 (強調のため多めに)
+                for (let p = 0; p < 4; p++) {
+                    this.particles.push(this.createParticle(x, nextY, vx + (Math.random() - 0.5) * 2));
                 }
                 // 頭をリセット
                 col.y = -100;
@@ -118,7 +124,7 @@ export default class RepellingDigitalRain extends AnimationBase {
                 if (dot.y < 0 || dot.y > height) return;
 
                 // 排他領域の中には描画しない（壁として扱う）
-                if (this.isInExclusion(x, dot.y, exclusionAreas)) return;
+                if (this.getHitExclusion(x, dot.y, exclusionAreas)) return;
 
                 const isLead = idx === col.dots.length - 1;
                 const size = isLead ? 3 : (idx > col.dots.length - 6 ? 2 : 1);
@@ -132,14 +138,13 @@ export default class RepellingDigitalRain extends AnimationBase {
             p.x += p.vx * speed;
             p.y += p.vy * speed;
             p.vy += gravity * speed;
-            p.life -= 0.05 * speed;
+            p.life -= 0.04 * speed; // Slightly longer life
 
             if (p.life <= 0 || p.y > height) {
                 this.particles.splice(i, 1);
             } else {
-                if (!this.isInExclusion(p.x, p.y, exclusionAreas)) {
-                    sprites.push({ x: p.x, y: p.y, size: p.size });
-                }
+                // パーティクル自体は排他領域に入っても消さない（放物線を見せるため）
+                sprites.push({ x: p.x, y: p.y, size: p.size });
             }
         }
 
