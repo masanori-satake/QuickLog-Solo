@@ -63,9 +63,8 @@ const metaName = document.getElementById('meta-name');
 const metaAuthor = document.getElementById('meta-author');
 const metaDesc = document.getElementById('meta-desc');
 const configMode = document.getElementById('config-mode');
-const configPseudo = document.getElementById('config-pseudo');
+const configExclusionStrategy = document.getElementById('config-exclusion-strategy');
 const configRewindable = document.getElementById('config-rewindable');
-const configIgnoreExclusion = document.getElementById('config-ignore-exclusion');
 
 const canvas = document.getElementById('animation-canvas');
 const exclusionSim = document.getElementById('exclusion-simulator');
@@ -275,15 +274,14 @@ function setupEventListeners() {
         markDirty();
         updateCanvasControlVisibility();
     });
-    configPseudo.addEventListener('change', markDirty);
+    configExclusionStrategy.addEventListener('change', () => {
+        markDirty();
+        studioIgnoreExclusion = (configExclusionStrategy.value === 'ignore');
+        updateExclusionAreas();
+    });
     configRewindable.addEventListener('change', () => {
         markDirty();
         updateTapeControlState();
-    });
-    configIgnoreExclusion.addEventListener('change', () => {
-        markDirty();
-        studioIgnoreExclusion = configIgnoreExclusion.checked;
-        updateExclusionAreas();
     });
 
     [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
@@ -503,7 +501,7 @@ function resetStudioUI(full = true) {
 
     // 2. Configuration
     configRewindable.checked = false;
-    configIgnoreExclusion.checked = false;
+    configExclusionStrategy.value = 'mask';
     studioIgnoreExclusion = false;
     updateTapeControlState();
     updateCanvasControlVisibility();
@@ -593,10 +591,23 @@ function parseAndPopulate(code, metadata) {
     // Extract config & metadata
     const modeMatch = code.match(/mode:\s*['"](canvas|matrix|sprite)['"]/);
     configMode.value = modeMatch ? modeMatch[1] : 'canvas';
-    configPseudo.checked = /usePseudoSpace:\s*true/.test(code);
+
+    const strategyMatch = code.match(/exclusionStrategy:\s*['"](mask|pseudo|ignore)['"]/);
+    if (strategyMatch) {
+        configExclusionStrategy.value = strategyMatch[1];
+    } else {
+        // Legacy support during transition if some files aren't updated yet
+        if (/usePseudoSpace:\s*true/.test(code)) {
+            configExclusionStrategy.value = 'pseudo';
+        } else if (/ignoreExclusion:\s*true/.test(code)) {
+            configExclusionStrategy.value = 'ignore';
+        } else {
+            configExclusionStrategy.value = 'mask';
+        }
+    }
+
     configRewindable.checked = /rewindable:\s*true/.test(code);
-    configIgnoreExclusion.checked = /ignoreExclusion:\s*true/.test(code);
-    studioIgnoreExclusion = configIgnoreExclusion.checked;
+    studioIgnoreExclusion = (configExclusionStrategy.value === 'ignore');
     updateTapeControlState();
     updateExclusionAreas();
 
@@ -623,6 +634,10 @@ function parseAndPopulate(code, metadata) {
         inputDraw.value = inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*,\s*/, 'draw(ctx, { ');
         inputDraw.value = inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*\}\s*\)/, 'draw(ctx, params)');
     }
+
+    // Cleanup legacy config properties
+    classContent = classContent.replace(/usePseudoSpace:\s*(true|false),?\s*/g, '');
+    classContent = classContent.replace(/ignoreExclusion:\s*(true|false),?\s*/g, '');
 
     const onClick = extractMethod(classContent, 'onClick');
     const onMouseMove = extractMethod(classContent, 'onMouseMove');
@@ -744,8 +759,7 @@ function startTest() {
     // Configure engine for testing
     engine.config = {
         mode: configMode.value,
-        usePseudoSpace: configPseudo.checked,
-        ignoreExclusion: configIgnoreExclusion.checked
+        exclusionStrategy: configExclusionStrategy.value
     };
 
     updateExclusionAreas();
@@ -919,7 +933,7 @@ function _requestStudioDraw(elapsed) {
 
     const progress = (elapsed % engine.cycleMs) / engine.cycleMs;
     let drawWidth = engine.canvas.width;
-    if (engine.config.usePseudoSpace) {
+    if (engine.config.exclusionStrategy === 'pseudo') {
         drawWidth = engine._getPseudoInfo().totalWidth;
     }
 
@@ -930,8 +944,8 @@ function _requestStudioDraw(elapsed) {
         elapsedMs: elapsed,
         progress,
         step: Math.floor(progress * 240),
-        exclusionAreas: engine.ignoreExclusion ? [] : engine._getVirtualExclusionAreas(),
-        realExclusionAreas: engine.ignoreExclusion ? [] : engine.exclusionAreas,
+        exclusionAreas: engine.config.exclusionStrategy === 'pseudo' ? [] : engine._getVirtualExclusionAreas(),
+        realExclusionAreas: engine.exclusionAreas,
         requestRawBitmap: engine.requestRawBitmap
     };
 
@@ -951,7 +965,7 @@ function updateTapeControlState() {
 }
 
 function setInputDisabled(disabled) {
-    [metaName, metaAuthor, metaDesc, configMode, configPseudo, configRewindable, inputVars, inputSetup, inputDraw, inputInteraction, sampleSelect].forEach(el => {
+    [metaName, metaAuthor, metaDesc, configMode, configExclusionStrategy, configRewindable, inputVars, inputSetup, inputDraw, inputInteraction, sampleSelect].forEach(el => {
         el.disabled = disabled;
     });
 }
@@ -984,8 +998,7 @@ export default class CustomAnimation extends AnimationBase {
 
     config = {
         mode: '${configMode.value}',
-        usePseudoSpace: ${configPseudo.checked},
-        ignoreExclusion: ${configIgnoreExclusion.checked}
+        exclusionStrategy: '${configExclusionStrategy.value}'
     };
 
     ${indentCode(inputVars.value, 4)}
@@ -1029,10 +1042,15 @@ function handleUpload(e) {
                 loadCurrentMetaData();
                 metaAuthor.value = data.author || '';
                 configMode.value = data.mode || 'canvas';
-                configPseudo.checked = !!data.usePseudoSpace;
+                if (data.exclusionStrategy) {
+                    configExclusionStrategy.value = data.exclusionStrategy;
+                } else {
+                    if (data.usePseudoSpace) configExclusionStrategy.value = 'pseudo';
+                    else if (data.ignoreExclusion) configExclusionStrategy.value = 'ignore';
+                    else configExclusionStrategy.value = 'mask';
+                }
                 configRewindable.checked = !!data.rewindable;
-                configIgnoreExclusion.checked = !!data.ignoreExclusion;
-                studioIgnoreExclusion = configIgnoreExclusion.checked;
+                studioIgnoreExclusion = (configExclusionStrategy.value === 'ignore');
                 updateTapeControlState();
                 inputVars.value = data.vars || '';
                 inputSetup.value = data.setup || '';

@@ -115,8 +115,8 @@ function _getPseudoInfo(exclusionAreas, canvasWidth) {
     return { left, width, totalWidth: canvasWidth - width };
 }
 
-function _mapToRealX(virtualX, usePseudoSpace, exclusionAreas, canvasWidth) {
-    if (!usePseudoSpace) return virtualX;
+function _mapToRealX(virtualX, strategy, exclusionAreas, canvasWidth) {
+    if (strategy !== 'pseudo') return virtualX;
     const info = _getPseudoInfo(exclusionAreas, canvasWidth);
     if (virtualX < info.left) return virtualX;
     return virtualX + info.width;
@@ -138,8 +138,7 @@ function performDraw(params) {
     const progress = (modifiedElapsedMs % cycleMs) / cycleMs;
 
     const config = animation.config || { mode: 'canvas' };
-    const usePseudoSpace = !!config.usePseudoSpace;
-    const ignoreExclusion = !!config.ignoreExclusion;
+    const strategy = config.exclusionStrategy || 'mask';
 
     // Parameters passed to the animation's draw method.
     // Width and height are intentionally excluded to encourage use of setup().
@@ -147,7 +146,7 @@ function performDraw(params) {
         elapsedMs: modifiedElapsedMs,
         progress: progress,
         step: Math.floor(progress * 240),
-        exclusionAreas: (ignoreExclusion || usePseudoSpace) ? [] : exclusionAreas,
+        exclusionAreas: strategy === 'pseudo' ? [] : exclusionAreas,
         speed: speedFactor
     };
 
@@ -169,11 +168,11 @@ function performDraw(params) {
                 const cellX = c * CELL_SIZE;
                 const cellY = r * CELL_SIZE;
 
-                // 1. Physical Masking: Prevent drawing over UI text/buttons
-                if (_isInExclusion(cellX, cellY, physicalMask)) continue;
+                // 1. Physical Masking: Prevent drawing over UI text/buttons (except for 'ignore' strategy)
+                if (strategy !== 'ignore' && _isInExclusion(cellX, cellY, physicalMask)) continue;
 
                 let virtualC = c;
-                if (usePseudoSpace) {
+                if (strategy === 'pseudo') {
                     const info = _getPseudoInfo(physicalMask, canvasWidth);
                     const realX = cellX;
                     if (realX < info.left) virtualC = Math.floor(realX / CELL_SIZE);
@@ -199,13 +198,13 @@ function performDraw(params) {
         if (!sprites || !Array.isArray(sprites)) return { dots: [], rawBitmap: null };
 
         sprites.forEach(sprite => {
-            const realX = _mapToRealX(sprite.x, usePseudoSpace, physicalMask, canvasWidth);
+            const realX = _mapToRealX(sprite.x, strategy, physicalMask, canvasWidth);
             const realY = sprite.y;
             const cellX = Math.floor(realX / CELL_SIZE) * CELL_SIZE;
             const cellY = Math.floor(realY / CELL_SIZE) * CELL_SIZE;
 
-            // 1. Physical Masking: Prevent drawing over UI text/buttons
-            if (_isInExclusion(cellX, cellY, physicalMask)) return;
+            // 1. Physical Masking: Prevent drawing over UI text/buttons (except for 'ignore' strategy)
+            if (strategy !== 'ignore' && _isInExclusion(cellX, cellY, physicalMask)) return;
 
             let dotSize = 0;
             if (sprite.size === 3) dotSize = DOT_SIZE_LARGE;
@@ -234,11 +233,11 @@ function performDraw(params) {
                 const cellX = c * CELL_SIZE;
                 const cellY = r * CELL_SIZE;
 
-                // 1. Physical Masking: Prevent drawing over UI text/buttons
-                if (_isInExclusion(cellX, cellY, physicalMask)) continue;
+                // 1. Physical Masking: Prevent drawing over UI text/buttons (except for 'ignore' strategy)
+                if (strategy !== 'ignore' && _isInExclusion(cellX, cellY, physicalMask)) continue;
 
                 let vCellX = cellX;
-                if (usePseudoSpace) {
+                if (strategy === 'pseudo') {
                     const info = _getPseudoInfo(physicalMask, canvasWidth);
                     if (cellX < info.left) {
                         vCellX = cellX;

@@ -31,7 +31,7 @@ export default class TetrisBuilding extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'matrix', usePseudoSpace: false };
+    config = { mode: 'matrix', exclusionStrategy: 'mask' };
 
     /**
      * Initial setup and resizing

@@ -31,7 +31,7 @@ export default class Cats extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'canvas', usePseudoSpace: true };
+    config = { mode: 'canvas', exclusionStrategy: 'pseudo' };
 
     /**
      * Initial setup and resizing

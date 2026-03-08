@@ -169,20 +169,79 @@ sequenceDiagram
     - `'canvas'`: (デフォルト) Canvas API を使用した自由な描画。
     - `'matrix'`: 2次元配列を返すグリッド描画。
     - `'sprite'`: `{x, y, size}` の配列を返すオブジェクト描画。
-- `usePseudoSpace`: 疑似空間（Pseudo-space）を使用するかどうかのフラグ。
-    - `true`: 遮蔽領域（テキスト等）を「最初から存在しない」ものとして扱い、連続した一本の領域として座標計算を行えるようにします。オブジェクトが遮蔽物を飛び越えて移動するようなシンプルな実装に適しています。
-    - `false`: (デフォルト) 実際のキャンバス座標を使用します。遮蔽物を避けたり、遮蔽物の上に乗ったりするような高度な演出に適しています。
-- `ignoreExclusion`: (オプション) `true` に設定すると、テキスト領域等による自動遮蔽（Exclusion）を無視してキャンバス全面に描画を行います。主に検証用モジュールで、UIの状態に関わらず確実な描画を保証するために使用します。
+- `exclusionStrategy`: 前面の UI 遮蔽領域（Exclusion Area）に対する振る舞い。
+    - `'mask'`: (デフォルト) 通常モード。UI の背後を避けて描画します。
+    - `'pseudo'`: 疑似空間モード。UI を「最初から存在しない隙間」として詰め、連続した空間として扱います。
+    - `'ignore'`: 無視モード。UI 領域による強制的な描画スキップを行わず、全面に描画します。
 
-### 5.2. 呼び出しサイクル
+### 5.2. 遮蔽戦略 (Exclusion Strategy) の詳細
+
+前面のテキスト（カテゴリ名やタイマー）とアニメーションが重なる際の制御を、以下の 3 つの戦略から選択できます。
+
+| 戦略 | モジュールが受け取る領域情報 (`exclusionAreas`) | エンジンによる強制遮蔽（マスク） | 座標系 | 主な用途 |
+| :--- | :--- | :--- | :--- | :--- |
+| **`'mask'`** (Default) | **実際の遮蔽領域** | **あり** | 物理座標 | 標準的なアニメーション。UI を避けたり、UI の周囲で反応させたい場合。 |
+| **`'pseudo'`** | 空配列 (`[]`) | **あり** | 疑似座標 (空間圧縮) | オブジェクトが UI を飛び越えて移動するような演出。実装を単純化したい場合。 |
+| **`'ignore'`** | **実際の遮蔽領域** | **なし** | 物理座標 | UI の形状に完全に Fit させたい場合や、テスト用。 |
+
+#### 各戦略の動作イメージと選択基準
+
+##### 1. `'mask'` (デフォルト): 協調と安全
+エンジンが自動的に UI 領域を隠蔽（マスク）します。モジュール側は `exclusionAreas` を参照して UI を避けることも可能です。
+
+- **モジュール側の視点:** キャンバス全体（物理座標）が見えている。
+- **実際の表示:** UI と重なる部分は強制的に消える。
+- **用途:** 「UI の後ろを何かが通る」ような一般的な演出に最適。
+
+```mermaid
+graph TD
+    subgraph "Result on Screen ('mask')"
+    Dots1[Dots] --- UI[UI Area: Always Clear] --- Dots2[Dots]
+    end
+```
+
+##### 2. `'pseudo'` (疑似空間): 単純化された移動
+UI 領域を空間的に圧縮し、モジュールからは「UI が存在しない一つの連続した空間」に見えるようにします。
+
+- **モジュール側の視点:** UI の横幅分だけ狭いキャンバスが見えている。座標 (10, 10) から (110, 10) に動かすだけで、実際には UI を飛び越える。
+- **実際の表示:** UI 領域は強制的に消去され、その両側にアニメーションがマッピングされる。
+- **用途:** 星や鳥が画面を横切るような、UI の存在を無視してスムーズに移動させたい場合に最適。
+
+```mermaid
+graph LR
+    subgraph "Module Side (Pseudo Space)"
+    P_Canvas[Narrow Canvas] --> P_Obj[Object moves linearly]
+    end
+    subgraph "Screen Side (Physical Space)"
+    S_Left[Left Area] --> S_UI[UI Gap] --> S_Right[Right Area]
+    P_Obj -. "Split & Map" .-> S_Left
+    P_Obj -. "Split & Map" .-> S_Right
+    end
+```
+
+##### 3. `'ignore'` (自由な表現): UI との融合
+エンジンによる強制遮蔽を一切行いません。モジュールは `exclusionAreas` を使って UI の位置を正確に把握し、UI に寄り添うような描画が可能です。
+
+- **モジュール側の視点:** キャンバス全体（物理座標）が見えている。
+- **実際の表示:** 描画したものがそのまま表示される（UI の下層にあるため、物理的には UI テキストの下に回り込むが、エンジンによるドットの削除はされない）。
+- **用途:** UI の枠線を発光させる、UI の影を落とす、UI の隙間を縫うように動くなど、UI と一体化した演出に最適。
+
+```mermaid
+graph TD
+    subgraph "Result on Screen ('ignore')"
+    UI_Combined[UI Area + Animation overlapping]
+    end
+```
+
+### 5.3. 呼び出しサイクル
 - **計算用ステップ:** 500ms ごとに `step` (0-239) がインクリメントされる。
 - **描画周期:** `requestAnimationFrame` (通常 60fps) に同期。
 - **周期の長さ:** 120秒 (2分) で 1サイクル。ただし `elapsedMs` を利用することで、2分を超える独自のストーリー展開も可能。
 
-### 5.3. 提供される情報 (Input Parameters)
+### 5.4. 提供される情報 (Input Parameters)
 
 #### A. セットアップ時 (`setup(width, height)`)
-- `width`: 描画領域の幅 (px)。`usePseudoSpace: true` の場合は、遮蔽領域を除いた仮想的な幅が渡されます。
+- `width`: 描画領域の幅 (px)。`exclusionStrategy: 'pseudo'` の場合は、遮蔽領域を除いた仮想的な幅（疑似座標の最大値）が渡されます。
 - `height`: 描画領域の高さ (px)
 ※開始時およびリサイズ時に呼び出される。
 
@@ -193,17 +252,17 @@ sequenceDiagram
 - `step`: 現在の計時ステップ (0 ～ 239)。
 - `exclusionAreas`: テキスト等が表示されている遮蔽領域の配列。
     - 形式: `Array<{x: number, y: number, width: number, height: number}>`
-    - **注意:** `ignoreExclusion: true` または `usePseudoSpace: true` が設定されているモジュールの場合、この配列は空（`[]`）になります。
+    - **注意:** `exclusionStrategy: 'pseudo'` が設定されているモジュールの場合、この配列は空（`[]`）になります。
     - **注意:** フォントの切り替えやテキスト長の変化により、描画中にサイズが変動する場合があるため、毎フレームチェックすることを推奨する。
 
-### 5.4. 出力データ形式 (Output)
+### 5.5. 出力データ形式 (Output)
 `config.mode` の設定に応じて、以下のいずれかの形式でデータを出力します。
 
 #### A. スプライト形式 (Sprite Mode)
 `draw` 関数の戻り値として、ドット（オブジェクト）の座標とサイズの配列を返します。
 - **データ構造:** `Array<{x: number, y: number, size: number}>`
 - **size の値:** `1` (小), `2` (中), `3` (大)
-- **メリット:** 最も直感的です。`usePseudoSpace: true` と組み合わせることで、遮蔽領域を一切気にせず、好きな座標にドットを置くだけでアニメーションが完成します。
+- **メリット:** 最も直感的です。`exclusionStrategy: 'pseudo'` と組み合わせることで、遮蔽領域を一切気にせず、好きな座標にドットを置くだけでアニメーションが完成します。
 
 #### B. マトリックス形式 (Matrix Mode)
 `draw` 関数の戻り値として、グリッド状の配置データを返します。
@@ -216,12 +275,12 @@ sequenceDiagram
 - **描画ルール:** モノクロ（白 `#fff`）で描画します。
 - **メリット:** Canvas API の全ての機能（曲線、グラデーション、画像の描画等）を利用でき、最も表現力が高いモードです。
 
-### 5.5. インタラクション (Events)
+### 5.6. インタラクション (Events)
 必要に応じて、以下のメソッドを実装することでユーザー操作に反応できます。
 
 - `onClick(x, y)`: キャンバスがクリックされたときに呼び出されます。
 - `onMouseMove(x, y)`: マウスが移動したときに呼び出されます。
-※ `usePseudoSpace: true` の場合、`x` 座標は自動的に仮想空間の座標に変換されます。
+※ `exclusionStrategy: 'pseudo'` の場合、`x` 座標は自動的に仮想空間（疑似座標）に変換されます。
 
 ## 6. 実装例
 
@@ -237,7 +296,7 @@ export default class ShootingStar extends AnimationBase {
         author: "QuickLog-Solo"
     };
 
-    config = { mode: 'sprite', usePseudoSpace: true };
+    config = { mode: 'sprite', exclusionStrategy: 'pseudo' };
 
     setup(width, height) {
         this.stars = Array(10).fill(0).map(() => ({
@@ -325,3 +384,4 @@ export default class Ripple extends AnimationBase {
 ## 11. 改訂履歴
 
 - **1.0 (2024-05-20):** 初版。モジュール仕様の基本構造、描画モード、およびセキュリティポリシーを定義。
+- **1.1 (2024-05-24):** `usePseudoSpace` および `ignoreExclusion` を `exclusionStrategy` に統合。
