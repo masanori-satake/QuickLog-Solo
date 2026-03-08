@@ -29,7 +29,6 @@ export class AnimationEngine {
         this.perfThreshold = 200; // ms
         this.perfViolations = 0;
         this.maxViolations = 20;
-        this.isMonitoring = false;
         this.isDrawPending = false;
         this.warmupFrames = 0;
         this.WARMUP_LIMIT = 180; // 3 seconds @ 60fps
@@ -123,7 +122,6 @@ export class AnimationEngine {
 
         // Ensure we have correct dimensions before starting
         this.resize();
-        this.isMonitoring = true;
         this.isDrawPending = false;
 
         const animInstance = new entry.class();
@@ -196,7 +194,6 @@ export class AnimationEngine {
     }
 
     stop() {
-        this.isMonitoring = false;
         this.isDrawPending = false;
         if (this.requestId) {
             cancelAnimationFrame(this.requestId);
