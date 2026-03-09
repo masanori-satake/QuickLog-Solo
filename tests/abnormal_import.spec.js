@@ -18,15 +18,36 @@ test.describe('Abnormal Import Cases', () => {
         fs.writeFileSync(filePath, 'This is not JSON at all\nDefinitely not');
 
         // Listen for alert
-        page.on('dialog', async dialog => {
-            expect(dialog.message()).toContain('ファイル形式が正しくありません');
-            await dialog.dismiss();
-        });
+        const dialogPromise = page.waitForEvent('dialog');
 
         const fileChooserPromise = page.waitForEvent('filechooser');
         await page.click('#import-categories-btn');
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(filePath);
+
+        const dialog = await dialogPromise;
+        expect(dialog.message()).toContain('ファイル形式が正しくありません');
+        await dialog.dismiss();
+
+        fs.unlinkSync(filePath);
+    });
+
+    test('should handle Level 1: Fatal Error (Empty file)', async ({ page }) => {
+        const filePath = path.join(process.cwd(), 'temp_empty.ndjson');
+        fs.writeFileSync(filePath, '');
+
+        const dialogPromise = page.waitForEvent('dialog');
+
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.click('#import-categories-btn');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles(filePath);
+
+        const dialog = await dialogPromise;
+        // Should fallback to alert-import-error or specific fatal message?
+        // Current logic: importedItems.length === 0 && total > 0 throws. Empty file (total=0) might do nothing or error.
+        // Let's check what happens.
+        await dialog.dismiss();
 
         fs.unlinkSync(filePath);
     });

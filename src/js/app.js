@@ -1864,21 +1864,27 @@ function setupEventListeners() {
 
         try {
             const text = await file.text();
-            const lines = text.split('\n').filter(line => line.trim());
+            const lines = text.split(/\r?\n/).filter(line => line.trim());
             const total = lines.length;
             const importedItems = [];
             let errorCount = 0;
 
             for (const line of lines) {
                 try {
-                    importedItems.push(JSON.parse(line));
+                    const item = JSON.parse(line);
+                    // Minimal check to ensure it's an object
+                    if (typeof item === 'object' && item !== null) {
+                        importedItems.push(item);
+                    } else {
+                        errorCount++;
+                    }
                 } catch {
                     errorCount++;
                 }
             }
 
-            // Level 1: Fatal Error (JSON Parsing failed for everything or most)
-            if (importedItems.length === 0 && total > 0) {
+            // Level 1: Fatal Error (Empty file or JSON Parsing failed for everything)
+            if (total === 0 || (importedItems.length === 0 && total > 0)) {
                 throw new Error('FATAL_IMPORT_ERROR');
             }
 
