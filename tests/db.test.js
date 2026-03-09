@@ -129,7 +129,7 @@ describe('DB Module', () => {
         expect(task.endTime).toBeDefined();
 
         const expectedEndTime = new Date(startTime);
-        expectedEndTime.setHours(23, 59, 59, 0);
+        expectedEndTime.setHours(23, 59, 59, 999);
         expect(task.endTime).toBe(expectedEndTime.getTime());
     });
 
