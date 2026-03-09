@@ -121,7 +121,7 @@ sequenceDiagram
 
 #### 同期メカズム
 - **形式:** NDJSON (Newline Delimited JSON)。1行1レコードの形式で、一部が破損しても他の行への影響を最小限に抑えます。
-- **ファイル分割:** 履歴（ログ）は `YYYY-MM-DD.ndjson` の形式で、1日1ファイルに分割されます。カテゴリと設定はそれぞれ `categories.ndjson`, `settings.ndjson` に保存されます。
+- **ファイル分割:** 履歴（ログ）は `YYYY-MM-DD.ndjson` の形式で、1日1ファイルに分割されます。カテゴリは `categories.ndjson` (NDJSON)、設定は `settings.json` (JSON) に保存されます。
 - **同期のタイミング:**
     - **即時 (Immediate):** データ更新を検知すると「Dirty（未保存）」状態となり、2秒後に自動的に同期が実行されます。
     - **5分 / 1時間:** 設定された間隔で定期実行されます。
@@ -241,9 +241,16 @@ stateDiagram-v2
 
 ### ビルドとパッケージング
 `npm run build` により、以下の処理を自動実行します：
-1. アニメーションレジストリ (`src/js/animation_registry.js`) の生成。
-2. バージョン整合性チェック。
-3. `releases/` ディレクトリへの ZIP パッケージ作成。
+1. **PNGアイコン生成**: `src/assets/icon.svg` から各サイズ（16/32/48/128）の `icon.png` を生成します (`scripts/generate_png_icons.py`)。
+2. **アニメーションレジストリ生成**: `src/js/animation/` 内の全モジュールをスキャンし、`src/js/animation_registry.js` を自動生成します (`scripts/generate_animation_registry.py`)。
+3. **バージョン整合性チェック**: `package.json`, `version.json`, マニフェストファイル間でのバージョン番号の一致を確認します (`scripts/check_version.py`)。
+4. **ZIPパッケージ作成**: ブラウザ別（Chrome, Firefox）のマニフェストを適用し、`releases/` ディレクトリに配布用 ZIP パッケージを作成します (`scripts/create_package.py`)。
+
+### その他の管理スクリプト
+- **scripts/bump_version.py**: バージョン番号をインクリメントし、関連ファイルすべてを同期更新します。
+- **scripts/verify_animations.py**: アニメーションモジュールのメタデータや安全性を検証します（`npm test` 内で実行）。
+- **scripts/verify_version_impact.py**: コミットメッセージの内容（feat, fix等）に応じて適切なバージョンアップが行われているかを CI 上で検証します。
+- **scripts/animation_utils.py**: 複数のスクリプトで共有される、アニメーションモジュールのパースやフィルタリングのための共通ユーティリティです。
 
 ---
 

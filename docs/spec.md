@@ -55,6 +55,7 @@
 - 同時に実行できるタスクは常に1つのみ。
 - **タブ間継続:** ブラウザのタブを切り替えてもサイドパネルの状態は維持され、計測が継続される。
 - **状態表示:** 実行中: ▶ (Green), 待機中/一時停止中: ⏸ (Orange - 点滅あり), 終了済み: ⏹ (Red)。
+- **日付変更時の”作業終了"自動記録:** 毎日23:59:59に、未終了の作業をその時刻で遡って自動終了させ、翌日の記録がクリーンに始められるようガードします。
 
 ### B. カテゴリ管理
 - ユーザーがカテゴリを追加・削除・編集可能。設定は永続化される。
@@ -71,8 +72,8 @@
 
 ### D. データライフサイクルとバックアップ
 - **保持期間:** 直近40日間。起動時に自動削除。
-- **ローカルファイル同期 (Backup):** File System Access API を使用した、特定ディレクトリへの履歴自動保存。NDJSON Partitioning (1日1ファイル) を採用。
-- **手動保守:** ログデータのCSVエクスポート/インポートが可能。
+- **ローカルファイル同期 (Backup):** File System Access API を使用した、特定ディレクトリへの履歴自動保存。ログは1日1ファイル、カテゴリは `categories.ndjson`（NDJSON形式による行ベースの手動並べ替えを考慮）、設定は `settings.json`（可読性重視のJSON形式）として同期します。
+- **手動保守:** ログデータのCSVエクスポート/インポート（設定の一般タブ）、カテゴリデータのNDJSONエクスポート/インポート（設定のカテゴリタブ）が可能です。
 
 ### E. 背景アニメーション
 - **レイヤー構造 (FG/BG):** 前面 (FG) と背景 (BG) を定義し、視認性と表現力を両立。
@@ -110,7 +111,13 @@
 - **バージョニング:** Conventional Commits に基づく自動採番 (`scripts/bump_version.py`)。
 
 ## 10. 免責事項 (Disclaimer)
-本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、無保証です。利用に際して生じたいかなる損害についても、開発者は一切の責任を負いません。MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。
+本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
+利用に際して生じたいかなる損害（データの消失、業務の中断、PCの不具合など）についても、開発者は一切の責任を負いません。
+MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
+
+This software is a personal open-source project and is provided **"AS IS"** without warranty of any kind.
+The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from the use of this software.
+Use at your own risk, as per the MIT License.
 
 ## 11. 関連ドキュメント
 - [開発者ガイド (README_DEV.md)](README_DEV.md)

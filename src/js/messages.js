@@ -77,7 +77,7 @@ export const messages = {
         'about-disclaimer': '【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': '終了忘れ防止',
+        'setting-auto-stop': '日付変更時の”作業終了"自動記録',
         'tooltip-auto-stop': 'ONにすると、毎日23:59:59に作業を自動的に終了し、翌日の記録がスムーズに始められるようガードします。次回起動時、未終了の作業があれば開始日の23:59:59に遡って記録を完了させます。',
         'page-break': '改ページ',
         'btn-add-page-break': '改ページを追加',
@@ -343,7 +343,7 @@ export const messages = {
         'about-disclaimer': '[Disclaimer] This is a personal open-source project and is provided "AS IS" without warranty of any kind. The developer shall not be liable for any damages arising from its use. Use at your own risk.',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Prevent Unfinished Tasks',
+        'setting-auto-stop': "Auto-record 'Stop' at Midnight",
         'tooltip-auto-stop': 'Automatically ends any active task at 23:59:59 to ensure a clean start for the next day. If work is unfinished on next launch, it retroactively records the end time as 23:59:59 of the start day.',
         'page-break': 'Page Break',
         'btn-add-page-break': 'Add Page Break',
@@ -559,7 +559,7 @@ export const messages = {
         'btn-copy': 'Kopieren',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Vergessenes Stoppen verhindern',
+        'setting-auto-stop': 'Automatisches Aufzeichnen des Arbeitsendes um Mitternacht',
         'tooltip-auto-stop': 'Beendet die Arbeit automatisch um 23:59:59, um einen sauberen Start in den nächsten Tag zu gewährleisten.',
         'page-break': 'Seitenumbruch',
         'btn-add-page-break': 'Seitenumbruch hinzufügen',
@@ -799,7 +799,7 @@ export const messages = {
         'btn-copy': 'Copiar',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Evitar olvido de cierre',
+        'setting-auto-stop': 'Registro automático de fin de tarea a medianoche',
         'tooltip-auto-stop': 'Finaliza automáticamente el trabajo a las 23:59:59 para asegurar un inicio limpio al día siguiente.',
         'page-break': 'Salto de página',
         'btn-add-page-break': 'Añadir salto de página',
@@ -1039,7 +1039,7 @@ export const messages = {
         'btn-copy': 'Copier',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Éviter l\'oubli d\'arrêt',
+        'setting-auto-stop': 'Enregistrement automatique de fin de tâche à minuit',
         'tooltip-auto-stop': 'Arrête automatiquement le travail à 23:59:59 pour assurer un démarrage propre le lendemain.',
         'page-break': 'Saut de page',
         'btn-add-page-break': 'Ajouter un saut de page',
@@ -1279,7 +1279,7 @@ export const messages = {
         'btn-copy': 'Copiar',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': 'Evitar esquecimento de parada',
+        'setting-auto-stop': 'Registro automático de fim de tarefa à meia-noite',
         'tooltip-auto-stop': 'Encerra o trabalho automaticamente às 23:59:59 para garantir um início limpo no dia seguinte.',
         'page-break': 'Quebra de página',
         'btn-add-page-break': 'Adicionar quebra de página',
@@ -1519,7 +1519,7 @@ export const messages = {
         'btn-copy': '복사',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': '종료 누락 방지',
+        'setting-auto-stop': '날짜 변경 시 ”작업 종료” 자동 기록',
         'tooltip-auto-stop': '매일 23:59:59에 작업을 자동으로 종료하여 다음 날의 기록을 원활하게 시작할 수 있도록 합니다.',
         'page-break': '페이지 나누기',
         'btn-add-page-break': '페이지 나누기 추가',
@@ -1759,7 +1759,7 @@ export const messages = {
         'btn-copy': '复制',
 
         // Auto Stop & Page Break
-        'setting-auto-stop': '防止忘记停止',
+        'setting-auto-stop': '日期变更时自动记录“任务结束”',
         'tooltip-auto-stop': '每天 23:59:59 自动结束工作，以确保第二天能顺利开始新的记录。',
         'page-break': '换页',
         'btn-add-page-break': '添加换页',

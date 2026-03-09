@@ -208,11 +208,11 @@ async function updateTimer() {
 
     const now = Date.now();
 
-    // Check Auto-stop using cache
+    // Check Auto-record 'Stop' at Midnight using cache
     if (autoStopEnabledCache) {
         const stopTime = getAutoStopTimeIfPassed(activeTask.startTime, now);
         if (stopTime) {
-            console.log('QuickLog-Solo: Auto-stop triggered');
+            console.log("QuickLog-Solo: Auto-record 'Stop' at Midnight triggered");
             await stopTask();
             updateUI();
             return;

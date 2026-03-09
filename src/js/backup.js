@@ -3,7 +3,7 @@ import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, ST
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 
 const FILE_NAME_CATEGORIES = 'categories.ndjson';
-const FILE_NAME_SETTINGS = 'settings.ndjson';
+const FILE_NAME_SETTINGS = 'settings.json';
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 
 export const BACKUP_STATUS = {
@@ -170,14 +170,14 @@ class BackupManager {
     }
 
     async backupToFiles() {
-        // Backup Categories
+        // Backup Categories (NDJSON)
         const categories = await dbGetAll(STORE_CATEGORIES);
         await this.writeNdjson(FILE_NAME_CATEGORIES, categories);
 
-        // Backup Settings (excluding backup-specific ones to avoid loops)
+        // Backup Settings (JSON) - excluding backup-specific ones to avoid loops
         const allSettings = await dbGetAll(STORE_SETTINGS);
         const filteredSettings = allSettings.filter(s => s.key !== 'backupDirectoryHandle' && s.key !== SETTING_KEY_BACKUP_CONFIG);
-        await this.writeNdjson(FILE_NAME_SETTINGS, filteredSettings);
+        await this.writeJson(FILE_NAME_SETTINGS, filteredSettings);
 
         // Backup Logs
         const logs = await dbGetAll(STORE_LOGS);
@@ -194,7 +194,7 @@ class BackupManager {
     }
 
     async restoreFromFiles() {
-        // --- Categories ---
+        // --- Categories (NDJSON) ---
         const fileCategories = await this.readNdjson(FILE_NAME_CATEGORIES);
         if (fileCategories.length > 0) {
             const dbCategories = await dbGetAll(STORE_CATEGORIES);
@@ -209,8 +209,8 @@ class BackupManager {
             if (newCategories.length > 0) await dbAddMultiple(STORE_CATEGORIES, newCategories);
         }
 
-        // --- Settings ---
-        const fileSettings = await this.readNdjson(FILE_NAME_SETTINGS);
+        // --- Settings (JSON) ---
+        const fileSettings = await this.readJson(FILE_NAME_SETTINGS);
         if (fileSettings.length > 0) {
             const dbSettings = await dbGetAll(STORE_SETTINGS);
             const newSettings = [];
@@ -277,6 +277,25 @@ class BackupManager {
             const file = await fileHandle.getFile();
             const text = await file.text();
             return text.split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
+        } catch {
+            return [];
+        }
+    }
+
+    async writeJson(fileName, data) {
+        const fileHandle = await this.directoryHandle.getFileHandle(fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        const content = JSON.stringify(data, null, 2);
+        await writable.write(content);
+        await writable.close();
+    }
+
+    async readJson(fileName) {
+        try {
+            const fileHandle = await this.directoryHandle.getFileHandle(fileName);
+            const file = await fileHandle.getFile();
+            const text = await file.text();
+            return JSON.parse(text);
         } catch {
             return [];
         }
