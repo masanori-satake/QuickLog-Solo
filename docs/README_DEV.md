@@ -250,7 +250,11 @@ stateDiagram-v2
 - **scripts/bump_version.py**: バージョン番号をインクリメントし、関連ファイルすべてを同期更新します。
 - **scripts/verify_animations.py**: アニメーションモジュールのメタデータや安全性を検証します（`npm test` 内で実行）。
 - **scripts/verify_version_impact.py**: コミットメッセージの内容（feat, fix等）に応じて適切なバージョンアップが行われているかを CI 上で検証します。
-- **SCANOSS (GitHub Actions)**: 業界標準の OSS 監査ツール。`src/` 内のコード断片（スニペット）を 1 億件以上の OSS データベースと照合し、ライセンス表記のないコピーコードも検出します。
+- **SCANOSS (GitHub Actions)**: 業界標準の OSS 監査ツール。`src/` 内のコード断片（スニペット）を 1 億件以上の OSS データベースと照合し、ライセンス表記のないコピーコードも検出します。実行には以下の GitHub ワークフロー権限が必要です：
+  - `contents: read`
+  - `pull-requests: write`
+  - `checks: write`
+  - `actions: read`
 - **scripts/animation_utils.py**: 複数のスクリプトで共有される、アニメーションモジュールのパースやフィルタリングのための共通ユーティリティです。
 
 ---
@@ -279,7 +283,7 @@ npx stylelint "**/*.css"
 コミット時に以下のチェックが自動的に実行されます。
 1.  **check-version:** `version.json`, `package.json`, およびマニフェストファイル間でのバージョン整合性チェック。
 2.  **create-package:** ブラウザ別パッケージ（ZIP）の自動生成。
-3.  **eslint:** JS の静的解析。
+3.  **eslint:** JS の静的解析。特に関数や try-catch ブロック内での不必要な変数への再代入を避けるため、 `no-useless-assignment` ルールを遵守してください。
 4.  **stylelint:** CSS の静的解析。
 5.  **jest:** ユニットテストの実行。
 
