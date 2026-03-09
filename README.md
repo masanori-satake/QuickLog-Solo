@@ -15,7 +15,7 @@
 - **日付変更時の”作業終了"自動記録:** 毎日23:59:59に自動終了し、翌日の記録がクリーンに始められるようガードします。
 - **ローカルファイルバックアップ:** 指定したローカルフォルダへの自動同期に対応。ブラウザのキャッシュクリア等による予期せぬデータ消失から記録を守ります（File System Access API を利用）。同期状況はヘッダー右側のインジケーターで一目で確認可能です。
 - **徹底したプライバシーと透明性:**
-    - **完全ローカル:** 記録されたデータはすべてブラウザ内の IndexedDB にのみ保存されます。
+    - **完全ローカル:** 記録されたデータはすべてブラウザ内の IndexedDB に保存されます（バックアップ機能を有効化した際には、ローカルファイルシステムにも保存されます）。
     - **外部通信ゼロ:** CSP（Content Security Policy）により技術的に外部通信を遮断しています。
     - **ピュアで長寿命な設計:** 外部ライブラリを一切使用しない Vanilla JS 構成。OSS のライフサイクルやトレンドに左右されないため、10年後も変わらず使い続けられる長期的安心感を提供します。また、依存関係によるブラックボックスを排除し、技術者が安心して利用・検証できる透明性を確保しています。
     - **厳格な完全内製監査:** 1行のコードも OSS からのコピー＆ペーストでないことを保証するため、業界標準の監査ツール **SCANOSS** によるスニペット単位の指紋照合検査を全開発フローで実施しています。
@@ -45,10 +45,10 @@
 - **メンテナンス:** 設定（⚙️）の「メンテナンス」タブから、ログの一括削除や、カテゴリ・設定の初期化（リセット）が行えます。不具合発生時や環境をクリーンにしたい場合に使用します。
 
 ## データの保存場所とリスク (Data Storage & Risks)
-- **データの保存先:** 記録されたデータはすべてブラウザ内の **IndexedDB** にのみ保存されます。
+- **データの保存先:** 記録されたデータはすべてブラウザ内の **IndexedDB** に保存されます（バックアップ機能を有効化した際には、ローカルファイルシステムにも保存されます）。
 - **消失リスク:** ブラウザの「閲覧履歴の消去」やキャッシュクリア、またはブラウザ自体の仕様により、データが予期せず削除される可能性があります。
 - **推奨事項:** 大切な記録を守るため、設定の「バックアップ」タブから **「ローカルファイルバックアップ」** を有効にし、ローカルフォルダへの自動同期設定を行うことを強く推奨します。
-- **Data Storage:** All recorded data is stored exclusively in the browser's **IndexedDB**.
+- **Data Storage:** All recorded data is stored in the browser's **IndexedDB** (and also to the local file system when the backup function is enabled).
 - **Data Loss Risk:** Data may be unexpectedly deleted due to browser "Clear browsing history," cache clearing, or browser-specific storage policies.
 - **Recommendation:** To protect your valuable records, we strongly recommend enabling **"Local File Backup"** in the "Backup" tab of the settings to automatically sync data to a local folder.
 
