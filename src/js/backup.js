@@ -214,7 +214,7 @@ class BackupManager {
 
     async restoreFromFiles() {
         // --- Categories (NDJSON) ---
-        let fileCategories = [];
+        let fileCategories;
         try {
             fileCategories = await this.readNdjson(FILE_NAME_CATEGORIES);
         } catch (e) {
@@ -235,7 +235,7 @@ class BackupManager {
         }
 
         // --- Settings (JSON) ---
-        let fileSettings = [];
+        let fileSettings;
         try {
             fileSettings = await this.readJson(FILE_NAME_SETTINGS);
         } catch (e) {
@@ -264,7 +264,7 @@ class BackupManager {
                 const dateStr = entry.name.replace('.ndjson', '');
                 if (new Date(dateStr).getTime() < threshold - 86400000) continue; // Skip very old files
 
-                let fileLogs = [];
+                let fileLogs;
                 try {
                     fileLogs = await this.readNdjson(entry.name);
                 } catch (e) {

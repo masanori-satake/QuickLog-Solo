@@ -11,7 +11,6 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
 }));
 
 const { backupManager, BACKUP_STATUS } = await import('../src/js/backup.js');
-const db = await import('../src/js/db.js');
 
 describe('BackupManager Abnormal Cases', () => {
     let mockDirectoryHandle;
