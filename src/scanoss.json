@@ -1,0 +1,12 @@
+{
+  "bom": {
+    "include": [
+      {
+        "purl": "pkg:github/muhammetdag/paradisesteamlibrary"
+      },
+      {
+        "purl": "pkg:github/rcconsult/ppxai"
+      }
+    ]
+  }
+}
