@@ -250,6 +250,7 @@ stateDiagram-v2
 - **scripts/bump_version.py**: バージョン番号をインクリメントし、関連ファイルすべてを同期更新します。
 - **scripts/verify_animations.py**: アニメーションモジュールのメタデータや安全性を検証します（`npm test` 内で実行）。
 - **scripts/verify_version_impact.py**: コミットメッセージの内容（feat, fix等）に応じて適切なバージョンアップが行われているかを CI 上で検証します。
+- **scripts/audit_oss_fragments.py**: `src/` ディレクトリ内のソースコードをスキャンし、外部 OSS の著作権表示や不審な URL が含まれていないかを検証します。
 - **scripts/animation_utils.py**: 複数のスクリプトで共有される、アニメーションモジュールのパースやフィルタリングのための共通ユーティリティです。
 
 ---
