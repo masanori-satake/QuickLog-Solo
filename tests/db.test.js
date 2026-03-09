@@ -143,6 +143,33 @@ describe('DB Module', () => {
         expect(savedPauseState.value.startTime).toBe(startTime);
     });
 
+    test('initDB performs auto-stop repair and adds stop marker', async () => {
+        await openDatabase();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(10, 0, 0, 0);
+        const startTime = yesterday.getTime();
+
+        // Create an open task from yesterday
+        await dbAdd(STORE_LOGS, { category: 'Yesterday Task', startTime: startTime, endTime: null });
+        closeDatabase();
+
+        // initDB should trigger repair
+        await initDB();
+
+        const allLogs = await dbGetAll(STORE_LOGS);
+        const yesterdayTask = allLogs.find(l => l.category === 'Yesterday Task');
+        expect(yesterdayTask.endTime).toBeDefined();
+
+        const stopTime = new Date(startTime).setHours(23, 59, 59, 999);
+        expect(yesterdayTask.endTime).toBe(stopTime);
+
+        // Check for stop marker
+        const stopMarker = allLogs.find(l => l.isManualStop && l.startTime === stopTime);
+        expect(stopMarker).toBeDefined();
+        expect(stopMarker.category).toBe(SYSTEM_CATEGORY_IDLE);
+    });
+
     describe('dbImportCategories', () => {
         test('imports categories in append mode', async () => {
             await openDatabase();

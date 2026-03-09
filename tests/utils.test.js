@@ -60,10 +60,10 @@ describe('Utils Module', () => {
     });
 
     describe('getAutoStopTimeIfPassed', () => {
-        test('returns auto-stop time if passed', () => {
+        test('returns auto-stop time (with ms) if passed', () => {
             const startTime = new Date('2026-03-03T10:00:00').getTime();
             const now = new Date('2026-03-04T01:00:00').getTime();
-            expect(getAutoStopTimeIfPassed(startTime, now)).toBe(new Date('2026-03-03T23:59:59').getTime());
+            expect(getAutoStopTimeIfPassed(startTime, now)).toBe(new Date('2026-03-03T23:59:59.999').getTime());
         });
         test('returns null if not yet passed', () => {
             const startTime = new Date('2026-03-03T10:00:00').getTime();

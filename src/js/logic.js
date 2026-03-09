@@ -1,4 +1,4 @@
-import { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
+import { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, escapeHtml } from './utils.js';
 
 export function formatDuration(ms) {
@@ -323,16 +323,16 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
     return newLog;
 }
 
-export async function stopTaskLogic(activeTask, isManualStop = false) {
+export async function stopTaskLogic(activeTask, isManualStop = false, customEndTime = null) {
     if (!activeTask) return null;
 
-    const now = Date.now();
+    const endTime = customEndTime || Date.now();
 
     if (activeTask.isPaused) {
         const idleLog = {
             ...activeTask,
             category: SYSTEM_CATEGORY_IDLE,
-            endTime: now,
+            endTime: endTime,
             isManualStop: false
         };
         delete idleLog.isPaused;
@@ -346,19 +346,30 @@ export async function stopTaskLogic(activeTask, isManualStop = false) {
         await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
     } else {
         // 通常の作業中の場合は、その作業を正常終了させる
-        const taskToSave = { ...activeTask, endTime: now, isManualStop: false };
+        const taskToSave = { ...activeTask, endTime: endTime, isManualStop: false };
         await dbPut(STORE_LOGS, taskToSave);
     }
 
     if (isManualStop) {
         // 停止ボタンが押された場合は、追加で停止マーカーを記録する
-        const stopLog = {
-            category: SYSTEM_CATEGORY_IDLE,
-            startTime: now,
-            endTime: now,
-            isManualStop: true
-        };
-        await dbAdd(STORE_LOGS, stopLog);
+        // 重複（同じ時刻のマーカー）を避けるためのチェック
+        const allLogs = await dbGetAll(STORE_LOGS);
+        const isDuplicate = allLogs.some(l =>
+            l.isManualStop &&
+            l.category === SYSTEM_CATEGORY_IDLE &&
+            l.startTime === endTime &&
+            l.endTime === endTime
+        );
+
+        if (!isDuplicate) {
+            const stopLog = {
+                category: SYSTEM_CATEGORY_IDLE,
+                startTime: endTime,
+                endTime: endTime,
+                isManualStop: true
+            };
+            await dbAdd(STORE_LOGS, stopLog);
+        }
     }
     return null;
 }

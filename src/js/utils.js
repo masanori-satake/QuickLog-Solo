@@ -111,7 +111,7 @@ export function isValidColor(color) {
  */
 export function getAutoStopTimeIfPassed(startTime, now = Date.now()) {
     const autoStopDate = new Date(startTime);
-    autoStopDate.setHours(23, 59, 59, 0);
+    autoStopDate.setHours(23, 59, 59, 999);
 
     if (now >= autoStopDate.getTime()) {
         return autoStopDate.getTime();
