@@ -32,6 +32,24 @@ test.describe('Abnormal Import Cases', () => {
         fs.unlinkSync(filePath);
     });
 
+    test('should handle Level 1: Fatal Error (Non-object JSON values)', async ({ page }) => {
+        const filePath = path.join(process.cwd(), 'temp_non_object.ndjson');
+        fs.writeFileSync(filePath, '123\n"string"\ntrue');
+
+        const dialogPromise = page.waitForEvent('dialog');
+
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.click('#import-categories-btn');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles(filePath);
+
+        const dialog = await dialogPromise;
+        expect(dialog.message()).toContain('ファイル形式が正しくありません');
+        await dialog.dismiss();
+
+        fs.unlinkSync(filePath);
+    });
+
     test('should handle Level 1: Fatal Error (Empty file)', async ({ page }) => {
         const filePath = path.join(process.cwd(), 'temp_empty.ndjson');
         fs.writeFileSync(filePath, '');

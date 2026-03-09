@@ -1876,9 +1876,11 @@ function setupEventListeners() {
                     if (typeof item === 'object' && item !== null) {
                         importedItems.push(item);
                     } else {
+                        console.warn(`QuickLog-Solo: JSON line is not an object: "${line}"`);
                         errorCount++;
                     }
-                } catch {
+                } catch (e) {
+                    console.warn(`QuickLog-Solo: Failed to parse line during import: "${line}"`, e);
                     errorCount++;
                 }
             }
