@@ -1,6 +1,6 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_AUTO_STOP
 } from '../src/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../src/js/utils.js';
 
@@ -88,6 +88,9 @@ describe('DB Module', () => {
 
     test('initDB handles multiple active tasks by closing orphaned ones', async () => {
         await openDatabase();
+        // Disable auto-stop to prevent tasks from being closed if test runs around midnight
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: false });
+
         const now = Date.now();
         // Create two tasks without endTime
         await dbAdd(STORE_LOGS, { category: 'Old Task', startTime: now - 10000, endTime: null });
@@ -109,6 +112,7 @@ describe('DB Module', () => {
 
     test('initDB handles pauseState correctly', async () => {
         await openDatabase();
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: false });
         const pauseState = { category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), isPaused: true };
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
         closeDatabase();
@@ -120,6 +124,7 @@ describe('DB Module', () => {
 
     test('initDB migrates open idle log to pauseState', async () => {
         await openDatabase();
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: false });
         const startTime = Date.now();
         await dbAdd(STORE_LOGS, { category: SYSTEM_CATEGORY_IDLE, startTime: startTime, endTime: null });
         closeDatabase();
