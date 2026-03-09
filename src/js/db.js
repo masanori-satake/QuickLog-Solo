@@ -366,7 +366,7 @@ async function setupInitialData(languageSetting) {
 
     let openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
 
-    // Automatic End-of-Day Stop repair
+    // Auto-record 'Stop' at Midnight repair
     if (isAutoStopEnabled) {
         for (const task of openTasks) {
             const stopTime = getAutoStopTimeIfPassed(task.startTime);
