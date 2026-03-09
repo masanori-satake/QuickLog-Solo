@@ -110,6 +110,29 @@ describe('DB Module', () => {
         expect(closedTask.endTime).toBe(closedTask.startTime + 1000);
     });
 
+    test('initDB auto-stops tasks from previous days if enabled', async () => {
+        await openDatabase();
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: true });
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(10, 0, 0, 0);
+        const startTime = yesterday.getTime();
+
+        await dbAdd(STORE_LOGS, { category: 'Yesterday Task', startTime: startTime, endTime: null });
+        closeDatabase();
+
+        await initDB();
+
+        const allLogs = await dbGetAll(STORE_LOGS);
+        const task = allLogs.find(l => l.category === 'Yesterday Task');
+        expect(task.endTime).toBeDefined();
+
+        const expectedEndTime = new Date(startTime);
+        expectedEndTime.setHours(23, 59, 59, 999);
+        expect(task.endTime).toBe(expectedEndTime.getTime());
+    });
+
     test('initDB handles pauseState correctly', async () => {
         await openDatabase();
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: false });
