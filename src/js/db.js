@@ -359,7 +359,7 @@ async function setupInitialData(languageSetting) {
         }
     }
 
-    const allLogs = await dbGetAll(STORE_LOGS);
+    let allLogs = await dbGetAll(STORE_LOGS);
 
     const autoStopStatus = await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP);
     const isAutoStopEnabled = autoStopStatus ? autoStopStatus.value : true;
@@ -378,23 +378,25 @@ async function setupInitialData(languageSetting) {
                 // Add a Stop marker at 23:59:59 if it doesn't exist for that day
                 const startOfDay = new Date(stopTime).setHours(0, 0, 0, 0);
                 const endOfDay = new Date(stopTime).setHours(23, 59, 59, 999);
-                const dayLogs = (await dbGetAll(STORE_LOGS)).filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay);
+                const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay);
                 const hasStopMarker = dayLogs.some(l => l.isManualStop && l.category === SYSTEM_CATEGORY_IDLE);
 
                 if (!hasStopMarker) {
-                    await dbAdd(STORE_LOGS, {
+                    const newMarker = {
                         category: SYSTEM_CATEGORY_IDLE,
                         startTime: stopTime,
                         endTime: stopTime,
                         isManualStop: true
-                    });
+                    };
+                    await dbAdd(STORE_LOGS, newMarker);
+                    allLogs.push(newMarker);
                 }
                 changed = true;
             }
         }
         if (changed) {
             // Refresh openTasks after auto-stop
-            openTasks = (await dbGetAll(STORE_LOGS)).filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
+            openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
         }
     }
 
