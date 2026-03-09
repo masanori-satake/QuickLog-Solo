@@ -29,6 +29,8 @@ class BackupManager {
         this.isDirty = false;
         this.dirtyStartTime = 0;
         this._dirtyCheckInterval = null;
+        this.lastError = null;
+        this.onConfirm = null; // Callback for user confirmation
     }
 
     async init() {
@@ -143,6 +145,7 @@ class BackupManager {
         if (this.isSyncing || !this.directoryHandle) return;
         this.isSyncing = true;
         this.status = BACKUP_STATUS.SYNCING;
+        this.lastError = null;
         if (this.onStatusChange) this.onStatusChange(this.status);
 
         try {
@@ -160,13 +163,29 @@ class BackupManager {
             this.status = BACKUP_STATUS.SUCCESS;
             this.isDirty = false;
         } catch (e) {
-            console.error('QuickLog-Solo: Backup failed', e);
-            this.status = BACKUP_STATUS.FAILED;
+            if (e.message === 'ABORT_BY_USER') {
+                console.log('QuickLog-Solo: Backup aborted by user');
+                this.status = BACKUP_STATUS.SUCCESS; // Or some other state? Success is safer to avoid retry loop
+            } else {
+                console.error('QuickLog-Solo: Backup failed', e);
+                this.status = BACKUP_STATUS.FAILED;
+                this.lastError = this._handleError(e);
+            }
         } finally {
             this.isSyncing = false;
             if (this.onStatusChange) this.onStatusChange(this.status);
             this.scheduleBackup();
         }
+    }
+
+    _handleError(e) {
+        if (e.name === 'NotReadableError' || e.name === 'AbortError' || e.message.includes('locked')) {
+            return { key: 'backup-err-locked' };
+        }
+        if (e.name === 'NotFoundError') {
+            return { key: 'backup-err-not-found' };
+        }
+        return { key: 'backup-err-unknown', params: { message: e.message } };
     }
 
     async backupToFiles() {
@@ -195,7 +214,13 @@ class BackupManager {
 
     async restoreFromFiles() {
         // --- Categories (NDJSON) ---
-        const fileCategories = await this.readNdjson(FILE_NAME_CATEGORIES);
+        let fileCategories = [];
+        try {
+            fileCategories = await this.readNdjson(FILE_NAME_CATEGORIES);
+        } catch (e) {
+            if (e.name === 'NotFoundError') fileCategories = [];
+            else throw e;
+        }
         if (fileCategories.length > 0) {
             const dbCategories = await dbGetAll(STORE_CATEGORIES);
             const newCategories = [];
@@ -210,7 +235,13 @@ class BackupManager {
         }
 
         // --- Settings (JSON) ---
-        const fileSettings = await this.readJson(FILE_NAME_SETTINGS);
+        let fileSettings = [];
+        try {
+            fileSettings = await this.readJson(FILE_NAME_SETTINGS);
+        } catch (e) {
+            if (e.name === 'NotFoundError') fileSettings = [];
+            else throw e;
+        }
         if (fileSettings.length > 0) {
             const dbSettings = await dbGetAll(STORE_SETTINGS);
             const newSettings = [];
@@ -233,7 +264,13 @@ class BackupManager {
                 const dateStr = entry.name.replace('.ndjson', '');
                 if (new Date(dateStr).getTime() < threshold - 86400000) continue; // Skip very old files
 
-                const fileLogs = await this.readNdjson(entry.name);
+                let fileLogs = [];
+                try {
+                    fileLogs = await this.readNdjson(entry.name);
+                } catch (e) {
+                    if (e.name === 'NotFoundError') fileLogs = [];
+                    else throw e;
+                }
                 for (const fl of fileLogs) {
                     const key = `${fl.startTime}|${fl.category}`;
                     if (!dbLogKeys.has(key)) {
@@ -272,14 +309,17 @@ class BackupManager {
     }
 
     async readNdjson(fileName) {
-        try {
-            const fileHandle = await this.directoryHandle.getFileHandle(fileName);
-            const file = await fileHandle.getFile();
-            const text = await file.text();
-            return text.split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
-        } catch {
+        const fileHandle = await this.directoryHandle.getFileHandle(fileName);
+        const file = await fileHandle.getFile();
+        if (file.size === 0) {
+            if (this.onConfirm) {
+                const proceed = await this.onConfirm('backup-err-0byte', { name: fileName });
+                if (!proceed) throw new Error('ABORT_BY_USER');
+            }
             return [];
         }
+        const text = await file.text();
+        return text.split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
     }
 
     async writeJson(fileName, data) {
@@ -291,14 +331,17 @@ class BackupManager {
     }
 
     async readJson(fileName) {
-        try {
-            const fileHandle = await this.directoryHandle.getFileHandle(fileName);
-            const file = await fileHandle.getFile();
-            const text = await file.text();
-            return JSON.parse(text);
-        } catch {
+        const fileHandle = await this.directoryHandle.getFileHandle(fileName);
+        const file = await fileHandle.getFile();
+        if (file.size === 0) {
+            if (this.onConfirm) {
+                const proceed = await this.onConfirm('backup-err-0byte', { name: fileName });
+                if (!proceed) throw new Error('ABORT_BY_USER');
+            }
             return [];
         }
+        const text = await file.text();
+        return JSON.parse(text);
     }
 
     formatDate(date) {

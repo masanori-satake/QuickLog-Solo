@@ -1111,6 +1111,43 @@ function showConfirm(message) {
     });
 }
 
+/**
+ * Shows a multi-choice modal.
+ * @param {string} message
+ * @param {Array<{label: string, value: any, class?: string}>} choices
+ * @returns {Promise<any>}
+ */
+function showMultiChoice(message, choices) {
+    return new Promise((resolve) => {
+        const modal = getEl('multi-choice-modal');
+        const msgEl = getEl('multi-choice-message');
+        const container = getEl('multi-choice-btn-container');
+
+        if (!modal || !msgEl || !container) {
+            // Fallback: use simple confirm or alert
+            console.warn('Multi-choice modal not found, falling back');
+            resolve(choices[0].value);
+            return;
+        }
+
+        msgEl.innerText = message;
+        container.innerHTML = '';
+
+        choices.forEach(choice => {
+            const btn = createEl('button');
+            btn.textContent = choice.label;
+            if (choice.class) btn.className = choice.class;
+            btn.onclick = () => {
+                modal.classList.add('hidden');
+                resolve(choice.value);
+            };
+            container.appendChild(btn);
+        });
+
+        modal.classList.remove('hidden');
+    });
+}
+
 // --- Category Editor ---
 
 function getColorCode(color) {
@@ -1505,7 +1542,8 @@ function setupEventListeners() {
     const popups = {
         settings: getEl(ID_SETTINGS_POPUP),
         report: getEl(ID_REPORT_MODAL),
-        tagAggregation: getEl(ID_TAG_AGGREGATION_MODAL)
+        tagAggregation: getEl(ID_TAG_AGGREGATION_MODAL),
+        multiChoice: getEl('multi-choice-modal')
     };
 
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
@@ -1623,6 +1661,10 @@ function setupEventListeners() {
         if (backupManager.status === BACKUP_STATUS.DIRTY) {
             await backupManager.flush();
             updateBackupUI();
+        } else if (backupManager.status === BACKUP_STATUS.FAILED) {
+            const error = backupManager.lastError;
+            const message = error ? t(error.key, error.params) : t('backup-status-failed');
+            showToast(t('toast-backup-failed-detail', { reason: message }));
         }
     });
 
@@ -1686,6 +1728,14 @@ function setupEventListeners() {
 
     backupManager.onStatusChange = () => {
         updateBackupUI();
+    };
+
+    backupManager.onConfirm = async (key, params) => {
+        const choice = await showMultiChoice(t(key, params), [
+            { label: t('backup-btn-ignore-continue'), value: true, class: 'primary-btn' },
+            { label: t('backup-btn-abort-investigate'), value: false, class: 'danger-btn' }
+        ]);
+        return choice;
     };
 
     // Settings listeners
@@ -1815,17 +1865,74 @@ function setupEventListeners() {
         try {
             const text = await file.text();
             const lines = text.split('\n').filter(line => line.trim());
-            const importedCategories = lines.map(line => JSON.parse(line));
+            const total = lines.length;
+            const importedItems = [];
+            let errorCount = 0;
 
-            const validatedItems = importedCategories.filter(item => {
-                if (item.type === 'page-break') return true;
-                if (!item.name || !isValidCategoryName(item.name)) return false;
-                if (item.color && !isValidColor(item.color)) {
-                    console.warn(`QuickLog-Solo: Invalid color '${item.color}' for category '${item.name}' during import.`);
-                    item.color = 'primary'; // Fallback
+            for (const line of lines) {
+                try {
+                    importedItems.push(JSON.parse(line));
+                } catch {
+                    errorCount++;
                 }
-                return true;
-            });
+            }
+
+            // Level 1: Fatal Error (JSON Parsing failed for everything or most)
+            if (importedItems.length === 0 && total > 0) {
+                throw new Error('FATAL_IMPORT_ERROR');
+            }
+
+            // Level 2: Partial Error (JSON line failures)
+            if (errorCount > 0) {
+                const proceed = await showConfirm(t('import-err-partial', { total, errorCount, validCount: importedItems.length }));
+                if (!proceed) {
+                    categoryFileInput.value = '';
+                    return;
+                }
+            }
+
+            // Level 3: Field Level validation
+            const validItems = [];
+            const invalidItems = [];
+            for (const item of importedItems) {
+                if (item.type === 'page-break') {
+                    validItems.push(item);
+                } else if (!item.name || !isValidCategoryName(item.name)) {
+                    invalidItems.push(item);
+                } else if (item.color && !isValidColor(item.color)) {
+                    // Field error (color invalid)
+                    invalidItems.push(item);
+                } else {
+                    validItems.push(item);
+                }
+            }
+
+            let finalItems = validItems;
+            if (invalidItems.length > 0) {
+                const choice = await showMultiChoice(t('import-err-field'), [
+                    { label: t('import-btn-apply-fallback'), value: 'fallback', class: 'primary-btn' },
+                    { label: t('import-btn-skip-invalid'), value: 'skip', class: 'secondary-btn' },
+                    { label: t('import-btn-abort'), value: 'abort', class: 'danger-btn' }
+                ]);
+
+                if (choice === 'abort') {
+                    categoryFileInput.value = '';
+                    return;
+                } else if (choice === 'fallback') {
+                    const repairedItems = invalidItems.map(item => {
+                        if (!item.name || !isValidCategoryName(item.name)) {
+                            item.name = item.name || 'Imported Category';
+                            if (item.name.length > 50) item.name = item.name.substring(0, 50);
+                        }
+                        if (item.color && !isValidColor(item.color)) {
+                            item.color = 'primary';
+                        }
+                        return item;
+                    });
+                    finalItems = [...validItems, ...repairedItems];
+                }
+                // 'skip' does nothing, finalItems remains validItems
+            }
 
             const importMode = document.querySelector('input[name="import-mode"]:checked')?.value || 'append';
 
@@ -1836,7 +1943,7 @@ function setupEventListeners() {
                 }
             }
 
-            await dbImportCategories(validatedItems, importMode);
+            await dbImportCategories(finalItems, importMode);
 
             categoryFileInput.value = '';
             showToast(t('toast-cat-imported'));
@@ -1844,8 +1951,12 @@ function setupEventListeners() {
             renderCategoryEditor();
             broadcastSync();
         } catch (err) {
-            console.error('Failed to import categories:', err);
-            alert(t('alert-import-error'));
+            if (err.message === 'FATAL_IMPORT_ERROR') {
+                alert(t('import-err-fatal'));
+            } else {
+                console.error('Failed to import categories:', err);
+                alert(t('alert-import-error'));
+            }
             categoryFileInput.value = '';
         }
     });
