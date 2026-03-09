@@ -247,11 +247,11 @@ stateDiagram-v2
 4. **ZIPパッケージ作成**: ブラウザ別（Chrome, Firefox）のマニフェストを適用し、`releases/` ディレクトリに配布用 ZIP パッケージを作成します (`scripts/create_package.py`)。
 
 ### その他の管理スクリプト
+- **scripts/animation_utils.py**: 複数のスクリプトで共有される、アニメーションモジュールのパースやフィルタリングのための共通ユーティリティです。
+- **scripts/audit_oss_fragments.py**: `src/` ディレクトリ内のソースコードをスキャンし、外部 OSS の著作権表示や不審な URL が含まれていないかを検証します。
 - **scripts/bump_version.py**: バージョン番号をインクリメントし、関連ファイルすべてを同期更新します。
 - **scripts/verify_animations.py**: アニメーションモジュールのメタデータや安全性を検証します（`npm test` 内で実行）。
 - **scripts/verify_version_impact.py**: コミットメッセージの内容（feat, fix等）に応じて適切なバージョンアップが行われているかを CI 上で検証します。
-- **SCANOSS (GitHub Actions)**: 業界標準の OSS 監査ツール。`src/` 内のコード断片（スニペット）を 1 億件以上の OSS データベースと照合し、ライセンス表記のないコピーコードも検出します。
-- **scripts/animation_utils.py**: 複数のスクリプトで共有される、アニメーションモジュールのパースやフィルタリングのための共通ユーティリティです。
 
 ---
 
