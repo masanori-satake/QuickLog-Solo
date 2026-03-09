@@ -209,11 +209,13 @@ async function updateTimer() {
     const now = Date.now();
 
     // Check Auto-record 'Stop' at Midnight using cache
-    if (autoStopEnabledCache) {
+    if (autoStopEnabledCache && document.visibilityState === 'visible') {
         const stopTime = getAutoStopTimeIfPassed(activeTask.startTime, now);
         if (stopTime) {
             console.log("QuickLog-Solo: Auto-record 'Stop' at Midnight triggered");
-            await stopTask();
+            // End current task and add stop marker at 23:59:59
+            activeTask = await stopTaskLogic(activeTask, true, stopTime);
+            broadcastSync();
             updateUI();
             return;
         }

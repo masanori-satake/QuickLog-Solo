@@ -359,7 +359,7 @@ async function setupInitialData(languageSetting) {
         }
     }
 
-    const allLogs = await dbGetAll(STORE_LOGS);
+    let allLogs = await dbGetAll(STORE_LOGS);
 
     const autoStopStatus = await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP);
     const isAutoStopEnabled = autoStopStatus ? autoStopStatus.value : true;
@@ -368,15 +368,36 @@ async function setupInitialData(languageSetting) {
 
     // Auto-record 'Stop' at Midnight repair
     if (isAutoStopEnabled) {
+        let changed = false;
         for (const task of openTasks) {
             const stopTime = getAutoStopTimeIfPassed(task.startTime);
             if (stopTime) {
                 task.endTime = stopTime;
                 await dbPut(STORE_LOGS, task);
+
+                // Add a Stop marker at 23:59:59 if it doesn't exist for that day
+                const startOfDay = new Date(stopTime).setHours(0, 0, 0, 0);
+                const endOfDay = new Date(stopTime).setHours(23, 59, 59, 999);
+                const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay);
+                const hasStopMarker = dayLogs.some(l => l.isManualStop && l.category === SYSTEM_CATEGORY_IDLE);
+
+                if (!hasStopMarker) {
+                    const newMarker = {
+                        category: SYSTEM_CATEGORY_IDLE,
+                        startTime: stopTime,
+                        endTime: stopTime,
+                        isManualStop: true
+                    };
+                    await dbAdd(STORE_LOGS, newMarker);
+                    allLogs.push(newMarker);
+                }
+                changed = true;
             }
         }
-        // Refresh openTasks after auto-stop
-        openTasks = (await dbGetAll(STORE_LOGS)).filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
+        if (changed) {
+            // Refresh openTasks after auto-stop
+            openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
+        }
     }
 
     const activeTaskFromLogs = openTasks[0];

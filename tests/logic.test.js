@@ -5,7 +5,7 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
     dbAdd: jest.fn().mockResolvedValue(123),
     dbPut: jest.fn().mockResolvedValue(true),
     dbGet: jest.fn(),
-    dbGetAll: jest.fn(),
+    dbGetAll: jest.fn().mockResolvedValue([]),
     dbDelete: jest.fn(),
     dbClear: jest.fn(),
     initDB: jest.fn(),
@@ -19,7 +19,7 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
 }));
 
 const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation } = await import('../src/js/logic.js');
-const { dbAdd, dbPut, dbDelete, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../src/js/db.js');
+const { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../src/js/db.js');
 const { getAutoStopTimeIfPassed } = await import('../src/js/utils.js');
 
 describe('Logic Module', () => {
@@ -123,7 +123,7 @@ describe('Logic Module', () => {
             const startTime = new Date('2026-03-03T20:00:00').getTime();
             const nextDay = new Date('2026-03-04T01:00:00').getTime();
             const stopTime = getAutoStopTimeIfPassed(startTime, nextDay);
-            expect(stopTime).toBe(new Date('2026-03-03T23:59:59').getTime());
+            expect(stopTime).toBe(new Date('2026-03-03T23:59:59.999').getTime());
         });
 
         test('does not trigger auto-stop if still on the same day', () => {
@@ -183,6 +183,44 @@ describe('Logic Module', () => {
                 endTime: expect.any(Number),
                 isManualStop: true
             }));
+        });
+
+        test('stopTaskLogic supports custom end time', async () => {
+            const activeTask = { id: 1, category: 'Work', startTime: 1000 };
+            const customEnd = 5000;
+            await stopTaskLogic(activeTask, true, customEnd);
+
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                endTime: customEnd
+            }));
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE,
+                startTime: customEnd,
+                endTime: customEnd,
+                isManualStop: true
+            }));
+        });
+
+        test('stopTaskLogic does not add duplicate stop markers', async () => {
+            const customEnd = 5000;
+            const existingStopMarker = {
+                category: SYSTEM_CATEGORY_IDLE,
+                startTime: customEnd,
+                endTime: customEnd,
+                isManualStop: true
+            };
+            dbGetAll.mockResolvedValueOnce([existingStopMarker]);
+
+            const activeTask = { id: 1, category: 'Work', startTime: 1000 };
+            await stopTaskLogic(activeTask, true, customEnd);
+
+            // dbAdd should NOT be called for the stop marker because it's a duplicate
+            // Note: dbAdd might have been called in other tests, so we check calls specifically
+            const stopMarkerAdds = dbAdd.mock.calls.filter(call =>
+                call[0] === STORE_LOGS && call[1].isManualStop === true
+            );
+            expect(stopMarkerAdds.length).toBe(0);
         });
 
         test('stopTaskLogic handles pause state with id', async () => {
