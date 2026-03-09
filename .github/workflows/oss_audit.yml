@@ -1,0 +1,35 @@
+name: OSS Fragment Audit (SCANOSS)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  actions: read
+
+jobs:
+  scanoss-audit:
+    name: SCANOSS Code Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run SCANOSS Code Scan
+      id: scanoss-code-scan-step
+      uses: scanoss/code-scan-action@v1
+      with:
+        scanPath: src
+        policies: undeclared
