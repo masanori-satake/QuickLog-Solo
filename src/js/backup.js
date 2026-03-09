@@ -1,4 +1,5 @@
 import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from './db.js';
+import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
 
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 
@@ -29,6 +30,8 @@ class BackupManager {
         this.isDirty = false;
         this.dirtyStartTime = 0;
         this._dirtyCheckInterval = null;
+        this.lastError = null;
+        this.onConfirm = null; // Callback for user confirmation
     }
 
     async init() {
@@ -143,6 +146,7 @@ class BackupManager {
         if (this.isSyncing || !this.directoryHandle) return;
         this.isSyncing = true;
         this.status = BACKUP_STATUS.SYNCING;
+        this.lastError = null;
         if (this.onStatusChange) this.onStatusChange(this.status);
 
         try {
@@ -160,13 +164,29 @@ class BackupManager {
             this.status = BACKUP_STATUS.SUCCESS;
             this.isDirty = false;
         } catch (e) {
-            console.error('QuickLog-Solo: Backup failed', e);
-            this.status = BACKUP_STATUS.FAILED;
+            if (e.message === 'ABORT_BY_USER') {
+                console.log('QuickLog-Solo: Backup aborted by user');
+                this.status = BACKUP_STATUS.SUCCESS; // Or some other state? Success is safer to avoid retry loop
+            } else {
+                console.error('QuickLog-Solo: Backup failed', e);
+                this.status = BACKUP_STATUS.FAILED;
+                this.lastError = this._handleError(e);
+            }
         } finally {
             this.isSyncing = false;
             if (this.onStatusChange) this.onStatusChange(this.status);
             this.scheduleBackup();
         }
+    }
+
+    _handleError(e) {
+        if (e.name === 'NotReadableError' || e.name === 'AbortError' || e.message.includes('locked')) {
+            return { key: 'backup-err-locked' };
+        }
+        if (e.name === 'NotFoundError') {
+            return { key: 'backup-err-not-found' };
+        }
+        return { key: 'backup-err-unknown', params: { message: e.message } };
     }
 
     async backupToFiles() {
@@ -195,28 +215,40 @@ class BackupManager {
 
     async restoreFromFiles() {
         // --- Categories (NDJSON) ---
-        const fileCategories = await this.readNdjson(FILE_NAME_CATEGORIES);
+        let fileCategories;
+        try {
+            fileCategories = await this.readNdjson(FILE_NAME_CATEGORIES);
+        } catch (e) {
+            if (e.name === 'NotFoundError') fileCategories = [];
+            else throw e;
+        }
         if (fileCategories.length > 0) {
             const dbCategories = await dbGetAll(STORE_CATEGORIES);
             const newCategories = [];
             for (const fc of fileCategories) {
-                // Skip system categories and existing ones
-                if (fc.name && !fc.name.startsWith('__SYSTEM_') && !dbCategories.find(dc => dc.name === fc.name)) {
-                    delete fc.id;
-                    newCategories.push(fc);
+                const validated = this._validateCategory(fc);
+                if (validated && !dbCategories.find(dc => dc.name === validated.name)) {
+                    newCategories.push(validated);
                 }
             }
             if (newCategories.length > 0) await dbAddMultiple(STORE_CATEGORIES, newCategories);
         }
 
         // --- Settings (JSON) ---
-        const fileSettings = await this.readJson(FILE_NAME_SETTINGS);
+        let fileSettings;
+        try {
+            fileSettings = await this.readJson(FILE_NAME_SETTINGS);
+        } catch (e) {
+            if (e.name === 'NotFoundError') fileSettings = [];
+            else throw e;
+        }
         if (fileSettings.length > 0) {
             const dbSettings = await dbGetAll(STORE_SETTINGS);
             const newSettings = [];
             for (const fs of fileSettings) {
-                if (!dbSettings.find(ds => ds.key === fs.key)) {
-                    newSettings.push(fs);
+                const validated = this._validateSetting(fs);
+                if (validated && !dbSettings.find(ds => ds.key === validated.key)) {
+                    newSettings.push(validated);
                 }
             }
             if (newSettings.length > 0) await dbAddMultiple(STORE_SETTINGS, newSettings);
@@ -233,14 +265,22 @@ class BackupManager {
                 const dateStr = entry.name.replace('.ndjson', '');
                 if (new Date(dateStr).getTime() < threshold - 86400000) continue; // Skip very old files
 
-                const fileLogs = await this.readNdjson(entry.name);
+                let fileLogs;
+                try {
+                    fileLogs = await this.readNdjson(entry.name);
+                } catch (e) {
+                    if (e.name === 'NotFoundError') fileLogs = [];
+                    else throw e;
+                }
                 for (const fl of fileLogs) {
-                    const key = `${fl.startTime}|${fl.category}`;
+                    const validated = this._validateLog(fl);
+                    if (!validated) continue;
+
+                    const key = `${validated.startTime}|${validated.category}`;
                     if (!dbLogKeys.has(key)) {
                         // Avoid adding very old logs that should have been cleaned up
-                        if (fl.startTime >= threshold) {
-                            delete fl.id;
-                            newLogs.push(fl);
+                        if (validated.startTime >= threshold) {
+                            newLogs.push(validated);
                             dbLogKeys.add(key); // Avoid adding same log multiple times from different files if any
                         }
                     }
@@ -271,15 +311,23 @@ class BackupManager {
         await writable.close();
     }
 
-    async readNdjson(fileName) {
-        try {
-            const fileHandle = await this.directoryHandle.getFileHandle(fileName);
-            const file = await fileHandle.getFile();
-            const text = await file.text();
-            return text.split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
-        } catch {
-            return [];
+    async _readTextFileWithCheck(fileName) {
+        const fileHandle = await this.directoryHandle.getFileHandle(fileName);
+        const file = await fileHandle.getFile();
+        if (file.size === 0) {
+            if (this.onConfirm) {
+                const proceed = await this.onConfirm('backup-err-0byte', { name: fileName });
+                if (!proceed) throw new Error('ABORT_BY_USER');
+            }
+            return null;
         }
+        return await file.text();
+    }
+
+    async readNdjson(fileName) {
+        const text = await this._readTextFileWithCheck(fileName);
+        if (text === null) return [];
+        return text.split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
     }
 
     async writeJson(fileName, data) {
@@ -291,14 +339,86 @@ class BackupManager {
     }
 
     async readJson(fileName) {
-        try {
-            const fileHandle = await this.directoryHandle.getFileHandle(fileName);
-            const file = await fileHandle.getFile();
-            const text = await file.text();
-            return JSON.parse(text);
-        } catch {
-            return [];
+        const text = await this._readTextFileWithCheck(fileName);
+        if (text === null) return [];
+        return JSON.parse(text);
+    }
+
+    _validateCategory(cat) {
+        if (!cat || typeof cat !== 'object' || !cat.name) return null;
+
+        // Handle page breaks specifically
+        if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+            return {
+                name: cat.name,
+                order: typeof cat.order === 'number' ? cat.order : 0
+            };
         }
+
+        // Regular categories
+        if (!isValidCategoryName(cat.name)) return null;
+
+        return {
+            name: cat.name.trim(),
+            color: isValidColor(cat.color) ? cat.color : 'primary',
+            tags: typeof cat.tags === 'string' ? cat.tags : '',
+            animation: typeof cat.animation === 'string' ? cat.animation : 'default',
+            order: typeof cat.order === 'number' ? cat.order : 0
+        };
+    }
+
+    _validateLog(log) {
+        if (!log || typeof log !== 'object' || !log.category || typeof log.startTime !== 'number') return null;
+
+        // Basic check for category name (allow system categories here)
+        if (typeof log.category !== 'string' || log.category.length > 100) return null;
+
+        return {
+            category: log.category,
+            startTime: log.startTime,
+            endTime: typeof log.endTime === 'number' ? log.endTime : null,
+            color: isValidColor(log.color) ? log.color : null,
+            isManualStop: !!log.isManualStop,
+            resumableCategory: typeof log.resumableCategory === 'string' ? log.resumableCategory : null
+        };
+    }
+
+    _validateSetting(setting) {
+        if (!setting || typeof setting !== 'object' || !setting.key) return null;
+        const key = setting.key;
+        const value = setting.value;
+
+        // Whitelist of settings we allow to restore
+        const allowedKeys = [
+            'theme', 'font', 'animation', 'language', 'reportSettings', 'autoStop'
+        ];
+        if (!allowedKeys.includes(key)) return null;
+
+        // Basic validation per key to prevent XSS and ensure data integrity
+        switch (key) {
+            case 'theme':
+                if (!['system', 'light', 'dark'].includes(value)) return null;
+                break;
+            case 'font':
+                if (typeof value !== 'string' || value.length > 200) return null;
+                break;
+            case 'animation':
+                if (typeof value !== 'string' || value.length > 50) return null;
+                break;
+            case 'language':
+                if (!['auto', 'ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'].includes(value)) return null;
+                break;
+            case 'autoStop':
+                if (typeof value !== 'boolean') return null;
+                break;
+            case 'reportSettings':
+                if (typeof value !== 'object' || value === null) return null;
+                break;
+            default:
+                return null;
+        }
+
+        return { key, value };
     }
 
     formatDate(date) {

@@ -155,6 +155,23 @@ export const messages = {
         'toast-deleted': '削除が完了しました',
         'no-logs-for-day': 'この日の記録はありません',
 
+        'import-err-fatal': 'ファイル形式が正しくありません。インポートを中止します。',
+        'import-err-partial': '全{total}行中{errorCount}行が破損しています。正常な{validCount}行のみを取り込みますか？',
+        'import-err-field': '一部のデータに不備（例：無効な色）があります。デフォルト値を適用して全て取り込みますか？それとも不備のある行を除外しますか？',
+        'import-btn-import-valid': '正常分のみ取り込む',
+        'import-btn-apply-fallback': 'デフォルト値を適用',
+        'import-btn-skip-invalid': '不備のある行を除外',
+        'import-btn-abort': '中止',
+
+        'backup-err-0byte': '中身が空のバックアップファイル（{name}）が見つかりました。これは異常な状態の可能性があります。このファイルを無視して続行しますか？',
+        'backup-btn-ignore-continue': '無視して続行',
+        'backup-btn-abort-investigate': '中断して調査',
+
+        'backup-err-locked': 'ファイルが他のプログラムでロックされているか、アクセス権限がありません。他のアプリを閉じてから再試行してください。',
+        'backup-err-not-found': 'バックアップ先フォルダが見つかりません。再度フォルダを選択してください。',
+        'backup-err-unknown': '予期せぬエラーが発生しました: {message}',
+        'toast-backup-failed-detail': 'バックアップに失敗しました。詳細：{reason}',
+
         // Dynamic Elements
         'day-names': ['日', '月', '火', '水', '木', '金', '土'],
         'idle-category': '(待機中)',
@@ -421,6 +438,23 @@ export const messages = {
         'toast-deleted': 'Deletion completed',
         'no-logs-for-day': 'No logs for this day',
 
+        'import-err-fatal': 'Invalid file format. Importing aborted.',
+        'import-err-partial': '{errorCount} out of {total} rows are corrupted. Do you want to import only the {validCount} valid rows?',
+        'import-err-field': 'Some data is incomplete (e.g., invalid color). Do you want to apply default values and import all, or skip the invalid rows?',
+        'import-btn-import-valid': 'Import Valid Only',
+        'import-btn-apply-fallback': 'Apply Defaults',
+        'import-btn-skip-invalid': 'Skip Invalid Rows',
+        'import-btn-abort': 'Abort',
+
+        'backup-err-0byte': 'An empty backup file ({name}) was found. This might indicate an error. Do you want to ignore this file and continue?',
+        'backup-btn-ignore-continue': 'Ignore & Continue',
+        'backup-btn-abort-investigate': 'Abort & Investigate',
+
+        'backup-err-locked': 'The file is locked by another program or you don\'t have permission. Please close other apps and try again.',
+        'backup-err-not-found': 'Backup directory not found. Please select the directory again.',
+        'backup-err-unknown': 'An unexpected error occurred: {message}',
+        'toast-backup-failed-detail': 'Backup failed. Reason: {reason}',
+
         // Dynamic Elements
         'day-names': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
         'idle-category': '(Idle)',
@@ -665,6 +699,24 @@ export const messages = {
         'toast-cat-imported': 'Kategorien importiert',
         'toast-deleted': 'Löschen abgeschlossen',
         'no-logs-for-day': 'Keine Protokolle für diesen Tag',
+
+        'import-err-fatal': 'Ungültiges Dateiformat. Import abgebrochen.',
+        'import-err-partial': '{errorCount} von {total} Zeilen sind beschädigt. Möchten Sie nur die {validCount} gültigen Zeilen importieren?',
+        'import-err-field': 'Einige Daten sind unvollständig (z. B. ungültige Farbe). Möchten Sie Standardwerte anwenden und alle importieren oder die ungültigen Zeilen überspringen?',
+        'import-btn-import-valid': 'Nur Gültige importieren',
+        'import-btn-apply-fallback': 'Standardwerte anwenden',
+        'import-btn-skip-invalid': 'Ungültige Zeilen überspringen',
+        'import-btn-abort': 'Abbrechen',
+
+        'backup-err-0byte': 'Eine leere Sicherungsdatei ({name}) wurde gefunden. Dies könnte auf einen Fehler hindeuten. Möchten Sie diese Datei ignorieren und fortfahren?',
+        'backup-btn-ignore-continue': 'Ignorieren & Fortfahren',
+        'backup-btn-abort-investigate': 'Abbrechen & Untersuchen',
+
+        'backup-err-locked': 'Die Datei ist durch ein anderes Programm gesperrt oder Sie haben keine Berechtigung. Bitte schließen Sie andere Apps und versuchen Sie es erneut.',
+        'backup-err-not-found': 'Sicherungsverzeichnis nicht gefunden. Bitte wählen Sie das Verzeichnis erneut aus.',
+        'backup-err-unknown': 'Ein unerwarteter Fehler ist aufgetreten: {message}',
+        'toast-backup-failed-detail': 'Sicherung fehlgeschlagen. Grund: {reason}',
+
         'day-names': ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
         'idle-category': '(Leerlauf)',
         'idle-category-log': '(Leerlauf)',
@@ -905,6 +957,24 @@ export const messages = {
         'toast-cat-imported': 'Categorías importadas',
         'toast-deleted': 'Eliminación completada',
         'no-logs-for-day': 'No hay registros para este día',
+
+        'import-err-fatal': 'Formato de archivo no válido. Importación abortada.',
+        'import-err-partial': '{errorCount} de {total} filas están dañadas. ¿Desea importar solo las {validCount} filas válidas?',
+        'import-err-field': 'Algunos datos están incompletos (p. ej., color no válido). ¿Desea aplicar valores predeterminados e importar todo, o saltar las filas no válidas?',
+        'import-btn-import-valid': 'Importar solo válidos',
+        'import-btn-apply-fallback': 'Aplicar valores predeterminados',
+        'import-btn-skip-invalid': 'Saltar filas no válidas',
+        'import-btn-abort': 'Abortar',
+
+        'backup-err-0byte': 'Se encontró un archivo de respaldo vacío ({name}). Esto podría indicar un error. ¿Desea ignorar este archivo y continuar?',
+        'backup-btn-ignore-continue': 'Ignorar y continuar',
+        'backup-btn-abort-investigate': 'Abortar e investigar',
+
+        'backup-err-locked': 'El archivo está bloqueado por otro programa o no tiene permiso. Cierre otras aplicaciones e inténtelo de nuevo.',
+        'backup-err-not-found': 'Directorio de respaldo no encontrado. Seleccione el directorio de nuevo.',
+        'backup-err-unknown': 'Ocurrió un error inesperado: {message}',
+        'toast-backup-failed-detail': 'Respaldo fallido. Razón: {reason}',
+
         'day-names': ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
         'idle-category': '(En espera)',
         'idle-category-log': '(En espera)',
@@ -1145,6 +1215,24 @@ export const messages = {
         'toast-cat-imported': 'Catégories importées',
         'toast-deleted': 'Suppression terminée',
         'no-logs-for-day': 'Aucun journal pour ce jour',
+
+        'import-err-fatal': 'Format de fichier non valide. Importation annulée.',
+        'import-err-partial': '{errorCount} lignes sur {total} sont corrompues. Voulez-vous importer uniquement les {validCount} lignes valides ?',
+        'import-err-field': 'Certaines données sont incomplètes (ex: couleur non valide). Voulez-vous appliquer les valeurs par défaut et tout importer, ou ignorer les lignes non valides ?',
+        'import-btn-import-valid': 'Importer uniquement les valides',
+        'import-btn-apply-fallback': 'Appliquer les défauts',
+        'import-btn-skip-invalid': 'Ignorer les lignes non valides',
+        'import-btn-abort': 'Abandonner',
+
+        'backup-err-0byte': 'Un fichier de sauvegarde vide ({name}) a été trouvé. Cela peut indiquer une erreur. Voulez-vous ignorer ce fichier et continuer ?',
+        'backup-btn-ignore-continue': 'Ignorer et continuer',
+        'backup-btn-abort-investigate': 'Abandonner et enquêter',
+
+        'backup-err-locked': 'Le fichier est verrouillé par un autre programme ou vous n\'avez pas la permission. Veuillez fermer les autres applications et réessayer.',
+        'backup-err-not-found': 'Répertoire de sauvegarde non trouvé. Veuillez sélectionner à nouveau le répertoire.',
+        'backup-err-unknown': 'Une erreur inattendue s\'est produite : {message}',
+        'toast-backup-failed-detail': 'Échec de la sauvegarde. Raison : {reason}',
+
         'day-names': ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
         'idle-category': '(En attente)',
         'idle-category-log': '(En attente)',
@@ -1385,6 +1473,24 @@ export const messages = {
         'toast-cat-imported': 'Categorias importadas',
         'toast-deleted': 'Exclusão concluída',
         'no-logs-for-day': 'Sem registros para este dia',
+
+        'import-err-fatal': 'Formato de arquivo inválido. Importação abortada.',
+        'import-err-partial': '{errorCount} de {total} linhas estão corrompidas. Deseja importar apenas as {validCount} linhas válidas?',
+        'import-err-field': 'Alguns dados estão incompletos (ex: cor inválida). Deseja aplicar valores padrão e importar tudo, ou pular as linhas inválidas?',
+        'import-btn-import-valid': 'Importar apenas válidos',
+        'import-btn-apply-fallback': 'Aplicar padrões',
+        'import-btn-skip-invalid': 'Pular linhas inválidas',
+        'import-btn-abort': 'Abortar',
+
+        'backup-err-0byte': 'Um arquivo de backup vazio ({name}) foi encontrado. Isso pode indicar um erro. Deseja ignorar este arquivo e continuar?',
+        'backup-btn-ignore-continue': 'Ignorar e continuar',
+        'backup-btn-abort-investigate': 'Abortar e investigar',
+
+        'backup-err-locked': 'O arquivo está bloqueado por outro programa ou você não tem permissão. Feche outros aplicativos e tente novamente.',
+        'backup-err-not-found': 'Diretório de backup não encontrado. Selecione o diretório novamente.',
+        'backup-err-unknown': 'Ocorreu um erro inesperado: {message}',
+        'toast-backup-failed-detail': 'Falha no backup. Motivo: {reason}',
+
         'day-names': ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
         'idle-category': '(Inativo)',
         'idle-category-log': '(Inativo)',
@@ -1625,6 +1731,24 @@ export const messages = {
         'toast-cat-imported': '카테고리를 가져왔습니다',
         'toast-deleted': '삭제가 완료되었습니다',
         'no-logs-for-day': '이 날의 기록이 없습니다',
+
+        'import-err-fatal': '파일 형식이 올바르지 않습니다. 가져오기를 중단합니다.',
+        'import-err-partial': '전체 {total}행 중 {errorCount}행이 손상되었습니다. 정상적인 {validCount}행만 가져오시겠습니까?',
+        'import-err-field': '일부 데이터에 결함이 있습니다(예: 유효하지 않은 색상). 기본값을 적용하여 모두 가져오시겠습니까, 아니면 결함이 있는 행을 제외하시겠습니까?',
+        'import-btn-import-valid': '정상 항목만 가져오기',
+        'import-btn-apply-fallback': '기본값 적용',
+        'import-btn-skip-invalid': '결함 있는 행 제외',
+        'import-btn-abort': '취소',
+
+        'backup-err-0byte': '내용이 비어 있는 백アップ 파일({name})이 발견되었습니다. 이는 비정상적인 상태일 수 있습니다. 이 파일을 무시하고 계속하시겠습니까?',
+        'backup-btn-ignore-continue': '무시하고 계속',
+        'backup-btn-abort-investigate': '중단하고 조사',
+
+        'backup-err-locked': '파일이 다른 프로그램에서 잠겨 있거나 액세스 권한이 없습니다. 다른 앱을 닫고 다시 시도하십시오.',
+        'backup-err-not-found': '백업 폴더를 찾을 수 없습니다. 폴더를 다시 선택하십시오.',
+        'backup-err-unknown': '예기치 않은 오류가 발생했습니다: {message}',
+        'toast-backup-failed-detail': '백업에 실패했습니다. 상세: {reason}',
+
         'day-names': ['일', '월', '화', '수', '목', '금', '토'],
         'idle-category': '(대기)',
         'idle-category-log': '(대기)',
@@ -1865,6 +1989,24 @@ export const messages = {
         'toast-cat-imported': '分类已导入',
         'toast-deleted': '删除完成',
         'no-logs-for-day': '该日无记录',
+
+        'import-err-fatal': '文件格式不正确。导入已中止。',
+        'import-err-partial': '在共 {total} 行中，有 {errorCount} 行已损坏。是否仅导入正常的 {validCount} 行？',
+        'import-err-field': '部分数据不完整（例如：颜色无效）。是否应用默认值并导入全部，或者跳过无效行？',
+        'import-btn-import-valid': '仅导入有效行',
+        'import-btn-apply-fallback': '应用默认值',
+        'import-btn-skip-invalid': '跳过无效行',
+        'import-btn-abort': '中止',
+
+        'backup-err-0byte': '发现一个空的备份文件 ({name})。这可能表示存在错误。是否忽略此文件并继续？',
+        'backup-btn-ignore-continue': '忽略并继续',
+        'backup-btn-abort-investigate': '中止并调查',
+
+        'backup-err-locked': '文件被另一个程序锁定或您没有权限。请关闭其他应用程序并重试。',
+        'backup-err-not-found': '未找到备份目录。请重新选择目录。',
+        'backup-err-unknown': '发生未知错误: {message}',
+        'toast-backup-failed-detail': '备份失败。原因: {reason}',
+
         'day-names': ['日', '一', '二', '三', '四', '五', '六'],
         'idle-category': '(闲置)',
         'idle-category-log': '(闲置)',
