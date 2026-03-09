@@ -1,4 +1,4 @@
-[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.22.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
+[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![OSS Fragment Audit](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.22.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
 
 # QuickLog-Solo
 
@@ -18,6 +18,7 @@
     - **完全ローカル:** 記録されたデータはすべてブラウザ内の IndexedDB にのみ保存されます。
     - **外部通信ゼロ:** CSP（Content Security Policy）により技術的に外部通信を遮断しています。
     - **ピュアで長寿命な設計:** 外部ライブラリを一切使用しない Vanilla JS 構成。OSS のライフサイクルやトレンドに左右されないため、10年後も変わらず使い続けられる長期的安心感を提供します。また、依存関係によるブラックボックスを排除し、技術者が安心して利用・検証できる透明性を確保しています。
+    - **厳格な完全内製監査:** 1行のコードも OSS からのコピー＆ペーストでないことを保証するため、業界標準の監査ツール **SCANOSS** によるスニペット単位の指紋照合検査を全開発フローで実施しています。
 
 ## インストール方法（開発者モード）
 現在、本拡張機能は各ブラウザのストアには公開されていません。以下の手順でインストールしてください。
@@ -54,10 +55,10 @@
 ## プライバシーとセキュリティ (Privacy & Security)
 - **Local Only:** 本アプリは、CSP（Content Security Policy）により技術的に外部への通信を一切行わないことが保証されています。
 - **トラッキングなし:** アクセス解析や広告、外部サービスへのデータ送信は一切行いません。
-- **透明性:** プログラムは Vanilla JS で記述されており、依存関係によるブラックボックスがありません。また、開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。
+- **透明性:** プログラムは Vanilla JS で記述されており、依存関係によるブラックボックスがありません。また、開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。さらに、SCANOSS を用いた[透明性レポート（監査ログ）](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml)を公開し、OSSコードが一切含まれていないことを動的に証明しています。
 - **Local Only:** This app is guaranteed by CSP (Content Security Policy) to technically block all external communications.
 - **No Tracking:** No analytics, advertisements, or data transmission to external services are performed.
-- **Transparency:** The program is written in Vanilla JS with no hidden dependencies. You can directly inspect the contents of IndexedDB using browser developer tools (F12).
+- **Transparency:** The program is written in Vanilla JS with no hidden dependencies. You can directly inspect the contents of IndexedDB using browser developer tools (F12). We also publish a [Transparency Report (Audit Logs)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml) powered by SCANOSS to dynamically prove that no OSS code is included.
 
 ## カスタマイズ
 - **テーマ:** ライトモード / ダークモードの切り替えが可能です。

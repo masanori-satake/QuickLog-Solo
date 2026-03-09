@@ -32,3 +32,4 @@ jobs:
       uses: scanoss/code-scan-action@v1
       with:
         scanPath: src
+        policies: undeclared
