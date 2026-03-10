@@ -194,22 +194,45 @@
         };
 
         function setLanguage(lang) {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
+            const safeLang = (lang === 'en') ? 'en' : 'ja';
+            const trans = translations[safeLang];
+
+            const elements = document.querySelectorAll('[data-i18n]');
+            for (let i = 0; i < elements.length; i++) {
+                const el = elements[i];
                 const key = el.getAttribute('data-i18n');
-                if (translations[lang][key]) {
-                    el.textContent = translations[lang][key];
+                if (trans[key]) {
+                    el.textContent = trans[key];
                 }
-            });
+            }
 
-            // Update images
-            document.getElementById('img-main').src = `src/assets/guide/01_main_${lang}.png`;
-            document.getElementById('img-recording').src = `src/assets/guide/02_recording_${lang}.png`;
-            document.getElementById('img-header').src = `src/assets/guide/03_header_actions_${lang}.png`;
-            document.getElementById('img-backup').src = `src/assets/guide/04_settings_backup_${lang}.png`;
+            const images = {
+                en: {
+                    main: 'src/assets/guide/01_main_en.png',
+                    recording: 'src/assets/guide/02_recording_en.png',
+                    header: 'src/assets/guide/03_header_actions_en.png',
+                    backup: 'src/assets/guide/04_settings_backup_en.png'
+                },
+                ja: {
+                    main: 'src/assets/guide/01_main_ja.png',
+                    recording: 'src/assets/guide/02_recording_ja.png',
+                    header: 'src/assets/guide/03_header_actions_ja.png',
+                    backup: 'src/assets/guide/04_settings_backup_ja.png'
+                }
+            };
 
-            // Update URL parameter
+            const currentImages = images[safeLang];
+            const imgMain = document.getElementById('img-main');
+            if (imgMain) imgMain.src = currentImages.main;
+            const imgRec = document.getElementById('img-recording');
+            if (imgRec) imgRec.src = currentImages.recording;
+            const imgHeader = document.getElementById('img-header');
+            if (imgHeader) imgHeader.src = currentImages.header;
+            const imgBackup = document.getElementById('img-backup');
+            if (imgBackup) imgBackup.src = currentImages.backup;
+
             const url = new URL(window.location);
-            url.searchParams.set('lang', lang);
+            url.searchParams.set('lang', safeLang);
             window.history.replaceState({}, '', url);
         }
 

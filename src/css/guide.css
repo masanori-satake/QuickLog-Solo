@@ -9,13 +9,13 @@ body {
     color: var(--md-sys-color-on-surface);
     margin: 0;
     padding: 0;
-    font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+    font-family: Roboto, 'Noto Sans JP', sans-serif;
 }
 
 #guide-container {
     max-width: var(--guide-max-width);
     margin: 0 auto;
-    padding: 0 16px 40px 16px;
+    padding: 0 16px 40px;
 }
 
 .guide-header {
@@ -204,7 +204,7 @@ body {
         box-shadow: none;
         border: 1px solid #ddd;
         margin-bottom: 20px;
-        page-break-inside: avoid;
+        break-inside: avoid;
     }
 
     .guide-hero h2 {
@@ -222,7 +222,7 @@ body {
     }
 }
 
-@media (max-width: 500px) {
+@media (width <= 500px) {
     .guide-grid {
         grid-template-columns: 1fr;
     }
