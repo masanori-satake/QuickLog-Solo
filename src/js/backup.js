@@ -1,5 +1,5 @@
 import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from './db.js';
-import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
+import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
 
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 
@@ -43,8 +43,8 @@ class BackupManager {
             if (handle) {
                 this.directoryHandle = handle.value;
             }
-        } catch (e) {
-            console.error('QuickLog-Solo: Failed to restore directory handle', e);
+        } catch {
+            // Ignore if key is not found
         }
     }
 
@@ -59,7 +59,7 @@ class BackupManager {
                 } else {
                     this.status = BACKUP_STATUS.FAILED; // Indicates permission needed or other issue
                 }
-            } catch (e) {
+            } catch {
                 this.status = BACKUP_STATUS.FAILED;
             }
         }
@@ -390,7 +390,7 @@ class BackupManager {
                     count++;
                 }
             }
-        } catch (e) {
+        } catch {
             // Might fail if permission is not granted
         }
         return count;
