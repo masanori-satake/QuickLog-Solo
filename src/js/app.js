@@ -172,9 +172,9 @@ async function pauseTask() {
     broadcastSync();
 }
 
-async function stopTask() {
+async function stopTask(customEndTime = null) {
     if (syncTimeout) clearTimeout(syncTimeout);
-    activeTask = await stopTaskLogic(activeTask, true);
+    activeTask = await stopTaskLogic(activeTask, true, customEndTime);
     broadcastSync();
 }
 
@@ -207,7 +207,7 @@ async function updateTimer() {
         const stopTime = getAutoStopTimeIfPassed(activeTask.startTime, now);
         if (stopTime) {
             console.log("QuickLog-Solo: Auto-record 'Stop' at Midnight triggered");
-            await stopTask();
+            await stopTask(stopTime);
             updateUI();
             return;
         }
@@ -1625,74 +1625,30 @@ function setupEventListeners() {
         };
     });
 
-    // Backup UI listeners
-    getEl(ID_BACKUP_STATUS_CIRCLE)?.addEventListener('click', async () => {
-        if (backupManager.status === BACKUP_STATUS.DIRTY) {
-            await backupManager.flush();
-            updateBackupUI();
-        } else if (backupManager.status === BACKUP_STATUS.FAILED) {
-            const error = backupManager.lastError;
-            const message = error ? t(error.key, error.params) : t('backup-status-failed');
-            showToast(t('toast-backup-failed-detail', { reason: message }));
-        }
-    });
-
-    getEl(ID_BACKUP_SYNC_NOW_BTN)?.addEventListener('click', async () => {
-        await backupManager.flush();
-        updateBackupUI();
-    });
-
     // Backup tab listeners
-    getEl(ID_BACKUP_ENABLE_TOGGLE)?.addEventListener('change', async (e) => {
-        const enabled = e.target.checked;
-        if (enabled && !backupManager.directoryHandle) {
-            try {
-                const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-                await backupManager.setDirectory(handle);
-            } catch (err) {
-                console.warn('Directory selection cancelled or failed', err);
-                e.target.checked = false;
-                return;
-            }
-        }
-        await backupManager.enable(enabled);
-        showToast(enabled ? t('toast-backup-enabled') : t('toast-backup-disabled'));
-        updateBackupUI();
-        broadcastSync();
-    });
-
-    getEl(ID_BACKUP_INTERVAL_SELECT)?.addEventListener('change', async (e) => {
-        await backupManager.setInterval(e.target.value);
-        updateBackupUI();
-        broadcastSync();
-    });
-
-    getEl(ID_BACKUP_SELECT_DIR_BTN)?.addEventListener('click', async () => {
+    const handleDirectorySelection = async () => {
         try {
             const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
             await backupManager.setDirectory(handle);
-            if (backupManager.config.enabled) {
-                await backupManager.sync();
-            }
+            await backupManager.sync();
             updateBackupUI();
             broadcastSync();
         } catch (err) {
-            console.warn('Directory selection cancelled or failed', err);
+            console.warn('QuickLog-Solo: Directory selection cancelled or failed', err);
         }
-    });
+    };
 
-    getEl(ID_BACKUP_GRANT_PERMISSION_BTN)?.addEventListener('click', async () => {
-        try {
-            const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-            await backupManager.setDirectory(handle);
-            if (backupManager.config.enabled) {
-                await backupManager.sync();
-            }
-            updateBackupUI();
-            broadcastSync();
-        } catch (err) {
-            console.warn('Permission grant failed', err);
+    getEl(ID_BACKUP_RUN_INIT_BTN)?.addEventListener('click', handleDirectorySelection);
+    getEl(ID_BACKUP_CHANGE_DIR_BTN)?.addEventListener('click', handleDirectorySelection);
+
+    getEl(ID_BACKUP_RUN_BTN)?.addEventListener('click', async () => {
+        if (!(await backupManager.hasPermission())) {
+            const granted = await backupManager.requestPermission();
+            if (!granted) return;
         }
+        await backupManager.sync();
+        updateBackupUI();
+        broadcastSync();
     });
 
     backupManager.onStatusChange = () => {
