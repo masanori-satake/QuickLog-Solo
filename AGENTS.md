@@ -163,10 +163,12 @@ AI エージェントは、以下のルールを厳格に遵守せよ。
 - **PR 連絡は日本語で行え:** 開発に関するコミュニケーション（PR、コミットメッセージ等）は、すべて日本語で行うこと。
 - **コミットメッセージ規約:** バージョン自動採番のため、[Conventional Commits](https://www.conventionalcommits.org/) に準拠せよ（例: `feat:`, `fix:`, `feat!:`, `BREAKING CHANGE:`）。
 - **Why を記録せよ:** 重要な変更を行う際は、単に「何を変えたか」だけでなく、「なぜその方法を選んだか」を AGENTS.md の「判断の背景」に追記せよ。
-- **バージョン管理:**
+- **バージョン管理とリリース:**
     - `src/version.json`, `package.json`, `src/manifest.*.json` のバージョン番号は常に一致させよ。
     - バージョン更新は `npm run version:bump` (`scripts/bump_version.py`) を使用して自動で行え。
     - CI 上の `scripts/verify_version_impact.py` により、変更内容（コミットタイプ）に応じた適切なバージョンアップが行われているか検証される。
+    - **自動リリース:** `v*.*.*` タグがプッシュされると、GitHub Actions (`release.yml`) が起動し、自動的に GitHub Releases が作成され、Chrome/Firefox 用の ZIP パッケージがアタッチされる。
+    - **Jules による自律リリース:** ヒューマンエラー防止のため、Jules は機能追加や修正が完了した際、自律的に `npm run version:bump` を実行し、適切なタグを作成・プッシュしてリリースをトリガーすることが推奨される。
 
 ## 4. 設計原則の適用 (Design Principles)
 
