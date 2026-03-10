@@ -17,7 +17,6 @@
 <body class="theme-light">
     <div id="app">
         <header>
-            <div id="backup-status-circle" class="status-circle" data-i18n-title="tooltip-backup-status"></div>
             <div id="header-btns">
                 <button id="copy-report-btn" data-i18n-title="tooltip-copy-report"><span class="material-symbols-outlined">content_paste</span></button>
                 <button id="copy-aggregation-btn" data-i18n-title="tooltip-copy-aggregation"><span class="material-symbols-outlined">functions</span></button>
@@ -321,50 +320,35 @@
                 </div>
 
                 <div id="backup-tab" class="tab-content hidden">
-                    <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center;">
-                        <label data-i18n="setting-backup-enable">ローカルバックアップ</label>
-                        <label class="switch">
-                            <input type="checkbox" id="backup-enable-toggle">
-                            <span class="slider round"></span>
-                        </label>
+                    <div id="backup-init-container" class="setting-item">
+                        <button id="backup-run-init-btn" class="primary-btn" style="width: 100%;">
+                            <span class="material-symbols-outlined">hard_drive</span>
+                            <span data-i18n="btn-backup-start">バックアップを開始する</span>
+                        </button>
                     </div>
 
-                    <div id="backup-options-container" class="disabled-group">
+                    <div id="backup-main-container" class="hidden">
                         <div class="setting-item">
-                            <label data-i18n="setting-backup-interval">同期頻度</label>
-                            <select id="backup-interval-select">
-                                <option value="immediate" data-i18n="interval-immediate">即時 (安全性重視)</option>
-                                <option value="5m" data-i18n="interval-5m">5分毎 (バランス)</option>
-                                <option value="1h" data-i18n="interval-1h">1時間毎 (負荷低減)</option>
-                            </select>
+                            <button id="backup-run-btn" class="primary-btn" style="width: 100%;">
+                                <span class="material-symbols-outlined">hard_drive</span>
+                                <span id="backup-run-btn-text" data-i18n="btn-backup-run">バックアップを実行する</span>
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <button id="backup-change-dir-btn" style="width: 100%;">
+                                <span class="material-symbols-outlined">folder_open</span>
+                                <span data-i18n="btn-backup-change-dir">バックアップ先を指定する</span>
+                            </button>
                         </div>
 
                         <div class="setting-item">
-                            <label data-i18n="backup-directory">保存先</label>
-                            <div class="maintenance-btns">
-                                <button id="backup-select-dir-btn" data-i18n="btn-select-directory">フォルダを選択</button>
-                            </div>
+                            <label data-i18n="backup-directory">現在の保存先</label>
                             <p id="backup-dir-path" class="path-display">-</p>
-                        </div>
-
-                        <div id="backup-permission-alert" class="alert-box hidden">
-                            <p data-i18n="backup-permission-request">ブラウザ再起動後のバックアップを継続するには、フォルダへのアクセスを再度許可する必要があります。</p>
-                            <button id="backup-grant-permission-btn" class="primary-btn" data-i18n="btn-grant-permission">アクセスを許可する</button>
                         </div>
 
                         <div class="backup-status-panel">
                             <div class="status-row">
-                                <span data-i18n="backup-status-label">現在のステータス</span>
-                                <span id="backup-status-indicator" class="status-badge idle">-</span>
-                            </div>
-                            <div class="status-row" style="margin-top: 12px;">
-                                <button id="backup-sync-now-btn" class="primary-btn" style="padding: 6px 12px; font-size: 0.75rem;">
-                                    <span class="material-symbols-outlined" style="font-size: 1rem;">sync</span>
-                                    <span data-i18n="btn-sync-now">今すぐ同期</span>
-                                </button>
-                            </div>
-                            <div class="status-row">
-                                <span data-i18n="backup-last-time">最終同期時刻</span>
+                                <span data-i18n="backup-last-time">最終バックアップ時刻</span>
                                 <span id="backup-last-time-display">-</span>
                             </div>
                             <div class="status-row">
@@ -372,11 +356,11 @@
                                 <span><span id="backup-file-count-display">0</span> <span data-i18n="backup-file-count-unit">日分</span></span>
                             </div>
                         </div>
-
-                        <p class="setting-description" data-i18n="backup-description">
-                            ブラウザのキャッシュクリアに備えて、指定したローカルフォルダに日付ごとのファイルを自動保存します。アプリの「40日以前の記録を削除する」ポリシーはここでも適用されます。
-                        </p>
                     </div>
+
+                    <p class="setting-description" data-i18n="backup-description-new">
+                        ブラウザのキャッシュクリアなどで IndexedDB のデータが消えてしまうのを防ぐため、定期的なバックアップを推奨します。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。
+                    </p>
                 </div>
 
                 <div id="maintenance-tab" class="tab-content hidden">

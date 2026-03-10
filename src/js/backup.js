@@ -1,5 +1,5 @@
 import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from './db.js';
-import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
+import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
 
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 
@@ -8,10 +8,9 @@ const FILE_NAME_SETTINGS = 'settings.json';
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 
 export const BACKUP_STATUS = {
-    DISABLED: 'disabled',
+    DISABLED: 'disabled', // No directory handle
     SYNCING: 'syncing',
     SUCCESS: 'success',
-    DIRTY: 'dirty',
     FAILED: 'failed'
 };
 
@@ -19,17 +18,11 @@ class BackupManager {
     constructor() {
         this.directoryHandle = null;
         this.config = {
-            enabled: false,
-            interval: '5m', // 'immediate', '5m', '1h'
             lastBackupTime: null
         };
         this.status = BACKUP_STATUS.DISABLED;
         this.onStatusChange = null;
-        this.backupTimer = null;
         this.isSyncing = false;
-        this.isDirty = false;
-        this.dirtyStartTime = 0;
-        this._dirtyCheckInterval = null;
         this.lastError = null;
         this.onConfirm = null; // Callback for user confirmation
     }
@@ -40,36 +33,8 @@ class BackupManager {
             this.config = { ...this.config, ...savedConfig.value };
         }
 
-        if (this.config.enabled) {
-            await this.tryRestoreHandle();
-            if (this.directoryHandle) {
-                this.status = BACKUP_STATUS.SUCCESS;
-                this.scheduleBackup();
-            } else {
-                this.status = BACKUP_STATUS.FAILED;
-            }
-        } else {
-            this.status = BACKUP_STATUS.DISABLED;
-        }
-
-        this._startDirtyMonitor();
-    }
-
-    _startDirtyMonitor() {
-        if (this._dirtyCheckInterval) clearInterval(this._dirtyCheckInterval);
-        this._dirtyCheckInterval = setInterval(() => {
-            if (this.isDirty && !this.isSyncing) {
-                const now = Date.now();
-                // Ensure dirty state is visible for at least 2 seconds
-                if (now - this.dirtyStartTime >= 2000) {
-                    // Update status to dirty if it was SUCCESS
-                    if (this.status === BACKUP_STATUS.SUCCESS) {
-                        this.status = BACKUP_STATUS.DIRTY;
-                        if (this.onStatusChange) this.onStatusChange(this.status);
-                    }
-                }
-            }
-        }, 500);
+        await this.tryRestoreHandle();
+        this._updateStatus();
     }
 
     async tryRestoreHandle() {
@@ -77,73 +42,62 @@ class BackupManager {
             const handle = await dbGet(STORE_SETTINGS, 'backupDirectoryHandle');
             if (handle) {
                 this.directoryHandle = handle.value;
-                // Check if we still have permission
-                if (await this.directoryHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') {
-                    // We don't have permission, user needs to grant it again via UI
-                    this.directoryHandle = null;
-                }
             }
         } catch (e) {
             console.error('QuickLog-Solo: Failed to restore directory handle', e);
         }
     }
 
+    async _updateStatus() {
+        if (!this.directoryHandle) {
+            this.status = BACKUP_STATUS.DISABLED;
+        } else {
+            try {
+                const permission = await this.directoryHandle.queryPermission({ mode: 'readwrite' });
+                if (permission === 'granted') {
+                    this.status = BACKUP_STATUS.SUCCESS;
+                } else {
+                    this.status = BACKUP_STATUS.FAILED; // Indicates permission needed or other issue
+                }
+            } catch (e) {
+                this.status = BACKUP_STATUS.FAILED;
+            }
+        }
+        if (this.onStatusChange) this.onStatusChange(this.status);
+    }
+
+    async hasPermission() {
+        if (!this.directoryHandle) return false;
+        return (await this.directoryHandle.queryPermission({ mode: 'readwrite' })) === 'granted';
+    }
+
+    async requestPermission() {
+        if (!this.directoryHandle) return false;
+        const result = await this.directoryHandle.requestPermission({ mode: 'readwrite' });
+        await this._updateStatus();
+        return result === 'granted';
+    }
+
     async setDirectory(handle) {
         this.directoryHandle = handle;
         await dbPut(STORE_SETTINGS, { key: 'backupDirectoryHandle', value: handle });
-        if (this.config.enabled) {
-            this.status = BACKUP_STATUS.SUCCESS;
-        } else {
-            this.status = BACKUP_STATUS.DISABLED;
-        }
-        if (this.onStatusChange) this.onStatusChange(this.status);
-    }
-
-    async enable(enabled) {
-        this.config.enabled = enabled;
-        await this.saveConfig();
-        if (enabled) {
-            if (this.directoryHandle) {
-                this.status = BACKUP_STATUS.SUCCESS;
-                await this.sync();
-                this.scheduleBackup();
-            } else {
-                this.status = BACKUP_STATUS.FAILED;
-            }
-        } else {
-            this.status = BACKUP_STATUS.DISABLED;
-            if (this.backupTimer) {
-                clearTimeout(this.backupTimer);
-                this.backupTimer = null;
-            }
-        }
-        if (this.onStatusChange) this.onStatusChange(this.status);
-    }
-
-    async setInterval(interval) {
-        this.config.interval = interval;
-        await this.saveConfig();
-        if (this.config.enabled && this.directoryHandle) {
-            this.scheduleBackup();
-        }
+        await this._updateStatus();
     }
 
     async saveConfig() {
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BACKUP_CONFIG, value: this.config });
     }
 
-    scheduleBackup() {
-        if (this.backupTimer) clearTimeout(this.backupTimer);
-        if (!this.config.enabled || !this.directoryHandle || this.config.interval === 'immediate') return;
-
-        let ms = 5 * 60 * 1000;
-        if (this.config.interval === '1h') ms = 60 * 60 * 1000;
-
-        this.backupTimer = setTimeout(() => this.sync(), ms);
-    }
-
     async sync() {
         if (this.isSyncing || !this.directoryHandle) return;
+
+        // Check permission before syncing
+        if (!(await this.hasPermission())) {
+            this.status = BACKUP_STATUS.FAILED;
+            if (this.onStatusChange) this.onStatusChange(this.status);
+            return;
+        }
+
         this.isSyncing = true;
         this.status = BACKUP_STATUS.SYNCING;
         this.lastError = null;
@@ -162,11 +116,10 @@ class BackupManager {
             this.config.lastBackupTime = Date.now();
             await this.saveConfig();
             this.status = BACKUP_STATUS.SUCCESS;
-            this.isDirty = false;
         } catch (e) {
             if (e.message === 'ABORT_BY_USER') {
                 console.log('QuickLog-Solo: Backup aborted by user');
-                this.status = BACKUP_STATUS.SUCCESS; // Or some other state? Success is safer to avoid retry loop
+                this.status = BACKUP_STATUS.SUCCESS;
             } else {
                 console.error('QuickLog-Solo: Backup failed', e);
                 this.status = BACKUP_STATUS.FAILED;
@@ -175,7 +128,6 @@ class BackupManager {
         } finally {
             this.isSyncing = false;
             if (this.onStatusChange) this.onStatusChange(this.status);
-            this.scheduleBackup();
         }
     }
 
@@ -431,33 +383,25 @@ class BackupManager {
     async getFileCount() {
         if (!this.directoryHandle) return 0;
         let count = 0;
-        for await (const entry of this.directoryHandle.values()) {
-            if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
-                count++;
+        try {
+            for await (const entry of this.directoryHandle.values()) {
+                if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
+                    count++;
+                }
             }
+        } catch (e) {
+            // Might fail if permission is not granted
         }
         return count;
     }
 
-    requestImmediateBackup() {
-        if (this.config.enabled) {
-            if (!this.isDirty) {
-                this.isDirty = true;
-                this.dirtyStartTime = Date.now();
-            }
-
-            if (this.config.interval === 'immediate') {
-                // Debounce immediate backup
-                if (this._immediateTimer) clearTimeout(this._immediateTimer);
-                this._immediateTimer = setTimeout(() => this.sync(), 2000);
-            }
-        }
-    }
+    // Removed: requestImmediateBackup()
+    // Removed: scheduleBackup()
+    // Removed: _startDirtyMonitor()
 
     async flush() {
-        if (this.config.enabled && this.directoryHandle) {
-            await this.sync();
-        }
+        // Manual backup only now
+        await this.sync();
     }
 }
 

@@ -17,74 +17,70 @@ describe('BackupManager', () => {
     beforeEach(() => {
         // Reset backupManager state
         backupManager.status = BACKUP_STATUS.DISABLED;
-        backupManager.config = { enabled: false, interval: '5m', lastBackupTime: null };
+        backupManager.config = { lastBackupTime: null };
         backupManager.directoryHandle = null;
-        backupManager.isDirty = false;
         backupManager.onStatusChange = null;
-        if (backupManager._dirtyCheckInterval) {
-            clearInterval(backupManager._dirtyCheckInterval);
-            backupManager._dirtyCheckInterval = null;
-        }
 
         jest.clearAllMocks();
     });
 
-    test('init sets status correctly when disabled', async () => {
-        db.dbGet.mockResolvedValue({ value: { enabled: false } });
-        await backupManager.init();
-        expect(backupManager.status).toBe(BACKUP_STATUS.DISABLED);
-    });
-
-    test('init sets status to SUCCESS when enabled and handle is restored', async () => {
+    test('init restores handle and checks permission', async () => {
+        const mockHandle = { queryPermission: jest.fn().mockResolvedValue('prompt') };
         db.dbGet.mockImplementation((store, key) => {
-            if (key === 'backupConfig') return Promise.resolve({ value: { enabled: true } });
-            if (key === 'backupDirectoryHandle') return Promise.resolve({ value: { queryPermission: jest.fn().mockResolvedValue('granted') } });
+            if (key === 'backupConfig') return Promise.resolve({ value: { lastBackupTime: '2025-01-01' } });
+            if (key === 'backupDirectoryHandle') return Promise.resolve({ value: mockHandle });
             return Promise.resolve(null);
         });
+
         await backupManager.init();
-        expect(backupManager.status).toBe(BACKUP_STATUS.SUCCESS);
+
+        expect(backupManager.directoryHandle).toBe(mockHandle);
+        expect(backupManager.status).toBe(BACKUP_STATUS.FAILED);
     });
 
-    test('requestImmediateBackup sets dirty state', () => {
-        backupManager.config.enabled = true;
-        backupManager.requestImmediateBackup();
-        expect(backupManager.isDirty).toBe(true);
+    test('hasPermission returns true only when granted', async () => {
+        backupManager.directoryHandle = null;
+        expect(await backupManager.hasPermission()).toBe(false);
+
+        backupManager.directoryHandle = { queryPermission: jest.fn().mockResolvedValue('prompt') };
+        expect(await backupManager.hasPermission()).toBe(false);
+
+        backupManager.directoryHandle = { queryPermission: jest.fn().mockResolvedValue('granted') };
+        expect(await backupManager.hasPermission()).toBe(true);
     });
 
-    test('dirty state transitions to DIRTY status after 2 seconds', (done) => {
-        backupManager.status = BACKUP_STATUS.SUCCESS;
-        backupManager.config.enabled = true;
-        backupManager.isDirty = true;
-        backupManager.dirtyStartTime = Date.now() - 2100;
-
-        backupManager.onStatusChange = (status) => {
-            if (status === BACKUP_STATUS.DIRTY) {
-                expect(backupManager.status).toBe(BACKUP_STATUS.DIRTY);
-                done();
-            }
-        };
-
-        backupManager._startDirtyMonitor();
-    }, 10000);
-
-    test('sync clears dirty state', async () => {
+    test('sync performs backup and updates lastBackupTime', async () => {
         const mockFile = { size: 100, text: jest.fn().mockResolvedValue('[]') };
+        const mockWritable = {
+            write: jest.fn(),
+            close: jest.fn()
+        };
         const mockFileHandle = {
             getFile: jest.fn().mockResolvedValue(mockFile),
-            createWritable: jest.fn().mockResolvedValue({
-                write: jest.fn(),
-                close: jest.fn()
-            })
+            createWritable: jest.fn().mockResolvedValue(mockWritable)
         };
         backupManager.directoryHandle = {
             values: async function* () { yield* []; },
-            getFileHandle: jest.fn().mockResolvedValue(mockFileHandle)
+            getFileHandle: jest.fn().mockResolvedValue(mockFileHandle),
+            queryPermission: jest.fn().mockResolvedValue('granted')
         };
         db.dbGetAll.mockResolvedValue([]);
-        backupManager.config.enabled = true;
-        backupManager.isDirty = true;
+        db.dbPut.mockResolvedValue(true);
+
         await backupManager.sync();
-        expect(backupManager.isDirty).toBe(false);
+
         expect(backupManager.status).toBe(BACKUP_STATUS.SUCCESS);
+        expect(backupManager.config.lastBackupTime).toBeDefined();
+        expect(db.dbPut).toHaveBeenCalledWith(db.STORE_SETTINGS, expect.objectContaining({ key: 'backupConfig' }));
+    });
+
+    test('sync handles missing permission', async () => {
+        backupManager.directoryHandle = {
+            queryPermission: jest.fn().mockResolvedValue('prompt')
+        };
+
+        await backupManager.sync();
+
+        expect(backupManager.status).toBe(BACKUP_STATUS.FAILED);
     });
 });

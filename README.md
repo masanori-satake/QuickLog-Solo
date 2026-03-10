@@ -1,4 +1,4 @@
-[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![OSS Fragment Audit](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.22.2-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
+[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![OSS Fragment Audit](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.22.3-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
 
 # QuickLog-Solo
 
@@ -13,7 +13,7 @@
 - **Visual Healing（視覚的癒やし）:** 20種類以上のLCDドットマトリクス風アニメーションを搭載。「1秒の重み」を緩やかな変化で表現し、作業中のストレスを軽減する心地よい体験を提供します。
 - **タグ別集計:** カテゴリにタグを紐付けることで、複数のカテゴリにまたがるプロジェクト横断の工数集計を一瞬で行えます。ヘッダーの「📊」ボタンから利用可能です。
 - **日付変更時の”作業終了"自動記録:** 毎日23:59:59に自動終了し、翌日の記録がクリーンに始められるようガードします。
-- **ローカルファイルバックアップ:** 指定したローカルフォルダへの自動同期に対応。ブラウザのキャッシュクリア等による予期せぬデータ消失から記録を守ります（File System Access API を利用）。同期状況はヘッダー右側のインジケーターで一目で確認可能です。
+- **ローカルファイルバックアップ:** 指定したローカルフォルダへのバックアップに対応。ブラウザのキャッシュクリア等による予期せぬデータ消失から記録を守ります（File System Access API を利用）。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。
 - **徹底したプライバシーと透明性:**
     - **完全ローカル:** 記録されたデータはすべてブラウザ内の IndexedDB に保存されます（バックアップ機能を有効化した際には、ローカルファイルシステムにも保存されます）。
     - **外部通信ゼロ:** CSP（Content Security Policy）により技術的に外部通信を遮断しています。
@@ -47,10 +47,10 @@
 ## データの保存場所とリスク (Data Storage & Risks)
 - **データの保存先:** 記録されたデータはすべてブラウザ内の **IndexedDB** に保存されます（バックアップ機能を有効化した際には、ローカルファイルシステムにも保存されます）。
 - **消失リスク:** ブラウザの「閲覧履歴の消去」やキャッシュクリア、またはブラウザ自体の仕様により、データが予期せず削除される可能性があります。
-- **推奨事項:** 大切な記録を守るため、設定の「バックアップ」タブから **「ローカルファイルバックアップ」** を有効にし、ローカルフォルダへの自動同期設定を行うことを強く推奨します。
+- **推奨事項:** 大切な記録を守るため、設定の「バックアップ」タブから定期的にバックアップを実行することを強く推奨します。
 - **Data Storage:** All recorded data is stored in the browser's **IndexedDB** (and also to the local file system when the backup function is enabled).
 - **Data Loss Risk:** Data may be unexpectedly deleted due to browser "Clear browsing history," cache clearing, or browser-specific storage policies.
-- **Recommendation:** To protect your valuable records, we strongly recommend enabling **"Local File Backup"** in the "Backup" tab of the settings to automatically sync data to a local folder.
+- **Recommendation:** To protect your valuable records, we strongly recommend performing regular backups from the "Backup" tab of the settings.
 
 ## プライバシーとセキュリティ (Privacy & Security)
 - **Local Only:** 本アプリは、CSP（Content Security Policy）により技術的に外部への通信を一切行わないことが保証されています。

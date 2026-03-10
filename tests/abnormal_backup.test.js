@@ -18,9 +18,8 @@ describe('BackupManager Abnormal Cases', () => {
     beforeEach(() => {
         // Reset backupManager state
         backupManager.status = BACKUP_STATUS.DISABLED;
-        backupManager.config = { enabled: false, interval: '5m', lastBackupTime: null };
+        backupManager.config = { lastBackupTime: null };
         backupManager.directoryHandle = null;
-        backupManager.isDirty = false;
         backupManager.onStatusChange = null;
         backupManager.onConfirm = null;
         backupManager.lastError = null;
@@ -28,7 +27,7 @@ describe('BackupManager Abnormal Cases', () => {
         mockDirectoryHandle = {
             values: jest.fn(),
             getFileHandle: jest.fn(),
-            removeEntry: jest.fn()
+            removeEntry: jest.fn(), queryPermission: jest.fn().mockResolvedValue("granted")
         };
 
         jest.clearAllMocks();
@@ -42,7 +41,7 @@ describe('BackupManager Abnormal Cases', () => {
         mockDirectoryHandle.getFileHandle.mockImplementation(() => { throw error; });
 
         backupManager.directoryHandle = mockDirectoryHandle;
-        backupManager.config.enabled = true;
+        
 
         await backupManager.sync();
 
@@ -80,7 +79,7 @@ describe('BackupManager Abnormal Cases', () => {
         mockDirectoryHandle.getFileHandle.mockImplementation(() => { throw error; });
 
         backupManager.directoryHandle = mockDirectoryHandle;
-        backupManager.config.enabled = true;
+        
 
         await backupManager.sync();
 
