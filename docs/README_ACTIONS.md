@@ -9,7 +9,7 @@
 | **CI** | `ci.yml` | コードの品質管理、バージョン整合性チェック、テスト実行 | `main`へのPush/PR, 手動 |
 | **OSS Fragment Audit** | `oss_audit.yml` | SCANOSSによる外部コード混入（スニペット盗用）の監査 | `main`へのPush/PR, 手動 |
 | **Animation Quality Evaluation** | `animation_eval.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (src/js/animation/**), 手動 |
-| **Deploy to Vercel** | `deploy.yml` | 本番・開発環境への自動デプロイ | `main`, `feat/quicklog-solo-core`へのPush |
+| **Deploy to Vercel** | `deploy.yml` | 本番・開発環境への自動デプロイ | `main`へのPush |
 | **Auto Release** | `release.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
 
 ---
@@ -104,7 +104,7 @@ graph TD
 
 ```mermaid
 graph TD
-    Start([トリガー: main/featへのPush]) --> Checkout[リポジトリのチェックアウト]
+    Start([トリガー: mainへのPush]) --> Checkout[リポジトリのチェックアウト]
     Checkout --> Vercel[Vercelへデプロイ]
     Vercel --> End([完了])
 ```
@@ -137,12 +137,10 @@ graph TD
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Push (main)** | ✅ (テストのみ) | ✅ | - | ✅ | - |
 | **Pull Request (main)** | ✅ (+E2E) | ✅ | ✅ (*1) | - | - |
-| **Push (feat/...)** | - | - | - | ✅ (*2) | - |
 | **Tag (v*.*.*)** | - | - | - | - | ✅ |
 | **Manual (Dispatch)** | ✅ | ✅ | ✅ | - | - |
 
 - (*1) `src/js/animation/**` に変更がある場合のみ実行
-- (*2) `feat/quicklog-solo-core` ブランチのみ対象
 
 ### プロセス・フロー概略図
 
