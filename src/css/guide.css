@@ -59,6 +59,7 @@ body {
     border: 1px solid var(--md-sys-color-outline);
     background: var(--md-sys-color-surface);
     color: var(--md-sys-color-on-surface);
+    font-family: Roboto, 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
 }
 
 .guide-hero {
