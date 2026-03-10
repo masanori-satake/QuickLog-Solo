@@ -100,7 +100,7 @@
 
                 <section class="guide-card step-card">
                     <h3 data-i18n="step4-title">STEP 4: データの安全管理</h3>
-                    <p data-i18n="step4-desc">大切なデータを守るために、バックアップを設定しましょう。</p>
+                    <p data-i18n="step4-desc">大切なデータを守るために、バックアップ先を設定しましょう。</p>
                     <ol>
                         <li data-i18n="step4-1">設定（⚙️）から「バックアップ」タブを選択。</li>
                         <li data-i18n="step4-2">「バックアップ先を指定する」でローカルフォルダを選択。</li>
@@ -151,7 +151,7 @@
                 "step3-stats-title": "タグ集計",
                 "step3-stats-desc": "プロジェクトごとの合計工数を一瞬で算出します。",
                 "step4-title": "STEP 4: データの安全管理",
-                "step4-desc": "大切なデータを守るために、バックアップを設定しましょう。",
+                "step4-desc": "大切なデータを守るために、バックアップ先を設定しましょう。",
                 "step4-1": "設定（⚙️）から「バックアップ」タブを選択。",
                 "step4-2": "「バックアップ先を指定する」でローカルフォルダを選択。",
                 "step4-3": "「バックアップを実行する」で同期が完了します。",
@@ -182,7 +182,7 @@
                 "step3-stats-title": "Tag Aggregation",
                 "step3-stats-desc": "Calculate total hours per project instantly.",
                 "step4-title": "STEP 4: Data Safety",
-                "step4-desc": "Set up a backup to protect your valuable records.",
+                "step4-desc": "Set up a backup destination to protect your valuable records.",
                 "step4-1": "Go to Settings (⚙️) and select the 'Backup' tab.",
                 "step4-2": "Click 'Change Destination' and select a local folder.",
                 "step4-3": "Click 'Execute Backup' to complete the sync.",
@@ -196,6 +196,13 @@
         function setLanguage(lang) {
             const safeLang = (lang === 'en') ? 'en' : 'ja';
             const trans = translations[safeLang];
+
+            // Update font stack based on language
+            const fontStacks = {
+                ja: "Roboto, 'Noto Sans JP', 'Noto Color Emoji', sans-serif",
+                en: "Roboto, 'Noto Color Emoji', sans-serif"
+            };
+            document.body.style.fontFamily = fontStacks[safeLang];
 
             const elements = document.querySelectorAll('[data-i18n]');
             for (let i = 0; i < elements.length; i++) {
