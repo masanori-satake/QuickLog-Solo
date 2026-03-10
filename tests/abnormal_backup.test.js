@@ -11,11 +11,18 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
 }));
 
 const { backupManager, BACKUP_STATUS } = await import('../src/js/backup.js');
+const db = await import('../src/js/db.js');
 
 describe('BackupManager Abnormal Cases', () => {
     let mockDirectoryHandle;
 
     beforeEach(() => {
+        // Reset DB mocks
+        db.dbGetAll.mockResolvedValue([]);
+        db.dbGet.mockResolvedValue(null);
+        db.dbPut.mockResolvedValue(null);
+        db.dbAddMultiple.mockResolvedValue(null);
+
         // Reset backupManager state
         backupManager.status = BACKUP_STATUS.DISABLED;
         backupManager.config = { lastBackupTime: null };
@@ -42,6 +49,39 @@ describe('BackupManager Abnormal Cases', () => {
 
         backupManager.directoryHandle = mockDirectoryHandle;
         
+
+        await backupManager.sync();
+
+        expect(backupManager.status).toBe(BACKUP_STATUS.FAILED);
+        expect(backupManager.lastError.key).toBe('backup-err-locked');
+    });
+
+    test('sync handles "Locked" message (case-insensitive) correctly', async () => {
+        const error = new Error('The directory is Locked by another process');
+        error.name = 'UnknownError';
+
+        mockDirectoryHandle.getFileHandle.mockImplementation(() => { throw error; });
+        backupManager.directoryHandle = mockDirectoryHandle;
+
+        await backupManager.sync();
+
+        expect(backupManager.status).toBe(BACKUP_STATUS.FAILED);
+        expect(backupManager.lastError.key).toBe('backup-err-locked');
+    });
+
+    test('sync handles error during directoryHandle.values() enumeration', async () => {
+        const error = new Error('Enumeration failed');
+        error.name = 'NotReadableError';
+
+        // restoreFromFiles calls values()
+        mockDirectoryHandle.values.mockImplementation(() => {
+            throw error;
+        });
+
+        // Mock other calls to not fail
+        mockDirectoryHandle.getFileHandle.mockResolvedValue({ getFile: jest.fn().mockResolvedValue({ size: 0 }) });
+
+        backupManager.directoryHandle = mockDirectoryHandle;
 
         await backupManager.sync();
 
