@@ -78,7 +78,7 @@ export const messages = {
 
         // Auto Stop & Page Break
         'setting-auto-stop': '日付変更時の”作業終了"自動記録',
-        'tooltip-auto-stop': 'ONにすると、毎日23:59:59に作業を自動的に終了し、翌日の記録がスムーズに始められるようガードします。次回起動時、未終了の作業があれば開始日の23:59:59に遡って記録を完了させます。',
+        'tooltip-auto-stop': 'ONにすると、毎日23:59:59に作業を自動的に終了し、翌日の記録がスムーズに始められるようガードします。次回起動時、未終了の作業があれば開始日の23:59:59に記録を完了させます。',
         'page-break': '改ページ',
         'btn-add-page-break': '改ページを追加',
         'confirm-delete-page-break': 'この改ページを削除しますか？',
@@ -350,7 +350,7 @@ export const messages = {
 
         // Auto Stop & Page Break
         'setting-auto-stop': "Auto-record 'Stop' at Midnight",
-        'tooltip-auto-stop': 'Automatically ends any active task at 23:59:59 to ensure a clean start for the next day. If work is unfinished on next launch, it retroactively records the end time as 23:59:59 of the start day.',
+        'tooltip-auto-stop': 'Automatically ends any active task at 23:59:59 to ensure a clean start for the next day. If work is unfinished on next launch, it records the end time as 23:59:59 of the start day.',
         'page-break': 'Page Break',
         'btn-add-page-break': 'Add Page Break',
         'confirm-delete-page-break': 'Do you want to delete this page break?',
@@ -1673,7 +1673,7 @@ export const messages = {
         'import-btn-skip-invalid': '결함 있는 행 제외',
         'import-btn-abort': '취소',
 
-        'backup-err-0byte': '내용이 비어 있는 백アップ 파일({name})이 발견되었습니다. 이는 비정상적인 상태일 수 있습니다. 이 파일을 무시하고 계속하시겠습니까?',
+        'backup-err-0byte': '내용이 비어 있는 백업 파일({name})이 발견되었습니다. 이는 비정상적인 상태일 수 있습니다. 이 파일을 무시하고 계속하시겠습니까?',
         'backup-btn-ignore-continue': '무시하고 계속',
         'backup-btn-abort-investigate': '중단하고 조사',
 
