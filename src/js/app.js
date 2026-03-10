@@ -1648,6 +1648,7 @@ function setupEventListeners() {
         }
         await backupManager.sync();
         updateBackupUI();
+        broadcastSync();
     });
 
     backupManager.onStatusChange = () => {
