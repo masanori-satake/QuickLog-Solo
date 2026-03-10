@@ -207,13 +207,13 @@ name: {
 
 ---
 
-## 7. 免責事項 (Disclaimer)
-本ソフトウェアおよび本仕様に基づいて制作されたモジュールの動作によって生じたいかなる損害（データの消失、業務の中断、PCの不具合など）についても、開発者は一切の責任を負いません。制作したモジュールの公開・配布は、制作者自身の責任において行ってください。
-
-The developer shall not be liable for any damages (including data loss, work interruption, PC malfunction, etc.) arising from the use of this software or modules created based on this specification. The publication and distribution of created modules are at the sole responsibility of the creator.
+## 7. 改訂履歴
+- **1.0 (2024-05-20):** 初版。
+- **1.1 (2024-05-24):** `exclusionStrategy` を導入。FG/BG 概念によるクリエイター向けガイドへ刷新。
 
 ---
 
-## 8. 改訂履歴
-- **1.0 (2024-05-20):** 初版。
-- **1.1 (2024-05-24):** `exclusionStrategy` を導入。FG/BG 概念によるクリエイター向けガイドへ刷新。
+## 8. 免責事項 (Disclaimer)
+本ソフトウェアおよび本仕様に基づいて制作されたモジュールの動作によって生じたいかなる損害（データの消失、業務の中断、PCの不具合など）についても、開発者は一切の責任を負いません。制作したモジュールの公開・配布は、制作者自身の責任において行ってください。
+
+The developer shall not be liable for any damages (including data loss, work interruption, PC malfunction, etc.) arising from the use of this software or modules created based on this specification. The publication and distribution of created modules are at the sole responsibility of the creator.

@@ -139,13 +139,7 @@ describe('Logic Module', () => {
             jest.clearAllMocks();
         });
 
-        test('startTaskLogic starts a new task', async () => {
-            const newTask = await startTaskLogic('Work', null);
-            expect(newTask.category).toBe('Work');
-            expect(dbAdd).toHaveBeenCalled();
-        });
-
-        test('startTaskLogic includes color and tags in log entry for historical preservation', async () => {
+        test('startTaskLogic starts a new task with color and tags for historical preservation', async () => {
             const color = 'secondary';
             const tags = 'Project A';
             const newTask = await startTaskLogic('Work', null, null, color, tags);
