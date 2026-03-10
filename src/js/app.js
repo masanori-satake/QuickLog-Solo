@@ -794,10 +794,6 @@ async function updateUI() {
         }
         if (elements.endBtn) elements.endBtn.disabled = false;
 
-        if (elements.elapsedTime) {
-            elements.elapsedTime.classList.remove('hidden');
-            elements.elapsedTime.style.visibility = 'visible';
-        }
         startTimer();
         // Ensure proper animation visibility (called after text content is updated for accurate exclusion)
         applyAnimation(currentAnimationType, categoryAnimation, color);
@@ -825,11 +821,14 @@ async function updateUI() {
         if (elements.endBtn) elements.endBtn.disabled = true;
 
         if (elements.elapsedTime) {
-            elements.elapsedTime.classList.remove('hidden');
             elements.elapsedTime.textContent = '00:00:00';
-            elements.elapsedTime.style.visibility = 'visible';
         }
         document.title = 'QuickLog-Solo';
+    }
+
+    if (elements.elapsedTime) {
+        elements.elapsedTime.classList.remove('hidden');
+        elements.elapsedTime.style.visibility = 'visible';
     }
 }
 
