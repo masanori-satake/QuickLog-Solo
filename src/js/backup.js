@@ -132,7 +132,8 @@ class BackupManager {
     }
 
     _handleError(e) {
-        if (e.name === 'NotReadableError' || e.name === 'AbortError' || e.message.includes('locked')) {
+        const message = e.message || '';
+        if (e.name === 'NotReadableError' || e.name === 'AbortError' || message.toLowerCase().includes('locked')) {
             return { key: 'backup-err-locked' };
         }
         if (e.name === 'NotFoundError') {
