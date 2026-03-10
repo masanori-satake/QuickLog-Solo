@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickLog-Solo - Quick Start Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="src/css/m3-theme.css">
+    <link rel="stylesheet" href="src/css/guide.css">
+    <link rel="icon" href="src/assets/icon.svg" type="image/svg+xml">
+</head>
+<body class="theme-light">
+    <div id="guide-container">
+        <header class="guide-header no-print">
+            <div class="header-content">
+                <a href="index.html" class="back-link">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    <span data-i18n="back-to-top">トップページへ</span>
+                </a>
+                <h1>QuickLog-Solo: Quick Start Guide</h1>
+            </div>
+            <div class="header-actions">
+                <div class="lang-switcher">
+                    <select onchange="setLanguage(this.value)" id="lang-select-guide" class="lang-select">
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="en">🇺🇸 English</option>
+                    </select>
+                </div>
+                <button onclick="window.print()" class="btn-primary print-btn">
+                    <span class="material-symbols-outlined">print</span>
+                    <span data-i18n="btn-print">印刷 / PDF保存</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="guide-main">
+            <section class="guide-hero">
+                <h2 data-i18n="guide-title">1秒で記録、1秒で集計。</h2>
+                <p data-i18n="guide-intro">QuickLog-Soloを使いこなすためのクイックガイドです。このページを印刷（PDF保存）して手元に置いておくと便利です。</p>
+            </section>
+
+            <div class="guide-grid">
+                <section class="guide-card step-card">
+                    <h3 data-i18n="step1-title">STEP 1: 準備とピン留め</h3>
+                    <p data-i18n="step1-desc">インストール後、いつでも使えるようにブラウザのツールバーにピン留めしましょう。</p>
+                    <ol>
+                        <li data-i18n="step1-1">ブラウザ右上の「パズルのピース」アイコンをクリック。</li>
+                        <li data-i18n="step1-2">QuickLog-Soloの横にある「ピン」アイコンをクリック。</li>
+                        <li data-i18n="step1-3">アイコンをクリックして、サイドパネルを開きます。</li>
+                    </ol>
+                    <div class="screenshot-box">
+                        <img src="src/assets/guide/01_main_ja.png" alt="Main View" class="screenshot" id="img-main">
+                    </div>
+                </section>
+
+                <section class="guide-card step-card">
+                    <h3 data-i18n="step2-title">STEP 2: 基本の記録サイクル</h3>
+                    <p data-i18n="step2-desc">カテゴリを選ぶだけで、すぐに計測が始まります。</p>
+                    <ul class="feature-list">
+                        <li>
+                            <span class="material-symbols-outlined">touch_app</span>
+                            <span data-i18n="step2-1"><strong>開始:</strong> カテゴリボタンをクリック。</span>
+                        </li>
+                        <li>
+                            <span class="material-symbols-outlined">pause</span>
+                            <span data-i18n="step2-2"><strong>一時停止:</strong> 休憩や割り込み時に。</span>
+                        </li>
+                        <li>
+                            <span class="material-symbols-outlined">stop</span>
+                            <span data-i18n="step2-3"><strong>終了:</strong> 作業完了時にクリック。</span>
+                        </li>
+                    </ul>
+                    <div class="screenshot-box">
+                        <img src="src/assets/guide/02_recording_ja.png" alt="Recording State" class="screenshot" id="img-recording">
+                    </div>
+                </section>
+
+                <section class="guide-card step-card">
+                    <h3 data-i18n="step3-title">STEP 3: データの活用</h3>
+                    <p data-i18n="step3-desc">ワンクリックで日報の作成や工数集計が可能です。</p>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <span class="material-symbols-outlined">content_paste</span>
+                            <h4 data-i18n="step3-report-title">日報コピー</h4>
+                            <p data-i18n="step3-report-desc">その日の全記録をコピー。日報作成が秒で終わります。</p>
+                        </div>
+                        <div class="feature-item">
+                            <span class="material-symbols-outlined">functions</span>
+                            <h4 data-i18n="step3-stats-title">タグ集計</h4>
+                            <p data-i18n="step3-stats-desc">プロジェクトごとの合計工数を一瞬で算出します。</p>
+                        </div>
+                    </div>
+                    <div class="screenshot-box">
+                        <img src="src/assets/guide/03_header_actions_ja.png" alt="Header Actions" class="screenshot" id="img-header">
+                    </div>
+                </section>
+
+                <section class="guide-card step-card">
+                    <h3 data-i18n="step4-title">STEP 4: データの安全管理</h3>
+                    <p data-i18n="step4-desc">大切なデータを守るために、バックアップ先を設定しましょう。</p>
+                    <ol>
+                        <li data-i18n="step4-1">設定（⚙️）から「バックアップ」タブを選択。</li>
+                        <li data-i18n="step4-2">「バックアップ先を指定する」でローカルフォルダを選択。</li>
+                        <li data-i18n="step4-3">「バックアップを実行する」で同期が完了します。</li>
+                    </ol>
+                    <div class="screenshot-box">
+                        <img src="src/assets/guide/04_settings_backup_ja.png" alt="Settings Backup" class="screenshot" id="img-backup">
+                    </div>
+                </section>
+            </div>
+
+            <section class="guide-policy card">
+                <h3 data-i18n="policy-title">安心のプライバシー・ポリシー</h3>
+                <ul class="policy-list">
+                    <li><span class="material-symbols-outlined">lock</span> <span data-i18n="policy-1"><strong>Local Only:</strong> データはあなたのPC内にのみ保存されます。</span></li>
+                    <li><span class="material-symbols-outlined">visibility_off</span> <span data-i18n="policy-2"><strong>No Tracking:</strong> 外部への通信は一切行われません。</span></li>
+                    <li><span class="material-symbols-outlined">verified_user</span> <span data-i18n="policy-3"><strong>100% Original:</strong> SCANOSSによる厳格な監査をクリアした完全内製コード。</span></li>
+                </ul>
+            </section>
+        </main>
+
+        <footer class="guide-footer">
+            <p>&copy; 2026 Masanori SATAKE. QuickLog-Solo Quick Start Guide.</p>
+        </footer>
+    </div>
+
+    <script>
+        const translations = {
+            ja: {
+                "back-to-top": "トップページへ",
+                "btn-print": "印刷 / PDF保存",
+                "guide-title": "1秒で記録、1秒で集計。",
+                "guide-intro": "QuickLog-Soloを使いこなすためのクイックガイドです。このページを印刷（PDF保存）して手元に置いておくと便利です。",
+                "step1-title": "STEP 1: 準備とピン留め",
+                "step1-desc": "インストール後、いつでも使えるようにブラウザのツールバーにピン留めしましょう。",
+                "step1-1": "ブラウザ右上の「パズルのピース」アイコンをクリック。",
+                "step1-2": "QuickLog-Soloの横にある「ピン」アイコンをクリック。",
+                "step1-3": "アイコンをクリックして、サイドパネルを開きます。",
+                "step2-title": "STEP 2: 基本の記録サイクル",
+                "step2-desc": "カテゴリを選ぶだけで、すぐに計測が始まります。",
+                "step2-1": "開始: カテゴリボタンをクリック。",
+                "step2-2": "一時停止: 休憩や割り込み時に。",
+                "step2-3": "終了: 作業完了時にクリック。",
+                "step3-title": "STEP 3: データの活用",
+                "step3-desc": "ワンクリックで日報の作成や工数集計が可能です。",
+                "step3-report-title": "日報コピー",
+                "step3-report-desc": "その日の全記録をコピー。日報作成が秒で終わります。",
+                "step3-stats-title": "タグ集計",
+                "step3-stats-desc": "プロジェクトごとの合計工数を一瞬で算出します。",
+                "step4-title": "STEP 4: データの安全管理",
+                "step4-desc": "大切なデータを守るために、バックアップ先を設定しましょう。",
+                "step4-1": "設定（⚙️）から「バックアップ」タブを選択。",
+                "step4-2": "「バックアップを開始する」でローカルフォルダを選択。",
+                "step4-3": "「バックアップを実行する」でバックアップされます。",
+                "policy-title": "安心のプライバシー・ポリシー",
+                "policy-1": "Local Only: データはあなたのPC内にのみ保存されます。",
+                "policy-2": "No Tracking: 外部への通信は一切行われません。",
+                "policy-3": "100% Original: SCANOSSによる厳格な監査をクリアした完全内製コード。"
+            },
+            en: {
+                "back-to-top": "Back to Home",
+                "btn-print": "Print / Save as PDF",
+                "guide-title": "Record in 1s, Total in 1s.",
+                "guide-intro": "A quick guide to mastering QuickLog-Solo. It is convenient to print this page (Save as PDF) and keep it at hand.",
+                "step1-title": "STEP 1: Setup & Pinning",
+                "step1-desc": "After installation, pin it to your browser toolbar for instant access.",
+                "step1-1": "Click the 'Puzzle piece' icon in the top right of the browser.",
+                "step1-2": "Click the 'Pin' icon next to QuickLog-Solo.",
+                "step1-3": "Click the icon to open the side panel.",
+                "step2-title": "STEP 2: Basic Workflow",
+                "step2-desc": "Just pick a category to start recording immediately.",
+                "step2-1": "Start: Click a category button.",
+                "step2-2": "Pause: For breaks or interruptions.",
+                "step2-3": "Stop: Click when the task is finished.",
+                "step3-title": "STEP 3: Data Utilization",
+                "step3-desc": "Create daily reports or aggregate hours with a single click.",
+                "step3-report-title": "Daily Report",
+                "step3-report-desc": "Copy all records for the day. Finish reporting in seconds.",
+                "step3-stats-title": "Tag Aggregation",
+                "step3-stats-desc": "Calculate total hours per project instantly.",
+                "step4-title": "STEP 4: Data Safety",
+                "step4-desc": "Set up a backup destination to protect your valuable records.",
+                "step4-1": "Go to Settings (⚙️) and select the 'Backup' tab.",
+                "step4-2": "Click 'Start Backup' and select a local folder.",
+                "step4-3": "Click 'Execute Backup' to complete the backup.",
+                "policy-title": "Privacy First Policy",
+                "policy-1": "Local Only: Data is stored only on your PC.",
+                "policy-2": "No Tracking: Zero external communication.",
+                "policy-3": "100% Original: Fully in-house code audited by SCANOSS."
+            }
+        };
+
+        function setLanguage(lang) {
+            const safeLang = (lang === 'en') ? 'en' : 'ja';
+            const trans = translations[safeLang];
+
+            // Update font stack based on language
+            const fontStacks = {
+                ja: "Roboto, 'Noto Sans JP', 'Noto Color Emoji', sans-serif",
+                en: "Roboto, 'Noto Color Emoji', sans-serif"
+            };
+            document.body.style.fontFamily = fontStacks[safeLang];
+
+            const elements = document.querySelectorAll('[data-i18n]');
+            for (let i = 0; i < elements.length; i++) {
+                const el = elements[i];
+                const key = el.getAttribute('data-i18n');
+                if (trans[key]) {
+                    el.textContent = trans[key];
+                }
+            }
+
+            const images = {
+                en: {
+                    main: 'src/assets/guide/01_main_en.png',
+                    recording: 'src/assets/guide/02_recording_en.png',
+                    header: 'src/assets/guide/03_header_actions_en.png',
+                    backup: 'src/assets/guide/04_settings_backup_en.png'
+                },
+                ja: {
+                    main: 'src/assets/guide/01_main_ja.png',
+                    recording: 'src/assets/guide/02_recording_ja.png',
+                    header: 'src/assets/guide/03_header_actions_ja.png',
+                    backup: 'src/assets/guide/04_settings_backup_ja.png'
+                }
+            };
+
+            const currentImages = images[safeLang];
+            const imgMain = document.getElementById('img-main');
+            if (imgMain) imgMain.src = currentImages.main;
+            const imgRec = document.getElementById('img-recording');
+            if (imgRec) imgRec.src = currentImages.recording;
+            const imgHeader = document.getElementById('img-header');
+            if (imgHeader) imgHeader.src = currentImages.header;
+            const imgBackup = document.getElementById('img-backup');
+            if (imgBackup) imgBackup.src = currentImages.backup;
+
+            const url = new URL(window.location);
+            url.searchParams.set('lang', safeLang);
+            window.history.replaceState({}, '', url);
+        }
+
+        // Initialize language
+        const params = new URLSearchParams(window.location.search);
+        const lang = params.get('lang') || (navigator.language.startsWith('ja') ? 'ja' : 'en');
+        document.getElementById('lang-select-guide').value = lang;
+        setLanguage(lang);
+    </script>
+</body>
+</html>
