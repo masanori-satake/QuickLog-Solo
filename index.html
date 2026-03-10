@@ -158,6 +158,10 @@
                                 <p class="note" data-i18n="setup-firefox-note">※ Firefoxの「一時的な拡張機能」はブラウザ再起動時にリセットされるため、継続利用にはアドオンストアからの配布（今後予定）または開発者設定が必要です。</p>
                             </div>
                         </div>
+                        <div style="margin-top: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary);">auto_stories</span>
+                            <a href="guide.html" id="quick-start-guide-link" style="font-weight: 500; color: var(--md-sys-color-primary); text-decoration: underline;" data-i18n="link-guide">Quick Start Guide を見る (印刷用PDFにも対応)</a>
+                        </div>
                         <p class="note" data-i18n="setup-install-note">※ 外部サーバーを介さないため、安心してお使いいただけます。</p>
                     </div>
                     <div class="setup-step">
@@ -286,6 +290,7 @@
                 "dl-chrome": "Chrome / Edge 用",
                 "dl-firefox": "Firefox 用",
                 "dl-note": "※過去のバージョンはGitHubリリースページから入手可能です。",
+                "link-guide": "Quick Start Guide を見る (印刷用PDFにも対応)",
                 "cta-studio": "QL-Animation Studio (β版) で遊ぶ",
                 "faq-4-q": "Q. アニメーションは追加することができますか？",
                 "faq-4-a": "A. 今後順次増やしていきます。さらに皆さんが作成したものも組み込んでいきたいと思います。技術に興味のある方はぜひ QL-Animation Studio で遊んでみてください！",
@@ -350,6 +355,7 @@
                 "dl-chrome": "For Chrome / Edge",
                 "dl-firefox": "For Firefox",
                 "dl-note": "* Past versions are available on the GitHub Releases page.",
+                "link-guide": "View Quick Start Guide (Printable PDF ready)",
                 "cta-studio": "Play in QL-Animation Studio (Beta)",
                 "faq-4-q": "Q. Can I add more animations?",
                 "faq-4-a": "A. We will continue to add more over time. We also hope to incorporate animations created by the community. If you are interested, please try out the QL-Animation Studio!",
@@ -785,6 +791,12 @@
             const studioLink = document.getElementById('cta-studio-link');
             if (studioLink) {
                 studioLink.href = 'src/studio.html?lang=' + encodeURIComponent(safeLang);
+            }
+
+            // Update Quick Start Guide link with language parameter
+            const guideLink = document.getElementById('quick-start-guide-link');
+            if (guideLink) {
+                guideLink.href = 'guide.html?lang=' + encodeURIComponent(safeLang);
             }
 
             // Update page title
