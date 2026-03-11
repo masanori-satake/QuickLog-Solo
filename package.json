@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.25.1",
+  "version": "0.26.0",
   "description": "「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向けサイドパネル作業メモツールです。",
   "main": "src/js/app.js",
   "directories": {
@@ -11,7 +11,8 @@
     "test:e2e": "python3 scripts/generate_animation_registry.py && playwright test",
     "test:animation-eval": "python3 scripts/generate_animation_registry.py && playwright test tests/animation_evaluation.spec.js",
     "build": "python3 scripts/generate_png_icons.py && python3 scripts/generate_animation_registry.py && python3 scripts/check_version.py && python3 scripts/create_package.py",
-    "version:bump": "python3 scripts/bump_version.py"
+    "version:bump": "python3 scripts/bump_version.py",
+    "update-guide-images": "node scripts/update_guide_images.js"
   },
   "repository": {
     "type": "git",
@@ -36,6 +37,7 @@
     "jest-environment-jsdom": "^30.2.0",
     "stylelint": "^17.3.0",
     "stylelint-config-standard": "^40.0.0",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "wait-on": "^9.0.4"
   }
 }

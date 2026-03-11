@@ -9,8 +9,26 @@
 | **CI** | `ci.yml` | コードの品質管理、バージョン整合性チェック、テスト実行 | `main`へのPush/PR, 手動 |
 | **OSS Fragment Audit** | `oss_audit.yml` | SCANOSSによる外部コード混入（スニペット盗用）の監査 | `main`へのPush/PR, 手動 |
 | **Animation Quality Evaluation** | `animation_eval.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (src/js/animation/**), 手動 |
+| **Update Guide Assets** | `update_guide_assets.yml` | クイックスタートガイド用スクリーンショットの自動生成と更新 | `main`へのPush/PR, 手動 |
 | **Deploy to Vercel** | `deploy.yml` | 本番・開発環境への自動デプロイ | `main`へのPush |
 | **Auto Release** | `release.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
+
+---
+
+## 自動化スクリプト
+
+### クイックスタートガイドのスクリーンショット自動作成
+
+ランディングページからアクセス可能なクイックスタートガイド (`guide.html`) に掲載するスクリーンショットを自動的に作成・更新する仕組みを備えています。
+
+- **実行コマンド**: `npm run update-guide-images`
+- **内部処理**:
+  1. `scripts/generate_guide_screenshots.js` が実行されます。
+  2. Playwright を使用して `src/app.html` を開き、内部状態（ダミーデータ等）を注入します。
+  3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
+  4. 生成された画像は `src/assets/guide/` に保存されます。
+- **自動化**: `update_guide_assets.yml` ワークフローにより、コード変更時にこれらの画像が自動的に再生成され、リポジトリにコミットされます。
+- **検証**: CI (`ci.yml`) の E2E テストフェーズにおいて、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
 
 ---
 
@@ -111,7 +129,24 @@ graph TD
 
 ---
 
-### 5. Auto Release (`release.yml`)
+### 5. Update Guide Assets (`update_guide_assets.yml`)
+
+ガイド用スクリーンショットを自動的に最新化し、リポジトリに反映します。
+
+#### フローチャート
+
+```mermaid
+graph TD
+    Start([トリガー: Push/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
+    Checkout --> Setup[環境セットアップ<br/>Node.js / Playwright]
+    Setup --> Update[画像更新実行<br/>npm run update-guide-images]
+    Update --> Commit[変更をコミット & プッシュ<br/>git-auto-commit-action]
+    Commit --> End([完了])
+
+    style Update fill:#dfd,stroke:#333
+```
+
+### 6. Auto Release (`release.yml`)
 
 #### フローチャート
 
@@ -133,12 +168,12 @@ graph TD
 
 ### トリガー別の動作一覧
 
-| イベント | CI | OSS Audit | Animation Eval | Deploy | Release |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Push (main)** | ✅ (テストのみ) | ✅ | - | ✅ | - |
-| **Pull Request (main)** | ✅ (+E2E) | ✅ | ✅ (*1) | - | - |
-| **Tag (v*.*.*)** | - | - | - | - | ✅ |
-| **Manual (Dispatch)** | ✅ | ✅ | ✅ | - | - |
+| イベント | CI | OSS Audit | Guide Assets | Animation Eval | Deploy | Release |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Push (main)** | ✅ (テストのみ) | ✅ | ✅ | - | ✅ | - |
+| **Pull Request (main)** | ✅ (+E2E) | ✅ | ✅ | ✅ (*1) | - | - |
+| **Tag (v*.*.*)** | - | - | - | - | - | ✅ |
+| **Manual (Dispatch)** | ✅ | ✅ | ✅ | ✅ | - | - |
 
 - (*1) `src/js/animation/**` に変更がある場合のみ実行
 

@@ -25,6 +25,7 @@
 | 正常系 | `dev_only_exclusion.spec.js` | 開発専用モジュールの露出検証 | 開発環境において `devOnly: true` のモジュールが選択肢に表示され、動作する |
 | 正常系 | `test_pattern_verification.spec.js` | 重ね合わせ透過度検証 | 動作確認用パターンが、UI要素の背景色（透過度）によって遮られていない |
 | 正常系 | `preview_repro.spec.js` | ランディングページ プレビュー検証 | ランディングページの iframe 内でアニメーションが正しく再生される |
+| 正常系 | `guide_verification.spec.js` | クイックガイド検証 | ガイドに表示されるキャプチャ画像が存在し、各言語で正しく表示されている |
 
 ### 2.1. ビジネスロジック (`js/logic.js`)
 
