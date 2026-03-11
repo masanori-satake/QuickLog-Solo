@@ -241,6 +241,19 @@ h1 {
     color: var(--md-sys-color-on-surface-variant);
 }
 
+.setup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.setup-header .headline-medium {
+    margin-bottom: 0;
+}
+
 .setup-content {
     display: flex;
     flex-direction: column;

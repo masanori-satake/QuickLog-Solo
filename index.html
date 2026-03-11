@@ -122,7 +122,10 @@
             </section>
 
             <section class="setup-section card">
-                <h3 class="headline-medium" data-i18n="setup-title">インストール / アンインストール</h3>
+                <div class="setup-header">
+                    <h3 class="headline-medium" data-i18n="setup-title">インストール / アンインストール</h3>
+                    <a href="guide.html" id="quick-start-guide-link" class="btn-tertiary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-size: 0.9rem;" data-i18n="link-guide">Quick Start Guide を見る (印刷にも対応)</a>
+                </div>
                 <div class="setup-content">
                     <div class="setup-step">
                         <h4 data-i18n="setup-install-title">インストール方法</h4>
@@ -286,10 +289,7 @@
                 "dl-chrome": "Chrome / Edge 用",
                 "dl-firefox": "Firefox 用",
                 "dl-note": "※過去のバージョンはGitHubリリースページから入手可能です。",
-<<<<<<< HEAD
                 "link-guide": "Quick Start Guide を見る (印刷にも対応)",
-=======
->>>>>>> origin/main
                 "cta-studio": "QL-Animation Studio (β版) で遊ぶ",
                 "faq-4-q": "Q. アニメーションは追加することができますか？",
                 "faq-4-a": "A. 今後順次増やしていきます。さらに皆さんが作成したものも組み込んでいきたいと思います。技術に興味のある方はぜひ QL-Animation Studio で遊んでみてください！",
@@ -354,10 +354,7 @@
                 "dl-chrome": "For Chrome / Edge",
                 "dl-firefox": "For Firefox",
                 "dl-note": "* Past versions are available on the GitHub Releases page.",
-<<<<<<< HEAD
                 "link-guide": "View Quick Start Guide (Printable PDF ready)",
-=======
->>>>>>> origin/main
                 "cta-studio": "Play in QL-Animation Studio (Beta)",
                 "faq-4-q": "Q. Can I add more animations?",
                 "faq-4-a": "A. We will continue to add more over time. We also hope to incorporate animations created by the community. If you are interested, please try out the QL-Animation Studio!",
@@ -799,6 +796,12 @@
             const studioLink = document.getElementById('cta-studio-link');
             if (studioLink) {
                 studioLink.href = 'src/studio.html?lang=' + encodeURIComponent(safeLang);
+            }
+
+            // Update Quick Start Guide link with language parameter
+            const guideLink = document.getElementById('quick-start-guide-link');
+            if (guideLink) {
+                guideLink.href = 'guide.html?lang=' + encodeURIComponent(safeLang);
             }
 
             // Update page title
