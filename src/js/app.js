@@ -794,10 +794,6 @@ async function updateUI() {
         }
         if (elements.endBtn) elements.endBtn.disabled = false;
 
-        if (elements.elapsedTime) {
-            elements.elapsedTime.classList.remove('hidden');
-            elements.elapsedTime.style.visibility = isPaused ? 'hidden' : 'visible';
-        }
         startTimer();
         // Ensure proper animation visibility (called after text content is updated for accurate exclusion)
         applyAnimation(currentAnimationType, categoryAnimation, color);
@@ -816,7 +812,7 @@ async function updateUI() {
             elements.statusLabel.title = t('tooltip-status-stopped');
         }
         const nameEl = getEl('current-task-name-text');
-        if (nameEl) nameEl.textContent = '-';
+        if (nameEl) nameEl.textContent = t('status-stopped-name');
 
         if (elements.pauseBtn) {
             elements.pauseBtn.disabled = true;
@@ -825,11 +821,15 @@ async function updateUI() {
         if (elements.endBtn) elements.endBtn.disabled = true;
 
         if (elements.elapsedTime) {
-            elements.elapsedTime.classList.add('hidden');
             elements.elapsedTime.textContent = '00:00:00';
-            elements.elapsedTime.style.visibility = 'visible';
         }
         document.title = 'QuickLog-Solo';
+    }
+
+    // Consolidate timer visibility: The timer remains visible across all states to ensure layout stability.
+    if (elements.elapsedTime) {
+        elements.elapsedTime.classList.remove('hidden');
+        elements.elapsedTime.style.visibility = 'visible';
     }
 }
 
