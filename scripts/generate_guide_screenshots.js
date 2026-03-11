@@ -9,7 +9,7 @@ const BASE_URL = 'http://localhost:8080/src/app.html';
 async function generateScreenshots() {
     const browser = await chromium.launch();
     const context = await browser.newContext({
-        viewport: { width: 760, height: 1200 },
+        viewport: { width: 400, height: 800 },
         deviceScaleFactor: 2,
     });
 
@@ -21,11 +21,13 @@ async function generateScreenshots() {
         const page = await context.newPage();
 
         // --- 01_main: Stopped state ---
+        // Show category list and stopped timer
         await page.goto(`${BASE_URL}?lang=${lang}&db=${dbName}`);
-        await page.waitForSelector('.category-btn'); // Ensure categories are rendered
-        await page.screenshot({
-            path: path.join(ASSET_DIR, `01_main_${lang}.png`),
-            clip: { x: 120, y: 170, width: 335, height: 460 }
+        await page.waitForSelector('.category-btn');
+
+        // Capture the category section and control section
+        await page.locator('main').screenshot({
+            path: path.join(ASSET_DIR, `01_main_${lang}.png`)
         });
 
         // --- 02_recording: Recording state ---
@@ -35,15 +37,13 @@ async function generateScreenshots() {
         await page.waitForSelector('.category-btn');
         await page.waitForTimeout(500);
 
-        await page.screenshot({
-            path: path.join(ASSET_DIR, `02_recording_${lang}.png`),
-            clip: { x: 120, y: 170, width: 335, height: 460 }
+        await page.locator('main').screenshot({
+            path: path.join(ASSET_DIR, `02_recording_${lang}.png`)
         });
 
         // --- 03_header_actions: Zoom on report/aggregation buttons ---
-        await page.screenshot({
-            path: path.join(ASSET_DIR, `03_header_actions_${lang}.png`),
-            clip: { x: 335, y: 170, width: 120, height: 50 }
+        await page.locator('#header-btns').screenshot({
+            path: path.join(ASSET_DIR, `03_header_actions_${lang}.png`)
         });
 
         // --- 04_settings_backup: Backup settings ---
@@ -52,9 +52,8 @@ async function generateScreenshots() {
         await page.click('[data-tab="backup"]');
         await page.waitForSelector('#backup-tab:not(.hidden)');
 
-        await page.screenshot({
-            path: path.join(ASSET_DIR, `04_settings_backup_${lang}.png`),
-            clip: { x: 120, y: 170, width: 335, height: 460 }
+        await page.locator('#settings-popup .modal-content').screenshot({
+            path: path.join(ASSET_DIR, `04_settings_backup_${lang}.png`)
         });
 
         await page.close();

@@ -14,6 +14,22 @@
 
 ---
 
+## 自動化スクリプト
+
+### クイックスタートガイドのスクリーンショット自動作成
+
+ランディングページからアクセス可能なクイックスタートガイド (`guide.html`) に掲載するスクリーンショットを自動的に作成・更新する仕組みを備えています。
+
+- **実行コマンド**: `npm run update-guide-images`
+- **内部処理**:
+  1. `scripts/generate_guide_screenshots.js` が実行されます。
+  2. Playwright を使用して `src/app.html` を開き、内部状態（ダミーデータ等）を注入します。
+  3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
+  4. 生成された画像は `src/assets/guide/` に保存されます。
+- **検証**: CI (`ci.yml`) の E2E テストフェーズにおいて、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
+
+---
+
 ## 各ワークフローの詳細
 
 ### 1. CI (`ci.yml`)
