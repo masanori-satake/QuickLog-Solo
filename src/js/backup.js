@@ -43,8 +43,8 @@ class BackupManager {
             if (handle) {
                 this.directoryHandle = handle.value;
             }
-        } catch {
-            // Ignore if key is not found
+        } catch (e) {
+            console.error('QuickLog-Solo: Failed to restore directory handle', e);
         }
     }
 
