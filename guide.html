@@ -6,7 +6,7 @@
     <title>QuickLog-Solo - Quick Start Guide</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+Symbols:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="src/css/m3-theme.css">
     <link rel="stylesheet" href="src/css/guide.css">
@@ -25,8 +25,8 @@
             <div class="header-actions">
                 <div class="lang-switcher">
                     <select onchange="setLanguage(this.value)" id="lang-select-guide" class="lang-select">
-                        <option value="en" data-i18n="lang-en">🇺🇸 English</option>
-                        <option value="ja" data-i18n="lang-ja">🇯🇵 日本語</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="en">🇺🇸 English</option>
                     </select>
                 </div>
                 <button onclick="window.print()" class="btn-primary print-btn">
@@ -158,9 +158,7 @@
                 "policy-title": "安心のプライバシー・ポリシー",
                 "policy-1": "Local Only: データはあなたのPC内にのみ保存されます。",
                 "policy-2": "No Tracking: 外部への通信は一切行われません。",
-                "policy-3": "100% Original: SCANOSSによる厳格な監査をクリアした完全内製コード。",
-                "lang-en": "🇺🇸 English",
-                "lang-ja": "🇯🇵 日本語"
+                "policy-3": "100% Original: SCANOSSによる厳格な監査をクリアした完全内製コード。"
             },
             en: {
                 "back-to-top": "Back to Home",
@@ -191,26 +189,20 @@
                 "policy-title": "Privacy First Policy",
                 "policy-1": "Local Only: Data is stored only on your PC.",
                 "policy-2": "No Tracking: Zero external communication.",
-                "policy-3": "100% Original: Fully in-house code audited by SCANOSS.",
-                "lang-en": "🇺🇸 English",
-                "lang-ja": "🇯🇵 日本語"
+                "policy-3": "100% Original: Fully in-house code audited by SCANOSS."
             }
         };
 
         function setLanguage(lang) {
-            const safeLang = (lang === 'ja') ? 'ja' : 'en';
+            const safeLang = (lang === 'en') ? 'en' : 'ja';
             const trans = translations[safeLang];
 
             // Update font stack based on language
             const fontStacks = {
-                ja: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
-                en: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif"
+                ja: "Roboto, 'Noto Sans JP', 'Noto Color Emoji', sans-serif",
+                en: "Roboto, 'Noto Color Emoji', sans-serif"
             };
             document.body.style.fontFamily = fontStacks[safeLang];
-
-            // Update dropdown value
-            const select = document.getElementById('lang-select-guide');
-            if (select) select.value = safeLang;
 
             const elements = document.querySelectorAll('[data-i18n]');
             for (let i = 0; i < elements.length; i++) {
@@ -254,6 +246,7 @@
         // Initialize language
         const params = new URLSearchParams(window.location.search);
         const lang = params.get('lang') || (navigator.language.startsWith('ja') ? 'ja' : 'en');
+        document.getElementById('lang-select-guide').value = lang;
         setLanguage(lang);
     </script>
 </body>
