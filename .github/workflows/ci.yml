@@ -57,6 +57,10 @@ jobs:
       run: npm install
       timeout-minutes: 5
 
+    - name: Check root directory cleanliness
+      run: python3 scripts/check_root_files.py
+      timeout-minutes: 2
+
     - name: Check version consistency
       if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
       run: python3 scripts/check_version.py
