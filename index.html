@@ -944,27 +944,29 @@
         function openPreview() {
             const iframe = document.querySelector('.preview-iframe');
 
-            // Use a separate database for preview to avoid conflict with the actual extension
-            const DB_NAME_PREVIEW = 'QuickLogSoloDB_Preview';
-            const deleteRequest = indexedDB.deleteDatabase(DB_NAME_PREVIEW);
+            // Use a separate database for preview to avoid conflict with the actual extension.
+            // Support 'db' URL parameter for test isolation.
+            const urlParams = new URLSearchParams(window.location.search);
+            const dbName = urlParams.get('db') || 'QuickLogSoloDB_Preview';
+            const deleteRequest = indexedDB.deleteDatabase(dbName);
 
             deleteRequest.onsuccess = () => {
                 console.log('Preview IndexedDB deleted successfully.');
-                loadPreview(iframe);
+                loadPreview(iframe, dbName);
             };
             deleteRequest.onerror = () => {
                 console.warn('Failed to delete preview IndexedDB, loading preview anyway.');
-                loadPreview(iframe);
+                loadPreview(iframe, dbName);
             };
             deleteRequest.onblocked = () => {
                 console.warn('Preview IndexedDB deletion blocked. Please close other preview tabs.');
-                loadPreview(iframe);
+                loadPreview(iframe, dbName);
             };
         }
 
-        function loadPreview(iframe) {
+        function loadPreview(iframe, dbName) {
             const safeLang = getSafeLang(currentLang);
-            const previewUrl = 'src/app.html?lang=' + encodeURIComponent(safeLang) + '&db=QuickLogSoloDB_Preview';
+            const previewUrl = 'src/app.html?lang=' + encodeURIComponent(safeLang) + '&db=' + encodeURIComponent(dbName);
             if (iframe.src !== previewUrl) {
                 iframe.src = previewUrl;
             }

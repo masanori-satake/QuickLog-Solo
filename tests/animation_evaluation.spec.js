@@ -18,7 +18,8 @@ test.describe('Animation Quality Evaluation', () => {
         test(`Evaluating animation: ${id}`, async ({ page }) => {
             // Navigate to the app with test parameters to start a task immediately
             // baseURL in playwright.config.js points to src/app.html
-            await page.goto(`?test_cat=EvalTarget&test_elapsed=0`);
+            const dbName = `EvalDB_${id}_${Math.random().toString(36).substring(7)}`;
+            await page.goto(`?test_cat=EvalTarget&test_elapsed=0&db=${dbName}`);
 
             // Wait for the app to initialize
             await page.waitForSelector('#animation-canvas');

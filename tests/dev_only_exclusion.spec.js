@@ -3,7 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Animation Verification and Dev-Only Exclusion', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the app (running from source)
-    await page.goto('http://localhost:8080/src/app.html');
+    const dbName = `DevExclusionDB_${Math.random().toString(36).substring(7)}`;
+    await page.goto(`http://localhost:8080/src/app.html?db=${dbName}`);
     // Wait for DB initialization
     await page.waitForTimeout(1000);
   });

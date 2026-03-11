@@ -4,7 +4,8 @@ import fs from 'fs';
 
 test.describe('Abnormal Import Cases', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('?lang=ja');
+        const dbName = `ImportTestDB_${Math.random().toString(36).substring(7)}`;
+        await page.goto(`?lang=ja&db=${dbName}`);
         await page.waitForSelector('.category-btn');
         // Open settings and go to categories tab
         await page.click('#settings-toggle');
