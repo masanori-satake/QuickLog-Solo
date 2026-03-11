@@ -5,3 +5,7 @@ test-results/
 verification/
 releases/*.zip
 __pycache__/
+
+# Temporary scripts
+reproduce_*.py
+verify_*.py
