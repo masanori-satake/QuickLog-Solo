@@ -418,6 +418,10 @@ h1 {
     margin-bottom: var(--md-sys-spacing-2);
 }
 
+.scene-desc-text {
+    white-space: pre-line;
+}
+
 .landing-footer {
     text-align: center;
     padding: var(--md-sys-spacing-6) 0;

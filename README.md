@@ -1,11 +1,8 @@
-[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![OSS Fragment Audit](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.27.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
+[![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![OSS Fragment Audit](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kllhfalcincleolgoepnailfjendigdh?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh) ![Version](https://img.shields.io/badge/version-0.27.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
 
 # <img src="src/assets/icon.svg" width="32" style="vertical-align: middle; margin-right: 8px;"> QuickLog-Solo
 
 「1秒で記録、1秒で集計」をコンセプトにした、ミニマリスト向け・サイドパネル型作業メモツールです。
-
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/oajpkofidpceocpkiikididclakkfmap?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/quicklog-solo/oajpkofidpceocpkiikididclakkfmap)
-[![Available in the Chrome Web Store](src/assets/badges/chrome-web-store-badge-en.png)](https://chromewebstore.google.com/detail/quicklog-solo/oajpkofidpceocpkiikididclakkfmap)
 
 業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者や、プライバシーを重視するすべての人のために設計されました。
 
@@ -27,14 +24,14 @@
 ## インストール方法
 
 ### 🚀 リリース版 (Chrome Web Store) - 推奨
-Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にインストールできます。
+Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にインストールできます。**新バージョンへの自動アップデートが適用されるため、通常はこちらの利用を強く推奨します。**
 
-[![Available in the Chrome Web Store](src/assets/badges/chrome-web-store-badge-en.png)](https://chromewebstore.google.com/detail/quicklog-solo/oajpkofidpceocpkiikididclakkfmap)
+[![Available in the Chrome Web Store](src/assets/badges/chrome-web-store-badge-en.png)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh)
 
 ※ 現在、限定公開（リンクを知っているユーザーのみ）として公開されています。
 
 ### 🛠️ 開発版 (Zip) / Firefox版
-**最新の未リリース機能をいち早く試したい方**や、Firefox で利用する場合は、以下の手順でインストールしてください。開発版へのフィードバックは随時受け付けています。
+**最新の未リリース機能をいち早く試したい方**や、Firefox で利用する場合は、以下の手順でインストールしてください。開発版へのフィードバックは随時受け付けています。なお、**開発版は新しいバージョンへの自動アップデートが行われないため、手動での更新が必要です。**
 
 #### Chrome / Edge の場合 (開発版)
 1. `releases/QuickLog-Solo-Chrome.zip` をダウンロードして解凍します。
