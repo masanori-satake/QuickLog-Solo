@@ -185,21 +185,46 @@ describe('Logic Module', () => {
             }));
         });
 
-        test('stopTaskLogic supports custom end time', async () => {
+        test('stopTaskLogic supports custom end time and manual stop marker', async () => {
             const activeTask = { id: 1, category: 'Work', startTime: 1000 };
             const customEnd = 5000;
             await stopTaskLogic(activeTask, true, customEnd);
 
+            // Task should be closed at customEnd
             expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
                 id: 1,
-                endTime: customEnd
+                endTime: customEnd,
+                isManualStop: false
             }));
+            // Stop marker should be created at customEnd
             expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
                 category: SYSTEM_CATEGORY_IDLE,
                 startTime: customEnd,
                 endTime: customEnd,
                 isManualStop: true
             }));
+        });
+
+        test('stopTaskLogic handles custom end time during pause state', async () => {
+            const customEnd = 5000;
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: 1000, resumableCategory: 'Work', isPaused: true };
+            await stopTaskLogic(pauseState, true, customEnd);
+
+            // The pause/idle log should be completed at customEnd
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                category: SYSTEM_CATEGORY_IDLE,
+                endTime: customEnd,
+                isManualStop: false
+            }));
+            // A separate manual stop marker should be added at customEnd
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE,
+                startTime: customEnd,
+                endTime: customEnd,
+                isManualStop: true
+            }));
+            expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
 
         test('stopTaskLogic does not add duplicate stop markers', async () => {

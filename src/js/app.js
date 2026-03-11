@@ -1692,7 +1692,6 @@ function setupEventListeners() {
 
     const fontSelect = getEl(ID_FONT_SELECT);
     if (fontSelect) {
-        updateFontSelect();
         fontSelect.addEventListener('change', async (e) => {
             const fontValue = e.target.value;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_FONT, value: fontValue });
@@ -1704,7 +1703,6 @@ function setupEventListeners() {
 
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
-        updateAnimationSelect();
         animSelect.addEventListener('change', async (e) => {
             const animType = e.target.value;
             currentAnimationType = animType;
