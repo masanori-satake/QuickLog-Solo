@@ -69,6 +69,21 @@ h1 {
     gap: var(--md-sys-spacing-2);
     margin-bottom: var(--md-sys-spacing-6);
     position: relative;
+    align-items: center;
+}
+
+.btn-store {
+    display: inline-block;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-store:hover {
+    transform: scale(1.05);
+}
+
+.store-badge {
+    height: 48px;
+    display: block;
 }
 
 .download-dropdown {
@@ -486,5 +501,11 @@ button, input, select, textarea {
 
     .btn-primary, .btn-secondary {
         text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .store-badge {
+        height: 40px;
     }
 }

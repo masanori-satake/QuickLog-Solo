@@ -1,8 +1,12 @@
 [![CI](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml) [![OSS Fragment Audit](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml) [![Deploy to Vercel](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/deploy.yml) ![Version](https://img.shields.io/badge/version-0.26.1-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)
 
-# QuickLog-Solo
+# <img src="src/assets/icon.svg" width="32" style="vertical-align: middle; margin-right: 8px;"> QuickLog-Solo
 
 「1秒で記録、1秒で集計」をコンセプトにした、ミニマリスト向け・サイドパネル型作業メモツールです。
+
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/oajpkofidpceocpkiikididclakkfmap?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/quicklog-solo/oajpkofidpceocpkiikididclakkfmap)
+[![Available in the Chrome Web Store](src/assets/badges/chrome-web-store-badge-en.png)](https://chromewebstore.google.com/detail/quicklog-solo/oajpkofidpceocpkiikididclakkfmap)
+
 業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者や、プライバシーを重視するすべての人のために設計されました。
 
 設計思想や行動指針については [AGENTS.md](AGENTS.md) を参照してください。
@@ -20,17 +24,26 @@
     - **ピュアで長寿命な設計:** 外部ライブラリを一切使用しない Vanilla JS 構成。OSS のライフサイクルやトレンドに左右されないため、10年後も変わらず使い続けられる長期的安心感を提供します。また、依存関係によるブラックボックスを排除し、技術者が安心して利用・検証できる透明性を確保しています。
     - **厳格な完全内製監査:** 1行のコードも OSS からのコピー＆ペーストでないことを保証するため、業界標準の監査ツール **SCANOSS** によるスニペット単位の指紋照合検査を全開発フローで実施しています。
 
-## インストール方法（開発者モード）
-現在、本拡張機能は各ブラウザのストアには公開されていません。以下の手順でインストールしてください。
+## インストール方法
 
-### Chrome / Edge の場合
+### 🚀 リリース版 (Chrome Web Store) - 推奨
+Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にインストールできます。
+
+[![Available in the Chrome Web Store](src/assets/badges/chrome-web-store-badge-en.png)](https://chromewebstore.google.com/detail/quicklog-solo/oajpkofidpceocpkiikididclakkfmap)
+
+※ 現在、限定公開（リンクを知っているユーザーのみ）として公開されています。
+
+### 🛠️ 開発版 (Zip) / Firefox版
+**最新の未リリース機能をいち早く試したい方**や、Firefox で利用する場合は、以下の手順でインストールしてください。開発版へのフィードバックは随時受け付けています。
+
+#### Chrome / Edge の場合 (開発版)
 1. `releases/QuickLog-Solo-Chrome.zip` をダウンロードして解凍します。
 2. ブラウザで拡張機能管理ページを開きます（Chrome: `chrome://extensions` / Edge: `edge://extensions`）。
 3. 「デベロッパー モード」をオンにします。
 4. 「パッケージ化されていない拡張機能を読み込む」ボタンをクリックし、解凍したフォルダを選択します。
 5. ツールバーの拡張機能アイコンをクリックし、QuickLog-Solo をピン留めして使用します。
 
-### Firefox の場合
+#### Firefox の場合
 1. `releases/QuickLog-Solo-Firefox.zip` をダウンロードして解凍します。
 2. Firefox で `about:debugging#/runtime/this-firefox` を開きます。
 3. 「一時的な拡張機能を読み込む...」をクリックし、解凍したフォルダ内の `manifest.json` を選択します。
