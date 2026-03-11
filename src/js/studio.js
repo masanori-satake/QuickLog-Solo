@@ -558,7 +558,7 @@ async function loadSample(id) {
 
     // We need to fetch the file content to extract the logic
     try {
-        const response = await fetch(`./js/animation/${id}.js`);
+        const response = await fetch(`./src/js/animation/${id}.js`);
         const text = await response.text();
         parseAndPopulate(text, anim.metadata);
         updateCanvasControlVisibility();
@@ -960,7 +960,7 @@ function setInputDisabled(disabled) {
 
 function buildModuleCode() {
     const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
-    const animationBaseUrl = `${baseUrl}/js/animation_base.js`;
+    const animationBaseUrl = `${baseUrl}/src/js/animation_base.js`;
 
     const escapeJSString = (str) => {
         return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
