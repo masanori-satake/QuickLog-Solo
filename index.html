@@ -297,7 +297,7 @@
                 "dl-chrome": "Chrome / Edge 用",
                 "dl-firefox": "Firefox 用",
                 "dl-note": "※過去のバージョンはGitHubリリースページから入手可能です。",
-                "link-guide": "Quick Start Guide を見る",
+                "link-guide": "Quick Start Guide を見る (印刷にも対応)",
                 "cta-studio": "QL-Animation Studio (β版) で遊ぶ",
                 "faq-4-q": "Q. アニメーションは追加することができますか？",
                 "faq-4-a": "A. 今後順次増やしていきます。さらに皆さんが作成したものも組み込んでいきたいと思います。技術に興味のある方はぜひ QL-Animation Studio で遊んでみてください！",
@@ -365,7 +365,7 @@
                 "dl-chrome": "For Chrome / Edge",
                 "dl-firefox": "For Firefox",
                 "dl-note": "* Past versions are available on the GitHub Releases page.",
-                "link-guide": "View Quick Start Guide",
+                "link-guide": "View Quick Start Guide (Printable PDF ready)",
                 "cta-studio": "Play in QL-Animation Studio (Beta)",
                 "faq-4-q": "Q. Can I add more animations?",
                 "faq-4-a": "A. We will continue to add more over time. We also hope to incorporate animations created by the community. If you are interested, please try out the QL-Animation Studio!",
@@ -433,6 +433,7 @@
                 "dl-chrome": "Für Chrome / Edge",
                 "dl-firefox": "Für Firefox",
                 "dl-note": "* Ältere Versionen sind auf der GitHub-Release-Seite verfügbar.",
+                "link-guide": "Quick Start Guide ansehen (Druckfertiges PDF)",
                 "cta-studio": "In QL-Animation Studio (Beta) spielen",
                 "faq-4-q": "Q. Kann ich weitere Animationen hinzufügen?",
                 "faq-4-a": "A. Wir werden im Laufe der Zeit weitere hinzufügen. Wir hoffen also, von der Community erstellte Animationen zu integrieren. Wenn Sie interessiert sind, probieren Sie das QL-Animation Studio aus!",
@@ -500,6 +501,7 @@
                 "dl-chrome": "Para Chrome / Edge",
                 "dl-firefox": "Para Firefox",
                 "dl-note": "* Las versiones anteriores están disponibles en la página de lanzamientos de GitHub.",
+                "link-guide": "Ver la Guía de inicio rápido (PDF para imprimir)",
                 "cta-studio": "Jugar en QL-Animation Studio (Beta)",
                 "faq-4-q": "¿Puedo añadir más animaciones?",
                 "faq-4-a": "A. Continuaremos añadiendo más con el tiempo. También esperamos incorporar animaciones creadas por la comunidad. Si estás interesado, ¡prueba el QL-Animation Studio!",
@@ -567,6 +569,7 @@
                 "dl-chrome": "Pour Chrome / Edge",
                 "dl-firefox": "Pour Firefox",
                 "dl-note": "* Les anciennes versions sont disponibles sur la page des versions GitHub.",
+                "link-guide": "Consulter le Guide de démarrage rapide (Prêt pour PDF)",
                 "cta-studio": "Jouer dans QL-Animation Studio (Beta)",
                 "faq-4-q": "Q. Puis-je ajouter d'autres animations ?",
                 "faq-4-a": "A. Nous continuerons d'en ajouter au fil du temps. Nous espérons aussi intégrer des animations créées par la communauté. Si vous êtes intéressé, essayez l'QL-Animation Studio !",
@@ -634,6 +637,7 @@
                 "dl-chrome": "Para Chrome / Edge",
                 "dl-firefox": "Para Firefox",
                 "dl-note": "* Versões anteriores estão disponíveis na página de lançamientos do GitHub.",
+                "link-guide": "Ver o Guia de Início Rápido (Pronto para PDF)",
                 "cta-studio": "Jogar no QL-Animation Studio (Beta)",
                 "faq-4-q": "P. Posso adicionar mais animações?",
                 "faq-4-a": "R. Continuaremos a adicionar mais com o tempo. Também esperamos incorporar animações criadas pela comunidade. Se estiver interessado, experimente o QL-Animation Studio!",
@@ -701,6 +705,7 @@
                 "dl-chrome": "Chrome / Edge 용",
                 "dl-firefox": "Firefox 용",
                 "dl-note": "* 이전 버전은 GitHub 릴리스 페이지에서 확인할 수 있습니다.",
+                "link-guide": "빠른 시작 가이드 보기 (인쇄용 PDF 대응)",
                 "cta-studio": "QL-Animation Studio(Beta)에서 놀기",
                 "faq-4-q": "Q. 애니메이션을 추가할 수 있나요?",
                 "faq-4-a": "A. 앞으로 점차 늘려갈 예정입니다. 또한 여러분이 만든 것도 통합하고 싶습니다. 관심이 있으시면 애니메이션 스튜디오를 시도해 보세요!",
@@ -768,6 +773,7 @@
                 "dl-chrome": "适用于 Chrome / Edge",
                 "dl-firefox": "适用于 Firefox",
                 "dl-note": "* 过去版本也可以在 GitHub Releases 页面获取。",
+                "link-guide": "查看快速入门指南 (支持打印 PDF)",
                 "cta-studio": "在 QL-Animation Studio (Beta) 中体验",
                 "faq-4-q": "Q. 我可以添加更多动画吗？",
                 "faq-4-a": "A. 我们会随着时间的推移继续添加更多。我们也希望整合社区创作的动画。如果您有兴趣，请尝试动画工作室！",
@@ -801,7 +807,7 @@
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (translations[safeLang][key]) {
-                    el.innerText = translations[safeLang][key];
+                    el.textContent = translations[safeLang][key];
                 }
             });
 
@@ -854,16 +860,23 @@
             .catch(err => console.error('Failed to load version:', err));
 
         // Initialize language
-        const userLang = navigator.language || navigator.userLanguage;
-        const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-        let matched = 'en';
-        for (const prefix of prefixes) {
-            if (userLang.startsWith(prefix)) {
-                matched = prefix;
-                break;
+        const params = new URLSearchParams(window.location.search);
+        const urlLang = params.get('lang');
+        const storageLang = localStorage.getItem('ql_solo_lang');
+        const browserLang = navigator.language || navigator.userLanguage;
+
+        function detectLanguage() {
+            const allowed = ['en', 'ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+            if (urlLang && allowed.includes(urlLang)) return urlLang;
+            if (storageLang && allowed.includes(storageLang)) return storageLang;
+
+            for (const code of allowed) {
+                if (browserLang.startsWith(code)) return code;
             }
+            return 'en';
         }
-        setLanguage(matched);
+
+        setLanguage(detectLanguage());
 
         function showSetup(browser, event) {
             document.querySelectorAll('.setup-tab-content').forEach(el => el.classList.add('hidden'));
