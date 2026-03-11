@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.26.1",
+  "version": "0.27.0",
   "description": "「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向けサイドパネル作業メモツールです。",
   "main": "src/js/app.js",
   "directories": {
@@ -31,6 +31,7 @@
     "@jest/globals": "^30.2.0",
     "@playwright/test": "^1.58.2",
     "eslint": "^10.0.2",
+    "playwright": "^1.58.2",
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.3.0",
     "jest": "^30.2.0",
@@ -39,5 +40,6 @@
     "stylelint-config-standard": "^40.0.0",
     "vite": "^7.3.1",
     "wait-on": "^9.0.4"
-  }
+  },
+  "dependencies": {}
 }

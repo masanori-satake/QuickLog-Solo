@@ -2,7 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Animation Rendering Verification', () => {
     test('should render Matrix Code animation and produce canvas content', async ({ page }) => {
-        await page.goto('');
+        // Use a unique DB to avoid state contamination
+        const dbName = `AnimVerifyDB_${Date.now()}`;
+        await page.goto(`?db=${dbName}`);
+
+        // Wait for app to be fully initialized
+        await page.waitForSelector('.category-btn');
 
         // Ensure Matrix Code is selected
         await page.click('#settings-toggle');
