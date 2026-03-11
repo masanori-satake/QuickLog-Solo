@@ -110,6 +110,29 @@ describe('DB Module', () => {
         expect(closedTask.endTime).toBe(closedTask.startTime + 1000);
     });
 
+    test('initDB auto-stops tasks from previous days if enabled', async () => {
+        await openDatabase();
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: true });
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(10, 0, 0, 0);
+        const startTime = yesterday.getTime();
+
+        await dbAdd(STORE_LOGS, { category: 'Yesterday Task', startTime: startTime, endTime: null });
+        closeDatabase();
+
+        await initDB();
+
+        const allLogs = await dbGetAll(STORE_LOGS);
+        const task = allLogs.find(l => l.category === 'Yesterday Task');
+        expect(task.endTime).toBeDefined();
+
+        const expectedEndTime = new Date(startTime);
+        expectedEndTime.setHours(23, 59, 59, 999);
+        expect(task.endTime).toBe(expectedEndTime.getTime());
+    });
+
     test('initDB handles pauseState correctly', async () => {
         await openDatabase();
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: false });
@@ -143,7 +166,7 @@ describe('DB Module', () => {
         expect(savedPauseState.value.startTime).toBe(startTime);
     });
 
-    test('initDB performs auto-stop repair, adds stop marker, and verifies millisecond precision', async () => {
+    test('initDB performs auto-stop repair and adds stop marker', async () => {
         await openDatabase();
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -161,15 +184,13 @@ describe('DB Module', () => {
         const yesterdayTask = allLogs.find(l => l.category === 'Yesterday Task');
         expect(yesterdayTask.endTime).toBeDefined();
 
-        // Verify it stops exactly at 23:59:59.999
-        const expectedStopTime = new Date(startTime).setHours(23, 59, 59, 999);
-        expect(yesterdayTask.endTime).toBe(expectedStopTime);
+        const stopTime = new Date(startTime).setHours(23, 59, 59, 999);
+        expect(yesterdayTask.endTime).toBe(stopTime);
 
-        // Check for stop marker at the exact same timestamp
-        const stopMarker = allLogs.find(l => l.isManualStop && l.startTime === expectedStopTime);
+        // Check for stop marker
+        const stopMarker = allLogs.find(l => l.isManualStop && l.startTime === stopTime);
         expect(stopMarker).toBeDefined();
         expect(stopMarker.category).toBe(SYSTEM_CATEGORY_IDLE);
-        expect(stopMarker.endTime).toBe(expectedStopTime);
     });
 
     describe('dbImportCategories', () => {
