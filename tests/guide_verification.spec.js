@@ -22,12 +22,14 @@ test('Verify Guide links and accessibility with extended descriptions', async ({
     await expect(page).toHaveURL(/guide.html\?lang=en/);
     await expect(page.locator('[data-i18n="guide-title"]')).toContainText('Record in 1s, Total in 1s.');
 
-    // Check German version
+    // Check German version (should fallback to English in guide.html)
     await page.goto('http://localhost:8080/index.html?lang=de');
     const guideLinkDe = page.locator('#quick-start-guide-link');
     await expect(guideLinkDe).toBeVisible();
     await expect(guideLinkDe).toContainText('Quick Start Guide ansehen (Druckfertiges PDF)');
 
     await guideLinkDe.click();
-    await expect(page).toHaveURL(/guide.html\?lang=en/); // Defaults to en if not ja/en
+    // guide.html currently normalizes unknown langs to 'en'
+    await expect(page).toHaveURL(/guide.html\?lang=en/);
+    await expect(page.locator('[data-i18n="guide-title"]')).toContainText('Record in 1s, Total in 1s.');
 });

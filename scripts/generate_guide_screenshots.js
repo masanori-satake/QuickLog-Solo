@@ -1,4 +1,4 @@
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
@@ -31,7 +31,8 @@ async function generateScreenshots() {
     const okBtn = page.locator('#confirm-ok-btn');
     if (await okBtn.isVisible()) {
       await okBtn.click();
-      await page.waitForTimeout(500);
+      // Wait for modal to be hidden to ensure UI is ready
+      await expect(page.locator('#confirm-modal')).toBeHidden({ timeout: 5000 });
     }
 
     await page.screenshot({ path: path.join(targetDir, `01_main_${lang}.png`) });
