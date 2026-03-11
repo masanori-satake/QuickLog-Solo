@@ -11,7 +11,7 @@
 | **Animation Quality Evaluation** | `animation_eval.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (src/js/animation/**), 手動 |
 | **Update Guide Assets** | `update_guide_assets.yml` | クイックスタートガイド用スクリーンショットの自動生成と更新 | `main`へのPush/PR, 手動 |
 | **Deploy to Vercel** | `deploy.yml` | 本番・開発環境への自動デプロイ | `main`へのPush |
-| **Auto Release** | `release.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
+| **Auto Release** | `release.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成（高速化のためPlaywrightキャッシュ対応） | `v*.*.*`タグのPush |
 
 ---
 
