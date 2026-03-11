@@ -1,13 +1,6 @@
 name: Update Guide Assets
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'src/**'
-      - 'scripts/**'
-      - 'guide.html'
-      - 'package.json'
   pull_request:
     branches: [ main ]
     paths:
@@ -19,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update-assets:
@@ -60,8 +54,19 @@ jobs:
     - name: Update screenshots
       run: npm run update-guide-images
 
-    - name: Commit and push changes
+    - name: Commit and push changes (PR)
+      if: github.event_name == 'pull_request'
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "chore: update guide screenshots [skip ci]"
         file_pattern: 'src/assets/guide/*.png'
+
+    - name: Create Pull Request (Manual/Main)
+      if: github.event_name != 'pull_request'
+      uses: peter-evans/create-pull-request@v7
+      with:
+        commit-message: "chore: update guide screenshots [skip ci]"
+        add-paths: 'src/assets/guide/*.png'
+        branch: "chore/update-guide-screenshots"
+        title: "chore: update guide screenshots"
+        body: "Automated update of guide screenshots."
