@@ -2058,7 +2058,14 @@ async function handleTestParameters() {
         activeTask = newLog;
 
         // URLをクリーンアップして再読み込み時にループしないようにする
-        const newUrl = window.location.pathname;
+        // test_* パラメータのみを削除し、langやdbは維持する
+        const params = new URLSearchParams(window.location.search);
+        params.delete(URL_PARAM_TEST_CAT);
+        params.delete(URL_PARAM_TEST_ELAPSED);
+        params.delete(URL_PARAM_TEST_RESUMABLE);
+
+        const queryString = params.toString();
+        const newUrl = window.location.pathname + (queryString ? '?' + queryString : '');
         window.history.replaceState({}, '', newUrl);
     }
 }

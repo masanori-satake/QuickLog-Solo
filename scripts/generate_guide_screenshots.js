@@ -56,10 +56,10 @@ async function generateScreenshots() {
         await page.waitForFunction(
             (text) => {
                 const h2 = document.querySelector('#settings-popup h2');
-                console.log(`Checking title: current="${h2 ? h2.textContent : 'none'}" expected="${text}"`);
                 return h2 && h2.textContent === text;
             },
-            expectedSettingsTitle
+            expectedSettingsTitle,
+            { timeout: 10000 }
         );
 
         await page.click('[data-tab="backup"]');
