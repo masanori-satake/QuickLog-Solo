@@ -41,6 +41,8 @@ export const messages = {
         'tab-about': 'About',
 
         // Alarms Tab
+        'alarm-setting-description': '指定した時刻にメッセージを表示し、必要に応じて作業を自動的に「終了」「一時停止」「開始」します。',
+        'alarm-note-extension-only': '※ アラーム機能はブラウザ拡張機能としてインストールされている場合のみ動作します。プレビュー版では通知や自動動作は実行されません。',
         'alarm-label-enabled': '有効',
         'alarm-label-time': '時刻',
         'alarm-label-message': 'メッセージ',
@@ -328,6 +330,8 @@ export const messages = {
         'tab-about': 'About',
 
         // Alarms Tab
+        'alarm-setting-description': 'Display a message at a specified time and automatically "Stop", "Pause", or "Start" tasks as needed.',
+        'alarm-note-extension-only': '* The alarm feature only works when installed as a browser extension. Notifications and auto-actions are not executed in the preview version.',
         'alarm-label-enabled': 'Enabled',
         'alarm-label-time': 'Time',
         'alarm-label-message': 'Message',
@@ -632,6 +636,8 @@ export const messages = {
         'tab-about': 'Über',
 
         // Alarms Tab
+        'alarm-setting-description': 'Zeigt zu einer bestimmten Zeit eine Nachricht an und führt bei Bedarf automatisch Aktionen wie „Beenden“, „Pause“ oder „Start“ aus.',
+        'alarm-note-extension-only': '* Die Alarmfunktion funktioniert nur, wenn sie als Browser-Erweiterung installiert ist. Benachrichtigungen und automatische Aktionen werden in der Vorschauversion nicht ausgeführt.',
         'alarm-label-enabled': 'Aktiviert',
         'alarm-label-time': 'Zeit',
         'alarm-label-message': 'Nachricht',
@@ -897,6 +903,8 @@ export const messages = {
         'tab-about': 'Acerca de',
 
         // Alarms Tab
+        'alarm-setting-description': 'Muestra un mensaje a una hora especificada y realiza automáticamente acciones como "Detener", "Pausar" o "Iniciar" tareas según sea necesario.',
+        'alarm-note-extension-only': '* La función de alarma solo funciona cuando está instalada como una extensión de navegador. Las notificaciones y acciones automáticas no se ejecutan en la versión de vista previa.',
         'alarm-label-enabled': 'Activado',
         'alarm-label-time': 'Hora',
         'alarm-label-message': 'Mensaje',
@@ -1162,6 +1170,8 @@ export const messages = {
         'tab-about': 'À propos',
 
         // Alarms Tab
+        'alarm-setting-description': 'Affiche un message à une heure précise et effectue automatiquement des actions telles que « Arrêter », « Pause » ou « Démarrer » les tâches si nécessaire.',
+        'alarm-note-extension-only': '* La fonction d\'alarme ne fonctionne que lorsqu\'elle est installée en tant qu\'extension de navigateur. Les notifications et les actions automatiques ne sont pas exécutées dans la version d\'aperçu.',
         'alarm-label-enabled': 'Activé',
         'alarm-label-time': 'Heure',
         'alarm-label-message': 'Message',
@@ -1427,6 +1437,8 @@ export const messages = {
         'tab-about': 'Sobre',
 
         // Alarms Tab
+        'alarm-setting-description': 'Exibe uma mensagem em um horário especificado e executa automaticamente ações como "Parar", "Pausar" ou "Iniciar" tarefas, conforme necessário.',
+        'alarm-note-extension-only': '* O recurso de alarme só funciona quando instalado como uma extensão do navegador. Notificações e ações automáticas não são executadas na versão de visualização.',
         'alarm-label-enabled': 'Ativado',
         'alarm-label-time': 'Hora',
         'alarm-label-message': 'Mensagem',
@@ -1692,6 +1704,8 @@ export const messages = {
         'tab-about': '정보',
 
         // Alarms Tab
+        'alarm-setting-description': '지정한 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 「종료」, 「일시 중지」, 「시작」합니다.',
+        'alarm-note-extension-only': '* 알람 기능은 브라우저 확장 프로그램으로 설치된 경우에만 작동합니다. 미리보기 버전에서는 알림 및 자동 동작이 실행되지 않습니다.',
         'alarm-label-enabled': '활성화됨',
         'alarm-label-time': '시간',
         'alarm-label-message': '메시지',
@@ -1957,6 +1971,8 @@ export const messages = {
         'tab-about': '关于',
 
         // Alarms Tab
+        'alarm-setting-description': '在指定时间显示消息，并根据需要自动执行“结束”、“暂停”或“开始”任务。',
+        'alarm-note-extension-only': '* 闹钟功能仅在作为浏览器扩展程序安装时有效。预览版中不会执行通知和自动操作。',
         'alarm-label-enabled': '启用',
         'alarm-label-time': '时间',
         'alarm-label-message': '消息',

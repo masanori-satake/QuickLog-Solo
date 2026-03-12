@@ -2,7 +2,7 @@ import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPass
 import { t, setLanguage } from './i18n.js';
 
 export let DB_NAME = 'QuickLogSoloDB';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export function setDatabaseName(name) {
     DB_NAME = name;

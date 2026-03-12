@@ -1159,6 +1159,15 @@ async function renderAlarmList() {
     const list = getEl(ID_ALARM_LIST);
     if (!list) return;
 
+    const extensionOnlyNotice = getEl('alarm-extension-notice');
+    if (extensionOnlyNotice) {
+        if (typeof chrome !== 'undefined' && chrome.alarms) {
+            extensionOnlyNotice.classList.add('hidden');
+        } else {
+            extensionOnlyNotice.classList.remove('hidden');
+        }
+    }
+
     const categories = await dbGetAll(STORE_CATEGORIES);
     const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
     const alarms = await dbGetAll(STORE_ALARMS);

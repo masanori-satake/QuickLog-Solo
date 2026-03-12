@@ -3,8 +3,9 @@
  * Chrome Extension Service Worker for QuickLog-Solo
  */
 
-import { openDatabase, dbGetAll, STORE_ALARMS, getCurrentAppState, dbGetByName, STORE_CATEGORIES } from './db.js';
+import { openDatabase, dbGetAll, STORE_ALARMS, getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME } from './db.js';
 import { stopTaskLogic, pauseTaskLogic, startTaskLogic } from './logic.js';
+import { t } from './i18n.js';
 
 // アイコンクリック時にサイドパネルを開くように設定 (Chrome/Edge用)
 if (typeof chrome !== 'undefined' && chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
@@ -17,7 +18,7 @@ const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
 let syncChannel = null;
 
 function setupBroadcastChannel() {
-    syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
+    syncChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
     syncChannel.onmessage = (event) => {
         if (event.data.type === 'alarms-updated') {
             setupAlarms();
@@ -72,8 +73,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             chrome.notifications.create({
                 type: 'basic',
                 iconUrl: '/assets/icon128.png',
-                title: 'QuickLog-Solo Alarm',
-                message: alarmData.message || 'Time reached!',
+                title: t('title'),
+                message: alarmData.message || t('alarm-action-none'),
                 priority: 2
             });
 
