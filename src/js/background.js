@@ -32,8 +32,9 @@ let initializationPromise = null;
  */
 async function initializeBackground() {
     try {
-        console.log('QuickLog-Solo: Initializing background worker...');
-        const state = await initDB();
+        console.log('QuickLog-Solo: Initializing background worker (Lite)...');
+        // Use Lite initialization for faster wake-up
+        const state = await initDB(true);
 
         // Ensure language is set correctly for notifications
         if (state.language) {
@@ -82,8 +83,6 @@ function setupBroadcastChannel() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'alarms-updated') {
         setupAlarms().catch(err => console.error('QuickLog-Solo: setupAlarms failed on message', err));
-    } else if (message.type === 'sync') {
-        // Just acknowledging sync if needed
     }
     return false; // Synchronous listener
 });
@@ -101,7 +100,6 @@ async function setupAlarms() {
         const alarms = state.alarms;
 
         // Clear all existing ql_alarms before rescheduling
-        // Note: We keep ql_test_alarm as it's for immediate testing
         const existingAlarms = await chrome.alarms.getAll();
         for (const alarm of existingAlarms) {
             if (alarm.name.startsWith('ql_alarm_')) {
@@ -155,7 +153,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             alarmData = {
                 id: 999,
                 enabled: true,
-                message: "TEST ALARM: " + t('test-notification-message'),
+                message: "TEST ALARM: " + t('test-notification-message') + " (Background Flow OK)",
                 action: 'none'
             };
         }
@@ -164,19 +162,12 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             console.log(`QuickLog-Solo: Alarm triggered [ID: ${alarmData.id}] message: ${alarmData.message}`);
 
             // 1. Show notification
-            console.log(`QuickLog-Solo: Creating notification for alarm ${alarmData.id}...`);
-            chrome.notifications.create({
+            chrome.notifications.create(`alarm_${alarmData.id}_${Date.now()}`, {
                 type: 'basic',
-                iconUrl: 'assets/icon128.png',
+                iconUrl: chrome.runtime.getURL('assets/icon128.png'),
                 title: t('title'),
                 message: alarmData.message || t('alarm-action-none'),
                 priority: 2
-            }, (id) => {
-                if (chrome.runtime.lastError) {
-                    console.error('QuickLog-Solo: Notification failed:', chrome.runtime.lastError);
-                } else {
-                    console.log('QuickLog-Solo: Notification created with ID:', id);
-                }
             });
 
             // 2. Execute automated task actions

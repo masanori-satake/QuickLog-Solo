@@ -232,6 +232,36 @@ export async function dbCount(storeName) {
     });
 }
 
+/**
+ * Finds the most recent active task (one without an endTime) without fetching all logs.
+ * @returns {Promise<Object|null>}
+ */
+export async function dbGetActiveTask() {
+    await openDatabase();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_LOGS, 'readonly');
+        const store = tx.objectStore(STORE_LOGS);
+        // Open cursor in reverse order (newest ID first)
+        const request = store.openCursor(null, 'prev');
+        request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                const log = cursor.value;
+                if (!log.endTime) {
+                    resolve(log);
+                } else {
+                    // This is an optimization: usually the active task is among the most recent.
+                    // If we don't find it immediately, we continue to the previous record.
+                    cursor.continue();
+                }
+            } else {
+                resolve(null);
+            }
+        };
+        request.onerror = () => reject(request.error);
+    });
+}
+
 export function closeDatabase() {
     if (db) {
         db.close();
@@ -240,13 +270,23 @@ export function closeDatabase() {
     dbPromise = null;
 }
 
-export async function initDB() {
+/**
+ * Initializes the database.
+ * @param {boolean} isLite - If true, skips heavy maintenance tasks like log cleanup and dummy data generation.
+ */
+export async function initDB(isLite = false) {
     await openDatabase();
-    const language = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
-    await setupInitialData(language ? language.value : 'auto');
-    const settings = await getCurrentAppState();
-    await cleanupOldLogs();
-    return settings;
+    const languageSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
+    const lang = languageSetting ? languageSetting.value : 'auto';
+
+    if (isLite) {
+        setLanguage(lang);
+    } else {
+        await setupInitialData(lang);
+        await cleanupOldLogs();
+    }
+
+    return await getCurrentAppState();
 }
 
 export async function getCurrentAppState() {
@@ -265,9 +305,7 @@ export async function getCurrentAppState() {
     if (pauseStateSetting) {
         activeTask = pauseStateSetting.value;
     } else {
-        const allLogs = await dbGetAll(STORE_LOGS);
-        const openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
-        activeTask = openTasks[0];
+        activeTask = await dbGetActiveTask();
     }
 
     return {
@@ -296,7 +334,7 @@ async function setupInitialData(languageSetting) {
         'dot_typing', 'spectrum', 'coffee_drip', 'car_drive', 'left_to_right',
         'contour_lines', 'tetris_building', 'night_sky', 'open_reel', 'sand_clock',
         'clock', 'cats', 'hero_pot', 'right_to_left', 'smoke',
-        'heart_beat', 'newtons_cradle', 'digital_rain', 'migrating_birds'
+        'heart_beat', 'newtons_cradle'
     ];
 
     const categoryDefs = [

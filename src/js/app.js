@@ -1771,12 +1771,13 @@ function setupEventListeners() {
                 });
             }
 
-            // 2. Background alarm test (schedules an alarm for 5 seconds in the future)
+            // 2. Background alarm test (schedules an alarm for 1 minute in the future)
+            // Chrome enforces a 1-minute minimum for alarms in packed extensions to prevent abuse.
             if (chrome.alarms) {
                 const testAlarmName = 'ql_test_alarm';
                 await chrome.alarms.clear(testAlarmName);
-                chrome.alarms.create(testAlarmName, { delayInMinutes: 0.1 }); // ~6 seconds
-                showToast("Scheduled background test alarm (6s)");
+                chrome.alarms.create(testAlarmName, { delayInMinutes: 1 });
+                showToast("Scheduled background test alarm (60s)");
             }
         } else {
             alert('Extension APIs not available in this environment.');
