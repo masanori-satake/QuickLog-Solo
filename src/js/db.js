@@ -27,9 +27,19 @@ const ORPHANED_TASK_MIN_DURATION_MS = 1000;
 let db;
 let dbPromise = null;
 
+/**
+ * Opens the IndexedDB connection.
+ * Returns a promise that resolves to the database instance.
+ * Uses a promise cache to prevent multiple concurrent opening attempts.
+ */
 export function openDatabase() {
     if (dbPromise) return dbPromise;
     dbPromise = new Promise((resolve, reject) => {
+        if (db) {
+            resolve(db);
+            return;
+        }
+
         const request = indexedDB.open(DB_NAME, DB_VERSION);
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
@@ -67,15 +77,14 @@ export function openDatabase() {
         };
         request.onblocked = () => {
             console.warn('Database connection blocked. Please close other tabs of this app.');
-            // We don't reject here because onsuccess might still fire if the user closes other tabs
         };
     });
     return dbPromise;
 }
 
-export function dbGet(storeName, key) {
+export async function dbGet(storeName, key) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.get(key);
@@ -84,11 +93,13 @@ export function dbGet(storeName, key) {
     });
 }
 
-export function dbAddMultiple(storeName, items) {
+/**
+ * Adds multiple items to a store in a single transaction.
+ */
+export async function dbAddMultiple(storeName, items) {
+    if (!items || items.length === 0) return;
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
-        if (items.length === 0) { resolve(); return; }
-
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
 
@@ -106,9 +117,9 @@ export function dbAddMultiple(storeName, items) {
  * @param {Array} items
  * @param {string} importMode - 'append' or 'overwrite'
  */
-export function dbImportCategories(items, importMode) {
+export async function dbImportCategories(items, importMode) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction([STORE_CATEGORIES], 'readwrite');
         const store = tx.objectStore(STORE_CATEGORIES);
 
@@ -150,9 +161,9 @@ export function dbImportCategories(items, importMode) {
     });
 }
 
-export function dbGetByName(storeName, name) {
+export async function dbGetByName(storeName, name) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const index = store.index('name');
@@ -162,9 +173,9 @@ export function dbGetByName(storeName, name) {
     });
 }
 
-export function dbClear(storeName) {
+export async function dbClear(storeName) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.clear();
@@ -173,9 +184,9 @@ export function dbClear(storeName) {
     });
 }
 
-export function dbGetAll(storeName) {
+export async function dbGetAll(storeName) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.getAll();
@@ -184,9 +195,9 @@ export function dbGetAll(storeName) {
     });
 }
 
-export function dbPut(storeName, value) {
+export async function dbPut(storeName, value) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.put(value);
@@ -195,9 +206,9 @@ export function dbPut(storeName, value) {
     });
 }
 
-export function dbAdd(storeName, value) {
+export async function dbAdd(storeName, value) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.add(value);
@@ -206,9 +217,9 @@ export function dbAdd(storeName, value) {
     });
 }
 
-export function dbDelete(storeName, key) {
+export async function dbDelete(storeName, key) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.delete(key);
@@ -217,9 +228,9 @@ export function dbDelete(storeName, key) {
     });
 }
 
-export function dbCount(storeName) {
+export async function dbCount(storeName) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.count();
@@ -288,30 +299,11 @@ async function setupInitialData(languageSetting) {
     }
 
     const animationOrder = [
-        'none',
-        'default',
-        'digital_rain',
-        'migrating_birds',
-        'ripple',
-        'dot_typing',
-        'spectrum',
-        'coffee_drip',
-        'car_drive',
-        'left_to_right',
-        'contour_lines',
-        'tetris_building',
-        'night_sky',
-        'open_reel',
-        'sand_clock',
-        'clock',
-        'cats',
-        'hero_pot',
-        'right_to_left',
-        'smoke',
-        'heart_beat',
-        'newtons_cradle',
-        'digital_rain',
-        'migrating_birds'
+        'none', 'default', 'digital_rain', 'migrating_birds', 'ripple',
+        'dot_typing', 'spectrum', 'coffee_drip', 'car_drive', 'left_to_right',
+        'contour_lines', 'tetris_building', 'night_sky', 'open_reel', 'sand_clock',
+        'clock', 'cats', 'hero_pot', 'right_to_left', 'smoke',
+        'heart_beat', 'newtons_cradle', 'digital_rain', 'migrating_birds'
     ];
 
     const categoryDefs = [
@@ -355,7 +347,7 @@ async function setupInitialData(languageSetting) {
             await dbPut(STORE_CATEGORIES, cat);
         }
     } else {
-        // Migration: Ensure existing categories have tags and animation if missing
+        const categoriesToUpdate = [];
         for (const cat of existingCategories) {
             let changed = false;
             if (cat.tags === undefined) {
@@ -369,31 +361,41 @@ async function setupInitialData(languageSetting) {
                 changed = true;
             }
             if (changed) {
-                await dbPut(STORE_CATEGORIES, cat);
+                categoriesToUpdate.push(cat);
             }
+        }
+
+        if (categoriesToUpdate.length > 0) {
+            console.log(`QuickLog-Solo: Migrating ${categoriesToUpdate.length} categories...`);
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_CATEGORIES, 'readwrite');
+                const store = tx.objectStore(STORE_CATEGORIES);
+                tx.oncomplete = () => resolve();
+                tx.onerror = (e) => reject(e.target.error);
+                for (const cat of categoriesToUpdate) {
+                    store.put(cat);
+                }
+            });
         }
     }
 
-    let allLogs = await dbGetAll(STORE_LOGS);
-
-    const autoStopStatus = await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP);
-    const isAutoStopEnabled = autoStopStatus ? autoStopStatus.value : true;
+    const allLogs = await dbGetAll(STORE_LOGS);
+    const isAutoStopEnabled = (await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP))?.value ?? true;
 
     let openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
 
-    // Auto-record 'Stop' at Midnight repair
     if (isAutoStopEnabled) {
-        let changed = false;
+        const repairUpdates = [];
+        const newMarkers = [];
+
         for (const task of openTasks) {
             const stopTime = getAutoStopTimeIfPassed(task.startTime);
             if (stopTime) {
                 task.endTime = stopTime;
-                await dbPut(STORE_LOGS, task);
+                repairUpdates.push(task);
 
-                // Add a Stop marker at 23:59:59 if it doesn't exist for that day
                 const startOfDay = new Date(stopTime).setHours(0, 0, 0, 0);
-                const endOfDay = new Date(stopTime).setHours(23, 59, 59, 999);
-                const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay);
+                const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime < (startOfDay + 86400000));
                 const hasStopMarker = dayLogs.some(l => l.isManualStop && l.category === SYSTEM_CATEGORY_IDLE);
 
                 if (!hasStopMarker) {
@@ -403,21 +405,31 @@ async function setupInitialData(languageSetting) {
                         endTime: stopTime,
                         isManualStop: true
                     };
-                    await dbAdd(STORE_LOGS, newMarker);
+                    newMarkers.push(newMarker);
                     allLogs.push(newMarker);
                 }
-                changed = true;
             }
         }
-        if (changed) {
-            // Refresh openTasks after auto-stop
+
+        if (repairUpdates.length > 0 || newMarkers.length > 0) {
+            console.log(`QuickLog-Solo: Performing auto-stop repair for ${repairUpdates.length} tasks and adding ${newMarkers.length} markers...`);
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_LOGS, 'readwrite');
+                const store = tx.objectStore(STORE_LOGS);
+                tx.oncomplete = () => resolve();
+                tx.onerror = (e) => reject(e.target.error);
+                for (const task of repairUpdates) {
+                    store.put(task);
+                }
+                for (const marker of newMarkers) {
+                    store.add(marker);
+                }
+            });
             openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
         }
     }
 
     const activeTaskFromLogs = openTasks[0];
-
-    // Auto-repair for idle tasks in logs (sync pauseState with logs)
     if (activeTaskFromLogs && activeTaskFromLogs.category === SYSTEM_CATEGORY_IDLE) {
         const pauseState = {
             id: activeTaskFromLogs.id,
@@ -429,37 +441,45 @@ async function setupInitialData(languageSetting) {
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
     }
 
-    const finalPauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-    const activeTask = finalPauseStateSetting ? finalPauseStateSetting.value : activeTaskFromLogs;
+    const activeTask = (await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE))?.value || activeTaskFromLogs;
 
-    // Ensure only one active task remains
     const hasPauseState = activeTask && activeTask.isPaused;
     const startIndex = hasPauseState ? 0 : 1;
     if (openTasks.length > startIndex) {
+        const orphanedTasks = [];
         for (let i = startIndex; i < openTasks.length; i++) {
             const orphaned = openTasks[i];
             if (hasPauseState && orphaned.category === SYSTEM_CATEGORY_IDLE && orphaned.startTime === activeTask.startTime) continue;
-
             orphaned.endTime = orphaned.startTime + ORPHANED_TASK_MIN_DURATION_MS;
-            await dbPut(STORE_LOGS, orphaned);
+            orphanedTasks.push(orphaned);
         }
-    }
-
-    // Ensure default alarms exist
-    let existingAlarms = await dbGetAll(STORE_ALARMS);
-    if (existingAlarms.length === 0) {
-        for (let i = 0; i < 5; i++) {
-            await dbAdd(STORE_ALARMS, {
-                enabled: false,
-                time: "09:00",
-                message: "",
-                action: "none", // none, stop, pause, start
-                actionCategory: ""
+        if (orphanedTasks.length > 0) {
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_LOGS, 'readwrite');
+                const store = tx.objectStore(STORE_LOGS);
+                tx.oncomplete = () => resolve();
+                tx.onerror = (e) => reject(e.target.error);
+                for (const task of orphanedTasks) {
+                    store.put(task);
+                }
             });
         }
     }
 
-    // Generate dummy history if no logs exist
+    if ((await dbGetAll(STORE_ALARMS)).length === 0) {
+        const defaultAlarms = [];
+        for (let i = 0; i < 5; i++) {
+            defaultAlarms.push({
+                enabled: false,
+                time: "09:00",
+                message: "",
+                action: "none",
+                actionCategory: ""
+            });
+        }
+        await dbAddMultiple(STORE_ALARMS, defaultAlarms);
+    }
+
     if ((await dbGetAll(STORE_LOGS)).length === 0) {
         await generateDummyHistory();
     }
@@ -467,49 +487,36 @@ async function setupInitialData(languageSetting) {
 
 async function generateDummyHistory() {
     console.log('QuickLog-Solo: Generating dummy history...');
-
     const CONFIG = {
-        DAYS_OFFSET: [1, 3, 5], // Non-consecutive days (e.g., Mon, Wed, Fri)
-        WORK_START_H: 8,
-        WORK_START_M: 30,
-        WORK_END_H: 17,
-        WORK_END_M: 30,
-        LUNCH_START_H: 12,
-        LUNCH_START_M: 30,
+        DAYS_OFFSET: [1, 3, 5],
+        WORK_START_H: 8, WORK_START_M: 30,
+        WORK_END_H: 17, WORK_END_M: 30,
+        LUNCH_START_H: 12, LUNCH_START_M: 30,
         LUNCH_DURATION_MINS: 60,
-        TIME_JITTER_MIN: 3,
-        TIME_JITTER_MAX: 7,
-        LUNCH_JITTER_MIN: 2,
-        LUNCH_JITTER_MAX: 5,
-        TASKS_PER_DAY_MIN: 5,
-        TASKS_PER_DAY_MAX: 7,
+        TIME_JITTER_MIN: 3, TIME_JITTER_MAX: 7,
+        LUNCH_JITTER_MIN: 2, LUNCH_JITTER_MAX: 5,
+        TASKS_PER_DAY_MIN: 5, TASKS_PER_DAY_MAX: 7,
         MORNING_TASK_COUNT: 2,
-        TASK_TIME_VARIATION: 0.2, // e.g., 0.2 means +/- 20%
+        TASK_TIME_VARIATION: 0.2
     };
 
-    const categories = await dbGetAll(STORE_CATEGORIES);
-    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE);
-
+    const workCategories = (await dbGetAll(STORE_CATEGORIES)).filter(c => c.name !== SYSTEM_CATEGORY_IDLE);
     if (workCategories.length === 0) return;
 
     const createJitter = (min, max) => (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * (max - min + 1)) + min);
+    const toMillis = (h, m) => (h * 60 + m) * 60 * 1000;
+
+    const allNewLogs = [];
 
     for (const offset of CONFIG.DAYS_OFFSET) {
         const baseDate = new Date();
         baseDate.setDate(baseDate.getDate() - offset);
         baseDate.setHours(0, 0, 0, 0);
-
         const baseTime = baseDate.getTime();
-        const toMillis = (h, m) => (h * 60 + m) * 60 * 1000;
 
-        const startJitter = createJitter(CONFIG.TIME_JITTER_MIN, CONFIG.TIME_JITTER_MAX);
-        const startTime = baseTime + toMillis(CONFIG.WORK_START_H, CONFIG.WORK_START_M) + startJitter * 60 * 1000;
-
-        const endJitter = createJitter(CONFIG.TIME_JITTER_MIN, CONFIG.TIME_JITTER_MAX);
-        const endTime = baseTime + toMillis(CONFIG.WORK_END_H, CONFIG.WORK_END_M) + endJitter * 60 * 1000;
-
-        const lunchJitter = createJitter(CONFIG.LUNCH_JITTER_MIN, CONFIG.LUNCH_JITTER_MAX);
-        const lunchStart = baseTime + toMillis(CONFIG.LUNCH_START_H, CONFIG.LUNCH_START_M) + lunchJitter * 60 * 1000;
+        const startTime = baseTime + toMillis(CONFIG.WORK_START_H, CONFIG.WORK_START_M) + createJitter(CONFIG.TIME_JITTER_MIN, CONFIG.TIME_JITTER_MAX) * 60 * 1000;
+        const endTime = baseTime + toMillis(CONFIG.WORK_END_H, CONFIG.WORK_END_M) + createJitter(CONFIG.TIME_JITTER_MIN, CONFIG.TIME_JITTER_MAX) * 60 * 1000;
+        const lunchStart = baseTime + toMillis(CONFIG.LUNCH_START_H, CONFIG.LUNCH_START_M) + createJitter(CONFIG.LUNCH_JITTER_MIN, CONFIG.LUNCH_JITTER_MAX) * 60 * 1000;
         const lunchEnd = lunchStart + CONFIG.LUNCH_DURATION_MINS * 60 * 1000;
 
         const numTasks = Math.floor(Math.random() * (CONFIG.TASKS_PER_DAY_MAX - CONFIG.TASKS_PER_DAY_MIN + 1)) + CONFIG.TASKS_PER_DAY_MIN;
@@ -518,68 +525,40 @@ async function generateDummyHistory() {
 
         let lastCategoryName = null;
 
-        const generateTasks = async (start, end, count, isMorning) => {
+        const addTasks = (start, end, count, isMorning) => {
             let current = start;
             for (let i = 0; i < count; i++) {
-                const remainingTasks = count - i;
-                const timePerTask = (end - current) / remainingTasks;
                 const variation = 1 - CONFIG.TASK_TIME_VARIATION + Math.random() * 2 * CONFIG.TASK_TIME_VARIATION;
-                const taskEnd = i === count - 1 ? end : current + timePerTask * variation;
-
+                const taskEnd = i === count - 1 ? end : current + ((end - current) / (count - i)) * variation;
                 const isFirstOfDay = isMorning && i === 0;
-                let cat;
-                if (isFirstOfDay) {
-                    cat = { name: t('demo-warning'), color: 'error' };
-                } else {
-                    // Avoid consecutive identical categories
-                    const candidates = workCategories.filter(c => c.name !== lastCategoryName);
-                    cat = candidates[Math.floor(Math.random() * candidates.length)];
-                }
+                let cat = isFirstOfDay ? { name: t('demo-warning'), color: 'error' } : workCategories.filter(c => c.name !== lastCategoryName)[Math.floor(Math.random() * (workCategories.length - (lastCategoryName ? 1 : 0)))];
                 lastCategoryName = cat.name;
-
-                await dbAdd(STORE_LOGS, {
-                    category: cat.name,
-                    startTime: Math.floor(current),
-                    endTime: Math.floor(taskEnd),
-                    color: cat.color || 'primary',
-                    tags: cat.tags || ''
-                });
+                allNewLogs.push({ category: cat.name, startTime: Math.floor(current), endTime: Math.floor(taskEnd), color: cat.color || 'primary', tags: cat.tags || '' });
                 current = taskEnd;
             }
         };
 
-        // Morning Tasks
-        await generateTasks(startTime, lunchStart, morningCount, true);
-
-        // Lunch Break
-        await dbAdd(STORE_LOGS, {
-            category: SYSTEM_CATEGORY_IDLE,
-            startTime: Math.floor(lunchStart),
-            endTime: Math.floor(lunchEnd)
-        });
-        // We do NOT reset lastCategoryName to SYSTEM_CATEGORY_IDLE here,
-        // so that the first afternoon task avoids the last morning task's category.
-
-        // Afternoon Tasks
-        await generateTasks(lunchEnd, endTime, afternoonCount, false);
-
-        // Final Stop Marker
-        // Use SYSTEM_CATEGORY_IDLE for consistency with logic.js and ensuring visibility in UI
-        await dbAdd(STORE_LOGS, {
-            category: SYSTEM_CATEGORY_IDLE,
-            startTime: Math.floor(endTime),
-            endTime: Math.floor(endTime),
-            isManualStop: true
-        });
+        addTasks(startTime, lunchStart, morningCount, true);
+        allNewLogs.push({ category: SYSTEM_CATEGORY_IDLE, startTime: Math.floor(lunchStart), endTime: Math.floor(lunchEnd) });
+        addTasks(lunchEnd, endTime, afternoonCount, false);
+        allNewLogs.push({ category: SYSTEM_CATEGORY_IDLE, startTime: Math.floor(endTime), endTime: Math.floor(endTime), isManualStop: true });
     }
+    await dbAddMultiple(STORE_LOGS, allNewLogs);
 }
 
 async function cleanupOldLogs() {
     const cleanupThresholdTime = Date.now() - LOG_CLEANUP_THRESHOLD_MS;
-    const logs = await dbGetAll(STORE_LOGS);
-    for (const log of logs) {
-        if (log.startTime < cleanupThresholdTime) {
-            await dbDelete(STORE_LOGS, log.id);
+    const allLogs = await dbGetAll(STORE_LOGS);
+    const logsToDelete = allLogs.filter(log => log.startTime < cleanupThresholdTime);
+    if (logsToDelete.length === 0) return;
+    console.log(`QuickLog-Solo: Cleaning up ${logsToDelete.length} old logs...`);
+    await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_LOGS, 'readwrite');
+        const store = tx.objectStore(STORE_LOGS);
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e.target.error);
+        for (const log of logsToDelete) {
+            store.delete(log.id);
         }
-    }
+    });
 }
