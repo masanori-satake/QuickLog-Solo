@@ -15,6 +15,10 @@ import { t, setLanguage } from './i18n.js';
  * and executes task logic even when the side panel is closed.
  */
 
+const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
+let syncChannel = null;
+let initializationPromise = null;
+
 /**
  * Configures the side panel behavior.
  */
@@ -22,27 +26,9 @@ function configureSidePanel() {
     if (typeof chrome !== 'undefined' && chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
         chrome.sidePanel
             .setPanelBehavior({ openPanelOnActionClick: true })
-            .then(() => console.log('QuickLog-Solo: Side panel behavior set.'))
             .catch((error) => console.error('QuickLog-Solo: Failed to set side panel behavior:', error));
     }
 }
-
-// Handler for extension icon click (fallback/Firefox support)
-if (typeof chrome !== 'undefined' && chrome.action) {
-    chrome.action.onClicked.addListener((tab) => {
-        // For Chrome, setPanelBehavior usually handles this, but we can also trigger manually
-        // if sidePanel is available.
-        if (chrome.sidePanel && chrome.sidePanel.open) {
-            chrome.sidePanel.open({ windowId: tab.windowId }).catch((e) => {
-                console.warn('QuickLog-Solo: Could not open side panel via API, falling back to default behavior.', e);
-            });
-        }
-    });
-}
-
-const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
-let syncChannel = null;
-let initializationPromise = null;
 
 /**
  * Initializes the background worker state.
@@ -101,9 +87,22 @@ function setupBroadcastChannel() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'alarms-updated') {
         setupAlarms().catch(err => console.error('QuickLog-Solo: setupAlarms failed on message', err));
+    } else if (message.type === 'sync') {
+        // Just acknowledging sync
     }
     return false; // Synchronous listener
 });
+
+// Handler for extension icon click (fallback)
+if (typeof chrome !== 'undefined' && chrome.action) {
+    chrome.action.onClicked.addListener((tab) => {
+        if (chrome.sidePanel && chrome.sidePanel.open) {
+            chrome.sidePanel.open({ windowId: tab.windowId }).catch((e) => {
+                console.warn('QuickLog-Solo: Could not open side panel via API.', e);
+            });
+        }
+    });
+}
 
 let isSettingUpAlarms = false;
 /**
@@ -159,14 +158,14 @@ async function setupAlarms() {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     console.log(`QuickLog-Solo: onAlarm triggered: ${alarm.name}`);
 
-    // Immediate diagnostic notification (System ACK)
+    // Immediate ACK notification for any QL alarm
     if (alarm.name.startsWith('ql_')) {
         chrome.notifications.create(`ack_${alarm.name}_${Date.now()}`, {
             type: 'basic',
             iconUrl: chrome.runtime.getURL('assets/icon128.png'),
             title: 'QuickLog-Solo System',
-            message: `Event: ${alarm.name} (Service Worker Active)`,
-            priority: 0
+            message: `Event: ${alarm.name} (Background Active)`,
+            priority: 1
         });
     }
 
@@ -182,7 +181,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             alarmData = {
                 id: 999,
                 enabled: true,
-                message: "TEST ALARM: " + t('test-notification-message') + " (Background Flow OK)",
+                message: "TEST ALARM: " + t('test-notification-message') + " (Flow OK)",
                 action: 'none'
             };
         }

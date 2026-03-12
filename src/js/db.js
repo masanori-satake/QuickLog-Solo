@@ -31,11 +31,22 @@ let dbPromise = null;
  * Opens the IndexedDB connection.
  * Returns a promise that resolves to the database instance.
  */
+const DB_OPEN_TIMEOUT_MS = 5000;
+
+/**
+ * Opens the IndexedDB connection.
+ * Returns a promise that resolves to the database instance.
+ */
 export function openDatabase() {
     if (dbPromise) return dbPromise;
     if (db) return Promise.resolve(db);
 
     dbPromise = new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+            dbPromise = null;
+            reject(new Error('IndexedDB open timeout'));
+        }, DB_OPEN_TIMEOUT_MS);
+
         const request = indexedDB.open(DB_NAME, DB_VERSION);
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
@@ -58,6 +69,7 @@ export function openDatabase() {
             }
         };
         request.onsuccess = (event) => {
+            clearTimeout(timeoutId);
             db = event.target.result;
             db.onversionchange = () => {
                 db.close();
@@ -68,6 +80,7 @@ export function openDatabase() {
             resolve(db);
         };
         request.onerror = (event) => {
+            clearTimeout(timeoutId);
             dbPromise = null;
             reject(event.target.error);
         };
