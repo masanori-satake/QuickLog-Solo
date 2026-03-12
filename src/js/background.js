@@ -15,11 +15,29 @@ import { t, setLanguage } from './i18n.js';
  * and executes task logic even when the side panel is closed.
  */
 
-// Configure side panel behavior for Chrome/Edge
-if (typeof chrome !== 'undefined' && chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
-    chrome.sidePanel
-        .setPanelBehavior({ openPanelOnActionClick: true })
-        .catch((error) => console.error('QuickLog-Solo: Failed to set side panel behavior:', error));
+/**
+ * Configures the side panel behavior.
+ */
+function configureSidePanel() {
+    if (typeof chrome !== 'undefined' && chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
+        chrome.sidePanel
+            .setPanelBehavior({ openPanelOnActionClick: true })
+            .then(() => console.log('QuickLog-Solo: Side panel behavior set.'))
+            .catch((error) => console.error('QuickLog-Solo: Failed to set side panel behavior:', error));
+    }
+}
+
+// Handler for extension icon click (fallback/Firefox support)
+if (typeof chrome !== 'undefined' && chrome.action) {
+    chrome.action.onClicked.addListener((tab) => {
+        // For Chrome, setPanelBehavior usually handles this, but we can also trigger manually
+        // if sidePanel is available.
+        if (chrome.sidePanel && chrome.sidePanel.open) {
+            chrome.sidePanel.open({ windowId: tab.windowId }).catch((e) => {
+                console.warn('QuickLog-Solo: Could not open side panel via API, falling back to default behavior.', e);
+            });
+        }
+    });
 }
 
 const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
@@ -141,6 +159,17 @@ async function setupAlarms() {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     console.log(`QuickLog-Solo: onAlarm triggered: ${alarm.name}`);
 
+    // Immediate diagnostic notification (System ACK)
+    if (alarm.name.startsWith('ql_')) {
+        chrome.notifications.create(`ack_${alarm.name}_${Date.now()}`, {
+            type: 'basic',
+            iconUrl: chrome.runtime.getURL('assets/icon128.png'),
+            title: 'QuickLog-Solo System',
+            message: `Event: ${alarm.name} (Service Worker Active)`,
+            priority: 0
+        });
+    }
+
     try {
         await guardedInitialize();
 
@@ -203,13 +232,16 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 // Run initialization
 chrome.runtime.onInstalled.addListener((details) => {
     console.log('QuickLog-Solo: Extension installed/updated. Reason:', details.reason);
+    configureSidePanel();
     guardedInitialize().catch(() => {});
 });
 
 chrome.runtime.onStartup.addListener(() => {
     console.log('QuickLog-Solo: Extension startup.');
+    configureSidePanel();
     guardedInitialize().catch(() => {});
 });
 
 // Also run immediately as the worker might be woken up for an alarm or sidepanel opening
+configureSidePanel();
 guardedInitialize().catch(() => {});

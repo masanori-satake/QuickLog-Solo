@@ -1777,7 +1777,7 @@ function setupEventListeners() {
                 const testAlarmName = 'ql_test_alarm';
                 await chrome.alarms.clear(testAlarmName);
                 chrome.alarms.create(testAlarmName, { delayInMinutes: 1 });
-                showToast("Scheduled background test alarm (60s)");
+                showToast("Background test scheduled. Please wait 60 seconds.");
             }
         } else {
             alert('Extension APIs not available in this environment.');
