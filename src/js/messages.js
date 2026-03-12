@@ -54,6 +54,8 @@ export const messages = {
         'alarm-action-start': 'カテゴリ開始',
         'alarm-placeholder-message': 'メッセージを入力...',
         'toast-alarm-saved': 'アラームを保存しました',
+        'btn-test-notification': '通知のテストを実行する',
+        'test-notification-message': 'これは通知テストです。正常に表示されています。',
 
         // Common labels
         'setting-enabled': '有効 (ON)',
@@ -343,6 +345,8 @@ export const messages = {
         'alarm-action-start': 'Start Category',
         'alarm-placeholder-message': 'Enter message...',
         'toast-alarm-saved': 'Alarm saved',
+        'btn-test-notification': 'Test Notification',
+        'test-notification-message': 'This is a notification test. It is working correctly.',
 
         // Common labels
         'setting-enabled': 'Enabled (ON)',
@@ -649,6 +653,8 @@ export const messages = {
         'alarm-action-start': 'Kategorie starten',
         'alarm-placeholder-message': 'Nachricht eingeben...',
         'toast-alarm-saved': 'Alarm gespeichert',
+        'btn-test-notification': 'Test-Benachrichtigung',
+        'test-notification-message': 'Dies ist ein Benachrichtigungstest. Er funktioniert ordnungsgemäß.',
 
         'setting-enabled': 'Aktiviert (EIN)',
         'setting-disabled': 'Deaktiviert (AUS)',
@@ -916,6 +922,8 @@ export const messages = {
         'alarm-action-start': 'Iniciar categoría',
         'alarm-placeholder-message': 'Ingrese mensaje...',
         'toast-alarm-saved': 'Alarma guardada',
+        'btn-test-notification': 'Probar notificación',
+        'test-notification-message': 'Esta es una prueba de notificación. Está funcionando correctamente.',
 
         'setting-enabled': 'Activado (SÍ)',
         'setting-disabled': 'Desactivado (NO)',
@@ -1183,6 +1191,8 @@ export const messages = {
         'alarm-action-start': 'Démarrer la catégorie',
         'alarm-placeholder-message': 'Entrez le message...',
         'toast-alarm-saved': 'Alarme enregistrée',
+        'btn-test-notification': 'Tester la notification',
+        'test-notification-message': 'Ceci est un test de notification. Cela fonctionne correctement.',
 
         'setting-enabled': 'Activé (ON)',
         'setting-disabled': 'Désactivé (OFF)',
@@ -1450,6 +1460,8 @@ export const messages = {
         'alarm-action-start': 'Iniciar Categoria',
         'alarm-placeholder-message': 'Digite a mensagem...',
         'toast-alarm-saved': 'Alarme salvo',
+        'btn-test-notification': 'Testar Notificação',
+        'test-notification-message': 'Este é um teste de notificação. Está funcionando corretamente.',
 
         'setting-enabled': 'Ativado (LIGADO)',
         'setting-disabled': 'Desativado (DESLIGADO)',
@@ -1717,6 +1729,8 @@ export const messages = {
         'alarm-action-start': '카테고리 시작',
         'alarm-placeholder-message': '메시지 입력...',
         'toast-alarm-saved': '알람이 저장되었습니다',
+        'btn-test-notification': '알림 테스트',
+        'test-notification-message': '알림 테스트입니다. 정상적으로 작동하고 있습니다.',
 
         'setting-enabled': '활성화 (ON)',
         'setting-disabled': '비활성화 (OFF)',
@@ -1984,6 +1998,8 @@ export const messages = {
         'alarm-action-start': '开始分类',
         'alarm-placeholder-message': '输入消息...',
         'toast-alarm-saved': '闹钟已保存',
+        'btn-test-notification': '测试通知',
+        'test-notification-message': '这是一条测试通知。它工作正常。',
 
         'setting-enabled': '已开启 (ON)',
         'setting-disabled': '已关闭 (OFF)',

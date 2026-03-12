@@ -1748,6 +1748,27 @@ function setupEventListeners() {
         broadcastSync();
     });
 
+    getEl('test-notification-btn')?.addEventListener('click', async () => {
+        if (typeof chrome !== 'undefined' && chrome.notifications) {
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'assets/icon128.png',
+                title: t('title'),
+                message: t('test-notification-message'),
+                priority: 2
+            }, (id) => {
+                if (chrome.runtime.lastError) {
+                    console.error('QuickLog-Solo: Test notification failed:', chrome.runtime.lastError);
+                    alert(`Notification failed: ${chrome.runtime.lastError.message}`);
+                } else {
+                    console.log('QuickLog-Solo: Test notification created with ID:', id);
+                }
+            });
+        } else {
+            alert('Notifications API not available in this environment.');
+        }
+    });
+
     backupManager.onStatusChange = () => {
         updateBackupUI();
     };

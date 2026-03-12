@@ -120,12 +120,19 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
                 console.log(`QuickLog-Solo: Alarm triggered [ID: ${alarmData.id}] message: ${alarmData.message}`);
 
                 // 1. Show notification
+                console.log(`QuickLog-Solo: Creating notification for alarm ${alarmData.id}...`);
                 chrome.notifications.create({
                     type: 'basic',
                     iconUrl: 'assets/icon128.png',
                     title: t('title'),
                     message: alarmData.message || t('alarm-action-none'),
                     priority: 2
+                }, (id) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('QuickLog-Solo: Notification failed:', chrome.runtime.lastError);
+                    } else {
+                        console.log('QuickLog-Solo: Notification created with ID:', id);
+                    }
                 });
 
                 // 2. Execute automated task actions
