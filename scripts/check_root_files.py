@@ -18,6 +18,7 @@ ALLOWED_ROOT_ITEMS = {
     "google600c7e741a07d031.html",
     "guide.html",
     "index.html",
+    "studio.html",
     "jest.config.cjs",
     "jest.setup.js",
     "package-lock.json",

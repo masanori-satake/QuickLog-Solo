@@ -185,7 +185,7 @@ name: {
 ---
 
 ## 6. QL-Animation Studio で試そう
-[QL-Animation Studio](../src/studio.html) を使えば、ブラウザ上でコードを書きながら、リアルタイムで FG 領域との重なりを確認できます。
+[QL-Animation Studio](../studio.html) を使えば、ブラウザ上でコードを書きながら、リアルタイムで FG 領域との重なりを確認できます。
 メトリクス（密度や変化率）を見ながら、最高の心地よさを追求してください。
 
 ---
