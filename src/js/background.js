@@ -24,6 +24,7 @@ if (typeof chrome !== 'undefined' && chrome.sidePanel && chrome.sidePanel.setPan
 
 const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
 let syncChannel = null;
+let initializationPromise = null;
 
 /**
  * Initializes the background worker state.
@@ -44,7 +45,27 @@ async function initializeBackground() {
         console.log('QuickLog-Solo: Background worker initialized.');
     } catch (error) {
         console.error('QuickLog-Solo: Initialization failed:', error);
+        throw error;
     }
+}
+
+/**
+ * Ensures background initialization only happens once and can be awaited.
+ */
+async function guardedInitialize() {
+    if (initializationPromise) return initializationPromise;
+
+    initializationPromise = (async () => {
+        try {
+            await initializeBackground();
+        } catch (error) {
+            console.error('QuickLog-Solo: guardedInitialize failed:', error);
+            initializationPromise = null; // Allow retry on next event
+            throw error;
+        }
+    })();
+
+    return initializationPromise;
 }
 
 function setupBroadcastChannel() {
@@ -52,21 +73,35 @@ function setupBroadcastChannel() {
     syncChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
     syncChannel.onmessage = (event) => {
         if (event.data.type === 'alarms-updated') {
-            setupAlarms();
+            setupAlarms().catch(err => console.error('QuickLog-Solo: setupAlarms failed on sync', err));
         }
     };
 }
 
+// Support chrome.runtime.sendMessage as well for better reliability
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'alarms-updated') {
+        setupAlarms().catch(err => console.error('QuickLog-Solo: setupAlarms failed on message', err));
+    } else if (message.type === 'sync') {
+        // Just acknowledging sync if needed
+    }
+    return false; // Synchronous listener
+});
+
+let isSettingUpAlarms = false;
 /**
  * Schedules chrome.alarms based on the user's alarm settings in the database.
  */
 async function setupAlarms() {
+    if (isSettingUpAlarms) return;
+    isSettingUpAlarms = true;
     try {
         console.log('QuickLog-Solo: Refreshing alarms...');
         const state = await getCurrentAppState();
         const alarms = state.alarms;
 
         // Clear all existing ql_alarms before rescheduling
+        // Note: We keep ql_test_alarm as it's for immediate testing
         const existingAlarms = await chrome.alarms.getAll();
         for (const alarm of existingAlarms) {
             if (alarm.name.startsWith('ql_alarm_')) {
@@ -97,6 +132,8 @@ async function setupAlarms() {
         }
     } catch (error) {
         console.error('QuickLog-Solo: Failed to setup alarms:', error);
+    } finally {
+        isSettingUpAlarms = false;
     }
 }
 
@@ -104,63 +141,84 @@ async function setupAlarms() {
  * Alarm listener to handle triggered alarms.
  */
 chrome.alarms.onAlarm.addListener(async (alarm) => {
-    if (alarm.name.startsWith('ql_alarm_')) {
-        try {
+    console.log(`QuickLog-Solo: onAlarm triggered: ${alarm.name}`);
+
+    try {
+        await guardedInitialize();
+
+        let alarmData = null;
+        if (alarm.name.startsWith('ql_alarm_')) {
             const alarmId = parseInt(alarm.name.replace('ql_alarm_', ''));
             const state = await getCurrentAppState();
+            alarmData = state.alarms.find(a => a.id === alarmId);
+        } else if (alarm.name === 'ql_test_alarm') {
+            alarmData = {
+                id: 999,
+                enabled: true,
+                message: "TEST ALARM: " + t('test-notification-message'),
+                action: 'none'
+            };
+        }
 
-            // Re-sync language in case it changed in the foreground
-            if (state.language) {
-                setLanguage(state.language);
-            }
+        if (alarmData && alarmData.enabled) {
+            console.log(`QuickLog-Solo: Alarm triggered [ID: ${alarmData.id}] message: ${alarmData.message}`);
 
-            const alarmData = state.alarms.find(a => a.id === alarmId);
+            // 1. Show notification
+            console.log(`QuickLog-Solo: Creating notification for alarm ${alarmData.id}...`);
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'assets/icon128.png',
+                title: t('title'),
+                message: alarmData.message || t('alarm-action-none'),
+                priority: 2
+            }, (id) => {
+                if (chrome.runtime.lastError) {
+                    console.error('QuickLog-Solo: Notification failed:', chrome.runtime.lastError);
+                } else {
+                    console.log('QuickLog-Solo: Notification created with ID:', id);
+                }
+            });
 
-            if (alarmData && alarmData.enabled) {
-                console.log(`QuickLog-Solo: Alarm triggered [ID: ${alarmData.id}] message: ${alarmData.message}`);
+            // 2. Execute automated task actions
+            if (alarmData.action && alarmData.action !== 'none') {
+                console.log(`QuickLog-Solo: Executing alarm action: ${alarmData.action}`);
+                const state = await getCurrentAppState();
+                let activeTask = state.activeTask;
 
-                // 1. Show notification
-                console.log(`QuickLog-Solo: Creating notification for alarm ${alarmData.id}...`);
-                chrome.notifications.create({
-                    type: 'basic',
-                    iconUrl: 'assets/icon128.png',
-                    title: t('title'),
-                    message: alarmData.message || t('alarm-action-none'),
-                    priority: 2
-                }, (id) => {
-                    if (chrome.runtime.lastError) {
-                        console.error('QuickLog-Solo: Notification failed:', chrome.runtime.lastError);
-                    } else {
-                        console.log('QuickLog-Solo: Notification created with ID:', id);
-                    }
-                });
-
-                // 2. Execute automated task actions
-                if (alarmData.action && alarmData.action !== 'none') {
-                    let activeTask = state.activeTask;
-
-                    if (alarmData.action === 'stop') {
-                        await stopTaskLogic(activeTask, true);
-                    } else if (alarmData.action === 'pause') {
-                        await pauseTaskLogic(activeTask);
-                    } else if (alarmData.action === 'start' && alarmData.actionCategory) {
-                        const cat = await dbGetByName(STORE_CATEGORIES, alarmData.actionCategory);
-                        if (cat) {
-                            await startTaskLogic(cat.name, activeTask, null, cat.color, cat.tags);
-                        }
-                    }
-
-                    // Broadcast sync to update any open side panel UI
-                    if (syncChannel) {
-                        syncChannel.postMessage({ type: 'sync' });
+                if (alarmData.action === 'stop') {
+                    await stopTaskLogic(activeTask, true);
+                } else if (alarmData.action === 'pause') {
+                    await pauseTaskLogic(activeTask);
+                } else if (alarmData.action === 'start' && alarmData.actionCategory) {
+                    const cat = await dbGetByName(STORE_CATEGORIES, alarmData.actionCategory);
+                    if (cat) {
+                        await startTaskLogic(cat.name, activeTask, null, cat.color, cat.tags);
                     }
                 }
+
+                // Broadcast sync to update any open side panel UI
+                if (syncChannel) {
+                    syncChannel.postMessage({ type: 'sync' });
+                }
+                // Also notify via chrome.runtime for better reliability
+                chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
             }
-        } catch (error) {
-            console.error('QuickLog-Solo: Error processing alarm:', error);
         }
+    } catch (error) {
+        console.error('QuickLog-Solo: Error processing alarm:', error);
     }
 });
 
 // Run initialization
-initializeBackground();
+chrome.runtime.onInstalled.addListener((details) => {
+    console.log('QuickLog-Solo: Extension installed/updated. Reason:', details.reason);
+    guardedInitialize().catch(() => {});
+});
+
+chrome.runtime.onStartup.addListener(() => {
+    console.log('QuickLog-Solo: Extension startup.');
+    guardedInitialize().catch(() => {});
+});
+
+// Also run immediately as the worker might be woken up for an alarm or sidepanel opening
+guardedInitialize().catch(() => {});

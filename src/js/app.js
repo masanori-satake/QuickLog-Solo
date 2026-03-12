@@ -568,6 +568,12 @@ function broadcastSync(type = 'sync') {
     if (syncChannel) {
         syncChannel.postMessage({ type });
     }
+    // Also notify background script via chrome.runtime for better reliability
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({ type }).catch(() => {
+            // Ignore errors if background script is not listening
+        });
+    }
 }
 
 async function syncState() {
@@ -1749,23 +1755,31 @@ function setupEventListeners() {
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
-        if (typeof chrome !== 'undefined' && chrome.notifications) {
-            chrome.notifications.create({
-                type: 'basic',
-                iconUrl: 'assets/icon128.png',
-                title: t('title'),
-                message: t('test-notification-message'),
-                priority: 2
-            }, (id) => {
-                if (chrome.runtime.lastError) {
-                    console.error('QuickLog-Solo: Test notification failed:', chrome.runtime.lastError);
-                    alert(`Notification failed: ${chrome.runtime.lastError.message}`);
-                } else {
-                    console.log('QuickLog-Solo: Test notification created with ID:', id);
-                }
-            });
+        if (typeof chrome !== 'undefined' && (chrome.notifications || chrome.alarms)) {
+            // 1. Immediate notification test
+            if (chrome.notifications) {
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: 'assets/icon128.png',
+                    title: t('title'),
+                    message: t('test-notification-message') + " (Immediate)",
+                    priority: 2
+                }, (id) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('QuickLog-Solo: Test notification failed:', chrome.runtime.lastError);
+                    }
+                });
+            }
+
+            // 2. Background alarm test (schedules an alarm for 5 seconds in the future)
+            if (chrome.alarms) {
+                const testAlarmName = 'ql_test_alarm';
+                await chrome.alarms.clear(testAlarmName);
+                chrome.alarms.create(testAlarmName, { delayInMinutes: 0.1 }); // ~6 seconds
+                showToast("Scheduled background test alarm (6s)");
+            }
         } else {
-            alert('Notifications API not available in this environment.');
+            alert('Extension APIs not available in this environment.');
         }
     });
 

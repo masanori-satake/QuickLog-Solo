@@ -71,6 +71,8 @@ export function t(key, params = {}) {
  * Updates all elements with data-i18n and data-i18n-title attributes.
  */
 export function applyLanguage() {
+    if (typeof document === 'undefined') return;
+
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         el.textContent = t(key);
