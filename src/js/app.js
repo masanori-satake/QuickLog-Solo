@@ -28,7 +28,7 @@ const EXCLUSION_PADDING_X = 4;
 const EXCLUSION_PADDING_Y = 2;
 
 const CSV_HEADER = "id,category,startTime,endTime\n";
-const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
+const SYNC_CHANNEL_NAME = 'app_state_sync';
 
 const ID_SETTINGS_POPUP = 'settings-popup';
 const ID_SETTINGS_TOGGLE = 'settings-toggle';

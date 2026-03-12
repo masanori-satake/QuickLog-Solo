@@ -2,7 +2,7 @@ import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPass
 import { t, setLanguage } from './i18n.js';
 
 export let DB_NAME = 'QuickLogSoloDB';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export function setDatabaseName(name) {
     DB_NAME = name;
@@ -11,6 +11,7 @@ export function setDatabaseName(name) {
 export const STORE_LOGS = 'logs';
 export const STORE_CATEGORIES = 'categories';
 export const STORE_SETTINGS = 'settings';
+export const STORE_ALARMS = 'alarms';
 
 export const SETTING_KEY_THEME = 'theme';
 export const SETTING_KEY_FONT = 'font';
@@ -25,8 +26,16 @@ const ORPHANED_TASK_MIN_DURATION_MS = 1000;
 
 let db;
 
-export function openDatabase() {
+const DB_CONNECTION_TIMEOUT_MS = 5000;
+
+export async function openDatabase() {
+    if (db) return db;
+
     return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+            reject(new Error(`Database connection timeout (${DB_CONNECTION_TIMEOUT_MS}ms)`));
+        }, DB_CONNECTION_TIMEOUT_MS);
+
         const request = indexedDB.open(DB_NAME, DB_VERSION);
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
@@ -43,8 +52,13 @@ export function openDatabase() {
             if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
                 db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
             }
+
+            if (!db.objectStoreNames.contains(STORE_ALARMS)) {
+                db.createObjectStore(STORE_ALARMS, { keyPath: 'id' });
+            }
         };
         request.onsuccess = (event) => {
+            clearTimeout(timeoutId);
             db = event.target.result;
             db.onversionchange = () => {
                 db.close();
@@ -53,7 +67,10 @@ export function openDatabase() {
             };
             resolve(db);
         };
-        request.onerror = (event) => reject(event.target.error);
+        request.onerror = (event) => {
+            clearTimeout(timeoutId);
+            reject(event.target.error);
+        };
         request.onblocked = () => {
             console.warn('Database connection blocked. Please close other tabs of this app.');
             // We don't reject here because onsuccess might still fire if the user closes other tabs
@@ -61,9 +78,9 @@ export function openDatabase() {
     });
 }
 
-export function dbGet(storeName, key) {
+export async function dbGet(storeName, key) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.get(key);
@@ -72,9 +89,9 @@ export function dbGet(storeName, key) {
     });
 }
 
-export function dbAddMultiple(storeName, items) {
+export async function dbAddMultiple(storeName, items) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         if (items.length === 0) { resolve(); return; }
 
         const tx = db.transaction(storeName, 'readwrite');
@@ -94,9 +111,9 @@ export function dbAddMultiple(storeName, items) {
  * @param {Array} items
  * @param {string} importMode - 'append' or 'overwrite'
  */
-export function dbImportCategories(items, importMode) {
+export async function dbImportCategories(items, importMode) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction([STORE_CATEGORIES], 'readwrite');
         const store = tx.objectStore(STORE_CATEGORIES);
 
@@ -138,9 +155,9 @@ export function dbImportCategories(items, importMode) {
     });
 }
 
-export function dbGetByName(storeName, name) {
+export async function dbGetByName(storeName, name) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const index = store.index('name');
@@ -150,9 +167,9 @@ export function dbGetByName(storeName, name) {
     });
 }
 
-export function dbClear(storeName) {
+export async function dbClear(storeName) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.clear();
@@ -161,9 +178,9 @@ export function dbClear(storeName) {
     });
 }
 
-export function dbGetAll(storeName) {
+export async function dbGetAll(storeName) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.getAll();
@@ -172,9 +189,9 @@ export function dbGetAll(storeName) {
     });
 }
 
-export function dbPut(storeName, value) {
+export async function dbPut(storeName, value) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.put(value);
@@ -183,9 +200,9 @@ export function dbPut(storeName, value) {
     });
 }
 
-export function dbAdd(storeName, value) {
+export async function dbAdd(storeName, value) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.add(value);
@@ -194,9 +211,9 @@ export function dbAdd(storeName, value) {
     });
 }
 
-export function dbDelete(storeName, key) {
+export async function dbDelete(storeName, key) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.delete(key);
@@ -205,9 +222,9 @@ export function dbDelete(storeName, key) {
     });
 }
 
-export function dbCount(storeName) {
+export async function dbCount(storeName) {
+    await openDatabase();
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.count();
@@ -334,13 +351,21 @@ async function setupInitialData(languageSetting) {
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
     if (existingCategories.length === 0) {
-        for (let i = 0; i < initialCategories.length; i++) {
-            const cat = initialCategories[i];
+        const tx = db.transaction(STORE_CATEGORIES, 'readwrite');
+        const store = tx.objectStore(STORE_CATEGORIES);
+        initialCategories.forEach((cat, i) => {
             cat.order = i;
-            await dbPut(STORE_CATEGORIES, cat);
-        }
+            store.put(cat);
+        });
+        await new Promise((resolve, reject) => {
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
     } else {
         // Migration: Ensure existing categories have tags and animation if missing
+        const tx = db.transaction(STORE_CATEGORIES, 'readwrite');
+        const store = tx.objectStore(STORE_CATEGORIES);
+        let hasChanges = false;
         for (const cat of existingCategories) {
             let changed = false;
             if (cat.tags === undefined) {
@@ -354,8 +379,15 @@ async function setupInitialData(languageSetting) {
                 changed = true;
             }
             if (changed) {
-                await dbPut(STORE_CATEGORIES, cat);
+                store.put(cat);
+                hasChanges = true;
             }
+        }
+        if (hasChanges) {
+            await new Promise((resolve, reject) => {
+                tx.oncomplete = resolve;
+                tx.onerror = () => reject(tx.error);
+            });
         }
     }
 
@@ -548,9 +580,17 @@ async function generateDummyHistory() {
 async function cleanupOldLogs() {
     const cleanupThresholdTime = Date.now() - LOG_CLEANUP_THRESHOLD_MS;
     const logs = await dbGetAll(STORE_LOGS);
-    for (const log of logs) {
-        if (log.startTime < cleanupThresholdTime) {
-            await dbDelete(STORE_LOGS, log.id);
+    const toDelete = logs.filter(log => log.startTime < cleanupThresholdTime);
+
+    if (toDelete.length > 0) {
+        const tx = db.transaction(STORE_LOGS, 'readwrite');
+        const store = tx.objectStore(STORE_LOGS);
+        for (const log of toDelete) {
+            store.delete(log.id);
         }
+        await new Promise((resolve, reject) => {
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
     }
 }

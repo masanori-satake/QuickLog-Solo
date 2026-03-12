@@ -21,14 +21,32 @@ describe('DB Module', () => {
         });
     });
 
-    test('openDatabase creates stores', async () => {
+    test('openDatabase creates stores including alarms', async () => {
         const db = await openDatabase();
         expect(db.objectStoreNames.contains(STORE_LOGS)).toBe(true);
         expect(db.objectStoreNames.contains(STORE_CATEGORIES)).toBe(true);
         expect(db.objectStoreNames.contains(STORE_SETTINGS)).toBe(true);
+        expect(db.objectStoreNames.contains('alarms')).toBe(true);
     });
 
-    test('dbAdd and dbGet work correctly', async () => {
+    test('openDatabase handles connection timeout', async () => {
+        // Mock indexedDB.open to never resolve/reject
+        const originalOpen = indexedDB.open;
+        indexedDB.open = () => ({
+            onupgradeneeded: null,
+            onsuccess: null,
+            onerror: null,
+            onblocked: null
+        });
+
+        try {
+            await expect(openDatabase()).rejects.toThrow(/timeout/);
+        } finally {
+            indexedDB.open = originalOpen;
+        }
+    }, 10000);
+
+    test('dbAdd and dbGet work correctly with self-healing pattern', async () => {
         await openDatabase();
         const log = { category: 'Test', startTime: Date.now() };
         const id = await dbAdd(STORE_LOGS, log);
