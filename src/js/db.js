@@ -25,9 +25,11 @@ const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
 
 let db;
+let dbPromise = null;
 
 export function openDatabase() {
-    return new Promise((resolve, reject) => {
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
@@ -54,16 +56,21 @@ export function openDatabase() {
             db.onversionchange = () => {
                 db.close();
                 db = null;
+                dbPromise = null;
                 console.warn('Database version changed or deletion requested. Closing connection.');
             };
             resolve(db);
         };
-        request.onerror = (event) => reject(event.target.error);
+        request.onerror = (event) => {
+            dbPromise = null;
+            reject(event.target.error);
+        };
         request.onblocked = () => {
             console.warn('Database connection blocked. Please close other tabs of this app.');
             // We don't reject here because onsuccess might still fire if the user closes other tabs
         };
     });
+    return dbPromise;
 }
 
 export function dbGet(storeName, key) {
@@ -226,6 +233,7 @@ export function closeDatabase() {
         db.close();
         db = null;
     }
+    dbPromise = null;
 }
 
 export async function initDB() {
