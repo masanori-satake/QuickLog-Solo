@@ -26,6 +26,7 @@
 | 正常系 | `test_pattern_verification.spec.js` | 重ね合わせ透過度検証 | 動作確認用パターンが、UI要素の背景色（透過度）によって遮られていない |
 | 正常系 | `preview_repro.spec.js` | ランディングページ プレビュー検証 | ランディングページの iframe 内でアニメーションが正しく再生される |
 | 正常系 | `guide_verification.spec.js` | クイックガイド検証 | ガイドに表示されるキャプチャ画像が存在し、各言語で正しく表示されている |
+| 正常系 | `abnormal_import.spec.js` | 不正データインポート検証 | 破損したNDJSONや不正なフィールドを持つカテゴリデータのインポート時の挙動（バリデーションとフォールバック）を検証 |
 
 ### 2.1. ビジネスロジック (`js/logic.js`)
 
@@ -63,6 +64,7 @@
 | 正常系 | `backup.test.js` | `BackupManager` 状態遷移検証 | ディレクトリハンドルの保持、アクセス権限の有無による状態遷移が仕様通りに行われる |
 | 正常系 | `backup.test.js` | 手動バックアップ検証 | バックアップ実行時にファイルへの書き出しと最終バックアップ時刻の更新が行われる |
 | 異常系 | `abnormal_backup.test.js` | ロックされたディレクトリのハンドリング | ディレクトリがロックされている場合やアクセス権限がない場合に、適切にエラー（`backup-err-locked`）が返されることの検証 |
+| 異常系 | `abnormal_backup.test.js` | ファイル列挙エラーのハンドリング | `directoryHandle.values()` 実行中にエラーが発生した場合に適切に処理されることの検証 |
 | 正常系 | `utils.test.js` | HTML/CSV エスケープ検証 | 特殊文字が正しく変換され、XSSやCSV崩れを防止できる |
 | 正常系 | `utils.test.js` | 入力値バリデーション検証 | カテゴリ名（長さ・重複・禁止名）や色の妥当性が正確に判定される |
 | 正常系 | `utils.test.js` | 自動終了時刻の計算 | 日付を跨いだ際の 23:59:59 停止ロジックが正確に機能する |
@@ -112,3 +114,14 @@ npm run test:animation-eval
 - [開発者ガイド (README_DEV.md)](README_DEV.md)
 - [背景アニメーション・モジュール仕様書 (animation_module_spec.md)](animation_module_spec.md)
 - [AI エージェント指針 (AGENTS.md)](../AGENTS.md)
+
+---
+
+## 免責事項 (Disclaimer)
+本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
+利用に際して生じたいかなる損害（データの消失、業務の中断、PCの不具合など）についても、開発者は一切の責任を負いません。
+MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
+
+This software is a personal open-source project and is provided **"AS IS"** without warranty of any kind.
+The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from the use of this software.
+Use at your own risk, as per the MIT License.

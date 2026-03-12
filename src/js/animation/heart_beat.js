@@ -7,7 +7,7 @@ import { AnimationBase } from '../animation_base.js';
  */
 export default class HeartBeat extends AnimationBase {
     static metadata = {
-        specVersion: '1.0',
+        specVersion: '1.1',
         name: {
             en: "Heart Beat",
             ja: "ハート・ビート",

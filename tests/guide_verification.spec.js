@@ -3,7 +3,6 @@ import path from 'path';
 import fs from 'fs';
 
 const LOCALES = ['ja', 'en'];
-const IMAGE_KEYS = ['main', 'recording', 'header', 'backup'];
 const ASSET_DIR = 'src/assets/guide';
 
 test.describe('Quick Start Guide Verification', () => {

@@ -7,7 +7,7 @@ import { AnimationBase } from '../animation_base.js';
  */
 export default class OpenReel extends AnimationBase {
     static metadata = {
-        specVersion: '1.0',
+        specVersion: '1.1',
         name: {
             en: "Open Reel",
             ja: "オープン・リール",

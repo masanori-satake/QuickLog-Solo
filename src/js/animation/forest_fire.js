@@ -19,7 +19,7 @@ import { AnimationBase } from '../animation_base.js';
  */
 export default class ForestFire extends AnimationBase {
     static metadata = {
-        specVersion: '1.0',
+        specVersion: '1.1',
         name: {
             en: "Forest Fire Simulation",
             ja: "森林火災のシミュレーション"

@@ -49,7 +49,8 @@ graph TD
     Setup --> Install[依存関係のインストール<br/>npm install]
 
     subgraph "品質チェック"
-        Install --> VerCheck{バージョン整合性チェック<br/>scripts/check_version.py}
+        Install --> CleanCheck[ルートディレクトリ清掃チェック<br/>scripts/check_root_files.py]
+        CleanCheck --> VerCheck{バージョン整合性チェック<br/>scripts/check_version.py}
         VerCheck --> VerImpact{バージョン影響調査<br/>scripts/verify_version_impact.py}
         VerImpact --> Lint[静的解析<br/>ESLint / Stylelint]
     end
@@ -71,6 +72,7 @@ graph TD
 ```
 
 #### 特徴的な条件判断
+- **ルートディレクトリ清掃チェック**: 一時的なスクリプトや不正なファイルがリポジトリのルートに混入していないかを検証します。
 - **バージョンチェック**: `src/`, `tests/`, `scripts/` 等の重要ファイルに変更がある場合のみ実行。
 - **Lint/Unit Test**: 原則として変更されたファイルのみを対象に実行（`tj-actions/changed-files` を活用）。手動実行時は全ファイルを対象。
 - **E2Eテスト**: PRまたは手動実行時のみ。Push時は実行されません。
@@ -206,3 +208,14 @@ flowchart LR
 
 本ドキュメントは、GitHub Actions のワークフローファイル（`.github/workflows/*.yml`）に変更が加えられた際、または新しいワークフローが追加された際に、自律的に更新される必要があります。
 詳細は `AGENTS.md` の指示に従ってください。
+
+---
+
+## 免責事項 (Disclaimer)
+本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
+利用に際して生じたいかなる損害（データの消失、業務の中断、PCの不具合など）についても、開発者は一切の責任を負いません。
+MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
+
+This software is a personal open-source project and is provided **"AS IS"** without warranty of any kind.
+The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from the use of this software.
+Use at your own risk, as per the MIT License.

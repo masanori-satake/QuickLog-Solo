@@ -7,7 +7,7 @@ import { AnimationBase } from '../animation_base.js';
  */
 export default class NightSky extends AnimationBase {
     static metadata = {
-        specVersion: '1.0',
+        specVersion: '1.1',
         name: {
             en: "Night Sky",
             ja: "夜空",
