@@ -69,10 +69,11 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         const alarmData = alarms.find(a => a.id === alarmId);
 
         if (alarmData && alarmData.enabled) {
+            console.log(`QuickLog-Solo: Alarm fired: ${alarmData.id} - ${alarmData.message}`);
             // Show notification
             chrome.notifications.create({
                 type: 'basic',
-                iconUrl: '/assets/icon128.png',
+                iconUrl: 'assets/icon128.png',
                 title: t('title'),
                 message: alarmData.message || t('alarm-action-none'),
                 priority: 2
