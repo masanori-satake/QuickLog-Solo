@@ -11,6 +11,7 @@ export function setDatabaseName(name) {
 export const STORE_LOGS = 'logs';
 export const STORE_CATEGORIES = 'categories';
 export const STORE_SETTINGS = 'settings';
+export const STORE_ALARMS = 'alarms';
 
 export const SETTING_KEY_THEME = 'theme';
 export const SETTING_KEY_FONT = 'font';
@@ -42,6 +43,10 @@ export function openDatabase() {
 
             if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
                 db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
+            }
+
+            if (!db.objectStoreNames.contains(STORE_ALARMS)) {
+                db.createObjectStore(STORE_ALARMS, { keyPath: 'id', autoIncrement: true });
             }
         };
         request.onsuccess = (event) => {
@@ -240,6 +245,7 @@ export async function getCurrentAppState() {
     const reportSettings = await dbGet(STORE_SETTINGS, SETTING_KEY_REPORT_SETTINGS);
     const autoStop = await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP);
     const categories = await dbGetAll(STORE_CATEGORIES);
+    const alarms = await dbGetAll(STORE_ALARMS);
 
     const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
     let activeTask;
@@ -260,6 +266,7 @@ export async function getCurrentAppState() {
         reportSettings: reportSettings ? reportSettings.value : null,
         autoStop: autoStop ? autoStop.value : true,
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+        alarms: alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
         activeTask
     };
 }
@@ -427,6 +434,20 @@ async function setupInitialData(languageSetting) {
 
             orphaned.endTime = orphaned.startTime + ORPHANED_TASK_MIN_DURATION_MS;
             await dbPut(STORE_LOGS, orphaned);
+        }
+    }
+
+    // Ensure default alarms exist
+    let existingAlarms = await dbGetAll(STORE_ALARMS);
+    if (existingAlarms.length === 0) {
+        for (let i = 0; i < 5; i++) {
+            await dbAdd(STORE_ALARMS, {
+                enabled: false,
+                time: "09:00",
+                message: "",
+                action: "none", // none, stop, pause, start
+                actionCategory: ""
+            });
         }
     }
 

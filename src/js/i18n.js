@@ -12,13 +12,15 @@ let currentLanguage = 'en';
  * @returns {string}
  */
 export function detectBrowserLanguage() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const langParam = urlParams.get('lang');
-    if (langParam && messages[langParam]) {
-        return langParam;
+    if (typeof window !== 'undefined' && window.location) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+        if (langParam && messages[langParam]) {
+            return langParam;
+        }
     }
 
-    const lang = navigator.language || navigator.userLanguage;
+    const lang = (typeof navigator !== 'undefined') ? (navigator.language || navigator.userLanguage) : 'en';
     const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
     for (const prefix of prefixes) {
         if (lang.startsWith(prefix)) return prefix;

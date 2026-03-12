@@ -194,6 +194,7 @@
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="general" data-i18n="tab-general">一般</button>
                     <button class="tab-btn" data-tab="categories" data-i18n="tab-categories">カテゴリ</button>
+                    <button class="tab-btn" data-tab="alarms" data-i18n="tab-alarms">アラーム</button>
                     <button class="tab-btn" data-tab="backup" data-i18n="tab-backup">バックアップ</button>
                     <button class="tab-btn" data-tab="maintenance" data-i18n="tab-maintenance">メンテナンス</button>
                     <button class="tab-btn" data-tab="about" data-i18n="tab-about">About</button>
@@ -253,6 +254,15 @@
                             <button id="import-csv-btn" data-i18n="btn-import-csv">インポート</button>
                         </div>
                         <input type="file" id="csv-file-input" style="display:none" accept=".csv">
+                    </div>
+                </div>
+
+                <div id="alarms-tab" class="tab-content hidden">
+                    <p class="setting-description" data-i18n="alarm-setting-description">
+                        指定した時刻にメッセージを表示し、必要に応じて作業を自動的に「終了」「一時停止」「開始」します。
+                    </p>
+                    <div id="alarm-list">
+                        <!-- Alarm items added by JS -->
                     </div>
                 </div>
 
