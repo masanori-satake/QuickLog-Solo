@@ -1,7 +1,7 @@
 import {
     initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
 } from './db.js';
 import { backupManager } from './backup.js';
@@ -63,6 +63,7 @@ const ID_CONFIRM_CANCEL_BTN = 'confirm-cancel-btn';
 const ID_VERSION_DISPLAY = 'version-display';
 const ID_STATS_LOG_COUNT = 'stats-log-count';
 const ID_STATS_CATEGORY_COUNT = 'stats-category-count';
+const ID_ALARM_LIST = 'alarm-list';
 const ID_CATEGORY_EDITOR_LIST = 'category-editor-list';
 const ID_NEW_CATEGORY_NAME_SETTINGS = 'new-category-name-settings';
 const ID_COPY_REPORT_BTN = 'copy-report-btn';
@@ -548,6 +549,12 @@ function setupBroadcastChannel() {
         console.log('QuickLog-Solo: Received sync message', event.data);
         if (event.data.type === 'reload') {
             location.reload();
+        } else if (event.data.type === 'alarms-updated') {
+            // Background script handles alarm scheduling, but we might want to refresh UI if open
+            const alarmsTab = getEl('alarms-tab');
+            if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
+                renderAlarmList();
+            }
         } else if (event.data.type === 'sync') {
             // Only sync if visible to reduce CPU load as requested
             if (document.visibilityState === 'visible') {
@@ -560,6 +567,12 @@ function setupBroadcastChannel() {
 function broadcastSync(type = 'sync') {
     if (syncChannel) {
         syncChannel.postMessage({ type });
+    }
+    // Also notify background script via chrome.runtime for better reliability
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({ type }).catch(() => {
+            // Ignore errors if background script is not listening
+        });
     }
 }
 
@@ -626,6 +639,10 @@ async function syncState() {
     // Settings popup logic: Refresh content if tab is active
     const settingsPopup = getEl(ID_SETTINGS_POPUP);
     if (settingsPopup && !settingsPopup.classList.contains('hidden')) {
+            const alarmsTab = getEl('alarms-tab');
+            if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
+                await renderAlarmList();
+            }
         const categoriesTab = getEl('categories-tab');
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
             await renderCategoryEditor();
@@ -1142,6 +1159,91 @@ function showMultiChoice(message, choices) {
     });
 }
 
+// --- Alarms ---
+
+async function renderAlarmList() {
+    const list = getEl(ID_ALARM_LIST);
+    if (!list) return;
+
+    const extensionOnlyNotice = getEl('alarm-extension-notice');
+    if (extensionOnlyNotice) {
+        if (typeof chrome !== 'undefined' && chrome.alarms) {
+            extensionOnlyNotice.classList.add('hidden');
+        } else {
+            extensionOnlyNotice.classList.remove('hidden');
+        }
+    }
+
+    const categories = await dbGetAll(STORE_CATEGORIES);
+    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+    const alarms = await dbGetAll(STORE_ALARMS);
+    alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+
+    list.innerHTML = '';
+
+    alarms.forEach(alarm => {
+        const item = createEl('div');
+        item.className = 'alarm-item';
+        item.innerHTML = `
+            <div class="alarm-row">
+                <label class="alarm-enabled-label">
+                    <input type="checkbox" class="alarm-enabled" ${alarm.enabled ? 'checked' : ''}>
+                    <span data-i18n="alarm-label-enabled">${t('alarm-label-enabled')}</span>
+                </label>
+                <input type="time" class="alarm-time" value="${alarm.time || '09:00'}">
+            </div>
+            <div class="alarm-row">
+                <span class="alarm-label" data-i18n="alarm-label-message">${t('alarm-label-message')}</span>
+                <input type="text" class="alarm-message" value="${escapeHtml(alarm.message || '')}" placeholder="${t('alarm-placeholder-message')}">
+            </div>
+            <div class="alarm-row">
+                <span class="alarm-label" data-i18n="alarm-label-action">${t('alarm-label-action')}</span>
+                <select class="alarm-action">
+                    <option value="none" ${alarm.action === 'none' ? 'selected' : ''} data-i18n="alarm-action-none">${t('alarm-action-none')}</option>
+                    <option value="stop" ${alarm.action === 'stop' ? 'selected' : ''} data-i18n="alarm-action-stop">${t('alarm-action-stop')}</option>
+                    <option value="pause" ${alarm.action === 'pause' ? 'selected' : ''} data-i18n="alarm-action-pause">${t('alarm-action-pause')}</option>
+                    <option value="start" ${alarm.action === 'start' ? 'selected' : ''} data-i18n="alarm-action-start">${t('alarm-action-start')}</option>
+                </select>
+            </div>
+            <div class="alarm-row alarm-category-row ${alarm.action === 'start' ? '' : 'hidden'}">
+                <span class="alarm-label" data-i18n="alarm-label-category">${t('alarm-label-category')}</span>
+                <select class="alarm-category">
+                    ${workCategories.map(c => `<option value="${escapeHtml(c.name)}" ${alarm.actionCategory === c.name ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+                </select>
+            </div>
+        `;
+
+        const updateAlarm = async () => {
+            alarm.enabled = item.querySelector('.alarm-enabled').checked;
+            alarm.time = item.querySelector('.alarm-time').value;
+            alarm.message = item.querySelector('.alarm-message').value.trim();
+            alarm.action = item.querySelector('.alarm-action').value;
+            alarm.actionCategory = item.querySelector('.alarm-category').value;
+
+            await dbPut(STORE_ALARMS, alarm);
+
+            const catRow = item.querySelector('.alarm-category-row');
+            if (alarm.action === 'start') {
+                catRow.classList.remove('hidden');
+            } else {
+                catRow.classList.add('hidden');
+            }
+
+            // Notify background script to update alarms
+            broadcastSync('alarms-updated');
+            showToast(t('toast-alarm-saved'));
+        };
+
+        item.querySelector('.alarm-enabled').onchange = updateAlarm;
+        item.querySelector('.alarm-time').onchange = updateAlarm;
+        item.querySelector('.alarm-message').onchange = updateAlarm;
+        item.querySelector('.alarm-action').onchange = updateAlarm;
+        item.querySelector('.alarm-category').onchange = updateAlarm;
+
+        list.appendChild(item);
+    });
+}
+
 // --- Category Editor ---
 
 function getColorCode(color) {
@@ -1619,6 +1721,7 @@ function setupEventListeners() {
             btn.classList.add('active');
             const target = getEl(`${btn.dataset.tab}-tab`);
             if (target) target.classList.remove('hidden');
+            if (btn.dataset.tab === 'alarms') renderAlarmList();
             if (btn.dataset.tab === 'categories') renderCategoryEditor();
             if (btn.dataset.tab === 'backup') updateBackupUI();
             if (btn.dataset.tab === 'about') updateAboutStats();
@@ -1649,6 +1752,37 @@ function setupEventListeners() {
         await backupManager.sync();
         updateBackupUI();
         broadcastSync();
+    });
+
+    getEl('test-notification-btn')?.addEventListener('click', async () => {
+        if (typeof chrome !== 'undefined' && (chrome.notifications || chrome.alarms)) {
+            // 1. Immediate notification test
+            if (chrome.notifications) {
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: 'assets/icon128.png',
+                    title: t('title'),
+                    message: t('test-notification-message') + " (Immediate)",
+                    priority: 2
+                }, (id) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('QuickLog-Solo: Test notification failed:', chrome.runtime.lastError);
+                    }
+                });
+            }
+
+            // 2. Background alarm test (schedules an alarm for 1 minute in the future)
+            // Chrome enforces a 1-minute minimum for alarms in packed extensions to prevent abuse.
+            if (chrome.alarms) {
+                const testAlarmName = 'ql_test_alarm';
+                await chrome.alarms.clear(testAlarmName);
+                // We use exactly 1.0 minutes to ensure scheduling by the browser
+                chrome.alarms.create(testAlarmName, { delayInMinutes: 1.0 });
+                showToast("Background test scheduled. Please wait 60s.");
+            }
+        } else {
+            alert('Extension APIs not available in this environment.');
+        }
     });
 
     backupManager.onStatusChange = () => {

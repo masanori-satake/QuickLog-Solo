@@ -194,6 +194,7 @@
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="general" data-i18n="tab-general">一般</button>
                     <button class="tab-btn" data-tab="categories" data-i18n="tab-categories">カテゴリ</button>
+                    <button class="tab-btn" data-tab="alarms" data-i18n="tab-alarms">アラーム</button>
                     <button class="tab-btn" data-tab="backup" data-i18n="tab-backup">バックアップ</button>
                     <button class="tab-btn" data-tab="maintenance" data-i18n="tab-maintenance">メンテナンス</button>
                     <button class="tab-btn" data-tab="about" data-i18n="tab-about">About</button>
@@ -253,6 +254,26 @@
                             <button id="import-csv-btn" data-i18n="btn-import-csv">インポート</button>
                         </div>
                         <input type="file" id="csv-file-input" style="display:none" accept=".csv">
+                    </div>
+                </div>
+
+                <div id="alarms-tab" class="tab-content hidden">
+                    <div id="alarm-extension-notice" class="setting-item hidden" style="background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                        <p class="note" data-i18n="alarm-note-extension-only" style="font-weight: 500; margin: 0;">
+                            ※ アラーム機能はブラウザ拡張機能としてインストールされている場合のみ動作します。プレビュー版では通知や自動動作は実行されません。
+                        </p>
+                    </div>
+                    <p class="setting-description" data-i18n="alarm-setting-description">
+                        指定した時刻にメッセージを表示し、必要に応じて作業を自動的に「終了」「一時停止」「開始」します。
+                    </p>
+                    <div class="setting-item" style="margin-bottom: 16px;">
+                        <button id="test-notification-btn" class="secondary-btn" style="width: 100%;">
+                            <span class="material-symbols-outlined">notifications_active</span>
+                            <span data-i18n="btn-test-notification">通知のテストを実行する</span>
+                        </button>
+                    </div>
+                    <div id="alarm-list">
+                        <!-- Alarm items added by JS -->
                     </div>
                 </div>
 
