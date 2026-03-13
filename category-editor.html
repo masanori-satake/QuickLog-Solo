@@ -119,10 +119,10 @@
                     <div id="preview-container" class="preview-container">
                         <canvas id="animation-canvas"></canvas>
                         <div id="preview-overlay-base" class="preview-overlay-base">
-                            <h3 id="preview-name-heading"><span id="preview-name">(Category Name)</span></h3>
-                            <div class="preview-timer-box">
-                                <span class="material-symbols-outlined">play_arrow</span>
-                                <div class="preview-elapsed">00:04:20</div>
+                            <h2 id="preview-name-heading"><span id="preview-name">(Category Name)</span></h2>
+                            <div id="preview-timer-box-base" class="preview-timer-box">
+                                <span id="preview-status-label" class="material-symbols-outlined">play_arrow</span>
+                                <div id="preview-elapsed" class="preview-elapsed">00:04:20</div>
                             </div>
                         </div>
                     </div>
@@ -159,16 +159,15 @@
                         <span data-i18n="section-code-view">NDJSON View</span>
                     </button>
                     <button id="import-btn" class="secondary-btn">
-                        <span class="material-symbols-outlined">upload</span>
-                        <span data-i18n="btn-import-json">Import NDJSON</span>
+                        <span class="material-symbols-outlined">content_paste</span>
+                        <span data-i18n="btn-import-json">貼り付け (Import)</span>
                     </button>
                     <button id="export-btn" class="primary-btn">
-                        <span class="material-symbols-outlined">download</span>
-                        <span data-i18n="btn-export-json">Export NDJSON</span>
+                        <span class="material-symbols-outlined">content_copy</span>
+                        <span data-i18n="btn-export-json">コピー (Export)</span>
                     </button>
                 </div>
             </div>
-            <input type="file" id="import-input" style="display:none" accept=".ndjson">
         </footer>
     </div>
 

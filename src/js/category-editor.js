@@ -34,7 +34,6 @@ const addCategoryBtn = document.getElementById('add-category-btn');
 const addPageBreakBtn = document.getElementById('add-page-break-btn');
 const importBtn = document.getElementById('import-btn');
 const exportBtn = document.getElementById('export-btn');
-const importInput = document.getElementById('import-input');
 const newStartBtn = document.getElementById('new-start-btn');
 const clearAllBtn = document.getElementById('clear-all-btn');
 const loadBrowserBtn = document.getElementById('load-browser-btn');
@@ -167,6 +166,9 @@ function setupEventListeners() {
         // Studio style slider requires explicit class update for the body too
         document.body.classList.remove('theme-light', 'theme-dark');
         document.body.classList.add(`theme-${currentTheme}`);
+
+        // Update animation color when theme changes
+        updatePreview();
     });
 
     addCategoryBtn.addEventListener('click', () => {
@@ -242,8 +244,7 @@ function setupEventListeners() {
         // Only hide if it's the 'none' animation or something
     });
 
-    importBtn.addEventListener('click', () => importInput.click());
-    importInput.addEventListener('change', handleImport);
+    importBtn.addEventListener('click', handleImport);
     exportBtn.addEventListener('click', handleExport);
 
     newStartBtn.addEventListener('click', () => {
@@ -433,16 +434,16 @@ function updateListItem(idx) {
 }
 
 function renderDetail() {
-    const previewContainer = document.getElementById('preview-container');
     const previewOverlay = document.querySelector('.preview-overlay-base');
+    const previewContainer = document.getElementById('preview-container');
 
     if (selectedIndex === -1 || selectedIndex >= categories.length) {
         detailSection.classList.remove('hidden');
         previewNameEl.textContent = '';
         animationEngine.stop();
         animInfoEl.classList.add('hidden');
-        previewContainer.className = 'preview-container';
         previewOverlay.className = 'preview-overlay-base';
+        previewContainer.classList.remove('anim-active');
         return;
     }
 
@@ -454,6 +455,8 @@ function renderDetail() {
         previewNameEl.textContent = `--- ${t('page-break-label')} ---`;
         updatePreview();
         animInfoEl.classList.add('hidden');
+        previewOverlay.className = 'preview-overlay-base';
+        previewContainer.classList.remove('anim-active');
         return;
     }
 
@@ -467,8 +470,11 @@ function renderDetail() {
 
     // Update preview theme classes
     const colorClass = `cat-${cat.color || 'primary'}`;
-    previewContainer.className = `preview-container ${colorClass} anim-active`;
-    previewOverlay.className = `preview-overlay-base ${colorClass} anim-active`;
+    const animation = cat.animation || 'default';
+    const animActive = animation !== 'none';
+
+    previewOverlay.className = `preview-overlay-base ${colorClass}` + (animActive ? ' anim-active' : '');
+    previewContainer.classList.toggle('anim-active', animActive);
 
     updatePreview();
 }
@@ -590,34 +596,43 @@ function updatePreview() {
     }
     const cat = categories[selectedIndex];
     const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+    const animation = cat.animation || 'default';
 
-    if (isPageBreak) {
+    if (isPageBreak || animation === 'none') {
         animationEngine.stop();
         return;
     }
 
-    const color = COLOR_CODES[cat.color || 'primary'];
-    const animation = cat.animation || 'default';
+    // Use theme-aware color from CSS variables
+    const colorKey = cat.color || 'primary';
+    const computedStyle = getComputedStyle(document.body);
+    const color = computedStyle.getPropertyValue(`--custom-cat-${colorKey}`).trim() || COLOR_CODES[colorKey];
 
     // Set exclusion areas to match sidebar behavior
     const canvasRect = animationEngine.canvas.getBoundingClientRect();
-    const nameRect = document.getElementById('preview-name-heading').getBoundingClientRect();
-    const timerRect = document.querySelector('.preview-timer-box').getBoundingClientRect();
 
-    const padding = 12;
-    // For small viewport/preview, ensure it doesn't break if elements have 0 size (hidden)
-    const x1 = Math.min(nameRect.left || Infinity, timerRect.left || Infinity) - canvasRect.left - padding;
-    const y1 = Math.min(nameRect.top || Infinity, timerRect.top || Infinity) - canvasRect.top - padding;
-    const x2 = Math.max(nameRect.right || 0, timerRect.right || 0) - canvasRect.left + padding;
-    const y2 = Math.max(nameRect.bottom || 0, timerRect.bottom || 0) - canvasRect.top + padding;
+    const exclusionAreas = [];
+    const paddingX = 4;
+    const paddingY = 2;
 
-    animationEngine.setExclusionAreas([{
-        x: x1,
-        y: y1,
-        width: x2 - x1,
-        height: y2 - y1
-    }]);
+    const nameHeading = document.getElementById('preview-name-heading');
+    const timerBox = document.getElementById('preview-timer-box-base');
 
+    [nameHeading, timerBox].forEach(el => {
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                exclusionAreas.push({
+                    x: rect.left - canvasRect.left - paddingX,
+                    y: rect.top - canvasRect.top - paddingY,
+                    width: rect.width + (paddingX * 2),
+                    height: rect.height + (paddingY * 2)
+                });
+            }
+        }
+    });
+
+    animationEngine.setExclusionAreas(exclusionAreas);
     animationEngine.start(animation === 'default' ? 'digital_rain' : animation, Date.now(), color);
 }
 
@@ -634,12 +649,11 @@ function updateCodeView() {
     codeViewEl.textContent = ndjson;
 }
 
-async function handleImport(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
+async function handleImport() {
     try {
-        const text = await file.text();
+        const text = await navigator.clipboard.readText();
+        if (!text) return;
+
         const lines = text.split('\n').filter(l => l.trim());
         const imported = lines.map(l => {
             const data = JSON.parse(l);
@@ -657,12 +671,15 @@ async function handleImport(e) {
         showToast(t('toast-import-success'));
     } catch (err) {
         console.error(err);
-        showToast(t('toast-import-failed'));
+        if (err.name === 'NotAllowedError') {
+             console.warn('Clipboard access denied');
+        } else {
+             showToast(t('toast-import-failed'));
+        }
     }
-    importInput.value = '';
 }
 
-function handleExport() {
+async function handleExport() {
     if (categories.length === 0) {
         showToast(t('toast-no-categories'));
         return;
@@ -677,14 +694,12 @@ function handleExport() {
         return JSON.stringify(item);
     }).join('\n');
 
-    const blob = new Blob([ndjson], { type: 'application/x-ndjson' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `quicklog_categories_${new Date().toISOString().slice(0, 10)}.ndjson`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast(t('toast-export-success'));
+    try {
+        await navigator.clipboard.writeText(ndjson);
+        showToast(t('toast-export-success'));
+    } catch (err) {
+        console.error('Failed to copy categories:', err);
+    }
 }
 
 async function handleLoadFromBrowser() {
