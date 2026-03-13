@@ -615,10 +615,11 @@ function updatePreview() {
     const paddingX = 4;
     const paddingY = 2;
 
-    const nameHeading = document.getElementById('preview-name-heading');
-    const timerBox = document.getElementById('preview-timer-box-base');
+    const previewName = document.getElementById('preview-name');
+    const timerLabel = document.getElementById('preview-status-label');
+    const timerElapsed = document.getElementById('preview-elapsed');
 
-    [nameHeading, timerBox].forEach(el => {
+    [previewName, timerLabel, timerElapsed].forEach(el => {
         if (el) {
             const rect = el.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {

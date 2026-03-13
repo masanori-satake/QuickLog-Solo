@@ -434,17 +434,19 @@ input[type="text"]:focus, select:focus {
     position: relative;
     width: 100%;
     height: 80px;
-    border: none;
+    border: 1px solid var(--md-sys-color-outline-variant);
     background-color: var(--md-sys-color-surface-container-high);
     border-radius: var(--md-sys-shape-medium);
     overflow: hidden;
     box-shadow: var(--md-sys-elevation-1);
     flex-shrink: 0;
+    margin-top: 8px;
 }
 
 .preview-container.anim-active {
     background-color: transparent !important;
     box-shadow: none;
+    border-color: var(--md-sys-color-outline);
 }
 
 #animation-canvas {
@@ -501,7 +503,8 @@ input[type="text"]:focus, select:focus {
     line-height: 1.2;
     margin-bottom: var(--md-sys-spacing-0-5);
     text-align: center;
-    width: 100%;
+    width: fit-content;
+    max-width: 90%;
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
