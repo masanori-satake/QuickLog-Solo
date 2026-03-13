@@ -27,11 +27,19 @@ body {
     height: var(--header-height);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
     background-color: var(--md-sys-color-surface-container);
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
     z-index: 100;
+    padding: 0 24px;
+}
+
+.header-content-wrapper {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .header-left {
@@ -68,8 +76,16 @@ body {
 .editor-main {
     flex: 1;
     display: flex;
+    justify-content: center;
     overflow: hidden;
     background-color: var(--md-sys-color-surface);
+}
+
+.main-content-wrapper {
+    max-width: 1200px;
+    width: 100%;
+    display: flex;
+    overflow: hidden;
 }
 
 .list-pane {
@@ -139,13 +155,25 @@ body {
     background-color: var(--md-sys-color-surface-container-highest);
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.2s;
+    transition: all 0.2s;
     gap: 12px;
     border: 2px solid transparent;
+    position: relative;
 }
 
 .category-item:hover {
     background-color: var(--md-sys-color-surface-variant);
+}
+
+.delete-item-btn {
+    opacity: 0;
+    position: absolute;
+    right: 8px;
+    transition: opacity 0.2s;
+}
+
+.category-item:hover .delete-item-btn {
+    opacity: 1;
 }
 
 .category-item.active {
@@ -178,12 +206,17 @@ body {
 }
 
 .category-item.page-break {
-    background-color: var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container);
     height: 40px;
     justify-content: center;
     border-style: dashed;
     border-width: 1px;
     border-color: var(--md-sys-color-outline);
+}
+
+.category-item.page-break:hover {
+    background-color: var(--md-sys-color-error-container);
+    border-color: var(--md-sys-color-error);
 }
 
 .category-item.page-break .cat-name {
@@ -259,6 +292,19 @@ input[type="text"]:focus, select:focus {
     cursor: pointer;
     border: 2px solid transparent;
     transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.color-option .material-symbols-outlined {
+    font-size: 16px;
+    opacity: 0;
+}
+
+.color-option.selected .material-symbols-outlined {
+    opacity: 1;
 }
 
 .color-option:hover {
@@ -267,7 +313,6 @@ input[type="text"]:focus, select:focus {
 
 .color-option.selected {
     border-color: var(--md-sys-color-on-surface);
-    box-shadow: 0 0 0 2px var(--md-sys-color-surface);
 }
 
 /* Tag Editor */
@@ -316,11 +361,12 @@ input[type="text"]:focus, select:focus {
 /* Preview */
 .preview-container {
     position: relative;
-    width: 100%;
+    width: 400px;
     height: 120px;
     border-radius: 12px;
     overflow: hidden;
     background-color: #000;
+    margin: 0 auto;
 }
 
 #animation-canvas {
@@ -328,25 +374,44 @@ input[type="text"]:focus, select:focus {
     height: 100%;
 }
 
-.preview-overlay {
+.preview-overlay-base {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
+    z-index: 1;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
+    padding: 8px;
     pointer-events: none;
 }
 
-.category-preview-badge {
-    padding: 8px 16px;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    border-radius: 20px;
-    color: #fff;
+#preview-name-heading {
+    font-size: 1rem;
     font-weight: 500;
+    text-shadow: 0 0 4px #000;
+    line-height: 1.2;
+    margin: 0 0 4px 0;
+    color: #fff;
+}
+
+.preview-timer-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    text-shadow: 0 0 4px #000;
+}
+
+.preview-timer-box .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
+.preview-elapsed {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Roboto Mono', 'Courier New', monospace;
+    line-height: 1;
 }
 
 /* Code View */
@@ -392,15 +457,28 @@ input[type="text"]:focus, select:focus {
     height: var(--footer-height);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
     background-color: var(--md-sys-color-surface-container);
     border-top: 1px solid var(--md-sys-color-outline-variant);
+    padding: 0 24px;
+}
+
+.footer-content-wrapper {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .footer-left, .footer-right {
     display: flex;
     gap: 12px;
+}
+
+.list-footer-actions {
+    padding: 16px;
+    margin-top: auto;
 }
 
 /* Toast */

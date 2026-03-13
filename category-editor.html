@@ -22,48 +22,56 @@
     </script>
     <div id="editor-app">
         <header class="editor-header">
-            <div class="header-left">
-                <a href="index.html" class="back-link" data-i18n-title="back-to-landing">
-                    <span class="material-symbols-outlined">arrow_back</span>
-                </a>
-                <h1 id="editor-title-heading"><span class="material-symbols-outlined">edit_note</span> <span data-i18n="category-editor-title">QL-Category Editor</span></h1>
-                <div class="theme-switch-wrapper">
-                    <span class="material-symbols-outlined">light_mode</span>
-                    <label class="theme-switch" for="theme-toggle">
-                        <input type="checkbox" id="theme-toggle" />
-                        <div class="slider round"></div>
-                    </label>
-                    <span class="material-symbols-outlined">dark_mode</span>
+            <div class="header-content-wrapper">
+                <div class="header-left">
+                    <a href="index.html" class="back-link" data-i18n-title="back-to-landing">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </a>
+                    <h1 id="editor-title-heading"><span class="material-symbols-outlined">edit_note</span> <span data-i18n="category-editor-title">QL-Category Editor</span></h1>
+                    <div class="theme-switch-wrapper">
+                        <span class="material-symbols-outlined">light_mode</span>
+                        <label class="theme-switch" for="theme-toggle">
+                            <input type="checkbox" id="theme-toggle" />
+                            <div class="slider round"></div>
+                        </label>
+                        <span class="material-symbols-outlined">dark_mode</span>
+                    </div>
                 </div>
-            </div>
-            <div class="header-right">
-                <div class="lang-switcher">
-                    <select id="lang-select-editor" class="lang-select">
-                        <option value="en" data-i18n="lang-en-native">🇺🇸 English</option>
-                        <option value="ja" data-i18n="lang-ja-native">🇯🇵 日本語</option>
-                        <option value="de" data-i18n="lang-de-native">🇩🇪 Deutsch</option>
-                        <option value="es" data-i18n="lang-es-native">🇪🇸 Español</option>
-                        <option value="fr" data-i18n="lang-fr-native">🇫🇷 Français</option>
-                        <option value="pt" data-i18n="lang-pt-native">🇧🇷 Português</option>
-                        <option value="ko" data-i18n="lang-ko-native">🇰🇷 한국어</option>
-                        <option value="zh" data-i18n="lang-zh-native">🇨🇳 简体中文</option>
-                    </select>
+                <div class="header-right">
+                    <div class="lang-switcher">
+                        <select id="lang-select-editor" class="lang-select">
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                            <option value="de">Deutsch</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                            <option value="pt">Português</option>
+                            <option value="ko">한국어</option>
+                            <option value="zh">简体中文</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </header>
 
         <main class="editor-main">
+            <div class="main-content-wrapper">
             <div class="list-pane">
                 <section class="category-list-section card">
                     <div class="section-header">
                         <h2 class="section-title"><span class="material-symbols-outlined">list</span> <span data-i18n="tab-categories">Categories</span></h2>
                         <div class="header-actions">
                             <button id="add-category-btn" class="icon-btn" data-i18n-title="placeholder-new-category"><span class="material-symbols-outlined">add</span></button>
-                            <button id="add-page-break-btn" class="icon-btn" data-i18n-title="btn-add-page-break"><span class="material-symbols-outlined">insert_page_break</span></button>
                         </div>
                     </div>
                     <div id="category-list" class="category-list">
                         <!-- Category items will be populated here -->
+                    </div>
+                    <div class="list-footer-actions">
+                        <button id="add-page-break-btn" class="tertiary-btn full-width">
+                            <span class="material-symbols-outlined">insert_page_break</span>
+                            <span data-i18n="btn-add-page-break">Add Page Break</span>
+                        </button>
                     </div>
                 </section>
             </div>
@@ -104,9 +112,11 @@
                     <h2 class="section-title"><span class="material-symbols-outlined">visibility</span> <span data-i18n="section-preview">Preview</span></h2>
                     <div id="preview-container" class="preview-container">
                         <canvas id="animation-canvas"></canvas>
-                        <div id="preview-overlay" class="preview-overlay">
-                            <div class="category-preview-badge">
-                                <span id="preview-name">(Category Name)</span>
+                        <div id="preview-overlay-base" class="preview-overlay-base">
+                            <h3 id="preview-name-heading"><span id="preview-name">(Category Name)</span></h3>
+                            <div class="preview-timer-box">
+                                <span class="material-symbols-outlined">play_arrow</span>
+                                <div class="preview-elapsed">00:04:20</div>
                             </div>
                         </div>
                     </div>
@@ -124,28 +134,31 @@
                     </div>
                 </section>
             </div>
+            </div>
         </main>
 
         <footer class="editor-footer">
-            <div class="footer-left">
-                <button id="new-start-btn" class="secondary-btn">
-                    <span class="material-symbols-outlined">auto_awesome</span>
-                    <span data-i18n="btn-new-start">Start from Default</span>
-                </button>
-                <button id="clear-all-btn" class="tertiary-btn">
-                    <span class="material-symbols-outlined">delete_sweep</span>
-                    <span data-i18n="btn-clear-all">Clear All</span>
-                </button>
-            </div>
-            <div class="footer-right">
-                <button id="import-btn" class="secondary-btn">
-                    <span class="material-symbols-outlined">upload</span>
-                    <span data-i18n="btn-import-json">Import NDJSON</span>
-                </button>
-                <button id="export-btn" class="primary-btn">
-                    <span class="material-symbols-outlined">download</span>
-                    <span data-i18n="btn-export-json">Export NDJSON</span>
-                </button>
+            <div class="footer-content-wrapper">
+                <div class="footer-left">
+                    <button id="new-start-btn" class="secondary-btn">
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        <span data-i18n="btn-new-start">Start from Default</span>
+                    </button>
+                    <button id="clear-all-btn" class="tertiary-btn">
+                        <span class="material-symbols-outlined">delete_sweep</span>
+                        <span data-i18n="btn-clear-all">Clear All</span>
+                    </button>
+                </div>
+                <div class="footer-right">
+                    <button id="import-btn" class="secondary-btn">
+                        <span class="material-symbols-outlined">upload</span>
+                        <span data-i18n="btn-import-json">Import NDJSON</span>
+                    </button>
+                    <button id="export-btn" class="primary-btn">
+                        <span class="material-symbols-outlined">download</span>
+                        <span data-i18n="btn-export-json">Export NDJSON</span>
+                    </button>
+                </div>
             </div>
             <input type="file" id="import-input" style="display:none" accept=".ndjson">
         </footer>

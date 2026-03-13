@@ -14,6 +14,7 @@ let animationEngine = null;
 let currentTheme = 'dark';
 
 // DOM Elements
+const mainContentWrapper = document.querySelector('.main-content-wrapper');
 const categoryListEl = document.getElementById('category-list');
 const detailSection = document.getElementById('detail-section');
 const editNameInput = document.getElementById('edit-name');
@@ -81,6 +82,7 @@ function init() {
     loadDefaultCategories();
 }
 
+
 function setupTheme() {
     const savedTheme = localStorage.getItem('category-editor-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -95,13 +97,20 @@ function applyTheme() {
 }
 
 function setupLanguage() {
-    const userLang = navigator.language || navigator.userLanguage;
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
     const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh', 'en'];
     let matched = 'en';
-    for (const prefix of prefixes) {
-        if (userLang.startsWith(prefix)) {
-            matched = prefix;
-            break;
+
+    if (langParam && prefixes.includes(langParam)) {
+        matched = langParam;
+    } else {
+        const userLang = navigator.language || navigator.userLanguage;
+        for (const prefix of prefixes) {
+            if (userLang.startsWith(prefix)) {
+                matched = prefix;
+                break;
+            }
         }
     }
     currentLang = matched;
@@ -149,6 +158,10 @@ function setupEventListeners() {
         currentTheme = themeToggle.checked ? 'dark' : 'light';
         localStorage.setItem('category-editor-theme', currentTheme);
         applyTheme();
+
+        // Studio style slider requires explicit class update for the body too
+        document.body.classList.remove('theme-light', 'theme-dark');
+        document.body.classList.add(`theme-${currentTheme}`);
     });
 
     addCategoryBtn.addEventListener('click', () => {
@@ -163,17 +176,23 @@ function setupEventListeners() {
         renderCategoryList();
         renderDetail();
         updateCodeView();
+
+        // Scroll to bottom
+        categoryListEl.scrollTop = categoryListEl.scrollHeight;
     });
 
     addPageBreakBtn.addEventListener('click', () => {
         const newPB = {
-            name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}`
+            name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
         categories.push(newPB);
         selectedIndex = categories.length - 1;
         renderCategoryList();
         renderDetail();
         updateCodeView();
+
+        // Scroll to bottom
+        categoryListEl.scrollTop = categoryListEl.scrollHeight;
     });
 
     editNameInput.addEventListener('input', (e) => {
@@ -311,6 +330,28 @@ function renderCategoryList() {
             item.appendChild(nameSpan);
         }
 
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'icon-btn delete-item-btn';
+        const deleteIcon = document.createElement('span');
+        deleteIcon.className = 'material-symbols-outlined';
+        deleteIcon.textContent = 'delete';
+        deleteBtn.appendChild(deleteIcon);
+        deleteBtn.title = t('delete');
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            const confirmMsg = isPageBreak ? t('confirm-delete-page-break') : t('confirm-delete-category', { name: cat.name });
+            if (confirm(confirmMsg)) {
+                categories.splice(idx, 1);
+                if (selectedIndex === idx) selectedIndex = -1;
+                else if (selectedIndex > idx) selectedIndex--;
+                renderCategoryList();
+                renderDetail();
+                updateCodeView();
+            }
+        };
+        item.appendChild(deleteBtn);
+
         item.onclick = () => {
             selectedIndex = idx;
             renderCategoryList();
@@ -404,6 +445,12 @@ function renderColorPalette() {
         opt.className = 'color-option';
         opt.style.backgroundColor = COLOR_CODES[color];
         opt.dataset.color = color;
+
+        const check = document.createElement('span');
+        check.className = 'material-symbols-outlined';
+        check.textContent = 'check';
+        opt.appendChild(check);
+
         opt.onclick = () => {
             if (selectedIndex === -1) return;
             categories[selectedIndex].color = color;
@@ -439,6 +486,7 @@ function populateAnimationOptions() {
     editAnimationSelect.appendChild(defOpt);
 
     animationRegistry.forEach(anim => {
+        if (anim.devOnly) return; // Skip devOnly animations
         const opt = document.createElement('option');
         opt.value = anim.id;
         opt.textContent = (typeof anim.metadata.name === 'object' ? (anim.metadata.name[currentLang] || anim.metadata.name['en']) : anim.metadata.name) || anim.id;
@@ -449,6 +497,7 @@ function populateAnimationOptions() {
 }
 
 function updatePreview() {
+    if (!animationEngine) return;
     if (selectedIndex === -1) {
         animationEngine.stop();
         return;
@@ -463,6 +512,24 @@ function updatePreview() {
 
     const color = COLOR_CODES[cat.color || 'primary'];
     const animation = cat.animation || 'default';
+
+    // Set exclusion areas to match sidebar behavior
+    // The canvas size might be updated asynchronously after start/resize,
+    // so we calculate based on current dimensions.
+    const canvasWidth = animationEngine.canvas.width;
+    const canvasHeight = animationEngine.canvas.height;
+
+    // In QuickLog-Solo, the FG area is roughly the middle 70-80px height
+    // and centered.
+    const badgeWidth = 300;
+    const badgeHeight = 70;
+
+    animationEngine.setExclusionAreas([{
+        x: (canvasWidth - badgeWidth) / 2,
+        y: (canvasHeight - badgeHeight) / 2,
+        width: badgeWidth,
+        height: badgeHeight
+    }]);
 
     animationEngine.start(animation === 'default' ? 'digital_rain' : animation, Date.now(), color);
 }
@@ -490,7 +557,7 @@ async function handleImport(e) {
         const imported = lines.map(l => {
             const data = JSON.parse(l);
             if (data.type === 'page-break') {
-                return { name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random()}` };
+                return { name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` };
             }
             return data;
         });
