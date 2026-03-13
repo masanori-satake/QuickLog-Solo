@@ -52,6 +52,9 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
+      - name: Install Python Playwright
+        run: pip install playwright
+
       - name: Build packages
         run: npm run build
 

@@ -104,8 +104,9 @@ graph TD
 
 ```mermaid
 graph TD
-    Start([トリガー: animationパスへのPR/Dispatch]) --> Setup[環境セットアップ<br/>Node.js / Python / Playwright]
-    Setup --> Server[ローカルサーバー起動]
+    Start([トリガー: animationパスへのPR/Dispatch]) --> Setup[環境セットアップ<br/>Node.js / Python]
+    Setup --> Playwright[Playwrightブラウザのセットアップ]
+    Playwright --> Server[ローカルサーバー起動]
     Server --> Eval[品質評価実行<br/>npm run test:animation-eval]
     Eval --> Result{評価基準をクリア?}
     Result -- Yes --> Pass([合格])
@@ -138,8 +139,9 @@ graph TD
 ```mermaid
 graph TD
     Start([トリガー: Push/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
-    Checkout --> Setup[環境セットアップ<br/>Node.js / Playwright]
-    Setup --> Update[画像更新実行<br/>npm run update-guide-images]
+    Checkout --> Setup[環境セットアップ<br/>Node.js]
+    Setup --> Playwright[Playwrightブラウザのセットアップ]
+    Playwright --> Update[画像更新実行<br/>npm run update-guide-images]
     Update --> Commit[変更をコミット & プッシュ<br/>git-auto-commit-action]
     Commit --> End([完了])
 
@@ -148,12 +150,15 @@ graph TD
 
 ### 6. Auto Release (`release.yml`)
 
+Pythonスクリプトによるアイコン生成 (`generate_png_icons.py`) のため、Node.js版のPlaywrightがインストールしたブラウザを共有する形で、Python版のPlaywrightライブラリを `pip` でインストール・セットアップします。
+
 #### フローチャート
 
 ```mermaid
 graph TD
-    Start([トリガー: v*.*.* タグのPush]) --> Setup[環境セットアップ]
-    Setup --> Build[ビルド実行<br/>npm run build]
+    Start([トリガー: v*.*.* タグのPush]) --> Setup[環境セットアップ<br/>Node.js / Python]
+    Setup --> Playwright[Playwrightブラウザ & <br/>Pythonライブラリのセットアップ]
+    Playwright --> Build[ビルド実行<br/>npm run build]
     Build --> Release[GitHub Release作成<br/>アセットのアップロード]
     Release --> End([完了])
 
