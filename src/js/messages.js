@@ -317,7 +317,15 @@ export const messages = {
         'toast-import-failed': 'インポートに失敗しました：無効な形式です',
         'toast-export-success': 'エクスポートに成功しました',
         'toast-no-categories': 'エクスポートするカテゴリがありません',
-        'page-break-label': '改ページ'
+        'page-break-label': '改ページ',
+        'btn-load-browser': 'ブラウザから読み込む',
+        'btn-save-browser': 'ブラウザに保存する',
+        'confirm-save-browser': '現在の編集内容をブラウザの設定（IndexedDB）に保存します。既存のカテゴリ設定は上書きされます。よろしいですか？',
+        'confirm-load-browser': 'ブラウザの設定（IndexedDB）からカテゴリを読み込みます。現在の変更は失われます。よろしいですか？',
+        'toast-save-browser-success': 'ブラウザへの保存が完了しました',
+        'toast-save-browser-failed': '保存に失敗しました',
+        'toast-load-browser-success': 'ブラウザからの読み込みが完了しました',
+        'toast-load-browser-failed': '読み込みに失敗しました'
     },
     en: {
         // UI Header & Sections
@@ -622,7 +630,15 @@ export const messages = {
         'toast-import-failed': 'Import failed: Invalid format',
         'toast-export-success': 'Export successful',
         'toast-no-categories': 'No categories to export',
-        'page-break-label': 'Page Break'
+        'page-break-label': 'Page Break',
+        'btn-load-browser': 'Load from Browser',
+        'btn-save-browser': 'Save to Browser',
+        'confirm-save-browser': 'Save current categories to browser storage (IndexedDB)? Existing categories will be overwritten.',
+        'confirm-load-browser': 'Load categories from browser storage (IndexedDB)? Current changes will be lost.',
+        'toast-save-browser-success': 'Saved to browser successfully',
+        'toast-save-browser-failed': 'Failed to save to browser',
+        'toast-load-browser-success': 'Loaded from browser successfully',
+        'toast-load-browser-failed': 'Failed to load from browser'
     },
     de: {
         'title': 'QuickLog-Solo',
@@ -905,7 +921,15 @@ export const messages = {
         'toast-import-failed': 'Import fehlgeschlagen: Ungültiges Format',
         'toast-export-success': 'Export erfolgreich',
         'toast-no-categories': 'Keine Kategorien zum Exportieren',
-        'page-break-label': 'Seitenumbruch'
+        'page-break-label': 'Seitenumbruch',
+        'btn-load-browser': 'Vom Browser laden',
+        'btn-save-browser': 'Im Browser speichern',
+        'confirm-save-browser': 'Aktuelle Kategorien im Browser-Speicher (IndexedDB) speichern? Bestehende Kategorien werden überschrieben.',
+        'confirm-load-browser': 'Kategorien aus dem Browser-Speicher (IndexedDB) laden? Aktuelle Änderungen gehen verloren.',
+        'toast-save-browser-success': 'Erfolgreich im Browser gespeichert',
+        'toast-save-browser-failed': 'Speichern im Browser fehlgeschlagen',
+        'toast-load-browser-success': 'Erfolgreich vom Browser geladen',
+        'toast-load-browser-failed': 'Laden vom Browser fehlgeschlagen'
     },
     es: {
         'title': 'QuickLog-Solo',
@@ -1188,7 +1212,15 @@ export const messages = {
         'toast-import-failed': 'Error al importar: formato no válido',
         'toast-export-success': 'Exportación exitosa',
         'toast-no-categories': 'No hay categorías para exportar',
-        'page-break-label': 'Salto de página'
+        'page-break-label': 'Salto de página',
+        'btn-load-browser': 'Cargar desde el navegador',
+        'btn-save-browser': 'Guardar en el navegador',
+        'confirm-save-browser': '¿Guardar categorías actuales en el almacenamiento del navegador (IndexedDB)? Se sobrescribirán las categorías existentes.',
+        'confirm-load-browser': '¿Cargar categorías desde el almacenamiento del navegador (IndexedDB)? Los cambios actuales se perderán.',
+        'toast-save-browser-success': 'Guardado en el navegador con éxito',
+        'toast-save-browser-failed': 'Error al guardar en el navegador',
+        'toast-load-browser-success': 'Cargado desde el navegador con éxito',
+        'toast-load-browser-failed': 'Error al cargar desde el navegador'
     },
     fr: {
         'title': 'QuickLog-Solo',
@@ -1471,7 +1503,15 @@ export const messages = {
         'toast-import-failed': 'Échec de l\'importation : format non valide',
         'toast-export-success': 'Exportation réussie',
         'toast-no-categories': 'Aucune catégorie à exporter',
-        'page-break-label': 'Saut de page'
+        'page-break-label': 'Saut de page',
+        'btn-load-browser': 'Charger depuis le navigateur',
+        'btn-save-browser': 'Enregistrer dans le navigateur',
+        'confirm-save-browser': 'Enregistrer les catégories actuelles dans le stockage du navigateur (IndexedDB) ? Les catégories existantes seront écrasées.',
+        'confirm-load-browser': 'Charger les catégories depuis le stockage du navigateur (IndexedDB) ? Les modifications actuelles seront perdues.',
+        'toast-save-browser-success': 'Enregistré dans le navigateur avec succès',
+        'toast-save-browser-failed': 'Échec de l\'enregistrement dans le navigateur',
+        'toast-load-browser-success': 'Chargé depuis le navigateur avec succès',
+        'toast-load-browser-failed': 'Échec du chargement depuis le navigateur'
     },
     pt: {
         'title': 'QuickLog-Solo',
@@ -1754,7 +1794,15 @@ export const messages = {
         'toast-import-failed': 'Falha na importação: formato inválido',
         'toast-export-success': 'Exportação bem-sucedida',
         'toast-no-categories': 'Nenhuma categoria para exportar',
-        'page-break-label': 'Quebra de página'
+        'page-break-label': 'Quebra de página',
+        'btn-load-browser': 'Carregar do navegador',
+        'btn-save-browser': 'Salvar no navegador',
+        'confirm-save-browser': 'Salvar as categorias atuais no armazenamento do navegador (IndexedDB)? As categorias existentes serão substituídas.',
+        'confirm-load-browser': 'Carregar categorias do armazenamento do navegador (IndexedDB)? As alterações atuais serão perdidas.',
+        'toast-save-browser-success': 'Salvo no navegador com sucesso',
+        'toast-save-browser-failed': 'Falha ao salvar no navegador',
+        'toast-load-browser-success': 'Carregado do navegador com sucesso',
+        'toast-load-browser-failed': 'Falha ao carregar do navegador'
     },
     ko: {
         'title': 'QuickLog-Solo',
@@ -2026,7 +2074,7 @@ export const messages = {
         'btn-clear-console': '콘솔 지우기',
 
         // Category Editor
-        'category-editor-title': '업무 카테고리 에ディ터',
+        'category-editor-title': '업무 카테고리 에디터',
         'category-detail': '카테고리 상세',
         'section-code-view': 'NDJSON 뷰',
         'btn-new-start': '기본 세트에서 시작',
@@ -2037,7 +2085,15 @@ export const messages = {
         'toast-import-failed': '가져오기 실패: 잘못된 형식',
         'toast-export-success': '내보내기 성공',
         'toast-no-categories': '내보낼 카테고리가 없습니다',
-        'page-break-label': '페이지 나누기'
+        'page-break-label': '페이지 나누기',
+        'btn-load-browser': '브라우저에서 불러오기',
+        'btn-save-browser': '브라우저에 저장하기',
+        'confirm-save-browser': '현재 편집 내용을 브라우저 설정(IndexedDB)에 저장하시겠습니까? 기존 카테고리 설정은 덮어씌워집니다.',
+        'confirm-load-browser': '브라우저 설정(IndexedDB)에서 카테고리를 불러오시겠습니까? 현재 변경 사항은 삭제됩니다.',
+        'toast-save-browser-success': '브라우저에 저장되었습니다',
+        'toast-save-browser-failed': '저장에 실패했습니다',
+        'toast-load-browser-success': '브라우저에서 불러왔습니다',
+        'toast-load-browser-failed': '불러오기에 실패했습니다'
     },
     zh: {
         'title': 'QuickLog-Solo',
@@ -2320,6 +2376,14 @@ export const messages = {
         'toast-import-failed': '导入失败：格式无效',
         'toast-export-success': '导出成功',
         'toast-no-categories': '没有可导出的分类',
-        'page-break-label': '换页'
+        'page-break-label': '换页',
+        'btn-load-browser': '从浏览器加载',
+        'btn-save-browser': '保存到浏览器',
+        'confirm-save-browser': '是否将当前分类保存到浏览器存储 (IndexedDB)？现有分类将被覆盖。',
+        'confirm-load-browser': '是否从浏览器存储 (IndexedDB) 加载分类？当前更改将丢失。',
+        'toast-save-browser-success': '已成功保存到浏览器',
+        'toast-save-browser-failed': '保存到浏览器失败',
+        'toast-load-browser-success': '已成功从浏览器加载',
+        'toast-load-browser-failed': '从浏览器加载失败'
     }
 };

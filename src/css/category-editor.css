@@ -182,8 +182,19 @@ body {
 }
 
 .category-item.dragging {
-    opacity: 0.5;
-    background-color: var(--md-sys-color-primary-container);
+    opacity: 0.4;
+    background-color: var(--md-sys-color-surface-variant);
+    border: 2px dashed var(--md-sys-color-outline);
+}
+
+.drop-indicator {
+    height: 4px;
+    background-color: var(--md-sys-color-primary);
+    border-radius: 2px;
+    margin: -2px 0;
+    pointer-events: none;
+    z-index: 10;
+    transition: transform 0.1s ease;
 }
 
 .category-item .drag-handle {
@@ -542,6 +553,14 @@ input[type="text"]:focus, select:focus {
 .footer-left, .footer-right {
     display: flex;
     gap: 12px;
+    align-items: center;
+}
+
+.footer-divider {
+    width: 1px;
+    height: 32px;
+    background-color: var(--md-sys-color-outline-variant);
+    margin: 0 4px;
 }
 
 .list-footer-actions {
@@ -668,6 +687,9 @@ input:checked + .slider::before {
     border: 1px solid var(--md-sys-color-outline);
 }
 
-.primary-btn:hover { background-color: var(--md-sys-color-primary-hover); }
-.secondary-btn:hover { background-color: var(--md-sys-color-secondary-container-hover); }
+.primary-btn:hover { filter: brightness(1.2); }
+.secondary-btn:hover { filter: brightness(0.9); }
 .tertiary-btn:hover { background-color: var(--md-sys-color-surface-container-highest); }
+
+body.theme-light .primary-btn:hover { filter: brightness(0.9); }
+body.theme-light .secondary-btn:hover { filter: brightness(0.95); }

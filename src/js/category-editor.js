@@ -5,7 +5,8 @@
 import { animations as animationRegistry } from './animation_registry.js';
 import { AnimationEngine } from './animations.js';
 import { messages } from './messages.js';
-import { SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK, isValidColor } from './utils.js';
+import { dbGetAll, dbImportCategories } from './db.js';
 
 let currentLang = 'en';
 let categories = [];
@@ -36,6 +37,8 @@ const exportBtn = document.getElementById('export-btn');
 const importInput = document.getElementById('import-input');
 const newStartBtn = document.getElementById('new-start-btn');
 const clearAllBtn = document.getElementById('clear-all-btn');
+const loadBrowserBtn = document.getElementById('load-browser-btn');
+const saveBrowserBtn = document.getElementById('save-browser-btn');
 
 const langSelect = document.getElementById('lang-select-editor');
 const themeToggle = document.getElementById('theme-toggle');
@@ -263,6 +266,9 @@ function setupEventListeners() {
         codeModalEl.classList.remove('hidden');
     });
 
+    loadBrowserBtn.addEventListener('click', handleLoadFromBrowser);
+    saveBrowserBtn.addEventListener('click', handleSaveToBrowser);
+
     window.addEventListener('click', (e) => {
         if (e.target === codeModalEl) {
             codeModalEl.classList.add('hidden');
@@ -270,22 +276,48 @@ function setupEventListeners() {
     });
 
     // Drag and Drop for Reordering
+    let dropIndicator = document.createElement('div');
+    dropIndicator.className = 'drop-indicator';
+
     categoryListEl.addEventListener('dragover', (e) => {
         e.preventDefault();
         const dragging = document.querySelector('.category-item.dragging');
         if (!dragging) return;
+
         const siblings = [...categoryListEl.querySelectorAll('.category-item:not(.dragging)')];
         let nextSibling = siblings.find(sibling => {
             return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
         });
-        categoryListEl.insertBefore(dragging, nextSibling);
+
+        if (nextSibling) {
+            categoryListEl.insertBefore(dropIndicator, nextSibling);
+        } else {
+            categoryListEl.appendChild(dropIndicator);
+        }
+    });
+
+    categoryListEl.addEventListener('dragenter', (e) => e.preventDefault());
+
+    categoryListEl.addEventListener('dragleave', (e) => {
+        if (e.target === categoryListEl && !categoryListEl.contains(e.relatedTarget)) {
+            if (dropIndicator.parentNode) dropIndicator.remove();
+        }
     });
 
     categoryListEl.addEventListener('drop', (e) => {
         e.preventDefault();
+        const dragging = document.querySelector('.category-item.dragging');
+        if (!dragging) return;
+
+        if (dropIndicator.parentNode) {
+            categoryListEl.insertBefore(dragging, dropIndicator);
+            dropIndicator.remove();
+        }
+
         const items = [...categoryListEl.querySelectorAll('.category-item')];
         const newCategories = items.map(item => categories[parseInt(item.dataset.index)]);
         const oldSelected = selectedIndex !== -1 ? categories[selectedIndex] : null;
+
         categories = newCategories;
         if (oldSelected) {
             selectedIndex = categories.indexOf(oldSelected);
@@ -557,22 +589,22 @@ function updatePreview() {
     const animation = cat.animation || 'default';
 
     // Set exclusion areas to match sidebar behavior
-    // The canvas size might be updated asynchronously after start/resize,
-    // so we calculate based on current dimensions.
-    const canvasWidth = animationEngine.canvas.width;
-    const canvasHeight = animationEngine.canvas.height;
+    const canvasRect = animationEngine.canvas.getBoundingClientRect();
+    const nameRect = document.getElementById('preview-name-heading').getBoundingClientRect();
+    const timerRect = document.querySelector('.preview-timer-box').getBoundingClientRect();
 
-    // Refine exclusion area to tightly fit the category name and timer.
-    // Measuring the actual text dimensions would be ideal, but for the preview
-    // we use a reasonable tight bound based on the UI elements.
-    const badgeWidth = 240;
-    const badgeHeight = 60;
+    const padding = 12;
+    // For small viewport/preview, ensure it doesn't break if elements have 0 size (hidden)
+    const x1 = Math.min(nameRect.left || Infinity, timerRect.left || Infinity) - canvasRect.left - padding;
+    const y1 = Math.min(nameRect.top || Infinity, timerRect.top || Infinity) - canvasRect.top - padding;
+    const x2 = Math.max(nameRect.right || 0, timerRect.right || 0) - canvasRect.left + padding;
+    const y2 = Math.max(nameRect.bottom || 0, timerRect.bottom || 0) - canvasRect.top + padding;
 
     animationEngine.setExclusionAreas([{
-        x: (canvasWidth - badgeWidth) / 2,
-        y: (canvasHeight - badgeHeight) / 2,
-        width: badgeWidth,
-        height: badgeHeight
+        x: x1,
+        y: y1,
+        width: x2 - x1,
+        height: y2 - y1
     }]);
 
     animationEngine.start(animation === 'default' ? 'digital_rain' : animation, Date.now(), color);
@@ -642,6 +674,54 @@ function handleExport() {
     a.click();
     URL.revokeObjectURL(url);
     showToast(t('toast-export-success'));
+}
+
+async function handleLoadFromBrowser() {
+    if (confirm(t('confirm-load-browser'))) {
+        try {
+            const browserCategories = await dbGetAll('categories');
+            if (browserCategories && browserCategories.length > 0) {
+                categories = browserCategories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+                selectedIndex = 0;
+                renderCategoryList();
+                renderDetail();
+                updateCodeView();
+                showToast(t('toast-load-browser-success'));
+            }
+        } catch (err) {
+            console.error(err);
+            showToast(t('toast-load-browser-failed'));
+        }
+    }
+}
+
+async function handleSaveToBrowser() {
+    if (categories.length === 0) {
+        showToast(t('toast-no-categories'));
+        return;
+    }
+    if (confirm(t('confirm-save-browser'))) {
+        try {
+            // Prepare categories for DB import format
+            const itemsToSave = categories.map(cat => {
+                if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+                    return { type: 'page-break' };
+                }
+                return {
+                    name: cat.name,
+                    color: isValidColor(cat.color) ? cat.color : 'primary',
+                    tags: cat.tags || '',
+                    animation: cat.animation || 'default'
+                };
+            });
+
+            await dbImportCategories(itemsToSave, 'overwrite');
+            showToast(t('toast-save-browser-success'));
+        } catch (err) {
+            console.error(err);
+            showToast(t('toast-save-browser-failed'));
+        }
+    }
 }
 
 function showToast(msg) {
