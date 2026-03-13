@@ -303,7 +303,21 @@ export const messages = {
         'btn-replace': '置換',
         'btn-replace-all': 'すべて置換',
         'section-console': 'コンソール',
-        'btn-clear-console': 'コンソールをクリア'
+        'btn-clear-console': 'コンソールをクリア',
+
+        // Category Editor
+        'category-editor-title': '業務カテゴリ・エディタ',
+        'category-detail': 'カテゴリ詳細',
+        'section-code-view': 'NDJSONビュー',
+        'btn-new-start': '標準セットから作成',
+        'btn-clear-all': '全てクリア',
+        'confirm-clear-all': '全てのカテゴリをクリアしますか？',
+        'confirm-load-default': '標準のカテゴリセットを読み込みます。現在の変更は失われます。よろしいですか？',
+        'toast-import-success': 'インポートに成功しました',
+        'toast-import-failed': 'インポートに失敗しました：無効な形式です',
+        'toast-export-success': 'エクスポートに成功しました',
+        'toast-no-categories': 'エクスポートするカテゴリがありません',
+        'page-break-label': '改ページ'
     },
     en: {
         // UI Header & Sections
@@ -594,7 +608,21 @@ export const messages = {
         'btn-replace': 'Replace',
         'btn-replace-all': 'Replace All',
         'section-console': 'Console',
-        'btn-clear-console': 'Clear Console'
+        'btn-clear-console': 'Clear Console',
+
+        // Category Editor
+        'category-editor-title': 'QL-Category Editor',
+        'category-detail': 'Category Detail',
+        'section-code-view': 'NDJSON View',
+        'btn-new-start': 'Start from Default',
+        'btn-clear-all': 'Clear All',
+        'confirm-clear-all': 'All categories will be cleared. Continue?',
+        'confirm-load-default': 'Default categories will be loaded. Current changes will be lost. Continue?',
+        'toast-import-success': 'Import successful',
+        'toast-import-failed': 'Import failed: Invalid format',
+        'toast-export-success': 'Export successful',
+        'toast-no-categories': 'No categories to export',
+        'page-break-label': 'Page Break'
     },
     de: {
         'title': 'QuickLog-Solo',
@@ -863,7 +891,21 @@ export const messages = {
         'btn-replace': 'Ersetzen',
         'btn-replace-all': 'Alle ersetzen',
         'section-console': 'Konsole',
-        'btn-clear-console': 'Konsole leeren'
+        'btn-clear-console': 'Konsole leeren',
+
+        // Category Editor
+        'category-editor-title': 'Geschäftskategorie-Editor',
+        'category-detail': 'Kategoriedetails',
+        'section-code-view': 'NDJSON-Ansicht',
+        'btn-new-start': 'Vom Standardsatz starten',
+        'btn-clear-all': 'Alles löschen',
+        'confirm-clear-all': 'Alle Kategorien löschen? Fortfahren?',
+        'confirm-load-default': 'Standardkategorien werden geladen. Aktuelle Änderungen gehen verloren. Fortfahren?',
+        'toast-import-success': 'Import erfolgreich',
+        'toast-import-failed': 'Import fehlgeschlagen: Ungültiges Format',
+        'toast-export-success': 'Export erfolgreich',
+        'toast-no-categories': 'Keine Kategorien zum Exportieren',
+        'page-break-label': 'Seitenumbruch'
     },
     es: {
         'title': 'QuickLog-Solo',
@@ -1132,7 +1174,21 @@ export const messages = {
         'btn-replace': 'Reemplazar',
         'btn-replace-all': 'Reemplazar todo',
         'section-console': 'Consola',
-        'btn-clear-console': 'Limpiar consola'
+        'btn-clear-console': 'Limpiar consola',
+
+        // Category Editor
+        'category-editor-title': 'Editor de Categorías de Negocio',
+        'category-detail': 'Detalle de Categoría',
+        'section-code-view': 'Vista NDJSON',
+        'btn-new-start': 'Comenzar desde el predeterminado',
+        'btn-clear-all': 'Limpiar todo',
+        'confirm-clear-all': '¿Borrar todas las categorías? ¿Continuar?',
+        'confirm-load-default': 'Se cargarán las categorías predeterminadas. Los cambios actuales se perderán. ¿Continuar?',
+        'toast-import-success': 'Importación exitosa',
+        'toast-import-failed': 'Error al importar: formato no válido',
+        'toast-export-success': 'Exportación exitosa',
+        'toast-no-categories': 'No hay categorías para exportar',
+        'page-break-label': 'Salto de página'
     },
     fr: {
         'title': 'QuickLog-Solo',
@@ -1401,7 +1457,21 @@ export const messages = {
         'btn-replace': 'Remplacer',
         'btn-replace-all': 'Tout remplacer',
         'section-console': 'Console',
-        'btn-clear-console': 'Effacer la console'
+        'btn-clear-console': 'Effacer la console',
+
+        // Category Editor
+        'category-editor-title': 'Éditeur de catégories professionnelles',
+        'category-detail': 'Détails de la catégorie',
+        'section-code-view': 'Vue NDJSON',
+        'btn-new-start': 'Démarrer à partir du jeu par défaut',
+        'btn-clear-all': 'Tout effacer',
+        'confirm-clear-all': 'Effacer toutes les catégories ? Continuer ?',
+        'confirm-load-default': 'Les catégories par défaut seront chargées. Les modifications actuelles seront perdues. Continuer ?',
+        'toast-import-success': 'Importation réussie',
+        'toast-import-failed': 'Échec de l\'importation : format non valide',
+        'toast-export-success': 'Exportation réussie',
+        'toast-no-categories': 'Aucune catégorie à exporter',
+        'page-break-label': 'Saut de page'
     },
     pt: {
         'title': 'QuickLog-Solo',
@@ -1670,7 +1740,21 @@ export const messages = {
         'btn-replace': 'Substituir',
         'btn-replace-all': 'Substituir tudo',
         'section-console': 'Console',
-        'btn-clear-console': 'Limpar console'
+        'btn-clear-console': 'Limpar console',
+
+        // Category Editor
+        'category-editor-title': 'Editor de Categorias de Negócios',
+        'category-detail': 'Detalhe da Categoria',
+        'section-code-view': 'Visualização NDJSON',
+        'btn-new-start': 'Iniciar a partir do padrão',
+        'btn-clear-all': 'Limpar tudo',
+        'confirm-clear-all': 'Limpar todas as categorias? Continuar?',
+        'confirm-load-default': 'Categorias padrão serão carregadas. Alterações atuais serão perdidas. Continuar?',
+        'toast-import-success': 'Importação bem-sucedida',
+        'toast-import-failed': 'Falha na importação: formato inválido',
+        'toast-export-success': 'Exportação bem-sucedida',
+        'toast-no-categories': 'Nenhuma categoria para exportar',
+        'page-break-label': 'Quebra de página'
     },
     ko: {
         'title': 'QuickLog-Solo',
@@ -1939,7 +2023,21 @@ export const messages = {
         'btn-replace': '바꾸기',
         'btn-replace-all': '모두 바꾸기',
         'section-console': '콘솔',
-        'btn-clear-console': '콘솔 지우기'
+        'btn-clear-console': '콘솔 지우기',
+
+        // Category Editor
+        'category-editor-title': '업무 카테고리 에ディ터',
+        'category-detail': '카테고리 상세',
+        'section-code-view': 'NDJSON 뷰',
+        'btn-new-start': '기본 세트에서 시작',
+        'btn-clear-all': '모두 지우기',
+        'confirm-clear-all': '모든 카테고리를 지우시겠습니까? 계속하시겠습니까?',
+        'confirm-load-default': '기본 카테고리 세트가 로드됩니다. 현재 변경 사항은 손실됩니다. 계속하시겠습니까?',
+        'toast-import-success': '가져오기 성공',
+        'toast-import-failed': '가져오기 실패: 잘못된 형식',
+        'toast-export-success': '내보내기 성공',
+        'toast-no-categories': '내보낼 카테고리가 없습니다',
+        'page-break-label': '페이지 나누기'
     },
     zh: {
         'title': 'QuickLog-Solo',
@@ -2208,6 +2306,20 @@ export const messages = {
         'btn-replace': '替换',
         'btn-replace-all': '全部替换',
         'section-console': '控制台',
-        'btn-clear-console': '清空控制台'
+        'btn-clear-console': '清空控制台',
+
+        // Category Editor
+        'category-editor-title': '业务分类编辑器',
+        'category-detail': '分类详情',
+        'section-code-view': 'NDJSON 视图',
+        'btn-new-start': '从默认集开始',
+        'btn-clear-all': '全部清除',
+        'confirm-clear-all': '清除所有分类？是否继续？',
+        'confirm-load-default': '将加载默认分类集。当前更改将丢失。是否继续？',
+        'toast-import-success': '导入成功',
+        'toast-import-failed': '导入失败：格式无效',
+        'toast-export-success': '导出成功',
+        'toast-no-categories': '没有可导出的分类',
+        'page-break-label': '换页'
     }
 };

@@ -1,0 +1,544 @@
+/**
+ * QL-Category Editor Logic
+ */
+
+import { animations as animationRegistry } from './animation_registry.js';
+import { AnimationEngine } from './animations.js';
+import { messages } from './messages.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
+
+let currentLang = 'en';
+let categories = [];
+let selectedIndex = -1;
+let animationEngine = null;
+let currentTheme = 'dark';
+
+// DOM Elements
+const categoryListEl = document.getElementById('category-list');
+const detailSection = document.getElementById('detail-section');
+const editNameInput = document.getElementById('edit-name');
+const tagListEl = document.getElementById('tag-list');
+const tagInput = document.getElementById('tag-input');
+const colorPaletteEl = document.getElementById('color-palette');
+const editAnimationSelect = document.getElementById('edit-animation');
+const previewNameEl = document.getElementById('preview-name');
+const codeViewEl = document.getElementById('code-view');
+const toggleCodeBtn = document.getElementById('toggle-code');
+const codeSection = document.getElementById('code-section');
+
+const addCategoryBtn = document.getElementById('add-category-btn');
+const addPageBreakBtn = document.getElementById('add-page-break-btn');
+const importBtn = document.getElementById('import-btn');
+const exportBtn = document.getElementById('export-btn');
+const importInput = document.getElementById('import-input');
+const newStartBtn = document.getElementById('new-start-btn');
+const clearAllBtn = document.getElementById('clear-all-btn');
+
+const langSelect = document.getElementById('lang-select-editor');
+const themeToggle = document.getElementById('theme-toggle');
+
+const COLORS = [
+    'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
+    'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
+];
+
+const COLOR_CODES = {
+    primary: '#1976d2',
+    secondary: '#7cb342',
+    tertiary: '#8e24aa',
+    error: '#d32f2f',
+    neutral: '#546e7a',
+    outline: '#9e9e9e',
+    teal: '#0097a7',
+    green: '#388e3c',
+    yellow: '#fbc02d',
+    orange: '#ffa000',
+    pink: '#d81b60',
+    indigo: '#5e35b1',
+    brown: '#6d4c41',
+    cyan: '#039be5'
+};
+
+// --- Localization Helper ---
+function t(key, params = {}) {
+    let msg = (messages[currentLang] && messages[currentLang][key]) || (messages._common && messages._common[key]) || messages.en[key] || key;
+    for (const [pKey, pVal] of Object.entries(params)) {
+        msg = msg.replace(`{${pKey}}`, pVal);
+    }
+    return msg;
+}
+
+// Initialize
+function init() {
+    setupLanguage();
+    setupTheme();
+    setupAnimationEngine();
+    setupEventListeners();
+    renderColorPalette();
+    populateAnimationOptions();
+
+    // Start with default categories
+    loadDefaultCategories();
+}
+
+function setupTheme() {
+    const savedTheme = localStorage.getItem('category-editor-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    themeToggle.checked = (currentTheme === 'dark');
+    applyTheme();
+}
+
+function applyTheme() {
+    document.body.classList.remove('theme-light', 'theme-dark');
+    document.body.classList.add(`theme-${currentTheme}`);
+}
+
+function setupLanguage() {
+    const userLang = navigator.language || navigator.userLanguage;
+    const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh', 'en'];
+    let matched = 'en';
+    for (const prefix of prefixes) {
+        if (userLang.startsWith(prefix)) {
+            matched = prefix;
+            break;
+        }
+    }
+    currentLang = matched;
+    langSelect.value = matched;
+    updateTranslations();
+}
+
+function updateTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+    });
+
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title');
+        el.title = t(key);
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        el.placeholder = t(key);
+    });
+}
+
+function setupAnimationEngine() {
+    const canvas = document.getElementById('animation-canvas');
+    animationEngine = new AnimationEngine(canvas);
+    animationRegistry.forEach(anim => {
+        animationEngine.register(anim.id, anim.class, anim.id);
+    });
+    animationEngine.resize();
+    window.addEventListener('resize', () => animationEngine.resize());
+}
+
+function setupEventListeners() {
+    langSelect.addEventListener('change', (e) => {
+        currentLang = e.target.value;
+        updateTranslations();
+        renderCategoryList();
+        populateAnimationOptions();
+        renderDetail();
+    });
+
+    themeToggle.addEventListener('change', () => {
+        currentTheme = themeToggle.checked ? 'dark' : 'light';
+        localStorage.setItem('category-editor-theme', currentTheme);
+        applyTheme();
+    });
+
+    addCategoryBtn.addEventListener('click', () => {
+        const newCat = {
+            name: 'New Category',
+            color: 'primary',
+            animation: 'default',
+            tags: ''
+        };
+        categories.push(newCat);
+        selectedIndex = categories.length - 1;
+        renderCategoryList();
+        renderDetail();
+        updateCodeView();
+    });
+
+    addPageBreakBtn.addEventListener('click', () => {
+        const newPB = {
+            name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}`
+        };
+        categories.push(newPB);
+        selectedIndex = categories.length - 1;
+        renderCategoryList();
+        renderDetail();
+        updateCodeView();
+    });
+
+    editNameInput.addEventListener('input', (e) => {
+        if (selectedIndex === -1) return;
+        const name = e.target.value;
+        categories[selectedIndex].name = name;
+        previewNameEl.textContent = name;
+        updateListItem(selectedIndex);
+        updateCodeView();
+    });
+
+    tagInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const tag = tagInput.value.trim().replace(/,/g, '');
+            if (tag && selectedIndex !== -1) {
+                const currentTags = categories[selectedIndex].tags ? categories[selectedIndex].tags.split(',').map(t => t.trim()) : [];
+                if (!currentTags.includes(tag)) {
+                    currentTags.push(tag);
+                    categories[selectedIndex].tags = currentTags.join(', ');
+                    renderTags();
+                    updateCodeView();
+                }
+                tagInput.value = '';
+            }
+        }
+    });
+
+    editAnimationSelect.addEventListener('change', (e) => {
+        if (selectedIndex === -1) return;
+        categories[selectedIndex].animation = e.target.value;
+        updatePreview();
+        updateCodeView();
+    });
+
+    importBtn.addEventListener('click', () => importInput.click());
+    importInput.addEventListener('change', handleImport);
+    exportBtn.addEventListener('click', handleExport);
+
+    newStartBtn.addEventListener('click', () => {
+        if (confirm(t('confirm-load-default'))) {
+            loadDefaultCategories();
+        }
+    });
+
+    clearAllBtn.addEventListener('click', () => {
+        if (confirm(t('confirm-clear-all'))) {
+            categories = [];
+            selectedIndex = -1;
+            renderCategoryList();
+            renderDetail();
+            updateCodeView();
+        }
+    });
+
+    toggleCodeBtn.addEventListener('click', () => {
+        codeSection.classList.toggle('collapsed');
+        toggleCodeBtn.querySelector('span').textContent = codeSection.classList.contains('collapsed') ? 'expand_less' : 'expand_more';
+    });
+
+    // Drag and Drop for Reordering
+    categoryListEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const dragging = document.querySelector('.category-item.dragging');
+        if (!dragging) return;
+        const siblings = [...categoryListEl.querySelectorAll('.category-item:not(.dragging)')];
+        let nextSibling = siblings.find(sibling => {
+            return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
+        });
+        categoryListEl.insertBefore(dragging, nextSibling);
+    });
+
+    categoryListEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const items = [...categoryListEl.querySelectorAll('.category-item')];
+        const newCategories = items.map(item => categories[parseInt(item.dataset.index)]);
+        const oldSelected = selectedIndex !== -1 ? categories[selectedIndex] : null;
+        categories = newCategories;
+        if (oldSelected) {
+            selectedIndex = categories.indexOf(oldSelected);
+        }
+        renderCategoryList();
+        updateCodeView();
+    });
+}
+
+function loadDefaultCategories() {
+    const defaultSet = [
+        { name: t('init-cat-dev'), color: 'primary', tags: 'dev, code', animation: 'digital_rain' },
+        { name: t('init-cat-meeting'), color: 'secondary', tags: 'meeting, sync', animation: 'migrating_birds' },
+        { name: t('init-cat-research'), color: 'tertiary', tags: 'research, tech', animation: 'ripple' },
+        { name: t('init-cat-admin'), color: 'neutral', tags: 'admin, mail', animation: 'dot_typing' },
+        { name: t('init-cat-break'), color: 'outline', tags: 'break, refresh', animation: 'coffee_drip' }
+    ];
+
+    categories = defaultSet;
+    selectedIndex = 0;
+    renderCategoryList();
+    renderDetail();
+    updateCodeView();
+}
+
+function renderCategoryList() {
+    categoryListEl.innerHTML = '';
+    categories.forEach((cat, idx) => {
+        const item = document.createElement('div');
+        const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        item.className = 'category-item' + (isPageBreak ? ' page-break' : '') + (idx === selectedIndex ? ' active' : '');
+        item.draggable = true;
+        item.dataset.index = idx;
+
+        const dragHandle = document.createElement('span');
+        dragHandle.className = 'material-symbols-outlined drag-handle';
+        dragHandle.textContent = 'drag_indicator';
+        item.appendChild(dragHandle);
+
+        if (isPageBreak) {
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'cat-name';
+            const icon = document.createElement('span');
+            icon.className = 'material-symbols-outlined';
+            icon.textContent = 'insert_page_break';
+            nameSpan.appendChild(icon);
+            nameSpan.appendChild(document.createTextNode(' ' + t('page-break-label')));
+            item.appendChild(nameSpan);
+        } else {
+            const dot = document.createElement('span');
+            dot.className = 'cat-dot';
+            dot.style.backgroundColor = COLOR_CODES[cat.color || 'primary'];
+            item.appendChild(dot);
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'cat-name';
+            nameSpan.textContent = cat.name;
+            item.appendChild(nameSpan);
+        }
+
+        item.onclick = () => {
+            selectedIndex = idx;
+            renderCategoryList();
+            renderDetail();
+        };
+
+        item.ondragstart = () => item.classList.add('dragging');
+        item.ondragend = () => item.classList.remove('dragging');
+
+        categoryListEl.appendChild(item);
+    });
+}
+
+function updateListItem(idx) {
+    const item = categoryListEl.children[idx];
+    if (!item) return;
+    const cat = categories[idx];
+    const nameEl = item.querySelector('.cat-name');
+    if (nameEl) {
+        nameEl.textContent = '';
+        if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+             const icon = document.createElement('span');
+             icon.className = 'material-symbols-outlined';
+             icon.textContent = 'insert_page_break';
+             nameEl.appendChild(icon);
+             nameEl.appendChild(document.createTextNode(' ' + t('page-break-label')));
+        } else {
+             nameEl.textContent = cat.name;
+        }
+    }
+}
+
+function renderDetail() {
+    if (selectedIndex === -1 || selectedIndex >= categories.length) {
+        detailSection.classList.add('hidden');
+        previewNameEl.textContent = '';
+        animationEngine.stop();
+        return;
+    }
+
+    const cat = categories[selectedIndex];
+    const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+
+    if (isPageBreak) {
+        detailSection.classList.add('hidden');
+        previewNameEl.textContent = `--- ${t('page-break-label')} ---`;
+        updatePreview();
+        return;
+    }
+
+    detailSection.classList.remove('hidden');
+    editNameInput.value = cat.name;
+    previewNameEl.textContent = cat.name;
+    renderTags();
+    updateColorSelection();
+    editAnimationSelect.value = cat.animation || 'default';
+    updatePreview();
+}
+
+function renderTags() {
+    tagListEl.innerHTML = '';
+    const tags = categories[selectedIndex].tags ? categories[selectedIndex].tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+    tags.forEach((tag, idx) => {
+        const pill = document.createElement('span');
+        pill.className = 'tag-pill';
+
+        const tagText = document.createElement('span');
+        tagText.textContent = tag;
+        pill.appendChild(tagText);
+
+        const removeBtn = document.createElement('span');
+        removeBtn.className = 'material-symbols-outlined tag-remove';
+        removeBtn.textContent = 'close';
+        pill.appendChild(removeBtn);
+
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            tags.splice(idx, 1);
+            categories[selectedIndex].tags = tags.join(', ');
+            renderTags();
+            updateCodeView();
+        };
+        tagListEl.appendChild(pill);
+    });
+}
+
+function renderColorPalette() {
+    colorPaletteEl.innerHTML = '';
+    COLORS.forEach(color => {
+        const opt = document.createElement('div');
+        opt.className = 'color-option';
+        opt.style.backgroundColor = COLOR_CODES[color];
+        opt.dataset.color = color;
+        opt.onclick = () => {
+            if (selectedIndex === -1) return;
+            categories[selectedIndex].color = color;
+            updateColorSelection();
+            updatePreview();
+            renderCategoryList();
+            updateCodeView();
+        };
+        colorPaletteEl.appendChild(opt);
+    });
+}
+
+function updateColorSelection() {
+    if (selectedIndex === -1) return;
+    const color = categories[selectedIndex].color || 'primary';
+    colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.color === color);
+    });
+}
+
+function populateAnimationOptions() {
+    const currentVal = editAnimationSelect.value;
+    editAnimationSelect.innerHTML = '';
+
+    const noneOpt = document.createElement('option');
+    noneOpt.value = 'none';
+    noneOpt.textContent = t('anim-none');
+    editAnimationSelect.appendChild(noneOpt);
+
+    const defOpt = document.createElement('option');
+    defOpt.value = 'default';
+    defOpt.textContent = t('anim-default');
+    editAnimationSelect.appendChild(defOpt);
+
+    animationRegistry.forEach(anim => {
+        const opt = document.createElement('option');
+        opt.value = anim.id;
+        opt.textContent = (typeof anim.metadata.name === 'object' ? (anim.metadata.name[currentLang] || anim.metadata.name['en']) : anim.metadata.name) || anim.id;
+        editAnimationSelect.appendChild(opt);
+    });
+
+    if (currentVal) editAnimationSelect.value = currentVal;
+}
+
+function updatePreview() {
+    if (selectedIndex === -1) {
+        animationEngine.stop();
+        return;
+    }
+    const cat = categories[selectedIndex];
+    const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+
+    if (isPageBreak) {
+        animationEngine.stop();
+        return;
+    }
+
+    const color = COLOR_CODES[cat.color || 'primary'];
+    const animation = cat.animation || 'default';
+
+    animationEngine.start(animation === 'default' ? 'digital_rain' : animation, Date.now(), color);
+}
+
+function updateCodeView() {
+    const ndjson = categories.map(cat => {
+        const item = { ...cat };
+        delete item.order;
+        delete item.id;
+        if (item.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+            return JSON.stringify({ type: 'page-break' });
+        }
+        return JSON.stringify(item);
+    }).join('\n');
+    codeViewEl.textContent = ndjson;
+}
+
+async function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const text = await file.text();
+        const lines = text.split('\n').filter(l => l.trim());
+        const imported = lines.map(l => {
+            const data = JSON.parse(l);
+            if (data.type === 'page-break') {
+                return { name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random()}` };
+            }
+            return data;
+        });
+
+        categories = imported;
+        selectedIndex = categories.length > 0 ? 0 : -1;
+        renderCategoryList();
+        renderDetail();
+        updateCodeView();
+        showToast(t('toast-import-success'));
+    } catch (err) {
+        console.error(err);
+        showToast(t('toast-import-failed'));
+    }
+    importInput.value = '';
+}
+
+function handleExport() {
+    if (categories.length === 0) {
+        showToast(t('toast-no-categories'));
+        return;
+    }
+    const ndjson = categories.map(cat => {
+        const item = { ...cat };
+        delete item.order;
+        delete item.id;
+        if (item.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+            return JSON.stringify({ type: 'page-break' });
+        }
+        return JSON.stringify(item);
+    }).join('\n');
+
+    const blob = new Blob([ndjson], { type: 'application/x-ndjson' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `quicklog_categories_${new Date().toISOString().slice(0, 10)}.ndjson`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(t('toast-export-success'));
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+// Start
+init();

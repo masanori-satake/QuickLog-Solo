@@ -1754,6 +1754,13 @@ function setupEventListeners() {
         broadcastSync();
     });
 
+    getEl('advanced-editor-link')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const lang = getLanguage();
+        // Fallback to absolute URL if necessary, but relative should work in extension context
+        window.open(`../category-editor.html?lang=${lang}`, '_blank');
+    });
+
     getEl('test-notification-btn')?.addEventListener('click', async () => {
         if (typeof chrome !== 'undefined' && (chrome.notifications || chrome.alarms)) {
             // 1. Immediate notification test
