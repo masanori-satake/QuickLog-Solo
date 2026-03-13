@@ -14,7 +14,6 @@ let animationEngine = null;
 let currentTheme = 'dark';
 
 // DOM Elements
-const mainContentWrapper = document.querySelector('.main-content-wrapper');
 const categoryListEl = document.getElementById('category-list');
 const detailSection = document.getElementById('detail-section');
 const editNameInput = document.getElementById('edit-name');

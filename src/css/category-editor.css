@@ -298,6 +298,10 @@ input[type="text"]:focus, select:focus {
     color: #fff;
 }
 
+.preview-timer-box .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
 .color-option .material-symbols-outlined {
     font-size: 16px;
     opacity: 0;
@@ -391,7 +395,7 @@ input[type="text"]:focus, select:focus {
     font-weight: 500;
     text-shadow: 0 0 4px #000;
     line-height: 1.2;
-    margin: 0 0 4px 0;
+    margin: 0 0 4px;
     color: #fff;
 }
 
@@ -403,9 +407,6 @@ input[type="text"]:focus, select:focus {
     text-shadow: 0 0 4px #000;
 }
 
-.preview-timer-box .material-symbols-outlined {
-    font-size: 1.2rem;
-}
 
 .preview-elapsed {
     font-size: 1.5rem;
