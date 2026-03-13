@@ -1,280 +1,3 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickLog-Solo - ミニマリスト向け作業メモツール</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+Symbols:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="stylesheet" href="src/css/m3-theme.css">
-    <link rel="stylesheet" href="src/css/landing.css">
-    <link rel="icon" href="src/assets/icon.svg" type="image/svg+xml">
-    <meta name="google-site-verification" content="xTZtBJrP70Jf8XmGcbYnZwWL6Z480h0VpcVW6Z8OPVQ" />
-</head>
-<body class="theme-light">
-    <div id="landing-container">
-        <header class="landing-header">
-            <div class="header-content">
-                <img src="src/assets/icon.svg" alt="QuickLog-Solo Icon" class="app-icon">
-                <h1>QuickLog-Solo</h1>
-            </div>
-            <div class="lang-switcher">
-                <select onchange="setLanguage(this.value)" id="lang-select-landing" class="lang-select">
-                    <option value="en" data-i18n="lang-en">🇺🇸 English</option>
-                    <option value="ja" data-i18n="lang-ja">🇯🇵 日本語</option>
-                    <option value="de" data-i18n="lang-de">🇩🇪 Deutsch</option>
-                    <option value="es" data-i18n="lang-es">🇪🇸 Español</option>
-                    <option value="fr" data-i18n="lang-fr">🇫🇷 Français</option>
-                    <option value="pt" data-i18n="lang-pt">🇧🇷 Português</option>
-                    <option value="ko" data-i18n="lang-ko">🇰🇷 한국어</option>
-                    <option value="zh" data-i18n="lang-zh">🇨🇳 简体中文</option>
-                </select>
-            </div>
-        </header>
-
-        <main class="landing-main">
-            <section class="hero-section">
-                <div class="browser-support-icons">
-                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" alt="Chrome" title="Chrome Support">
-                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt="Edge" title="Edge Support">
-                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" title="Firefox Support">
-                </div>
-                <h2 class="display-large" data-i18n="hero-title">1秒で記録、1秒で集計。</h2>
-                <p class="body-large" data-i18n="hero-desc">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型作業メモツールです。</p>
-                <div class="cta-buttons">
-                    <a href="https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh" class="btn-store" target="_blank">
-                        <img src="src/assets/badges/chrome-web-store-badge-en.png" alt="Available in the Chrome Web Store" class="store-badge" id="hero-store-badge">
-                    </a>
-
-                    <button class="btn-primary" onclick="openPreview()" data-i18n="cta-test">ブラウザで試す</button>
-
-                    <div class="download-dropdown" id="download-dropdown">
-                        <button class="btn-secondary" onclick="toggleDownloadDropdown(event)"><span data-i18n="cta-download">Zipをダウンロード (開発版)</span> <span class="material-symbols-outlined">expand_more</span></button>
-                        <div class="dropdown-content">
-                            <a href="releases/QuickLog-Solo-Chrome.zip"><span data-i18n="dl-chrome">Chrome / Edge 用</span> (.zip)</a>
-                            <a href="releases/QuickLog-Solo-Firefox.zip"><span data-i18n="dl-firefox">Firefox 用</span> (.zip)</a>
-                            <div style="font-size: 0.7rem; color: var(--md-sys-color-on-surface-variant); padding: 8px 16px; border-top: 1px solid var(--md-sys-color-outline-variant); margin: 0;">
-                                <a href="https://github.com/masanori-satake/QuickLog-Solo/releases" style="text-decoration: underline; color: inherit; display: block; padding: 0;" data-i18n="dl-note">※過去のバージョンはGitHubリリースページから入手可能です。</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="feature-section card">
-                <h3 class="headline-medium" data-i18n="policy-title">大事なポリシー</h3>
-                <div class="policy-grid">
-                    <div class="policy-item">
-                        <span class="material-symbols-outlined icon-large">lock</span>
-                        <h4>Local Only</h4>
-                        <p data-i18n="policy-local-desc">データはブラウザ内の IndexedDB に保存され（バックアップを実行した際にはローカルファイルシステムにも保存されます）、外部サーバーへの送信は一切行われません。</p>
-                    </div>
-                    <div class="policy-item">
-                        <span class="material-symbols-outlined icon-large">visibility_off</span>
-                        <h4>No Tracking</h4>
-                        <p data-i18n="policy-tracking-desc">アクセス解析やトラッキングコードは一切含みません。あなたの作業を誰も監視しません。</p>
-                    </div>
-                    <div class="policy-item">
-                        <span class="material-symbols-outlined icon-large">hard_drive</span>
-                        <h4>Local Backup</h4>
-                        <p data-i18n="policy-backup-desc">ローカルフォルダへのバックアップに対応。ブラウザのキャッシュ消去に備えた安心設計です。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。</p>
-                        
-                    </div>
-                    <div class="policy-item">
-                        <span class="material-symbols-outlined icon-large">update</span>
-                        <h4>Pure JavaScript</h4>
-                        <p data-i18n="policy-longevity-desc">外部ライブラリを使わず「JavaScriptのみ」で構築。10年後も安心して使い続けられます。</p>
-                        <a href="https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/oss_audit.yml" target="_blank" class="policy-link" data-i18n="policy-audit-report" style="font-size: 0.75rem; color: var(--md-sys-color-primary); text-decoration: underline; margin-top: 4px; display: inline-block;">透明性レポート（監査ログ）</a>
-                    </div>
-                </div>
-            </section>
-
-            <section class="feature-section">
-                <h3 class="headline-medium" data-i18n="features-title">主な機能</h3>
-                <ul class="feature-list">
-                    <li>
-                        <span class="material-symbols-outlined">bolt</span>
-                        <div>
-                            <h4 data-i18n="feature-1-title">1秒で記録、1秒で集計</h4>
-                            <p data-i18n="feature-1-desc">カテゴリを選ぶだけで即座に開始。日報や集計データもワンクリックで作成できます。</p>
-                        </div>
-                    </li>
-                    <li>
-                        <span class="material-symbols-outlined">side_navigation</span>
-                        <div>
-                            <h4 data-i18n="feature-2-title">サイドバー常駐</h4>
-                            <p data-i18n="feature-2-desc">ブラウザのサイドパネルで動作。作業を妨げず、いつでもブラウザの傍らでクイックに記録可能です。</p>
-                        </div>
-                    </li>
-                    <li>
-                        <span class="material-symbols-outlined">auto_fix_high</span>
-                        <div>
-                            <h4 data-i18n="feature-3-title">Visual Healing</h4>
-                            <p data-i18n="feature-3-desc">20種類以上のドットアニメーションが「1秒の重み」を表現。作業中のストレスを軽減します。</p>
-                        </div>
-                    </li>
-                    <li>
-                        <span class="material-symbols-outlined">analytics</span>
-                        <div>
-                            <h4 data-i18n="feature-4-title">タグ別集計・自動記録</h4>
-                            <p data-i18n="feature-4-desc">プロジェクト横断の集計や、深夜の日付変更時の”作業終了"自動記録など、実用的な機能を備えています。</p>
-                        </div>
-                    </li>
-                </ul>
-            </section>
-
-            <section class="setup-section card">
-                <h3 class="headline-medium" data-i18n="setup-title">インストール / アンインストール</h3>
-                <div class="setup-content">
-                    <div class="setup-step">
-                        <h4 data-i18n="setup-install-title">インストール方法</h4>
-                        <div class="tab-container">
-                            <div class="setup-tabs">
-                                <button class="setup-tab-btn active" onclick="showSetup('chrome', event)">Chrome / Edge</button>
-                                <button class="setup-tab-btn" onclick="showSetup('firefox', event)">Firefox</button>
-                            </div>
-                            <div id="setup-chrome" class="setup-tab-content">
-                                <h5 style="margin: 8px 0;" data-i18n="setup-release-title">リリース版 (推奨)</h5>
-                                <ol>
-                                    <li>
-                                        <a href="https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh" target="_blank" style="display: inline-block; margin-bottom: 8px;">
-                                            <img src="src/assets/badges/chrome-web-store-badge-en.png" alt="Available in the Chrome Web Store" style="height: 40px;" class="setup-store-badge">
-                                        </a>
-                                    </li>
-                                    <li data-i18n="setup-chrome-release-note">Chrome Web Storeから「Chromeに追加」をクリックするだけでインストール完了です。新しいバージョンに自動でアップデートされます。</li>
-                                </ol>
-
-                                <h5 style="margin: 16px 0 8px;" data-i18n="setup-dev-title">開発版 (Zip)</h5>
-                                <ol>
-                                    <li data-i18n="setup-chrome-step-1">ZIPファイルをダウンロードして解凍します。</li>
-                                    <li data-i18n="setup-chrome-step-2">ブラウザの拡張機能管理ページのURLをコピーして開きます。</li>
-                                    <div style="margin: 4px 0 12px 20px;">
-                                        (Chrome: <a href="chrome://extensions/" class="internal-link" onclick="copyUrl('chrome://extensions/', event)"><code>chrome://extensions/</code> <span class="material-symbols-outlined">content_copy</span></a> /
-                                         Edge: <a href="edge://extensions/" class="internal-link" onclick="copyUrl('edge://extensions/', event)"><code>edge://extensions/</code> <span class="material-symbols-outlined">content_copy</span></a>)
-                                    </div>
-                                    <li data-i18n="setup-chrome-step-3">「デベロッパーモード」をONにします。</li>
-                                    <li data-i18n="setup-chrome-step-4">「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。</li>
-                                </ol>
-                            </div>
-                            <div id="setup-firefox" class="setup-tab-content hidden">
-                                <ol>
-                                    <li data-i18n="setup-firefox-step-1">ZIPファイルをダウンロードして解凍します。</li>
-                                    <li>
-                                        <span data-i18n="setup-firefox-step-2">FirefoxのデバッグページのURLをコピーして開きます。</span><br>
-                                        <a href="about:debugging#/runtime/this-firefox" class="internal-link" onclick="copyUrl('about:debugging#/runtime/this-firefox', event)"><code>about:debugging</code> <span class="material-symbols-outlined">content_copy</span></a>
-                                    </li>
-                                    <li data-i18n="setup-firefox-step-3">「一時的な拡張機能を読み込む...」をクリックします。</li>
-                                    <li>
-                                        <span data-i18n="setup-firefox-step-4">解凍したフォルダ内の manifest.json を選択します。</span>
-                                    </li>
-                                </ol>
-                                <p class="note" data-i18n="setup-firefox-note">※ Firefoxの「一時的な拡張機能」はブラウザ再起動時にリセットされるため、継続利用にはアドオンストアからの配布（今後予定）または開発者設定が必要です。</p>
-                            </div>
-                        </div>
-                        <div style="margin-top: 16px; display: flex; align-items: center; gap: 8px;">
-                            <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary);">auto_stories</span>
-                            <a href="guide.html" id="quick-start-guide-link" style="font-weight: 500; color: var(--md-sys-color-primary); text-decoration: underline;" data-i18n="link-guide">Quick Start Guide を見る</a>
-                        </div>
-                        <p class="note" data-i18n="setup-install-note">※ 外部サーバーを介さないため、安心してお使いいただけます。</p>
-                    </div>
-                    <div class="setup-step">
-                        <h4 data-i18n="setup-uninstall-title">アンインストール方法</h4>
-                        <p data-i18n="setup-uninstall-desc">拡張機能管理画面から「削除」を選択するだけです。IndexedDBに保存されたデータもブラウザの仕様に従い削除されます。</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="faq-section">
-                <h3 class="headline-medium" data-i18n="faq-title">FAQ / トラブルシューティング</h3>
-                <div class="faq-list">
-                    <div class="faq-item">
-                        <h4 data-i18n="faq-1-q">Q. データはどこに保存されますか？</h4>
-                        <p data-i18n="faq-1-a">A. あなたのPC内のブラウザが管理する領域（IndexedDB）に保存されます（バックアップを実行した際には、ローカルファイルシステムにも保存されます）。</p>
-                    </div>
-                    <div class="faq-item">
-                        <h4 data-i18n="faq-2-q">Q. PCを再起動してもデータは消えませんか？</h4>
-                        <p data-i18n="faq-2-a">A. はい、消えません。ブラウザのストレージ機能により、永続的に保存されます。ただし、ブラウザの「閲覧履歴の消去」などでデータが消去される可能性があるため、設定の「バックアップ」タブから定期的にバックアップを実行することを強く推奨します。</p>
-                    </div>
-                    <div class="faq-item">
-                        <h4 data-i18n="faq-3-q">Q. 動作が重くなった場合は？</h4>
-                        <p data-i18n="faq-3-a">A. 設定の「メンテナンス」タブからログをクリアするか、CSVエクスポートでバックアップを取ってからリセットをお試しください。</p>
-                    </div>
-                    <div class="faq-item">
-                        <h4 data-i18n="faq-4-q">Q. アニメーションは追加することができますか？</h4>
-                        <p data-i18n="faq-4-a">A. 今後順次増やしていきます。さらに皆さんが作成したものも組み込んでいきたいと思います。興味のある方はぜひ QL-Animation Studio で試してみてください！</p>
-                        <div style="margin-top: 12px;">
-                            <a href="studio.html" id="cta-studio-link" class="btn-tertiary" style="text-decoration: none; display: inline-block;" data-i18n="cta-studio">QL-Animation Studio (β版) で遊ぶ</a>
-                        </div>
-                    </div>
-                    <div class="faq-item">
-                        <h4 data-i18n="faq-5-q">Q. 不具合を見つけましたがどのように報告すべきですか？</h4>
-                        <p data-i18n="faq-5-a">A. GitHubのIssueページから報告いただけます。バグ報告用のテンプレートを用意していますので、そちらから詳細をお知らせください。</p>
-                        <div style="margin-top: 12px;">
-                            <a href="https://github.com/masanori-satake/QuickLog-Solo/issues/new?template=bug_report.yml" target="_blank" class="btn-tertiary" style="text-decoration: none; display: inline-block;" data-i18n="cta-bug-report">バグを報告する (GitHub)</a>
-                        </div>
-                    </div>
-                    <div class="faq-item">
-                        <h4 data-i18n="faq-6-q">Q. 新しい機能のアイデアや改善の要望がある場合はどうすればよいですか？</h4>
-                        <p data-i18n="faq-6-a">A. GitHubのIssueページから「機能・改善リクエスト」として投稿いただけます。皆さんのアイデアをお待ちしています！</p>
-                        <div style="margin-top: 12px;">
-                            <a href="https://github.com/masanori-satake/QuickLog-Solo/issues/new?template=feature_request.yml" target="_blank" class="btn-tertiary" style="text-decoration: none; display: inline-block;" data-i18n="cta-feature-request">機能・改善をリクエストする (GitHub)</a>
-                        </div>
-                    </div>
-                    <div class="faq-item">
-                        <h4 data-i18n="faq-editor-q">Q. サイドバーが狭くて、業務カテゴリの編集が大変です。</h4>
-                        <p data-i18n="faq-editor-a">A. 広い画面で効率よく編集できる専用のエディタを用意しています。並べ替えや色の確認もスムーズに行えます。</p>
-                        <div style="margin-top: 12px;">
-                            <a href="category-editor.html" id="cta-editor-link" class="btn-tertiary" style="text-decoration: none; display: inline-block;"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 4px;">edit_note</span><span data-i18n="category-editor-title">業務カテゴリ・エディタ</span></a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="scene-section card">
-                <div class="scene-content">
-                    <span class="material-symbols-outlined icon-extra-large">task_alt</span>
-                    <h3 class="headline-small" data-i18n="scene-title">一日の終わりに、スッキリとした解放感を。</h3>
-                    <p data-i18n="scene-desc" class="scene-desc-text">
-                        「今日、何してたっけ？」と思い出す時間はもう不要です。<br>
-                        QuickLog-Soloを開いて集計ボタンを押すだけ。正確な記録が、あなたの誠実な仕事を証明します。
-                    </p>
-                </div>
-            </section>
-        </main>
-
-        <footer class="landing-footer">
-            <p class="disclaimer-footer" data-i18n="footer-disclaimer">本ソフトウェアは無保証であり、自己責任でご利用ください。</p>
-            <p>&copy; 2026 Masanori SATAKE. Built with Material 3.</p>
-            <div style="margin-top: 8px;">
-                <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; opacity: 0.8;" onmouseover="this.style.opacity=1; this.style.color='var(--md-sys-color-primary)'" onmouseout="this.style.opacity=0.8; this.style.color='inherit'">
-                    <svg height="20" viewBox="0 0 16 16" width="20" style="fill: currentColor;"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
-                    <span data-i18n="footer-dev-site">開発サイト</span>
-                </a>
-            </div>
-        </footer>
-    </div>
-
-    <div id="preview-modal" class="modal hidden">
-        <div class="modal-content preview-content">
-            <div class="modal-header">
-                <div style="display: flex; align-items: baseline; gap: 8px;">
-                    <h3 data-i18n="preview-title">アプリ プレビュー</h3>
-                    <span id="preview-version" style="font-size: 0.85rem; opacity: 0.7; font-weight: normal;"></span>
-                </div>
-                <button class="close-btn" onclick="closePreview()"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            <div class="preview-body">
-                <iframe src="about:blank" frameborder="0" class="preview-iframe"></iframe>
-            </div>
-            <div class="modal-footer">
-                <p data-i18n="preview-note">※ プレビュー版ではサイドパネルでの動作をシミュレートしています。</p>
-            </div>
-        </div>
-    </div>
-
-    <script>
         const translations = {
             ja: {
                 "hero-title": "1秒で記録、1秒で集計。",
@@ -419,9 +142,6 @@
                 "faq-editor-a": "A. We have a dedicated editor that allows efficient editing on a larger screen. You can also reorder categories and preview colors smoothly.",
                 "footer-dev-site": "Development Site",
                 "footer-disclaimer": "This is a personal open-source project and provided 'AS IS' without warranty of any kind. The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from its use. Use at your own risk.",
-                "faq-editor-q": "Q. The sidebar is too narrow for editing categories.",
-                "faq-editor-a": "A. We have a dedicated editor that allows efficient editing on a larger screen. You can also reorder categories and preview colors smoothly.",
-                "category-editor-title": "QL-Category Editor",
                 "lang-en": "🇺🇸 English",
                 "lang-ja": "🇯🇵 日本語",
                 "lang-de": "🇩🇪 Deutsch",
@@ -495,9 +215,6 @@
                 "cta-feature-request": "Funktion anfordern (GitHub)",
                 "footer-dev-site": "Entwicklerseite",
                 "footer-disclaimer": "Dies ist ein persönliches Open-Source-Projekt und wird ohne jegliche Gewährleistung zur Verfügung gestellt. Nutzung auf eigene Gefahr.",
-                "faq-editor-q": "Q. Die Seitenleiste ist zu schmal zum Bearbeiten von Kategorien.",
-                "faq-editor-a": "A. Wir haben einen speziellen Editor, der eine effiziente Bearbeitung auf einem größeren Bildschirm ermöglicht. Sie können Kategorien auch neu ordnen und Farben reibungslos in der Vorschau anzeigen.",
-                "category-editor-title": "Geschäftskategorie-Editor",
                 "lang-en": "🇺🇸 English",
                 "lang-ja": "🇯🇵 日本語",
                 "lang-de": "🇩🇪 Deutsch",
@@ -571,9 +288,6 @@
                 "cta-feature-request": "Solicitar una función (GitHub)",
                 "footer-dev-site": "Sitio de desarrollo",
                 "footer-disclaimer": "Este es un proyecto personal de código abierto y se proporciona 'TAL CUAL' sin garantía de ningún tipo. Úselo bajo su propio riesgo.",
-                "faq-editor-q": "Q. La barra lateral es demasiado estrecha para editar categorías.",
-                "faq-editor-a": "A. Tenemos un editor dedicado que permite una edición eficiente en una pantalla más grande. También puedes reordenar categorías y previsualizar colores sin problemas.",
-                "category-editor-title": "Editor de Categorías de Negocio",
                 "lang-en": "🇺🇸 English",
                 "lang-ja": "🇯🇵 日本語",
                 "lang-de": "🇩🇪 Deutsch",
@@ -647,9 +361,6 @@
                 "cta-feature-request": "Suggérer une fonction (GitHub)",
                 "footer-dev-site": "Site de développement",
                 "footer-disclaimer": "Ceci est un projet personnel open-source et est fourni 'EN L'ÉTAT' sans aucune garantie. À utiliser à vos propres risques.",
-                "faq-editor-q": "Q. La barre latérale est trop étroite pour modifier les catégories.",
-                "faq-editor-a": "A. Nous avons un éditeur dédié qui permet une édition efficace sur un écran plus grand. Vous pouvez également réorganiser les catégories et prévisualiser les couleurs en toute fluidité.",
-                "category-editor-title": "Éditeur de catégories professionnelles",
                 "lang-en": "🇺🇸 English",
                 "lang-ja": "🇯🇵 日本語",
                 "lang-de": "🇩🇪 Deutsch",
@@ -723,9 +434,6 @@
                 "cta-feature-request": "Solicitar um recurso (GitHub)",
                 "footer-dev-site": "Site de desenvolvimento",
                 "footer-disclaimer": "Este é um projeto pessoal de código aberto e é fornecido 'COMO ESTÁ' sem qualquer garantia. Use por sua conta e risco.",
-                "faq-editor-q": "Q. A barra lateral é muito estreita para editar categorias.",
-                "faq-editor-a": "A. Temos um editor dedicado que permite uma edição eficiente em uma tela maior. Você também pode reordenar categorias e visualizar cores sem problemas.",
-                "category-editor-title": "Editor de Categorias de Negócios",
                 "lang-en": "🇺🇸 English",
                 "lang-ja": "🇯🇵 日本語",
                 "lang-de": "🇩🇪 Deutsch",
@@ -799,9 +507,6 @@
                 "cta-feature-request": "기능/개선 요청 (GitHub)",
                 "footer-dev-site": "개발 사이트",
                 "footer-disclaimer": "이 프로젝트는 개인 오픈 소스 프로젝트이며 어떠한 보증도 제공하지 않습니다. 사용 시 발생하는 책임은 사용자에게 있습니다.",
-                "faq-editor-q": "Q. 사이드바가 너무 좁아서 카테고리를 편집하기 어렵습니다.",
-                "faq-editor-a": "A. 큰 화면에서 효율적으로 편집할 수 있는 전용 에디터가 준비되어 있습니다. 카테고리 순서 변경 및 색상 확인도 원활하게 수행할 수 있습니다.",
-                "category-editor-title": "업무 카테고리 에디터",
                 "lang-en": "🇺🇸 English",
                 "lang-ja": "🇯🇵 日本語",
                 "lang-de": "🇩🇪 Deutsch",
@@ -875,9 +580,6 @@
                 "cta-feature-request": "请求新功能 (GitHub)",
                 "footer-dev-site": "开发网站",
                 "footer-disclaimer": "这是一个个人开源项目，按“原样”提供，不附带任何形式的保证。请自行承担使用风险。",
-                "faq-editor-q": "Q. 侧边栏太窄，编辑分类很不方便。",
-                "faq-editor-a": "A. 我们提供了一个专用编辑器，可以在更大的屏幕上高效编辑。您还可以顺畅地调整分类顺序并预览颜色。",
-                "category-editor-title": "业务分类编辑器",
                 "lang-en": "🇺🇸 English",
                 "lang-ja": "🇯🇵 日本語",
                 "lang-de": "🇩🇪 Deutsch",
@@ -888,185 +590,3 @@
                 "lang-zh": "🇨🇳 简体中文"
             }
         };
-
-        let currentLang = 'en';
-
-        function getSafeLang(lang) {
-            // Whitelist of supported languages; fallback to English if unknown
-            const allowedLangs = ['en', 'ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-            return allowedLangs.includes(lang) ? lang : 'en';
-        }
-
-        function setLanguage(lang) {
-            const safeLang = getSafeLang(lang);
-            currentLang = safeLang;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[safeLang][key]) {
-                    el.innerText = translations[safeLang][key];
-                }
-            });
-
-            // Update store badges
-            const currentBadge = `src/assets/badges/chrome-web-store-badge-${safeLang}.png`;
-
-            const heroBadge = document.getElementById('hero-store-badge');
-            if (heroBadge) heroBadge.src = currentBadge;
-
-            document.querySelectorAll('.setup-store-badge').forEach(img => {
-                img.src = currentBadge;
-            });
-
-            // Update font stack based on language
-            const fontStacks = {
-                ja: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
-                ko: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
-                zh: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
-                default: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif"
-            };
-            document.body.style.fontFamily = fontStacks[lang] || fontStacks.default;
-
-            // Update dropdown value
-            const select = document.getElementById('lang-select-landing');
-            if (select) select.value = lang;
-
-            // Update QL-Animation Studio link with language parameter
-            const studioLink = document.getElementById('cta-studio-link');
-            if (studioLink) {
-                studioLink.href = 'studio.html?lang=' + encodeURIComponent(safeLang);
-            }
-
-            // Update QL-Category Editor link with language parameter
-            const editorLink = document.getElementById('cta-editor-link');
-            if (editorLink) {
-                editorLink.href = 'category-editor.html?lang=' + encodeURIComponent(safeLang);
-            }
-
-            // Update Quick Start Guide link with language parameter
-            const guideLink = document.getElementById('quick-start-guide-link');
-            if (guideLink) {
-                guideLink.href = 'guide.html?lang=' + encodeURIComponent(safeLang);
-            }
-
-            // Update page title
-            const titles = {
-                en: "QuickLog-Solo - Work memo tool for minimalists",
-                ja: "QuickLog-Solo - ミニマリスト向け作業メモツール",
-                de: "QuickLog-Solo - Arbeitsnotiz-Tool für Minimalisten",
-                es: "QuickLog-Solo - Herramienta de notas de trabajo para minimalistas",
-                fr: "QuickLog-Solo - Outil de notes de travail pour minimalistes",
-                pt: "QuickLog-Solo - Ferramenta de notas de trabalho para minimalistas",
-                ko: "QuickLog-Solo - 미니멀리스트를 위한 작업 메모 도구",
-                zh: "QuickLog-Solo - 极简主义者的工作笔记工具"
-            };
-            document.title = titles[lang] || titles['en'];
-        }
-
-        // Initialize version display
-        fetch('src/version.json')
-            .then(response => response.json())
-            .then(data => {
-                const el = document.getElementById('preview-version');
-                if (el) el.textContent = `v${data.version}`;
-            })
-            .catch(err => console.error('Failed to load version:', err));
-
-        // Initialize language
-        const userLang = navigator.language || navigator.userLanguage;
-        const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-        let matched = 'en';
-        for (const prefix of prefixes) {
-            if (userLang.startsWith(prefix)) {
-                matched = prefix;
-                break;
-            }
-        }
-        setLanguage(matched);
-
-        function showSetup(browser, event) {
-            document.querySelectorAll('.setup-tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.setup-tab-btn').forEach(el => el.classList.remove('active'));
-
-            document.getElementById('setup-' + browser).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
-        }
-
-        function copyUrl(url, event) {
-            event.preventDefault();
-            const target = event.currentTarget;
-            navigator.clipboard.writeText(url).then(() => {
-                const originalHtml = target.innerHTML;
-                const feedbackText = translations[currentLang]["copy-success"];
-                target.innerHTML = '<span style="font-size: 0.8em; font-weight: bold;">' + feedbackText + '</span>';
-                const originalColor = target.style.color;
-                target.style.color = 'var(--md-sys-color-tertiary)';
-
-                setTimeout(() => {
-                    target.innerHTML = originalHtml;
-                    target.style.color = originalColor;
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-            });
-        }
-
-        function openPreview() {
-            const iframe = document.querySelector('.preview-iframe');
-
-            // Use a separate database for preview to avoid conflict with the actual extension.
-            // Support 'db' URL parameter for test isolation.
-            const urlParams = new URLSearchParams(window.location.search);
-            const dbName = urlParams.get('db') || 'QuickLogSoloDB_Preview';
-            const deleteRequest = indexedDB.deleteDatabase(dbName);
-
-            deleteRequest.onsuccess = () => {
-                console.log('Preview IndexedDB deleted successfully.');
-                loadPreview(iframe, dbName);
-            };
-            deleteRequest.onerror = () => {
-                console.warn('Failed to delete preview IndexedDB, loading preview anyway.');
-                loadPreview(iframe, dbName);
-            };
-            deleteRequest.onblocked = () => {
-                console.warn('Preview IndexedDB deletion blocked. Please close other preview tabs.');
-                loadPreview(iframe, dbName);
-            };
-        }
-
-        function loadPreview(iframe, dbName) {
-            const safeLang = getSafeLang(currentLang);
-            const previewUrl = 'src/app.html?lang=' + encodeURIComponent(safeLang) + '&db=' + encodeURIComponent(dbName);
-            if (iframe.src !== previewUrl) {
-                iframe.src = previewUrl;
-            }
-            document.getElementById('preview-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closePreview() {
-            const iframe = document.querySelector('.preview-iframe');
-            iframe.src = 'about:blank'; // Stop all processes in iframe
-            document.getElementById('preview-modal').classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-
-        function toggleDownloadDropdown(event) {
-            event.stopPropagation();
-            const dropdown = document.getElementById('download-dropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        window.onclick = function(event) {
-            const modal = document.getElementById('preview-modal');
-            if (event.target == modal) {
-                closePreview();
-            }
-
-            const dropdown = document.getElementById('download-dropdown');
-            if (dropdown && !dropdown.contains(event.target)) {
-                dropdown.classList.remove('show');
-            }
-        }
-    </script>
-</body>
-</html>
