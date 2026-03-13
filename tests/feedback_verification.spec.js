@@ -50,5 +50,5 @@ test('Feedback implementation verification', async ({ page }) => {
   await page.click('#btn-show-code');
   await expect(page.locator('#code-modal')).toBeVisible();
 
-  await page.screenshot({ path: '/home/jules/verification/feedback_refined.png' });
+  await page.screenshot({ path: 'feedback_refined.png' });
 });
