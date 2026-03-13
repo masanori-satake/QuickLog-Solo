@@ -22,9 +22,12 @@ const tagInput = document.getElementById('tag-input');
 const colorPaletteEl = document.getElementById('color-palette');
 const editAnimationSelect = document.getElementById('edit-animation');
 const previewNameEl = document.getElementById('preview-name');
+const animInfoEl = document.getElementById('animation-info');
+const animDescEl = document.getElementById('anim-desc');
+const animAuthorEl = document.getElementById('anim-author');
 const codeViewEl = document.getElementById('code-view');
-const toggleCodeBtn = document.getElementById('toggle-code');
-const codeSection = document.getElementById('code-section');
+const codeModalEl = document.getElementById('code-modal');
+const btnShowCode = document.getElementById('btn-show-code');
 
 const addCategoryBtn = document.getElementById('add-category-btn');
 const addPageBreakBtn = document.getElementById('add-page-break-btn');
@@ -223,8 +226,17 @@ function setupEventListeners() {
     editAnimationSelect.addEventListener('change', (e) => {
         if (selectedIndex === -1) return;
         categories[selectedIndex].animation = e.target.value;
+        updateAnimationInfo();
         updatePreview();
         updateCodeView();
+    });
+
+    editAnimationSelect.addEventListener('mouseenter', () => {
+        updateAnimationInfo();
+    });
+
+    editAnimationSelect.addEventListener('mouseleave', () => {
+        // Only hide if it's the 'none' animation or something
     });
 
     importBtn.addEventListener('click', () => importInput.click());
@@ -247,9 +259,14 @@ function setupEventListeners() {
         }
     });
 
-    toggleCodeBtn.addEventListener('click', () => {
-        codeSection.classList.toggle('collapsed');
-        toggleCodeBtn.querySelector('span').textContent = codeSection.classList.contains('collapsed') ? 'expand_less' : 'expand_more';
+    btnShowCode.addEventListener('click', () => {
+        codeModalEl.classList.remove('hidden');
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === codeModalEl) {
+            codeModalEl.classList.add('hidden');
+        }
     });
 
     // Drag and Drop for Reordering
@@ -388,6 +405,7 @@ function renderDetail() {
         detailSection.classList.add('hidden');
         previewNameEl.textContent = '';
         animationEngine.stop();
+        animInfoEl.classList.add('hidden');
         return;
     }
 
@@ -398,6 +416,7 @@ function renderDetail() {
         detailSection.classList.add('hidden');
         previewNameEl.textContent = `--- ${t('page-break-label')} ---`;
         updatePreview();
+        animInfoEl.classList.add('hidden');
         return;
     }
 
@@ -407,7 +426,32 @@ function renderDetail() {
     renderTags();
     updateColorSelection();
     editAnimationSelect.value = cat.animation || 'default';
+    updateAnimationInfo();
     updatePreview();
+}
+
+function updateAnimationInfo() {
+    const animId = editAnimationSelect.value;
+    if (!animId || animId === 'none') {
+        animInfoEl.classList.add('hidden');
+        return;
+    }
+
+    const effectiveId = animId === 'default' ? 'digital_rain' : animId;
+    const anim = animationRegistry.find(a => a.id === effectiveId);
+
+    if (anim && anim.metadata) {
+        animInfoEl.classList.remove('hidden');
+        const desc = typeof anim.metadata.description === 'object' ?
+            (anim.metadata.description[currentLang] || anim.metadata.description['en']) :
+            anim.metadata.description;
+        animDescEl.textContent = desc || '';
+
+        const author = anim.metadata.author || t('anim-unknown-author');
+        animAuthorEl.textContent = `${t('anim-author-label')}: ${author}`;
+    } else {
+        animInfoEl.classList.add('hidden');
+    }
 }
 
 function renderTags() {
@@ -518,10 +562,11 @@ function updatePreview() {
     const canvasWidth = animationEngine.canvas.width;
     const canvasHeight = animationEngine.canvas.height;
 
-    // In QuickLog-Solo, the FG area is roughly the middle 70-80px height
-    // and centered.
-    const badgeWidth = 300;
-    const badgeHeight = 70;
+    // Refine exclusion area to tightly fit the category name and timer.
+    // Measuring the actual text dimensions would be ideal, but for the preview
+    // we use a reasonable tight bound based on the UI elements.
+    const badgeWidth = 240;
+    const badgeHeight = 60;
 
     animationEngine.setExclusionAreas([{
         x: (canvasWidth - badgeWidth) / 2,
