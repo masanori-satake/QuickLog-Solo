@@ -42,7 +42,7 @@ body {
     justify-content: space-between;
 }
 
-.header-left {
+.header-left, .header-right {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -282,8 +282,12 @@ input[type="text"], select {
     border: 1px solid var(--md-sys-color-outline);
     background-color: var(--md-sys-color-surface);
     color: var(--md-sys-color-on-surface);
-    font-family: inherit;
+    font-family: var(--font-family);
     font-size: 0.9rem;
+}
+
+option {
+    font-family: var(--font-family);
 }
 
 input[type="text"]:focus, select:focus {
