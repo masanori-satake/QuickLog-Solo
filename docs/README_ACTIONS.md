@@ -148,11 +148,13 @@ graph TD
 
 ### 6. Auto Release (`release.yml`)
 
+Pythonスクリプトによるアイコン生成 (`generate_png_icons.py`) のため、Node.jsに加えてPython版のPlaywrightもセットアップします。
+
 #### フローチャート
 
 ```mermaid
 graph TD
-    Start([トリガー: v*.*.* タグのPush]) --> Setup[環境セットアップ]
+    Start([トリガー: v*.*.* タグのPush]) --> Setup[環境セットアップ<br/>Node.js / Python / Playwright]
     Setup --> Build[ビルド実行<br/>npm run build]
     Build --> Release[GitHub Release作成<br/>アセットのアップロード]
     Release --> End([完了])
