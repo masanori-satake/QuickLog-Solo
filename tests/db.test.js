@@ -1,6 +1,6 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_AUTO_STOP
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_AUTO_STOP
 } from '../src/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../src/js/utils.js';
 
@@ -191,6 +191,14 @@ describe('DB Module', () => {
         const stopMarker = allLogs.find(l => l.isManualStop && l.startTime === stopTime);
         expect(stopMarker).toBeDefined();
         expect(stopMarker.category).toBe(SYSTEM_CATEGORY_IDLE);
+    });
+
+    test('initDB initializes default alarms', async () => {
+        await initDB();
+        const alarms = await dbGetAll(STORE_ALARMS);
+        expect(alarms.length).toBe(5);
+        expect(alarms[0].enabled).toBe(false);
+        expect(alarms[0].action).toBe('none');
     });
 
     describe('dbImportCategories', () => {

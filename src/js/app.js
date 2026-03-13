@@ -1764,7 +1764,7 @@ function setupEventListeners() {
                     title: t('title'),
                     message: t('test-notification-message') + " (Immediate)",
                     priority: 2
-                }, (id) => {
+                }, (_id) => {
                     if (chrome.runtime.lastError) {
                         console.error('QuickLog-Solo: Test notification failed:', chrome.runtime.lastError);
                     }
