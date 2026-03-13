@@ -137,7 +137,7 @@ jobs:
     - name: Install Playwright Dependencies (if cache hit)
       if: (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') && steps.playwright-cache.outputs.cache-hit == 'true'
       run: npx playwright install-deps chromium
-      timeout-minutes: 2
+      timeout-minutes: 5
 
     - name: Start local server
       if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'

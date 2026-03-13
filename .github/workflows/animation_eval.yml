@@ -53,7 +53,7 @@ jobs:
     - name: Install Playwright Dependencies (if cache hit)
       if: steps.playwright-cache.outputs.cache-hit == 'true'
       run: npx playwright install-deps chromium
-      timeout-minutes: 2
+      timeout-minutes: 5
 
     - name: Start local server
       run: python3 -m http.server 8080 &
