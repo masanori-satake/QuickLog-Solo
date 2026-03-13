@@ -2,6 +2,14 @@
 
 本プロジェクトにおける CI/CD および自動化プロセスの概要と詳細をまとめます。
 
+## 共通設定
+
+GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェクト全体のワークフロー環境を以下のように統一しています。
+
+- **Node.js 実行環境**: すべてのワークフローで Node.js **v24** を使用します。
+- **先行オプトイン**: `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` 環境変数を設定し、アクションが Node.js 24 ランタイムで動作するように強制しています。
+- **アクションの最新化**: `actions/checkout@v5`, `actions/setup-node@v6`, `actions/setup-python@v6`, `actions/cache@v5` 等の最新メジャーバージョンを採用しています。
+
 ## ワークフロー一覧
 
 | ワークフロー名 | ファイル | 概要 | トリガー |
@@ -150,13 +158,14 @@ graph TD
 
 ### 6. Auto Release (`release.yml`)
 
+Node.js **v24** 環境で動作します。
 Pythonスクリプトによるアイコン生成 (`generate_png_icons.py`) のため、Node.js版のPlaywrightがインストールしたブラウザを共有する形で、Python版のPlaywrightライブラリを `pip` でインストール・セットアップします。
 
 #### フローチャート
 
 ```mermaid
 graph TD
-    Start([トリガー: v*.*.* タグのPush]) --> Setup[環境セットアップ<br/>Node.js / Python]
+    Start([トリガー: v*.*.* タグのPush]) --> Setup[環境セットアップ<br/>Node.js v24 / Python]
     Setup --> Playwright[Playwrightブラウザ & <br/>Pythonライブラリのセットアップ]
     Playwright --> Build[ビルド実行<br/>npm run build]
     Build --> Release[GitHub Release作成<br/>アセットのアップロード]
