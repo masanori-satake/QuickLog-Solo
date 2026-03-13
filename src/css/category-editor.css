@@ -432,15 +432,17 @@ input[type="text"]:focus, select:focus {
     position: relative;
     width: 400px;
     height: 120px;
-    border-radius: 12px;
+    border-radius: var(--md-sys-shape-medium);
     overflow: hidden;
-    background-color: #000;
+    background-color: var(--md-sys-color-surface-container-high);
     margin: 0 auto;
+    box-shadow: var(--md-sys-elevation-1);
 }
 
 #animation-canvas {
     width: 100%;
     height: 100%;
+    background-color: var(--md-sys-color-surface-container-high);
 }
 
 .preview-overlay-base {
@@ -456,25 +458,25 @@ input[type="text"]:focus, select:focus {
 }
 
 #preview-name-heading {
-    font-size: 1rem;
+    font-size: var(--md-sys-typescale-title-medium-size);
     font-weight: 500;
-    text-shadow: 0 0 4px #000;
+    text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
     line-height: 1.2;
     margin: 0 0 4px;
-    color: #fff;
+    color: var(--md-sys-color-on-surface);
 }
 
 .preview-timer-box {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: #fff;
-    text-shadow: 0 0 4px #000;
+    gap: var(--md-sys-spacing-1);
+    color: var(--md-sys-color-on-surface);
+    text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
 }
 
 
 .preview-elapsed {
-    font-size: 1.5rem;
+    font-size: var(--md-sys-typescale-headline-medium-size);
     font-weight: 700;
     font-family: 'Roboto Mono', 'Courier New', monospace;
     line-height: 1;

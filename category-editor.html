@@ -32,8 +32,8 @@
                 <div class="header-right">
                     <div class="theme-switch-wrapper">
                         <span class="material-symbols-outlined">light_mode</span>
-                        <label class="theme-switch" for="theme-toggle">
-                            <input type="checkbox" id="theme-toggle" />
+                        <label class="theme-switch" for="theme-toggle" style="display: inline-block;">
+                            <input type="checkbox" id="theme-toggle" style="display: none;" />
                             <div class="slider round"></div>
                         </label>
                         <span class="material-symbols-outlined">dark_mode</span>
@@ -81,11 +81,11 @@
                     <h2 class="section-title"><span class="material-symbols-outlined">edit</span> <span data-i18n="category-detail">Category Detail</span></h2>
                     <div class="edit-form">
                         <div class="input-group">
-                            <label data-i18n="label-name">Name</label>
+                            <label for="edit-name" data-i18n="label-name">Name</label>
                             <input type="text" id="edit-name" placeholder="Category Name">
                         </div>
                         <div class="input-group">
-                            <label data-i18n="tags">Tags</label>
+                            <label for="tag-input" data-i18n="tags">Tags</label>
                             <div class="tag-editor">
                                 <div id="tag-list" class="tag-list"></div>
                                 <input type="text" id="tag-input" data-i18n-placeholder="placeholder-tags" placeholder="Add tags...">
@@ -99,7 +99,7 @@
                                 </div>
                             </div>
                             <div class="input-group">
-                                <label data-i18n="setting-animation">Animation</label>
+                                <label for="edit-animation" data-i18n="setting-animation">Animation</label>
                                 <div class="animation-select-wrapper">
                                     <select id="edit-animation">
                                         <!-- Animations will be populated here -->

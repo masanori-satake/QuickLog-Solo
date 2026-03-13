@@ -433,11 +433,16 @@ function updateListItem(idx) {
 }
 
 function renderDetail() {
+    const previewContainer = document.getElementById('preview-container');
+    const previewOverlay = document.querySelector('.preview-overlay-base');
+
     if (selectedIndex === -1 || selectedIndex >= categories.length) {
-        detailSection.classList.add('hidden');
+        detailSection.classList.remove('hidden');
         previewNameEl.textContent = '';
         animationEngine.stop();
         animInfoEl.classList.add('hidden');
+        previewContainer.className = 'preview-container';
+        previewOverlay.className = 'preview-overlay-base';
         return;
     }
 
@@ -459,6 +464,12 @@ function renderDetail() {
     updateColorSelection();
     editAnimationSelect.value = cat.animation || 'default';
     updateAnimationInfo();
+
+    // Update preview theme classes
+    const colorClass = `cat-${cat.color || 'primary'}`;
+    previewContainer.className = `preview-container ${colorClass} anim-active`;
+    previewOverlay.className = `preview-overlay-base ${colorClass} anim-active`;
+
     updatePreview();
 }
 
