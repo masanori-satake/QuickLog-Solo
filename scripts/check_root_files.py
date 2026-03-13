@@ -19,6 +19,7 @@ ALLOWED_ROOT_ITEMS = {
     "guide.html",
     "index.html",
     "studio.html",
+    "category-editor.html",
     "jest.config.cjs",
     "jest.setup.js",
     "package-lock.json",
