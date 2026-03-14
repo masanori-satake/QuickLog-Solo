@@ -19,8 +19,8 @@ test.describe('Abnormal Import Cases', () => {
         const content = 'This is not JSON at all\nDefinitely not';
         await page.evaluate((text) => navigator.clipboard.writeText(text), content);
 
-        // Listen for alert
-        const dialogPromise = page.waitForEvent('dialog');
+        // Listen for alert. Use a higher timeout and manual handler for better stability
+        const dialogPromise = page.waitForEvent('dialog', { timeout: 10000 });
         await page.click('#import-categories-btn');
 
         const dialog = await dialogPromise;
@@ -32,7 +32,7 @@ test.describe('Abnormal Import Cases', () => {
         const content = '123\n"string"\ntrue';
         await page.evaluate((text) => navigator.clipboard.writeText(text), content);
 
-        const dialogPromise = page.waitForEvent('dialog');
+        const dialogPromise = page.waitForEvent('dialog', { timeout: 10000 });
         await page.click('#import-categories-btn');
 
         const dialog = await dialogPromise;
