@@ -1757,7 +1757,7 @@ function setupEventListeners() {
         e.preventDefault();
         const lang = getLanguage();
         // Fallback to absolute URL if necessary, but relative should work in extension context
-        window.open(`../category-editor.html?lang=${lang}`, '_blank');
+        window.open(`../category-editor.html?lang=${lang}&from=app`, '_blank');
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {

@@ -73,6 +73,7 @@ function t(key, params = {}) {
 // Initialize
 function init() {
     setupLanguage();
+    setupAppMode();
     setupTheme();
     setupAnimationEngine();
     setupEventListeners();
@@ -95,6 +96,14 @@ function setupTheme() {
 function applyTheme() {
     document.body.classList.remove('theme-light', 'theme-dark');
     document.body.classList.add(`theme-${currentTheme}`);
+}
+
+function setupAppMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('from') === 'app') {
+        const backLink = document.querySelector('.back-link');
+        if (backLink) backLink.classList.add('hidden');
+    }
 }
 
 function setupLanguage() {

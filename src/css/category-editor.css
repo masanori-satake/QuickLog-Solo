@@ -651,6 +651,10 @@ input[type="text"]:focus, select:focus {
     pointer-events: none;
 }
 
+.hidden {
+    display: none !important;
+}
+
 /* Theme Switch */
 .theme-switch-wrapper {
     display: flex;
