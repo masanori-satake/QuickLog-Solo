@@ -29,6 +29,7 @@ ALLOWED_ROOT_ITEMS = {
     "src",
     "tests",
     "vercel.json",
+    "releases",
     "node_modules", # Included for local dev convenience, though CI might not have it when this runs
 }
 
