@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 
 def generate_icons(output_dir=None, bg_color=None):
     svg_path = os.path.join(os.getcwd(), 'src/assets/icon.svg')
@@ -14,10 +15,17 @@ def generate_icons(output_dir=None, bg_color=None):
         svg_content = f.read()
 
     if bg_color:
-        # Simple replacement for the main background color
-        # The original is <rect width="512" height="512" rx="100" fill="#2563eb"/>
-        svg_content = svg_content.replace('fill="#2563eb"', f'fill="{bg_color}"')
-        print(f"Background color changed to {bg_color}")
+        # Improved replacement logic using regex to identify the background rect (512x512)
+        # This ensures we follow the master SVG's structure even if the base color changes.
+        pattern = r'(<rect\s+[^>]*width="512"\s+[^>]*height="512"\s+[^>]*fill=")([^"]+)(")'
+        if re.search(pattern, svg_content):
+            svg_content = re.sub(pattern, rf'\1{bg_color}\3', svg_content)
+            print(f"Background color dynamically changed to {bg_color}")
+        else:
+            # Fallback if the strict pattern doesn't match (e.g. order of attributes)
+            # Find the first fill attribute in a rect
+            svg_content = re.sub(r'(<rect\s+[^>]*fill=")([^"]+)(")', rf'\1{bg_color}\3', svg_content, count=1)
+            print(f"Background color changed to {bg_color} (using fallback regex)")
 
     # If VERCEL environment is detected, skip generation as it's not needed for the landing page
     # and Playwright might not be installed or configured.
