@@ -1,0 +1,307 @@
+:root {
+  /* --- Material 3 Color System (Baseline Light) --- */
+  --md-sys-color-primary: #0056d2;
+  --md-sys-color-on-primary: #fff;
+  --md-sys-color-primary-container: #dae2ff;
+  --md-sys-color-on-primary-container: #00184a;
+  --md-sys-color-secondary: #585e71;
+  --md-sys-color-on-secondary: #fff;
+  --md-sys-color-secondary-container: #dce2f9;
+  --md-sys-color-on-secondary-container: #151b2c;
+  --md-sys-color-tertiary: #735572;
+  --md-sys-color-on-tertiary: #fff;
+  --md-sys-color-tertiary-container: #fed7f9;
+  --md-sys-color-on-tertiary-container: #2b122c;
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #fff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+  --md-sys-color-background: #fdfbff;
+  --md-sys-color-on-background: #1b1b1f;
+  --md-sys-color-surface: #fdfbff;
+  --md-sys-color-on-surface: #1b1b1f;
+  --md-sys-color-surface-variant: #e1e2ec;
+  --md-sys-color-on-surface-variant: #44474f;
+  --md-sys-color-outline: #757780;
+  --md-sys-color-outline-variant: #c5c6d0;
+  --md-sys-color-surface-container-lowest: #fff;
+  --md-sys-color-surface-container-low: #f7f3f9;
+  --md-sys-color-surface-container: #f1edf3;
+  --md-sys-color-surface-container-high: #ebe7ed;
+  --md-sys-color-surface-container-high-rgb: 235, 231, 237;
+  --md-sys-color-surface-container-highest: #e5e1e7;
+  --md-sys-color-inverse-surface: #313033;
+  --md-sys-color-inverse-on-surface: #f4eff4;
+
+  /* --- Fonts --- */
+  --font-family: 'Roboto', 'Inter', 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
+
+  /* --- Spacing --- */
+  --md-sys-spacing-0: 0px;
+  --md-sys-spacing-0-5: 4px;
+  --md-sys-spacing-1: 8px;
+  --md-sys-spacing-1-5: 12px;
+  --md-sys-spacing-2: 16px;
+  --md-sys-spacing-3: 24px;
+  --md-sys-spacing-4: 32px;
+  --md-sys-spacing-5: 40px;
+  --md-sys-spacing-6: 48px;
+  --md-sys-spacing-7: 56px;
+  --md-sys-spacing-8: 64px;
+
+  /* --- Shape (Rounding) --- */
+  --md-sys-shape-none: 0px;
+  --md-sys-shape-extra-small: 4px;
+  --md-sys-shape-small: 8px;
+  --md-sys-shape-medium: 12px;
+  --md-sys-shape-large: 16px;
+  --md-sys-shape-extra-large: 28px;
+  --md-sys-shape-full: 9999px;
+
+  /* --- Elevation (Simplified Shadows) --- */
+  --md-sys-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+  --md-sys-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+  --md-sys-elevation-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.30), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+
+  /* --- Typography --- */
+  --md-sys-typescale-display-large-size: 57px;
+  --md-sys-typescale-display-large-line-height: 64px;
+  --md-sys-typescale-display-large-weight: 400;
+  --md-sys-typescale-headline-large-size: 32px;
+  --md-sys-typescale-headline-large-line-height: 40px;
+  --md-sys-typescale-headline-large-weight: 400;
+  --md-sys-typescale-headline-medium-size: 28px;
+  --md-sys-typescale-headline-medium-line-height: 36px;
+  --md-sys-typescale-headline-medium-weight: 400;
+  --md-sys-typescale-title-large-size: 22px;
+  --md-sys-typescale-title-large-line-height: 28px;
+  --md-sys-typescale-title-large-weight: 400;
+  --md-sys-typescale-title-medium-size: 16px;
+  --md-sys-typescale-title-medium-line-height: 24px;
+  --md-sys-typescale-title-medium-weight: 500;
+  --md-sys-typescale-body-large-size: 16px;
+  --md-sys-typescale-body-large-line-height: 24px;
+  --md-sys-typescale-body-large-weight: 400;
+  --md-sys-typescale-label-large-size: 14px;
+  --md-sys-typescale-label-large-line-height: 20px;
+  --md-sys-typescale-label-large-weight: 500;
+
+  /* Custom Category Tonal Presets (Mapped to M3 Roles) */
+  --custom-cat-primary-container: #bbdefb; /* Blue 100 */
+  --custom-cat-on-primary-container: #0d47a1;
+  --custom-cat-secondary-container: #dcedc8; /* Light Green 100 */
+  --custom-cat-on-secondary-container: #1b5e20;
+  --custom-cat-tertiary-container: #e1bee7; /* Purple 100 */
+  --custom-cat-on-tertiary-container: #4a148c;
+  --custom-cat-error-container: #ffcdd2; /* Red 100 */
+  --custom-cat-on-error-container: #b71c1c;
+  --custom-cat-neutral-container: #cfd8dc; /* Blue Gray 100 */
+  --custom-cat-on-neutral-container: #263238;
+  --custom-cat-outline-container: #f5f5f5; /* Gray 100 */
+  --custom-cat-on-outline-container: #212121;
+
+  /* Additional M3-like Tonal Presets */
+  --custom-cat-teal-container: #b2ebf2; /* Cyan 100 */
+  --custom-cat-on-teal-container: #006064;
+  --custom-cat-green-container: #c8e6c9; /* Green 100 */
+  --custom-cat-on-green-container: #1b5e20;
+  --custom-cat-yellow-container: #fff9c4; /* Yellow 100 */
+  --custom-cat-on-yellow-container: #f57f17;
+  --custom-cat-orange-container: #ffecb3; /* Amber 100 */
+  --custom-cat-on-orange-container: #ff6f00;
+  --custom-cat-pink-container: #f8bbd0; /* Pink 100 */
+  --custom-cat-on-pink-container: #880e4f;
+  --custom-cat-indigo-container: #d1c4e9; /* Deep Purple 100 */
+  --custom-cat-on-indigo-container: #311b92;
+  --custom-cat-brown-container: #d7ccc8; /* Brown 100 */
+  --custom-cat-on-brown-container: #3e2723;
+  --custom-cat-cyan-container: #b3e5fc; /* Light Blue 100 */
+  --custom-cat-on-cyan-container: #01579b;
+
+  /* Custom Category Main Colors (for dots and overlays) */
+  --custom-cat-primary: #1976d2;
+  --custom-cat-secondary: #7cb342;
+  --custom-cat-tertiary: #8e24aa;
+  --custom-cat-error: #d32f2f;
+  --custom-cat-neutral: #546e7a;
+  --custom-cat-outline: #9e9e9e;
+  --custom-cat-teal: #0097a7;
+  --custom-cat-green: #388e3c;
+  --custom-cat-yellow: #fbc02d;
+  --custom-cat-orange: #ffa000;
+  --custom-cat-pink: #d81b60;
+  --custom-cat-indigo: #5e35b1;
+  --custom-cat-brown: #6d4c41;
+  --custom-cat-cyan: #039be5;
+  --custom-cat-on-main: #fff;
+}
+
+body.theme-dark {
+  --md-sys-color-primary: #b1c5ff;
+  --md-sys-color-on-primary: #002c72;
+  --md-sys-color-primary-container: #0040a1;
+  --md-sys-color-on-primary-container: #dae2ff;
+  --md-sys-color-secondary: #c0c6dd;
+  --md-sys-color-on-secondary: #2a3042;
+  --md-sys-color-secondary-container: #404659;
+  --md-sys-color-on-secondary-container: #dce2f9;
+  --md-sys-color-tertiary: #e1bbdd;
+  --md-sys-color-on-tertiary: #412742;
+  --md-sys-color-tertiary-container: #593d59;
+  --md-sys-color-on-tertiary-container: #fed7f9;
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffdad6;
+  --md-sys-color-background: #1b1b1f;
+  --md-sys-color-on-background: #e5e1e6;
+  --md-sys-color-surface: #1b1b1f;
+  --md-sys-color-on-surface: #e5e1e6;
+  --md-sys-color-surface-variant: #44474f;
+  --md-sys-color-on-surface-variant: #c5c6d0;
+  --md-sys-color-outline: #8f9099;
+  --md-sys-color-outline-variant: #44474f;
+  --md-sys-color-surface-container-lowest: #0f0f12;
+  --md-sys-color-surface-container-low: #1b1b1f;
+  --md-sys-color-surface-container: #1f1f23;
+  --md-sys-color-surface-container-high: #2a292f;
+  --md-sys-color-surface-container-high-rgb: 42, 41, 47;
+  --md-sys-color-surface-container-highest: #35343a;
+  --md-sys-color-inverse-surface: #e5e1e6;
+  --md-sys-color-inverse-on-surface: #313033;
+
+  /* Custom Category Tonal Presets (Dark - Mapped to M3 Roles) */
+  --custom-cat-primary-container: #0d47a1;
+  --custom-cat-on-primary-container: #bbdefb;
+  --custom-cat-secondary-container: #1b5e20;
+  --custom-cat-on-secondary-container: #dcedc8;
+  --custom-cat-tertiary-container: #4a148c;
+  --custom-cat-on-tertiary-container: #e1bee7;
+  --custom-cat-error-container: #b71c1c;
+  --custom-cat-on-error-container: #ffcdd2;
+  --custom-cat-neutral-container: #263238;
+  --custom-cat-on-neutral-container: #cfd8dc;
+  --custom-cat-outline-container: #212121;
+  --custom-cat-on-outline-container: #f5f5f5;
+
+  /* Additional M3-like Tonal Presets (Dark) */
+  --custom-cat-teal-container: #006064;
+  --custom-cat-on-teal-container: #b2ebf2;
+  --custom-cat-green-container: #1b5e20;
+  --custom-cat-on-green-container: #c8e6c9;
+  --custom-cat-yellow-container: #f57f17;
+  --custom-cat-on-yellow-container: #fff9c4;
+  --custom-cat-orange-container: #ff6f00;
+  --custom-cat-on-orange-container: #ffecb3;
+  --custom-cat-pink-container: #880e4f;
+  --custom-cat-on-pink-container: #f8bbd0;
+  --custom-cat-indigo-container: #311b92;
+  --custom-cat-on-indigo-container: #d1c4e9;
+  --custom-cat-brown-container: #3e2723;
+  --custom-cat-on-brown-container: #d7ccc8;
+  --custom-cat-cyan-container: #01579b;
+  --custom-cat-on-cyan-container: #b3e5fc;
+
+  /* Custom Category Main Colors (Dark) */
+  --custom-cat-primary: #90caf9;
+  --custom-cat-secondary: #aed581;
+  --custom-cat-tertiary: #ce93d8;
+  --custom-cat-error: #ef9a9a;
+  --custom-cat-neutral: #90a4ae;
+  --custom-cat-outline: #bdbdbd;
+  --custom-cat-teal: #80deea;
+  --custom-cat-green: #a5d6a7;
+  --custom-cat-yellow: #fff59d;
+  --custom-cat-orange: #ffcc80;
+  --custom-cat-pink: #f48fb1;
+  --custom-cat-indigo: #b39ddb;
+  --custom-cat-brown: #bcaaa4;
+  --custom-cat-cyan: #81d4fa;
+  --custom-cat-on-main: #000;
+}
+
+/* Category Background & Text Colors (Shared Components) */
+.cat-primary {
+    background-color: var(--custom-cat-primary-container) !important;
+    color: var(--custom-cat-on-primary-container) !important;
+}
+
+.cat-secondary {
+    background-color: var(--custom-cat-secondary-container) !important;
+    color: var(--custom-cat-on-secondary-container) !important;
+}
+
+.cat-tertiary {
+    background-color: var(--custom-cat-tertiary-container) !important;
+    color: var(--custom-cat-on-tertiary-container) !important;
+}
+
+.cat-error {
+    background-color: var(--custom-cat-error-container) !important;
+    color: var(--custom-cat-on-error-container) !important;
+}
+
+.cat-neutral {
+    background-color: var(--custom-cat-neutral-container) !important;
+    color: var(--custom-cat-on-neutral-container) !important;
+}
+
+.cat-outline {
+    background-color: var(--custom-cat-outline-container) !important;
+    color: var(--custom-cat-on-outline-container) !important;
+}
+
+.cat-teal {
+    background-color: var(--custom-cat-teal-container) !important;
+    color: var(--custom-cat-on-teal-container) !important;
+}
+
+.cat-green {
+    background-color: var(--custom-cat-green-container) !important;
+    color: var(--custom-cat-on-green-container) !important;
+}
+
+.cat-yellow {
+    background-color: var(--custom-cat-yellow-container) !important;
+    color: var(--custom-cat-on-yellow-container) !important;
+}
+
+.cat-orange {
+    background-color: var(--custom-cat-orange-container) !important;
+    color: var(--custom-cat-on-orange-container) !important;
+}
+
+.cat-pink {
+    background-color: var(--custom-cat-pink-container) !important;
+    color: var(--custom-cat-on-pink-container) !important;
+}
+
+.cat-indigo {
+    background-color: var(--custom-cat-indigo-container) !important;
+    color: var(--custom-cat-on-indigo-container) !important;
+}
+
+.cat-brown {
+    background-color: var(--custom-cat-brown-container) !important;
+    color: var(--custom-cat-on-brown-container) !important;
+}
+
+.cat-cyan {
+    background-color: var(--custom-cat-cyan-container) !important;
+    color: var(--custom-cat-on-cyan-container) !important;
+}
+
+.cat-primary-full { background-color: var(--custom-cat-primary) !important; }
+.cat-secondary-full { background-color: var(--custom-cat-secondary) !important; }
+.cat-tertiary-full { background-color: var(--custom-cat-tertiary) !important; }
+.cat-error-full { background-color: var(--custom-cat-error) !important; }
+.cat-neutral-full { background-color: var(--custom-cat-neutral) !important; }
+.cat-outline-full { background-color: var(--custom-cat-outline) !important; }
+.cat-teal-full { background-color: var(--custom-cat-teal) !important; }
+.cat-green-full { background-color: var(--custom-cat-green) !important; }
+.cat-yellow-full { background-color: var(--custom-cat-yellow) !important; }
+.cat-orange-full { background-color: var(--custom-cat-orange) !important; }
+.cat-pink-full { background-color: var(--custom-cat-pink) !important; }
+.cat-indigo-full { background-color: var(--custom-cat-indigo) !important; }
+.cat-brown-full { background-color: var(--custom-cat-brown) !important; }
+.cat-cyan-full { background-color: var(--custom-cat-cyan) !important; }
