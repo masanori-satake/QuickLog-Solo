@@ -10,6 +10,9 @@ on:
       - 'package.json'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: write
   pull-requests: write
@@ -17,8 +20,6 @@ permissions:
 jobs:
   update-assets:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     timeout-minutes: 15
 
     steps:
@@ -65,7 +66,7 @@ jobs:
 
     - name: Create Pull Request (Manual/Main)
       if: github.event_name != 'pull_request'
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@v8.1.0
       with:
         commit-message: "chore: update guide screenshots [skip ci]"
         add-paths: 'src/assets/guide/*.png'
