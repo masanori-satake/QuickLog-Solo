@@ -172,8 +172,8 @@ function setupEventListeners() {
         document.body.classList.remove('theme-light', 'theme-dark');
         document.body.classList.add(`theme-${currentTheme}`);
 
-        // Update animation color when theme changes
-        updatePreview();
+        // Full UI refresh to ensure theme variables are picked up and dataset is consistent
+        renderDetail();
     });
 
     addCategoryBtn.addEventListener('click', () => {
@@ -434,6 +434,16 @@ function updateListItem(idx) {
     }
 }
 
+/**
+ * Utility to clean up all category color classes from an element.
+ * @param {HTMLElement} el
+ */
+function clearCategoryClasses(el) {
+    if (!el) return;
+    const classes = Array.from(el.classList).filter(c => c.startsWith('cat-'));
+    classes.forEach(c => el.classList.remove(c));
+}
+
 function renderDetail() {
     try {
         const previewOverlay = document.getElementById('preview-overlay-base');
@@ -441,11 +451,9 @@ function renderDetail() {
 
         if (!previewOverlay || !previewContainer) return;
 
-        // Utility to clean up all category color classes
-        const clearCategoryClasses = (el) => {
-            const classes = Array.from(el.classList).filter(c => c.startsWith('cat-'));
-            classes.forEach(c => el.classList.remove(c));
-        };
+        // Definitive cleanup of legacy classes to prevent interference from m3-theme.css solid rules
+        clearCategoryClasses(previewOverlay);
+        clearCategoryClasses(previewContainer);
 
         if (selectedIndex === -1 || selectedIndex >= categories.length) {
             detailSection.classList.add('hidden');
@@ -505,8 +513,8 @@ function renderDetail() {
         }
 
         updatePreview();
-    } catch (err) {
-        console.error('QuickLog-Solo: Error in renderDetail:', err);
+    } catch {
+        // Render detail failed
     }
 }
 

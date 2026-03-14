@@ -333,12 +333,12 @@ input[type="text"]:focus, select:focus {
     from {
         opacity: 0;
         transform: translateY(-5px);
-    }
+}
 
     to {
         opacity: 1;
         transform: translateY(0);
-    }
+}
 }
 
 /* Color Palette */
@@ -486,23 +486,97 @@ input[type="text"]:focus, select:focus {
 }
 
 /* Category overlays for preview - Use data-attributes to decouple from solid background classes in m3-theme.css */
-#preview-overlay-base { background-color: transparent !important; }
+#preview-overlay-base {
+    background-color: transparent !important;
+}
 
-#preview-overlay-base[data-anim-active="true"] { background-color: transparent !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="primary"] { background-color: rgba(187, 222, 251, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%) !important; color: var(--custom-cat-on-primary-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="secondary"] { background-color: rgba(220, 237, 200, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%) !important; color: var(--custom-cat-on-secondary-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="tertiary"] { background-color: rgba(225, 190, 231, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%) !important; color: var(--custom-cat-on-tertiary-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="error"] { background-color: rgba(255, 205, 210, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 95%) !important; color: var(--custom-cat-on-error-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="neutral"] { background-color: rgba(207, 216, 220, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 95%) !important; color: var(--custom-cat-on-neutral-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="outline"] { background-color: rgba(245, 245, 245, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 95%) !important; color: var(--custom-cat-on-outline-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="teal"] { background-color: rgba(178, 235, 242, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 95%) !important; color: var(--custom-cat-on-teal-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="green"] { background-color: rgba(200, 230, 201, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 95%) !important; color: var(--custom-cat-on-green-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="yellow"] { background-color: rgba(255, 249, 196, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 95%) !important; color: var(--custom-cat-on-yellow-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="orange"] { background-color: rgba(255, 236, 179, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 95%) !important; color: var(--custom-cat-on-orange-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="pink"] { background-color: rgba(248, 187, 208, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 95%) !important; color: var(--custom-cat-on-pink-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="indigo"] { background-color: rgba(209, 196, 233, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 95%) !important; color: var(--custom-cat-on-indigo-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="brown"] { background-color: rgba(215, 204, 200, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%) !important; color: var(--custom-cat-on-brown-container) !important; }
-#preview-overlay-base[data-anim-active="true"][data-color="cyan"] { background-color: rgba(179, 229, 252, 0.05) !important; background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%) !important; color: var(--custom-cat-on-cyan-container) !important; }
+#preview-overlay-base[data-anim-active="true"] {
+    background-color: transparent !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="primary"] {
+    background-color: rgba(187, 222, 251, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%) !important;
+    color: var(--custom-cat-on-primary-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="secondary"] {
+    background-color: rgba(220, 237, 200, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%) !important;
+    color: var(--custom-cat-on-secondary-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="tertiary"] {
+    background-color: rgba(225, 190, 231, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%) !important;
+    color: var(--custom-cat-on-tertiary-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="error"] {
+    background-color: rgba(255, 205, 210, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 95%) !important;
+    color: var(--custom-cat-on-error-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="neutral"] {
+    background-color: rgba(207, 216, 220, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 95%) !important;
+    color: var(--custom-cat-on-neutral-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="outline"] {
+    background-color: rgba(245, 245, 245, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 95%) !important;
+    color: var(--custom-cat-on-outline-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="teal"] {
+    background-color: rgba(178, 235, 242, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 95%) !important;
+    color: var(--custom-cat-on-teal-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="green"] {
+    background-color: rgba(200, 230, 201, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 95%) !important;
+    color: var(--custom-cat-on-green-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="yellow"] {
+    background-color: rgba(255, 249, 196, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 95%) !important;
+    color: var(--custom-cat-on-yellow-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="orange"] {
+    background-color: rgba(255, 236, 179, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 95%) !important;
+    color: var(--custom-cat-on-orange-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="pink"] {
+    background-color: rgba(248, 187, 208, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 95%) !important;
+    color: var(--custom-cat-on-pink-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="indigo"] {
+    background-color: rgba(209, 196, 233, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 95%) !important;
+    color: var(--custom-cat-on-indigo-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="brown"] {
+    background-color: rgba(215, 204, 200, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%) !important;
+    color: var(--custom-cat-on-brown-container) !important;
+}
+
+#preview-overlay-base[data-anim-active="true"][data-color="cyan"] {
+    background-color: rgba(179, 229, 252, 0.05) !important;
+    background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%) !important;
+    color: var(--custom-cat-on-cyan-container) !important;
+}
 
 #preview-name-heading {
     font-size: var(--md-sys-typescale-title-medium-size);
@@ -759,9 +833,22 @@ input:checked + .slider::before {
     border: 1px solid var(--md-sys-color-outline);
 }
 
-.primary-btn:hover { filter: brightness(1.2); }
-.secondary-btn:hover { filter: brightness(0.9); }
-.tertiary-btn:hover { background-color: var(--md-sys-color-surface-container-highest); }
+.primary-btn:hover {
+    filter: brightness(1.2);
+}
 
-body.theme-light .primary-btn:hover { filter: brightness(0.9); }
-body.theme-light .secondary-btn:hover { filter: brightness(0.95); }
+.secondary-btn:hover {
+    filter: brightness(0.9);
+}
+
+.tertiary-btn:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+body.theme-light .primary-btn:hover {
+    filter: brightness(0.9);
+}
+
+body.theme-light .secondary-btn:hover {
+    filter: brightness(0.95);
+}
