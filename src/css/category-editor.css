@@ -652,7 +652,7 @@ input[type="text"]:focus, select:focus {
 }
 
 .hidden {
-    display: none !important;
+    display: none;
 }
 
 /* Theme Switch */

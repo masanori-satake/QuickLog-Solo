@@ -72,8 +72,9 @@ function t(key, params = {}) {
 
 // Initialize
 function init() {
-    setupLanguage();
-    setupAppMode();
+    const urlParams = new URLSearchParams(window.location.search);
+    setupLanguage(urlParams);
+    setupAppMode(urlParams);
     setupTheme();
     setupAnimationEngine();
     setupEventListeners();
@@ -98,16 +99,14 @@ function applyTheme() {
     document.body.classList.add(`theme-${currentTheme}`);
 }
 
-function setupAppMode() {
-    const urlParams = new URLSearchParams(window.location.search);
+function setupAppMode(urlParams) {
     if (urlParams.get('from') === 'app') {
         const backLink = document.querySelector('.back-link');
         if (backLink) backLink.classList.add('hidden');
     }
 }
 
-function setupLanguage() {
-    const urlParams = new URLSearchParams(window.location.search);
+function setupLanguage(urlParams) {
     const langParam = urlParams.get('lang');
     const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh', 'en'];
     let matched = 'en';
