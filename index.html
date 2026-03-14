@@ -281,6 +281,8 @@
     </div>
 
     <script>
+        const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor';
+
         const translations = {
             ja: {
                 "hero-title": "1秒で記録、1秒で集計。",
@@ -975,7 +977,7 @@
             // Update QL-Category Editor link with language parameter
             const editorLink = document.getElementById('cta-editor-link');
             if (editorLink) {
-                editorLink.href = 'https://quick-log-solo.vercel.app/category-editor?lang=' + encodeURIComponent(safeLang) + '&from=app';
+                editorLink.href = CATEGORY_EDITOR_URL + '?lang=' + encodeURIComponent(safeLang) + '&from=app';
             }
 
             // Update Quick Start Guide link with language parameter

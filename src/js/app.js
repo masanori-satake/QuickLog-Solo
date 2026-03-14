@@ -79,6 +79,8 @@ const ID_CLEAR_LOGS_BTN = 'clear-logs-btn';
 const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
 const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 
+const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor';
+
 const ID_REPORT_MODAL = 'report-modal';
 const ID_REPORT_PREVIEW = 'report-preview';
 const ID_REPORT_DATE_TEXT = 'report-date-text';
@@ -1756,7 +1758,7 @@ function setupEventListeners() {
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
         const lang = getLanguage();
-        window.open(`https://quick-log-solo.vercel.app/category-editor?lang=${lang}&from=app`, '_blank');
+        window.open(`${CATEGORY_EDITOR_URL}?lang=${lang}&from=app`, '_blank');
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
