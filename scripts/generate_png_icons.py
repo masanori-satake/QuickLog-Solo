@@ -1,15 +1,23 @@
 import os
+import sys
 
-def generate_icons():
+def generate_icons(output_dir=None, bg_color=None):
     svg_path = os.path.join(os.getcwd(), 'src/assets/icon.svg')
-    output_dir = os.path.join(os.getcwd(), 'src/assets')
+    if output_dir is None:
+        output_dir = os.path.join(os.getcwd(), 'src/assets')
 
     if not os.path.exists(svg_path):
         print(f"Error: {svg_path} not found.")
         return False
 
-    with open(svg_path, 'r') as f:
+    with open(svg_path, 'r', encoding='utf-8') as f:
         svg_content = f.read()
+
+    if bg_color:
+        # Simple replacement for the main background color
+        # The original is <rect width="512" height="512" rx="100" fill="#2563eb"/>
+        svg_content = svg_content.replace('fill="#2563eb"', f'fill="{bg_color}"')
+        print(f"Background color changed to {bg_color}")
 
     # If VERCEL environment is detected, skip generation as it's not needed for the landing page
     # and Playwright might not be installed or configured.
@@ -23,6 +31,9 @@ def generate_icons():
     except ImportError:
         print("Error: No module named 'playwright'. Please install it to generate extension icons.")
         return False
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     with sync_playwright() as p:
         try:
@@ -58,11 +69,15 @@ def generate_icons():
 
         browser.close()
 
-    print('Icon generation complete.')
+    print(f"Icon generation complete in {output_dir}")
     return True
 
 if __name__ == "__main__":
-    if generate_icons():
+    # Support optional command line arguments: [output_dir] [bg_color]
+    target_dir = sys.argv[1] if len(sys.argv) > 1 else None
+    color = sys.argv[2] if len(sys.argv) > 2 else None
+
+    if generate_icons(target_dir, color):
         exit(0)
     else:
         exit(1)
