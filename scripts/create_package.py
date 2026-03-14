@@ -42,6 +42,13 @@ def create_zip(zip_filepath, includes, manifest_src, temp_dir, is_dev=False, ver
                         if 'icon.svg' in names:
                             ignored.append('icon.svg')
 
+                        # Exclude landing page specific assets (guide screenshots and store badges)
+                        # these are for index.html/guide.html and not needed by the extension.
+                        if 'guide' in names:
+                            ignored.append('guide')
+                        if 'badges' in names:
+                            ignored.append('badges')
+
                     # Physically exclude development-only animation modules from Release builds.
                     # Dev builds include all modules to facilitate support and verification.
                     if not is_dev and os.path.normpath(path).endswith(os.path.join('js', 'animation')):
