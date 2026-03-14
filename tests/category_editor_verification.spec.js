@@ -52,5 +52,18 @@ test('Category Editor UI and Functionality', async ({ page }) => {
     expect(toggledTheme).not.toBe(initialTheme);
 
     // Take screenshot
-    await page.screenshot({ path: 'tests/screenshots/category-editor-v0.30.png', fullPage: true });
+    await page.screenshot({ path: 'tests/screenshots/category-editor-v0.31.png', fullPage: true });
+});
+
+test('Category Editor URL parameters', async ({ page }) => {
+    // 1. Visit with from=app
+    await page.goto('http://localhost:8080/category-editor.html?from=app');
+
+    // 2. Verify back link is hidden
+    const backLink = page.locator('.back-link');
+    await expect(backLink).toBeHidden();
+
+    // 3. Visit without from=app
+    await page.goto('http://localhost:8080/category-editor.html');
+    await expect(backLink).toBeVisible();
 });
