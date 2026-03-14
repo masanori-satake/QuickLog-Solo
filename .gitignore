@@ -3,7 +3,6 @@
 node_modules/
 test-results/
 verification/
-releases/*.zip
 __pycache__/
 
 # Temporary scripts
