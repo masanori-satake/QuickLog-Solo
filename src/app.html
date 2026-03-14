@@ -278,6 +278,12 @@
                 </div>
 
                 <div id="categories-tab" class="tab-content hidden">
+                    <div style="margin-bottom: 16px;">
+                        <a id="advanced-editor-link" href="#" target="_blank" class="secondary-btn" style="text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; box-sizing: border-box;">
+                            <span class="material-symbols-outlined">edit_note</span>
+                            <span data-i18n="category-editor-title">業務カテゴリ・エディタ</span>
+                        </a>
+                    </div>
                     <div id="category-editor-list">
                         <!-- カテゴリ編集アイテムがここに動的に追加される -->
                     </div>
@@ -293,10 +299,16 @@
 
                     <div class="category-maintenance-box">
                         <div class="setting-item">
-                            <label data-i18n="category-backup">カテゴリのバックアップ</label>
+                            <label data-i18n="category-backup">カテゴリの入出力 (クリップボード)</label>
                             <div class="maintenance-btns">
-                                <button id="export-categories-btn" data-i18n="btn-export-json">エクスポート (NDJSON)</button>
-                                <button id="import-categories-btn" data-i18n="btn-import-json">インポート (NDJSON)</button>
+                                <button id="export-categories-btn" class="secondary-btn">
+                                    <span class="material-symbols-outlined">content_copy</span>
+                                    <span data-i18n="btn-export-json">コピー (Export)</span>
+                                </button>
+                                <button id="import-categories-btn" class="secondary-btn">
+                                    <span class="material-symbols-outlined">content_paste</span>
+                                    <span data-i18n="btn-import-json">貼り付け (Import)</span>
+                                </button>
                             </div>
                             <div class="import-mode-selector">
                                 <span data-i18n="import-setting">インポート設定:</span>
@@ -307,7 +319,6 @@
                                     <input type="radio" name="import-mode" value="overwrite"> <span data-i18n="import-overwrite">上書き</span>
                                 </label>
                             </div>
-                            <input type="file" id="category-file-input" style="display:none" accept=".ndjson">
                         </div>
                     </div>
                 </div>

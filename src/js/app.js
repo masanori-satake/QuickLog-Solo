@@ -75,7 +75,6 @@ const ID_IMPORT_CSV_BTN = 'import-csv-btn';
 const ID_CSV_FILE_INPUT = 'csv-file-input';
 const ID_EXPORT_CATEGORIES_BTN = 'export-categories-btn';
 const ID_IMPORT_CATEGORIES_BTN = 'import-categories-btn';
-const ID_CATEGORY_FILE_INPUT = 'category-file-input';
 const ID_CLEAR_LOGS_BTN = 'clear-logs-btn';
 const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
 const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
@@ -1754,6 +1753,13 @@ function setupEventListeners() {
         broadcastSync();
     });
 
+    getEl('advanced-editor-link')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const lang = getLanguage();
+        // Fallback to absolute URL if necessary, but relative should work in extension context
+        window.open(`../category-editor.html?lang=${lang}`, '_blank');
+    });
+
     getEl('test-notification-btn')?.addEventListener('click', async () => {
         if (typeof chrome !== 'undefined' && (chrome.notifications || chrome.alarms)) {
             // 1. Immediate notification test
@@ -1764,7 +1770,7 @@ function setupEventListeners() {
                     title: t('title'),
                     message: t('test-notification-message') + " (Immediate)",
                     priority: 2
-                }, (id) => {
+                }, (_id) => {
                     if (chrome.runtime.lastError) {
                         console.error('QuickLog-Solo: Test notification failed:', chrome.runtime.lastError);
                     }
@@ -1882,7 +1888,7 @@ function setupEventListeners() {
         broadcastSync();
     });
 
-    // Category Import/Export
+    // Category Import/Export (Clipboard)
     getEl(ID_EXPORT_CATEGORIES_BTN)?.addEventListener('click', async () => {
         const categories = await dbGetAll(STORE_CATEGORIES);
         categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -1891,32 +1897,26 @@ function setupEventListeners() {
         // Convert to NDJSON
         const ndjson = exportData.map(c => {
             const copy = { ...c };
-            delete copy.order; // Remove order as per requirement
+            delete copy.order;
             if (copy.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
                 return JSON.stringify({ type: 'page-break' });
             }
             return JSON.stringify(copy);
         }).join('\n');
 
-        const blob = new Blob([ndjson], { type: 'application/x-ndjson' });
-        const url = URL.createObjectURL(blob);
-        const a = createEl('a');
-        a.href = url;
-        a.download = `quicklog_categories_${new Date().toISOString().slice(0, 10)}.ndjson`;
-        a.click();
-    });
-
-    const categoryFileInput = getEl(ID_CATEGORY_FILE_INPUT);
-    getEl(ID_IMPORT_CATEGORIES_BTN)?.addEventListener('click', () => {
-        categoryFileInput?.click();
-    });
-
-    categoryFileInput?.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
         try {
-            const text = await file.text();
+            await navigator.clipboard.writeText(ndjson);
+            showToast(t('toast-export-success'));
+        } catch (err) {
+            console.error('Failed to copy categories:', err);
+        }
+    });
+
+    getEl(ID_IMPORT_CATEGORIES_BTN)?.addEventListener('click', async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (!text) return;
+
             const lines = text.split(/\r?\n/).filter(line => line.trim());
             const total = lines.length;
             const importedItems = [];
@@ -1947,7 +1947,6 @@ function setupEventListeners() {
             if (errorCount > 0) {
                 const proceed = await showConfirm(t('import-err-partial', { total, errorCount, validCount: importedItems.length }));
                 if (!proceed) {
-                    categoryFileInput.value = '';
                     return;
                 }
             }
@@ -1977,7 +1976,6 @@ function setupEventListeners() {
                 ]);
 
                 if (choice === 'abort') {
-                    categoryFileInput.value = '';
                     return;
                 } else if (choice === 'fallback') {
                     const repairedItems = invalidItems.map(item => {
@@ -1999,26 +1997,25 @@ function setupEventListeners() {
 
             if (importMode === 'overwrite') {
                 if (!(await showConfirm(t('confirm-import-overwrite')))) {
-                    categoryFileInput.value = '';
                     return;
                 }
             }
 
             await dbImportCategories(finalItems, importMode);
 
-            categoryFileInput.value = '';
-            showToast(t('toast-cat-imported'));
+            showToast(t('toast-import-success'));
             renderCategories();
             renderCategoryEditor();
             broadcastSync();
         } catch (err) {
             if (err.message === 'FATAL_IMPORT_ERROR') {
                 alert(t('import-err-fatal'));
+            } else if (err.name === 'NotAllowedError') {
+                console.warn('Clipboard access denied');
             } else {
                 console.error('Failed to import categories:', err);
                 alert(t('alert-import-error'));
             }
-            categoryFileInput.value = '';
         }
     });
 
