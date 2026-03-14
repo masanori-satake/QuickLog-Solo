@@ -1,0 +1,3 @@
+{"name":"Valid1","color":"teal"}
+{"name":"InvalidColor","color":"invalid"}
+{"name":"","color":"orange"}
