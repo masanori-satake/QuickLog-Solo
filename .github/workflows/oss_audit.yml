@@ -11,6 +11,9 @@ on:
       - 'src/**'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: read
   pull-requests: write
@@ -21,8 +24,6 @@ jobs:
   scanoss-audit:
     name: SCANOSS Code Scan
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     timeout-minutes: 10
 
     steps:
@@ -31,7 +32,7 @@ jobs:
 
     - name: Run SCANOSS Code Scan
       id: scanoss-code-scan-step
-      uses: scanoss/code-scan-action@v1.5.0
+      uses: scanoss/code-scan-action@v1
       with:
         scanPath: src
         policies: undeclared

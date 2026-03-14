@@ -11,11 +11,12 @@ on:
         required: true
         type: string
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       contents: write # Releaseの作成およびアセットのアップロードに必須
 
@@ -61,7 +62,7 @@ jobs:
         run: npm run build
 
       - name: Create GitHub Release and Upload Assets
-        uses: softprops/action-gh-release@v2.4.0
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
           generate_release_notes: true
