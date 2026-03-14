@@ -442,6 +442,7 @@ function clearCategoryClasses(el) {
     if (!el) return;
     const classes = Array.from(el.classList).filter(c => c.startsWith('cat-'));
     classes.forEach(c => el.classList.remove(c));
+    // Specifically remove any potential residual background color if needed
 }
 
 function renderDetail() {
@@ -460,11 +461,8 @@ function renderDetail() {
             previewNameEl.textContent = '';
             if (animationEngine) animationEngine.stop();
             animInfoEl.classList.add('hidden');
-            previewOverlay.dataset.animActive = 'false';
-            previewContainer.dataset.animActive = 'false';
             previewOverlay.classList.remove('anim-active');
             previewContainer.classList.remove('anim-active');
-            previewOverlay.style.setProperty('background-color', 'transparent', 'important');
             return;
         }
 
@@ -474,11 +472,8 @@ function renderDetail() {
         if (isPageBreak) {
             detailSection.classList.add('hidden');
             previewNameEl.textContent = `--- ${t('page-break-label')} ---`;
-            previewOverlay.dataset.animActive = 'false';
-            previewContainer.dataset.animActive = 'false';
             previewOverlay.classList.remove('anim-active');
             previewContainer.classList.remove('anim-active');
-            previewOverlay.style.setProperty('background-color', 'transparent', 'important');
             updatePreview();
             animInfoEl.classList.add('hidden');
             return;
@@ -492,24 +487,18 @@ function renderDetail() {
         editAnimationSelect.value = cat.animation || 'default';
         updateAnimationInfo();
 
-        // Update preview theme classes using data attributes to avoid collision with solid background classes
+        // Update preview theme classes (Aligned with app.js architecture)
         const color = cat.color || 'primary';
         const animation = cat.animation || 'default';
         const animActive = animation !== 'none';
 
-        previewOverlay.dataset.color = color;
-        previewOverlay.dataset.animActive = animActive;
-        previewContainer.dataset.animActive = animActive;
-
         if (animActive) {
             previewOverlay.classList.add('anim-active');
+            previewOverlay.classList.add(`cat-${color}`);
             previewContainer.classList.add('anim-active');
-            previewOverlay.style.removeProperty('background-color');
         } else {
             previewOverlay.classList.remove('anim-active');
             previewContainer.classList.remove('anim-active');
-            // Force transparency when no animation is active
-            previewOverlay.style.setProperty('background-color', 'transparent', 'important');
         }
 
         updatePreview();
