@@ -1947,7 +1947,6 @@ function setupEventListeners() {
             if (errorCount > 0) {
                 const proceed = await showConfirm(t('import-err-partial', { total, errorCount, validCount: importedItems.length }));
                 if (!proceed) {
-                    categoryFileInput.value = '';
                     return;
                 }
             }
@@ -1977,7 +1976,6 @@ function setupEventListeners() {
                 ]);
 
                 if (choice === 'abort') {
-                    categoryFileInput.value = '';
                     return;
                 } else if (choice === 'fallback') {
                     const repairedItems = invalidItems.map(item => {
