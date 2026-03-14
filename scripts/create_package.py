@@ -63,9 +63,17 @@ def create_zip(zip_filepath, includes, manifest_src, temp_dir, is_dev=False, ver
 
         # For Dev builds, regenerate icons with orange branding (#ea580c) directly in the package
         if is_dev:
-            print("  Generating orange icons for Dev build...")
+            print("  [Branding] Generating orange icons for Dev build...")
             dev_assets_dir = os.path.join(temp_dir, "assets")
             subprocess.run(["python3", "scripts/generate_png_icons.py", dev_assets_dir, "#ea580c"], check=True)
+            print("  [Branding] Orange PNG icons generated successfully.")
+
+        # Final check for package hygiene
+        print(f"  [Hygiene] Verifying {zip_filepath} content...")
+        if os.path.exists(os.path.join(temp_dir, "assets", "icon.svg")):
+             print("  [Hygiene] WARNING: icon.svg found in assembly dir. It should have been ignored.")
+        else:
+             print("  [Hygiene] icon.svg correctly excluded from package.")
 
         # Create zip from temporary directory
         with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:

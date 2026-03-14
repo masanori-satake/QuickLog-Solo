@@ -143,6 +143,10 @@ jobs:
       if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
       run: python3 -m http.server 8080 &
 
+    - name: Wait for local server
+      if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+      run: npx wait-on http://localhost:8080 -t 30000
+
     - name: Run E2E tests
       if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
       run: npm run test:e2e -- --grep-invert "Animation Quality Evaluation"
