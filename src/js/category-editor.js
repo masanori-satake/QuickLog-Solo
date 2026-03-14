@@ -688,7 +688,13 @@ async function handleImport() {
             if (data.type === 'page-break') {
                 return { name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` };
             }
-            return data;
+            // Normalize data to ensure all fields exist, matching app.js behavior
+            return {
+                name: data.name || 'Imported Category',
+                color: data.color || 'primary',
+                tags: data.tags || '',
+                animation: data.animation || 'default'
+            };
         });
 
         categories = imported;
