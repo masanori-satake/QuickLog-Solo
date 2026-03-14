@@ -172,8 +172,8 @@ function setupEventListeners() {
         document.body.classList.remove('theme-light', 'theme-dark');
         document.body.classList.add(`theme-${currentTheme}`);
 
-        // Update animation color when theme changes
-        updatePreview();
+        // Full UI refresh to ensure theme variables are picked up and dataset is consistent
+        renderDetail();
     });
 
     addCategoryBtn.addEventListener('click', () => {
@@ -236,8 +236,7 @@ function setupEventListeners() {
     editAnimationSelect.addEventListener('change', (e) => {
         if (selectedIndex === -1) return;
         categories[selectedIndex].animation = e.target.value;
-        updateAnimationInfo();
-        updatePreview();
+        renderDetail();
         updateCodeView();
     });
 
@@ -435,50 +434,77 @@ function updateListItem(idx) {
     }
 }
 
+/**
+ * Utility to clean up all category color classes from an element.
+ * @param {HTMLElement} el
+ */
+function clearCategoryClasses(el) {
+    if (!el) return;
+    const classes = Array.from(el.classList).filter(c => c.startsWith('cat-'));
+    classes.forEach(c => el.classList.remove(c));
+    // Specifically remove any potential residual background color if needed
+}
+
 function renderDetail() {
-    const previewOverlay = document.querySelector('.preview-overlay-base');
-    const previewContainer = document.getElementById('preview-container');
+    try {
+        const previewOverlay = document.getElementById('preview-overlay-base');
+        const previewContainer = document.getElementById('preview-container');
 
-    if (selectedIndex === -1 || selectedIndex >= categories.length) {
+        if (!previewOverlay || !previewContainer) return;
+
+        // Definitive cleanup of legacy classes to prevent interference from m3-theme.css solid rules
+        clearCategoryClasses(previewOverlay);
+        clearCategoryClasses(previewContainer);
+
+        if (selectedIndex === -1 || selectedIndex >= categories.length) {
+            detailSection.classList.add('hidden');
+            previewNameEl.textContent = '';
+            if (animationEngine) animationEngine.stop();
+            animInfoEl.classList.add('hidden');
+            previewOverlay.classList.remove('anim-active');
+            previewContainer.classList.remove('anim-active');
+            return;
+        }
+
+        const cat = categories[selectedIndex];
+        const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+
+        if (isPageBreak) {
+            detailSection.classList.add('hidden');
+            previewNameEl.textContent = `--- ${t('page-break-label')} ---`;
+            previewOverlay.classList.remove('anim-active');
+            previewContainer.classList.remove('anim-active');
+            updatePreview();
+            animInfoEl.classList.add('hidden');
+            return;
+        }
+
         detailSection.classList.remove('hidden');
-        previewNameEl.textContent = '';
-        animationEngine.stop();
-        animInfoEl.classList.add('hidden');
-        previewOverlay.className = 'preview-overlay-base';
-        previewContainer.classList.remove('anim-active');
-        return;
-    }
+        editNameInput.value = cat.name;
+        previewNameEl.textContent = cat.name;
+        renderTags();
+        updateColorSelection();
+        editAnimationSelect.value = cat.animation || 'default';
+        updateAnimationInfo();
 
-    const cat = categories[selectedIndex];
-    const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        // Update preview theme classes (Aligned with app.js architecture)
+        const color = cat.color || 'primary';
+        const animation = cat.animation || 'default';
+        const animActive = animation !== 'none';
 
-    if (isPageBreak) {
-        detailSection.classList.add('hidden');
-        previewNameEl.textContent = `--- ${t('page-break-label')} ---`;
+        if (animActive) {
+            previewOverlay.classList.add('anim-active');
+            previewOverlay.classList.add(`cat-${color}`);
+            previewContainer.classList.add('anim-active');
+        } else {
+            previewOverlay.classList.remove('anim-active');
+            previewContainer.classList.remove('anim-active');
+        }
+
         updatePreview();
-        animInfoEl.classList.add('hidden');
-        previewOverlay.className = 'preview-overlay-base';
-        previewContainer.classList.remove('anim-active');
-        return;
+    } catch {
+        // Render detail failed
     }
-
-    detailSection.classList.remove('hidden');
-    editNameInput.value = cat.name;
-    previewNameEl.textContent = cat.name;
-    renderTags();
-    updateColorSelection();
-    editAnimationSelect.value = cat.animation || 'default';
-    updateAnimationInfo();
-
-    // Update preview theme classes
-    const colorClass = `cat-${cat.color || 'primary'}`;
-    const animation = cat.animation || 'default';
-    const animActive = animation !== 'none';
-
-    previewOverlay.className = `preview-overlay-base ${colorClass}` + (animActive ? ' anim-active' : '');
-    previewContainer.classList.toggle('anim-active', animActive);
-
-    updatePreview();
 }
 
 function updateAnimationInfo() {
@@ -548,8 +574,7 @@ function renderColorPalette() {
         opt.onclick = () => {
             if (selectedIndex === -1) return;
             categories[selectedIndex].color = color;
-            updateColorSelection();
-            updatePreview();
+            renderDetail();
             renderCategoryList();
             updateCodeView();
         };
@@ -608,7 +633,7 @@ function updatePreview() {
     // Use theme-aware color from CSS variables
     const colorKey = cat.color || 'primary';
     const computedStyle = getComputedStyle(document.body);
-    const color = computedStyle.getPropertyValue(`--custom-cat-${colorKey}`).trim() || COLOR_CODES[colorKey];
+    const color = computedStyle.getPropertyValue(`--custom-cat-${colorKey}`).trim() || COLOR_CODES[colorKey] || '#1976d2';
 
     // Set exclusion areas to match sidebar behavior
     const canvasRect = animationEngine.canvas.getBoundingClientRect();
@@ -663,7 +688,13 @@ async function handleImport() {
             if (data.type === 'page-break') {
                 return { name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` };
             }
-            return data;
+            // Normalize data to ensure all fields exist, matching app.js behavior
+            return {
+                name: data.name || 'Imported Category',
+                color: data.color || 'primary',
+                tags: data.tags || '',
+                animation: data.animation || 'default'
+            };
         });
 
         categories = imported;

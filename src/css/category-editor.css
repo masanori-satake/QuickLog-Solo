@@ -333,12 +333,12 @@ input[type="text"]:focus, select:focus {
     from {
         opacity: 0;
         transform: translateY(-5px);
-    }
+}
 
     to {
         opacity: 1;
         transform: translateY(0);
-    }
+}
 }
 
 /* Color Palette */
@@ -443,10 +443,15 @@ input[type="text"]:focus, select:focus {
     margin-top: 8px;
 }
 
-.preview-container.anim-active {
+#preview-container.anim-active {
     background-color: transparent !important;
     box-shadow: none;
     border-color: var(--md-sys-color-outline);
+}
+
+#preview-overlay-base.anim-active {
+    background-color: transparent !important;
+    backdrop-filter: none;
 }
 
 #animation-canvas {
@@ -480,21 +485,84 @@ input[type="text"]:focus, select:focus {
     backdrop-filter: none;
 }
 
-/* Category overlays for preview */
-.preview-overlay-base.cat-primary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%) !important; }
-.preview-overlay-base.cat-secondary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%) !important; }
-.preview-overlay-base.cat-tertiary.anim-active { background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%) !important; }
-.preview-overlay-base.cat-error.anim-active { background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 95%) !important; }
-.preview-overlay-base.cat-neutral.anim-active { background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 95%) !important; }
-.preview-overlay-base.cat-outline.anim-active { background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 95%) !important; }
-.preview-overlay-base.cat-teal.anim-active { background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 95%) !important; }
-.preview-overlay-base.cat-green.anim-active { background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 95%) !important; }
-.preview-overlay-base.cat-yellow.anim-active { background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 95%) !important; }
-.preview-overlay-base.cat-orange.anim-active { background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 95%) !important; }
-.preview-overlay-base.cat-pink.anim-active { background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 95%) !important; }
-.preview-overlay-base.cat-indigo.anim-active { background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 95%) !important; }
-.preview-overlay-base.cat-brown.anim-active { background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%) !important; }
-.preview-overlay-base.cat-cyan.anim-active { background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%) !important; }
+/* Category overlays for preview - Aligned with QuickLog-Solo main app architecture */
+#preview-overlay-base {
+    background-color: transparent !important;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* DO NOT REMOVE !important in the blocks below: These rules enforce high transparency (95%) when an animation is active,
+   ensuring the UI overlay remains legible without obscuring the background animation.
+   Specificity is matched with main app style.css for architectural consistency. */
+#preview-overlay-base.cat-primary.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-primary-container), transparent 95%) !important;
+    color: var(--custom-cat-on-primary-container) !important;
+}
+
+#preview-overlay-base.cat-secondary.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-secondary-container), transparent 95%) !important;
+    color: var(--custom-cat-on-secondary-container) !important;
+}
+
+#preview-overlay-base.cat-tertiary.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-tertiary-container), transparent 95%) !important;
+    color: var(--custom-cat-on-tertiary-container) !important;
+}
+
+#preview-overlay-base.cat-error.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-error-container), transparent 95%) !important;
+    color: var(--custom-cat-on-error-container) !important;
+}
+
+#preview-overlay-base.cat-neutral.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-neutral-container), transparent 95%) !important;
+    color: var(--custom-cat-on-neutral-container) !important;
+}
+
+#preview-overlay-base.cat-outline.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-outline-container), transparent 95%) !important;
+    color: var(--custom-cat-on-outline-container) !important;
+}
+
+#preview-overlay-base.cat-teal.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-teal-container), transparent 95%) !important;
+    color: var(--custom-cat-on-teal-container) !important;
+}
+
+#preview-overlay-base.cat-green.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-green-container), transparent 95%) !important;
+    color: var(--custom-cat-on-green-container) !important;
+}
+
+#preview-overlay-base.cat-yellow.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-yellow-container), transparent 95%) !important;
+    color: var(--custom-cat-on-yellow-container) !important;
+}
+
+#preview-overlay-base.cat-orange.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-orange-container), transparent 95%) !important;
+    color: var(--custom-cat-on-orange-container) !important;
+}
+
+#preview-overlay-base.cat-pink.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-pink-container), transparent 95%) !important;
+    color: var(--custom-cat-on-pink-container) !important;
+}
+
+#preview-overlay-base.cat-indigo.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-indigo-container), transparent 95%) !important;
+    color: var(--custom-cat-on-indigo-container) !important;
+}
+
+#preview-overlay-base.cat-brown.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-brown-container), transparent 95%) !important;
+    color: var(--custom-cat-on-brown-container) !important;
+}
+
+#preview-overlay-base.cat-cyan.anim-active {
+    background-color: color-mix(in srgb, var(--custom-cat-cyan-container), transparent 95%) !important;
+    color: var(--custom-cat-on-cyan-container) !important;
+}
 
 #preview-name-heading {
     font-size: var(--md-sys-typescale-title-medium-size);
@@ -751,9 +819,22 @@ input:checked + .slider::before {
     border: 1px solid var(--md-sys-color-outline);
 }
 
-.primary-btn:hover { filter: brightness(1.2); }
-.secondary-btn:hover { filter: brightness(0.9); }
-.tertiary-btn:hover { background-color: var(--md-sys-color-surface-container-highest); }
+.primary-btn:hover {
+    filter: brightness(1.2);
+}
 
-body.theme-light .primary-btn:hover { filter: brightness(0.9); }
-body.theme-light .secondary-btn:hover { filter: brightness(0.95); }
+.secondary-btn:hover {
+    filter: brightness(0.9);
+}
+
+.tertiary-btn:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+body.theme-light .primary-btn:hover {
+    filter: brightness(0.9);
+}
+
+body.theme-light .secondary-btn:hover {
+    filter: brightness(0.95);
+}
