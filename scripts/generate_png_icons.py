@@ -30,7 +30,7 @@ def generate_icons(output_dir=None, bg_color=None):
 
     # If VERCEL environment is detected, skip generation as it's not needed for the landing page
     # and Playwright might not be installed or configured.
-    if os.environ.get('VERCEL'):
+    if os.environ.get('VERCEL') == '1':
         print("Vercel environment detected. Skipping PNG icon generation for extension.")
         return True
 
