@@ -236,8 +236,7 @@ function setupEventListeners() {
     editAnimationSelect.addEventListener('change', (e) => {
         if (selectedIndex === -1) return;
         categories[selectedIndex].animation = e.target.value;
-        updateAnimationInfo();
-        updatePreview();
+        renderDetail();
         updateCodeView();
     });
 
@@ -475,7 +474,8 @@ function renderDetail() {
     const animation = cat.animation || 'default';
     const animActive = animation !== 'none';
 
-    previewOverlay.className = `preview-overlay-base ${colorClass}` + (animActive ? ' anim-active' : '');
+    // Only apply category color class if animation is active, matching main app behavior
+    previewOverlay.className = `preview-overlay-base` + (animActive ? ` ${colorClass} anim-active` : '');
     previewContainer.classList.toggle('anim-active', animActive);
 
     updatePreview();
@@ -548,8 +548,7 @@ function renderColorPalette() {
         opt.onclick = () => {
             if (selectedIndex === -1) return;
             categories[selectedIndex].color = color;
-            updateColorSelection();
-            updatePreview();
+            renderDetail();
             renderCategoryList();
             updateCodeView();
         };
