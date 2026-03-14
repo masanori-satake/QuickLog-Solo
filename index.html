@@ -232,7 +232,7 @@
                         <h4 data-i18n="faq-editor-q">Q. サイドバーが狭くて、業務カテゴリの編集が大変です。</h4>
                         <p data-i18n="faq-editor-a">A. 広い画面で効率よく編集できる専用のエディタを用意しています。並べ替えや色の確認もスムーズに行えます。</p>
                         <div style="margin-top: 12px;">
-                            <a href="category-editor.html" id="cta-editor-link" class="btn-tertiary" style="text-decoration: none; display: inline-block;"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 4px;">edit_note</span><span data-i18n="category-editor-title">業務カテゴリ・エディタ</span></a>
+                            <a href="https://quick-log-solo.vercel.app/category-editor" id="cta-editor-link" class="btn-tertiary" style="text-decoration: none; display: inline-block;" target="_blank"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 4px;">edit_note</span><span data-i18n="category-editor-title">業務カテゴリ・エディタ</span></a>
                         </div>
                     </div>
                 </div>
@@ -975,7 +975,7 @@
             // Update QL-Category Editor link with language parameter
             const editorLink = document.getElementById('cta-editor-link');
             if (editorLink) {
-                editorLink.href = 'category-editor.html?lang=' + encodeURIComponent(safeLang);
+                editorLink.href = 'https://quick-log-solo.vercel.app/category-editor?lang=' + encodeURIComponent(safeLang) + '&from=app';
             }
 
             // Update Quick Start Guide link with language parameter

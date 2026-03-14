@@ -1756,8 +1756,7 @@ function setupEventListeners() {
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
         const lang = getLanguage();
-        // Fallback to absolute URL if necessary, but relative should work in extension context
-        window.open(`../category-editor.html?lang=${lang}&from=app`, '_blank');
+        window.open(`https://quick-log-solo.vercel.app/category-editor?lang=${lang}&from=app`, '_blank');
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
