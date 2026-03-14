@@ -874,6 +874,10 @@ main {
     color: var(--md-sys-color-on-surface-variant);
     transition: all 0.2s;
     font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
 }
 
 .tab-btn.active {
