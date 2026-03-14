@@ -35,8 +35,13 @@ def create_zip(zip_filepath, includes, manifest_src, temp_dir, is_dev=False, ver
 
             src_path = os.path.join("src", item)
             if os.path.isdir(src_path):
-                def ignore_dev_only(path, names):
+                def ignore_files(path, names):
                     ignored = []
+                    # Exclude source SVG from all packages to ensure browser uses colored PNGs
+                    if os.path.normpath(path).endswith('assets'):
+                        if 'icon.svg' in names:
+                            ignored.append('icon.svg')
+
                     # Physically exclude development-only animation modules from Release builds.
                     # Dev builds include all modules to facilitate support and verification.
                     if not is_dev and os.path.normpath(path).endswith(os.path.join('js', 'animation')):
@@ -48,7 +53,7 @@ def create_zip(zip_filepath, includes, manifest_src, temp_dir, is_dev=False, ver
                                         ignored.append(name)
                     return ignored
 
-                shutil.copytree(src_path, os.path.join(temp_dir, item), ignore=ignore_dev_only)
+                shutil.copytree(src_path, os.path.join(temp_dir, item), ignore=ignore_files)
                 print(f"  Added: {item}/ (from src/{item})")
             elif os.path.isfile(src_path):
                 shutil.copy2(src_path, os.path.join(temp_dir, item))

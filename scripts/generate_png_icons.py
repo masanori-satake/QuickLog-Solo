@@ -17,6 +17,7 @@ def generate_icons(output_dir=None, bg_color=None):
     if bg_color:
         # Improved replacement logic using regex to identify the background rect (512x512)
         # This ensures we follow the master SVG's structure even if the base color changes.
+        # We also support optional attributes like 'rx' or 'class' that might be present.
         pattern = r'(<rect\s+[^>]*width="512"\s+[^>]*height="512"\s+[^>]*fill=")([^"]+)(")'
         if re.search(pattern, svg_content):
             svg_content = re.sub(pattern, rf'\1{bg_color}\3', svg_content)
