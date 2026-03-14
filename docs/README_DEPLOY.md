@@ -167,3 +167,7 @@ graph LR
 > 本ドキュメントは、本プロジェクトの開発者が自身の環境（Vercel）で構築した際の参考情報を共有するものです。
 > 開発者は Vercel の利用を特別に推奨しているわけではなく、また他のサービスを含め、本手順が将来にわたって正常に動作することを保証しません。
 > 自動化設定に伴う機密情報の管理やデプロイは、すべて利用者の自己責任において行ってください。
+>
+> This document shares reference information from the project developer's own setup (Vercel).
+> The developer does not specifically endorse Vercel, nor does the developer guarantee that these steps will continue to function correctly in the future, including for other services.
+> Management of sensitive information and deployments associated with automation settings are entirely at the user's own risk.

@@ -1,5 +1,6 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "buildCommand": "mkdir -p releases"
 }

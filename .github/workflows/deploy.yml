@@ -58,6 +58,14 @@ jobs:
       - name: Build packages (Generates ZIPs and Branded Icons)
         run: npm run build
 
+      - name: Verify build artifacts
+        run: |
+          ls -R releases/
+          file src/assets/icon128.png
+          # Verify that some icons were generated (they should be orange in Dev builds but we verify presence here)
+          [ -f src/assets/icon128.png ] || (echo "Icons missing" && exit 1)
+          [ -f releases/QuickLog-Solo-Chrome-Dev.zip ] || (echo "Dev ZIP missing" && exit 1)
+
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v41.1.4
         with:
