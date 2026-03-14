@@ -5,8 +5,7 @@
 import { animations as animationRegistry } from './animation_registry.js';
 import { AnimationEngine } from './animations.js';
 import { messages } from './messages.js';
-import { SYSTEM_CATEGORY_PAGE_BREAK, isValidColor } from './utils.js';
-import { dbGetAll, dbImportCategories } from './db.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
 
 let currentLang = 'en';
 let categories = [];
@@ -36,8 +35,6 @@ const importBtn = document.getElementById('import-btn');
 const exportBtn = document.getElementById('export-btn');
 const newStartBtn = document.getElementById('new-start-btn');
 const clearAllBtn = document.getElementById('clear-all-btn');
-const loadBrowserBtn = document.getElementById('load-browser-btn');
-const saveBrowserBtn = document.getElementById('save-browser-btn');
 
 const langSelect = document.getElementById('lang-select-editor');
 const themeToggle = document.getElementById('theme-toggle');
@@ -266,9 +263,6 @@ function setupEventListeners() {
     btnShowCode.addEventListener('click', () => {
         codeModalEl.classList.remove('hidden');
     });
-
-    loadBrowserBtn.addEventListener('click', handleLoadFromBrowser);
-    saveBrowserBtn.addEventListener('click', handleSaveToBrowser);
 
     window.addEventListener('click', (e) => {
         if (e.target === codeModalEl) {
@@ -700,54 +694,6 @@ async function handleExport() {
         showToast(t('toast-export-success'));
     } catch (err) {
         console.error('Failed to copy categories:', err);
-    }
-}
-
-async function handleLoadFromBrowser() {
-    if (confirm(t('confirm-load-browser'))) {
-        try {
-            const browserCategories = await dbGetAll('categories');
-            if (browserCategories && browserCategories.length > 0) {
-                categories = browserCategories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-                selectedIndex = 0;
-                renderCategoryList();
-                renderDetail();
-                updateCodeView();
-                showToast(t('toast-load-browser-success'));
-            }
-        } catch (err) {
-            console.error(err);
-            showToast(t('toast-load-browser-failed'));
-        }
-    }
-}
-
-async function handleSaveToBrowser() {
-    if (categories.length === 0) {
-        showToast(t('toast-no-categories'));
-        return;
-    }
-    if (confirm(t('confirm-save-browser'))) {
-        try {
-            // Prepare categories for DB import format
-            const itemsToSave = categories.map(cat => {
-                if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
-                    return { type: 'page-break' };
-                }
-                return {
-                    name: cat.name,
-                    color: isValidColor(cat.color) ? cat.color : 'primary',
-                    tags: cat.tags || '',
-                    animation: cat.animation || 'default'
-                };
-            });
-
-            await dbImportCategories(itemsToSave, 'overwrite');
-            showToast(t('toast-save-browser-success'));
-        } catch (err) {
-            console.error(err);
-            showToast(t('toast-save-browser-failed'));
-        }
     }
 }
 
