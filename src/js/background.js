@@ -3,7 +3,7 @@
  * Chrome Extension Service Worker for QuickLog-Solo
  */
 
-import { openDatabase, dbGetAll, STORE_ALARMS, getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME, initDB } from './db.js';
+import { getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME, initDB } from './db.js';
 import { stopTaskLogic, pauseTaskLogic, startTaskLogic } from './logic.js';
 import { t, setLanguage } from './i18n.js';
 
@@ -84,7 +84,7 @@ function setupBroadcastChannel() {
 }
 
 // Support chrome.runtime.sendMessage as well for better reliability
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
     if (message.type === 'alarms-updated') {
         setupAlarms().catch(err => console.error('QuickLog-Solo: setupAlarms failed on message', err));
     } else if (message.type === 'sync') {
