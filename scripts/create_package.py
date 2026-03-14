@@ -65,7 +65,11 @@ def create_zip(zip_filepath, includes, manifest_src, temp_dir, is_dev=False, ver
         if is_dev:
             print("  [Branding] Generating orange icons for Dev build...")
             dev_assets_dir = os.path.join(temp_dir, "assets")
-            subprocess.run(["python3", "scripts/generate_png_icons.py", dev_assets_dir, "#ea580c"], check=True)
+            # Explicitly unset VERCEL env var during branding to ensure generation happens even in Vercel environment
+            env = os.environ.copy()
+            if 'VERCEL' in env:
+                del env['VERCEL']
+            subprocess.run(["python3", "scripts/generate_png_icons.py", dev_assets_dir, "#ea580c"], check=True, env=env)
             print("  [Branding] Orange PNG icons generated successfully.")
 
         # Final check for package hygiene

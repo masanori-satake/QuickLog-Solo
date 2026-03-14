@@ -139,13 +139,20 @@ graph TD
 
 ### 4. Deploy to Vercel (`deploy.yml`)
 
+GitHub Actions 経由でビルドを行い、Vercel へデプロイします。
+プルリクエスト時にもプレビュー環境が構築されるため、マージ前に Release/Dev 各 ZIP パッケージの動作やブランディング（オレンジアイコン等）を実機で確認することが可能です。
+
 #### フローチャート
 
 ```mermaid
 graph TD
-    Start([トリガー: mainへのPush]) --> Checkout[リポジトリのチェックアウト]
-    Checkout --> Vercel[Vercelへデプロイ]
+    Start([トリガー: mainへのPush<br/>または PR作成/更新]) --> Setup[環境セットアップ<br/>Node.js / Python]
+    Setup --> Playwright[Playwrightブラウザセットアップ]
+    Playwright --> Build[ビルド実行<br/>npm run build]
+    Build --> Vercel[Vercelへデプロイ<br/>amondnet/vercel-action]
     Vercel --> End([完了])
+
+    style Build fill:#dfd,stroke:#333
 ```
 
 ---
