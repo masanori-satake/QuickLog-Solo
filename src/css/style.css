@@ -1034,6 +1034,7 @@ body.theme-dark button:active {
     align-items: center;
     gap: var(--md-sys-spacing-1);
     font-size: 0.75rem;
+    margin-bottom: var(--md-sys-spacing-1-5);
 }
 
 .import-mode-selector label {
