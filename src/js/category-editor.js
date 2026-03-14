@@ -435,50 +435,79 @@ function updateListItem(idx) {
 }
 
 function renderDetail() {
-    const previewOverlay = document.querySelector('.preview-overlay-base');
-    const previewContainer = document.getElementById('preview-container');
+    try {
+        const previewOverlay = document.getElementById('preview-overlay-base');
+        const previewContainer = document.getElementById('preview-container');
 
-    if (selectedIndex === -1 || selectedIndex >= categories.length) {
+        if (!previewOverlay || !previewContainer) return;
+
+        // Utility to clean up all category color classes
+        const clearCategoryClasses = (el) => {
+            const classes = Array.from(el.classList).filter(c => c.startsWith('cat-'));
+            classes.forEach(c => el.classList.remove(c));
+        };
+
+        if (selectedIndex === -1 || selectedIndex >= categories.length) {
+            detailSection.classList.add('hidden');
+            previewNameEl.textContent = '';
+            if (animationEngine) animationEngine.stop();
+            animInfoEl.classList.add('hidden');
+            previewOverlay.dataset.animActive = 'false';
+            previewContainer.dataset.animActive = 'false';
+            previewOverlay.classList.remove('anim-active');
+            previewContainer.classList.remove('anim-active');
+            previewOverlay.style.setProperty('background-color', 'transparent', 'important');
+            return;
+        }
+
+        const cat = categories[selectedIndex];
+        const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+
+        if (isPageBreak) {
+            detailSection.classList.add('hidden');
+            previewNameEl.textContent = `--- ${t('page-break-label')} ---`;
+            previewOverlay.dataset.animActive = 'false';
+            previewContainer.dataset.animActive = 'false';
+            previewOverlay.classList.remove('anim-active');
+            previewContainer.classList.remove('anim-active');
+            previewOverlay.style.setProperty('background-color', 'transparent', 'important');
+            updatePreview();
+            animInfoEl.classList.add('hidden');
+            return;
+        }
+
         detailSection.classList.remove('hidden');
-        previewNameEl.textContent = '';
-        animationEngine.stop();
-        animInfoEl.classList.add('hidden');
-        previewOverlay.className = 'preview-overlay-base';
-        previewContainer.classList.remove('anim-active');
-        return;
-    }
+        editNameInput.value = cat.name;
+        previewNameEl.textContent = cat.name;
+        renderTags();
+        updateColorSelection();
+        editAnimationSelect.value = cat.animation || 'default';
+        updateAnimationInfo();
 
-    const cat = categories[selectedIndex];
-    const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        // Update preview theme classes using data attributes to avoid collision with solid background classes
+        const color = cat.color || 'primary';
+        const animation = cat.animation || 'default';
+        const animActive = animation !== 'none';
 
-    if (isPageBreak) {
-        detailSection.classList.add('hidden');
-        previewNameEl.textContent = `--- ${t('page-break-label')} ---`;
+        previewOverlay.dataset.color = color;
+        previewOverlay.dataset.animActive = animActive;
+        previewContainer.dataset.animActive = animActive;
+
+        if (animActive) {
+            previewOverlay.classList.add('anim-active');
+            previewContainer.classList.add('anim-active');
+            previewOverlay.style.removeProperty('background-color');
+        } else {
+            previewOverlay.classList.remove('anim-active');
+            previewContainer.classList.remove('anim-active');
+            // Force transparency when no animation is active
+            previewOverlay.style.setProperty('background-color', 'transparent', 'important');
+        }
+
         updatePreview();
-        animInfoEl.classList.add('hidden');
-        previewOverlay.className = 'preview-overlay-base';
-        previewContainer.classList.remove('anim-active');
-        return;
+    } catch (err) {
+        console.error('QuickLog-Solo: Error in renderDetail:', err);
     }
-
-    detailSection.classList.remove('hidden');
-    editNameInput.value = cat.name;
-    previewNameEl.textContent = cat.name;
-    renderTags();
-    updateColorSelection();
-    editAnimationSelect.value = cat.animation || 'default';
-    updateAnimationInfo();
-
-    // Update preview theme classes
-    const colorClass = `cat-${cat.color || 'primary'}`;
-    const animation = cat.animation || 'default';
-    const animActive = animation !== 'none';
-
-    // Only apply category color class if animation is active, matching main app behavior
-    previewOverlay.className = `preview-overlay-base` + (animActive ? ` ${colorClass} anim-active` : '');
-    previewContainer.classList.toggle('anim-active', animActive);
-
-    updatePreview();
 }
 
 function updateAnimationInfo() {
@@ -607,7 +636,7 @@ function updatePreview() {
     // Use theme-aware color from CSS variables
     const colorKey = cat.color || 'primary';
     const computedStyle = getComputedStyle(document.body);
-    const color = computedStyle.getPropertyValue(`--custom-cat-${colorKey}`).trim() || COLOR_CODES[colorKey];
+    const color = computedStyle.getPropertyValue(`--custom-cat-${colorKey}`).trim() || COLOR_CODES[colorKey] || '#1976d2';
 
     // Set exclusion areas to match sidebar behavior
     const canvasRect = animationEngine.canvas.getBoundingClientRect();
