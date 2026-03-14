@@ -1,0 +1,13 @@
+*.log
+.DS_Store
+node_modules
+test-results
+verification
+__pycache__
+reproduce_*.py
+verify_*.py
+.git
+.github
+tests
+scripts
+docs

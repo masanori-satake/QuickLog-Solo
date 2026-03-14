@@ -25,6 +25,18 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 
 ## 自動化スクリプト
 
+### 拡張機能パッケージの自動生成（Release & Dev）
+
+本プロジェクトでは、製品版（Release）と開発・検証用（Dev）の2種類のパッケージを自動生成します。
+
+- **実行タイミング**: バージョンタグ（`v*.*.*`）のプッシュ時に `release.yml` が起動し、Release 用と Dev 用の両方の ZIP ファイルを自動的に GitHub Release にアップロードします。
+- **実行コマンド**: `npm run build` (内部で `scripts/create_package.py` を実行)
+- **パッケージの種類**:
+    - **Release版**: 公式配布用。青色アイコン、正規名称。開発専用アニメーションは物理的に除外されます。
+    - **Dev版**: 開発・サポート用。オレンジ色アイコン（#ea580c）、名称に `(Dev v0.32.0)` 形式のサフィックスを付与。すべての開発用アニメーションを含みます。
+- **ブランディング自動化**: `scripts/generate_png_icons.py` が SVG の背景色を動的に変更し、各サイズ（16, 32, 48, 128）の PNG アイコンを生成します。この処理はビルドプロセス (`create_package.py`) の中で自動的に行われるため、事前作業は不要です。
+- **クリーンパブリッシュ**: ブラウザのキャッシュや優先度の問題を避けるため、ZIP パッケージからはソースの `icon.svg` が物理的に除外され、生成された PNG のみが含まれます。
+
 ### クイックスタートガイドのスクリーンショット自動作成
 
 ランディングページからアクセス可能なクイックスタートガイド (`guide.html`) に掲載するスクリーンショットを自動的に作成・更新する仕組みを備えています。
@@ -127,13 +139,20 @@ graph TD
 
 ### 4. Deploy to Vercel (`deploy.yml`)
 
+GitHub Actions 経由でビルドを行い、Vercel へデプロイします。
+プルリクエスト時にもプレビュー環境が構築されるため、マージ前に Release/Dev 各 ZIP パッケージの動作やブランディング（オレンジアイコン等）を実機で確認することが可能です。
+
 #### フローチャート
 
 ```mermaid
 graph TD
-    Start([トリガー: mainへのPush]) --> Checkout[リポジトリのチェックアウト]
-    Checkout --> Vercel[Vercelへデプロイ]
+    Start([トリガー: mainへのPush<br/>または PR作成/更新]) --> Setup[環境セットアップ<br/>Node.js / Python]
+    Setup --> Playwright[Playwrightブラウザセットアップ]
+    Playwright --> Build[ビルド実行<br/>npm run build]
+    Build --> Vercel[Vercelへデプロイ<br/>amondnet/vercel-action]
     Vercel --> End([完了])
+
+    style Build fill:#dfd,stroke:#333
 ```
 
 ---
@@ -159,6 +178,8 @@ graph TD
 ### 6. Auto Release (`release.yml`)
 
 Node.js **v24** 環境で動作します。
+このワークフローは、本番用の Release ZIP と検証用の Dev ZIP の両方を生成し、GitHub Release にアセットとしてアップロードします。
+
 Pythonスクリプトによるアイコン生成 (`generate_png_icons.py`) のため、Node.js版のPlaywrightがインストールしたブラウザを共有する形で、Python版のPlaywrightライブラリを `pip` でインストール・セットアップします。
 
 #### フローチャート
@@ -168,10 +189,19 @@ graph TD
     Start([トリガー: v*.*.* タグのPush]) --> Setup[環境セットアップ<br/>Node.js v24 / Python]
     Setup --> Playwright[Playwrightブラウザ & <br/>Pythonライブラリのセットアップ]
     Playwright --> Build[ビルド実行<br/>npm run build]
-    Build --> Release[GitHub Release作成<br/>アセットのアップロード]
+    subgraph "ビルド詳細"
+        Build --> RegRelease[Release用レジストリ生成]
+        RegRelease --> ZipRelease[Release ZIP作成]
+        ZipRelease --> RegDev[Dev用レジストリ生成]
+        RegDev --> GenOrange[オレンジアイコン生成]
+        GenOrange --> ZipDev[Dev ZIP作成]
+        ZipDev --> Restore[環境復元]
+    end
+    Restore --> Release[GitHub Release作成<br/>アセットの全ZIPアップロード]
     Release --> End([完了])
 
     style Build fill:#dfd,stroke:#333
+    style GenOrange fill:#f96,stroke:#333
 ```
 
 ---

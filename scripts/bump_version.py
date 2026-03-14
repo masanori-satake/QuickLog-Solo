@@ -59,11 +59,11 @@ def bump_version(current_version, bump_type):
         return f"{major}.{minor}.{patch + 1}"
     return current_version
 
-def update_file(filepath, new_version):
-    with open(filepath, 'r') as f:
+def update_json_file(filepath, new_version):
+    with open(filepath, 'r', encoding='utf-8') as f:
         data = json.load(f)
     data['version'] = new_version
-    with open(filepath, 'w') as f:
+    with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
         f.write('\n')
 
@@ -89,7 +89,7 @@ def main():
         return
 
     try:
-        with open('src/version.json', 'r') as f:
+        with open('src/version.json', 'r', encoding='utf-8') as f:
             current_version = json.load(f).get('version')
     except Exception as e:
         print(f"Error reading src/version.json: {e}")
@@ -103,8 +103,18 @@ def main():
 
     print(f"Bumping version from {current_version} to {new_version} ({bump_type})")
 
+    # 1. Update package.json and package-lock.json using npm version
+    try:
+        subprocess.run(["npm", "version", new_version, "--no-git-tag-version"], check=True)
+        print("Updated package.json and package-lock.json using npm version")
+    except subprocess.CalledProcessError:
+        print("Warning: npm version failed. Falling back to manual update.")
+        update_json_file('package.json', new_version)
+        if os.path.exists('package-lock.json'):
+            update_json_file('package-lock.json', new_version)
+
+    # 2. Update other files
     files_to_update = [
-        'package.json',
         'src/version.json',
         'src/manifest.chrome.json',
         'src/manifest.firefox.json'
@@ -112,15 +122,15 @@ def main():
 
     for filepath in files_to_update:
         if os.path.exists(filepath):
-            update_file(filepath, new_version)
+            update_json_file(filepath, new_version)
             print(f"Updated {filepath}")
         else:
             print(f"Warning: {filepath} not found.")
 
-    # Special handling for README.md version badge
+    # 3. Special handling for README.md version badge
     readme_path = 'README.md'
     if os.path.exists(readme_path):
-        with open(readme_path, 'r') as f:
+        with open(readme_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
         new_content = re.sub(
@@ -130,7 +140,7 @@ def main():
         )
 
         if content != new_content:
-            with open(readme_path, 'w') as f:
+            with open(readme_path, 'w', encoding='utf-8') as f:
                 f.write(new_content)
             print(f"Updated version badge in {readme_path}")
 

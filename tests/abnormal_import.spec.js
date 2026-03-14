@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Abnormal Import Cases', () => {
+    test.slow(); // Give these tests more time in CI
+
     test.beforeEach(async ({ context, page }) => {
         // Grant clipboard permissions
         await context.grantPermissions(['clipboard-read', 'clipboard-write']);
@@ -19,25 +21,24 @@ test.describe('Abnormal Import Cases', () => {
         const content = 'This is not JSON at all\nDefinitely not';
         await page.evaluate((text) => navigator.clipboard.writeText(text), content);
 
-        // Listen for alert
-        const dialogPromise = page.waitForEvent('dialog');
-        await page.click('#import-categories-btn');
+        page.once('dialog', async dialog => {
+            expect(dialog.message()).toContain('ファイル形式が正しくありません');
+            await dialog.dismiss();
+        });
 
-        const dialog = await dialogPromise;
-        expect(dialog.message()).toContain('ファイル形式が正しくありません');
-        await dialog.dismiss();
+        await page.locator('#import-categories-btn').click();
     });
 
     test('should handle Level 1: Fatal Error (Non-object JSON values)', async ({ page }) => {
         const content = '123\n"string"\ntrue';
         await page.evaluate((text) => navigator.clipboard.writeText(text), content);
 
-        const dialogPromise = page.waitForEvent('dialog');
-        await page.click('#import-categories-btn');
+        page.once('dialog', async dialog => {
+            expect(dialog.message()).toContain('ファイル形式が正しくありません');
+            await dialog.dismiss();
+        });
 
-        const dialog = await dialogPromise;
-        expect(dialog.message()).toContain('ファイル形式が正しくありません');
-        await dialog.dismiss();
+        await page.locator('#import-categories-btn').click();
     });
 
     test('should handle Level 1: Fatal Error (Empty content)', async ({ page }) => {

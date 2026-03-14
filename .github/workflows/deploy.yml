@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -17,10 +21,55 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium --with-deps
+
+      - name: Install Playwright Dependencies (if cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Install Python Playwright
+        run: pip install playwright
+
+      - name: Build packages (Generates ZIPs and Branded Icons)
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          ls -R releases/
+          file src/assets/icon128.png
+          # Verify that some icons were generated (they should be orange in Dev builds but we verify presence here)
+          [ -f src/assets/icon128.png ] || (echo "Icons missing" && exit 1)
+          [ -f releases/QuickLog-Solo-Chrome-Dev.zip ] || (echo "Dev ZIP missing" && exit 1)
+
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v41.1.4
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
