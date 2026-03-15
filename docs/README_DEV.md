@@ -119,38 +119,38 @@ sequenceDiagram
 
 ```mermaid
 stateDiagram-v2
+    state "待機 (IDLE)" as IDLE
+    state "作業中 (WORKING)" as WORKING
+    state "一時停止 (PAUSED)" as PAUSED
+
     [*] --> IDLE
 
-    IDLE --> ACTIVE : カテゴリ選択
+    IDLE --> WORKING : カテゴリ選択
+    WORKING --> IDLE : 終了 (Stop Marker記録)
 
-    state "計測中 (ACTIVE)" as ACTIVE {
-        state "作業中 (WORKING)" as WORKING
-        state "一時停止 (PAUSED)" as PAUSED
+    WORKING --> PAUSED : 一時停止
+    PAUSED --> WORKING : 再開
 
-        [*] --> WORKING
-        WORKING --> PAUSED : 一時停止
-        PAUSED --> WORKING : 再開
-        WORKING --> WORKING : カテゴリ切替
-    }
+    PAUSED --> IDLE : 終了 (Stop Marker記録)
 
-    ACTIVE --> IDLE : 終了 (Stop Marker記録)
+    WORKING --> WORKING : カテゴリ切替
 
     note left of IDLE
-        <b>IDLE (待機)</b>
+        <b>待機 (IDLE)</b>
         計測停止状態
         手動終了時は
         停止マーカーを記録
     end note
 
-    note right of WORKING
-        <b>WORKING (作業中)</b>
+    note top of WORKING
+        <b>作業中 (WORKING)</b>
         業務計測中
         背景アニメーション動作
         タイマー進行
     end note
 
-    note left of PAUSED
-        <b>PAUSED (一時停止中)</b>
+    note right of PAUSED
+        <b>一時停止 (PAUSED)</b>
         待機ログ記録
         元のカテゴリを保持
         (Resumeで復帰可能)
@@ -251,6 +251,10 @@ graph TD
 
 ```mermaid
 stateDiagram-v2
+    state "STOPPED (停止中)" as STOPPED
+    state "PLAYING (再生中)" as PLAYING
+    state "PAUSED (一時停止中)" as PAUSED
+
     [*] --> STOPPED
 
     STOPPED --> PLAYING : Play
@@ -261,9 +265,9 @@ stateDiagram-v2
 
     PAUSED --> STOPPED : Stop
 
-    STOPPED --> STOPPED : Eject
-    PLAYING --> PLAYING : Rewind / FF
-    PAUSED --> PAUSED : Rewind / FF
+    STOPPED --> STOPPED : Eject (サンプル解除)
+    PLAYING --> PLAYING : Rewind / FF (早送り/巻戻し)
+    PAUSED --> PAUSED : Rewind / FF (早送り/巻戻し)
 ```
 
 #### 特徴的な機能
