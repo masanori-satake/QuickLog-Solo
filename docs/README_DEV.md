@@ -144,7 +144,7 @@ stateDiagram-v2
       元のカテゴリを保持
     end note
 
-    note bottom of IDLE
+    note left of IDLE
       計測停止
       手動終了時は「停止マーカー」を記録
     end note
