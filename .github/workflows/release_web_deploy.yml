@@ -1,4 +1,4 @@
-name: リリース: Webアプリケーションのデプロイ (Release: Deploy Web Applications)
+name: "リリース: Webアプリケーションのデプロイ (Release: Deploy Web Applications)"
 
 on:
   push:
@@ -32,15 +32,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -49,7 +49,7 @@ jobs:
         run: npm install
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -80,7 +80,7 @@ jobs:
           [ -f releases/QuickLog-Solo-Chrome-Dev.zip ] || (echo "Dev ZIP missing" && exit 1)
 
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v41.1.4
+        uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}

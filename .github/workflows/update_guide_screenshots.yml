@@ -1,4 +1,4 @@
-name: 更新: ガイド用スクリーンショット (Update: Guide Screenshots)
+name: "更新: ガイド用スクリーンショット (Update: Guide Screenshots)"
 
 on:
   push:
@@ -31,12 +31,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.head_ref || github.ref }}
 
     - name: Set up Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v4
       with:
         node-version: '24'
         cache: 'npm'
@@ -45,7 +45,7 @@ jobs:
       run: npm install
 
     - name: Cache Playwright browsers
-      uses: actions/cache@v5
+      uses: actions/cache@v4
       id: playwright-cache
       with:
         path: ~/.cache/ms-playwright
@@ -66,14 +66,14 @@ jobs:
 
     - name: Commit and push changes (PR)
       if: github.event_name == 'pull_request'
-      uses: stefanzweifel/git-auto-commit-action@v7
+      uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "chore: update guide screenshots [skip ci]"
         file_pattern: 'shared/assets/guide/*.png'
 
     - name: Create Pull Request (Manual/Main)
       if: github.event_name != 'pull_request'
-      uses: peter-evans/create-pull-request@v8.1.0
+      uses: peter-evans/create-pull-request@v7.0.5
       with:
         commit-message: "chore: update guide screenshots [skip ci]"
         add-paths: 'shared/assets/guide/*.png'

@@ -1,4 +1,4 @@
-name: テスト: コード品質 (Lint/Unit) (Test: Code Quality)
+name: "テスト: コード品質 (Lint/Unit) (Test: Code Quality)"
 
 on:
   push:
@@ -35,13 +35,13 @@ jobs:
     timeout-minutes: 15
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Get changed files
       id: changed-files
-      uses: tj-actions/changed-files@v47
+      uses: tj-actions/changed-files@v45
       with:
         files: |
           projects/**
@@ -52,7 +52,7 @@ jobs:
           .stylelintrc.json
 
     - name: Set up Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v4
       with:
         node-version: '24'
         cache: 'npm'

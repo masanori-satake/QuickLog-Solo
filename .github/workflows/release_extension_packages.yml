@@ -1,4 +1,4 @@
-name: リリース: 拡張機能パッケージの公開 (Release: Publish Extension Packages)
+name: "リリース: 拡張機能パッケージの公開 (Release: Publish Extension Packages)"
 
 on:
   push:
@@ -22,15 +22,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -39,7 +39,7 @@ jobs:
         run: npm install
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
