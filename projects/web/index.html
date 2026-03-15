@@ -281,7 +281,7 @@
     </div>
 
     <script>
-        const CATEGORY_EDITOR_URL = '/projects/category-editor/index';
+        const CATEGORY_EDITOR_URL = '/projects/category-editor/index.html';
 
         const translations = {
             ja: {
@@ -971,7 +971,7 @@
             // Update QL-Animation Studio link with language parameter
             const studioLink = document.getElementById('cta-studio-link');
             if (studioLink) {
-                studioLink.href = '/projects/studio/index?lang=' + encodeURIComponent(safeLang);
+                studioLink.href = '/projects/studio/index.html?lang=' + encodeURIComponent(safeLang);
             }
 
             // Update QL-Category Editor link with language parameter
@@ -983,7 +983,7 @@
             // Update Quick Start Guide link with language parameter
             const guideLink = document.getElementById('quick-start-guide-link');
             if (guideLink) {
-                guideLink.href = '/projects/web/guide?lang=' + encodeURIComponent(safeLang);
+                guideLink.href = '/projects/web/guide.html?lang=' + encodeURIComponent(safeLang);
             }
 
             // Update page title
@@ -1073,7 +1073,7 @@
 
         function loadPreview(iframe, dbName) {
             const safeLang = getSafeLang(currentLang);
-            const previewUrl = '/projects/app/app?lang=' + encodeURIComponent(safeLang) + '&db=' + encodeURIComponent(dbName);
+            const previewUrl = '/projects/app/app.html?lang=' + encodeURIComponent(safeLang) + '&db=' + encodeURIComponent(dbName);
             if (iframe.src !== previewUrl) {
                 iframe.src = previewUrl;
             }
