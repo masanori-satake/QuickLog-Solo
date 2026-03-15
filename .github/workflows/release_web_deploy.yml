@@ -71,13 +71,27 @@ jobs:
       - name: Build packages (Generates ZIPs and Branded Icons)
         run: npm run build
 
+      - name: Prepare Deployment Directory
+        run: |
+          mkdir dist_web
+          cp vercel.json dist_web/
+          mkdir -p dist_web/projects
+          cp -r projects/web dist_web/projects/
+          cp -r projects/app dist_web/projects/
+          cp -r projects/category-editor dist_web/projects/
+          cp -r projects/studio dist_web/projects/
+          cp -r shared dist_web/
+          cp -r releases dist_web/
+
+          # Remove symlinks in dist_web to ensure they are real directories/files for Vercel
+          find dist_web -type l -delete
+
       - name: Verify build artifacts
         run: |
-          ls -R releases/
-          file shared/assets/icon128.png
-          # Verify that some icons were generated (they should be orange in Dev builds but we verify presence here)
-          [ -f shared/assets/icon128.png ] || (echo "Icons missing" && exit 1)
-          [ -f releases/QuickLog-Solo-Chrome-Dev.zip ] || (echo "Dev ZIP missing" && exit 1)
+          ls -R dist_web/releases/
+          [ -f dist_web/shared/assets/icon128.png ] || (echo "Icons missing" && exit 1)
+          [ -f dist_web/releases/QuickLog-Solo-Chrome-Dev.zip ] || (echo "Dev ZIP missing" && exit 1)
+          [ -f dist_web/projects/web/index.html ] || (echo "Landing page missing" && exit 1)
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25.2.0
@@ -85,4 +99,5 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: dist_web
           vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}

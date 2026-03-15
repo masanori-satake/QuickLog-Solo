@@ -1,13 +1,37 @@
+# dist_web ディレクトリをルートとしてデプロイするため、
+# その外にあるものはそもそも転送対象になりませんが、
+# 念のため安全策として記述します。
+
+# Local development and OS files
 *.log
 .DS_Store
 node_modules
+__pycache__
+
+# CI/CD and Task-specific files
 test-results
 verification
-__pycache__
 reproduce_*.py
 verify_*.py
+
+# Repositiory root files (should not be in dist_web)
 .git
 .github
 tests
 scripts
 docs
+package.json
+package-lock.json
+eslint.config.js
+jest.config.cjs
+jest.setup.js
+playwright.config.js
+scanoss.json
+.scanossignore
+.stylelintrc.json
+.stylelintignore
+.pre-commit-config.yaml
+AGENTS.md
+LICENSE
+README.md
+SECURITY.md
