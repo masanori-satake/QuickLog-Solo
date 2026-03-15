@@ -1,4 +1,4 @@
-name: OSS Fragment Audit (SCANOSS)
+name: OSSコンプライアンス監査 (Audit OSS Compliance)
 
 on:
   push:

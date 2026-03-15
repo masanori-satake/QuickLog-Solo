@@ -1,27 +1,25 @@
-name: Auto Release with ZIP Asset
+name: Webアプリケーションのデプロイ (Deploy Web Applications)
 
 on:
   push:
-    tags:
-      - 'v*.*.*' # セマンティックバージョニングのタグをトリガーとする
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      tag_name:
-        description: 'Tag name to release (e.g. v0.26.1)'
-        required: true
-        type: string
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  release:
+  deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Releaseの作成およびアセットのアップロードに必須
-
+      contents: read
+    timeout-minutes: 10
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v6
 
       - name: Set up Python
@@ -58,12 +56,21 @@ jobs:
       - name: Install Python Playwright
         run: pip install playwright
 
-      - name: Build packages
+      - name: Build packages (Generates ZIPs and Branded Icons)
         run: npm run build
 
-      - name: Create GitHub Release and Upload Assets
-        uses: softprops/action-gh-release@v2
+      - name: Verify build artifacts
+        run: |
+          ls -R releases/
+          file shared/assets/icon128.png
+          # Verify that some icons were generated (they should be orange in Dev builds but we verify presence here)
+          [ -f shared/assets/icon128.png ] || (echo "Icons missing" && exit 1)
+          [ -f releases/QuickLog-Solo-Chrome-Dev.zip ] || (echo "Dev ZIP missing" && exit 1)
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v41.1.4
         with:
-          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
-          generate_release_notes: true
-          files: releases/*.zip
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}

@@ -12,14 +12,20 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 
 ## ワークフロー一覧
 
-| ワークフロー名 | ファイル | 概要 | トリガー |
-| :--- | :--- | :--- | :--- |
-| **CI** | `ci.yml` | コードの品質管理、バージョン整合性チェック、テスト実行 | `main`へのPush/PR, 手動 |
-| **OSS Fragment Audit** | `oss_audit.yml` | SCANOSSによる外部コード混入（スニペット盗用）の監査 | `main`へのPush/PR, 手動 |
-| **Animation Quality Evaluation** | `animation_eval.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (shared/js/animation/**), 手動 |
-| **Update Guide Assets** | `update_guide_assets.yml` | クイックスタートガイド用スクリーンショットの自動生成と更新 | `main`へのPush/PR, 手動 |
-| **Deploy to Vercel** | `deploy.yml` | 本番・開発環境への自動デプロイ | `main`へのPush |
-| **Auto Release** | `release.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成（高速化のためPlaywrightキャッシュ対応） | `v*.*.*`タグのPush |
+各ワークフローは、役割に応じて **Audit（監査）**, **Test（テスト）**, **Release（公開）**, **Update（更新）** の4つのグループに分類されています。
+
+| グループ | ワークフロー名 | ファイル | 概要 | トリガー |
+| :--- | :--- | :--- | :--- | :--- |
+| **Audit** | **コードとバージョンの整合性監査** | `audit_integrity.yml` | ルートディレクトリのクリーンネス、バージョン整合性の検証 | `main`へのPush/PR, 手動 |
+| **Audit** | **OSSコンプライアンス監査** | `audit_oss_compliance.yml` | SCANOSSによる外部コード混入（スニペット盗用）の監査 | `main`へのPush/PR, 手動 |
+| **Test** | **コード品質テスト (Lint/Unit)** | `test_quality.yml` | ESLint, Stylelint, Jest による静的解析とユニットテスト | `main`へのPush/PR, 手動 |
+| **Test** | **E2Eテスト** | `test_e2e.yml` | Playwright による End-to-End テスト | `main`へのPR, 手動 |
+| **Test** | **アニメーション品質評価** | `test_animation.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (*1), 手動 |
+| **Release** | **Webアプリケーションのデプロイ** | `release_web_deploy.yml` | Vercelへの自動デプロイ（Landing Page, Studio等） | `main`へのPush/PR, 手動 |
+| **Release** | **拡張機能パッケージの公開** | `release_extension_packages.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
+| **Update** | **ガイド用スクリーンショットの更新** | `update_guide_screenshots.yml` | クイックスタートガイド用画像のリポジトリ自動反映 | `main`へのPush/PR, 手動 |
+
+- (*1) `shared/js/animation/**` に変更がある場合のみ実行
 
 ---
 
@@ -29,13 +35,12 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 
 本プロジェクトでは、製品版（Release）と開発・検証用（Dev）の2種類のパッケージを自動生成します。
 
-- **実行タイミング**: バージョンタグ（`v*.*.*`）のプッシュ時に `release.yml` が起動し、Release 用と Dev 用の両方の ZIP ファイルを自動的に GitHub Release にアップロードします。
+- **実行タイミング**: バージョンタグ（`v*.*.*`）のプッシュ時に `release_extension_packages.yml` が起動し、Release 用と Dev 用の両方の ZIP ファイルを自動的に GitHub Release にアップロードします。
 - **実行コマンド**: `npm run build` (内部で `scripts/create_package.py` を実行)
 - **パッケージの種類**:
     - **Release版**: 公式配布用。青色アイコン、正規名称。開発専用アニメーションは物理的に除外されます。
     - **Dev版**: 開発・サポート用。オレンジ色アイコン（#ea580c）、名称に `(Dev v0.32.0)` 形式のサフィックスを付与。すべての開発用アニメーションを含みます。
 - **ブランディング自動化**: `scripts/generate_png_icons.py` が SVG の背景色を動的に変更し、各サイズ（16, 32, 48, 128）の PNG アイコンを生成します。この処理はビルドプロセス (`create_package.py`) の中で自動的に行われるため、事前作業は不要です。
-- **クリーンパブリッシュ**: ブラウザのキャッシュや優先度の問題を避けるため、ZIP パッケージからはソースの `icon.svg` が物理的に除外され、生成された PNG のみが含まれます。
 
 ### クイックスタートガイドのスクリーンショット自動作成
 
@@ -47,200 +52,79 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
   2. Playwright を使用して `projects/app/app.html` を開き、内部状態（ダミーデータ等）を注入します。
   3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
   4. 生成された画像は `shared/assets/guide/` に保存されます。
-- **自動化**: `update_guide_assets.yml` ワークフローにより、コード変更時にこれらの画像が自動的に再生成され、リポジトリにコミットされます。
-- **検証**: CI (`ci.yml`) の E2E テストフェーズにおいて、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
+- **自動化**: `update_guide_screenshots.yml` ワークフローにより、コード変更時にこれらの画像が自動的に再生成され、リポジトリにコミットされます。
 
 ---
 
-## 各ワークフローの詳細
+## 主要なワークフローの構成
 
-### 1. CI (`ci.yml`)
+### 1. 監査とテスト (Audit & Test)
 
-リポジトリの整合性と品質を担保する最も重要なワークフローです。変更されたファイルに応じて実行ステップを最適化しています。
+旧 `ci.yml` を機能別に分割し、並列実行と実行結果の明確化を図っています。
 
-#### フローチャート
+#### フローチャート (Audit & Quality Test)
 
 ```mermaid
 graph TD
     Start([トリガー: Push/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
     Checkout --> GetChanged{変更ファイルの取得}
 
-    GetChanged --> Setup[環境セットアップ<br/>Python / Node.js]
-    Setup --> Install[依存関係のインストール<br/>npm install]
-
-    subgraph "品質チェック"
-        Install --> VerCheck{バージョン整合性チェック<br/>scripts/check_version.py}
-        VerCheck --> VerImpact{バージョン影響調査<br/>scripts/verify_version_impact.py}
-        VerImpact --> Lint[静的解析<br/>ESLint / Stylelint]
+    subgraph "Audit (audit_integrity.yml)"
+        GetChanged --> CleanCheck[ルートクリーンネス検証]
+        CleanCheck --> VerCheck[バージョン整合性チェック]
     end
 
-    subgraph "テスト"
+    subgraph "Quality (test_quality.yml)"
+        GetChanged --> Lint[静的解析<br/>ESLint / Stylelint]
         Lint --> UnitTests[ユニットテスト<br/>Jest]
-        UnitTests --> E2E{E2Eテストが必要か?}
-        E2E -- Yes (PR or Dispatch) --> Playwright[Playwrightブラウザのインストール]
-        Playwright --> RunE2E[E2Eテスト実行<br/>npm run test:e2e]
-        E2E -- No --> End([終了])
-        RunE2E --> End
     end
 
+    subgraph "E2E (test_e2e.yml)"
+        GetChanged --> Playwright[Playwright実行]
+        Playwright --> RunE2E[E2Eテスト実行]
+    end
+
+    style CleanCheck fill:#f9f,stroke:#333
     style VerCheck fill:#f9f,stroke:#333
-    style VerImpact fill:#f9f,stroke:#333
     style Lint fill:#bbf,stroke:#333
     style UnitTests fill:#bbf,stroke:#333
     style RunE2E fill:#dfd,stroke:#333
 ```
 
-#### 特徴的な条件判断
-- **バージョンチェック**: `projects/app/`, `shared/`, `tests/`, `scripts/` 等の重要ファイルに変更がある場合のみ実行。
-- **Lint/Unit Test**: 原則として変更されたファイルのみを対象に実行（`tj-actions/changed-files` を活用）。手動実行時は全ファイルを対象。
-- **E2Eテスト**: PRまたは手動実行時のみ。Push時は実行されません。
-
 ---
 
-### 2. OSS Fragment Audit (`oss_audit.yml`)
+### 2. 公開・配布 (Release)
 
-「100% オリジナルコード」を証明するための監査フローです。
-
-#### フローチャート
-
-```mermaid
-graph TD
-    Start([トリガー: projects/app/, shared/ へのPush/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
-    Checkout --> SCANOSS[SCANOSSコードスキャン実行]
-    SCANOSS --> Policy{ポリシーチェック: undeclared}
-    Policy -- 違反あり --> Fail([失敗: 外部コード検出])
-    Policy -- 違反なし --> Pass([成功: 監査完了])
-
-    style SCANOSS fill:#f96,stroke:#333
-```
-
----
-
-### 3. Animation Quality Evaluation (`animation_eval.yml`)
-
-アニメーションモジュールの描画品質を自動評価します。
-
-#### フローチャート
-
-```mermaid
-graph TD
-    Start([トリガー: animationパスへのPR/Dispatch]) --> Setup[環境セットアップ<br/>Node.js / Python]
-    Setup --> Playwright[Playwrightブラウザのセットアップ]
-    Playwright --> Server[ローカルサーバー起動]
-    Server --> Eval[品質評価実行<br/>npm run test:animation-eval]
-    Eval --> Result{評価基準をクリア?}
-    Result -- Yes --> Pass([合格])
-    Result -- No --> Fail([不合格])
-
-    style Eval fill:#bbf,stroke:#333
-```
-
----
-
-### 4. Deploy to Vercel (`deploy.yml`)
-
+#### Webアプリケーションのデプロイ (`release_web_deploy.yml`)
 GitHub Actions 経由でビルドを行い、Vercel へデプロイします。
-プルリクエスト時にもプレビュー環境が構築されるため、マージ前に Release/Dev 各 ZIP パッケージの動作やブランディング（オレンジアイコン等）を実機で確認することが可能です。
 
-#### フローチャート
-
-```mermaid
-graph TD
-    Start([トリガー: mainへのPush<br/>または PR作成/更新]) --> Setup[環境セットアップ<br/>Node.js / Python]
-    Setup --> Playwright[Playwrightブラウザセットアップ]
-    Playwright --> Build[ビルド実行<br/>npm run build]
-    Build --> Vercel[Vercelへデプロイ<br/>amondnet/vercel-action]
-    Vercel --> End([完了])
-
-    style Build fill:#dfd,stroke:#333
-```
-
----
-
-### 5. Update Guide Assets (`update_guide_assets.yml`)
-
-ガイド用スクリーンショットを自動的に最新化し、リポジトリに反映します。
-
-#### フローチャート
-
-```mermaid
-graph TD
-    Start([トリガー: Push/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
-    Checkout --> Setup[環境セットアップ<br/>Node.js]
-    Setup --> Playwright[Playwrightブラウザのセットアップ]
-    Playwright --> Update[画像更新実行<br/>npm run update-guide-images]
-    Update --> Commit[変更をコミット & プッシュ<br/>git-auto-commit-action]
-    Commit --> End([完了])
-
-    style Update fill:#dfd,stroke:#333
-```
-
-### 6. Auto Release (`release.yml`)
-
-Node.js **v24** 環境で動作します。
-このワークフローは、本番用の Release ZIP と検証用の Dev ZIP の両方を生成し、GitHub Release にアセットとしてアップロードします。
-
-Pythonスクリプトによるアイコン生成 (`generate_png_icons.py`) のため、Node.js版のPlaywrightがインストールしたブラウザを共有する形で、Python版のPlaywrightライブラリを `pip` でインストール・セットアップします。
-
-#### フローチャート
-
-```mermaid
-graph TD
-    Start([トリガー: v*.*.* タグのPush]) --> Setup[環境セットアップ<br/>Node.js v24 / Python]
-    Setup --> Playwright[Playwrightブラウザ & <br/>Pythonライブラリのセットアップ]
-    Playwright --> Build[ビルド実行<br/>npm run build]
-    subgraph "ビルド詳細"
-        Build --> RegRelease[Release用レジストリ生成]
-        RegRelease --> ZipRelease[Release ZIP作成]
-        ZipRelease --> RegDev[Dev用レジストリ生成]
-        RegDev --> GenOrange[オレンジアイコン生成]
-        GenOrange --> ZipDev[Dev ZIP作成]
-        ZipDev --> Restore[環境復元]
-    end
-    Restore --> Release[GitHub Release作成<br/>アセットの全ZIPアップロード]
-    Release --> End([完了])
-
-    style Build fill:#dfd,stroke:#333
-    style GenOrange fill:#f96,stroke:#333
-```
+#### 拡張機能パッケージの公開 (`release_extension_packages.yml`)
+Node.js **v24** 環境で動作します。本番用の Release ZIP と検証用の Dev ZIP の両方を生成し、GitHub Release にアセットとしてアップロードします。
 
 ---
 
 ## CI/CD 全体の統合ビュー
 
-各ワークフローがどのタイミングでどのように機能するかをまとめます。
-
-### トリガー別の動作一覧
-
-| イベント | CI | OSS Audit | Guide Assets | Animation Eval | Deploy | Release |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Push (main)** | ✅ (テストのみ) | ✅ | ✅ | - | ✅ | - |
-| **Pull Request (main)** | ✅ (+E2E) | ✅ | ✅ | ✅ (*1) | - | - |
-| **Tag (v*.*.*)** | - | - | - | - | - | ✅ |
-| **Manual (Dispatch)** | ✅ | ✅ | ✅ | ✅ | - | - |
-
-- (*1) `shared/js/animation/**` に変更がある場合のみ実行
-
 ### プロセス・フロー概略図
 
 ```mermaid
 flowchart LR
-    Dev[開発者] -- PR作成 --> CI[CI: 構文/整合性/テスト]
-    Dev -- PR作成 --> OSS[OSS Audit: 著作権監査]
-    PR_Anim{Anim変更あり?} -- Yes --> Eval[Anim Eval: 品質評価]
+    Dev[開発者] -- PR作成 --> Audit[Audit: 整合性監査]
+    Dev -- PR作成 --> Test[Test: 品質テスト/E2E]
+    Dev -- PR作成 --> OSS[Audit: OSSコンプライアンス]
 
-    CI & OSS & Eval -- Merge --> Main[mainブランチ]
-    Main -- Push --> Deploy[Vercelデプロイ]
+    Audit & Test & OSS -- Merge --> Main[mainブランチ]
+    Main -- Push --> Deploy[Release: Webデプロイ]
 
-    Main -- Tag v* --> Rel[Auto Release: 配布パッケージ作成]
+    Main -- Tag v* --> Rel[Release: 拡張機能パッケージ作成]
 
-    subgraph "Validation Phase"
-    CI
+    subgraph "Validation Phase (Audit / Test)"
+    Audit
+    Test
     OSS
-    Eval
     end
 
-    subgraph "Delivery Phase"
+    subgraph "Delivery Phase (Release)"
     Deploy
     Rel
     end

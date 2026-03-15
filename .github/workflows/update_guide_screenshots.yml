@@ -1,4 +1,4 @@
-name: Update Guide Assets
+name: ガイド用スクリーンショットの更新 (Update Guide Screenshots)
 
 on:
   pull_request:
