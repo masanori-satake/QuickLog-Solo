@@ -15,6 +15,11 @@ projects/web/shared/
 tests/
 scripts/
 docs/
+.git
+.github
+tests
+scripts
+docs
 .*
 .gitignore
 .vercelignore

@@ -44,16 +44,18 @@ jobs:
         patterns = load_ignore()
         def is_ignored(path):
             path = path.replace(os.sep, '/')
+            if path.startswith('./'): path = path[2:]
             for p in patterns:
-                if fnmatch.fnmatch(path, p) or fnmatch.fnmatch(os.path.basename(path), p): return True
+                p_match = p.rstrip('/')
+                if fnmatch.fnmatch(path, p) or fnmatch.fnmatch(path, p_match) or fnmatch.fnmatch(os.path.basename(path), p): return True
                 parts = path.split('/')
                 for part in parts:
-                    if fnmatch.fnmatch(part, p): return True
+                    if fnmatch.fnmatch(part, p) or fnmatch.fnmatch(part, p_match): return True
             return False
         for root, dirs, files in os.walk('.'):
-            dirs[:] = [d for d in dirs if not is_ignored(os.path.join(root, d).lstrip('./'))]
+            dirs[:] = [d for d in dirs if not is_ignored(os.path.join(root, d))]
             for f in files:
-                p = os.path.join(root, f).lstrip('./')
+                p = os.path.join(root, f)
                 if not is_ignored(p): print(f'  {p}')
         EOF
         python3 check_scan.py
