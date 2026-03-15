@@ -29,8 +29,6 @@ playwright.config.js
 *.jsonc
 *.yaml
 *.yml
-*.md
-LICENSE
 
 # Binary and Asset Files
 *.png
