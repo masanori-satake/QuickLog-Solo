@@ -16,7 +16,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 | :--- | :--- | :--- | :--- |
 | **CI** | `ci.yml` | コードの品質管理、バージョン整合性チェック、テスト実行 | `main`へのPush/PR, 手動 |
 | **OSS Fragment Audit** | `oss_audit.yml` | SCANOSSによる外部コード混入（スニペット盗用）の監査 | `main`へのPush/PR, 手動 |
-| **Animation Quality Evaluation** | `animation_eval.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (src/js/animation/**), 手動 |
+| **Animation Quality Evaluation** | `animation_eval.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (shared/js/animation/**), 手動 |
 | **Update Guide Assets** | `update_guide_assets.yml` | クイックスタートガイド用スクリーンショットの自動生成と更新 | `main`へのPush/PR, 手動 |
 | **Deploy to Vercel** | `deploy.yml` | 本番・開発環境への自動デプロイ | `main`へのPush |
 | **Auto Release** | `release.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成（高速化のためPlaywrightキャッシュ対応） | `v*.*.*`タグのPush |
@@ -44,9 +44,9 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 - **実行コマンド**: `npm run update-guide-images`
 - **内部処理**:
   1. `scripts/generate_guide_screenshots.js` が実行されます。
-  2. Playwright を使用して `src/app.html` を開き、内部状態（ダミーデータ等）を注入します。
+  2. Playwright を使用して `projects/app/app.html` を開き、内部状態（ダミーデータ等）を注入します。
   3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
-  4. 生成された画像は `src/assets/guide/` に保存されます。
+  4. 生成された画像は `shared/assets/guide/` に保存されます。
 - **自動化**: `update_guide_assets.yml` ワークフローにより、コード変更時にこれらの画像が自動的に再生成され、リポジトリにコミットされます。
 - **検証**: CI (`ci.yml`) の E2E テストフェーズにおいて、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
 
@@ -91,7 +91,7 @@ graph TD
 ```
 
 #### 特徴的な条件判断
-- **バージョンチェック**: `src/`, `tests/`, `scripts/` 等の重要ファイルに変更がある場合のみ実行。
+- **バージョンチェック**: `projects/app/`, `shared/`, `tests/`, `scripts/` 等の重要ファイルに変更がある場合のみ実行。
 - **Lint/Unit Test**: 原則として変更されたファイルのみを対象に実行（`tj-actions/changed-files` を活用）。手動実行時は全ファイルを対象。
 - **E2Eテスト**: PRまたは手動実行時のみ。Push時は実行されません。
 
@@ -105,7 +105,7 @@ graph TD
 
 ```mermaid
 graph TD
-    Start([トリガー: src/ へのPush/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
+    Start([トリガー: projects/app/, shared/ へのPush/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
     Checkout --> SCANOSS[SCANOSSコードスキャン実行]
     SCANOSS --> Policy{ポリシーチェック: undeclared}
     Policy -- 違反あり --> Fail([失敗: 外部コード検出])
@@ -219,7 +219,7 @@ graph TD
 | **Tag (v*.*.*)** | - | - | - | - | - | ✅ |
 | **Manual (Dispatch)** | ✅ | ✅ | ✅ | ✅ | - | - |
 
-- (*1) `src/js/animation/**` に変更がある場合のみ実行
+- (*1) `shared/js/animation/**` に変更がある場合のみ実行
 
 ### プロセス・フロー概略図
 

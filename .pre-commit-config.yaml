@@ -12,7 +12,7 @@ repos:
         entry: python3 scripts/create_package.py
         language: python
         pass_filenames: false
-        files: ^src/(version\.json|manifest\..*\.json)$
+        files: ^projects/app/(version\.json|manifest\..*\.json)$
     -   id: eslint
         name: eslint
         entry: npx eslint .

@@ -1,6 +1,6 @@
 import {
     escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, getAutoStopTimeIfPassed
-} from '../src/js/utils.js';
+} from '../shared/js/utils.js';
 
 describe('Utils Module', () => {
     describe('escapeHtml', () => {

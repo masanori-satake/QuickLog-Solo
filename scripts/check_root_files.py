@@ -15,23 +15,21 @@ ALLOWED_ROOT_ITEMS = {
     "SECURITY.md",
     "docs",
     "eslint.config.js",
-    "google600c7e741a07d031.html",
-    "guide.html",
-    "index.html",
-    "studio.html",
-    "category-editor.html",
     "jest.config.cjs",
     "jest.setup.js",
     "package-lock.json",
     "package.json",
     "playwright.config.js",
     "scripts",
-    "src",
+    "projects",
+    "shared",
     "tests",
     "vercel.json",
     "releases",
     ".vercelignore",
-    "node_modules", # Included for local dev convenience, though CI might not have it when this runs
+    "node_modules",
+    "scanoss.json",
+    ".scanossignore",
 }
 
 def check_root_directory():
@@ -40,8 +38,6 @@ def check_root_directory():
 
     for item in root_items:
         if item not in ALLOWED_ROOT_ITEMS:
-            # Check if it's a file that matches the temporary script pattern (additional safety)
-            # or any other unauthorized file.
             print(f"Error: Unauthorized item found in root directory: {item}")
             found_unauthorized = True
 

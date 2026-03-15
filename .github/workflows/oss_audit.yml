@@ -4,11 +4,13 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'src/**'
+      - 'projects/**'
+      - 'shared/**'
   pull_request:
     branches: [ main ]
     paths:
-      - 'src/**'
+      - 'projects/**'
+      - 'shared/**'
   workflow_dispatch:
 
 env:
@@ -34,5 +36,7 @@ jobs:
       id: scanoss-code-scan-step
       uses: scanoss/code-scan-action@v1
       with:
-        scanPath: src
+        scanPath: .
         policies: undeclared
+        scanossSettings: true
+        settingsFilepath: scanoss.json

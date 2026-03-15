@@ -6,7 +6,7 @@ import os
 
 def get_base_commit():
     # In CI, we usually want to compare against the base branch (e.g. origin/main)
-    # If not in CI, compare with the last commit that modified src/version.json
+    # If not in CI, compare with the last commit that modified projects/app/version.json
     try:
         # Check if we are in a GitHub Action
         if os.getenv('GITHUB_EVENT_NAME') == 'pull_request':
@@ -16,7 +16,7 @@ def get_base_commit():
                 return f"origin/{base_ref}"
 
         # Fallback: get the last version commit
-        cmd = ["git", "log", "-1", "--format=%H", "src/version.json"]
+        cmd = ["git", "log", "-1", "--format=%H", "projects/app/version.json"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return result.stdout.strip()
     except subprocess.CalledProcessError:
@@ -83,8 +83,8 @@ def check_impact():
         print("No feature or fix commits detected. Version bump may not be required.")
         return True
 
-    current_version = get_version_from_file('src/version.json')
-    base_version = get_version_at_commit('src/version.json', base_commit)
+    current_version = get_version_from_file('projects/app/version.json')
+    base_version = get_version_at_commit('projects/app/version.json', base_commit)
 
     if not base_version:
         print("Could not determine base version. Skipping impact check.")

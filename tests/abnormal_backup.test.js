@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 
-jest.unstable_mockModule('../src/js/db.js', () => ({
+jest.unstable_mockModule('../shared/js/db.js', () => ({
     dbGet: jest.fn(),
     dbPut: jest.fn(),
     dbGetAll: jest.fn(),
@@ -10,8 +10,8 @@ jest.unstable_mockModule('../src/js/db.js', () => ({
     STORE_CATEGORIES: 'categories'
 }));
 
-const { backupManager, BACKUP_STATUS } = await import('../src/js/backup.js');
-const db = await import('../src/js/db.js');
+const { backupManager, BACKUP_STATUS } = await import('../projects/app/js/backup.js');
+const db = await import('../shared/js/db.js');
 
 describe('BackupManager Abnormal Cases', () => {
     let mockDirectoryHandle;

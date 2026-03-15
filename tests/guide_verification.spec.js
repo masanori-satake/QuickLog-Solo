@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 const LOCALES = ['ja', 'en'];
-const ASSET_DIR = 'src/assets/guide';
+const ASSET_DIR = 'shared/assets/guide';
 
 test.describe('Quick Start Guide Verification', () => {
 
@@ -26,37 +26,37 @@ test.describe('Quick Start Guide Verification', () => {
   });
 
   test('should display screenshots correctly in Japanese', async ({ page }) => {
-    await page.goto(`http://localhost:8080/guide.html?lang=ja`);
+    await page.goto(`http://localhost:8080/projects/web/guide.html?lang=ja`);
 
     const imgMain = page.locator('#img-main');
-    await expect(imgMain).toHaveAttribute('src', 'src/assets/guide/01_main_ja.png');
+    await expect(imgMain).toHaveAttribute('src', 'shared/assets/guide/01_main_ja.png');
     await expect(imgMain).toBeVisible();
 
     const imgRec = page.locator('#img-recording');
-    await expect(imgRec).toHaveAttribute('src', 'src/assets/guide/02_recording_ja.png');
+    await expect(imgRec).toHaveAttribute('src', 'shared/assets/guide/02_recording_ja.png');
 
     const imgHeader = page.locator('#img-header');
-    await expect(imgHeader).toHaveAttribute('src', 'src/assets/guide/03_header_actions_ja.png');
+    await expect(imgHeader).toHaveAttribute('src', 'shared/assets/guide/03_header_actions_ja.png');
 
     const imgBackup = page.locator('#img-backup');
-    await expect(imgBackup).toHaveAttribute('src', 'src/assets/guide/04_settings_backup_ja.png');
+    await expect(imgBackup).toHaveAttribute('src', 'shared/assets/guide/04_settings_backup_ja.png');
   });
 
   test('should display screenshots correctly in English', async ({ page }) => {
-    await page.goto(`http://localhost:8080/guide.html?lang=en`);
+    await page.goto(`http://localhost:8080/projects/web/guide.html?lang=en`);
 
     const imgMain = page.locator('#img-main');
-    await expect(imgMain).toHaveAttribute('src', 'src/assets/guide/01_main_en.png');
+    await expect(imgMain).toHaveAttribute('src', 'shared/assets/guide/01_main_en.png');
     await expect(imgMain).toBeVisible();
 
     const imgRec = page.locator('#img-recording');
-    await expect(imgRec).toHaveAttribute('src', 'src/assets/guide/02_recording_en.png');
+    await expect(imgRec).toHaveAttribute('src', 'shared/assets/guide/02_recording_en.png');
 
     const imgHeader = page.locator('#img-header');
-    await expect(imgHeader).toHaveAttribute('src', 'src/assets/guide/03_header_actions_en.png');
+    await expect(imgHeader).toHaveAttribute('src', 'shared/assets/guide/03_header_actions_en.png');
 
     const imgBackup = page.locator('#img-backup');
-    await expect(imgBackup).toHaveAttribute('src', 'src/assets/guide/04_settings_backup_en.png');
+    await expect(imgBackup).toHaveAttribute('src', 'shared/assets/guide/04_settings_backup_en.png');
   });
 
 });

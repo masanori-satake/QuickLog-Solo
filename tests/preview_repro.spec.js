@@ -6,7 +6,7 @@ test('Preview animations on landing page', async ({ page }) => {
 
     // Use a unique DB to avoid state contamination
     const dbName = `PreviewTestDB_${Math.random().toString(36).substring(7)}`;
-    await page.goto(`http://localhost:8080/?db=${dbName}`);
+    await page.goto(`http://localhost:8080/projects/web/?db=${dbName}`);
 
     // Click "Try in Browser" (Japanese text first as default is JA)
     const previewBtn = page.locator('button', { hasText: /ブラウザで試す|Try in Browser/ });

@@ -38,7 +38,8 @@ jobs:
       uses: tj-actions/changed-files@v47
       with:
         files: |
-          src/**
+          projects/**
+          shared/**
           tests/**
           scripts/**
           package.json

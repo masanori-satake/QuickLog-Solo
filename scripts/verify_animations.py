@@ -18,7 +18,7 @@ def remove_comments_and_strings(content):
     return re.sub(pattern, replacer, content)
 
 def verify_animations():
-    animation_dir = 'src/js/animation'
+    animation_dir = 'shared/js/animation'
     if not os.path.exists(animation_dir):
         print(f"Directory {animation_dir} not found.")
         return True
