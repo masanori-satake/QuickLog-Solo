@@ -1758,7 +1758,7 @@ function setupEventListeners() {
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
         const lang = getLanguage();
-        window.open(`${CATEGORY_EDITOR_URL}?lang=${lang}&from=app`, '_blank');
+        window.location.href = `${CATEGORY_EDITOR_URL}?lang=${lang}&from=app`;
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
