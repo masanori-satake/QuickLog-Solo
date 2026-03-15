@@ -1,16 +1,73 @@
-# GitHub Actions ワークフロー構成
+# GitHub Actions ワークフロー構成と CI/CD プロセス
 
-本プロジェクトにおける CI/CD および自動化プロセスの概要と詳細をまとめます。
+本プロジェクトにおける CI/CD（継続的インテグレーション／継続的デリバリー）および自動化プロセスの概要と詳細をまとめます。GitHub Actions を活用することで、「品質の維持」と「リリースの自動化」を両立しています。
 
-## 共通設定
+---
 
-GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェクト全体のワークフロー環境を以下のように統一しています。
+## 1. 基本用語の定義
+GitHub Actions や CI/CD を初めて触れる開発者向けに、本プロジェクトで使用される用語を整理します。
 
-- **Node.js 実行環境**: すべてのワークフローで Node.js **v24** を使用します。
-- **先行オプトイン**: `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` 環境変数を設定し、アクションが Node.js 24 ランタイムで動作するように強制しています。
-- **アクションの最新化**: `actions/checkout@v6`, `actions/setup-node@v6`, `actions/setup-python@v6`, `actions/cache@v5` 等の最新メジャーバージョンを採用しています。
+| 用語 | 定義 | Atlassian Bamboo での対応（参考） |
+| :--- | :--- | :--- |
+| **CI (Continuous Integration)** | 継続的インテグレーション。コード変更の度に自動でテストや検査を行い、品質を保つ仕組み。 | Plan / Build |
+| **CD (Continuous Delivery)** | 継続的デリバリー。検査済みのコードを、いつでも本番環境（Vercel 等）へ公開できる状態にする仕組み。 | Deployment Project |
+| **Workflow** | GitHub Actions における一連の処理プロセス全体（`.yml` ファイル単位）。 | Plan |
+| **Job** | ワークフロー内の実行単位。複数の Step で構成される。 | Stage |
+| **Step** | ジョブ内の個別のタスク（コマンドの実行やアクションの呼び出し）。 | Task |
+| **Runner** | 処理が実際に実行される仮想マシン（Ubuntu 等）。 | Remote Agent |
+| **Secret** | パスワードやトークンなどの機密情報。GitHub 上で暗号化して管理される。 | Variables (Password type) |
+| **Artifact** | 処理の過程で生成されるファイル（ZIPパッケージ等）。 | Artifact |
+| **Lint (リンター)** | コードの書き方（構文やスタイル）に問題がないか自動チェックするツール。 | (コード解析タスク) |
 
-## ワークフロー一覧
+---
+
+## 2. 全体像：コード修正から公開まで
+開発者がコードを GitHub へ送信してから、ユーザが利用可能になるまでの大まかな流れです。
+
+```mermaid
+sequenceDiagram
+    participant Dev as 開発者 (Developer)
+    participant GH as GitHub (Repository)
+    participant GHA as GitHub Actions
+    participant Vercel as Vercel (Hosting/Build)
+    participant Store as GitHub Releases / Store
+    participant User as ユーザ (User)
+
+    Note over Dev, GH: コードを Push / PR 作成
+    Dev->>GH: push main / pull_request
+    GH->>GHA: ワークフロー起動
+
+    rect rgb(240, 240, 240)
+        Note over GHA: [Scene 1: 検査 (CI)]
+        GHA->>GHA: 静的解析 (Lint)
+        GHA->>GHA: バージョン整合性チェック
+        GHA->>GHA: ユニットテスト (Jest)
+        GHA->>GHA: E2Eテスト (Playwright)
+    end
+
+    alt 検査合格 (mainへのpush時)
+        rect rgb(230, 255, 230)
+            Note over GHA, Vercel: [Scene 2: 継続的デリバリー (CD)]
+            GHA->>Vercel: デプロイ指示 (Deploy)
+            Vercel->>Vercel: サイト公開 (Landing Page)
+            Vercel->>Vercel: パッケージ生成 (Release & Dev ZIP)
+        end
+        Vercel-->>User: 最新版の利用・開発版の試用が可能に
+    else 検査合格 (タグ v*.*.* 付与時)
+        rect rgb(230, 230, 255)
+            Note over GHA, Store: [Scene 3: 公式リリース]
+            GHA->>GHA: リリースビルド
+            GHA->>Store: ZIPアセットのアップロード
+        end
+        Store-->>User: 公式リリース版のダウンロードが可能に
+    else 検査失敗
+        GHA-->>Dev: 失敗を通知 (Fix Required)
+    end
+```
+
+---
+
+## 3. ワークフロー一覧
 
 各ワークフローは、役割に応じて **Audit（監査）**, **Test（テスト）**, **Release（公開）**, **Update（更新）** の4つのグループに分類されています。
 
@@ -29,116 +86,58 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 
 ---
 
-## 自動化スクリプト
+## 4. 自動化の詳細プロセス
 
-### 拡張機能パッケージの自動生成（Release & Dev）
+### 4.1. 検査プロセス (CI)
+プルリクエスト（PR）の作成時やブランチへのプッシュ時に実行されます。目的は「壊れたコードを本番環境に入れないこと」です。
 
-本プロジェクトでは、製品版（Release）と開発・検証用（Dev）の2種類のパッケージを自動生成します。
+- **判断基準**: すべてのスクリプトとテストがエラーなしで終了すること。
+- **アニメーション品質**: 新しく追加・修正されたアニメーションが、5秒以内の応答性や一定の密度を維持していること（アニメーション評価システム）。
 
-- **実行タイミング**: バージョンタグ（`v*.*.*`）のプッシュ時に `release_extension_packages.yml` が起動し、Release 用と Dev 用の両方の ZIP ファイルを自動的に GitHub Release にアップロードします。
-- **実行コマンド**: `npm run build` (内部で `scripts/create_package.py` を実行)
-- **パッケージの種類**:
+### 4.2. 継続的デリバリー (CD)
+`main` ブランチにコードがマージされると、自動的に Vercel を通じた公開作業が始まります。
+
+- **処理の目的**: 最新のソースコードから、紹介ページ（ランディングページ）を更新し、インストール可能な ZIP ファイルを提供すること。
+- **二種類のパッケージ生成**:
     - **Release版**: 公式配布用。青色アイコン、正規名称。開発専用アニメーションは物理的に除外されます。
-    - **Dev版**: 開発・サポート用。オレンジ色アイコン（#ea580c）、名称に `(Dev v0.32.0)` 形式のサフィックスを付与。すべての開発用アニメーションを含みます。
-- **ブランディング自動化**: `scripts/generate_png_icons.py` が SVG の背景色を動的に変更し、各サイズ（16, 32, 48, 128）の PNG アイコンを生成します。この処理はビルドプロセス (`create_package.py`) の中で自動的に行われるため、事前作業は不要です。
-- **クリーンパブリッシュ**: ブラウザのキャッシュや優先度の問題を避けるため、ZIP パッケージからはソースの `icon.svg` が物理的に除外され、生成された PNG のみが含まれます。
+    - **Dev版**: 開発・サポート用。オレンジ色アイコン、名称に `(Dev vX.X.X)` サフィックスを付与、すべての開発用アニメーションを同梱。
 
-### クイックスタートガイドのスクリーンショット自動作成
+### 4.3. 公式リリース (配布プロセス)
+バージョンタグ（例: `v0.32.0`）がリポジトリにプッシュされると、GitHub Releases にアセットが自動登録されます。
 
-ランディングページからアクセス可能なクイックスタートガイド (`guide.html`) に掲載するスクリーンショットを自動的に作成・更新する仕組みを備えています。
-
-- **実行コマンド**: `npm run update-guide-images`
-- **内部処理**:
-  1. `scripts/generate_guide_screenshots.js` が実行されます。
-  2. Playwright を使用して `projects/app/app.html` を開き、内部状態（ダミーデータ等）を注入します。
-  3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
-  4. 生成された画像は `shared/assets/guide/` に保存されます。
-- **自動化**: `update_guide_screenshots.yml` ワークフローにより、コード変更時にこれらの画像が自動的に再生成され、リポジトリにコミットされます。
-- **検証**: CI (`audit_integrity.yml`, `test_quality.yml`, `test_e2e.yml`) の E2E テストフェーズ（`test_e2e.yml`）において、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
+- **処理の目的**: 特定のバージョンを正式な成果物として固定し、永続的にダウンロード可能な状態にすること。
+- **成果物**: 4つの ZIP ファイル（Chrome/Firefox 用の Release 版および Dev 版）。
 
 ---
 
-## 主要なワークフローの構成
+## 5. 自動化スクリプトの役割
 
-### 1. 監査とテスト (Audit & Test)
-
-旧 `ci.yml` を機能別に分割し、並列実行と実行結果の明確化を図っています。
-
-#### フローチャート (Audit & Quality Test)
-
-```mermaid
-graph TD
-    Start([トリガー: Push/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
-    Checkout --> GetChanged{変更ファイルの取得}
-
-    subgraph "Audit (audit_integrity.yml)"
-        GetChanged --> CleanCheck[ルートクリーンネス検証]
-        CleanCheck --> VerCheck[バージョン整合性チェック]
-    end
-
-    subgraph "Quality (test_quality.yml)"
-        GetChanged --> Lint[静的解析<br/>ESLint / Stylelint]
-        Lint --> UnitTests[ユニットテスト<br/>Jest]
-    end
-
-    subgraph "E2E (test_e2e.yml)"
-        GetChanged --> Playwright[Playwright実行]
-        Playwright --> RunE2E[E2Eテスト実行]
-    end
-
-    style CleanCheck fill:#f9f,stroke:#333
-    style VerCheck fill:#f9f,stroke:#333
-    style Lint fill:#bbf,stroke:#333
-    style UnitTests fill:#bbf,stroke:#333
-    style RunE2E fill:#dfd,stroke:#333
-```
-
-#### 特徴的な条件判断
-- **トリガーの最適化**: ほとんどのワークフローには `paths` フィルタが設定されており、関連性のないファイル（ドキュメントのみの変更など）の更新時には実行をスキップすることで、リソース（Vercel デプロイ枠など）を節約します。
-- **整合性・品質チェック**: `projects/app/`, `shared/`, `tests/`, `scripts/` 等の重要ファイルに変更がある場合のみ実行（`tj-actions/changed-files` を活用）。手動実行時は全ファイルを対象。
-- **E2Eテスト**: `test_e2e.yml` はプルリクエストまたは手動実行時のみ、かつ関連ファイルに変更がある場合のみ実行されます。Push時は実行されません。
+- **scripts/create_package.py**: 拡張機能の ZIP パッケージを作成します。Release/Dev 版の切り分けやアセットの物理的除外を行います。
+- **scripts/generate_png_icons.py**: SVG アイコンから、指定された色（Release/Dev）の各サイズ PNG アイコンを自動生成します。
+- **scripts/update_guide_images.js**: クイックスタートガイド (`guide.html`) 用のスクリーンショットを Playwright で自動生成します。
+- **scripts/check_version.py**: `package.json`, `version.json`, マニフェスト間のバージョン整合性をチェックします。
 
 ---
 
-### 2. 公開・配布 (Release)
+## 6. Vercel への初回設定方法
+*※すでに設定済みの場合は不要です。*
 
-#### Webアプリケーションのデプロイ (`release_web_deploy.yml`)
-GitHub Actions 経由でビルドを行い、Vercel へデプロイします。
-プルリクエスト時にもプレビュー環境が構築されるため、マージ前に Release/Dev 各 ZIP パッケージの動作やブランディング（オレンジアイコン等）を実機で確認することが可能です。
-
-#### 拡張機能パッケージの公開 (`release_extension_packages.yml`)
-Node.js **v24** 環境で動作します。本番用の Release ZIP と検証用の Dev ZIP の両方を生成し、GitHub Release にアセットとしてアップロードします。
+1. **Vercel での準備**
+   - Vercel にログインし、プロジェクトを作成（GitHub リポジトリをインポート）。
+   - Framework Preset は「Other」を選択。
+   - プロジェクト設定から `Project ID`, `Org ID` を取得し、`Access Token` を発行。
+2. **GitHub リポジトリでの設定**
+   - GitHub リポジトリの **Settings** > **Secrets and variables** > **Actions** に `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` を追加。
 
 ---
 
-## CI/CD 全体の統合ビュー
-
-### プロセス・フロー概略図
-
-```mermaid
-flowchart LR
-    Dev[開発者] -- PR作成 --> Audit[監査: 整合性監査]
-    Dev -- PR作成 --> Test[テスト: 品質テスト/E2E]
-    Dev -- PR作成 --> OSS[監査: OSSコンプライアンス]
-
-    Audit & Test & OSS -- Merge --> Main[mainブランチ]
-    Main -- Push --> Deploy[リリース: Webデプロイ]
-
-    Main -- Tag v* --> Rel[リリース: 拡張機能パッケージ作成]
-
-    subgraph "Validation Phase (監査 / テスト)"
-    Audit
-    Test
-    OSS
-    end
-
-    subgraph "Delivery Phase (リリース)"
-    Deploy
-    Rel
-    end
-```
-
-## ドキュメントの維持管理
+## 7. ドキュメントの維持管理
 
 本ドキュメントは、GitHub Actions のワークフローファイル（`.github/workflows/*.yml`）に変更が加えられた際、または新しいワークフローが追加された際に、自律的に更新される必要があります。
 詳細は `AGENTS.md` の指示に従ってください。
+
+---
+
+> [!CAUTION]
+> **免責事項 / Disclaimer**
+> 本ドキュメントは、本プロジェクトの開発者が自身の環境（Vercel）で構築した際の参考情報を共有するものです。開発者は Vercel の利用を特別に推奨しているわけではなく、また他のサービスを含め、本手順が将来にわたって正常に動作することを保証しません。自動化設定に伴う機密情報の管理やデプロイは、すべて利用者の自己責任において行ってください。
