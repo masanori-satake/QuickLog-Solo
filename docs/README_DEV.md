@@ -49,10 +49,6 @@ graph TD
         AnimModules[js/animation/*.js]
     end
 
-    subgraph External
-        LS["ローカルストレージ <br/>(File System)"]:::storage
-    end
-
     App --> AppJS
     AppJS --> Logic
     AppJS --> DB
@@ -62,6 +58,11 @@ graph TD
     AppJS --> Backup
     Logic --> DB
     Backup --> DB
+
+    subgraph External
+        LS["ローカルストレージ <br/>(File System)"]:::storage
+    end
+
     Backup --> LS
     Anim --> AnimWorker
     AnimWorker --> Registry
@@ -344,23 +345,23 @@ flowchart LR
 
 ```mermaid
 graph TD
-    subgraph Engine ["AnimationEngine (Common)"]
-        Canvas[Canvas Element]
+    subgraph Engine ["AnimationEngine - Common"]
+        Canvas["Canvas Element"]
     end
 
-    subgraph Metrics ["studio.js (Studio Unique)"]
-        Timer[1秒間隔のタイマー]
-        ImageData[getImageData]
-        Calc[計算ロジック]
+    subgraph Metrics ["studio.js - Studio Unique"]
+        Timer["1秒間隔のタイマー"]
+        ImageData["getImageData"]
+        Calc["計算ロジック"]
     end
 
     Canvas -->|描画完了| Timer
     Timer --> ImageData
     ImageData --> Calc
-    Calc -->|非ゼロ画素/全画素| Density[描画密度]
-    Calc -->|前フレームとの差分画素| ChangeRate[変化率]
+    Calc -->|非ゼロ画素/全画素| Density["描画密度"]
+    Calc -->|前フレームとの差分画素| ChangeRate["変化率"]
 
-    Engine --|drawResponse 受信時間| Latency[描画遅延]
+    Canvas -->|drawResponse 受信時間| MetricLatency["描画遅延"]
 ```
 
 - **計測項目:**
@@ -543,16 +544,16 @@ graph TD
 
 ```mermaid
 graph TD
-    subgraph NodeHost ["Node.js (Jest)"]
-        JSDOM[jsdom <br/>Window/DOM 仮想化]
-        FakeDB[fake-indexeddb <br/>IndexedDB 仮想化]
-        Mocks[API Mocks <br/>File System / Chrome API]
+    subgraph NodeHost ["Node.js - Jest"]
+        JSDOM["jsdom - Window/DOM 仮想化"]
+        FakeDB["fake-indexeddb - IndexedDB 仮想化"]
+        Mocks["API Mocks - File System / Chrome API"]
     end
 
     subgraph TestCases ["Test Cases"]
-        LogicTest[logic.test.js]
-        DBTest[db.test.js]
-        BackupTest[backup.test.js]
+        LogicTest["logic.test.js"]
+        DBTest["db.test.js"]
+        BackupTest["backup.test.js"]
     end
 
     LogicTest --> JSDOM
