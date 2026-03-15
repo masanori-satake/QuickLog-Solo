@@ -218,7 +218,87 @@ stateDiagram-v2
 
 ---
 
-## 3. QL-Animation Studio
+## 3. アラーム機能 (Alarms)
+
+本アプリは、指定した時刻に通知を表示し、タスクの自動操作（終了・一時停止・開始）を行うアラーム機能を備えています。
+
+### アーキテクチャと利用 API
+
+アラーム機能は、UI スレッド (`app.js`) とバックグラウンドスレッド (`background.js`) が連携して動作します。
+
+- **利用 API:**
+  - **chrome.alarms**: スケジューリング（バックグラウンドでの定時実行）。
+  - **chrome.notifications**: ユーザーへのプッシュ通知。
+  - **BroadcastChannel**: 同一オリジン内のウィンドウ/タブ間および Service Worker との同期。
+  - **chrome.runtime.sendMessage**: `BroadcastChannel` が利用できない、または不安定な環境での予備的な通信手段。
+
+### 処理フロー
+
+#### 1. アラームの設定・更新フロー
+ユーザーが UI でアラーム設定を変更した際のフローです。
+
+```mermaid
+sequenceDiagram
+    participant U as ユーザー (UI)
+    participant A as js/app.js
+    participant D as js/db.js
+    participant BC as BroadcastChannel
+    participant B as js/background.js
+
+    U->>A: アラーム設定変更
+    A->>D: dbPut (STORE_ALARMS)
+    A->>BC: postMessage('alarms-updated')
+    BC->>B: onmessage
+    B->>B: setupAlarms()
+    B->>D: getCurrentAppState()
+    B->>B: chrome.alarms.create()
+```
+
+#### 2. アラーム発火時の処理フロー
+設定時刻になり、`chrome.alarms` が発火した際のフローです。
+
+```mermaid
+sequenceDiagram
+    participant CA as chrome.alarms
+    participant B as js/background.js
+    participant N as chrome.notifications
+    participant L as js/logic.js
+    participant BC as BroadcastChannel
+    participant A as js/app.js (Side Panel)
+
+    CA->>B: onAlarm
+    B->>B: guardedInitialize()
+    B->>N: chrome.notifications.create
+    alt 自動アクションあり (stop/pause/start)
+        B->>L: stop/pause/startTaskLogic()
+        B->>BC: postMessage('sync')
+        BC->>A: onmessage (UI更新)
+    end
+```
+
+### 技術的な制限と設計上の考慮事項
+
+- **ブラウザ拡張機能専用:** アラームおよび通知機能はブラウザ拡張機能 API に依存しているため、通常の Web サイトとして実行されている場合（プレビュー版など）は動作しません。
+- **1分間隔の制限:** `chrome.alarms` は、パッケージ化された拡張機能において最小 1 分の間隔制限があります。そのため、1分未満の精密なスケジューリングには適していません。本アプリでは「時刻」指定によるデイリー実行を主目的としています。
+- **Service Worker のライフサイクル:** バックグラウンド処理は Service Worker 上で動作するため、アイドル状態では停止します。アラーム発火時に自動的に起動し、`guardedInitialize()` によって DB 接続などが復旧されます。
+
+### テストアラーム (`ql_test_alarm`)
+開発およびユーザー環境の動作確認用として、テストアラーム機能が実装されています。
+- **挙動:** 実行すると 1 分後に発火するようにスケジュールされます（Chrome の最小制限に準拠）。
+- **目的:** 通知権限やバックグラウンドスクリプトの稼働状況を、実際の運用を待たずに即座に検証するために使用されます。
+
+### BroadcastChannel の活用と今後の展望
+現在、`BroadcastChannel` は主に以下の用途で使用されています：
+- アラーム更新時の Service Worker への通知。
+- 自動アクション実行時の Side Panel UI の同期。
+
+**今後の展望:**
+- **マルチウィンドウ同期:** 複数のウィンドウで Side Panel を開いている場合、一方の操作を即座に他方へ反映させる（タイマーの同期など）ための基盤として活用できます。
+- **データ競合の回避:** 重い DB 書き込みが発生する際、各スレッド間でロック状態を簡易的に通知し、IndexedDB の競合を抑制する制御にも転用可能です。
+
+---
+
+## 4. QL-Animation Studio
 
 ### アーキテクチャ図 (Studio)
 
@@ -371,7 +451,7 @@ graph TD
 
 ---
 
-## 4. QL-Category Editor
+## 5. QL-Category Editor
 
 ### アーキテクチャ図 (Category Editor)
 
@@ -457,7 +537,7 @@ engine.worker.postMessage({ type: 'init', payload: { modulePath: blobUrl } });
 
 ---
 
-## 5. Webサイト・資産 (Landing Page & Quick Start Guide)
+## 6. Webサイト・資産 (Landing Page & Quick Start Guide)
 
 ### アーキテクチャ図 (Web Assets)
 
@@ -498,13 +578,13 @@ graph TD
 
 ---
 
-## 6. 設計原則と行動指針
+## 7. 設計原則と行動指針
 
 本プロジェクトで採用している設計原則（SLAP, DRY, KISS, YAGNI, OCP）の詳細および具体的な行動指針については、[AGENTS.md](AGENTS.md) を参照してください。
 
 ---
 
-## 7. 開発ワークフロー
+## 8. 開発ワークフロー
 
 ### ディレクトリ構成
 - `src/`: 拡張機能のソースコード一式。
@@ -536,7 +616,7 @@ graph TD
 
 ---
 
-## 8. テストと品質管理
+## 9. テストと品質管理
 
 ### テスト環境の仮想化 (Virtualization)
 
@@ -604,7 +684,7 @@ npx stylelint "**/*.css"
 
 ---
 
-## 9. 拡張・修正時の注意点
+## 10. 拡張・修正時の注意点
 
 1. **ドキュメントの更新:** 実装の修正や拡張を行った場合、必ず関連ドキュメントを更新してください。
 2. **Vanilla JS の維持:** プロダクションコードにおける外部ライブラリの導入は原則禁止です。
@@ -612,7 +692,7 @@ npx stylelint "**/*.css"
 
 ---
 
-## 10. 関連ドキュメント
+## 11. 関連ドキュメント
 
 - [製品仕様書 (spec.md)](spec.md)
 - [テスト計画・ケース定義書 (README_TEST.md)](README_TEST.md)
