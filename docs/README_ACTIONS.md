@@ -91,7 +91,7 @@ graph TD
 ```
 
 #### 特徴的な条件判断
-- **バージョンチェック**: `src/`, `tests/`, `scripts/` 等の重要ファイルに変更がある場合のみ実行。
+- **バージョンチェック**: `projects/app/`, `shared/`, `tests/`, `scripts/` 等の重要ファイルに変更がある場合のみ実行。
 - **Lint/Unit Test**: 原則として変更されたファイルのみを対象に実行（`tj-actions/changed-files` を活用）。手動実行時は全ファイルを対象。
 - **E2Eテスト**: PRまたは手動実行時のみ。Push時は実行されません。
 
@@ -105,7 +105,7 @@ graph TD
 
 ```mermaid
 graph TD
-    Start([トリガー: src/ へのPush/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
+    Start([トリガー: projects/app/, shared/ へのPush/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
     Checkout --> SCANOSS[SCANOSSコードスキャン実行]
     SCANOSS --> Policy{ポリシーチェック: undeclared}
     Policy -- 違反あり --> Fail([失敗: 外部コード検出])

@@ -1,0 +1,16 @@
+node_modules
+releases
+test-results
+projects/app/shared
+projects/studio/shared
+projects/category-editor/shared
+projects/web/shared
+.git
+.github
+tests
+scripts
+docs
+*.png
+*.zip
+*.svg
+shared/assets

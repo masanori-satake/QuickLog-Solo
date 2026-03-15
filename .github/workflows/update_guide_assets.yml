@@ -6,7 +6,7 @@ on:
     paths:
       - 'projects/**'
       - 'scripts/**'
-      - 'guide.html'
+      - 'projects/web/guide.html'
       - 'package.json'
   workflow_dispatch:
 
@@ -62,14 +62,14 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v7
       with:
         commit_message: "chore: update guide screenshots [skip ci]"
-        file_pattern: 'src/assets/guide/*.png'
+        file_pattern: 'shared/assets/guide/*.png'
 
     - name: Create Pull Request (Manual/Main)
       if: github.event_name != 'pull_request'
       uses: peter-evans/create-pull-request@v8.1.0
       with:
         commit-message: "chore: update guide screenshots [skip ci]"
-        add-paths: 'src/assets/guide/*.png'
+        add-paths: 'shared/assets/guide/*.png'
         branch: "chore/update-guide-screenshots"
         title: "chore: update guide screenshots"
         body: "Automated update of guide screenshots."

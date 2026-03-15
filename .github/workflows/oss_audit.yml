@@ -38,3 +38,5 @@ jobs:
       with:
         scanPath: .
         policies: undeclared
+        scanossSettings: true
+        settingsFilepath: scanoss.json

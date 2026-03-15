@@ -34,19 +34,19 @@ graph TD
 
     subgraph Application
         AppJS[js/app.js <br/>UI Orchestrator]
-        Logic["js/logic.js <br/>Business Logic (共通)"]:::common
-        DB["js/db.js <br/>Data Access Layer (共通)"]:::common
+        Logic["shared/js/logic.js <br/>Business Logic (共通)"]:::common
+        DB["shared/js/db.js <br/>Data Access Layer (共通)"]:::common
         Backup[js/backup.js <br/>File Backup]
-        Utils["js/utils.js <br/>Utilities (共通)"]:::common
-        I18n["js/i18n.js <br/>Internationalization (共通)"]:::common
-        Messages["js/messages.js <br/>Messages Data (共通)"]:::common
-        Anim["js/animations.js <br/>Animation Engine (共通)"]:::common
-        Registry["js/animation_registry.js <br/>Registry (共通)"]:::common
+        Utils["shared/js/utils.js <br/>Utilities (共通)"]:::common
+        I18n["shared/js/i18n.js <br/>Internationalization (共通)"]:::common
+        Messages["shared/js/messages.js <br/>Messages Data (共通)"]:::common
+        Anim["shared/js/animations.js <br/>Animation Engine (共通)"]:::common
+        Registry["shared/js/animation_registry.js <br/>Registry (共通)"]:::common
     end
 
     subgraph Workers
-        AnimWorker["js/animation_worker.js (共通)"]:::common
-        AnimModules[js/animation/*.js]
+        AnimWorker["shared/js/animation_worker.js (共通)"]:::common
+        AnimModules[shared/js/animation/*.js]
     end
 
     App --> AppJS
@@ -308,21 +308,21 @@ graph TD
     classDef unique fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
 
     subgraph Studio_Project
-        StudioHTML[studio.html]:::unique
+        StudioHTML[index.html]:::unique
         StudioJS[js/studio.js]:::unique
     end
 
     subgraph Shared_Modules
-        Anim["js/animations.js (共通)"]:::common
-        Registry["js/animation_registry.js (共通)"]:::common
-        I18n["js/i18n.js (共通)"]:::common
-        Messages["js/messages.js (共通)"]:::common
-        Utils["js/utils.js (共通)"]:::common
+        Anim["shared/js/animations.js (共通)"]:::common
+        Registry["shared/js/animation_registry.js (共通)"]:::common
+        I18n["shared/js/i18n.js (共通)"]:::common
+        Messages["shared/js/messages.js (共通)"]:::common
+        Utils["shared/js/utils.js (共通)"]:::common
     end
 
     subgraph Sandbox
-        Worker["js/animation_worker.js (共通)"]:::common
-        Base["js/animation_base.js (共通)"]:::common
+        Worker["shared/js/animation_worker.js (共通)"]:::common
+        Base["shared/js/animation_base.js (共通)"]:::common
     end
 
     StudioHTML --> StudioJS
@@ -461,16 +461,16 @@ graph TD
     classDef unique fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
 
     subgraph Editor_Project
-        EditorHTML[category-editor.html]:::unique
+        EditorHTML[index.html]:::unique
         EditorJS[js/category-editor.js]:::unique
     end
 
     subgraph Shared_Modules
-        Anim["js/animations.js (共通)"]:::common
-        Registry["js/animation_registry.js (共通)"]:::common
-        I18n["js/i18n.js (共通)"]:::common
-        Messages["js/messages.js (共通)"]:::common
-        Utils["js/utils.js (共通)"]:::common
+            Anim["shared/js/animations.js (共通)"]:::common
+        Registry["shared/js/animation_registry.js (共通)"]:::common
+            I18n["shared/js/i18n.js (共通)"]:::common
+            Messages["shared/js/messages.js (共通)"]:::common
+            Utils["shared/js/utils.js (共通)"]:::common
     end
 
     EditorHTML --> EditorJS
@@ -587,29 +587,28 @@ graph TD
 ## 8. 開発ワークフロー
 
 ### ディレクトリ構成
-- `src/`: 拡張機能のソースコード一式。
-  - `js/`: アプリケーションロジック。
-    - `animation/`: 個別のアニメーションモジュール。
-- `category-editor.html`, `studio.html`, `index.html`, `guide.html`: 各サブプロジェクト/資産のルート。
+- `projects/app/`: メインプロジェクト（ブラウザ拡張機能）のソースコード一式。
+- `projects/studio/`, `projects/category-editor/`, `projects/web/`: 各サブプロジェクトのルート。
+- `shared/`: 各プロジェクト間で共有されるロジック、JSモジュール、CSS、資産。
 - `scripts/`: ビルド・検証・資産生成スクリプト。
 - `tests/`: Jest による単体テスト。
 - `docs/`: 技術仕様書、各種ガイド。
 
 ### バージョン管理
-`npm run version:bump` コマンドにより、`src/version.json`, `package.json`, `src/manifest.*.json` を一括更新します。
+`npm run version:bump` コマンドにより、`projects/app/version.json`, `package.json`, `projects/app/manifest.*.json` を一括更新します。
 
 ### ビルドとパッケージング
 `npm run build` により、以下の処理を自動実行します：
 1. **PNGアイコン生成**: `shared/assets/icon.svg` から各サイズ（16/32/48/128）の `icon.png` を生成します (`scripts/generate_png_icons.py`)。
-2. **アニメーションレジストリ生成**: `shared/js/animation/` 内の全モジュールをスキャンし、`src/js/animation_registry.js` を自動生成します (`scripts/generate_animation_registry.py`)。
-3. **バージョン整合性チェック**: `package.json`, `version.json`, マニフェストファイル間でのバージョン番号の一致を確認します (`scripts/check_version.py`)。
+2. **アニメーションレジストリ生成**: `shared/js/animation/` 内の全モジュールをスキャンし、`shared/js/animation_registry.js` を自動生成します (`scripts/generate_animation_registry.py`)。
+3. **バージョン整合性チェック**: `package.json`, `projects/app/version.json`, マニフェストファイル間でのバージョン番号の一致を確認します (`scripts/check_version.py`)。
 4. **ZIPパッケージ作成**: ブラウザ別（Chrome, Firefox）のマニフェストを適用し、`releases/` ディレクトリに配布用 ZIP パッケージを作成します (`scripts/create_package.py`)。
 
 ### その他の管理スクリプト
 - **scripts/bump_version.py**: バージョン番号をインクリメントし、関連ファイルすべてを同期更新します。
 - **scripts/verify_animations.py**: アニメーションモジュールのメタデータや安全性を検証します（`npm test` 内で実行）。
 - **scripts/verify_version_impact.py**: コミットメッセージの内容（feat, fix等）に応じて適切なバージョンアップが行われているかを CI 上で検証します。
-- **SCANOSS (GitHub Actions)**: 業界標準の OSS 監査ツール。`src/` 内のコード断片（スニペット）を 1 億件以上の OSS データベースと照合し、ライセンス表記のないコピーコードも検出します。
+- **SCANOSS (GitHub Actions)**: 業界標準の OSS 監査ツール。プロジェクト内のコード断片（スニペット）を 1 億件以上の OSS データベースと照合し、ライセンス表記のないコピーコードも検出します。
 - **scripts/animation_utils.py**: 複数のスクリプトで共有される、アニメーションモジュールのパースやフィルタリングのための共通ユーティリティです。
 - **scripts/update_guide_images.js**: クイックスタートガイド (`guide.html`) で使用するキャプチャ画像を Playwright を使用して自動生成します。内部的に `generate_guide_screenshots.js` を呼び出します。
 - **scripts/generate_guide_screenshots.js**: 特定の言語・状態でアプリを起動し、指定された座標のスクリーンショットを撮影する Playwright スクリプトです。
