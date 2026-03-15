@@ -35,7 +35,7 @@ jobs:
     - name: List files to be scanned (Debug)
       run: |
         echo "Listing files that will be scanned by SCANOSS (not ignored by .scanossignore):"
-        cat << 'EOF' > check_scan.py
+        python3 -c "
         import os, fnmatch
         def load_ignore():
             if not os.path.exists('.scanossignore'): return []
@@ -57,8 +57,7 @@ jobs:
             for f in files:
                 p = os.path.join(root, f)
                 if not is_ignored(p): print(f'  {p}')
-        EOF
-        python3 check_scan.py
+        "
 
     - name: Run SCANOSS Code Scan
       id: scanoss-code-scan-step
