@@ -121,12 +121,13 @@ sequenceDiagram
 stateDiagram-v2
     [*] --> IDLE
 
-    IDLE --> WORKING : カテゴリ選択
+    IDLE --> ACTIVE : カテゴリ選択
 
     state "計測中 (ACTIVE)" as ACTIVE {
         state "作業中 (WORKING)" as WORKING
         state "一時停止 (PAUSED)" as PAUSED
 
+        [*] --> WORKING
         WORKING --> PAUSED : 一時停止
         PAUSED --> WORKING : 再開
         WORKING --> WORKING : カテゴリ切替
@@ -148,7 +149,7 @@ stateDiagram-v2
         タイマー進行
     end note
 
-    note right of PAUSED
+    note left of PAUSED
         <b>PAUSED (一時停止中)</b>
         待機ログ記録
         元のカテゴリを保持
@@ -252,16 +253,17 @@ graph TD
 stateDiagram-v2
     [*] --> STOPPED
 
-    STOPPED --> PLAYING : Play (Start)
-    STOPPED --> STOPPED : Eject (Reset Sample)
-
+    STOPPED --> PLAYING : Play
     PLAYING --> STOPPED : Stop
-    PLAYING --> PAUSED : Pause
-    PLAYING --> PLAYING : Rewind / FF (Scrub)
 
-    PAUSED --> PLAYING : Play / Pause (Resume)
+    PLAYING --> PAUSED : Pause
+    PAUSED --> PLAYING : Resume
+
     PAUSED --> STOPPED : Stop
-    PAUSED --> PAUSED : Rewind / FF (Scrub)
+
+    STOPPED --> STOPPED : Eject
+    PLAYING --> PLAYING : Rewind / FF
+    PAUSED --> PAUSED : Rewind / FF
 ```
 
 #### 特徴的な機能
