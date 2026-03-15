@@ -1,13 +1,11 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "buildCommand": null,
-  "outputDirectory": ".",
   "rewrites": [
-    { "source": "/", "destination": "/projects/web/index.html" },
-    { "source": "/guide", "destination": "/projects/web/guide.html" },
-    { "source": "/google600c7e741a07d031.html", "destination": "/projects/web/google600c7e741a07d031.html" },
-    { "source": "/category-editor", "destination": "/projects/category-editor/index.html" },
-    { "source": "/studio", "destination": "/projects/studio/index.html" }
+    { "source": "/", "destination": "/projects/web/index" },
+    { "source": "/guide", "destination": "/projects/web/guide" },
+    { "source": "/google600c7e741a07d031.html", "destination": "/projects/web/google600c7e741a07d031" },
+    { "source": "/category-editor", "destination": "/projects/category-editor/index" },
+    { "source": "/studio", "destination": "/projects/studio/index" }
   ]
 }
