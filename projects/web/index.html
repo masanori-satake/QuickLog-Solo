@@ -181,7 +181,7 @@
                         </div>
                         <div style="margin-top: 16px; display: flex; align-items: center; gap: 8px;">
                             <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary);">auto_stories</span>
-                            <a href="guide.html" id="quick-start-guide-link" style="font-weight: 500; color: var(--md-sys-color-primary); text-decoration: underline;" data-i18n="link-guide">Quick Start Guide を見る</a>
+                            <a href="/projects/web/guide.html" id="quick-start-guide-link" style="font-weight: 500; color: var(--md-sys-color-primary); text-decoration: underline;" data-i18n="link-guide">Quick Start Guide を見る</a>
                         </div>
                         <p class="note" data-i18n="setup-install-note">※ 外部サーバーを介さないため、安心してお使いいただけます。</p>
                     </div>
@@ -211,7 +211,7 @@
                         <h4 data-i18n="faq-editor-q">Q. サイドバーが狭くて、業務カテゴリの編集が大変です。</h4>
                         <p data-i18n="faq-editor-a">A. 広い画面で効率よく編集できる専用のエディタを用意しています。並べ替えや色の確認もスムーズに行えます。</p>
                         <div style="margin-top: 12px;">
-                            <a href="https://quick-log-solo.vercel.app/category-editor" id="cta-editor-link" class="btn-tertiary" style="text-decoration: none; display: inline-block;"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 4px;">edit_note</span><span data-i18n="category-editor-title">業務カテゴリ・エディタ</span></a>
+                            <a href="/projects/category-editor/index.html" id="cta-editor-link" class="btn-tertiary" style="text-decoration: none; display: inline-block;"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 4px;">edit_note</span><span data-i18n="category-editor-title">業務カテゴリ・エディタ</span></a>
                         </div>
                     </div>
                     <div class="faq-item">
@@ -232,7 +232,7 @@
                         <h4 data-i18n="faq-4-q">Q. アニメーションは追加することができますか？</h4>
                         <p data-i18n="faq-4-a">A. 今後順次増やしていきます。さらに皆さんが作成したものも組み込んでいきたいと思います。興味のある方はぜひ QL-Animation Studio で試してみてください！</p>
                         <div style="margin-top: 12px;">
-                            <a href="/studio" id="cta-studio-link" class="btn-tertiary" style="text-decoration: none; display: inline-block;" data-i18n="cta-studio">QL-Animation Studio (β版) で遊ぶ</a>
+                            <a href="/projects/studio/index.html" id="cta-studio-link" class="btn-tertiary" style="text-decoration: none; display: inline-block;" data-i18n="cta-studio">QL-Animation Studio (β版) で遊ぶ</a>
                         </div>
                     </div>
                 </div>
@@ -281,7 +281,7 @@
     </div>
 
     <script>
-        const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor';
+        const CATEGORY_EDITOR_URL = '/projects/category-editor/index.html';
 
         const translations = {
             ja: {
@@ -946,7 +946,7 @@
             });
 
             // Update store badges
-            const currentBadge = `shared/assets/badges/chrome-web-store-badge-${safeLang}.png`;
+            const currentBadge = `/shared/assets/badges/chrome-web-store-badge-${safeLang}.png`;
 
             const heroBadge = document.getElementById('hero-store-badge');
             if (heroBadge) heroBadge.src = currentBadge;
@@ -971,7 +971,7 @@
             // Update QL-Animation Studio link with language parameter
             const studioLink = document.getElementById('cta-studio-link');
             if (studioLink) {
-                studioLink.href = '/studio?lang=' + encodeURIComponent(safeLang);
+                studioLink.href = '/projects/studio/index.html?lang=' + encodeURIComponent(safeLang);
             }
 
             // Update QL-Category Editor link with language parameter
@@ -983,7 +983,7 @@
             // Update Quick Start Guide link with language parameter
             const guideLink = document.getElementById('quick-start-guide-link');
             if (guideLink) {
-                guideLink.href = '/guide?lang=' + encodeURIComponent(safeLang);
+                guideLink.href = '/projects/web/guide.html?lang=' + encodeURIComponent(safeLang);
             }
 
             // Update page title
@@ -1010,16 +1010,21 @@
             .catch(err => console.error('Failed to load version:', err));
 
         // Initialize language
-        const userLang = navigator.language || navigator.userLanguage;
-        const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-        let matched = 'en';
-        for (const prefix of prefixes) {
-            if (userLang.startsWith(prefix)) {
-                matched = prefix;
-                break;
+        const urlParams = new URLSearchParams(window.location.search);
+        let langToSet = urlParams.get('lang');
+
+        if (!langToSet) {
+            const userLang = navigator.language || navigator.userLanguage;
+            const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+            langToSet = 'en';
+            for (const prefix of prefixes) {
+                if (userLang.startsWith(prefix)) {
+                    langToSet = prefix;
+                    break;
+                }
             }
         }
-        setLanguage(matched);
+        setLanguage(langToSet);
 
         function showSetup(browser, event) {
             document.querySelectorAll('.setup-tab-content').forEach(el => el.classList.add('hidden'));
