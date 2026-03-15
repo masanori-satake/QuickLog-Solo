@@ -327,11 +327,12 @@ flowchart TD
 flowchart LR
     A[ユーザー操作: Rewind/FF] --> B{Scrubbing状態開始}
     B --> C[virtualElapsedMs の増減]
-    C --> D[描画リクエストの即時発行]
+    C --> D[描画リクエストの発行]
     D --> E{isDrawPending?}
-    E -- Yes --> F[待機/スキップ]
-    E -- No --> G[Workerへ描画指示]
-    G --> H[virtualElapsedMs 更新]
+    E -- Yes --> F[スキップ]
+    E -- No --> G[Workerへ指示]
+    F --> H[一定時間の待機]
+    G --> H
     H --> I{操作継続?}
     I -- Yes --> C
     I -- No --> J[停止/再生継続]
