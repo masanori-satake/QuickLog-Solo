@@ -93,12 +93,17 @@ graph TD
     style RunE2E fill:#dfd,stroke:#333
 ```
 
+#### 特徴的な条件判断
+- **整合性・品質チェック**: `projects/app/`, `shared/`, `tests/`, `scripts/` 等の重要ファイルに変更がある場合のみ実行（`tj-actions/changed-files` を活用）。手動実行時は全ファイルを対象。
+- **E2Eテスト**: `test_e2e.yml` はプルリクエストまたは手動実行時のみ。Push時は実行されません。
+
 ---
 
 ### 2. 公開・配布 (Release)
 
 #### Webアプリケーションのデプロイ (`release_web_deploy.yml`)
 GitHub Actions 経由でビルドを行い、Vercel へデプロイします。
+プルリクエスト時にもプレビュー環境が構築されるため、マージ前に Release/Dev 各 ZIP パッケージの動作やブランディング（オレンジアイコン等）を実機で確認することが可能です。
 
 #### 拡張機能パッケージの公開 (`release_extension_packages.yml`)
 Node.js **v24** 環境で動作します。本番用の Release ZIP と検証用の Dev ZIP の両方を生成し、GitHub Release にアセットとしてアップロードします。
