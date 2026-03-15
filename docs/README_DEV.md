@@ -25,6 +25,7 @@
 ```mermaid
 graph TD
     classDef common fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef storage fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
 
     subgraph Browser
         SW[background.js <br/>Service Worker]
@@ -57,6 +58,12 @@ graph TD
     AppJS --> Backup
     Logic --> DB
     Backup --> DB
+
+    subgraph External
+        LS["ローカルストレージ <br/>(File System)"]:::storage
+    end
+
+    Backup --> LS
     Anim --> AnimWorker
     AnimWorker --> Registry
     AnimWorker --> AnimModules
@@ -86,7 +93,8 @@ graph TD
 -   **js/animations.js (描画エンジン / 共通):**
     -   Canvas 描画の統括、Web Worker (`animation_worker.js`) との通信。
 -   **js/backup.js (バックアップ層):**
-    -   File System Access API を使用したローカルファイルへの同期（NDJSON形式）。
+    -   File System Access API を使用したローカルファイルへの同期。
+    -   履歴ログ・カテゴリ情報は NDJSON形式、設定情報は JSON形式で保存。
 -   **js/utils.js (共通):** 共通定数、バリデーション、HTMLエスケープ、時刻計算補助。
 -   **js/i18n.js / messages.js (共通):** 多言語対応ロジックと、各言語ごとの翻訳リソース。
 
@@ -187,7 +195,9 @@ stateDiagram-v2
 ブラウザのキャッシュクリア等によるデータ消失を防ぐため、File System Access API を利用してローカルディレクトリにデータを同期します。
 
 #### 同期メカズム
-- **形式:** NDJSON (Newline Delimited JSON)。1行1レコードの形式で、一部が破損しても他の行への影響を最小限に抑えます。
+- **形式:** データの性質に合わせて最適な形式を採用。
+    - **NDJSON (Newline Delimited JSON):** 履歴（ログ）およびカテゴリ設定で使用。1行1レコードの形式で、データ量が増えても追記が容易で、一部が破損しても他の行への影響を最小限に抑えます。
+    - **JSON:** アプリケーション設定（`settings.json`）で使用。構造化されたデータの保存に適しています。
 - **ファイル分割:** 履歴（ログ）は `YYYY-MM-DD.ndjson` の形式で、1日1ファイルに分割されます。カテゴリは `categories.ndjson` (NDJSON)、設定は `settings.json` (JSON) に保存されます。
 - **同期のタイミング:**
     - **手動 (Manual Only):** ユーザーが明示的に「バックアップを実行する」ボタンを押した際、またはインジケーターをクリックした際に同期が実行されます。自動同期（一定間隔での実行）は行われません。
@@ -267,11 +277,97 @@ stateDiagram-v2
     PAUSED --> PAUSED : Rewind / FF (早送り/巻戻し)
 ```
 
-#### 特徴的な機能
-- **サンドボックス実行:** `studio.js` はエディタ上のコードから動的に Blob URL を生成し、Web Worker 内でインスタンス化します。これにより、メインスレッドを汚染することなく安全にコードを実行できます。
-- **パフォーマンス・スロットリング:** Web Worker からのログ出力（Console）は描画負荷を抑えるため 10fps に制限されます。また、実行時エラーが発生した際は自動的にコンソールが展開され、開発者に通知されます。
-- **スクラブ操作 (Rewind/FF):** 仮想時間を操作し、アニメーションの特定のタイミングを検証できます。描画リクエストのバックログを防ぐため、`isDrawPending` フラグによる流量制御が行われます。
-- **メトリクス計測:** Latency (描画遅延)、Density (描画密度)、Change Rate (ピクセル変化率) をリアルタイムで計測し、アニメーションの品質を確認できます。
+#### 特徴的な機能の実装詳細
+
+##### 1. サンドボックス実行 (Dynamic Sandboxing)
+エディタで記述された生のコードを、安全かつ即座に実行するための仕組みです。
+
+```mermaid
+sequenceDiagram
+    participant E as エディタ (UI)
+    participant S as js/studio.js
+    participant W as js/animation_worker.js
+    participant M as 動的モジュール (Blob)
+
+    E->>S: コード変更 / Play
+    S->>S: buildModuleCode() <br/>(クラス定義の文字列生成)
+    S->>S: new Blob([code], {type: 'application/javascript'})
+    S->>S: URL.createObjectURL(blob)
+    S->>W: postMessage({type: 'init', payload: {modulePath: blobUrl}})
+    W->>M: dynamic import(blobUrl)
+    M-->>W: Class Definition
+    W->>W: new Class()
+    W-->>S: postMessage({type: 'initialized'})
+    S->>S: 実行開始
+```
+
+- **メリット:** サーバーへのアップロードや再ビルドを介さず、ブラウザ内だけでモジュールの動的読み込みと隔離実行が可能です。
+
+##### 2. パフォーマンス・スロットリング (Throttling)
+描画品質と開発環境のレスポンスを両立するための流量制御です。
+
+```mermaid
+flowchart TD
+    Req[描画リクエスト発生] --> Pending{isDrawPending?}
+    Pending -- Yes (前フレーム処理中) --> Skip[リクエストを破棄]
+    Pending -- No --> Mark[isDrawPending = true]
+    Mark --> Worker[Workerへ計算命令]
+    Worker --> Response[Workerより描画データ受信]
+    Response --> Render[Canvasへ反映]
+    Render --> Reset[isDrawPending = false]
+```
+
+- **描画スキップ:** `animations.js` (共通) の `isDrawPending` フラグを利用。Worker からの `drawResponse` が返る前に次の描画リクエストが発生した場合、そのフレームを破棄します。これにより、重いアニメーションでもメインスレッドのイベントループが埋まるのを防ぎます。
+- **仮想時間による制御:** Studio では `engine.draw` をオーバーライドし、実時間 (`performance.now()`) ではなく `virtualElapsedMs` に基づいて描画をリクエストします。これにより、低速な環境でもコマ落ちせずにアニメーションの「内容」を正確に検証できます。
+
+##### 3. スクラブ操作 (Scrubbing / Virtual Time)
+「カセットテープ」の操作感を実現するための時間軸操作です。
+
+```mermaid
+flowchart LR
+    A[ユーザー操作: Rewind/FF] --> B{Scrubbing状態開始}
+    B --> C[virtualElapsedMs の増減]
+    C --> D[描画リクエストの発行]
+    D --> E{isDrawPending?}
+    E -- Yes --> F[スキップ]
+    E -- No --> G[Workerへ指示]
+    F --> H[一定時間の待機]
+    G --> H
+    H --> I{操作継続?}
+    I -- Yes --> C
+    I -- No --> J[停止/再生継続]
+```
+
+- **実装:** `rewindable: true` が設定されたモジュールでは、`elapsedMs` に完全に依存した設計を要求することで、時間を巻き戻しても描画が破綻しないようにしています。
+
+##### 4. メトリクス計測 (Real-time Metrics)
+`AnimationEngine` から得られる描画結果を統計的に分析します。
+
+```mermaid
+graph TD
+    subgraph Engine ["AnimationEngine - Common"]
+        Canvas["Canvas Element"]
+    end
+
+    subgraph Metrics ["studio.js - Studio Unique"]
+        Timer["1秒間隔のタイマー"]
+        ImageData["getImageData"]
+        Calc["計算ロジック"]
+    end
+
+    Canvas -->|描画完了| Timer
+    Timer --> ImageData
+    ImageData --> Calc
+    Calc -->|非ゼロ画素/全画素| Density["描画密度"]
+    Calc -->|前フレームとの差分画素| ChangeRate["変化率"]
+
+    Canvas -->|drawResponse 受信時間| MetricLatency["描画遅延"]
+```
+
+- **計測項目:**
+    - **Latency (遅延):** Worker にリクエストを出してから `drawResponse` が返るまでの時間。
+    - **Density (密度):** キャンバス上の点灯ドットの割合。
+    - **Change Rate (変化率):** 1フレーム前と比較して、状態（色）が変化した画素の割合。
 
 ---
 
@@ -308,6 +404,56 @@ graph TD
 - **NDJSON インポート/エクスポート:** クリップボードを介して、メインアプリの設定と互換性のある NDJSON 形式でカテゴリ設定を一括操作できます。
 - **ドラッグ＆ドロップ:** カテゴリの並べ替えを直感的に行い、その結果を `order` 属性に反映させます。
 - **ページ区切り (Page Break):** メインアプリのページネーションを制御するための特殊なカテゴリ（`SYSTEM_CATEGORY_PAGE_BREAK`）を挿入・編集できます。
+
+### Animation Engine (共通エンジン) の仕様と使用方法
+
+`js/animations.js` に実装されている `AnimationEngine` は、メインアプリ、Studio、Category Editor のすべてで共通の描画基盤として使用されます。
+
+#### 1. 基本的な使用方法
+
+```javascript
+import { AnimationEngine } from './js/animations.js';
+import { MyAnimation } from './js/animation/my_animation.js';
+
+// インスタンス化
+const canvas = document.getElementById('my-canvas');
+const engine = new AnimationEngine(canvas);
+
+// モジュールの登録
+engine.register('my-anim', MyAnimation, 'my_animation_id');
+
+// アニメーション開始
+// start(登録名, 開始時刻(ms), 色コード)
+engine.start('my-anim', Date.now(), '#1976d2');
+
+// UI遮蔽領域の設定
+engine.setExclusionAreas([{ x: 10, y: 10, width: 100, height: 50 }]);
+
+// 停止
+engine.stop();
+```
+
+#### 2. 動的モジュール読み込み (Blob URL の応用)
+Studio 等で、未登録のコードを即座にプレビューするために、Blob URL を使用してモジュールを動的にロードできます。
+
+```javascript
+// studio.js での応用例
+const fullCode = "export default class CustomAnimation extends AnimationBase { ... }";
+const blob = new Blob([fullCode], { type: 'application/javascript' });
+const blobUrl = URL.createObjectURL(blob);
+
+// Engine の内部 Worker へ Blob URL を渡して初期化
+// ※Studioでは内部的に engine.start をオーバーライドして modulePath を blobUrl に差し替えています
+engine.worker.postMessage({ type: 'init', payload: { modulePath: blobUrl } });
+```
+
+#### 3. 主要なAPI仕様
+- **`constructor(canvas)`**: 描画対象の Canvas 要素を指定して初期化します。
+- **`register(name, class, id)`**: モジュール名、クラス、および一意識別子（ファイル名に対応）を登録します。
+- **`start(name, startTime, color)`**: 指定したモジュールでアニメーションを開始します。内部で Web Worker を生成し、モジュールをロードします。
+- **`stop()`**: アニメーションを停止し、Worker を破棄してキャンバスをクリアします。
+- **`setExclusionAreas(areas)`**: `[{x, y, width, height}, ...]` の形式で、文字などで隠すべき領域を指定します。
+- **`resize()`**: 親要素のサイズに合わせてキャンバスをリサイズし、Worker へ通知します。
 
 ---
 
@@ -392,10 +538,51 @@ graph TD
 
 ## 8. テストと品質管理
 
-### テスト構成
-- **Jest:** テストランナー。
-- **fake-indexeddb:** Node.js 環境で IndexedDB をエミュレート。
-- **jsdom:** ブラウザ環境のエミュレート。
+### テスト環境の仮想化 (Virtualization)
+
+本プロジェクトでは、ブラウザ API に依存したコードを Node.js 環境で効率的にテストするため、以下の仮想化技術とモック戦略を採用しています。
+
+```mermaid
+graph TD
+    subgraph NodeHost ["Node.js - Jest"]
+        JSDOM["jsdom - Window/DOM 仮想化"]
+        FakeDB["fake-indexeddb - IndexedDB 仮想化"]
+        Mocks["API Mocks - File System / Chrome API"]
+    end
+
+    subgraph TestCases ["Test Cases"]
+        LogicTest["logic.test.js"]
+        DBTest["db.test.js"]
+        BackupTest["backup.test.js"]
+    end
+
+    LogicTest --> JSDOM
+    DBTest --> FakeDB
+    BackupTest --> Mocks
+```
+
+#### 仮想化の詳細
+- **IndexedDB の仮想化 (`fake-indexeddb`):** 実際のデータベースを使用せず、メモリ上で IndexedDB をエミュレートします。テストごとにデータベースをリセットでき、高速でクリーンなテスト環境を提供します。
+- **DOM 仮想化 (`jsdom`):** `app.js` など UI に密接なモジュールをテストする際、ブラウザの DOM 構造をメモリ上に再現します。`document.querySelector` やイベントリスナーの動作検証が可能です。
+- **API のモック化 (Mocking):**
+    - **File System Access API:** `backup.test.js` では、`window.showDirectoryPicker` や `FileSystemHandle` を Jest のモック関数 (`jest.fn()`) で置き換えています。これにより、実際のディスク操作を発生させずに、ファイル保存や読み込みのロジック、エラーハンドリングを検証します。
+    - **Chrome/Browser Extension API:** `chrome.storage` や `chrome.alarms` などの拡張機能固有の API は、グローバルオブジェクトとしてモックを定義し、期待される動作をシミュレートします。
+
+### テスト一覧
+
+| 分類 | テスト項目 (ファイル名) | テストの観点・目的 | テスト方法の概要 |
+| :--- | :--- | :--- | :--- |
+| **単体テスト** | `logic.test.js` | 業務状態（IDLE/WORKING等）の遷移が正しいか | logic.js の純粋なロジックを Jest で検証 |
+| | `db.test.js` | IndexedDB への CRUD 操作とマイグレーション | `fake-indexeddb` を用いた DB 操作検証 |
+| | `utils.test.js` | バリデーション、時間計算、エスケープ処理 | 多様な入力値に対する期待値の検証 |
+| **統合/UIテスト** | `app.test.js` (想定) | UI 要素の更新、イベント発火の連動 | `jsdom` 環境での DOM 操作・検証 |
+| | `i18n_coverage.test.js` | 全言語で翻訳キーが不足なく存在するか | `messages.js` の構造を網羅的にチェック |
+| **バックアップ** | `backup.test.js` | NDJSON/JSON 形式での保存・復元と統合 | FileSystem API をモックしてロジック検証 |
+| | `abnormal_backup.test.js` | ディスク満杯や権限喪失時の異常系挙動 | 意図的に例外をスローするモックでの検証 |
+| **E2Eテスト** | `sync.spec.js` | 複数ウィンドウ間での状態同期 | Playwright による複数ブラウザ操作 |
+| | `settings.spec.js` | 設定変更が即座に UI と DB に反映されるか | Playwright による実ブラウザ操作自動化 |
+| **品質・検証** | `animation_verification.spec.js` | アニメーションの描画パフォーマンスとエラー | 実 Worker を起動し Latency 等を計測 |
+| | `dev_only_exclusion.spec.js` | リリース版に開発用アニメが含まれていないか | ビルド成果物 (ZIP) の内容スキャン |
 
 ### 実行コマンド
 ```bash
