@@ -1,34 +1,40 @@
+# SCANOSS Ignore File
+# Documentation: https://github.com/scanoss/scanoss.py
+
 # Dependencies and Build Artifacts
+**/node_modules/
 node_modules/
 releases/
+releases/**
 test-results/
 package-lock.json
 
-# Symlinks (Source is in shared/)
+# Symlinks (Avoid double-scanning shared/ and potential scanner loops)
+# The source is in the root shared/ directory.
+projects/app/shared
 projects/app/shared/
+projects/studio/shared
 projects/studio/shared/
+projects/category-editor/shared
 projects/category-editor/shared/
+projects/web/shared
 projects/web/shared/
 
-# Development and Configuration
+# Internal Tooling and Documentation
 .git/
 .github/
 tests/
 scripts/
 docs/
+# Redundant but added for robustness against different scanner versions
 .git
 .github
 tests
 scripts
 docs
-release_extension_packages.yml
-release_web_deploy.yml
-audit_integrity.yml
-audit_oss_compliance.yml
-test_quality.yml
-test_e2e.yml
-test_animation.yml
-update_guide_screenshots.yml
+
+# Hidden Files and Configuration (Non-production code)
+**/.*
 .*
 .gitignore
 .vercelignore
@@ -40,6 +46,7 @@ eslint.config.js
 jest.config.cjs
 jest.setup.js
 playwright.config.js
+scanoss.json
 *.jsonc
 *.yaml
 *.yml
@@ -61,3 +68,5 @@ playwright.config.js
 *.ttf
 *.eot
 shared/assets/
+shared/assets/**
+**/screenshots/**
