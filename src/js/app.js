@@ -1758,7 +1758,10 @@ function setupEventListeners() {
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
         const lang = getLanguage();
-        window.location.href = `${CATEGORY_EDITOR_URL}?lang=${lang}&from=app`;
+        const url = new URL(CATEGORY_EDITOR_URL);
+        url.searchParams.set('lang', lang);
+        url.searchParams.set('from', 'app');
+        window.location.href = url.toString();
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
