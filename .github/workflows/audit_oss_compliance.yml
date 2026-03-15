@@ -1,4 +1,4 @@
-name: 監査: OSSコンプライアンス (Audit: OSS Compliance)
+name: "監査: OSSコンプライアンス (Audit: OSS Compliance)"
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
 
     - name: List files to be scanned (Debug)
       run: |
