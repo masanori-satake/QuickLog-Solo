@@ -8,16 +8,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+Symbols:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="stylesheet" href="src/css/m3-theme.css">
-    <link rel="stylesheet" href="src/css/landing.css">
-    <link rel="icon" href="src/assets/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/shared/css/m3-theme.css">
+    <link rel="stylesheet" href="/projects/web/css/landing.css">
+    <link rel="icon" href="/shared/assets/icon.svg" type="image/svg+xml">
     <meta name="google-site-verification" content="xTZtBJrP70Jf8XmGcbYnZwWL6Z480h0VpcVW6Z8OPVQ" />
 </head>
 <body class="theme-light">
     <div id="landing-container">
         <header class="landing-header">
             <div class="header-content">
-                <img src="src/assets/icon.svg" alt="QuickLog-Solo Icon" class="app-icon">
+                <img src="/shared/assets/icon.svg" alt="QuickLog-Solo Icon" class="app-icon">
                 <h1>QuickLog-Solo</h1>
             </div>
             <div class="lang-switcher">
@@ -45,7 +45,7 @@
                 <p class="body-large" data-i18n="hero-desc">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型作業メモツールです。</p>
                 <div class="cta-buttons">
                     <a href="https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh" class="btn-store" target="_blank">
-                        <img src="src/assets/badges/chrome-web-store-badge-en.png" alt="Available in the Chrome Web Store" class="store-badge" id="hero-store-badge">
+                        <img src="/shared/assets/badges/chrome-web-store-badge-en.png" alt="Available in the Chrome Web Store" class="store-badge" id="hero-store-badge">
                     </a>
 
                     <button class="btn-primary" onclick="openPreview()" data-i18n="cta-test">ブラウザで試す</button>
@@ -54,12 +54,12 @@
                         <button class="btn-secondary" onclick="toggleDownloadDropdown(event)"><span data-i18n="cta-download">Zipをダウンロード</span> <span class="material-symbols-outlined">expand_more</span></button>
                         <div class="dropdown-content">
                             <div class="dropdown-group-label" data-i18n="dl-release-group">リリース版</div>
-                            <a href="releases/QuickLog-Solo-Chrome.zip"><span data-i18n="dl-chrome">Chrome / Edge 用</span> (.zip)</a>
-                            <a href="releases/QuickLog-Solo-Firefox.zip"><span data-i18n="dl-firefox">Firefox 用</span> (.zip)</a>
+                            <a href="/releases/QuickLog-Solo-Chrome.zip"><span data-i18n="dl-chrome">Chrome / Edge 用</span> (.zip)</a>
+                            <a href="/releases/QuickLog-Solo-Firefox.zip"><span data-i18n="dl-firefox">Firefox 用</span> (.zip)</a>
 
                             <div class="dropdown-group-label" data-i18n="dl-dev-group" style="border-top: 1px solid var(--md-sys-color-outline-variant); margin-top: 4px; padding-top: 8px;">開発版</div>
-                            <a href="releases/QuickLog-Solo-Chrome-Dev.zip"><span data-i18n="dl-chrome-dev">Chrome / Edge 用 (Dev)</span> (.zip)</a>
-                            <a href="releases/QuickLog-Solo-Firefox-Dev.zip"><span data-i18n="dl-firefox-dev">Firefox 用 (Dev)</span> (.zip)</a>
+                            <a href="/releases/QuickLog-Solo-Chrome-Dev.zip"><span data-i18n="dl-chrome-dev">Chrome / Edge 用 (Dev)</span> (.zip)</a>
+                            <a href="/releases/QuickLog-Solo-Firefox-Dev.zip"><span data-i18n="dl-firefox-dev">Firefox 用 (Dev)</span> (.zip)</a>
 
                             <div style="font-size: 0.7rem; color: var(--md-sys-color-on-surface-variant); padding: 8px 16px; border-top: 1px solid var(--md-sys-color-outline-variant); margin: 0;">
                                 <a href="https://github.com/masanori-satake/QuickLog-Solo/releases" style="text-decoration: underline; color: inherit; display: block; padding: 0;" data-i18n="dl-note">※過去のバージョンはGitHubリリースページから入手可能です。</a>
@@ -146,7 +146,7 @@
                                 <ol>
                                     <li>
                                         <a href="https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh" target="_blank" style="display: inline-block; margin-bottom: 8px;">
-                                            <img src="src/assets/badges/chrome-web-store-badge-en.png" alt="Available in the Chrome Web Store" style="height: 40px;" class="setup-store-badge">
+                                            <img src="/shared/assets/badges/chrome-web-store-badge-en.png" alt="Available in the Chrome Web Store" style="height: 40px;" class="setup-store-badge">
                                         </a>
                                     </li>
                                     <li data-i18n="setup-chrome-release-note">Chrome Web Storeから「Chromeに追加」をクリックするだけでインストール完了です。新しいバージョンに自動でアップデートされます。</li>
@@ -946,7 +946,7 @@
             });
 
             // Update store badges
-            const currentBadge = `src/assets/badges/chrome-web-store-badge-${safeLang}.png`;
+            const currentBadge = `shared/assets/badges/chrome-web-store-badge-${safeLang}.png`;
 
             const heroBadge = document.getElementById('hero-store-badge');
             if (heroBadge) heroBadge.src = currentBadge;
@@ -971,7 +971,7 @@
             // Update QL-Animation Studio link with language parameter
             const studioLink = document.getElementById('cta-studio-link');
             if (studioLink) {
-                studioLink.href = 'studio.html?lang=' + encodeURIComponent(safeLang);
+                studioLink.href = '/studio?lang=' + encodeURIComponent(safeLang);
             }
 
             // Update QL-Category Editor link with language parameter
@@ -983,7 +983,7 @@
             // Update Quick Start Guide link with language parameter
             const guideLink = document.getElementById('quick-start-guide-link');
             if (guideLink) {
-                guideLink.href = 'guide.html?lang=' + encodeURIComponent(safeLang);
+                guideLink.href = '/guide?lang=' + encodeURIComponent(safeLang);
             }
 
             // Update page title
@@ -1001,7 +1001,7 @@
         }
 
         // Initialize version display
-        fetch('src/version.json')
+        fetch('/projects/app/version.json')
             .then(response => response.json())
             .then(data => {
                 const el = document.getElementById('preview-version');
@@ -1073,7 +1073,7 @@
 
         function loadPreview(iframe, dbName) {
             const safeLang = getSafeLang(currentLang);
-            const previewUrl = 'src/app.html?lang=' + encodeURIComponent(safeLang) + '&db=' + encodeURIComponent(dbName);
+            const previewUrl = '/projects/app/app.html?lang=' + encodeURIComponent(safeLang) + '&db=' + encodeURIComponent(dbName);
             if (iframe.src !== previewUrl) {
                 iframe.src = previewUrl;
             }

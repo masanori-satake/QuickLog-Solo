@@ -11,7 +11,7 @@ async function updateScreenshots() {
     try {
         console.log('Waiting for Vite server to be ready...');
         await waitOn({
-            resources: ['http://localhost:8080/src/app.html'],
+            resources: ['http://localhost:8080/projects/app/app.html'],
             timeout: 30000
         });
 

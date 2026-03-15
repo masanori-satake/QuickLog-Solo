@@ -250,7 +250,7 @@ export const ko = {
     'pr-guide-title': '풀 리퀘스트 가이드',
     'pr-step-1': '작성한 애니메이션을 <code>.js</code> 파일로 다운로드합니다.',
     'pr-step-2': '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> 저장소를 포크합니다.',
-    'pr-step-3': '다운로드한 파일을 <code>src/js/animation/</code>에 추가합니다.',
+    'pr-step-3': '다운로드한 파일을 <code>shared/js/animation/</code>에 추가합니다.',
     'pr-step-4': '풀 리퀘스트를 제출하세요!',
     'pr-note': '여러분의 기여가 이 도구를 더욱 좋게 만듭니다!',
     'back-to-landing': '랜딩 페이지로 돌아가기',

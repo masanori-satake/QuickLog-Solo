@@ -1,5 +1,5 @@
-import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from './db.js';
-import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
+import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from '../shared/js/db.js';
+import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 

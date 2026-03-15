@@ -2,8 +2,8 @@ import { chromium } from '@playwright/test';
 import path from 'path';
 
 const LOCALES = ['ja', 'en'];
-const ASSET_DIR = 'src/assets/guide';
-const BASE_URL = 'http://localhost:8080/src/app.html';
+const ASSET_DIR = 'shared/assets/guide';
+const BASE_URL = 'http://localhost:8080/projects/app/app.html';
 
 async function generateScreenshots() {
     const browser = await chromium.launch();

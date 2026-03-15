@@ -272,7 +272,7 @@ export const ja = {
     'pr-guide-title': 'Pull Request の準備',
     'pr-step-1': '作成したアニメーションを <code>.js</code> ファイルとしてダウンロードします。',
     'pr-step-2': '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> のリポジトリをフォークします。',
-    'pr-step-3': 'ダウンロードしたファイルを <code>src/js/animation/</code> に配置します。',
+    'pr-step-3': 'ダウンロードしたファイルを <code>shared/js/animation/</code> に配置します。',
     'pr-step-4': '変更をコミットして、Pull Request を作成してください！',
     'pr-note': 'あなたの貢献が、このツールをより楽しくします！',
     'back-to-landing': 'トップページに戻る',

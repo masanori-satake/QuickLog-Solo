@@ -4,7 +4,7 @@ import path from 'path';
 import { EVAL_CONFIG } from './animation_eval_config.js';
 
 // Helper to get animation IDs from the filesystem, excluding development-only modules
-const animationDir = path.join(process.cwd(), 'src/js/animation');
+const animationDir = path.join(process.cwd(), 'shared/js/animation');
 const animationFiles = fs.readdirSync(animationDir).filter(f => {
     if (!f.endsWith('.js')) return false;
     const content = fs.readFileSync(path.join(animationDir, f), 'utf-8');

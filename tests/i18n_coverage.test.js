@@ -1,4 +1,4 @@
-import { messages } from '../src/js/messages.js';
+import { messages } from '../shared/js/messages.js';
 
 describe('i18n Coverage', () => {
     const baseLang = 'en';

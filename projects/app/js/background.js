@@ -3,9 +3,9 @@
  * Chrome Extension Service Worker for QuickLog-Solo
  */
 
-import { getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME, initDB } from './db.js';
-import { stopTaskLogic, pauseTaskLogic, startTaskLogic } from './logic.js';
-import { t, setLanguage } from './i18n.js';
+import { getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME, initDB } from '../shared/js/db.js';
+import { stopTaskLogic, pauseTaskLogic, startTaskLogic } from '../shared/js/logic.js';
+import { t, setLanguage } from '../shared/js/i18n.js';
 
 /**
  * background.js

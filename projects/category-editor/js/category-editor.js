@@ -2,10 +2,10 @@
  * QL-Category Editor Logic
  */
 
-import { animations as animationRegistry } from './animation_registry.js';
-import { AnimationEngine } from './animations.js';
-import { messages } from './messages.js';
-import { SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
+import { animations as animationRegistry } from '../shared/js/animation_registry.js';
+import { AnimationEngine } from '../shared/js/animations.js';
+import { messages } from '../shared/js/messages.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 
 let currentLang = 'en';
 let categories = [];

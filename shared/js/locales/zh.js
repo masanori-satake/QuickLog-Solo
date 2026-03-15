@@ -250,7 +250,7 @@ export const zh = {
     'pr-guide-title': 'Pull Request 指南',
     'pr-step-1': '将动画保存为 <code>.js</code> 文件并下载。',
     'pr-step-2': 'Fork <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> 仓库。',
-    'pr-step-3': '将文件放入 <code>src/js/animation/</code>。',
+    'pr-step-3': '将文件放入 <code>shared/js/animation/</code>。',
     'pr-step-4': '提交 Pull Request！',
     'pr-note': '您的贡献让这个工具变得更好！',
     'back-to-landing': '返回首页',

@@ -2,9 +2,9 @@
  * QL-Animation Studio Logic
  */
 
-import { animations } from './animation_registry.js';
-import { AnimationEngine } from './animations.js';
-import { messages } from './messages.js';
+import { animations } from '../shared/js/animation_registry.js';
+import { AnimationEngine } from '../shared/js/animations.js';
+import { messages } from '../shared/js/messages.js';
 
 let currentLang = 'en';
 let metaLang = 'en';
@@ -558,7 +558,7 @@ async function loadSample(id) {
 
     // We need to fetch the file content to extract the logic
     try {
-        const response = await fetch(`./src/js/animation/${id}.js`);
+        const response = await fetch(`shared/js/animation/${id}.js`);
         const text = await response.text();
         parseAndPopulate(text, anim.metadata);
         updateCanvasControlVisibility();
@@ -796,7 +796,7 @@ function startTest() {
             bitmap.close();
         };
 
-        this.worker = new Worker(new URL('./animation_worker.js', import.meta.url), { type: 'module' });
+        this.worker = new Worker(new URL('../shared/js/animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
         this.worker.postMessage({ type: 'init', payload: { modulePath: workerUrl } });
         this.worker.postMessage({ type: 'setSpeed', payload: 1.0 }); // Speed handled in virtual time
@@ -960,7 +960,7 @@ function setInputDisabled(disabled) {
 
 function buildModuleCode() {
     const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
-    const animationBaseUrl = `${baseUrl}/src/js/animation_base.js`;
+    const animationBaseUrl = `${baseUrl}/shared/js/animation_base.js`;
 
     const escapeJSString = (str) => {
         return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');

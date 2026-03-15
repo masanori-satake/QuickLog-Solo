@@ -5,8 +5,8 @@ import argparse
 from animation_utils import validate_metadata_text, extract_metadata_block
 
 def generate_registry(exclude_dev=False):
-    animation_dir = 'src/js/animation'
-    registry_file = 'src/js/animation_registry.js'
+    animation_dir = 'shared/js/animation'
+    registry_file = 'shared/js/animation_registry.js'
 
     if not os.path.exists(animation_dir):
         print(f"Directory {animation_dir} not found.")

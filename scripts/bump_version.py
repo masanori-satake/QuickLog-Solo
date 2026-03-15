@@ -7,8 +7,8 @@ import argparse
 
 def get_last_version_commit():
     try:
-        # Get the hash of the last commit that modified src/version.json
-        cmd = ["git", "log", "-1", "--format=%H", "src/version.json"]
+        # Get the hash of the last commit that modified projects/app/version.json
+        cmd = ["git", "log", "-1", "--format=%H", "projects/app/version.json"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return result.stdout.strip()
     except subprocess.CalledProcessError:
@@ -89,10 +89,10 @@ def main():
         return
 
     try:
-        with open('src/version.json', 'r', encoding='utf-8') as f:
+        with open('projects/app/version.json', 'r', encoding='utf-8') as f:
             current_version = json.load(f).get('version')
     except Exception as e:
-        print(f"Error reading src/version.json: {e}")
+        print(f"Error reading projects/app/version.json: {e}")
         sys.exit(1)
 
     new_version = bump_version(current_version, bump_type)
@@ -115,9 +115,9 @@ def main():
 
     # 2. Update other files
     files_to_update = [
-        'src/version.json',
-        'src/manifest.chrome.json',
-        'src/manifest.firefox.json'
+        'projects/app/version.json',
+        'projects/app/manifest.chrome.json',
+        'projects/app/manifest.firefox.json'
     ]
 
     for filepath in files_to_update:

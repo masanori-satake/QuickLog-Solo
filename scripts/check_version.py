@@ -4,7 +4,7 @@ import sys
 def check_version():
     try:
         # Load version from version.json
-        with open('src/version.json', 'r') as f:
+        with open('projects/app/version.json', 'r') as f:
             version = json.load(f).get('version')
 
         # Load version from package.json
@@ -12,11 +12,11 @@ def check_version():
             package_version = json.load(f).get('version')
 
         # Load version from manifest.chrome.json
-        with open('src/manifest.chrome.json', 'r') as f:
+        with open('projects/app/manifest.chrome.json', 'r') as f:
             chrome_version = json.load(f).get('version')
 
         # Load version from manifest.firefox.json
-        with open('src/manifest.firefox.json', 'r') as f:
+        with open('projects/app/manifest.firefox.json', 'r') as f:
             firefox_version = json.load(f).get('version')
 
         if not version:

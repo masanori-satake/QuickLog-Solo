@@ -1,8 +1,8 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_AUTO_STOP
-} from '../src/js/db.js';
-import { SYSTEM_CATEGORY_IDLE } from '../src/js/utils.js';
+} from '../shared/js/db.js';
+import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 
 describe('DB Module', () => {
     const DB_NAME = 'QuickLogSoloDB';

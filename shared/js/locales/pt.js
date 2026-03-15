@@ -250,7 +250,7 @@ export const pt = {
     'pr-guide-title': 'Guia de Pull Request',
     'pr-step-1': 'Baixe sua animação como um arquivo <code>.js</code>.',
     'pr-step-2': 'Faça um fork do repositório <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
-    'pr-step-3': 'Coloque seu arquivo em <code>src/js/animation/</code>.',
+    'pr-step-3': 'Coloque seu arquivo em <code>shared/js/animation/</code>.',
     'pr-step-4': 'Envie um Pull Request!',
     'pr-note': 'Sua contribuição torna esta ferramenta melhor para todos!',
     'back-to-landing': 'Voltar para a página inicial',

@@ -3,9 +3,9 @@ import sys
 import re
 
 def generate_icons(output_dir=None, bg_color=None):
-    svg_path = os.path.join(os.getcwd(), 'src/assets/icon.svg')
+    svg_path = os.path.join(os.getcwd(), 'shared/assets/icon.svg')
     if output_dir is None:
-        output_dir = os.path.join(os.getcwd(), 'src/assets')
+        output_dir = os.path.join(os.getcwd(), 'shared/assets')
 
     if not os.path.exists(svg_path):
         print(f"Error: {svg_path} not found.")
