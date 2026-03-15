@@ -1,12 +1,24 @@
-name: Deploy to Vercel
+name: リリース: Webアプリケーションのデプロイ (Release: Deploy Web Applications)
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'vercel.json'
   pull_request:
     branches:
       - main
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'vercel.json'
   workflow_dispatch:
 
 env:

@@ -189,7 +189,7 @@ AI エージェントは、以下のルールを厳格に遵守せよ。
     - `projects/app/version.json`, `package.json`, `projects/app/manifest.*.json` のバージョン番号は常に一致させよ。
     - バージョン更新は `npm run version:bump` (`scripts/bump_version.py`) を使用して自動で行え。
     - CI 上の `scripts/verify_version_impact.py` により、変更内容（コミットタイプ）に応じた適切なバージョンアップが行われているか検証される。
-    - **自動リリース:** `v*.*.*` タグがプッシュされると、GitHub Actions (`release.yml`) が起動し、自動的に GitHub Releases が作成され、Chrome/Firefox 用の ZIP パッケージがアタッチされる。
+    - **自動リリース:** `v*.*.*` タグがプッシュされると、GitHub Actions (`release_extension_packages.yml`) が起動し、自動的に GitHub Releases が作成され、Chrome/Firefox 用の ZIP パッケージがアタッチされる。
     - **Jules による自律リリース:** ヒューマンエラー防止のため、Jules は機能追加や修正が完了した際、自律的に `npm run version:bump` を実行し、適切なタグを作成・プッシュしてリリースをトリガーすることが推奨される。
 
 ### 深い計画プロトコル (Deep Planning Protocol)

@@ -1,0 +1,82 @@
+name: 監査: コードとバージョンの整合性 (Audit: Code and Version Integrity)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'eslint.config.js'
+      - '.stylelintrc.json'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'eslint.config.js'
+      - '.stylelintrc.json'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v47
+      with:
+        files: |
+          projects/**
+          shared/**
+          tests/**
+          scripts/**
+          package.json
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.x'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+      timeout-minutes: 5
+
+    - name: Check root directory cleanliness
+      run: python3 scripts/check_root_files.py
+      timeout-minutes: 2
+
+    - name: Check version consistency
+      if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+      run: python3 scripts/check_version.py
+      timeout-minutes: 2
+
+    - name: Verify version impact
+      if: (github.event_name == 'pull_request' && steps.changed-files.outputs.any_changed == 'true') || github.event_name == 'workflow_dispatch'
+      run: python3 scripts/verify_version_impact.py
+      timeout-minutes: 2

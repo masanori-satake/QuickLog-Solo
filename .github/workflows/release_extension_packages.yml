@@ -1,4 +1,4 @@
-name: Auto Release with ZIP Asset
+name: リリース: 拡張機能パッケージの公開 (Release: Publish Extension Packages)
 
 on:
   push:
