@@ -121,32 +121,38 @@ sequenceDiagram
 stateDiagram-v2
     [*] --> IDLE
 
-    IDLE --> WORKING : カテゴリ選択 / startTask
-    WORKING --> WORKING : カテゴリ切替 / startTask
-    WORKING --> PAUSED : 一時停止 / pauseTask
-    WORKING --> IDLE : 終了 / stopTask (Stop Marker記録)
+    IDLE --> WORKING : カテゴリ選択
 
-    PAUSED --> WORKING : 再開 / startTask
-    PAUSED --> IDLE : 終了 / stopTask (Stop Marker記録)
+    state "計測中 (ACTIVE)" as ACTIVE {
+        state "作業中 (WORKING)" as WORKING
+        state "一時停止 (PAUSED)" as PAUSED
 
-    state WORKING {
-        [*] --> Running
-        Running --> Running : タイマー更新
+        WORKING --> PAUSED : 一時停止
+        PAUSED --> WORKING : 再開
+        WORKING --> WORKING : カテゴリ切替
     }
 
+    ACTIVE --> IDLE : 終了 (Stop Marker記録)
+
+    note left of IDLE
+        <b>IDLE (待機)</b>
+        計測停止状態
+        手動終了時は
+        停止マーカーを記録
+    end note
+
     note right of WORKING
-      業務計測中
-      背景アニメーション動作
+        <b>WORKING (作業中)</b>
+        業務計測中
+        背景アニメーション動作
+        タイマー進行
     end note
 
     note right of PAUSED
-      一時停止中（待機ログ記録）
-      元のカテゴリを保持
-    end note
-
-    note left of IDLE
-      計測停止
-      手動終了時は「停止マーカー」を記録
+        <b>PAUSED (一時停止中)</b>
+        待機ログ記録
+        元のカテゴリを保持
+        (Resumeで復帰可能)
     end note
 ```
 
