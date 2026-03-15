@@ -54,7 +54,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
   3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
   4. 生成された画像は `shared/assets/guide/` に保存されます。
 - **自動化**: `update_guide_screenshots.yml` ワークフローにより、コード変更時にこれらの画像が自動的に再生成され、リポジトリにコミットされます。
-- **検証**: `test_e2e.yml` ワークフローにおいて、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
+- **検証**: CI (`audit_integrity.yml`, `test_quality.yml`, `test_e2e.yml`) の E2E テストフェーズ（`test_e2e.yml`）において、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
 
 ---
 
