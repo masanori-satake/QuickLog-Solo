@@ -25,12 +25,7 @@
 ```mermaid
 graph TD
     classDef common fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-
     classDef storage fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
-
-    subgraph External
-        LS["ローカルストレージ <br/>(File System)"]:::storage
-    end
 
     subgraph Browser
         SW[background.js <br/>Service Worker]
@@ -52,6 +47,10 @@ graph TD
     subgraph Workers
         AnimWorker["js/animation_worker.js (共通)"]:::common
         AnimModules[js/animation/*.js]
+    end
+
+    subgraph External
+        LS["ローカルストレージ <br/>(File System)"]:::storage
     end
 
     App --> AppJS
@@ -345,11 +344,11 @@ flowchart LR
 
 ```mermaid
 graph TD
-    subgraph Engine [AnimationEngine (Common)]
+    subgraph Engine ["AnimationEngine (Common)"]
         Canvas[Canvas Element]
     end
 
-    subgraph Metrics [studio.js (Studio Unique)]
+    subgraph Metrics ["studio.js (Studio Unique)"]
         Timer[1秒間隔のタイマー]
         ImageData[getImageData]
         Calc[計算ロジック]
@@ -544,13 +543,13 @@ graph TD
 
 ```mermaid
 graph TD
-    subgraph NodeHost [Node.js (Jest)]
+    subgraph NodeHost ["Node.js (Jest)"]
         JSDOM[jsdom <br/>Window/DOM 仮想化]
         FakeDB[fake-indexeddb <br/>IndexedDB 仮想化]
         Mocks[API Mocks <br/>File System / Chrome API]
     end
 
-    subgraph TestCases [Test Cases]
+    subgraph TestCases ["Test Cases"]
         LogicTest[logic.test.js]
         DBTest[db.test.js]
         BackupTest[backup.test.js]
