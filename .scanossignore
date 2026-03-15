@@ -1,16 +1,42 @@
-node_modules
-releases
-test-results
-projects/app/shared
-projects/studio/shared
-projects/category-editor/shared
-projects/web/shared
-.git
-.github
-tests
-scripts
-docs
+# Dependencies and Build Artifacts
+node_modules/
+releases/
+test-results/
+
+# Symlinks (Source is in shared/)
+projects/app/shared/
+projects/studio/shared/
+projects/category-editor/shared/
+projects/web/shared/
+
+# Development and Configuration
+.git/
+.github/
+tests/
+scripts/
+docs/
+.*
+eslint.config.js
+jest.config.cjs
+jest.setup.js
+playwright.config.js
+*.jsonc
+*.yaml
+*.yml
+*.md
+LICENSE
+
+# Binary and Asset Files
 *.png
 *.zip
 *.svg
-shared/assets
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.webp
+*.woff
+*.woff2
+*.ttf
+*.eot
+shared/assets/
