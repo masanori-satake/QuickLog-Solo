@@ -36,27 +36,27 @@ jobs:
       run: |
         echo "Listing files that will be scanned by SCANOSS (not ignored by .scanossignore):"
         python3 -c "
-        import os, fnmatch
-        def load_ignore():
-            if not os.path.exists('.scanossignore'): return []
-            with open('.scanossignore') as f:
-                return [l.strip() for l in f if l.strip() and not l.startswith('#')]
-        patterns = load_ignore()
-        def is_ignored(path):
-            path = path.replace(os.sep, '/')
-            if path.startswith('./'): path = path[2:]
-            for p in patterns:
-                p_match = p.rstrip('/')
-                if fnmatch.fnmatch(path, p) or fnmatch.fnmatch(path, p_match) or fnmatch.fnmatch(os.path.basename(path), p): return True
-                parts = path.split('/')
-                for part in parts:
-                    if fnmatch.fnmatch(part, p) or fnmatch.fnmatch(part, p_match): return True
-            return False
-        for root, dirs, files in os.walk('.'):
-            dirs[:] = [d for d in dirs if not is_ignored(os.path.join(root, d))]
-            for f in files:
-                p = os.path.join(root, f)
-                if not is_ignored(p): print(f'  {p}')
+import os, fnmatch
+def load_ignore():
+    if not os.path.exists('.scanossignore'): return []
+    with open('.scanossignore') as f:
+        return [l.strip() for l in f if l.strip() and not l.startswith('#')]
+patterns = load_ignore()
+def is_ignored(path):
+    path = path.replace(os.sep, '/')
+    if path.startswith('./'): path = path[2:]
+    for p in patterns:
+        p_match = p.rstrip('/')
+        if fnmatch.fnmatch(path, p) or fnmatch.fnmatch(path, p_match) or fnmatch.fnmatch(os.path.basename(path), p): return True
+        parts = path.split('/')
+        for part in parts:
+            if fnmatch.fnmatch(part, p) or fnmatch.fnmatch(part, p_match): return True
+    return False
+for root, dirs, files in os.walk('.'):
+    dirs[:] = [d for d in dirs if not is_ignored(os.path.join(root, d))]
+    for f in files:
+        p = os.path.join(root, f)
+        if not is_ignored(p): print(f'  {p}')
         "
 
     - name: Run SCANOSS Code Scan
