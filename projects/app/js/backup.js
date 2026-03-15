@@ -396,10 +396,6 @@ class BackupManager {
         return count;
     }
 
-    // Removed: requestImmediateBackup()
-    // Removed: scheduleBackup()
-    // Removed: _startDirtyMonitor()
-
     async flush() {
         // Manual backup only now
         await this.sync();
