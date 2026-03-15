@@ -162,7 +162,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name.startsWith('ql_')) {
         chrome.notifications.create(`ack_${alarm.name}_${Date.now()}`, {
             type: 'basic',
-            iconUrl: chrome.runtime.getURL('assets/icon128.png'),
+            iconUrl: chrome.runtime.getURL('shared/assets/icon128.png'),
             title: 'QuickLog-Solo System',
             message: `Event: ${alarm.name} (Background Active)`,
             priority: 1
@@ -192,7 +192,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             // 1. Show notification
             chrome.notifications.create(`alarm_${alarmData.id}_${Date.now()}`, {
                 type: 'basic',
-                iconUrl: chrome.runtime.getURL('assets/icon128.png'),
+                iconUrl: chrome.runtime.getURL('shared/assets/icon128.png'),
                 title: t('title'),
                 message: alarmData.message || t('alarm-action-none'),
                 priority: 2

@@ -1770,7 +1770,7 @@ function setupEventListeners() {
             if (chrome.notifications) {
                 chrome.notifications.create({
                     type: 'basic',
-                    iconUrl: 'assets/icon128.png',
+                    iconUrl: 'shared/assets/icon128.png',
                     title: t('title'),
                     message: t('test-notification-message') + " (Immediate)",
                     priority: 2
