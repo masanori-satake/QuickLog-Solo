@@ -16,6 +16,12 @@ tests/
 scripts/
 docs/
 .*
+.gitignore
+.vercelignore
+.scanossignore
+.stylelintignore
+.stylelintrc.json
+.pre-commit-config.yaml
 eslint.config.js
 jest.config.cjs
 jest.setup.js
