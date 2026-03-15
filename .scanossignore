@@ -1,34 +1,20 @@
+# SCANOSS Ignore File
+# Note: Patterns in scanoss.json are also used for skipping.
+
 # Dependencies and Build Artifacts
-node_modules/
-releases/
-test-results/
+node_modules
+releases
+test-results
 package-lock.json
 
-# Symlinks (Source is in shared/)
-projects/app/shared/
-projects/studio/shared/
-projects/category-editor/shared/
-projects/web/shared/
-
-# Development and Configuration
-.git/
-.github/
-tests/
-scripts/
-docs/
+# Internal Tooling and Documentation
 .git
 .github
 tests
 scripts
 docs
-release_extension_packages.yml
-release_web_deploy.yml
-audit_integrity.yml
-audit_oss_compliance.yml
-test_quality.yml
-test_e2e.yml
-test_animation.yml
-update_guide_screenshots.yml
+
+# Hidden Files and Configuration
 .*
 .gitignore
 .vercelignore
@@ -40,11 +26,10 @@ eslint.config.js
 jest.config.cjs
 jest.setup.js
 playwright.config.js
-*.jsonc
-*.yaml
-*.yml
+scanoss.json
 
 # Binary and Asset Files
+shared/assets
 *.png
 *.zip
 *.svg
@@ -60,4 +45,10 @@ playwright.config.js
 *.woff2
 *.ttf
 *.eot
-shared/assets/
+
+# Symlinks and problematic areas
+projects/app/shared
+projects/studio/shared
+projects/category-editor/shared
+projects/web/shared
+screenshots
