@@ -1,20 +1,26 @@
-name: コード品質テスト (Lint/Unit) (Test Code Quality)
+name: テスト: コード品質 (Lint/Unit) (Test: Code Quality)
 
 on:
   push:
     branches: [ main ]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.gitignore'
-      - 'LICENSE'
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'eslint.config.js'
+      - '.stylelintrc.json'
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.gitignore'
-      - 'LICENSE'
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'eslint.config.js'
+      - '.stylelintrc.json'
   workflow_dispatch:
 
 env:

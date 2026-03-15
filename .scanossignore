@@ -2,6 +2,7 @@
 node_modules/
 releases/
 test-results/
+package-lock.json
 
 # Symlinks (Source is in shared/)
 projects/app/shared/
@@ -20,6 +21,14 @@ docs/
 tests
 scripts
 docs
+release_extension_packages.yml
+release_web_deploy.yml
+audit_integrity.yml
+audit_oss_compliance.yml
+test_quality.yml
+test_e2e.yml
+test_animation.yml
+update_guide_screenshots.yml
 .*
 .gitignore
 .vercelignore
@@ -44,6 +53,9 @@ playwright.config.js
 *.gif
 *.ico
 *.webp
+*.rev
+*.idx
+*.pack
 *.woff
 *.woff2
 *.ttf

@@ -1,4 +1,4 @@
-name: 拡張機能パッケージの公開 (Publish Extension Packages)
+name: リリース: 拡張機能パッケージの公開 (Release: Publish Extension Packages)
 
 on:
   push:

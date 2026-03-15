@@ -1,13 +1,14 @@
-name: E2Eテスト (End-to-End Testing)
+name: テスト: E2E (Test: End-to-End)
 
 on:
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.gitignore'
-      - 'LICENSE'
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
 
 env:

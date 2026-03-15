@@ -1,4 +1,4 @@
-name: OSSコンプライアンス監査 (Audit OSS Compliance)
+name: 監査: OSSコンプライアンス (Audit: OSS Compliance)
 
 on:
   push:
@@ -6,11 +6,15 @@ on:
     paths:
       - 'projects/**'
       - 'shared/**'
+      - 'package.json'
+      - 'package-lock.json'
   pull_request:
     branches: [ main ]
     paths:
       - 'projects/**'
       - 'shared/**'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
 
 env:
