@@ -94,6 +94,25 @@ graph TD
 
 ## 2. 主要な振る舞い
 
+### タスクの開始・切り替えフロー
+
+```mermaid
+sequenceDiagram
+    participant U as ユーザー
+    participant A as js/app.js
+    participant L as js/logic.js
+    participant D as js/db.js
+
+    U->>A: カテゴリクリック
+    A->>L: startTaskLogic(cat, activeTask)
+    L->>L: stopTaskLogic(activeTask)
+    L->>D: dbPut (終了時刻記録)
+    L->>D: dbAdd (新規タスク開始)
+    L-->>A: 新規タスクオブジェクト
+    A->>A: updateUI()
+    A->>A: startTimer()
+```
+
 ### オペレーターの状態遷移
 
 オペレーター（利用者）の業務状態は、以下の図のように遷移します。
@@ -143,6 +162,13 @@ stateDiagram-v2
     - 内部的には `__IDLE__` カテゴリでログが記録されます。
     - 元のカテゴリを `resumableCategory` として保持しており、「再開」によって元の業務に素早く戻ることができます。
 
+### カテゴリのページネーション
+
+カテゴリ数が増えた場合（17個以上）、1ページあたり16個のボタンを表示するページネーションが自動的に適用されます。
+- **実装方法:** `js/app.js` 内の `currentCategoryPage` 変数で現在のページを管理。
+- **操作:** `category-section` 上でのマウスホイール操作を検知し、ページを切り替え。
+- **UI:** 下部に非活性なページインジケーター（ドット）を表示。
+
 ### 背景アニメーション (Canvas & Web Worker)
 
 タスク実行中の背景アニメーションは、パフォーマンスの安定とセキュリティを確保するため、メインスレッドから分離された Web Worker 上で実行されます。
@@ -150,14 +176,31 @@ stateDiagram-v2
 - **LCD スタイル:** 全てのアニメーションは 4 段階のドットサイズを持つ LCD ドットマトリクススタイルで描画されます。
 - **自動遮蔽 (Exclusion Areas):** 前面のテキスト（カテゴリ名、タイマー）が隠れないよう、エンジン側で描画を回避します。
 - **動的制御:** `app.js` は定期的に UI 要素の `getBoundingClientRect()` を計測し、Worker へ遮蔽領域を通知します。
+詳細な仕様は [animation_module_spec.md](animation_module_spec.md) を参照してください。
 
 ### ローカルファイルバックアップ
 
-File System Access API を利用してローカルディレクトリにデータを同期します。
+ブラウザのキャッシュクリア等によるデータ消失を防ぐため、File System Access API を利用してローカルディレクトリにデータを同期します。
 
-- **形式:** NDJSON (Newline Delimited JSON)。
-- **同期のタイミング:** ユーザーによる明示的な実行のみ（ブラウザのセキュリティ制限により、再起動後は再認証が必要）。
-- **双方向の統合 (Merge):** バックアップ実行時、ファイル側の内容と IndexedDB の内容を比較・マージし、最新の状態を双方に維持します。
+#### 同期メカズム
+- **形式:** NDJSON (Newline Delimited JSON)。1行1レコードの形式で、一部が破損しても他の行への影響を最小限に抑えます。
+- **ファイル分割:** 履歴（ログ）は `YYYY-MM-DD.ndjson` の形式で、1日1ファイルに分割されます。カテゴリは `categories.ndjson` (NDJSON)、設定は `settings.json` (JSON) に保存されます。
+- **同期のタイミング:**
+    - **手動 (Manual Only):** ユーザーが明示的に「バックアップを実行する」ボタンを押した際、またはインジケーターをクリックした際に同期が実行されます。自動同期（一定間隔での実行）は行われません。
+- **双方向の統合 (Merge):**
+    - 同期（バックアップ実行）時、まずファイル側の内容を IndexedDB に読み込み、IndexedDB に存在しないデータのみを追加します。
+    - その後、IndexedDB の最新状態をファイルに書き出します。
+- **40日間保持ポリシー:**
+    - IndexedDB のクリーンアップ（40日以前のデータ削除）に連動し、バックアップ実行時にバックアップフォルダ内の古い `.ndjson` ファイルも削除されます。
+
+#### ステータス表示
+バックアップの状態は、設定画面の「バックアップ」タブ内で確認できます。
+- **最終バックアップ時刻:** 前回のバックアップ実行日時が表示されます。
+- **ファイル数:** バックアップフォルダ内に保存されているログファイル（日分）の数が表示されます。
+- **実行ボタン:** 権限が必要な場合は「保存先にアクセスしてバックアップを実行」と表示され、クリックすることで再認証と実行を同時に行えます。
+
+#### セキュリティと制限
+- ブラウザのセキュリティ仕様により、ブラウザの再起動後はユーザーが明示的に「アクセスを許可する」ボタン（設定パネル内の再接続ボタン）を押すまで、フォルダへのアクセス権限が一時的に失われます。
 
 ---
 
@@ -317,19 +360,51 @@ graph TD
 - `tests/`: Jest による単体テスト。
 - `docs/`: 技術仕様書、各種ガイド。
 
-### バージョン管理とビルド
-`npm run build` により、アイコン生成、アニメーションレジストリの自動更新、バージョン整合性チェック、ブラウザ別パッケージ（ZIP）の作成が自動実行されます。詳細は `package.json` のスクリプトセクションを参照してください。
+### バージョン管理
+`npm run version:bump` コマンドにより、`src/version.json`, `package.json`, `src/manifest.*.json` を一括更新します。
+
+### ビルドとパッケージング
+`npm run build` により、以下の処理を自動実行します：
+1. **PNGアイコン生成**: `src/assets/icon.svg` から各サイズ（16/32/48/128）の `icon.png` を生成します (`scripts/generate_png_icons.py`)。
+2. **アニメーションレジストリ生成**: `src/js/animation/` 内の全モジュールをスキャンし、`src/js/animation_registry.js` を自動生成します (`scripts/generate_animation_registry.py`)。
+3. **バージョン整合性チェック**: `package.json`, `version.json`, マニフェストファイル間でのバージョン番号の一致を確認します (`scripts/check_version.py`)。
+4. **ZIPパッケージ作成**: ブラウザ別（Chrome, Firefox）のマニフェストを適用し、`releases/` ディレクトリに配布用 ZIP パッケージを作成します (`scripts/create_package.py`)。
+
+### その他の管理スクリプト
+- **scripts/bump_version.py**: バージョン番号をインクリメントし、関連ファイルすべてを同期更新します。
+- **scripts/verify_animations.py**: アニメーションモジュールのメタデータや安全性を検証します（`npm test` 内で実行）。
+- **scripts/verify_version_impact.py**: コミットメッセージの内容（feat, fix等）に応じて適切なバージョンアップが行われているかを CI 上で検証します。
+- **SCANOSS (GitHub Actions)**: 業界標準の OSS 監査ツール。`src/` 内のコード断片（スニペット）を 1 億件以上の OSS データベースと照合し、ライセンス表記のないコピーコードも検出します。
+- **scripts/animation_utils.py**: 複数のスクリプトで共有される、アニメーションモジュールのパースやフィルタリングのための共通ユーティリティです。
+- **scripts/update_guide_images.js**: クイックスタートガイド (`guide.html`) で使用するキャプチャ画像を Playwright を使用して自動生成します。内部的に `generate_guide_screenshots.js` を呼び出します。
+- **scripts/generate_guide_screenshots.js**: 特定の言語・状態でアプリを起動し、指定された座標のスクリーンショットを撮影する Playwright スクリプトです。
 
 ---
 
 ## 8. テストと品質管理
 
 ### テスト構成
-- **Jest:** ロジック層 (`logic.js`) およびデータ層 (`db.js`) の単体テスト。`fake-indexeddb` を使用してブラウザ環境をエミュレート。
-- **SCANOSS:** 外部コードの混入を監視する OSS 監査。
+- **Jest:** テストランナー。
+- **fake-indexeddb:** Node.js 環境で IndexedDB をエミュレート。
+- **jsdom:** ブラウザ環境のエミュレート。
+
+### 実行コマンド
+```bash
+# 全テストの実行
+npm test
+
+# リンターの実行
+npx eslint .
+npx stylelint "**/*.css"
+```
 
 ### pre-commit フック
-コミット前に、バージョン整合性チェック、ビルド、リンター（ESLint/Stylelint）、テストが自動的に実行され、品質を担保します。
+コミット時に以下のチェックが自動的に実行されます。
+1. **check-version:** `version.json`, `package.json`, およびマニフェストファイル間でのバージョン整合性チェック。
+2. **create-package:** ブラウザ別パッケージ（ZIP）の自動生成。
+3. **eslint:** JS の静的解析。特に関数や try-catch ブロック内での不必要な変数への再代入を避けるため、 `no-useless-assignment` ルールを遵守してください。
+4. **stylelint:** CSS の静的解析。
+5. **jest:** ユニットテストの実行。
 
 ---
 
