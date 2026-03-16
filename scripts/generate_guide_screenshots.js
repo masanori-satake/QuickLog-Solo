@@ -33,23 +33,9 @@ async function generateScreenshots() {
         // --- 02_recording: Recording state ---
         const testCat = lang === 'ja' ? '開発' : 'Development';
 
-        // Go to a neutral state first to initialize DB then disable autoStop to prevent midnight trigger in CI
+        // Ensure state
         await page.goto(`${BASE_URL}?lang=${lang}&db=${dbName}`);
         await page.waitForSelector('.category-btn');
-        await page.evaluate(async () => {
-            // Accessing app's internal DB via its exported functions is not easy from here,
-            // so we use direct IndexedDB API to force the setting.
-            return new Promise((resolve) => {
-                const dbName = new URLSearchParams(window.location.search).get('db');
-                const req = indexedDB.open(dbName);
-                req.onsuccess = (e) => {
-                    const db = e.target.result;
-                    const tx = db.transaction('settings', 'readwrite');
-                    tx.objectStore('settings').put({ key: 'autoStop', value: false });
-                    tx.oncomplete = () => resolve();
-                };
-            });
-        });
 
         await page.goto(`${BASE_URL}?lang=${lang}&db=${dbName}&test_cat=${testCat}&test_elapsed=3661000&test_resumable=${testCat}`);
         await page.waitForSelector('.status-running');

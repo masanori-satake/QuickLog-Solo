@@ -7,7 +7,9 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     dbAddMultiple: jest.fn(),
     STORE_LOGS: 'logs',
     STORE_SETTINGS: 'settings',
-    STORE_CATEGORIES: 'categories'
+    STORE_CATEGORIES: 'categories',
+    SETTING_KEY_BACKUP_CONFIG: 'backupConfig',
+    SETTING_KEY_BACKUP_DIRECTORY_HANDLE: 'backupDirectoryHandle'
 }));
 
 const { backupManager, BACKUP_STATUS } = await import('../projects/app/js/backup.js');
@@ -157,7 +159,6 @@ describe('BackupManager Abnormal Cases', () => {
         // Invalid values for known keys
         expect(backupManager._validateSetting({ key: 'theme', value: 'purple' })).toBeNull();
         expect(backupManager._validateSetting({ key: 'language', value: 'ru' })).toBeNull();
-        expect(backupManager._validateSetting({ key: 'autoStop', value: 'yes' })).toBeNull();
 
         // Valid case
         expect(backupManager._validateSetting({ key: 'theme', value: 'dark' })).toEqual({ key: 'theme', value: 'dark' });

@@ -60,7 +60,7 @@
 - 同時に実行できるタスクは常に1つのみ。
 - **タブ間継続:** ブラウザのタブを切り替えてもサイドパネルの状態は維持され、計測が継続される。
 - **状態表示:** 実行中: ▶ (Green), 待機中/一時停止中: ⏸ (Orange - 点滅あり), 終了済み: ⏹ (Red)。
-- **日付変更時の”作業終了"自動記録:** 毎日23:59:59に、未終了の作業をその時刻で自動終了させ、翌日の記録がクリーンに始められるようガードします。
+- **日付変更時の”作業終了"自動記録:** 以前は専用設定でしたが、現在はアラーム機能のデフォルト設定（5番目のスロット: 23:59 に実行）として統合されています。未終了の作業をその時刻で自動終了させ、翌日の記録がクリーンに始められるようガードします。
 
 ### B. カテゴリ管理
 - ユーザーがカテゴリを追加・削除・編集可能。設定は永続化される。
@@ -117,6 +117,8 @@
 - **ディレクトリ構成:** 詳細は `README_DEV.md` を参照。メインアプリは `projects/app/`, サブプロジェクトは `projects/`, 共通コードは `shared/`, スクリプトは `scripts/` に集約されています。
 - **ドキュメント:** PR におけるやり取りはすべて**日本語**。セッション内の判断は随時 spec.md に反映する。
 - **バージョニング:** Conventional Commits に基づく自動採番 (`scripts/bump_version.py`)。
+- **ルートディレクトリのクリーンネス:** CI において、AI エージェント等による一時的なスクリプトの混入を厳格にチェック（`check_root_files.py`）。
+- **パス・ポータビリティ標準:** ローカル、Vercel、拡張機能の全環境で動作させるため、アセット参照は常に相対パス（先頭スラッシュなし）を使用します。
 
 ## 9. QL-Animation Studio (β版)
 ブラウザ上でアニメーションロジックを作成・テスト・ダウンロード可能な開発環境。
@@ -135,11 +137,3 @@
 - [背景アニメーション・モジュール仕様書 (animation_module_spec.md)](animation_module_spec.md)
 - [AI エージェント指針 (AGENTS.md)](../AGENTS.md)
 
-## 12. 免責事項 (Disclaimer)
-本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
-利用に際して生じたいかなる損害（データの消失、業務の中断、PCの不具合など）についても、開発者は一切の責任を負いません。
-MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
-
-This software is a personal open-source project and is provided **"AS IS"** without warranty of any kind.
-The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from the use of this software.
-Use at your own risk, as per the MIT License.

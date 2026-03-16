@@ -2,7 +2,7 @@ import {
     initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
+    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
