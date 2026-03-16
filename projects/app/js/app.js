@@ -1761,7 +1761,7 @@ function setupEventListeners() {
         const url = new URL(CATEGORY_EDITOR_URL);
         url.searchParams.set('lang', lang);
         url.searchParams.set('from', 'app');
-        window.open(url.toString(), '_blank');
+        window.open(url.toString(), '_blank', 'noopener');
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
