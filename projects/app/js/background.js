@@ -181,18 +181,11 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             const activeTask = state.activeTask;
 
             // Check if action will change the state
-            let willChange = true;
-            if (alarmData.action === 'stop') {
-                if (!activeTask) willChange = false;
-            } else if (alarmData.action === 'pause') {
-                if (!activeTask || activeTask.isPaused) willChange = false;
-            } else if (alarmData.action === 'start') {
-                if (activeTask && !activeTask.isPaused && activeTask.category === alarmData.actionCategory) {
-                    willChange = false;
-                }
-            }
+            const isRedundantStop = alarmData.action === 'stop' && !activeTask;
+            const isRedundantPause = alarmData.action === 'pause' && (!activeTask || activeTask.isPaused);
+            const isRedundantStart = alarmData.action === 'start' && activeTask && !activeTask.isPaused && activeTask.category === alarmData.actionCategory;
 
-            if (!willChange) {
+            if (isRedundantStop || isRedundantPause || isRedundantStart) {
                 console.log(`QuickLog-Solo: Alarm [ID: ${alarmData.id}] skipped because state would not change (${alarmData.action})`);
                 return;
             }

@@ -81,15 +81,22 @@ describe('Background Alarm Logic', () => {
 
     test('executes "stop" action if task is active', async () => {
         const alarm = { name: 'ql_alarm_1' };
+        const activeTask = { category: 'Work' };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, action: 'stop', message: 'Stop it' }],
-            activeTask: { category: 'Work' }
+            activeTask: activeTask
         });
 
         await onAlarmListener(alarm);
 
-        expect(chrome.notifications.create).toHaveBeenCalled();
-        expect(stopTaskLogic).toHaveBeenCalled();
+        expect(chrome.notifications.create).toHaveBeenCalledWith(
+            expect.stringContaining('alarm_1_'),
+            expect.objectContaining({
+                message: 'Stop it',
+                priority: 2
+            })
+        );
+        expect(stopTaskLogic).toHaveBeenCalledWith(activeTask, true);
     });
 
     test('skips "pause" if already paused', async () => {
@@ -120,16 +127,17 @@ describe('Background Alarm Logic', () => {
 
     test('does NOT skip "start" if working on a DIFFERENT category', async () => {
         const alarm = { name: 'ql_alarm_1' };
+        const activeTask = { category: 'Work', isPaused: false };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, action: 'start', actionCategory: 'Study', message: 'Start Study' }],
-            activeTask: { category: 'Work', isPaused: false }
+            activeTask: activeTask
         });
-        dbGetByName.mockResolvedValue({ name: 'Study', color: 'blue', tags: '' });
+        dbGetByName.mockResolvedValue({ name: 'Study', color: 'blue', tags: 'tag1' });
 
         await onAlarmListener(alarm);
 
         expect(chrome.notifications.create).toHaveBeenCalled();
-        expect(startTaskLogic).toHaveBeenCalledWith('Study', expect.anything(), null, 'blue', '');
+        expect(startTaskLogic).toHaveBeenCalledWith('Study', activeTask, null, 'blue', 'tag1');
     });
 
     test('always triggers "none" action alarms', async () => {
@@ -153,6 +161,11 @@ describe('Background Alarm Logic', () => {
 
         await onAlarmListener(alarm);
 
-        expect(chrome.notifications.create).toHaveBeenCalled();
+        expect(chrome.notifications.create).toHaveBeenCalledWith(
+            expect.stringContaining('alarm_999_'),
+            expect.objectContaining({
+                priority: 2
+            })
+        );
     });
 });
