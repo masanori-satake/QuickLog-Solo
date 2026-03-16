@@ -938,6 +938,11 @@
         function setLanguage(lang) {
             const safeLang = getSafeLang(lang);
             currentLang = safeLang;
+
+            const url = new URL(window.location);
+            url.searchParams.set('lang', safeLang);
+            window.history.replaceState({}, '', url);
+
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (translations[safeLang][key]) {
@@ -1010,13 +1015,21 @@
             .catch(err => console.error('Failed to load version:', err));
 
         // Initialize language
-        const userLang = navigator.language || navigator.userLanguage;
-        const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+
+        const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh', 'en'];
         let matched = 'en';
-        for (const prefix of prefixes) {
-            if (userLang.startsWith(prefix)) {
-                matched = prefix;
-                break;
+
+        if (langParam && prefixes.includes(langParam)) {
+            matched = langParam;
+        } else {
+            const userLang = navigator.language || navigator.userLanguage;
+            for (const prefix of prefixes) {
+                if (userLang.startsWith(prefix)) {
+                    matched = prefix;
+                    break;
+                }
             }
         }
         setLanguage(matched);

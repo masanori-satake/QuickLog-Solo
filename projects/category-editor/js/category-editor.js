@@ -125,6 +125,14 @@ function setupLanguage(urlParams) {
     currentLang = matched;
     langSelect.value = matched;
     updateTranslations();
+    updateBackLink();
+}
+
+function updateBackLink() {
+    const backLink = document.querySelector('.back-link');
+    if (backLink) {
+        backLink.href = `../web/?lang=${encodeURIComponent(currentLang)}`;
+    }
 }
 
 function updateTranslations() {
@@ -157,7 +165,13 @@ function setupAnimationEngine() {
 function setupEventListeners() {
     langSelect.addEventListener('change', (e) => {
         currentLang = e.target.value;
+
+        const url = new URL(window.location);
+        url.searchParams.set('lang', currentLang);
+        window.history.replaceState({}, '', url);
+
         updateTranslations();
+        updateBackLink();
         renderCategoryList();
         populateAnimationOptions();
         renderDetail();
