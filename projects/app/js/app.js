@@ -79,7 +79,7 @@ const ID_CLEAR_LOGS_BTN = 'clear-logs-btn';
 const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
 const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 
-const CATEGORY_EDITOR_URL = '/projects/category-editor/index.html';
+const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor';
 
 const ID_REPORT_MODAL = 'report-modal';
 const ID_REPORT_PREVIEW = 'report-preview';
