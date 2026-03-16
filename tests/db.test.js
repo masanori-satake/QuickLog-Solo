@@ -3,6 +3,7 @@ import {
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
+import { t } from '../shared/js/i18n.js';
 
 describe('DB Module', () => {
     const DB_NAME = 'QuickLogSoloDB';
@@ -147,9 +148,7 @@ describe('DB Module', () => {
         const alarm2359 = alarms.find(a => a.time === '23:59');
         expect(alarm2359).toBeDefined();
         expect(alarm2359.action).toBe('stop');
-        expect(alarm2359.message).not.toBe('');
-        // Check if it's either Japanese or English stop message
-        expect(['作業終了', 'Stop Task']).toContain(alarm2359.message);
+        expect(alarm2359.message).toBe(t('alarm-action-stop'));
 
         const alarm0900 = alarms.find(a => a.time === '09:00');
         expect(alarm0900).toBeDefined();
