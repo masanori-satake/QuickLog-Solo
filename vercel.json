@@ -1,12 +1,18 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
+  "cleanUrls": false,
+  "trailingSlash": true,
+  "redirects": [
+    { "source": "/", "destination": "/projects/web/", "permanent": false },
+    { "source": "/guide", "destination": "/projects/web/guide.html", "permanent": false },
+    { "source": "/category-editor", "destination": "/projects/category-editor/", "permanent": false },
+    { "source": "/studio", "destination": "/projects/studio/", "permanent": false },
+    { "source": "/projects/web/index.html", "destination": "/projects/web/", "permanent": false },
+    { "source": "/projects/studio/index.html", "destination": "/projects/studio/", "permanent": false },
+    { "source": "/projects/category-editor/index.html", "destination": "/projects/category-editor/", "permanent": false }
+  ],
   "rewrites": [
-    { "source": "/", "destination": "/projects/web/index.html" },
-    { "source": "/guide", "destination": "/projects/web/guide.html" },
     { "source": "/google600c7e741a07d031.html", "destination": "/projects/web/google600c7e741a07d031.html" },
-    { "source": "/category-editor", "destination": "/projects/category-editor/index.html" },
-    { "source": "/studio", "destination": "/projects/studio/index.html" },
+    { "source": "/(.*)/shared/(.*)", "destination": "/shared/$2" },
     { "source": "/shared/(.*)", "destination": "/shared/$1" },
     { "source": "/projects/(.*)", "destination": "/projects/$1" },
     { "source": "/releases/(.*)", "destination": "/releases/$1" }
