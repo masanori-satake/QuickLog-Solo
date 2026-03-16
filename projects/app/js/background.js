@@ -158,24 +158,14 @@ async function setupAlarms() {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     console.log(`QuickLog-Solo: onAlarm triggered: ${alarm.name}`);
 
-    // Immediate ACK notification for any QL alarm
-    if (alarm.name.startsWith('ql_')) {
-        chrome.notifications.create(`ack_${alarm.name}_${Date.now()}`, {
-            type: 'basic',
-            iconUrl: chrome.runtime.getURL('shared/assets/icon128.png'),
-            title: 'QuickLog-Solo System',
-            message: `Event: ${alarm.name} (Background Active)`,
-            priority: 1
-        });
-    }
-
     try {
         await guardedInitialize();
 
         let alarmData = null;
+        let state = null;
         if (alarm.name.startsWith('ql_alarm_')) {
             const alarmId = parseInt(alarm.name.replace('ql_alarm_', ''));
-            const state = await getCurrentAppState();
+            state = await getCurrentAppState();
             alarmData = state.alarms.find(a => a.id === alarmId);
         } else if (alarm.name === 'ql_test_alarm') {
             alarmData = {
@@ -187,6 +177,19 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         }
 
         if (alarmData && alarmData.enabled) {
+            if (!state) state = await getCurrentAppState();
+            const activeTask = state.activeTask;
+
+            // Check if action will change the state
+            const isRedundantStop = alarmData.action === 'stop' && !activeTask;
+            const isRedundantPause = alarmData.action === 'pause' && (!activeTask || activeTask.isPaused);
+            const isRedundantStart = alarmData.action === 'start' && activeTask && !activeTask.isPaused && activeTask.category === alarmData.actionCategory;
+
+            if (isRedundantStop || isRedundantPause || isRedundantStart) {
+                console.log(`QuickLog-Solo: Alarm [ID: ${alarmData.id}] skipped because state would not change (${alarmData.action})`);
+                return;
+            }
+
             console.log(`QuickLog-Solo: Alarm triggered [ID: ${alarmData.id}] message: ${alarmData.message}`);
 
             // 1. Show notification
@@ -201,8 +204,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             // 2. Execute automated task actions
             if (alarmData.action && alarmData.action !== 'none') {
                 console.log(`QuickLog-Solo: Executing alarm action: ${alarmData.action}`);
-                const state = await getCurrentAppState();
-                let activeTask = state.activeTask;
 
                 if (alarmData.action === 'stop') {
                     await stopTaskLogic(activeTask, true);
