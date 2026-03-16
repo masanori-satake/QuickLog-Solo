@@ -8,7 +8,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 
 - **Node.js 実行環境**: すべてのワークフローで Node.js **v24** を使用します。
 - **先行オプトイン**: `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` 環境変数を設定し、アクションが Node.js 24 ランタイムで動作するように強制しています。
-- **アクションの最新化**: `actions/checkout@v6`, `actions/setup-node@v6`, `actions/setup-python@v6`, `actions/cache@v5` 等の最新メジャーバージョンを採用しています。
+- **アクションの安定版採用**: `actions/checkout@v4`, `actions/setup-node@v4`, `actions/setup-python@v5`, `actions/cache@v4` 等の安定したメジャーバージョンを採用しています。不具合を避けるため、未リリースの将来バージョン（@v6等）の指定は行いません。
 
 ## ワークフロー一覧
 
