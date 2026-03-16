@@ -1,6 +1,6 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 
@@ -137,6 +137,23 @@ describe('DB Module', () => {
         const savedPauseState = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         expect(savedPauseState).toBeDefined();
         expect(savedPauseState.value.startTime).toBe(startTime);
+    });
+
+    test('initDB sets up default alarms with messages', async () => {
+        await initDB();
+        const alarms = await dbGetAll(STORE_ALARMS);
+        expect(alarms.length).toBe(5);
+
+        const alarm2359 = alarms.find(a => a.time === '23:59');
+        expect(alarm2359).toBeDefined();
+        expect(alarm2359.action).toBe('stop');
+        expect(alarm2359.message).not.toBe('');
+        // Check if it's either Japanese or English stop message
+        expect(['作業終了', 'Stop Task']).toContain(alarm2359.message);
+
+        const alarm0900 = alarms.find(a => a.time === '09:00');
+        expect(alarm0900).toBeDefined();
+        expect(alarm0900.message).toBe('');
     });
 
     describe('dbImportCategories', () => {
