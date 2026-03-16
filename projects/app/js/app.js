@@ -7,7 +7,7 @@ import {
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation } from '../shared/js/logic.js';
-import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPassed } from '../shared/js/utils.js';
+import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { animations } from '../shared/js/animation_registry.js';
 
@@ -137,7 +137,6 @@ let reportSettings = {
     duration: 'none',
     adjust: 'none'
 };
-let autoStopEnabledCache = true;
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -203,17 +202,6 @@ async function updateTimer() {
     }
 
     const now = Date.now();
-
-    // Check Auto-record 'Stop' at Midnight using cache
-    if (autoStopEnabledCache) {
-        const stopTime = getAutoStopTimeIfPassed(activeTask.startTime, now);
-        if (stopTime) {
-            console.log("QuickLog-Solo: Auto-record 'Stop' at Midnight triggered");
-            await stopTask(stopTime);
-            updateUI();
-            return;
-        }
-    }
 
     const elapsed = now - activeTask.startTime;
     const timeStr = formatDuration(elapsed).toString();
@@ -590,7 +578,6 @@ async function syncState() {
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: 'digital_rain' });
     }
     activeTask = state.activeTask;
-    autoStopEnabledCache = state.autoStop;
 
     const lang = state.language || 'auto';
     setLanguage(lang);
@@ -601,16 +588,6 @@ async function syncState() {
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
 
-    const autoStopSelect = getEl('auto-stop-select');
-    if (autoStopSelect) {
-        autoStopSelect.value = state.autoStop ? 'true' : 'false';
-        autoStopSelect.onchange = async (e) => {
-            const enabled = e.target.value === 'true';
-            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: enabled });
-            autoStopEnabledCache = enabled;
-            broadcastSync();
-        };
-    }
 
     // Update Animation options
     currentAnimationType = state.animation || 'digital_rain';

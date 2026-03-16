@@ -80,8 +80,6 @@ export const en = {
     'about-disclaimer': '[Disclaimer] This is a personal open-source project and is provided "AS IS" without warranty of any kind. The developer shall not be liable for any damages arising from its use. Use at your own risk.',
 
     // Auto Stop & Page Break
-    'setting-auto-stop': "Auto-record 'Stop' at Midnight",
-    'tooltip-auto-stop': 'Automatically ends any active task at 23:59:59 to ensure a clean start for the next day. If work is unfinished on next launch, it records the end time as 23:59:59 of the start day.',
     'page-break': 'Page Break',
     'btn-add-page-break': 'Add Page Break',
     'confirm-delete-page-break': 'Do you want to delete this page break?',

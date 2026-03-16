@@ -1,4 +1,4 @@
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, getAutoStopTimeIfPassed, isValidColor } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, isValidColor } from './utils.js';
 import { t, setLanguage } from './i18n.js';
 
 export let DB_NAME = 'QuickLogSoloDB';
@@ -337,10 +337,6 @@ export async function getCurrentAppState() {
 async function setupInitialData(languageSetting) {
     setLanguage(languageSetting);
 
-    const autoStopSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP);
-    if (autoStopSetting === undefined) {
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: true });
-    }
 
     const animationOrder = [
         'none', 'default', 'digital_rain', 'migrating_birds', 'ripple',
@@ -426,58 +422,8 @@ async function setupInitialData(languageSetting) {
     }
 
     const allLogs = await dbGetAll(STORE_LOGS);
-    const isAutoStopEnabled = (await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP))?.value ?? true;
 
     let openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
-
-    // Auto-record 'Stop' at Midnight repair
-    if (isAutoStopEnabled) {
-        const repairUpdates = [];
-        const newMarkers = [];
-
-        for (const task of openTasks) {
-            const stopTime = getAutoStopTimeIfPassed(task.startTime);
-            if (stopTime) {
-                task.endTime = stopTime;
-                repairUpdates.push(task);
-
-                // Add a Stop marker at 23:59:59 if it doesn't exist for that day
-                const startOfDay = new Date(stopTime).setHours(0, 0, 0, 0);
-                const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime < (startOfDay + 86400000));
-                const hasStopMarker = dayLogs.some(l => l.isManualStop && l.category === SYSTEM_CATEGORY_IDLE);
-
-                if (!hasStopMarker) {
-                    const newMarker = {
-                        category: SYSTEM_CATEGORY_IDLE,
-                        startTime: stopTime,
-                        endTime: stopTime,
-                        isManualStop: true
-                    };
-                    newMarkers.push(newMarker);
-                    allLogs.push(newMarker);
-                }
-            }
-        }
-
-        if (repairUpdates.length > 0 || newMarkers.length > 0) {
-            console.log(`QuickLog-Solo: Performing auto-stop repair for ${repairUpdates.length} tasks and adding ${newMarkers.length} markers...`);
-            await new Promise((resolve, reject) => {
-                if (!db) { reject(new Error('DB not initialized')); return; }
-                const tx = db.transaction(STORE_LOGS, 'readwrite');
-                const store = tx.objectStore(STORE_LOGS);
-                tx.oncomplete = () => resolve();
-                tx.onerror = (e) => reject(e.target.error);
-                for (const task of repairUpdates) {
-                    store.put(task);
-                }
-                for (const marker of newMarkers) {
-                    store.add(marker);
-                }
-            });
-            // Refresh openTasks after auto-stop
-            openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
-        }
-    }
 
     const activeTaskFromLogs = openTasks[0];
 
@@ -526,11 +472,12 @@ async function setupInitialData(languageSetting) {
     if (existingAlarms.length === 0) {
         const defaultAlarms = [];
         for (let i = 0; i < 5; i++) {
+            const isLast = i === 4;
             defaultAlarms.push({
-                enabled: false,
-                time: "09:00",
+                enabled: isLast,
+                time: isLast ? "23:59" : "09:00",
                 message: "",
-                action: "none", // none, stop, pause, start
+                action: isLast ? "stop" : "none", // none, stop, pause, start
                 actionCategory: ""
             });
         }

@@ -20,7 +20,6 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
 
 const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation } = await import('../shared/js/logic.js');
 const { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
-const { getAutoStopTimeIfPassed } = await import('../shared/js/utils.js');
 
 describe('Logic Module', () => {
     describe('formatDuration', () => {
@@ -115,22 +114,6 @@ describe('Logic Module', () => {
             expect(result['Tag1']).toBe(2000);
             expect(result['Tag2']).toBe(1000);
             expect(result['Tag3']).toBe(1000);
-        });
-    });
-
-    describe('Auto-stop Logic', () => {
-        test('triggers auto-stop if end of day has passed', () => {
-            const startTime = new Date('2026-03-03T20:00:00').getTime();
-            const nextDay = new Date('2026-03-04T01:00:00').getTime();
-            const stopTime = getAutoStopTimeIfPassed(startTime, nextDay);
-            expect(stopTime).toBe(new Date('2026-03-03T23:59:59.999').getTime());
-        });
-
-        test('does not trigger auto-stop if still on the same day', () => {
-            const startTime = new Date('2026-03-03T20:00:00').getTime();
-            const sameDay = new Date('2026-03-03T23:00:00').getTime();
-            const stopTime = getAutoStopTimeIfPassed(startTime, sameDay);
-            expect(stopTime).toBeNull();
         });
     });
 

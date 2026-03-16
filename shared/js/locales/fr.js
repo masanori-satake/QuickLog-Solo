@@ -11,8 +11,6 @@ export const fr = {
     'btn-copy': 'Copier',
 
     // Auto Stop & Page Break
-    'setting-auto-stop': 'Enregistrement automatique de fin de tâche à minuit',
-    'tooltip-auto-stop': 'Arrête automatiquement le travail à 23:59:59 pour assurer un démarrage propre le lendemain.',
     'page-break': 'Saut de page',
     'btn-add-page-break': 'Ajouter un saut de page',
     'confirm-delete-page-break': 'Voulez-vous supprimer ce saut de page ?',

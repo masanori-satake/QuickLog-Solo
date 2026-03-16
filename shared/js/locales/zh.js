@@ -11,8 +11,6 @@ export const zh = {
     'btn-copy': '复制',
 
     // Auto Stop & Page Break
-    'setting-auto-stop': '日期变更时自动记录“任务结束”',
-    'tooltip-auto-stop': '每天 23:59:59 自动结束工作，以确保第二天能顺利开始新的记录。',
     'page-break': '换页',
     'btn-add-page-break': '添加换页',
     'confirm-delete-page-break': '是否删除此换页？',
