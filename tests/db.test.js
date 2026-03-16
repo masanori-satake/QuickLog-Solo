@@ -1,6 +1,6 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_AUTO_STOP
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 
@@ -88,8 +88,6 @@ describe('DB Module', () => {
 
     test('initDB handles multiple active tasks by closing orphaned ones', async () => {
         await openDatabase();
-        // Disable auto-stop to prevent tasks from being closed if test runs around midnight
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: false });
 
         const now = Date.now();
         // Create two tasks without endTime
@@ -110,32 +108,8 @@ describe('DB Module', () => {
         expect(closedTask.endTime).toBe(closedTask.startTime + 1000);
     });
 
-    test('initDB auto-stops tasks from previous days if enabled', async () => {
-        await openDatabase();
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: true });
-
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        yesterday.setHours(10, 0, 0, 0);
-        const startTime = yesterday.getTime();
-
-        await dbAdd(STORE_LOGS, { category: 'Yesterday Task', startTime: startTime, endTime: null });
-        closeDatabase();
-
-        await initDB();
-
-        const allLogs = await dbGetAll(STORE_LOGS);
-        const task = allLogs.find(l => l.category === 'Yesterday Task');
-        expect(task.endTime).toBeDefined();
-
-        const expectedEndTime = new Date(startTime);
-        expectedEndTime.setHours(23, 59, 59, 999);
-        expect(task.endTime).toBe(expectedEndTime.getTime());
-    });
-
     test('initDB handles pauseState correctly', async () => {
         await openDatabase();
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: false });
         const pauseState = { category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), isPaused: true };
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
         closeDatabase();
@@ -147,7 +121,6 @@ describe('DB Module', () => {
 
     test('initDB migrates open idle log to pauseState', async () => {
         await openDatabase();
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_AUTO_STOP, value: false });
         const startTime = Date.now();
         await dbAdd(STORE_LOGS, { category: SYSTEM_CATEGORY_IDLE, startTime: startTime, endTime: null });
         closeDatabase();
@@ -164,33 +137,6 @@ describe('DB Module', () => {
         const savedPauseState = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         expect(savedPauseState).toBeDefined();
         expect(savedPauseState.value.startTime).toBe(startTime);
-    });
-
-    test('initDB performs auto-stop repair and adds stop marker', async () => {
-        await openDatabase();
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        yesterday.setHours(10, 0, 0, 0);
-        const startTime = yesterday.getTime();
-
-        // Create an open task from yesterday
-        await dbAdd(STORE_LOGS, { category: 'Yesterday Task', startTime: startTime, endTime: null });
-        closeDatabase();
-
-        // initDB should trigger repair
-        await initDB();
-
-        const allLogs = await dbGetAll(STORE_LOGS);
-        const yesterdayTask = allLogs.find(l => l.category === 'Yesterday Task');
-        expect(yesterdayTask.endTime).toBeDefined();
-
-        const stopTime = new Date(startTime).setHours(23, 59, 59, 999);
-        expect(yesterdayTask.endTime).toBe(stopTime);
-
-        // Check for stop marker
-        const stopMarker = allLogs.find(l => l.isManualStop && l.startTime === stopTime);
-        expect(stopMarker).toBeDefined();
-        expect(stopMarker.category).toBe(SYSTEM_CATEGORY_IDLE);
     });
 
     describe('dbImportCategories', () => {

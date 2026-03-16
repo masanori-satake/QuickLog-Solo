@@ -11,8 +11,6 @@ export const ko = {
     'btn-copy': '복사',
 
     // Auto Stop & Page Break
-    'setting-auto-stop': '날짜 변경 시 ”작업 종료” 자동 기록',
-    'tooltip-auto-stop': '매일 23:59:59에 작업을 자동으로 종료하여 다음 날의 기록을 원활하게 시작할 수 있도록 합니다.',
     'page-break': '페이지 나누기',
     'btn-add-page-break': '페이지 나누기 추가',
     'confirm-delete-page-break': '이 페이지 나누기를 삭제하시겠습니까?',

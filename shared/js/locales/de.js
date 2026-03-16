@@ -11,8 +11,6 @@ export const de = {
     'btn-copy': 'Kopieren',
 
     // Auto Stop & Page Break
-    'setting-auto-stop': 'Automatisches Aufzeichnen des Arbeitsendes um Mitternacht',
-    'tooltip-auto-stop': 'Beendet die Arbeit automatisch um 23:59:59, um einen sauberen Start in den nächsten Tag zu gewährleisten.',
     'page-break': 'Seitenumbruch',
     'btn-add-page-break': 'Seitenumbruch hinzufügen',
     'confirm-delete-page-break': 'Möchten Sie diesen Seitenumbruch löschen?',
