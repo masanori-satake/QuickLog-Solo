@@ -3,9 +3,9 @@
   "trailingSlash": true,
   "redirects": [
     { "source": "/", "destination": "/projects/web/", "permanent": false },
-    { "source": "/guide", "destination": "/projects/web/guide.html", "permanent": false },
-    { "source": "/category-editor", "destination": "/projects/category-editor/", "permanent": false },
-    { "source": "/studio", "destination": "/projects/studio/", "permanent": false },
+    { "source": "/guide/", "destination": "/projects/web/guide.html", "permanent": false },
+    { "source": "/category-editor/", "destination": "/projects/category-editor/", "permanent": false },
+    { "source": "/studio/", "destination": "/projects/studio/", "permanent": false },
     { "source": "/projects/web/index.html", "destination": "/projects/web/", "permanent": false },
     { "source": "/projects/studio/index.html", "destination": "/projects/studio/", "permanent": false },
     { "source": "/projects/category-editor/index.html", "destination": "/projects/category-editor/", "permanent": false }
