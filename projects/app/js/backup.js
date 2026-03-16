@@ -1,8 +1,7 @@
-import {
-    dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
-    SETTING_KEY_BACKUP_CONFIG, SETTING_KEY_BACKUP_DIRECTORY_HANDLE
-} from '../shared/js/db.js';
+import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from '../shared/js/db.js';
 import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
+
+export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 
 const FILE_NAME_CATEGORIES = 'categories.ndjson';
 const FILE_NAME_SETTINGS = 'settings.json';
@@ -40,7 +39,7 @@ class BackupManager {
 
     async tryRestoreHandle() {
         try {
-            const handle = await dbGet(STORE_SETTINGS, SETTING_KEY_BACKUP_DIRECTORY_HANDLE);
+            const handle = await dbGet(STORE_SETTINGS, 'backupDirectoryHandle');
             if (handle) {
                 this.directoryHandle = handle.value;
             }
@@ -81,7 +80,7 @@ class BackupManager {
 
     async setDirectory(handle) {
         this.directoryHandle = handle;
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BACKUP_DIRECTORY_HANDLE, value: handle });
+        await dbPut(STORE_SETTINGS, { key: 'backupDirectoryHandle', value: handle });
         await this._updateStatus();
     }
 
@@ -150,7 +149,7 @@ class BackupManager {
 
         // Backup Settings (JSON) - excluding backup-specific ones to avoid loops
         const allSettings = await dbGetAll(STORE_SETTINGS);
-        const filteredSettings = allSettings.filter(s => s.key !== SETTING_KEY_BACKUP_DIRECTORY_HANDLE && s.key !== SETTING_KEY_BACKUP_CONFIG);
+        const filteredSettings = allSettings.filter(s => s.key !== 'backupDirectoryHandle' && s.key !== SETTING_KEY_BACKUP_CONFIG);
         await this.writeJson(FILE_NAME_SETTINGS, filteredSettings);
 
         // Backup Logs
@@ -344,7 +343,7 @@ class BackupManager {
 
         // Whitelist of settings we allow to restore
         const allowedKeys = [
-            'theme', 'font', 'animation', 'language', 'reportSettings'
+            'theme', 'font', 'animation', 'language', 'reportSettings', 'autoStop'
         ];
         if (!allowedKeys.includes(key)) return null;
 
@@ -361,6 +360,9 @@ class BackupManager {
                 break;
             case 'language':
                 if (!['auto', 'ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'].includes(value)) return null;
+                break;
+            case 'autoStop':
+                if (typeof value !== 'boolean') return null;
                 break;
             case 'reportSettings':
                 if (typeof value !== 'object' || value === null) return null;

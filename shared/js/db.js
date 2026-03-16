@@ -19,8 +19,7 @@ export const SETTING_KEY_ANIMATION = 'animation';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 export const SETTING_KEY_LANGUAGE = 'language';
 export const SETTING_KEY_REPORT_SETTINGS = 'reportSettings';
-export const SETTING_KEY_BACKUP_DIRECTORY_HANDLE = 'backupDirectoryHandle';
-export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
+export const SETTING_KEY_AUTO_STOP = 'autoStop';
 
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
@@ -28,6 +27,10 @@ const ORPHANED_TASK_MIN_DURATION_MS = 1000;
 let db;
 let dbPromise = null;
 
+/**
+ * Opens the IndexedDB connection.
+ * Returns a promise that resolves to the database instance.
+ */
 const DB_OPEN_TIMEOUT_MS = 5000;
 
 /**
@@ -305,6 +308,7 @@ export async function getCurrentAppState() {
     const animation = await dbGet(STORE_SETTINGS, SETTING_KEY_ANIMATION);
     const language = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
     const reportSettings = await dbGet(STORE_SETTINGS, SETTING_KEY_REPORT_SETTINGS);
+    const autoStop = await dbGet(STORE_SETTINGS, SETTING_KEY_AUTO_STOP);
     const categories = await dbGetAll(STORE_CATEGORIES);
     const alarms = await dbGetAll(STORE_ALARMS);
 
@@ -323,6 +327,7 @@ export async function getCurrentAppState() {
         animation: animation ? animation.value : 'digital_rain',
         language: language ? language.value : 'auto',
         reportSettings: reportSettings ? reportSettings.value : null,
+        autoStop: autoStop ? autoStop.value : true,
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
         alarms: alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
         activeTask

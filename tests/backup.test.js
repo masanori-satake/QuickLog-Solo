@@ -7,9 +7,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     dbAddMultiple: jest.fn(),
     STORE_LOGS: 'logs',
     STORE_SETTINGS: 'settings',
-    STORE_CATEGORIES: 'categories',
-    SETTING_KEY_BACKUP_CONFIG: 'backupConfig',
-    SETTING_KEY_BACKUP_DIRECTORY_HANDLE: 'backupDirectoryHandle'
+    STORE_CATEGORIES: 'categories'
 }));
 
 const { backupManager, BACKUP_STATUS } = await import('../projects/app/js/backup.js');
