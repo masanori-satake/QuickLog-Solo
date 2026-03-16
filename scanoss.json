@@ -27,6 +27,7 @@
           "projects/category-editor/shared",
           "projects/web/shared",
           "screenshots",
+          ".*",
           ".scanossignore",
           "scanoss.json",
           "package-lock.json",
