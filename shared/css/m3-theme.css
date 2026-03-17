@@ -27,6 +27,7 @@
   --md-sys-color-surface-container-lowest: #fff;
   --md-sys-color-surface-container-low: #f7f3f9;
   --md-sys-color-surface-container: #f1edf3;
+  --md-sys-color-surface-container-rgb: 241, 237, 243;
   --md-sys-color-surface-container-high: #ebe7ed;
   --md-sys-color-surface-container-high-rgb: 235, 231, 237;
   --md-sys-color-surface-container-highest: #e5e1e7;
@@ -164,6 +165,7 @@ body.theme-dark {
   --md-sys-color-surface-container-lowest: #0f0f12;
   --md-sys-color-surface-container-low: #1b1b1f;
   --md-sys-color-surface-container: #1f1f23;
+  --md-sys-color-surface-container-rgb: 31, 31, 35;
   --md-sys-color-surface-container-high: #2a292f;
   --md-sys-color-surface-container-high-rgb: 42, 41, 47;
   --md-sys-color-surface-container-highest: #35343a;

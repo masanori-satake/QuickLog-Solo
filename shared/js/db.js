@@ -135,7 +135,7 @@ export async function dbImportCategories(items, importMode) {
         const performImport = (currentCategories) => {
             let maxOrder = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
             for (const item of items) {
-                if (item.type === 'page-break') {
+                if (item.type === 'page-break' || (item.name && item.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))) {
                     store.add({
                         name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
                         order: ++maxOrder
