@@ -73,10 +73,6 @@
         "animation": {
           "$ref": "#/definitions/animationId",
           "description": "The animation ID to play when this category is active."
-        },
-        "order": {
-          "type": "number",
-          "description": "The display order of the category."
         }
       }
     },
@@ -102,10 +98,6 @@
         "name": {
           "type": "string",
           "description": "Internal name or unique identifier for the page break."
-        },
-        "order": {
-          "type": "number",
-          "description": "The display order of the page break."
         }
       }
     }
