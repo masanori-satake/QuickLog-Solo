@@ -4,11 +4,22 @@
   "description": "Schema for a single line in history NDJSON files used in QuickLog-Solo.",
   "definitions": {
     "color": {
-      "type": ["string", "null"],
+      "type": "string",
       "enum": [
-        "primary", "secondary", "tertiary", "error", "neutral", "outline",
-        "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan",
-        null
+        "primary",
+        "secondary",
+        "tertiary",
+        "error",
+        "neutral",
+        "outline",
+        "teal",
+        "green",
+        "yellow",
+        "orange",
+        "pink",
+        "indigo",
+        "brown",
+        "cyan"
       ]
     },
     "tags": {
@@ -17,46 +28,154 @@
         "type": "string",
         "maxLength": 50
       }
+    },
+    "common": {
+      "type": "object",
+      "required": [
+        "kind",
+        "type",
+        "startTime"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "QuickLogSolo/History",
+          "description": "Identifier for the history log data kind."
+        },
+        "startTime": {
+          "type": "number",
+          "description": "Start timestamp in milliseconds since epoch."
+        },
+        "endTime": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "End timestamp in milliseconds since epoch."
+        }
+      }
     }
   },
-  "type": "object",
-  "required": ["kind", "category", "startTime"],
-  "additionalProperties": false,
-  "properties": {
-    "kind": {
-      "type": "string",
-      "const": "QuickLogSolo/History",
-      "description": "Identifier for the history log data kind."
+  "oneOf": [
+    {
+      "title": "Task Entry",
+      "description": "A regular work task entry.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/common"
+        },
+        {
+          "type": "object",
+          "required": [
+            "category"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "QuickLogSolo/History"
+            },
+            "type": {
+              "const": "task"
+            },
+            "startTime": {
+              "type": "number"
+            },
+            "endTime": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Name of the task category."
+            },
+            "color": {
+              "$ref": "#/definitions/color",
+              "description": "The theme color used at the time of recording."
+            },
+            "tags": {
+              "$ref": "#/definitions/tags",
+              "description": "List of tags associated with the task."
+            }
+          }
+        }
+      ]
     },
-    "category": {
-      "type": "string",
-      "maxLength": 100,
-      "description": "Category name or internal ID (e.g., __IDLE__)."
+    {
+      "title": "Idle Entry",
+      "description": "A waiting or paused state entry.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "QuickLogSolo/History"
+            },
+            "type": {
+              "const": "idle"
+            },
+            "startTime": {
+              "type": "number"
+            },
+            "endTime": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "resumableCategory": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 100,
+              "description": "The category name to resume after this pause."
+            }
+          }
+        }
+      ]
     },
-    "startTime": {
-      "type": "number",
-      "description": "Start timestamp in milliseconds since epoch."
-    },
-    "endTime": {
-      "type": ["number", "null"],
-      "description": "End timestamp in milliseconds since epoch."
-    },
-    "color": {
-      "$ref": "#/definitions/color",
-      "description": "The theme color used at the time of recording."
-    },
-    "isManualStop": {
-      "type": "boolean",
-      "description": "Whether the task was explicitly stopped by the user."
-    },
-    "resumableCategory": {
-      "type": ["string", "null"],
-      "maxLength": 100,
-      "description": "The category to resume after a pause."
-    },
-    "tags": {
-      "$ref": "#/definitions/tags",
-      "description": "List of tags associated with the task."
+    {
+      "title": "Stop Marker",
+      "description": "An explicit stop marker indicating the end of a work session.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/common"
+        },
+        {
+          "type": "object",
+          "required": [
+            "isManualStop"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "QuickLogSolo/History"
+            },
+            "type": {
+              "const": "stop"
+            },
+            "startTime": {
+              "type": "number"
+            },
+            "endTime": {
+              "type": "number"
+            },
+            "isManualStop": {
+              "type": "boolean",
+              "const": true,
+              "description": "Must be true for explicit stop markers."
+            }
+          }
+        }
+      ]
     }
-  }
+  ]
 }

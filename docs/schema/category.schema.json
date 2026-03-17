@@ -6,8 +6,20 @@
     "color": {
       "type": "string",
       "enum": [
-        "primary", "secondary", "tertiary", "error", "neutral", "outline",
-        "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan"
+        "primary",
+        "secondary",
+        "tertiary",
+        "error",
+        "neutral",
+        "outline",
+        "teal",
+        "green",
+        "yellow",
+        "orange",
+        "pink",
+        "indigo",
+        "brown",
+        "cyan"
       ]
     },
     "animationId": {
@@ -26,7 +38,12 @@
     {
       "title": "Regular Category",
       "type": "object",
-      "required": ["kind", "type", "name", "color"],
+      "required": [
+        "kind",
+        "type",
+        "name",
+        "color"
+      ],
       "additionalProperties": false,
       "properties": {
         "kind": {
@@ -43,8 +60,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 50,
-          "pattern": "^(?!__PAGE_BREAK__|__IDLE__).*$",
-          "description": "Display name of the category. Must not be a system reserved name."
+          "description": "Display name of the category."
         },
         "color": {
           "$ref": "#/definitions/color",
@@ -67,7 +83,10 @@
     {
       "title": "Page Break",
       "type": "object",
-      "required": ["kind", "type"],
+      "required": [
+        "kind",
+        "type"
+      ],
       "additionalProperties": false,
       "properties": {
         "kind": {
@@ -81,9 +100,8 @@
           "description": "Indicates this item is a page break."
         },
         "name": {
-            "type": "string",
-            "pattern": "^__PAGE_BREAK__",
-            "description": "Internal name for the page break (used in backup files)."
+          "type": "string",
+          "description": "Internal name or unique identifier for the page break."
         },
         "order": {
           "type": "number",
