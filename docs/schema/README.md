@@ -128,7 +128,6 @@ classDiagram
         +String animation
     }
     class PageBreak {
-        +String name
     }
     CategoryItem <|-- RegularCategory
     CategoryItem <|-- PageBreak
@@ -140,10 +139,10 @@ classDiagram
 | `kind` | string | ○ | データ種別 (`"QuickLogSolo/Category"`) |
 | `version` | string | ○ | スキーマバージョン |
 | `type` | string | ○ | カテゴリの種類 (`"category"`, `"page-break"`) |
-| `name` | string | △ | 表示名 (type=category時は必須) |
-| `color` | string | △ | テーマ色 (type=category時は必須) |
-| `tags` | string[] | - | デフォルトのタグ配列 |
-| `animation` | string | - | アニメーション ID (無しは `"none"`) |
+| `name` | string | △ | 表示名 (type=category時のみ。かつ必須) |
+| `color` | string | △ | テーマ色 (type=category時のみ。かつ必須) |
+| `tags` | string[] | - | デフォルトのタグ配列 (type=category時のみ) |
+| `animation` | string | - | アニメーション ID (type=category時のみ。無しは `"none"`) |
 
 ---
 
