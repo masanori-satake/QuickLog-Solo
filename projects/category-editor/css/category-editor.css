@@ -167,7 +167,8 @@ body {
     background-color: var(--md-sys-color-surface-variant);
 }
 
-.delete-item-btn {
+.delete-item-btn,
+.more-item-btn {
     opacity: 0;
     position: absolute;
     right: 8px;
@@ -241,13 +242,6 @@ body {
     gap: 4px;
     justify-content: center;
     padding-right: 24px;
-}
-
-.more-item-btn {
-    opacity: 0;
-    position: absolute;
-    right: 8px;
-    transition: opacity 0.2s;
 }
 
 .category-menu {
