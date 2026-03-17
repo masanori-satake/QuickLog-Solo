@@ -48,7 +48,7 @@
 - **ファイル形式:** NDJSON (各行が 1 つの JSON オブジェクト)
 - **識別フィールド:**
   - `kind`: データ種別 (`"QuickLogSolo/History"`)
-  - `version`: `"1.1"`
+  - `version`: `"1.0"`
   - `type`: ログの種類 (`"task"`, `"idle"`, `"stop"`)
 - **ログの種類:**
   - **task**: 通常の作業タスク。`category` プロパティが必須です。
