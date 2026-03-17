@@ -69,6 +69,7 @@
   },
   "else": {
     "properties": {
+      "name": false,
       "color": false,
       "tags": false,
       "animation": false
