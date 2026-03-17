@@ -4,11 +4,23 @@ test.describe('Verification Pattern (TestPattern) Rendering', () => {
     test('should render Verification Pattern and ensure it is not obscured by opaque backgrounds', async ({ page }) => {
         const dbName = `TestPatternDB_${Math.random().toString(36).substring(7)}`;
         await page.goto(`http://localhost:8080/projects/app/app.html?db=${dbName}`);
+        await page.waitForSelector('#app');
 
-        // Select Verification Pattern
+        // Wait for initialization (categories rendered)
+        await page.waitForSelector('.category-btn');
+
+        // Open settings
         await page.click('#settings-toggle');
-        await page.waitForSelector('#animation-select', { state: 'visible' });
+
+        // Ensure settings popup and general tab are visible
+        await page.waitForSelector('#settings-popup', { state: 'visible' });
+        await page.waitForSelector('#general-tab', { state: 'visible' });
+
+        // Select Verification Pattern - wait for option to be present
+        const animSelect = page.locator('#animation-select');
+        await expect(animSelect).toBeVisible();
         await page.selectOption('#animation-select', 'test_pattern');
+
         await page.click('#settings-popup .close-btn');
 
         // Start a task (second category usually has a color) to trigger animation
