@@ -3,7 +3,7 @@
 :root {
     --header-height: 64px;
     --footer-height: 72px;
-    --list-width: 320px;
+    --list-width: 400px;
 }
 
 body {
@@ -246,8 +246,6 @@ body {
 
 .category-menu {
     position: absolute;
-    right: 8px;
-    top: 40px;
     background-color: var(--md-sys-color-surface-container-highest);
     border-radius: 8px;
     box-shadow: var(--md-sys-elevation-2);
@@ -256,6 +254,7 @@ body {
     flex-direction: column;
     overflow: hidden;
     min-width: 120px;
+    width: max-content;
     border: 1px solid var(--md-sys-color-outline-variant);
 }
 

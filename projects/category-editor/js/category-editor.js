@@ -336,13 +336,13 @@ function setupEventListeners() {
         }
 
         const items = [...categoryListEl.querySelectorAll('.category-item')];
+        const dragIdx = parseInt(dragging.dataset.index);
+        const dragItem = categories[dragIdx];
+
         const newCategories = items.map(item => categories[parseInt(item.dataset.index)]);
-        const oldSelected = selectedIndex !== -1 ? categories[selectedIndex] : null;
 
         categories = newCategories;
-        if (oldSelected) {
-            selectedIndex = categories.indexOf(oldSelected);
-        }
+        selectedIndex = categories.indexOf(dragItem);
         renderCategoryList();
         updateCodeView();
     });
@@ -396,6 +396,7 @@ function renderCategoryList() {
             const nameSpan = document.createElement('span');
             nameSpan.className = 'cat-name';
             nameSpan.textContent = cat.name;
+            nameSpan.title = cat.name;
             item.appendChild(nameSpan);
         }
 
@@ -530,6 +531,7 @@ function updateListItem(idx) {
     const nameEl = item.querySelector('.cat-name');
     if (nameEl) {
         nameEl.textContent = '';
+        nameEl.title = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) ? '' : cat.name;
         if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
              const icon = document.createElement('span');
              icon.className = 'material-symbols-outlined';
