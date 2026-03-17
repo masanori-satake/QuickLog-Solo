@@ -19,7 +19,7 @@
     },
     "kind": {
       "type": "string",
-      "const": "Settings",
+      "const": "QuickLogSolo/Settings",
       "description": "Data kind identifier."
     },
     "version": {
@@ -38,10 +38,9 @@
             "enum": [
               "theme",
               "font",
-              "animation",
+              "defaultAnimation",
               "language",
-              "reportSettings",
-              "autoStop"
+              "reportSettings"
             ],
             "description": "The unique key for the setting."
           },
@@ -67,7 +66,7 @@
             }
           },
           {
-            "if": { "properties": { "key": { "const": "animation" } } },
+            "if": { "properties": { "key": { "const": "defaultAnimation" } } },
             "then": {
               "properties": {
                 "value": { "$ref": "#/definitions/animationId" }
@@ -82,14 +81,6 @@
                   "type": "string",
                   "enum": ["auto", "ja", "en", "de", "es", "fr", "pt", "ko", "zh"]
                 }
-              }
-            }
-          },
-          {
-            "if": { "properties": { "key": { "const": "autoStop" } } },
-            "then": {
-              "properties": {
-                "value": { "type": "boolean" }
               }
             }
           },

@@ -24,13 +24,17 @@
     }
   },
   "type": "object",
-  "required": ["kind", "type"],
+  "required": ["kind", "version", "type"],
   "additionalProperties": false,
   "properties": {
     "kind": {
       "type": "string",
       "const": "QuickLogSolo/Category",
       "description": "Identifier for the category data kind."
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version."
     },
     "type": {
       "type": "string",
