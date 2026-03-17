@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QuickLog-Solo Category Export/Backup Schema",
+  "description": "Schema for a single line in category export or backup NDJSON files used in QuickLog-Solo.",
+  "oneOf": [
+    {
+      "title": "Regular Category",
+      "type": "object",
+      "required": ["name", "color"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Display name of the category. Must not be a system reserved name."
+        },
+        "color": {
+          "type": "string",
+          "enum": [
+            "primary", "secondary", "tertiary", "error", "neutral", "outline",
+            "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan"
+          ],
+          "description": "The theme color identifier for the category."
+        },
+        "tags": {
+          "type": "string",
+          "description": "Comma-separated list of tags for the category."
+        },
+        "animation": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "The animation ID to play when this category is active."
+        },
+        "order": {
+          "type": "number",
+          "description": "The display order of the category."
+        }
+      }
+    },
+    {
+      "title": "Page Break",
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "page-break",
+          "description": "Indicates this item is a page break."
+        },
+        "name": {
+            "type": "string",
+            "pattern": "^__PAGE_BREAK__",
+            "description": "Internal name for the page break used in backup files."
+        },
+        "order": {
+          "type": "number",
+          "description": "The display order of the page break."
+        }
+      }
+    }
+  ]
+}

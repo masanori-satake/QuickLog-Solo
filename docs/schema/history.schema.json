@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QuickLog-Solo History Log Schema",
+  "description": "Schema for a single line in history NDJSON files used in QuickLog-Solo.",
+  "type": "object",
+  "required": ["category", "startTime"],
+  "properties": {
+    "category": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Category name or internal ID (e.g., __IDLE__)."
+    },
+    "startTime": {
+      "type": "number",
+      "description": "Start timestamp in milliseconds since epoch."
+    },
+    "endTime": {
+      "type": ["number", "null"],
+      "description": "End timestamp in milliseconds since epoch."
+    },
+    "color": {
+      "type": ["string", "null"],
+      "enum": [
+        "primary", "secondary", "tertiary", "error", "neutral", "outline",
+        "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan",
+        null
+      ],
+      "description": "The theme color used at the time of recording."
+    },
+    "isManualStop": {
+      "type": "boolean",
+      "description": "Whether the task was explicitly stopped by the user."
+    },
+    "resumableCategory": {
+      "type": ["string", "null"],
+      "maxLength": 100,
+      "description": "The category to resume after a pause."
+    },
+    "tags": {
+      "type": "string",
+      "description": "Comma-separated list of tags associated with the task."
+    }
+  }
+}
