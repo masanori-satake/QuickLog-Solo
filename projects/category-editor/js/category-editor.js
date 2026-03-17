@@ -455,7 +455,11 @@ function showCategoryMenu(e, idx) {
     menu.className = 'category-menu';
 
     const duplicateBtn = document.createElement('button');
-    duplicateBtn.innerHTML = `<span class="material-symbols-outlined">content_copy</span> ${t('duplicate')}`;
+    const duplicateIcon = document.createElement('span');
+    duplicateIcon.className = 'material-symbols-outlined';
+    duplicateIcon.textContent = 'content_copy';
+    duplicateBtn.appendChild(duplicateIcon);
+    duplicateBtn.appendChild(document.createTextNode(' ' + t('duplicate')));
     duplicateBtn.onclick = (event) => {
         event.stopPropagation();
         duplicateCategory(idx);
@@ -464,7 +468,11 @@ function showCategoryMenu(e, idx) {
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete';
-    deleteBtn.innerHTML = `<span class="material-symbols-outlined">delete</span> ${t('delete')}`;
+    const deleteIcon = document.createElement('span');
+    deleteIcon.className = 'material-symbols-outlined';
+    deleteIcon.textContent = 'delete';
+    deleteBtn.appendChild(deleteIcon);
+    deleteBtn.appendChild(document.createTextNode(' ' + t('delete')));
     deleteBtn.onclick = (event) => {
         event.stopPropagation();
         const cat = categories[idx];
