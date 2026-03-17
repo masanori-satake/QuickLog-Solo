@@ -590,7 +590,7 @@ function renderDetail() {
 
         if (isPageBreak) {
             if (previewSection) previewSection.classList.add('hidden');
-            editNameInput.value = ` ${t('page-break-label')}`;
+            editNameInput.value = t('page-break-label');
             editNameInput.disabled = true;
             tagInput.disabled = true;
             editAnimationSelect.value = 'none';
