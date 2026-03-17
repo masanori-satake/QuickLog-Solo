@@ -12,6 +12,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 50,
+          "pattern": "^(?!__PAGE_BREAK__|__IDLE__).*$",
           "description": "Display name of the category. Must not be a system reserved name."
         },
         "color": {
@@ -40,17 +41,20 @@
     {
       "title": "Page Break",
       "type": "object",
-      "required": ["type"],
+      "anyOf": [
+        { "required": ["type"] },
+        { "required": ["name"] }
+      ],
       "properties": {
         "type": {
           "type": "string",
           "const": "page-break",
-          "description": "Indicates this item is a page break."
+          "description": "Indicates this item is a page break (used in clipboard export)."
         },
         "name": {
             "type": "string",
             "pattern": "^__PAGE_BREAK__",
-            "description": "Internal name for the page break used in backup files."
+            "description": "Internal name for the page break (used in backup files)."
         },
         "order": {
           "type": "number",
