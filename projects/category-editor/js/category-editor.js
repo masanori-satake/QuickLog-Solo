@@ -513,7 +513,7 @@ function duplicateCategory(idx) {
         }
     });
 
-    const newName = `${baseName}(${maxNum + 1})`;
+    const newName = `${baseName} (${maxNum + 1})`;
     const newCat = { ...original, name: newName };
 
     categories.splice(idx + 1, 0, newCat);
