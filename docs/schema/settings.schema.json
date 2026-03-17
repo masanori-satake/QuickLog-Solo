@@ -24,6 +24,7 @@
     },
     "version": {
       "type": "string",
+      "const": "1.0",
       "description": "Schema version."
     },
     "entries": {
