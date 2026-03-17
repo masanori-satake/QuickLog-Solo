@@ -28,7 +28,7 @@
 - **識別フィールド:**
   - `app`: アプリケーション識別子 (`"QuickLog-Solo"`)
   - `kind`: データ種別 (`"QuickLogSolo/Settings"`)
-  - `version`: スキーマバージョン
+  - `version`: `"1.0"`
 - **主な項目:**
   - `entries`: 設定項目の配列。
 
@@ -48,8 +48,20 @@
 - **ファイル形式:** NDJSON (各行が 1 つの JSON オブジェクト)
 - **識別フィールド:**
   - `kind`: データ種別 (`"QuickLogSolo/History"`)
-  - `version`: スキーマバージョン
+  - `version`: `"1.1"`
   - `type`: ログの種類 (`"task"`, `"idle"`, `"stop"`)
+- **ログの種類:**
+  - **task**: 通常の作業タスク。`category` プロパティが必須です。
+  - **idle**: 待機または一時停止状態。必要に応じて `resumableCategory` を持ちます。
+  - **stop**: 手動での明示的な停止マーカー。
+
+#### 履歴ログの主な項目:
+- `startTime`: 開始時刻 (UNIX タイムスタンプ、ミリ秒)
+- `endTime`: 終了時刻 (UNIX タイムスタンプ、ミリ秒、進行中の場合は `null`)
+- `category`: カテゴリ名 (`type: "task"` の場合)
+- `tags`: 記録時に付与されていたタグ（文字列の配列）
+- `memo`: ユーザーによる補足メモ（任意、最大 100 文字）
+- `resumableCategory`: 復帰対象のカテゴリ名 (`type: "idle"` の場合)
 
 ---
 
@@ -61,8 +73,14 @@
 - **ファイル形式:** NDJSON (各行が 1 つの JSON オブジェクト)
 - **識別フィールド:**
   - `kind`: データ種別 (`"QuickLogSolo/Category"`)
-  - `version`: スキーマバージョン
+  - `version`: `"1.0"`
   - `type`: カテゴリの種類 (`"category"`, `"page-break"`)
+- **定義タイプ:**
+  - **Regular Category (通常カテゴリ)**: `type: "category"` を持ち、名前、色、タグ、アニメーション設定を持つ。
+  - **Page Break (改ページ)**: `type: "page-break"` を持ち、アプリ内のボタン配置で改ページを挿入するマーカー。
+
+#### カテゴリの項目詳細:
+- **animation**: アニメーション ID。アニメーションを表示しない場合は予約値 `"none"` を指定します。
 
 ---
 

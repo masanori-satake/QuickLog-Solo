@@ -46,7 +46,7 @@
     },
     "version": {
       "type": "string",
-      "const": "1.0",
+      "const": "1.1",
       "description": "Schema version."
     },
     "type": {
@@ -82,6 +82,11 @@
     "tags": {
       "$ref": "#/definitions/tags",
       "description": "Tags at the time of recording (optional for 'task')."
+    },
+    "memo": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Optional memo or note provided by the user."
     },
     "resumableCategory": {
       "type": [
@@ -150,6 +155,7 @@
           "category": false,
           "color": false,
           "tags": false,
+          "memo": false,
           "resumableCategory": false
         }
       }
