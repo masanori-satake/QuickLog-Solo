@@ -2,7 +2,7 @@ import {
     initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_AUTO_STOP
+    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
@@ -1894,6 +1894,25 @@ function setupEventListeners() {
     });
 
     getEl(ID_IMPORT_CATEGORIES_BTN)?.addEventListener('click', async () => {
+        const overlay = getEl('category-list-overlay');
+        const list = getEl(ID_CATEGORY_EDITOR_LIST);
+        const addBox = getEl('add-category-box-settings');
+        const maintenanceBox = getEl('category-maintenance-box-settings');
+
+        const setImporting = (isImporting) => {
+            if (isImporting) {
+                overlay?.classList.remove('hidden');
+                list?.classList.add('disabled-group');
+                addBox?.classList.add('disabled-group');
+                maintenanceBox?.classList.add('disabled-group');
+            } else {
+                overlay?.classList.add('hidden');
+                list?.classList.remove('disabled-group');
+                addBox?.classList.remove('disabled-group');
+                maintenanceBox?.classList.remove('disabled-group');
+            }
+        };
+
         try {
             const text = await navigator.clipboard.readText();
             if (!text) return;
@@ -1936,7 +1955,7 @@ function setupEventListeners() {
             const validItems = [];
             const invalidItems = [];
             for (const item of importedItems) {
-                if (item.type === 'page-break') {
+                if (item.type === 'page-break' || (item.name && item.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))) {
                     validItems.push(item);
                 } else if (!item.name || !isValidCategoryName(item.name)) {
                     invalidItems.push(item);
@@ -1982,9 +2001,10 @@ function setupEventListeners() {
                 }
             }
 
+            setImporting(true);
             await dbImportCategories(finalItems, importMode);
 
-            showToast(t('toast-import-success'));
+            showToast(t('toast-cat-imported'));
             renderCategories();
             renderCategoryEditor();
             broadcastSync();
@@ -1993,10 +2013,13 @@ function setupEventListeners() {
                 alert(t('import-err-fatal'));
             } else if (err.name === 'NotAllowedError') {
                 console.warn('Clipboard access denied');
+                alert(t('alert-import-error') + '\n(Clipboard access denied)');
             } else {
                 console.error('Failed to import categories:', err);
                 alert(t('alert-import-error'));
             }
+        } finally {
+            setImporting(false);
         }
     });
 

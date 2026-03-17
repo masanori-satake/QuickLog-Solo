@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "QuickLog-Solo",
-  "version": "0.33.0",
+  "version": "0.33.1",
   "description": "1秒で記録、1秒で集計 - ミニマリスト向けサイドパネル作業メモツール",
   "permissions": [
     "sidePanel",
     "alarms",
-    "notifications"
+    "notifications",
+    "clipboardRead"
   ],
   "content_security_policy": {
     "extension_pages": "default-src 'self'; connect-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://raw.githubusercontent.com;"

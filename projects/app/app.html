@@ -268,8 +268,13 @@
                 </div>
 
                 <div id="categories-tab" class="tab-content hidden">
-                    <div id="category-editor-list">
-                        <!-- カテゴリ編集アイテムがここに動的に追加される -->
+                    <div id="category-editor-list-container">
+                        <div id="category-editor-list">
+                            <!-- カテゴリ編集アイテムがここに動的に追加される -->
+                        </div>
+                        <div id="category-list-overlay" class="loading-overlay hidden">
+                            <div class="spinner"></div>
+                        </div>
                     </div>
                     <div id="add-category-box-settings">
                         <div class="add-cat-left">
@@ -281,7 +286,7 @@
                         </button>
                     </div>
 
-                    <div class="category-maintenance-box">
+                    <div id="category-maintenance-box-settings" class="category-maintenance-box">
                         <div class="setting-item">
                             <label data-i18n="category-backup">カテゴリの入出力 (クリップボード)</label>
                             <div class="maintenance-btns">
