@@ -8,6 +8,7 @@ export const ko = {
     'no-tags': '태그 없음',
     'settings': '설정',
     'delete': '삭제',
+    'duplicate': '복제',
     'btn-copy': '복사',
 
     // Auto Stop & Page Break
