@@ -1897,19 +1897,19 @@ function setupEventListeners() {
         const overlay = getEl('category-list-overlay');
         const list = getEl(ID_CATEGORY_EDITOR_LIST);
         const addBox = getEl('add-category-box-settings');
-        const maintenanceBox = document.querySelector('.category-maintenance-box');
+        const maintenanceBox = getEl('category-maintenance-box-settings');
 
         const setImporting = (isImporting) => {
             if (isImporting) {
                 overlay?.classList.remove('hidden');
                 list?.classList.add('disabled-group');
                 addBox?.classList.add('disabled-group');
-                if (maintenanceBox) maintenanceBox.classList.add('disabled-group');
+                maintenanceBox?.classList.add('disabled-group');
             } else {
                 overlay?.classList.add('hidden');
                 list?.classList.remove('disabled-group');
                 addBox?.classList.remove('disabled-group');
-                if (maintenanceBox) maintenanceBox.classList.remove('disabled-group');
+                maintenanceBox?.classList.remove('disabled-group');
             }
         };
 
@@ -2003,9 +2003,6 @@ function setupEventListeners() {
 
             setImporting(true);
             await dbImportCategories(finalItems, importMode);
-
-            // Small delay to make spinner visible and avoid UI jump
-            await new Promise(r => setTimeout(r, 500));
 
             showToast(t('toast-cat-imported'));
             renderCategories();
