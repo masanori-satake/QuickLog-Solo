@@ -12,7 +12,8 @@
     },
     "animationId": {
       "type": "string",
-      "maxLength": 50
+      "maxLength": 50,
+      "description": "Identifier for the animation. 'none' is reserved for no animation."
     },
     "tags": {
       "type": "array",
