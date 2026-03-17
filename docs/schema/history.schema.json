@@ -37,8 +37,12 @@
       "description": "The category to resume after a pause."
     },
     "tags": {
-      "type": "string",
-      "description": "Comma-separated list of tags associated with the task."
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      },
+      "description": "List of tags associated with the task."
     }
   }
 }

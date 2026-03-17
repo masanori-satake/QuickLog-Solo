@@ -24,8 +24,12 @@
           "description": "The theme color identifier for the category."
         },
         "tags": {
-          "type": "string",
-          "description": "Comma-separated list of tags for the category."
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "description": "List of tags associated with the category."
         },
         "animation": {
           "type": "string",
