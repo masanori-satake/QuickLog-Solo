@@ -2,12 +2,38 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QuickLog-Solo Category Export/Backup Schema",
   "description": "Schema for a single line in category export or backup NDJSON files used in QuickLog-Solo.",
+  "definitions": {
+    "color": {
+      "type": "string",
+      "enum": [
+        "primary", "secondary", "tertiary", "error", "neutral", "outline",
+        "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan"
+      ]
+    },
+    "animationId": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      }
+    }
+  },
   "oneOf": [
     {
       "title": "Regular Category",
       "type": "object",
-      "required": ["name", "color"],
+      "required": ["kind", "name", "color"],
+      "additionalProperties": false,
       "properties": {
+        "kind": {
+          "type": "string",
+          "const": "QuickLogSolo/Category",
+          "description": "Identifier for the category data kind."
+        },
         "name": {
           "type": "string",
           "minLength": 1,
@@ -16,24 +42,15 @@
           "description": "Display name of the category. Must not be a system reserved name."
         },
         "color": {
-          "type": "string",
-          "enum": [
-            "primary", "secondary", "tertiary", "error", "neutral", "outline",
-            "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan"
-          ],
+          "$ref": "#/definitions/color",
           "description": "The theme color identifier for the category."
         },
         "tags": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "maxLength": 50
-          },
+          "$ref": "#/definitions/tags",
           "description": "List of tags associated with the category."
         },
         "animation": {
-          "type": "string",
-          "maxLength": 50,
+          "$ref": "#/definitions/animationId",
           "description": "The animation ID to play when this category is active."
         },
         "order": {
@@ -45,11 +62,18 @@
     {
       "title": "Page Break",
       "type": "object",
+      "required": ["kind"],
       "anyOf": [
         { "required": ["type"] },
         { "required": ["name"] }
       ],
+      "additionalProperties": false,
       "properties": {
+        "kind": {
+          "type": "string",
+          "const": "QuickLogSolo/Category",
+          "description": "Identifier for the category data kind."
+        },
         "type": {
           "type": "string",
           "const": "page-break",

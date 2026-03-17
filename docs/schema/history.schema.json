@@ -2,9 +2,32 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QuickLog-Solo History Log Schema",
   "description": "Schema for a single line in history NDJSON files used in QuickLog-Solo.",
+  "definitions": {
+    "color": {
+      "type": ["string", "null"],
+      "enum": [
+        "primary", "secondary", "tertiary", "error", "neutral", "outline",
+        "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan",
+        null
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      }
+    }
+  },
   "type": "object",
-  "required": ["category", "startTime"],
+  "required": ["kind", "category", "startTime"],
+  "additionalProperties": false,
   "properties": {
+    "kind": {
+      "type": "string",
+      "const": "QuickLogSolo/History",
+      "description": "Identifier for the history log data kind."
+    },
     "category": {
       "type": "string",
       "maxLength": 100,
@@ -19,12 +42,7 @@
       "description": "End timestamp in milliseconds since epoch."
     },
     "color": {
-      "type": ["string", "null"],
-      "enum": [
-        "primary", "secondary", "tertiary", "error", "neutral", "outline",
-        "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan",
-        null
-      ],
+      "$ref": "#/definitions/color",
       "description": "The theme color used at the time of recording."
     },
     "isManualStop": {
@@ -37,11 +55,7 @@
       "description": "The category to resume after a pause."
     },
     "tags": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "maxLength": 50
-      },
+      "$ref": "#/definitions/tags",
       "description": "List of tags associated with the task."
     }
   }
