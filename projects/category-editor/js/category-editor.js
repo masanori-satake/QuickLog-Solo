@@ -289,6 +289,11 @@ function setupEventListeners() {
         if (e.target === codeModalEl) {
             codeModalEl.classList.add('hidden');
         }
+        // Close category menu if clicking elsewhere
+        const menu = document.querySelector('.category-menu');
+        if (menu && !menu.contains(e.target)) {
+            menu.remove();
+        }
     });
 
     // Drag and Drop for Reordering
@@ -331,14 +336,15 @@ function setupEventListeners() {
         }
 
         const items = [...categoryListEl.querySelectorAll('.category-item')];
+        const dragIdx = parseInt(dragging.dataset.index);
+        const dragItem = categories[dragIdx];
+
         const newCategories = items.map(item => categories[parseInt(item.dataset.index)]);
-        const oldSelected = selectedIndex !== -1 ? categories[selectedIndex] : null;
 
         categories = newCategories;
-        if (oldSelected) {
-            selectedIndex = categories.indexOf(oldSelected);
-        }
+        selectedIndex = categories.indexOf(dragItem);
         renderCategoryList();
+        renderDetail();
         updateCodeView();
     });
 }
@@ -391,30 +397,43 @@ function renderCategoryList() {
             const nameSpan = document.createElement('span');
             nameSpan.className = 'cat-name';
             nameSpan.textContent = cat.name;
+            nameSpan.title = cat.name;
             item.appendChild(nameSpan);
         }
 
-        // Delete button
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'icon-btn delete-item-btn';
-        const deleteIcon = document.createElement('span');
-        deleteIcon.className = 'material-symbols-outlined';
-        deleteIcon.textContent = 'delete';
-        deleteBtn.appendChild(deleteIcon);
-        deleteBtn.title = t('delete');
-        deleteBtn.onclick = (e) => {
-            e.stopPropagation();
-            const confirmMsg = isPageBreak ? t('confirm-delete-page-break') : t('confirm-delete-category', { name: cat.name });
-            if (confirm(confirmMsg)) {
+        if (isPageBreak) {
+            // Delete button for Page Break
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'icon-btn delete-item-btn';
+            const deleteIcon = document.createElement('span');
+            deleteIcon.className = 'material-symbols-outlined';
+            deleteIcon.textContent = 'delete';
+            deleteBtn.appendChild(deleteIcon);
+            deleteBtn.title = t('delete');
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
                 categories.splice(idx, 1);
                 if (selectedIndex === idx) selectedIndex = -1;
                 else if (selectedIndex > idx) selectedIndex--;
                 renderCategoryList();
                 renderDetail();
                 updateCodeView();
-            }
-        };
-        item.appendChild(deleteBtn);
+            };
+            item.appendChild(deleteBtn);
+        } else {
+            // More button for regular categories
+            const moreBtn = document.createElement('button');
+            moreBtn.className = 'icon-btn more-item-btn';
+            const moreIcon = document.createElement('span');
+            moreIcon.className = 'material-symbols-outlined';
+            moreIcon.textContent = 'more_vert';
+            moreBtn.appendChild(moreIcon);
+            moreBtn.onclick = (e) => {
+                e.stopPropagation();
+                showCategoryMenu(e, idx);
+            };
+            item.appendChild(moreBtn);
+        }
 
         item.onclick = () => {
             selectedIndex = idx;
@@ -422,11 +441,93 @@ function renderCategoryList() {
             renderDetail();
         };
 
-        item.ondragstart = () => item.classList.add('dragging');
+        item.ondragstart = () => {
+            item.classList.add('dragging');
+            // Close any open menu when dragging starts
+            const menu = document.querySelector('.category-menu');
+            if (menu) menu.remove();
+        };
         item.ondragend = () => item.classList.remove('dragging');
 
         categoryListEl.appendChild(item);
     });
+}
+
+function showCategoryMenu(e, idx) {
+    // Remove any existing menu
+    const existingMenu = document.querySelector('.category-menu');
+    if (existingMenu) existingMenu.remove();
+
+    const menu = document.createElement('div');
+    menu.className = 'category-menu';
+
+    const duplicateBtn = document.createElement('button');
+    const duplicateIcon = document.createElement('span');
+    duplicateIcon.className = 'material-symbols-outlined';
+    duplicateIcon.textContent = 'content_copy';
+    duplicateBtn.appendChild(duplicateIcon);
+    duplicateBtn.appendChild(document.createTextNode(' ' + t('duplicate')));
+    duplicateBtn.onclick = (event) => {
+        event.stopPropagation();
+        duplicateCategory(idx);
+        menu.remove();
+    };
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete';
+    const deleteIcon = document.createElement('span');
+    deleteIcon.className = 'material-symbols-outlined';
+    deleteIcon.textContent = 'delete';
+    deleteBtn.appendChild(deleteIcon);
+    deleteBtn.appendChild(document.createTextNode(' ' + t('delete')));
+    deleteBtn.onclick = (event) => {
+        event.stopPropagation();
+        const cat = categories[idx];
+        if (confirm(t('confirm-delete-category', { name: cat.name }))) {
+            categories.splice(idx, 1);
+            if (selectedIndex === idx) selectedIndex = -1;
+            else if (selectedIndex > idx) selectedIndex--;
+            renderCategoryList();
+            renderDetail();
+            updateCodeView();
+        }
+        menu.remove();
+    };
+
+    menu.appendChild(duplicateBtn);
+    menu.appendChild(deleteBtn);
+
+    // Position the menu
+    document.body.appendChild(menu);
+    const rect = e.currentTarget.getBoundingClientRect();
+    menu.style.top = `${rect.bottom + window.scrollY}px`;
+    menu.style.left = `${rect.right - menu.offsetWidth + window.scrollX}px`;
+}
+
+function duplicateCategory(idx) {
+    const original = categories[idx];
+    const baseName = original.name.replace(/\s*\(\d+\)$/, '').trim();
+
+    // Find the next available number
+    let maxNum = 0;
+    const pattern = new RegExp(`^${baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\((\\d+)\\)$`);
+
+    categories.forEach(cat => {
+        const match = cat.name.match(pattern);
+        if (match) {
+            const num = parseInt(match[1]);
+            if (num > maxNum) maxNum = num;
+        }
+    });
+
+    const newName = `${baseName} (${maxNum + 1})`;
+    const newCat = { ...original, name: newName };
+
+    categories.splice(idx + 1, 0, newCat);
+    selectedIndex = idx + 1;
+    renderCategoryList();
+    renderDetail();
+    updateCodeView();
 }
 
 function updateListItem(idx) {
@@ -436,6 +537,7 @@ function updateListItem(idx) {
     const nameEl = item.querySelector('.cat-name');
     if (nameEl) {
         nameEl.textContent = '';
+        nameEl.title = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) ? '' : cat.name;
         if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
              const icon = document.createElement('span');
              icon.className = 'material-symbols-outlined';
@@ -483,17 +585,42 @@ function renderDetail() {
         const cat = categories[selectedIndex];
         const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
 
+        detailSection.classList.remove('hidden');
+        const previewSection = document.querySelector('.preview-section');
+
         if (isPageBreak) {
-            detailSection.classList.add('hidden');
+            if (previewSection) previewSection.classList.add('hidden');
+            editNameInput.value = t('page-break-label');
+            editNameInput.disabled = true;
+            tagInput.disabled = true;
+            editAnimationSelect.value = 'none';
+            editAnimationSelect.disabled = true;
+
+            // Clear tags and color selection for Page Break
+            tagListEl.innerHTML = '';
+            colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.remove('selected');
+                opt.style.pointerEvents = 'none';
+                opt.style.opacity = '0.5';
+            });
+
             previewNameEl.textContent = `--- ${t('page-break-label')} ---`;
             previewOverlay.classList.remove('anim-active');
             previewContainer.classList.remove('anim-active');
             updatePreview();
-            animInfoEl.classList.add('hidden');
+            updateAnimationInfo();
             return;
         }
 
-        detailSection.classList.remove('hidden');
+        if (previewSection) previewSection.classList.remove('hidden');
+        editNameInput.disabled = false;
+        tagInput.disabled = false;
+        editAnimationSelect.disabled = false;
+        colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
+            opt.style.pointerEvents = 'auto';
+            opt.style.opacity = '1';
+        });
+
         editNameInput.value = cat.name;
         previewNameEl.textContent = cat.name;
         renderTags();
@@ -523,8 +650,11 @@ function renderDetail() {
 
 function updateAnimationInfo() {
     const animId = editAnimationSelect.value;
+    animInfoEl.classList.remove('hidden');
+
     if (!animId || animId === 'none') {
-        animInfoEl.classList.add('hidden');
+        animDescEl.textContent = '';
+        animAuthorEl.innerHTML = '&nbsp;'; // Maintain height even when empty
         return;
     }
 
@@ -532,7 +662,6 @@ function updateAnimationInfo() {
     const anim = animationRegistry.find(a => a.id === effectiveId);
 
     if (anim && anim.metadata) {
-        animInfoEl.classList.remove('hidden');
         const desc = typeof anim.metadata.description === 'object' ?
             (anim.metadata.description[currentLang] || anim.metadata.description['en']) :
             anim.metadata.description;
@@ -541,7 +670,8 @@ function updateAnimationInfo() {
         const author = anim.metadata.author || t('anim-unknown-author');
         animAuthorEl.textContent = `${t('anim-author-label')}: ${author}`;
     } else {
-        animInfoEl.classList.add('hidden');
+        animDescEl.textContent = '';
+        animAuthorEl.innerHTML = '&nbsp;';
     }
 }
 

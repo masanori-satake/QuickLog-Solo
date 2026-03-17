@@ -3,7 +3,7 @@
 :root {
     --header-height: 64px;
     --footer-height: 72px;
-    --list-width: 320px;
+    --list-width: 400px;
 }
 
 body {
@@ -167,14 +167,16 @@ body {
     background-color: var(--md-sys-color-surface-variant);
 }
 
-.delete-item-btn {
+.delete-item-btn,
+.more-item-btn {
     opacity: 0;
     position: absolute;
     right: 8px;
     transition: opacity 0.2s;
 }
 
-.category-item:hover .delete-item-btn {
+.category-item:hover .delete-item-btn,
+.category-item:hover .more-item-btn {
     opacity: 1;
 }
 
@@ -240,6 +242,41 @@ body {
     gap: 4px;
     justify-content: center;
     padding-right: 24px;
+}
+
+.category-menu {
+    position: absolute;
+    background-color: var(--md-sys-color-surface-container-highest);
+    border-radius: 8px;
+    box-shadow: var(--md-sys-elevation-2);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 120px;
+    width: max-content;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.category-menu button {
+    background: none;
+    border: none;
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.category-menu button:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.category-menu button.delete {
+    color: var(--md-sys-color-error);
 }
 
 /* Detail Pane */
@@ -322,6 +359,8 @@ input[type="text"]:focus, select:focus {
     color: var(--md-sys-color-on-surface);
     margin-bottom: 4px;
     line-height: 1.4;
+    height: calc(1.4em * 3.5);
+    overflow-y: auto;
 }
 
 .anim-author {

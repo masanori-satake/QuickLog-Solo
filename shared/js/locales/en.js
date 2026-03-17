@@ -9,6 +9,7 @@ export const en = {
     'no-tags': 'No Tags',
     'settings': 'Settings',
     'delete': 'Delete',
+    'duplicate': 'Duplicate',
     'btn-copy': 'Copy',
 
     // Controls

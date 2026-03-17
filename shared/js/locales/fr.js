@@ -8,6 +8,7 @@ export const fr = {
     'no-tags': 'Pas de tags',
     'settings': 'Paramètres',
     'delete': 'Supprimer',
+    'duplicate': 'Dupliquer',
     'btn-copy': 'Copier',
 
     // Auto Stop & Page Break

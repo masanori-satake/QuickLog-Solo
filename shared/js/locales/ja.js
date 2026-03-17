@@ -9,6 +9,7 @@ export const ja = {
     'no-tags': 'タグ無し',
     'settings': '設定',
     'delete': '削除',
+    'duplicate': '複製',
     'btn-copy': 'コピー',
 
     // Controls

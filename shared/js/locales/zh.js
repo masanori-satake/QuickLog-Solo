@@ -8,6 +8,7 @@ export const zh = {
     'no-tags': '无标签',
     'settings': '设置',
     'delete': '删除',
+    'duplicate': '复制',
     'btn-copy': '复制',
 
     // Auto Stop & Page Break
