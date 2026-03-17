@@ -25,12 +25,7 @@
 - **animation**: デフォルトの背景アニメーション ID
 - **language**: 表示言語 (`auto`, `ja`, `en`, `de`, `es`, `fr`, `pt`, `ko`, `zh`)
 - **autoStop**: 日付変更時の自動停止を有効にするか (`boolean`)
-- **reportSettings**: 日報出力時の詳細設定
-  - `format`: 出力形式 (`markdown`, `wiki`, `html`, `csv`, `text-plain`, `text-table`)
-  - `emoji`: 絵文字の扱い (`keep`, `remove`)
-  - `endTime`: 終了時刻の表示 (`none`, `show`)
-  - `duration`: 継続時間の表示位置 (`none`, `right`, `bottom`)
-  - `adjust`: ログ時間の調整間隔 (`none`, `5`, `10`, `15`, `30`, `60`)
+- **reportSettings**: 日報出力時の詳細設定 (フォーマット、絵文字の有無、終了時刻の表示など)
 
 ---
 
