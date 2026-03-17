@@ -6,20 +6,8 @@
     "color": {
       "type": "string",
       "enum": [
-        "primary",
-        "secondary",
-        "tertiary",
-        "error",
-        "neutral",
-        "outline",
-        "teal",
-        "green",
-        "yellow",
-        "orange",
-        "pink",
-        "indigo",
-        "brown",
-        "cyan"
+        "primary", "secondary", "tertiary", "error", "neutral", "outline",
+        "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan"
       ]
     },
     "tags": {
@@ -28,154 +16,88 @@
         "type": "string",
         "maxLength": 50
       }
-    },
-    "common": {
-      "type": "object",
-      "required": [
-        "kind",
-        "type",
-        "startTime"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "QuickLogSolo/History",
-          "description": "Identifier for the history log data kind."
-        },
-        "startTime": {
-          "type": "number",
-          "description": "Start timestamp in milliseconds since epoch."
-        },
-        "endTime": {
-          "type": [
-            "number",
-            "null"
-          ],
-          "description": "End timestamp in milliseconds since epoch."
-        }
-      }
     }
   },
-  "oneOf": [
+  "type": "object",
+  "required": ["kind", "type", "startTime"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "type": "string",
+      "const": "QuickLogSolo/History",
+      "description": "Identifier for the history log data kind."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["task", "idle", "stop"],
+      "description": "The type of the history entry."
+    },
+    "startTime": {
+      "type": "number",
+      "description": "Start timestamp in milliseconds since epoch."
+    },
+    "endTime": {
+      "type": ["number", "null"],
+      "description": "End timestamp in milliseconds since epoch."
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Name of the task category (required for 'task')."
+    },
+    "color": {
+      "$ref": "#/definitions/color",
+      "description": "Theme color at the time of recording (optional for 'task')."
+    },
+    "tags": {
+      "$ref": "#/definitions/tags",
+      "description": "Tags at the time of recording (optional for 'task')."
+    },
+    "resumableCategory": {
+      "type": ["string", "null"],
+      "maxLength": 100,
+      "description": "The category to resume (only for 'idle')."
+    },
+    "isManualStop": {
+      "type": "boolean",
+      "const": true,
+      "description": "Explicit stop flag (required for 'stop')."
+    }
+  },
+  "allOf": [
     {
-      "title": "Task Entry",
-      "description": "A regular work task entry.",
-      "allOf": [
-        {
-          "$ref": "#/definitions/common"
-        },
-        {
-          "type": "object",
-          "required": [
-            "category"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "kind": {
-              "const": "QuickLogSolo/History"
-            },
-            "type": {
-              "const": "task"
-            },
-            "startTime": {
-              "type": "number"
-            },
-            "endTime": {
-              "type": [
-                "number",
-                "null"
-              ]
-            },
-            "category": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 100,
-              "description": "Name of the task category."
-            },
-            "color": {
-              "$ref": "#/definitions/color",
-              "description": "The theme color used at the time of recording."
-            },
-            "tags": {
-              "$ref": "#/definitions/tags",
-              "description": "List of tags associated with the task."
-            }
-          }
+      "if": { "properties": { "type": { "const": "task" } } },
+      "then": {
+        "required": ["category"],
+        "properties": {
+          "resumableCategory": false,
+          "isManualStop": false
         }
-      ]
+      }
     },
     {
-      "title": "Idle Entry",
-      "description": "A waiting or paused state entry.",
-      "allOf": [
-        {
-          "$ref": "#/definitions/common"
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "kind": {
-              "const": "QuickLogSolo/History"
-            },
-            "type": {
-              "const": "idle"
-            },
-            "startTime": {
-              "type": "number"
-            },
-            "endTime": {
-              "type": [
-                "number",
-                "null"
-              ]
-            },
-            "resumableCategory": {
-              "type": [
-                "string",
-                "null"
-              ],
-              "maxLength": 100,
-              "description": "The category name to resume after this pause."
-            }
-          }
+      "if": { "properties": { "type": { "const": "idle" } } },
+      "then": {
+        "properties": {
+          "category": false,
+          "color": false,
+          "tags": false,
+          "isManualStop": false
         }
-      ]
+      }
     },
     {
-      "title": "Stop Marker",
-      "description": "An explicit stop marker indicating the end of a work session.",
-      "allOf": [
-        {
-          "$ref": "#/definitions/common"
-        },
-        {
-          "type": "object",
-          "required": [
-            "isManualStop"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "kind": {
-              "const": "QuickLogSolo/History"
-            },
-            "type": {
-              "const": "stop"
-            },
-            "startTime": {
-              "type": "number"
-            },
-            "endTime": {
-              "type": "number"
-            },
-            "isManualStop": {
-              "type": "boolean",
-              "const": true,
-              "description": "Must be true for explicit stop markers."
-            }
-          }
+      "if": { "properties": { "type": { "const": "stop" } } },
+      "then": {
+        "required": ["endTime", "isManualStop"],
+        "properties": {
+          "category": false,
+          "color": false,
+          "tags": false,
+          "resumableCategory": false
         }
-      ]
+      }
     }
   ]
 }

@@ -6,20 +6,8 @@
     "color": {
       "type": "string",
       "enum": [
-        "primary",
-        "secondary",
-        "tertiary",
-        "error",
-        "neutral",
-        "outline",
-        "teal",
-        "green",
-        "yellow",
-        "orange",
-        "pink",
-        "indigo",
-        "brown",
-        "cyan"
+        "primary", "secondary", "tertiary", "error", "neutral", "outline",
+        "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan"
       ]
     },
     "animationId": {
@@ -34,72 +22,50 @@
       }
     }
   },
-  "oneOf": [
-    {
-      "title": "Regular Category",
-      "type": "object",
-      "required": [
-        "kind",
-        "type",
-        "name",
-        "color"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "QuickLogSolo/Category",
-          "description": "Identifier for the category data kind."
-        },
-        "type": {
-          "type": "string",
-          "const": "category",
-          "description": "Indicates this item is a regular category."
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 50,
-          "description": "Display name of the category."
-        },
-        "color": {
-          "$ref": "#/definitions/color",
-          "description": "The theme color identifier for the category."
-        },
-        "tags": {
-          "$ref": "#/definitions/tags",
-          "description": "List of tags associated with the category."
-        },
-        "animation": {
-          "$ref": "#/definitions/animationId",
-          "description": "The animation ID to play when this category is active."
-        }
-      }
+  "type": "object",
+  "required": ["kind", "type"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "type": "string",
+      "const": "QuickLogSolo/Category",
+      "description": "Identifier for the category data kind."
     },
-    {
-      "title": "Page Break",
-      "type": "object",
-      "required": [
-        "kind",
-        "type"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "QuickLogSolo/Category",
-          "description": "Identifier for the category data kind."
-        },
-        "type": {
-          "type": "string",
-          "const": "page-break",
-          "description": "Indicates this item is a page break."
-        },
-        "name": {
-          "type": "string",
-          "description": "Internal name or unique identifier for the page break."
-        }
-      }
+    "type": {
+      "type": "string",
+      "enum": ["category", "page-break"],
+      "description": "The type of the category entry."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "Display name or unique identifier."
+    },
+    "color": {
+      "$ref": "#/definitions/color",
+      "description": "The theme color identifier (only for regular categories)."
+    },
+    "tags": {
+      "$ref": "#/definitions/tags",
+      "description": "List of tags (only for regular categories)."
+    },
+    "animation": {
+      "$ref": "#/definitions/animationId",
+      "description": "Animation ID (only for regular categories)."
     }
-  ]
+  },
+  "if": {
+    "properties": { "type": { "const": "category" } }
+  },
+  "then": {
+    "required": ["name", "color"]
+  },
+  "else": {
+    "properties": {
+      "color": false,
+      "tags": false,
+      "animation": false
+    }
+  }
 }
