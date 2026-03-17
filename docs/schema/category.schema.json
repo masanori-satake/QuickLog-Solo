@@ -26,13 +26,18 @@
     {
       "title": "Regular Category",
       "type": "object",
-      "required": ["kind", "name", "color"],
+      "required": ["kind", "type", "name", "color"],
       "additionalProperties": false,
       "properties": {
         "kind": {
           "type": "string",
           "const": "QuickLogSolo/Category",
           "description": "Identifier for the category data kind."
+        },
+        "type": {
+          "type": "string",
+          "const": "category",
+          "description": "Indicates this item is a regular category."
         },
         "name": {
           "type": "string",
@@ -62,11 +67,7 @@
     {
       "title": "Page Break",
       "type": "object",
-      "required": ["kind"],
-      "anyOf": [
-        { "required": ["type"] },
-        { "required": ["name"] }
-      ],
+      "required": ["kind", "type"],
       "additionalProperties": false,
       "properties": {
         "kind": {
@@ -77,7 +78,7 @@
         "type": {
           "type": "string",
           "const": "page-break",
-          "description": "Indicates this item is a page break (used in clipboard export)."
+          "description": "Indicates this item is a page break."
         },
         "name": {
             "type": "string",
