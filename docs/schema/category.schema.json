@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QuickLog-Solo Category Export/Backup Schema",
+  "description": "Schema for a single line in category export or backup NDJSON files used in QuickLog-Solo.",
+  "definitions": {
+    "color": {
+      "type": "string",
+      "enum": [
+        "primary", "secondary", "tertiary", "error", "neutral", "outline",
+        "teal", "green", "yellow", "orange", "pink", "indigo", "brown", "cyan"
+      ]
+    },
+    "animationId": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Identifier for the animation. 'none' is reserved for no animation."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      }
+    }
+  },
+  "type": "object",
+  "required": ["kind", "version", "type"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "type": "string",
+      "const": "QuickLogSolo/Category",
+      "description": "Identifier for the category data kind."
+    },
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["category", "page-break"],
+      "description": "The type of the category entry."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "Display name or unique identifier."
+    },
+    "color": {
+      "$ref": "#/definitions/color",
+      "description": "The theme color identifier (only for regular categories)."
+    },
+    "tags": {
+      "$ref": "#/definitions/tags",
+      "description": "List of tags (only for regular categories)."
+    },
+    "animation": {
+      "$ref": "#/definitions/animationId",
+      "description": "Animation ID (only for regular categories)."
+    }
+  },
+  "if": {
+    "properties": { "type": { "const": "category" } }
+  },
+  "then": {
+    "required": ["name", "color"]
+  },
+  "else": {
+    "properties": {
+      "color": false,
+      "tags": false,
+      "animation": false
+    }
+  }
+}

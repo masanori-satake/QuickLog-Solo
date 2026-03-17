@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QuickLog-Solo History Log Schema",
+  "description": "Schema for a single line in history NDJSON files used in QuickLog-Solo.",
+  "definitions": {
+    "color": {
+      "type": "string",
+      "enum": [
+        "primary",
+        "secondary",
+        "tertiary",
+        "error",
+        "neutral",
+        "outline",
+        "teal",
+        "green",
+        "yellow",
+        "orange",
+        "pink",
+        "indigo",
+        "brown",
+        "cyan"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      }
+    }
+  },
+  "type": "object",
+  "required": [
+    "kind",
+    "version",
+    "type",
+    "startTime"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "type": "string",
+      "const": "QuickLogSolo/History",
+      "description": "Identifier for the history log data kind."
+    },
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "task",
+        "idle",
+        "stop"
+      ],
+      "description": "The type of the history entry."
+    },
+    "startTime": {
+      "type": "number",
+      "description": "Start timestamp in milliseconds since epoch."
+    },
+    "endTime": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "End timestamp in milliseconds since epoch."
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Name of the task category (required for 'task')."
+    },
+    "color": {
+      "$ref": "#/definitions/color",
+      "description": "Theme color at the time of recording (optional for 'task')."
+    },
+    "tags": {
+      "$ref": "#/definitions/tags",
+      "description": "Tags at the time of recording (optional for 'task')."
+    },
+    "memo": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Optional memo or note provided by the user."
+    },
+    "resumableCategory": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 100,
+      "description": "The category to resume (only for 'idle')."
+    },
+    "isManualStop": {
+      "type": "boolean",
+      "const": true,
+      "description": "Explicit stop flag (required for 'stop')."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "task"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "category"
+        ],
+        "properties": {
+          "resumableCategory": false,
+          "isManualStop": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "idle"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "category": false,
+          "color": false,
+          "tags": false,
+          "isManualStop": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "stop"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "endTime",
+          "isManualStop"
+        ],
+        "properties": {
+          "category": false,
+          "color": false,
+          "tags": false,
+          "memo": false,
+          "resumableCategory": false
+        }
+      }
+    }
+  ]
+}

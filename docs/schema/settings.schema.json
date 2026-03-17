@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QuickLog-Solo Settings File Schema",
+  "description": "Schema for the settings.json file used in QuickLog-Solo backups.",
+  "definitions": {
+    "animationId": {
+      "type": "string",
+      "maxLength": 50
+    }
+  },
+  "type": "object",
+  "required": ["app", "kind", "version", "entries"],
+  "additionalProperties": false,
+  "properties": {
+    "app": {
+      "type": "string",
+      "const": "QuickLog-Solo",
+      "description": "Application identifier."
+    },
+    "kind": {
+      "type": "string",
+      "const": "QuickLogSolo/Settings",
+      "description": "Data kind identifier."
+    },
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version."
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "theme",
+              "font",
+              "defaultAnimation",
+              "language",
+              "reportSettings"
+            ],
+            "description": "The unique key for the setting."
+          },
+          "value": {
+            "description": "The value associated with the setting key."
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "key": { "const": "theme" } } },
+            "then": {
+              "properties": {
+                "value": { "type": "string", "enum": ["system", "light", "dark"] }
+              }
+            }
+          },
+          {
+            "if": { "properties": { "key": { "const": "font" } } },
+            "then": {
+              "properties": {
+                "value": { "type": "string", "maxLength": 200 }
+              }
+            }
+          },
+          {
+            "if": { "properties": { "key": { "const": "defaultAnimation" } } },
+            "then": {
+              "properties": {
+                "value": { "$ref": "#/definitions/animationId" }
+              }
+            }
+          },
+          {
+            "if": { "properties": { "key": { "const": "language" } } },
+            "then": {
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "enum": ["auto", "ja", "en", "de", "es", "fr", "pt", "ko", "zh"]
+                }
+              }
+            }
+          },
+          {
+            "if": { "properties": { "key": { "const": "reportSettings" } } },
+            "then": {
+              "properties": {
+                "value": {
+                  "type": "object",
+                  "required": ["format", "emoji", "endTime", "duration", "adjust"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "format": {
+                      "type": "string",
+                      "enum": ["markdown", "wiki", "html", "csv", "text-plain", "text-table"]
+                    },
+                    "emoji": { "type": "string", "enum": ["keep", "remove"] },
+                    "endTime": { "type": "string", "enum": ["none", "show"] },
+                    "duration": { "type": "string", "enum": ["none", "right", "bottom"] },
+                    "adjust": { "type": "string", "enum": ["none", "5", "10", "15", "30", "60"] }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
