@@ -344,6 +344,7 @@ function setupEventListeners() {
         categories = newCategories;
         selectedIndex = categories.indexOf(dragItem);
         renderCategoryList();
+        renderDetail();
         updateCodeView();
     });
 }
@@ -592,6 +593,7 @@ function renderDetail() {
             editNameInput.value = ` ${t('page-break-label')}`;
             editNameInput.disabled = true;
             tagInput.disabled = true;
+            editAnimationSelect.value = 'none';
             editAnimationSelect.disabled = true;
 
             // Clear tags and color selection for Page Break
@@ -606,7 +608,7 @@ function renderDetail() {
             previewOverlay.classList.remove('anim-active');
             previewContainer.classList.remove('anim-active');
             updatePreview();
-            animInfoEl.classList.add('hidden');
+            updateAnimationInfo();
             return;
         }
 
