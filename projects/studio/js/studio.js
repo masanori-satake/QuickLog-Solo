@@ -158,6 +158,14 @@ function setupLanguage() {
     langSelect.value = matched;
     metaLangSelect.value = matched;
     updateTranslations();
+    updateBackLink();
+}
+
+function updateBackLink() {
+    const backLink = document.querySelector('.back-link');
+    if (backLink) {
+        backLink.href = `../web/index.html?lang=${encodeURIComponent(currentLang)}`;
+    }
 }
 
 function updateTranslations() {
@@ -240,7 +248,14 @@ function populateSamples() {
 function setupEventListeners() {
     langSelect.addEventListener('change', (e) => {
         currentLang = e.target.value;
+
+        const url = new URL(window.location);
+        url.searchParams.set('lang', currentLang);
+        window.history.replaceState({}, '', url);
+
         updateTranslations();
+        updateBackLink();
+
         // Re-populate samples to update names
         const val = sampleSelect.value;
         sampleSelect.innerHTML = '<option value="" data-i18n="sample-select-placeholder">サンプルを選択...</option>';

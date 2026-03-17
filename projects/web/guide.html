@@ -241,6 +241,18 @@
             const url = new URL(window.location);
             url.searchParams.set('lang', safeLang);
             window.history.replaceState({}, '', url);
+
+            const backLink = document.querySelector('.back-link');
+            if (backLink) {
+                backLink.href = `index.html?lang=${encodeURIComponent(safeLang)}`;
+            }
+
+            // Update page title
+            const titles = {
+                ja: "QuickLog-Solo - クイックスタートガイド",
+                en: "QuickLog-Solo - Quick Start Guide"
+            };
+            document.title = titles[safeLang] || titles['en'];
         }
 
         // Initialize language
