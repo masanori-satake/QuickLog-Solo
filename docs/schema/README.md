@@ -35,7 +35,15 @@ classDiagram
         +String key
         +Any value
     }
+    class ReportSettings {
+        +String format
+        +String emoji
+        +String endTime
+        +String duration
+        +String adjust
+    }
     SettingsRoot *-- Entry
+    Entry ..> ReportSettings : if key="reportSettings"
 ```
 
 #### フィールド定義
@@ -54,6 +62,15 @@ classDiagram
 | `defaultAnimation` | string | 標準（共通）の背景アニメーション ID |
 | `language` | string | 表示言語 (`auto`, `ja`, `en`, `de`, `es`, `fr`, `pt`, `ko`, `zh`) |
 | `reportSettings` | object | 日報出力の詳細設定（フォーマット、絵文字、丸め設定等） |
+
+#### 日報設定 (`reportSettings`) の詳細
+| プロパティ | 型 | 説明 |
+| :--- | :--- | :--- |
+| `format` | string | 出力フォーマット (`markdown`, `wiki`, `html`, `csv`, `text-plain`, `text-table`) |
+| `emoji` | string | 絵文字の扱い (`keep`: あり, `remove`: なし) |
+| `endTime` | string | 終了時刻の表示 (`none`: なし, `show`: あり) |
+| `duration` | string | 所要時間の表示位置 (`none`: なし, `right`: 右, `bottom`: 下) |
+| `adjust` | string | 時間の丸め単位（分） (`none`: しない, `5`, `10`, `15`, `30`, `60`) |
 
 ---
 
