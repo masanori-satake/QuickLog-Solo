@@ -440,7 +440,12 @@ function renderCategoryList() {
             renderDetail();
         };
 
-        item.ondragstart = () => item.classList.add('dragging');
+        item.ondragstart = () => {
+            item.classList.add('dragging');
+            // Close any open menu when dragging starts
+            const menu = document.querySelector('.category-menu');
+            if (menu) menu.remove();
+        };
         item.ondragend = () => item.classList.remove('dragging');
 
         categoryListEl.appendChild(item);
@@ -643,8 +648,11 @@ function renderDetail() {
 
 function updateAnimationInfo() {
     const animId = editAnimationSelect.value;
+    animInfoEl.classList.remove('hidden');
+
     if (!animId || animId === 'none') {
-        animInfoEl.classList.add('hidden');
+        animDescEl.textContent = '';
+        animAuthorEl.innerHTML = '&nbsp;'; // Maintain height even when empty
         return;
     }
 
@@ -652,7 +660,6 @@ function updateAnimationInfo() {
     const anim = animationRegistry.find(a => a.id === effectiveId);
 
     if (anim && anim.metadata) {
-        animInfoEl.classList.remove('hidden');
         const desc = typeof anim.metadata.description === 'object' ?
             (anim.metadata.description[currentLang] || anim.metadata.description['en']) :
             anim.metadata.description;
@@ -661,7 +668,8 @@ function updateAnimationInfo() {
         const author = anim.metadata.author || t('anim-unknown-author');
         animAuthorEl.textContent = `${t('anim-author-label')}: ${author}`;
     } else {
-        animInfoEl.classList.add('hidden');
+        animDescEl.textContent = '';
+        animAuthorEl.innerHTML = '&nbsp;';
     }
 }
 
