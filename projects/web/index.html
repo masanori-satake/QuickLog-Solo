@@ -362,7 +362,8 @@
                 "lang-fr": "🇫🇷 Français",
                 "lang-pt": "🇧🇷 Português",
                 "lang-ko": "🇰🇷 한국어",
-                "lang-zh": "🇨🇳 简体中文"
+                "lang-zh": "🇨🇳 简体中文",
+                "page-title": "QuickLog-Solo - ミニマリスト向け作業メモツール"
             },
             en: {
                 "hero-title": "Record in 1s, Total in 1s.",
@@ -443,7 +444,8 @@
                 "lang-fr": "🇫🇷 Français",
                 "lang-pt": "🇧🇷 Português",
                 "lang-ko": "🇰🇷 한국어",
-                "lang-zh": "🇨🇳 简体中文"
+                "lang-zh": "🇨🇳 简体中文",
+                "page-title": "QuickLog-Solo - Work memo tool for minimalists"
             },
             de: {
                 "hero-title": "Protokoll in 1s, Bilanz in 1s.",
@@ -523,7 +525,8 @@
                 "lang-fr": "🇫🇷 Français",
                 "lang-pt": "🇧🇷 Português",
                 "lang-ko": "🇰🇷 한국어",
-                "lang-zh": "🇨🇳 简体中文"
+                "lang-zh": "🇨🇳 简体中文",
+                "page-title": "QuickLog-Solo - Arbeitsnotiz-Tool für Minimalisten"
             },
             es: {
                 "hero-title": "Registro en 1s, Total en 1s.",
@@ -603,7 +606,8 @@
                 "lang-fr": "🇫🇷 Français",
                 "lang-pt": "🇧🇷 Português",
                 "lang-ko": "🇰🇷 한국어",
-                "lang-zh": "🇨🇳 简体中文"
+                "lang-zh": "🇨🇳 简体中文",
+                "page-title": "QuickLog-Solo - Herramienta de notas de trabajo para minimalistas"
             },
             fr: {
                 "hero-title": "Saisie en 1s, Bilan en 1s.",
@@ -683,7 +687,8 @@
                 "lang-fr": "🇫🇷 Français",
                 "lang-pt": "🇧🇷 Português",
                 "lang-ko": "🇰🇷 한국어",
-                "lang-zh": "🇨🇳 简体中文"
+                "lang-zh": "🇨🇳 简体中文",
+                "page-title": "QuickLog-Solo - Outil de notes de travail pour minimalistes"
             },
             pt: {
                 "hero-title": "Registro em 1s, Total em 1s.",
@@ -763,7 +768,8 @@
                 "lang-fr": "🇫🇷 Français",
                 "lang-pt": "🇧🇷 Português",
                 "lang-ko": "🇰🇷 한국어",
-                "lang-zh": "🇨🇳 简体中文"
+                "lang-zh": "🇨🇳 简体中文",
+                "page-title": "QuickLog-Solo - Ferramenta de notas de trabalho para minimalistas"
             },
             ko: {
                 "hero-title": "1초 기록, 1초 집계.",
@@ -843,7 +849,8 @@
                 "lang-fr": "🇫🇷 Français",
                 "lang-pt": "🇧🇷 Português",
                 "lang-ko": "🇰🇷 한국어",
-                "lang-zh": "🇨🇳 简体中文"
+                "lang-zh": "🇨🇳 简体中文",
+                "page-title": "QuickLog-Solo - 미니멀리스트를 위한 작업 메모 도구"
             },
             zh: {
                 "hero-title": "1秒记录，1秒统计。",
@@ -923,7 +930,8 @@
                 "lang-fr": "🇫🇷 Français",
                 "lang-pt": "🇧🇷 Português",
                 "lang-ko": "🇰🇷 한국어",
-                "lang-zh": "🇨🇳 简体中文"
+                "lang-zh": "🇨🇳 简体中文",
+                "page-title": "QuickLog-Solo - 极简主义者的工作笔记工具"
             }
         };
 
@@ -940,8 +948,10 @@
             currentLang = safeLang;
 
             const url = new URL(window.location);
-            url.searchParams.set('lang', safeLang);
-            window.history.replaceState({}, '', url);
+            if (url.searchParams.get('lang') !== safeLang) {
+                url.searchParams.set('lang', safeLang);
+                window.history.replaceState({}, '', url);
+            }
 
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
@@ -971,38 +981,21 @@
 
             // Update dropdown value
             const select = document.getElementById('lang-select-landing');
-            if (select) select.value = lang;
+            if (select) select.value = safeLang;
 
-            // Update QL-Animation Studio link with language parameter
-            const studioLink = document.getElementById('cta-studio-link');
-            if (studioLink) {
-                studioLink.href = '../studio/?lang=' + encodeURIComponent(safeLang);
-            }
-
-            // Update QL-Category Editor link with language parameter
-            const editorLink = document.getElementById('cta-editor-link');
-            if (editorLink) {
-                editorLink.href = '../category-editor/?lang=' + encodeURIComponent(safeLang);
-            }
-
-            // Update Quick Start Guide link with language parameter
-            const guideLink = document.getElementById('quick-start-guide-link');
-            if (guideLink) {
-                guideLink.href = 'guide.html?lang=' + encodeURIComponent(safeLang);
-            }
+            // Update internal links with language parameter
+            const updateLink = (id, base) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.href = base + '?lang=' + encodeURIComponent(safeLang);
+                }
+            };
+            updateLink('cta-studio-link', '../studio/');
+            updateLink('cta-editor-link', '../category-editor/');
+            updateLink('quick-start-guide-link', 'guide.html');
 
             // Update page title
-            const titles = {
-                en: "QuickLog-Solo - Work memo tool for minimalists",
-                ja: "QuickLog-Solo - ミニマリスト向け作業メモツール",
-                de: "QuickLog-Solo - Arbeitsnotiz-Tool für Minimalisten",
-                es: "QuickLog-Solo - Herramienta de notas de trabajo para minimalistas",
-                fr: "QuickLog-Solo - Outil de notes de travail pour minimalistes",
-                pt: "QuickLog-Solo - Ferramenta de notas de trabalho para minimalistas",
-                ko: "QuickLog-Solo - 미니멀리스트를 위한 작업 메모 도구",
-                zh: "QuickLog-Solo - 极简主义者的工作笔记工具"
-            };
-            document.title = titles[lang] || titles['en'];
+            document.title = translations[safeLang]['page-title'] || translations['en']['page-title'];
         }
 
         // Initialize version display

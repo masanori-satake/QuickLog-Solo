@@ -164,7 +164,7 @@ function setupLanguage() {
 function updateBackLink() {
     const backLink = document.querySelector('.back-link');
     if (backLink) {
-        backLink.href = `../web/?lang=${encodeURIComponent(currentLang)}`;
+        backLink.href = `../web/index.html?lang=${encodeURIComponent(currentLang)}`;
     }
 }
 

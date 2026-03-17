@@ -246,6 +246,13 @@
             if (backLink) {
                 backLink.href = `index.html?lang=${encodeURIComponent(safeLang)}`;
             }
+
+            // Update page title
+            const titles = {
+                ja: "QuickLog-Solo - クイックスタートガイド",
+                en: "QuickLog-Solo - Quick Start Guide"
+            };
+            document.title = titles[safeLang] || titles['en'];
         }
 
         // Initialize language
