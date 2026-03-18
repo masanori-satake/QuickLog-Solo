@@ -649,6 +649,12 @@ main {
 
 .alarm-confirm-label .material-symbols-outlined {
     font-size: 1.5rem;
+    padding: 4px;
+    border-radius: 50%;
+}
+
+.alarm-confirm-label:hover .material-symbols-outlined {
+    background-color: var(--md-sys-color-surface-container-highest);
 }
 
 .alarm-confirm-label input:checked + .material-symbols-outlined {
@@ -1500,15 +1506,6 @@ body.theme-dark button:active {
     gap: 4px;
 }
 
-.alarm-confirm-label .material-symbols-outlined {
-    font-size: 1.5rem;
-    padding: 4px;
-    border-radius: 50%;
-}
-
-.alarm-confirm-label:hover .material-symbols-outlined {
-    background-color: var(--md-sys-color-surface-container-highest);
-}
 
 .alarm-confirm {
     width: 16px !important;

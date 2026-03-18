@@ -533,6 +533,15 @@ function initAnimationEngine() {
             animationEngine.resize();
             updateAnimationExclusionAreas();
         });
+
+        // Robustness: Handle transition-based side panel opening
+        const observer = new ResizeObserver(() => {
+            if (animationEngine && document.visibilityState === 'visible') {
+                animationEngine.resize();
+                updateAnimationExclusionAreas();
+            }
+        });
+        observer.observe(canvas.parentElement);
     }
 }
 
