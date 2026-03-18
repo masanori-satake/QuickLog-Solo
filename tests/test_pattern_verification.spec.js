@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Verification Pattern (TestPattern) Rendering', () => {
     test('should render Verification Pattern and ensure it is not obscured by opaque backgrounds', async ({ page }) => {
         const dbName = `TestPatternDB_${Math.random().toString(36).substring(7)}`;
-        await page.goto(`http://localhost:8080/projects/app/app.html?db=${dbName}`);
+        await page.goto(`/projects/app/app.html?db=${dbName}`);
         await page.waitForSelector('#app');
 
         // Wait for initialization (categories rendered)

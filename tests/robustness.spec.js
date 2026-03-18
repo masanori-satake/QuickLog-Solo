@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Robustness and Persistence', () => {
   test('should persist language when navigating from landing to sub-projects', async ({ page }) => {
     // 1. Start on landing page in English
-    await page.goto('http://localhost:8080/projects/web/index.html?lang=en');
+    await page.goto('/projects/web/index.html?lang=en');
     await expect(page.locator('#lang-select-landing')).toHaveValue('en');
     await expect(page.locator('[data-i18n="cta-test"]')).toHaveText('Try in Browser');
 
@@ -49,7 +49,7 @@ test.describe('Robustness and Persistence', () => {
     const dbName = `RobustnessDB_${Math.random().toString(36).substring(7)}`;
 
     // Use URL parameter to inject a category with a long name
-    await page.goto(`http://localhost:8080/projects/app/app.html?db=${dbName}`);
+    await page.goto(`/projects/app/app.html?db=${dbName}`);
     await page.waitForSelector('.category-btn');
 
     // Add long category via settings

@@ -5,8 +5,8 @@ test.describe('Multi-tab Synchronization', () => {
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
-    await page1.goto('http://localhost:8080/projects/app/app.html');
-    await page2.goto('http://localhost:8080/projects/app/app.html');
+    await page1.goto('/projects/app/app.html');
+    await page2.goto('/projects/app/app.html');
 
     // Open settings on page 1 and change theme
     await page1.click('#settings-toggle');
@@ -22,8 +22,8 @@ test.describe('Multi-tab Synchronization', () => {
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
-    await page1.goto('http://localhost:8080/projects/app/app.html');
-    await page2.goto('http://localhost:8080/projects/app/app.html');
+    await page1.goto('/projects/app/app.html');
+    await page2.goto('/projects/app/app.html');
 
     // Start a task on page 1
     const catBtn = page1.locator('.category-btn').first();
@@ -42,8 +42,8 @@ test.describe('Multi-tab Synchronization', () => {
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
-    await page1.goto(`http://localhost:8080/projects/app/app.html?db=${dbName}`);
-    await page2.goto(`http://localhost:8080/projects/app/app.html?db=${dbName}`);
+    await page1.goto(`/projects/app/app.html?db=${dbName}`);
+    await page2.goto(`/projects/app/app.html?db=${dbName}`);
 
     // Wait for dummy history to be generated
     await page1.waitForSelector('.log-item');
