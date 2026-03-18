@@ -647,6 +647,15 @@ main {
     outline-offset: -2px;
 }
 
+.alarm-confirm-label .material-symbols-outlined {
+    font-size: 1.5rem;
+}
+
+.alarm-confirm-label input:checked + .material-symbols-outlined {
+    color: var(--md-sys-color-primary);
+    font-variation-settings: 'FILL' 1;
+}
+
 #report-date-display .material-symbols-outlined {
     font-size: 1.2rem;
 }
@@ -1495,15 +1504,6 @@ body.theme-dark button:active {
 
 .alarm-confirm-label:hover {
     background-color: var(--md-sys-color-surface-container-highest);
-}
-
-.alarm-confirm-label input:checked + .material-symbols-outlined {
-    color: var(--md-sys-color-primary);
-    font-variation-settings: 'FILL' 1;
-}
-
-.alarm-confirm-label .material-symbols-outlined {
-    font-size: 1.5rem;
 }
 
 .alarm-label {
