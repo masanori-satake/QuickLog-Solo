@@ -10,6 +10,10 @@ import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pause
 import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { animations } from '../shared/js/animation_registry.js';
+import {
+    validateCategorySchema, SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0,
+    SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK
+} from '../shared/js/schema.js';
 
 // QuickLog-Solo: Main Application Entry
 
@@ -1875,14 +1879,21 @@ function setupEventListeners() {
         categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         const exportData = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE);
 
-        // Convert to NDJSON
+        // Convert to NDJSON according to schema
         const ndjson = exportData.map(c => {
-            const copy = { ...c };
-            delete copy.order;
-            if (copy.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
-                return JSON.stringify({ type: 'page-break' });
+            const isPageBreak = c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+            const entry = {
+                kind: SCHEMA_KIND_CATEGORY,
+                version: SCHEMA_VERSION_1_0,
+                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
+            };
+            if (!isPageBreak) {
+                entry.name = c.name;
+                entry.color = c.color;
+                entry.tags = c.tags ? c.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+                entry.animation = c.animation || 'default';
             }
-            return JSON.stringify(copy);
+            return JSON.stringify(entry);
         }).join('\n');
 
         try {
@@ -1922,14 +1933,14 @@ function setupEventListeners() {
             const importedItems = [];
             let errorCount = 0;
 
+            const validItems = [];
             for (const line of lines) {
                 try {
                     const item = JSON.parse(line);
-                    // Minimal check to ensure it's an object
-                    if (typeof item === 'object' && item !== null) {
-                        importedItems.push(item);
+                    if (validateCategorySchema(item)) {
+                        validItems.push(item);
                     } else {
-                        console.warn(`QuickLog-Solo: JSON line is not an object: "${line}"`);
+                        console.warn(`QuickLog-Solo: Schema validation failed for line: "${line}"`);
                         errorCount++;
                     }
                 } catch (e) {
@@ -1938,60 +1949,20 @@ function setupEventListeners() {
                 }
             }
 
-            // Level 1: Fatal Error (Empty file or JSON Parsing failed for everything)
-            if (total === 0 || (importedItems.length === 0 && total > 0)) {
+            // Level 1: Fatal Error (Empty file or all lines failed)
+            if (total === 0 || (validItems.length === 0 && total > 0)) {
                 throw new Error('FATAL_IMPORT_ERROR');
             }
 
-            // Level 2: Partial Error (JSON line failures)
+            // Level 2: Partial Error (Some lines failed)
             if (errorCount > 0) {
-                const proceed = await showConfirm(t('import-err-partial', { total, errorCount, validCount: importedItems.length }));
+                const proceed = await showConfirm(t('import-err-partial', { total, errorCount, validCount: validItems.length }));
                 if (!proceed) {
                     return;
                 }
             }
 
-            // Level 3: Field Level validation
-            const validItems = [];
-            const invalidItems = [];
-            for (const item of importedItems) {
-                if (item.type === 'page-break' || (item.name && item.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))) {
-                    validItems.push(item);
-                } else if (!item.name || !isValidCategoryName(item.name)) {
-                    invalidItems.push(item);
-                } else if (item.color && !isValidColor(item.color)) {
-                    // Field error (color invalid)
-                    invalidItems.push(item);
-                } else {
-                    validItems.push(item);
-                }
-            }
-
-            let finalItems = validItems;
-            if (invalidItems.length > 0) {
-                const choice = await showMultiChoice(t('import-err-field'), [
-                    { label: t('import-btn-apply-fallback'), value: 'fallback', class: 'primary-btn' },
-                    { label: t('import-btn-skip-invalid'), value: 'skip', class: 'secondary-btn' },
-                    { label: t('import-btn-abort'), value: 'abort', class: 'danger-btn' }
-                ]);
-
-                if (choice === 'abort') {
-                    return;
-                } else if (choice === 'fallback') {
-                    const repairedItems = invalidItems.map(item => {
-                        if (!item.name || !isValidCategoryName(item.name)) {
-                            item.name = item.name || 'Imported Category';
-                            if (item.name.length > 50) item.name = item.name.substring(0, 50);
-                        }
-                        if (item.color && !isValidColor(item.color)) {
-                            item.color = 'primary';
-                        }
-                        return item;
-                    });
-                    finalItems = [...validItems, ...repairedItems];
-                }
-                // 'skip' does nothing, finalItems remains validItems
-            }
+            const finalItems = validItems;
 
             const importMode = document.querySelector('input[name="import-mode"]:checked')?.value || 'append';
 

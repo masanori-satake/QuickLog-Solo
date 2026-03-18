@@ -6,6 +6,10 @@ import { animations as animationRegistry } from '../shared/js/animation_registry
 import { AnimationEngine } from '../shared/js/animations.js';
 import { messages } from '../shared/js/messages.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
+import {
+    validateCategorySchema, SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0,
+    SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK
+} from '../shared/js/schema.js';
 
 let currentLang = 'en';
 let categories = [];
@@ -810,13 +814,19 @@ function updatePreview() {
 
 function updateCodeView() {
     const ndjson = categories.map(cat => {
-        const item = { ...cat };
-        delete item.order;
-        delete item.id;
-        if (item.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
-            return JSON.stringify({ type: 'page-break' });
+        const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        const entry = {
+            kind: SCHEMA_KIND_CATEGORY,
+            version: SCHEMA_VERSION_1_0,
+            type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
+        };
+        if (!isPageBreak) {
+            entry.name = cat.name;
+            entry.color = cat.color;
+            entry.tags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+            entry.animation = cat.animation || 'default';
         }
-        return JSON.stringify(item);
+        return JSON.stringify(entry);
     }).join('\n');
     codeViewEl.textContent = ndjson;
 }
@@ -827,21 +837,43 @@ async function handleImport() {
         if (!text) return;
 
         const lines = text.split('\n').filter(l => l.trim());
-        const imported = lines.map(l => {
-            const data = JSON.parse(l);
-            if (data.type === 'page-break') {
-                return { name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` };
-            }
-            // Normalize data to ensure all fields exist, matching app.js behavior
-            return {
-                name: data.name || 'Imported Category',
-                color: data.color || 'primary',
-                tags: data.tags || '',
-                animation: data.animation || 'default'
-            };
-        });
+        const validItems = [];
+        let errorCount = 0;
 
-        categories = imported;
+        for (const line of lines) {
+            try {
+                const data = JSON.parse(line);
+                if (validateCategorySchema(data)) {
+                    if (data.type === SCHEMA_TYPE_PAGE_BREAK) {
+                        validItems.push({ name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` });
+                    } else {
+                        validItems.push({
+                            name: data.name,
+                            color: data.color,
+                            tags: Array.isArray(data.tags) ? data.tags.join(', ') : '',
+                            animation: data.animation || 'default'
+                        });
+                    }
+                } else {
+                    errorCount++;
+                }
+            } catch (e) {
+                errorCount++;
+            }
+        }
+
+        if (validItems.length === 0 && lines.length > 0) {
+            showToast(t('toast-import-failed'));
+            return;
+        }
+
+        if (errorCount > 0) {
+            if (!confirm(t('import-err-partial', { total: lines.length, errorCount, validCount: validItems.length }))) {
+                return;
+            }
+        }
+
+        categories = validItems;
         selectedIndex = categories.length > 0 ? 0 : -1;
         renderCategoryList();
         renderDetail();
@@ -863,13 +895,19 @@ async function handleExport() {
         return;
     }
     const ndjson = categories.map(cat => {
-        const item = { ...cat };
-        delete item.order;
-        delete item.id;
-        if (item.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
-            return JSON.stringify({ type: 'page-break' });
+        const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        const entry = {
+            kind: SCHEMA_KIND_CATEGORY,
+            version: SCHEMA_VERSION_1_0,
+            type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
+        };
+        if (!isPageBreak) {
+            entry.name = cat.name;
+            entry.color = cat.color;
+            entry.tags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+            entry.animation = cat.animation || 'default';
         }
-        return JSON.stringify(item);
+        return JSON.stringify(entry);
     }).join('\n');
 
     try {

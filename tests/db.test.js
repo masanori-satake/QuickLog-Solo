@@ -4,6 +4,7 @@ import {
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 import { t } from '../shared/js/i18n.js';
+import { SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0, SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK } from '../shared/js/schema.js';
 
 describe('DB Module', () => {
     const DB_NAME = 'QuickLogSoloDB';
@@ -161,9 +162,9 @@ describe('DB Module', () => {
             await dbAdd(STORE_CATEGORIES, { name: 'Existing', color: 'primary', order: 0 });
 
             const items = [
-                { name: 'Existing', color: 'secondary' }, // Should be skipped
-                { name: 'New', color: 'teal' },
-                { type: 'page-break' }
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'Existing', color: 'secondary' }, // Should be skipped (conflict)
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'New', color: 'teal' },
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_PAGE_BREAK }
             ];
 
             await dbImportCategories(items, 'append');
@@ -177,14 +178,14 @@ describe('DB Module', () => {
             expect(result.find(c => c.name === 'New').order).toBeGreaterThan(0);
         });
 
-        test('dbImportCategories handles invalid colors by falling back to primary', async () => {
+        test('dbImportCategories rejects invalid items', async () => {
             await openDatabase();
             const items = [
-                { name: 'Invalid Color', color: 'super-red' }
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'Invalid Color', color: 'super-red' }
             ];
             await dbImportCategories(items, 'append');
             const result = await dbGetAll(STORE_CATEGORIES);
-            expect(result.find(c => c.name === 'Invalid Color').color).toBe('primary');
+            expect(result.find(c => c.name === 'Invalid Color')).toBeUndefined();
         });
 
         test('imports categories in overwrite mode', async () => {
@@ -192,7 +193,7 @@ describe('DB Module', () => {
             await dbAdd(STORE_CATEGORIES, { name: 'Old', color: 'primary', order: 0 });
 
             const items = [
-                { name: 'New', color: 'green' }
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'New', color: 'green' }
             ];
 
             await dbImportCategories(items, 'overwrite');
