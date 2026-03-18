@@ -481,10 +481,32 @@ async function setupInitialData(languageSetting) {
                 time: isLast ? "23:59" : "09:00",
                 message: isLast ? t('alarm-action-stop') : "",
                 action: isLast ? "stop" : "none", // none, stop, pause, start
-                actionCategory: ""
+                actionCategory: "",
+                requireConfirmation: false
             });
         }
         await dbAddMultiple(STORE_ALARMS, defaultAlarms);
+    } else {
+        // Migration: Ensure existing alarms have requireConfirmation
+        const alarmsToUpdate = [];
+        for (const alarm of existingAlarms) {
+            if (alarm.requireConfirmation === undefined) {
+                alarm.requireConfirmation = false;
+                alarmsToUpdate.push(alarm);
+            }
+        }
+        if (alarmsToUpdate.length > 0) {
+            console.log(`QuickLog-Solo: Migrating ${alarmsToUpdate.length} alarms...`);
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_ALARMS, 'readwrite');
+                const store = tx.objectStore(STORE_ALARMS);
+                tx.oncomplete = () => resolve();
+                tx.onerror = (e) => reject(e.target.error);
+                for (const alarm of alarmsToUpdate) {
+                    store.put(alarm);
+                }
+            });
+        }
     }
 
     // Generate dummy history if no logs exist

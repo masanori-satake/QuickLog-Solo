@@ -38,6 +38,7 @@ export const en = {
     'alarm-action-pause': 'Pause Task',
     'alarm-action-start': 'Start Category',
     'alarm-placeholder-message': 'Enter message...',
+    'alarm-tooltip-confirmation': 'Keep notification until OK is clicked, then execute the action',
     'toast-alarm-saved': 'Alarm saved',
     'btn-test-notification': 'Test Notification',
     'test-notification-message': 'This is a notification test. It is working correctly.',
@@ -145,6 +146,9 @@ export const en = {
     'toast-cat-imported': 'Categories imported',
     'toast-deleted': 'Deletion completed',
     'no-logs-for-day': 'No logs for this day',
+
+    'notification-btn-ok': 'OK',
+    'notification-btn-close': 'Close',
 
     'import-err-fatal': 'Invalid file format. Importing aborted.',
     'import-err-partial': '{errorCount} out of {total} rows are corrupted. Do you want to import only the {validCount} valid rows?',

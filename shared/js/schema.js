@@ -85,7 +85,7 @@ export function validateSettingsSchema(data) {
     if (data.app !== 'QuickLog-Solo' || data.kind !== SCHEMA_KIND_SETTINGS || data.version !== SCHEMA_VERSION_1_0) return false;
     if (!Array.isArray(data.entries)) return false;
 
-    const allowedKeys = ['theme', 'font', 'defaultAnimation', 'language', 'reportSettings'];
+    const allowedKeys = ['theme', 'font', 'defaultAnimation', 'language', 'reportSettings', 'alarms'];
 
     for (const entry of data.entries) {
         if (!entry || typeof entry !== 'object' || !allowedKeys.includes(entry.key)) return false;
@@ -117,6 +117,23 @@ export function validateSettingsSchema(data) {
                 if (!['none', 'show'].includes(val.endTime)) return false;
                 if (!['none', 'right', 'bottom'].includes(val.duration)) return false;
                 if (!['none', '5', '10', '15', '30', '60'].includes(val.adjust)) return false;
+                break;
+            }
+            case 'alarms': {
+                if (!Array.isArray(val)) return false;
+                for (const alarm of val) {
+                    if (typeof alarm !== 'object' || alarm === null) return false;
+                    const required = ['enabled', 'time', 'message', 'action', 'actionCategory', 'requireConfirmation'];
+                    for (const k of required) {
+                        if (alarm[k] === undefined) return false;
+                    }
+                    if (typeof alarm.enabled !== 'boolean') return false;
+                    if (typeof alarm.time !== 'string' || !alarm.time.match(/^([01]\d|2[0-3]):([0-5]\d)$/)) return false;
+                    if (typeof alarm.message !== 'string' || alarm.message.length > 200) return false;
+                    if (!['none', 'stop', 'pause', 'start'].includes(alarm.action)) return false;
+                    if (typeof alarm.actionCategory !== 'string' || alarm.actionCategory.length > 100) return false;
+                    if (typeof alarm.requireConfirmation !== 'boolean') return false;
+                }
                 break;
             }
         }

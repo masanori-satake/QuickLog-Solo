@@ -153,6 +153,76 @@ async function setupAlarms() {
 }
 
 /**
+ * Executes the logic associated with an alarm.
+ */
+async function executeAlarmAction(alarmData, activeTask) {
+    console.log(`QuickLog-Solo: Executing alarm action: ${alarmData.action}`);
+
+    if (alarmData.action === 'stop') {
+        await stopTaskLogic(activeTask, true);
+    } else if (alarmData.action === 'pause') {
+        await pauseTaskLogic(activeTask);
+    } else if (alarmData.action === 'start' && alarmData.actionCategory) {
+        const cat = await dbGetByName(STORE_CATEGORIES, alarmData.actionCategory);
+        if (cat) {
+            await startTaskLogic(cat.name, activeTask, null, cat.color, cat.tags);
+        }
+    }
+
+    // Broadcast sync to update any open side panel UI
+    if (syncChannel) {
+        syncChannel.postMessage({ type: 'sync' });
+    }
+    // Also notify via chrome.runtime for better reliability
+    chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
+}
+
+/**
+ * Opens the side panel.
+ */
+function openSidePanel() {
+    if (chrome.sidePanel && chrome.sidePanel.open) {
+        chrome.windows.getCurrent((window) => {
+            chrome.sidePanel.open({ windowId: window.id }).catch((e) => {
+                console.warn('QuickLog-Solo: Failed to open side panel', e);
+            });
+        });
+    }
+}
+
+/**
+ * Handle notification clicks and button clicks.
+ */
+chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIndex) => {
+    if (!notificationId.startsWith('alarm_')) return;
+
+    const alarmId = parseInt(notificationId.split('_')[1]);
+    const state = await getCurrentAppState();
+    const alarmData = state.alarms.find(a => a.id === alarmId);
+
+    if (alarmData) {
+        const hasAction = alarmData.action && alarmData.action !== 'none';
+
+        if (hasAction && buttonIndex === 0) {
+            // "OK" button clicked (if action exists, it's at index 0)
+            await executeAlarmAction(alarmData, state.activeTask);
+        }
+        // "Close" button is at index 0 (if no action) or index 1 (if action exists)
+        // Both cases just need to open the side panel (and notification closes automatically)
+    }
+
+    openSidePanel();
+    chrome.notifications.clear(notificationId);
+});
+
+chrome.notifications.onClicked.addListener((notificationId) => {
+    if (notificationId.startsWith('alarm_')) {
+        openSidePanel();
+        chrome.notifications.clear(notificationId);
+    }
+});
+
+/**
  * Alarm listener to handle triggered alarms.
  */
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -192,36 +262,33 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
             console.log(`QuickLog-Solo: Alarm triggered [ID: ${alarmData.id}] message: ${alarmData.message}`);
 
-            // 1. Show notification
-            chrome.notifications.create(`alarm_${alarmData.id}_${Date.now()}`, {
+            const hasAction = alarmData.action && alarmData.action !== 'none';
+            const requireConfirmation = !!alarmData.requireConfirmation;
+
+            const notificationId = `alarm_${alarmData.id}_${Date.now()}`;
+            const notificationOptions = {
                 type: 'basic',
                 iconUrl: chrome.runtime.getURL('shared/assets/icon128.png'),
                 title: t('title'),
                 message: alarmData.message || t('alarm-action-none'),
-                priority: 2
-            });
+                priority: 2,
+                requireInteraction: requireConfirmation
+            };
 
-            // 2. Execute automated task actions
-            if (alarmData.action && alarmData.action !== 'none') {
-                console.log(`QuickLog-Solo: Executing alarm action: ${alarmData.action}`);
-
-                if (alarmData.action === 'stop') {
-                    await stopTaskLogic(activeTask, true);
-                } else if (alarmData.action === 'pause') {
-                    await pauseTaskLogic(activeTask);
-                } else if (alarmData.action === 'start' && alarmData.actionCategory) {
-                    const cat = await dbGetByName(STORE_CATEGORIES, alarmData.actionCategory);
-                    if (cat) {
-                        await startTaskLogic(cat.name, activeTask, null, cat.color, cat.tags);
-                    }
+            if (requireConfirmation) {
+                notificationOptions.buttons = [];
+                if (hasAction) {
+                    notificationOptions.buttons.push({ title: t('notification-btn-ok') });
                 }
+                notificationOptions.buttons.push({ title: t('notification-btn-close') });
+            }
 
-                // Broadcast sync to update any open side panel UI
-                if (syncChannel) {
-                    syncChannel.postMessage({ type: 'sync' });
-                }
-                // Also notify via chrome.runtime for better reliability
-                chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
+            // 1. Show notification
+            chrome.notifications.create(notificationId, notificationOptions);
+
+            // 2. Execute automated task actions (only if NOT requiring confirmation)
+            if (!requireConfirmation && hasAction) {
+                await executeAlarmAction(alarmData, activeTask);
             }
         }
     } catch (error) {
