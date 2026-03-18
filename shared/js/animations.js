@@ -222,7 +222,15 @@ export class AnimationEngine {
     }
 
     draw() {
-        if (!this.worker || !this.initialized || !this.setupDone) return;
+        if (!this.worker || !this.initialized) return;
+
+        // Emergency resize check: If dimensions are 0 but we think setup is done, or vice-versa
+        const parent = this.canvas.parentElement;
+        const rect = parent?.getBoundingClientRect();
+        if (rect && (rect.width === 0 || rect.height === 0 || !this.setupDone)) {
+            this.resize();
+            if (!this.setupDone) return;
+        }
 
         // If a draw is already pending in the worker, skip this frame
         // to avoid queuing up messages and causing latency spikes.
