@@ -5,7 +5,7 @@ test.describe('Analysis and Reporting', () => {
 
     const getDbName = () => `AnalysisTestDB_${Math.random().toString(36).substring(7)}`;
 
-    test.beforeEach(async ({ context, page }) => {
+    test.beforeEach(async ({ context }) => {
         await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     });
 

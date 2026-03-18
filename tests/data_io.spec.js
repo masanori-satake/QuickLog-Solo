@@ -66,6 +66,7 @@ test.describe('Data Import and Export Consistency', () => {
 
         expect(lines[0]).toBe('id,category,startTime,endTime');
         expect(lines.length).toBeGreaterThan(1);
+        /* eslint-disable-next-line no-control-regex */
         expect(lines[1]).toContain(catName.replace(/[^\x00-\x7F]/g, ""));
     });
 
