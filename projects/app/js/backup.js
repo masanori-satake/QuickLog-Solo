@@ -1,5 +1,12 @@
-import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from '../shared/js/db.js';
-import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
+import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_ANIMATION } from '../shared/js/db.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
+import {
+    SCHEMA_VERSION_1_0,
+    SCHEMA_KIND_CATEGORY, SCHEMA_KIND_HISTORY, SCHEMA_KIND_SETTINGS,
+    SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK,
+    SCHEMA_TYPE_HISTORY_TASK, SCHEMA_TYPE_HISTORY_IDLE, SCHEMA_TYPE_HISTORY_STOP,
+    validateCategorySchema, validateHistorySchema, validateSettingsSchema
+} from '../shared/js/schema.js';
 
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 
@@ -145,12 +152,40 @@ class BackupManager {
     async backupToFiles() {
         // Backup Categories (NDJSON)
         const categories = await dbGetAll(STORE_CATEGORIES);
-        await this.writeNdjson(FILE_NAME_CATEGORIES, categories);
+        // Sort by display order before exporting to NDJSON
+        categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const categoryData = categories.map(cat => {
+            const isPageBreak = cat.name && cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+            const entry = {
+                kind: SCHEMA_KIND_CATEGORY,
+                version: SCHEMA_VERSION_1_0,
+                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
+            };
+            if (!isPageBreak) {
+                entry.name = cat.name;
+                entry.color = cat.color;
+                entry.tags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+                entry.animation = cat.animation || 'default';
+            }
+            return entry;
+        });
+        await this.writeNdjson(FILE_NAME_CATEGORIES, categoryData);
 
         // Backup Settings (JSON) - excluding backup-specific ones to avoid loops
         const allSettings = await dbGetAll(STORE_SETTINGS);
         const filteredSettings = allSettings.filter(s => s.key !== 'backupDirectoryHandle' && s.key !== SETTING_KEY_BACKUP_CONFIG);
-        await this.writeJson(FILE_NAME_SETTINGS, filteredSettings);
+        const settingsData = {
+            app: 'QuickLog-Solo',
+            kind: SCHEMA_KIND_SETTINGS,
+            version: SCHEMA_VERSION_1_0,
+            entries: filteredSettings.map(s => {
+                // Map application keys to schema keys
+                let key = s.key;
+                if (key === SETTING_KEY_ANIMATION) key = 'defaultAnimation';
+                return { key, value: s.value };
+            })
+        };
+        await this.writeJson(FILE_NAME_SETTINGS, settingsData);
 
         // Backup Logs
         const logs = await dbGetAll(STORE_LOGS);
@@ -158,7 +193,30 @@ class BackupManager {
         logs.forEach(log => {
             const date = this.formatDate(new Date(log.startTime));
             if (!logsByDate[date]) logsByDate[date] = [];
-            logsByDate[date].push(log);
+
+            const type = log.isManualStop ? SCHEMA_TYPE_HISTORY_STOP :
+                         (log.category === SYSTEM_CATEGORY_IDLE ? SCHEMA_TYPE_HISTORY_IDLE : SCHEMA_TYPE_HISTORY_TASK);
+
+            const entry = {
+                kind: SCHEMA_KIND_HISTORY,
+                version: SCHEMA_VERSION_1_0,
+                type: type,
+                startTime: log.startTime,
+                endTime: log.endTime || null
+            };
+
+            if (type === SCHEMA_TYPE_HISTORY_TASK) {
+                entry.category = log.category;
+                if (log.color) entry.color = log.color; // Omit if null/undefined for schema compliance
+                entry.tags = log.tags ? log.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+                if (log.memo) entry.memo = log.memo;
+            } else if (type === SCHEMA_TYPE_HISTORY_IDLE) {
+                if (log.resumableCategory) entry.resumableCategory = log.resumableCategory;
+            } else if (type === SCHEMA_TYPE_HISTORY_STOP) {
+                entry.isManualStop = true;
+            }
+
+            logsByDate[date].push(entry);
         });
 
         for (const [date, dayLogs] of Object.entries(logsByDate)) {
@@ -178,30 +236,40 @@ class BackupManager {
         if (fileCategories.length > 0) {
             const dbCategories = await dbGetAll(STORE_CATEGORIES);
             const newCategories = [];
+            let maxOrder = dbCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
+
             for (const fc of fileCategories) {
                 const validated = this._validateCategory(fc);
-                if (validated && !dbCategories.find(dc => dc.name === validated.name)) {
-                    newCategories.push(validated);
+                if (validated) {
+                    // Page breaks need unique names for current DB keyPath
+                    const isPageBreak = validated.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+                    if (isPageBreak || !dbCategories.find(dc => dc.name === validated.name)) {
+                        validated.order = ++maxOrder;
+                        newCategories.push(validated);
+                    }
                 }
             }
             if (newCategories.length > 0) await dbAddMultiple(STORE_CATEGORIES, newCategories);
         }
 
         // --- Settings (JSON) ---
-        let fileSettings;
+        let fileSettingsData;
         try {
-            fileSettings = await this.readJson(FILE_NAME_SETTINGS);
+            fileSettingsData = await this.readJson(FILE_NAME_SETTINGS);
         } catch (e) {
-            if (e.name === 'NotFoundError') fileSettings = [];
+            if (e.name === 'NotFoundError') fileSettingsData = null;
             else throw e;
         }
-        if (fileSettings.length > 0) {
+        if (fileSettingsData && validateSettingsSchema(fileSettingsData)) {
             const dbSettings = await dbGetAll(STORE_SETTINGS);
             const newSettings = [];
-            for (const fs of fileSettings) {
-                const validated = this._validateSetting(fs);
-                if (validated && !dbSettings.find(ds => ds.key === validated.key)) {
-                    newSettings.push(validated);
+            for (const fs of fileSettingsData.entries) {
+                // Map schema keys back to application keys
+                let key = fs.key;
+                if (key === 'defaultAnimation') key = SETTING_KEY_ANIMATION;
+
+                if (!dbSettings.find(ds => ds.key === key)) {
+                    newSettings.push({ key, value: fs.value });
                 }
             }
             if (newSettings.length > 0) await dbAddMultiple(STORE_SETTINGS, newSettings);
@@ -298,77 +366,55 @@ class BackupManager {
     }
 
     _validateCategory(cat) {
-        if (!cat || typeof cat !== 'object' || !cat.name) return null;
+        if (!validateCategorySchema(cat)) return null;
 
-        // Handle page breaks specifically
-        if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+        if (cat.type === SCHEMA_TYPE_PAGE_BREAK) {
             return {
-                name: cat.name,
-                order: typeof cat.order === 'number' ? cat.order : 0
+                name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                order: 0 // Placeholder, will be set during import loop
             };
         }
 
-        // Regular categories
-        if (!isValidCategoryName(cat.name)) return null;
-
         return {
             name: cat.name.trim(),
-            color: isValidColor(cat.color) ? cat.color : 'primary',
-            tags: typeof cat.tags === 'string' ? cat.tags : '',
-            animation: typeof cat.animation === 'string' ? cat.animation : 'default',
-            order: typeof cat.order === 'number' ? cat.order : 0
+            color: cat.color,
+            tags: Array.isArray(cat.tags) ? cat.tags.join(',') : '',
+            animation: cat.animation || 'default',
+            order: 0 // Placeholder, will be set during import loop
         };
     }
 
     _validateLog(log) {
-        if (!log || typeof log !== 'object' || !log.category || typeof log.startTime !== 'number') return null;
+        if (!validateHistorySchema(log)) return null;
 
-        // Basic check for category name (allow system categories here)
-        if (typeof log.category !== 'string' || log.category.length > 100) return null;
-
-        return {
-            category: log.category,
+        const type = log.type;
+        const base = {
             startTime: log.startTime,
-            endTime: typeof log.endTime === 'number' ? log.endTime : null,
-            color: isValidColor(log.color) ? log.color : null,
-            isManualStop: !!log.isManualStop,
-            resumableCategory: typeof log.resumableCategory === 'string' ? log.resumableCategory : null
+            endTime: log.endTime || null
         };
-    }
 
-    _validateSetting(setting) {
-        if (!setting || typeof setting !== 'object' || !setting.key) return null;
-        const key = setting.key;
-        const value = setting.value;
-
-        // Whitelist of settings we allow to restore
-        const allowedKeys = [
-            'theme', 'font', 'animation', 'language', 'reportSettings'
-        ];
-        if (!allowedKeys.includes(key)) return null;
-
-        // Basic validation per key to prevent XSS and ensure data integrity
-        switch (key) {
-            case 'theme':
-                if (!['system', 'light', 'dark'].includes(value)) return null;
-                break;
-            case 'font':
-                if (typeof value !== 'string' || value.length > 200) return null;
-                break;
-            case 'animation':
-                if (typeof value !== 'string' || value.length > 50) return null;
-                break;
-            case 'language':
-                if (!['auto', 'ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'].includes(value)) return null;
-                break;
-            case 'reportSettings':
-                if (typeof value !== 'object' || value === null) return null;
-                break;
-            default:
-                return null;
+        if (type === SCHEMA_TYPE_HISTORY_TASK) {
+            return {
+                ...base,
+                category: log.category,
+                color: log.color || null,
+                tags: Array.isArray(log.tags) ? log.tags.join(',') : '',
+                memo: log.memo || ''
+            };
+        } else if (type === SCHEMA_TYPE_HISTORY_IDLE) {
+            return {
+                ...base,
+                category: SYSTEM_CATEGORY_IDLE,
+                resumableCategory: log.resumableCategory || null
+            };
+        } else if (type === SCHEMA_TYPE_HISTORY_STOP) {
+            return {
+                ...base,
+                category: SYSTEM_CATEGORY_IDLE, // Historically IDLE is used for stops too
+                isManualStop: true
+            };
         }
-
-        return { key, value };
+        return null;
     }
 
     formatDate(date) {

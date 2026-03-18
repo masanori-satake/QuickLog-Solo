@@ -7,7 +7,8 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     dbAddMultiple: jest.fn(),
     STORE_LOGS: 'logs',
     STORE_SETTINGS: 'settings',
-    STORE_CATEGORIES: 'categories'
+    STORE_CATEGORIES: 'categories',
+    SETTING_KEY_ANIMATION: 'animation'
 }));
 
 const { backupManager, BACKUP_STATUS } = await import('../projects/app/js/backup.js');
@@ -34,7 +35,8 @@ describe('BackupManager Abnormal Cases', () => {
         mockDirectoryHandle = {
             values: jest.fn(),
             getFileHandle: jest.fn(),
-            removeEntry: jest.fn(), queryPermission: jest.fn().mockResolvedValue("granted")
+            removeEntry: jest.fn(),
+            queryPermission: jest.fn().mockResolvedValue("granted")
         };
 
         jest.clearAllMocks();
@@ -128,37 +130,35 @@ describe('BackupManager Abnormal Cases', () => {
         expect(backupManager.lastError.params.message).toBe('Some random error');
     });
 
-    test('_validateCategory repairs invalid color and animation', () => {
-        const invalidCat = { name: 'Test', color: 'malicious-color', animation: 123 };
-        const result = backupManager._validateCategory(invalidCat);
+    test('_validateCategory rejects non-compliant data (Strict Schema)', () => {
+        // Missing kind/version
+        const invalid1 = { name: 'Test', color: 'primary', type: 'category' };
+        expect(backupManager._validateCategory(invalid1)).toBeNull();
+
+        // Invalid color
+        const invalid2 = { kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'Test', color: 'malicious' };
+        expect(backupManager._validateCategory(invalid2)).toBeNull();
+
+        // Valid
+        const valid = { kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'Test', color: 'primary' };
+        const result = backupManager._validateCategory(valid);
         expect(result.name).toBe('Test');
-        expect(result.color).toBe('primary'); // Default
-        expect(result.animation).toBe('default'); // Default
+        expect(result.color).toBe('primary');
     });
 
-    test('_validateCategory returns null for invalid names', () => {
-        expect(backupManager._validateCategory({ name: '' })).toBeNull();
-        expect(backupManager._validateCategory({ name: 'A'.repeat(51) })).toBeNull();
-        expect(backupManager._validateCategory({ name: '__IDLE__' })).toBeNull();
-    });
+    test('_validateLog rejects non-compliant data (Strict Schema)', () => {
+        // Missing kind/version
+        const invalid1 = { category: 'Dev', startTime: 1000, type: 'task' };
+        expect(backupManager._validateLog(invalid1)).toBeNull();
 
-    test('_validateLog repairs invalid color and ensures types', () => {
-        const invalidLog = { category: 'Dev', startTime: 1000, color: 'bad' };
-        const result = backupManager._validateLog(invalidLog);
+        // Invalid type
+        const invalid2 = { kind: 'QuickLogSolo/History', version: '1.0', type: 'invalid', startTime: 1000 };
+        expect(backupManager._validateLog(invalid2)).toBeNull();
+
+        // Valid
+        const valid = { kind: 'QuickLogSolo/History', version: '1.0', type: 'task', category: 'Dev', startTime: 1000 };
+        const result = backupManager._validateLog(valid);
         expect(result.category).toBe('Dev');
-        expect(result.color).toBeNull();
-        expect(result.isManualStop).toBe(false);
-    });
-
-    test('_validateSetting rejects unknown keys and invalid values', () => {
-        // Unknown key
-        expect(backupManager._validateSetting({ key: 'unknown', value: 'val' })).toBeNull();
-
-        // Invalid values for known keys
-        expect(backupManager._validateSetting({ key: 'theme', value: 'purple' })).toBeNull();
-        expect(backupManager._validateSetting({ key: 'language', value: 'ru' })).toBeNull();
-
-        // Valid case
-        expect(backupManager._validateSetting({ key: 'theme', value: 'dark' })).toEqual({ key: 'theme', value: 'dark' });
+        expect(result.startTime).toBe(1000);
     });
 });

@@ -1,5 +1,6 @@
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, isValidColor } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
 import { t, setLanguage } from './i18n.js';
+import { validateCategorySchema, SCHEMA_TYPE_PAGE_BREAK } from './schema.js';
 
 export let DB_NAME = 'QuickLogSoloDB';
 export const DB_VERSION = 2;
@@ -132,24 +133,29 @@ export async function dbImportCategories(items, importMode) {
         tx.onerror = (e) => reject(e.target.error);
 
         const performImport = (currentCategories) => {
-            let maxOrder = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
+            let maxOrderInDB = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
+
             for (const item of items) {
-                if (item.type === 'page-break' || (item.name && item.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))) {
+                if (!validateCategorySchema(item)) {
+                    console.warn('QuickLog-Solo: Skipping invalid item during import', item);
+                    continue;
+                }
+
+                if (item.type === SCHEMA_TYPE_PAGE_BREAK) {
                     store.add({
                         name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                        order: ++maxOrder
+                        order: ++maxOrderInDB
                     });
-                } else if (item.name) {
+                } else {
                     if (importMode === 'append') {
                         const existing = currentCategories.find(c => c.name === item.name);
                         if (existing) continue;
                     }
-                    const color = (item.color && isValidColor(item.color)) ? item.color : 'primary';
                     store.add({
                         name: item.name,
-                        color: color,
-                        order: ++maxOrder,
-                        tags: item.tags || '',
+                        color: item.color,
+                        order: ++maxOrderInDB,
+                        tags: Array.isArray(item.tags) ? item.tags.join(',') : '',
                         animation: item.animation || 'default'
                     });
                 }
