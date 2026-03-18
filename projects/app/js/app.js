@@ -1,5 +1,5 @@
 import {
-    initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
+    initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbAddMultiple, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS
@@ -2027,24 +2027,98 @@ function setupEventListeners() {
     csvInput?.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const text = await file.text();
-        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '').slice(1);
-        for (const line of lines) {
-            const parts = parseCsvLine(line);
-            if (parts.length >= 3) {
-                const [, category, startTime, endTime] = parts;
-                if (category && startTime) {
-                    await dbPut(STORE_LOGS, {
-                        category,
-                        startTime: parseInt(startTime),
-                        endTime: endTime ? parseInt(endTime) : null
-                    });
+
+        try {
+            const text = await file.text();
+            const lines = text.split(/\r?\n/).filter(line => line.trim() !== '').slice(1);
+            if (lines.length === 0) return;
+
+            const existingLogs = await dbGetAll(STORE_LOGS);
+            // Optimization: Create a Set of keys for O(1) duplicate lookup
+            const existingKeys = new Set(existingLogs.map(l => `${l.category}|${l.startTime}`));
+            const importedKeys = new Set(); // To prevent duplicates within the same CSV
+
+            const now = Date.now();
+            const FUTURE_BUFFER = 5 * 60 * 1000; // 5 minutes allowance
+
+            const validRows = [];
+            let errorCount = 0;
+            let duplicateCount = 0;
+
+            for (const line of lines) {
+                const parts = parseCsvLine(line);
+                if (parts.length < 3) {
+                    errorCount++;
+                    continue;
                 }
+                const [, category, startStr, endStr] = parts;
+                const startTime = parseInt(startStr, 10);
+                const rawEndTime = endStr ? parseInt(endStr, 10) : null;
+                const endTime = isNaN(rawEndTime) ? null : rawEndTime;
+
+                // 1. Basic Validation
+                if (!category || isNaN(startTime)) {
+                    errorCount++;
+                    continue;
+                }
+
+                // 2. Logical Range Validation
+                if (endTime !== null && endTime < startTime) {
+                    errorCount++;
+                    continue;
+                }
+
+                // 3. Future Timestamp Validation
+                if (startTime > now + FUTURE_BUFFER) {
+                    errorCount++;
+                    continue;
+                }
+
+                // 4. Duplicate Check (exact match of category and startTime)
+                const recordKey = `${category}|${startTime}`;
+                if (existingKeys.has(recordKey) || importedKeys.has(recordKey)) {
+                    duplicateCount++;
+                    continue;
+                }
+
+                validRows.push({
+                    category,
+                    startTime,
+                    endTime: endTime
+                });
+                importedKeys.add(recordKey);
             }
+
+            if (validRows.length === 0) {
+                if (duplicateCount > 0 && errorCount === 0) {
+                    alert(t('toast-imported') + ` (${duplicateCount} duplicates skipped)`);
+                } else {
+                    alert(t('import-err-fatal'));
+                }
+                return;
+            }
+
+            if (errorCount > 0) {
+                const proceed = await showConfirm(t('import-err-partial', {
+                    total: lines.length,
+                    errorCount,
+                    validCount: validRows.length
+                }));
+                if (!proceed) return;
+            }
+
+            // Optimization: Batch insertion in a single transaction
+            await dbAddMultiple(STORE_LOGS, validRows);
+
+            updateUI();
+            broadcastSync('reload');
+            showToast(t('toast-imported'));
+        } catch (err) {
+            console.error('QuickLog-Solo: History import failed', err);
+            alert(t('alert-import-error'));
+        } finally {
+            e.target.value = '';
         }
-        updateUI();
-        broadcastSync('reload');
-        alert(t('toast-imported'));
     });
 
     getEl(ID_CLEAR_LOGS_BTN)?.addEventListener('click', () => {
