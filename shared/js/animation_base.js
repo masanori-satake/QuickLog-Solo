@@ -3,6 +3,11 @@
  */
 
 export class AnimationBase {
+    constructor() {
+        this.width = 0;
+        this.height = 0;
+    }
+
     /**
      * Static metadata for the animation.
      */

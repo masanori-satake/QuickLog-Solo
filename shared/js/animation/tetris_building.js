@@ -55,7 +55,7 @@ export default class TetrisBuilding extends AnimationBase {
         // テトリス・グリッドの設定
         this.cols = 6;
         this.cellSize = 12; // 2x2 matrix cells
-        this.rows = Math.floor((height - 12) / this.cellSize);
+        this.rows = Math.max(0, Math.floor((height - 12) / this.cellSize));
 
         // Horizontal placement (default to left)
         // 水平位置の初期設定（デフォルトは左端）
