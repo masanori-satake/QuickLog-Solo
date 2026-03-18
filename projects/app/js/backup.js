@@ -343,7 +343,7 @@ class BackupManager {
 
         // Whitelist of settings we allow to restore
         const allowedKeys = [
-            'theme', 'font', 'animation', 'language', 'reportSettings', 'autoStop'
+            'theme', 'font', 'animation', 'language', 'reportSettings'
         ];
         if (!allowedKeys.includes(key)) return null;
 
@@ -360,9 +360,6 @@ class BackupManager {
                 break;
             case 'language':
                 if (!['auto', 'ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'].includes(value)) return null;
-                break;
-            case 'autoStop':
-                if (typeof value !== 'boolean') return null;
                 break;
             case 'reportSettings':
                 if (typeof value !== 'object' || value === null) return null;

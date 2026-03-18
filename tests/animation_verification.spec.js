@@ -4,7 +4,7 @@ test.describe('Animation Rendering Verification', () => {
     test('should render Matrix Code animation and produce canvas content', async ({ page }) => {
         // Use a unique DB to avoid state contamination
         const dbName = `AnimVerifyDB_${Date.now()}`;
-        await page.goto(`?db=${dbName}`);
+        await page.goto(`http://localhost:8080/projects/app/app.html?db=${dbName}`);
 
         // Wait for app to be fully initialized
         await page.waitForSelector('.category-btn');
