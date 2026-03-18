@@ -22,8 +22,7 @@ describe('Schema Compliance Tests', () => {
                 version: '1.0',
                 type: 'category',
                 name: 'Test Category',
-                color: 'primary',
-                order: 5
+                color: 'primary'
             };
             expect(validateCategorySchema(data)).toBe(true);
             expect(ajvValidateCategory(data)).toBe(true);
@@ -33,8 +32,7 @@ describe('Schema Compliance Tests', () => {
             const data = {
                 kind: 'QuickLogSolo/Category',
                 version: '1.0',
-                type: 'page-break',
-                order: 10
+                type: 'page-break'
             };
             expect(validateCategorySchema(data)).toBe(true);
             expect(ajvValidateCategory(data)).toBe(true);

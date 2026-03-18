@@ -152,13 +152,14 @@ class BackupManager {
     async backupToFiles() {
         // Backup Categories (NDJSON)
         const categories = await dbGetAll(STORE_CATEGORIES);
+        // Sort by display order before exporting to NDJSON
+        categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         const categoryData = categories.map(cat => {
             const isPageBreak = cat.name && cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
             const entry = {
                 kind: SCHEMA_KIND_CATEGORY,
                 version: SCHEMA_VERSION_1_0,
-                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY,
-                order: cat.order ?? 0
+                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
             };
             if (!isPageBreak) {
                 entry.name = cat.name;
@@ -235,12 +236,15 @@ class BackupManager {
         if (fileCategories.length > 0) {
             const dbCategories = await dbGetAll(STORE_CATEGORIES);
             const newCategories = [];
+            let maxOrder = dbCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
+
             for (const fc of fileCategories) {
                 const validated = this._validateCategory(fc);
                 if (validated) {
                     // Page breaks need unique names for current DB keyPath
                     const isPageBreak = validated.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
                     if (isPageBreak || !dbCategories.find(dc => dc.name === validated.name)) {
+                        validated.order = ++maxOrder;
                         newCategories.push(validated);
                     }
                 }
@@ -367,7 +371,7 @@ class BackupManager {
         if (cat.type === SCHEMA_TYPE_PAGE_BREAK) {
             return {
                 name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                order: cat.order ?? 0
+                order: 0 // Placeholder, will be set during import loop
             };
         }
 
@@ -376,7 +380,7 @@ class BackupManager {
             color: cat.color,
             tags: Array.isArray(cat.tags) ? cat.tags.join(',') : '',
             animation: cat.animation || 'default',
-            order: cat.order ?? 0
+            order: 0 // Placeholder, will be set during import loop
         };
     }
 

@@ -32,11 +32,9 @@ export function validateCategorySchema(data) {
         if (!isValidColor(data.color)) return false;
         if (data.tags !== undefined && !Array.isArray(data.tags)) return false;
         if (data.animation !== undefined && (typeof data.animation !== 'string' || data.animation.length > 50)) return false;
-        if (data.order !== undefined && typeof data.order !== 'number') return false;
         return true;
     } else if (data.type === SCHEMA_TYPE_PAGE_BREAK) {
         // Page breaks must NOT have category-specific properties
-        if (data.order !== undefined && typeof data.order !== 'number') return false;
         return data.name === undefined &&
                data.color === undefined &&
                data.tags === undefined &&
