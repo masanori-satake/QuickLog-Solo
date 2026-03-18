@@ -1,5 +1,5 @@
-import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS } from '../shared/js/db.js';
-import { isValidColor, isValidCategoryName, SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
+import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_ANIMATION } from '../shared/js/db.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 import {
     SCHEMA_VERSION_1_0,
     SCHEMA_KIND_CATEGORY, SCHEMA_KIND_HISTORY, SCHEMA_KIND_SETTINGS,
@@ -157,7 +157,8 @@ class BackupManager {
             const entry = {
                 kind: SCHEMA_KIND_CATEGORY,
                 version: SCHEMA_VERSION_1_0,
-                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
+                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY,
+                order: cat.order ?? 0
             };
             if (!isPageBreak) {
                 entry.name = cat.name;
@@ -176,7 +177,12 @@ class BackupManager {
             app: 'QuickLog-Solo',
             kind: SCHEMA_KIND_SETTINGS,
             version: SCHEMA_VERSION_1_0,
-            entries: filteredSettings.map(s => ({ key: s.key, value: s.value }))
+            entries: filteredSettings.map(s => {
+                // Map application keys to schema keys
+                let key = s.key;
+                if (key === SETTING_KEY_ANIMATION) key = 'defaultAnimation';
+                return { key, value: s.value };
+            })
         };
         await this.writeJson(FILE_NAME_SETTINGS, settingsData);
 
@@ -200,7 +206,7 @@ class BackupManager {
 
             if (type === SCHEMA_TYPE_HISTORY_TASK) {
                 entry.category = log.category;
-                entry.color = log.color || null;
+                if (log.color) entry.color = log.color; // Omit if null/undefined for schema compliance
                 entry.tags = log.tags ? log.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
                 if (log.memo) entry.memo = log.memo;
             } else if (type === SCHEMA_TYPE_HISTORY_IDLE) {
@@ -254,9 +260,12 @@ class BackupManager {
             const dbSettings = await dbGetAll(STORE_SETTINGS);
             const newSettings = [];
             for (const fs of fileSettingsData.entries) {
-                // Since validateSettingsSchema already checked entries, we just ensure no DB conflict
-                if (!dbSettings.find(ds => ds.key === fs.key)) {
-                    newSettings.push(fs);
+                // Map schema keys back to application keys
+                let key = fs.key;
+                if (key === 'defaultAnimation') key = SETTING_KEY_ANIMATION;
+
+                if (!dbSettings.find(ds => ds.key === key)) {
+                    newSettings.push({ key, value: fs.value });
                 }
             }
             if (newSettings.length > 0) await dbAddMultiple(STORE_SETTINGS, newSettings);
@@ -358,7 +367,7 @@ class BackupManager {
         if (cat.type === SCHEMA_TYPE_PAGE_BREAK) {
             return {
                 name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                order: 0
+                order: cat.order ?? 0
             };
         }
 
@@ -367,7 +376,7 @@ class BackupManager {
             color: cat.color,
             tags: Array.isArray(cat.tags) ? cat.tags.join(',') : '',
             animation: cat.animation || 'default',
-            order: 0
+            order: cat.order ?? 0
         };
     }
 

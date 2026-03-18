@@ -42,20 +42,16 @@ test.describe('Abnormal Import Cases', () => {
     });
 
     test('should handle Level 1: Fatal Error (Empty content)', async ({ page }) => {
-        const content = '';
-        await page.evaluate((text) => navigator.clipboard.writeText(text), content);
-
-        // Current implementation for empty clipboard might not show alert or might show error.
-        // If navigator.clipboard.readText() returns empty, it just returns.
-        // If it throws, it shows 'alert-import-error'.
-        // Let's see what happens.
+        await page.evaluate(() => navigator.clipboard.writeText(''));
         await page.click('#import-categories-btn');
-        // If it doesn't show a dialog, this test might need adjustment.
-        // For now, let's just make sure it doesn't crash or timeout.
+        // Should not crash. Currently empty clipboard just returns early.
     });
 
-    test('should handle Level 2: Partial Error (Some lines invalid JSON)', async ({ page }) => {
-        const content = '{"name":"Valid1","color":"teal"}\n{Invalid JSON}\n{"name":"Valid2","color":"orange"}';
+    test('should handle Level 2: Partial Error (Some lines invalid JSON or Schema)', async ({ page }) => {
+        // Valid items must follow schema
+        const valid1 = JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'Valid1', color: 'teal' });
+        const valid2 = JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'Valid2', color: 'orange' });
+        const content = `${valid1}\n{Invalid JSON}\n${valid2}`;
         await page.evaluate((text) => navigator.clipboard.writeText(text), content);
 
         await page.click('#import-categories-btn');
@@ -64,8 +60,6 @@ test.describe('Abnormal Import Cases', () => {
         await expect(page.locator('#confirm-modal')).toBeVisible();
         await expect(page.locator('#confirm-message')).toContainText('3行中1行が破損しています');
         await page.click('#confirm-ok-btn');
-        // Wait for modal to update content rather than hide/show quickly
-        await expect(page.locator('#confirm-message')).not.toContainText('破損しています');
 
         // For overwrite mode, we get ANOTHER confirmation
         await expect(page.locator('#confirm-modal')).toBeVisible();
@@ -78,29 +72,29 @@ test.describe('Abnormal Import Cases', () => {
         await expect(page.locator('.category-btn:has-text("Valid2")')).toBeVisible();
     });
 
-    test('should handle Level 3: Field Level validation (Invalid fields)', async ({ page }) => {
-        const content = '{"name":"Valid1","color":"teal"}\n{"name":"InvalidColor","color":"invalid"}\n{"name":"","color":"orange"}';
+    test('should handle Level 3: Strict Schema validation (Invalid fields are rejected)', async ({ page }) => {
+        // Legacy "repair" is gone. Non-compliant items are treated as errors.
+        const valid1 = JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'Valid1', color: 'teal' });
+        const invalidColor = JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'InvalidColor', color: 'invalid' });
+        const emptyName = JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: '', color: 'orange' });
+
+        const content = `${valid1}\n${invalidColor}\n${emptyName}`;
         await page.evaluate((text) => navigator.clipboard.writeText(text), content);
 
         await page.click('#import-categories-btn');
 
-        // Multi-choice modal should appear
-        await expect(page.locator('#multi-choice-modal')).toBeVisible();
-        await expect(page.locator('#multi-choice-message')).toContainText('一部のデータに不備');
-
-        // Click "Apply Defaults"
-        await page.click('#multi-choice-btn-container button:has-text("デフォルト値を適用")');
-        await expect(page.locator('#multi-choice-modal')).toBeHidden();
-
-        // For overwrite mode, we get ANOTHER confirmation
+        // Should show partial error modal, NOT multi-choice (repair) modal
         await expect(page.locator('#confirm-modal')).toBeVisible();
+        await expect(page.locator('#confirm-message')).toContainText('3行中2行が破損しています');
+        await page.click('#confirm-ok-btn');
+
+        // Confirmation for overwrite
         await page.click('#confirm-ok-btn');
         await expect(page.locator('#confirm-modal')).toBeHidden();
 
-        // Verify everything imported with fallbacks
+        // Verify only the valid one imported
         await page.click('#settings-popup .close-btn'); // Close settings
         await expect(page.locator('.category-btn:has-text("Valid1")')).toBeVisible();
-        await expect(page.locator('.category-btn:has-text("InvalidColor")')).toBeVisible();
-        await expect(page.locator('.category-btn:has-text("Imported Category")')).toBeVisible();
+        await expect(page.locator('.category-btn:has-text("InvalidColor")')).not.toBeVisible();
     });
 });

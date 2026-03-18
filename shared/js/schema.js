@@ -32,9 +32,11 @@ export function validateCategorySchema(data) {
         if (!isValidColor(data.color)) return false;
         if (data.tags !== undefined && !Array.isArray(data.tags)) return false;
         if (data.animation !== undefined && (typeof data.animation !== 'string' || data.animation.length > 50)) return false;
+        if (data.order !== undefined && typeof data.order !== 'number') return false;
         return true;
     } else if (data.type === SCHEMA_TYPE_PAGE_BREAK) {
         // Page breaks must NOT have category-specific properties
+        if (data.order !== undefined && typeof data.order !== 'number') return false;
         return data.name === undefined &&
                data.color === undefined &&
                data.tags === undefined &&
@@ -106,7 +108,7 @@ export function validateSettingsSchema(data) {
             case 'language':
                 if (!['auto', 'ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'].includes(val)) return false;
                 break;
-            case 'reportSettings':
+            case 'reportSettings': {
                 if (typeof val !== 'object' || val === null) return false;
                 const required = ['format', 'emoji', 'endTime', 'duration', 'adjust'];
                 for (const k of required) {
@@ -118,6 +120,7 @@ export function validateSettingsSchema(data) {
                 if (!['none', 'right', 'bottom'].includes(val.duration)) return false;
                 if (!['none', '5', '10', '15', '30', '60'].includes(val.adjust)) return false;
                 break;
+            }
         }
     }
 

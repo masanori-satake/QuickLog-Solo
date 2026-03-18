@@ -59,6 +59,11 @@
     "animation": {
       "$ref": "#/definitions/animationId",
       "description": "Animation ID (only for regular categories)."
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional display order metadata for the application UI."
     }
   },
   "if": {

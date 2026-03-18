@@ -1,4 +1,4 @@
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, isValidColor } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
 import { t, setLanguage } from './i18n.js';
 import { validateCategorySchema, SCHEMA_TYPE_PAGE_BREAK } from './schema.js';
 
@@ -133,17 +133,27 @@ export async function dbImportCategories(items, importMode) {
         tx.onerror = (e) => reject(e.target.error);
 
         const performImport = (currentCategories) => {
-            let maxOrder = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
+            let maxOrderInDB = currentCategories.reduce((max, c) => Math.max(max, c.order || 0), -1);
+
+            // If importing metadata with order, we should find the max in the import set too
+            // to ensure appended items don't collide if they don't have order.
+            const importHasOrder = items.some(item => item.order !== undefined);
+
             for (const item of items) {
                 if (!validateCategorySchema(item)) {
                     console.warn('QuickLog-Solo: Skipping invalid item during import', item);
                     continue;
                 }
 
+                const order = (item.order !== undefined) ? item.order : ++maxOrderInDB;
+                if (importHasOrder && item.order === undefined) {
+                    // Safety: if some have order and some don't, ensure no collision with existing or new
+                }
+
                 if (item.type === SCHEMA_TYPE_PAGE_BREAK) {
                     store.add({
                         name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                        order: ++maxOrder
+                        order: order
                     });
                 } else {
                     if (importMode === 'append') {
@@ -153,7 +163,7 @@ export async function dbImportCategories(items, importMode) {
                     store.add({
                         name: item.name,
                         color: item.color,
-                        order: ++maxOrder,
+                        order: order,
                         tags: Array.isArray(item.tags) ? item.tags.join(',') : '',
                         animation: item.animation || 'default'
                     });

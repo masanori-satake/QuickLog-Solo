@@ -857,7 +857,7 @@ async function handleImport() {
                 } else {
                     errorCount++;
                 }
-            } catch (e) {
+            } catch {
                 errorCount++;
             }
         }
