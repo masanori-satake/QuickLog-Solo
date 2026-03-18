@@ -53,6 +53,7 @@ export const zh = {
     'alarm-action-pause': '暂停任务',
     'alarm-action-start': '开始分类',
     'alarm-placeholder-message': '输入消息...',
+    'alarm-tooltip-confirmation': '在点击确定按钮前保持通知，并在确认后执行操作',
     'toast-alarm-saved': '闹钟已保存',
     'btn-test-notification': '测试通知',
     'test-notification-message': '这是一条测试通知。它工作正常。',
@@ -127,6 +128,9 @@ export const zh = {
     'toast-cat-imported': '分类已导入',
     'toast-deleted': '删除完成',
     'no-logs-for-day': '该日无记录',
+
+    'notification-btn-ok': '确定',
+    'notification-btn-close': '关闭',
 
     'import-err-fatal': '文件格式不正确。导入已中止。',
     'import-err-partial': '在共 {total} 行中，有 {errorCount} 行已损坏。是否仅导入正常的 {validCount} 行？',

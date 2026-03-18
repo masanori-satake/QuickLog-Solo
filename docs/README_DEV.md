@@ -268,11 +268,21 @@ sequenceDiagram
 
     CA->>B: onAlarm
     B->>B: guardedInitialize()
-    B->>N: chrome.notifications.create
-    alt 自動アクションあり (stop/pause/start)
+    alt 確認が不要な場合 (requireConfirmation: false)
+        B->>N: chrome.notifications.create
+        alt 自動アクションあり (stop/pause/start)
+            B->>L: stop/pause/startTaskLogic()
+            B->>BC: postMessage('sync')
+            BC->>A: onmessage (UI更新)
+        end
+    else 確認が必要な場合 (requireConfirmation: true)
+        B->>N: chrome.notifications.create (ボタン付き・永続)
+        Note over U, N: ユーザーが通知をクリック/操作
+        U->>N: 「了解」ボタン押下
+        N->>B: onButtonClicked
         B->>L: stop/pause/startTaskLogic()
         B->>BC: postMessage('sync')
-        BC->>A: onmessage (UI更新)
+        B->>B: openSidePanel()
     end
 ```
 

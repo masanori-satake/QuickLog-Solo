@@ -62,6 +62,18 @@ classDiagram
 | `defaultAnimation` | string | 標準（共通）の背景アニメーション ID |
 | `language` | string | 表示言語 (`auto`, `ja`, `en`, `de`, `es`, `fr`, `pt`, `ko`, `zh`) |
 | `reportSettings` | object | 日報出力の詳細設定（フォーマット、絵文字、丸め設定等） |
+| `alarms` | array | アラーム設定の配列 |
+
+#### アラーム設定 (`alarms`) の詳細
+| プロパティ | 型 | 必須 | 説明 |
+| :--- | :--- | :---: | :--- |
+| `id` | integer | - | 一意識別子 |
+| `enabled` | boolean | ○ | 有効/無効 |
+| `time` | string | ○ | 実行時刻 (`HH:mm`) |
+| `message` | string | ○ | 表示メッセージ |
+| `action` | string | ○ | 実行アクション (`none`, `stop`, `pause`, `start`) |
+| `actionCategory` | string | ○ | アクションが `start` の場合のカテゴリ名 |
+| `requireConfirmation`| boolean | ○ | 実行前にユーザーの確認を求めるか |
 
 #### 日報設定 (`reportSettings`) の詳細
 | プロパティ | 型 | 必須 | 説明 |

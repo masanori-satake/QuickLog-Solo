@@ -38,6 +38,7 @@ export const ja = {
     'alarm-action-pause': '一時停止',
     'alarm-action-start': 'カテゴリ開始',
     'alarm-placeholder-message': 'メッセージを入力...',
+    'alarm-tooltip-confirmation': '了解ボタンが押されるまで通知を維持し、了解後にアクションを実行します',
     'toast-alarm-saved': 'アラームを保存しました',
     'btn-test-notification': '通知のテストを実行する',
     'test-notification-message': 'これは通知テストです。正常に表示されています。',
@@ -145,6 +146,9 @@ export const ja = {
     'toast-cat-imported': 'カテゴリをインポートしました',
     'toast-deleted': '削除が完了しました',
     'no-logs-for-day': 'この日の記録はありません',
+
+    'notification-btn-ok': '了解',
+    'notification-btn-close': '閉じる',
 
     'import-err-fatal': 'ファイル形式が正しくありません。インポートを中止します。',
     'import-err-partial': '全{total}行中{errorCount}行が破損しています。正常な{validCount}行のみを取り込みますか？',

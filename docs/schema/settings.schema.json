@@ -41,7 +41,8 @@
               "font",
               "defaultAnimation",
               "language",
-              "reportSettings"
+              "reportSettings",
+              "alarms"
             ],
             "description": "The unique key for the setting."
           },
@@ -102,6 +103,30 @@
                     "endTime": { "type": "string", "enum": ["none", "show"] },
                     "duration": { "type": "string", "enum": ["none", "right", "bottom"] },
                     "adjust": { "type": "string", "enum": ["none", "5", "10", "15", "30", "60"] }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": { "properties": { "key": { "const": "alarms" } } },
+            "then": {
+              "properties": {
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["enabled", "time", "message", "action", "actionCategory", "requireConfirmation"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "enabled": { "type": "boolean" },
+                      "time": { "type": "string", "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$" },
+                      "message": { "type": "string", "maxLength": 200 },
+                      "action": { "type": "string", "enum": ["none", "stop", "pause", "start"] },
+                      "actionCategory": { "type": "string", "maxLength": 100 },
+                      "requireConfirmation": { "type": "boolean" }
+                    }
                   }
                 }
               }

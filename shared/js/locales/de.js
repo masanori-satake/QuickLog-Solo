@@ -53,6 +53,7 @@ export const de = {
     'alarm-action-pause': 'Aufgabe pausieren',
     'alarm-action-start': 'Kategorie starten',
     'alarm-placeholder-message': 'Nachricht eingeben...',
+    'alarm-tooltip-confirmation': 'Benachrichtigung bis zum Klicken auf OK beibehalten, dann die Aktion ausführen',
     'toast-alarm-saved': 'Alarm gespeichert',
     'btn-test-notification': 'Test-Benachrichtigung',
     'test-notification-message': 'Dies ist ein Benachrichtigungstest. Er funktioniert ordnungsgemäß.',
@@ -127,6 +128,9 @@ export const de = {
     'toast-cat-imported': 'Kategorien importiert',
     'toast-deleted': 'Löschen abgeschlossen',
     'no-logs-for-day': 'Keine Protokolle für diesen Tag',
+
+    'notification-btn-ok': 'OK',
+    'notification-btn-close': 'Schließen',
 
     'import-err-fatal': 'Ungültiges Dateiformat. Import abgebrochen.',
     'import-err-partial': '{errorCount} von {total} Zeilen sind beschädigt. Möchten Sie nur die {validCount} gültigen Zeilen importieren?',

@@ -53,6 +53,7 @@ export const ko = {
     'alarm-action-pause': '작업 일시 중지',
     'alarm-action-start': '카테고리 시작',
     'alarm-placeholder-message': '메시지 입력...',
+    'alarm-tooltip-confirmation': '확인 버튼을 누를 때까지 알림을 유지하고 확인 후 작업을 실행합니다',
     'toast-alarm-saved': '알람이 저장되었습니다',
     'btn-test-notification': '알림 테스트',
     'test-notification-message': '알림 테스트입니다. 정상적으로 작동하고 있습니다.',
@@ -127,6 +128,9 @@ export const ko = {
     'toast-cat-imported': '카테고리를 가져왔습니다',
     'toast-deleted': '삭제가 완료되었습니다',
     'no-logs-for-day': '이 날의 기록이 없습니다',
+
+    'notification-btn-ok': '확인',
+    'notification-btn-close': '닫기',
 
     'import-err-fatal': '파일 형식이 올바르지 않습니다. 가져오기를 중단합니다.',
     'import-err-partial': '전체 {total}행 중 {errorCount}행이 손상되었습니다. 정상적인 {validCount}행만 가져오시겠습니까?',

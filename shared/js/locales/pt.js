@@ -53,6 +53,7 @@ export const pt = {
     'alarm-action-pause': 'Pausar Tarefa',
     'alarm-action-start': 'Iniciar Categoria',
     'alarm-placeholder-message': 'Digite a mensagem...',
+    'alarm-tooltip-confirmation': 'Manter a notificação até que OK seja clicado e, em seguida, executar a ação',
     'toast-alarm-saved': 'Alarme salvo',
     'btn-test-notification': 'Testar Notificação',
     'test-notification-message': 'Este é um teste de notificação. Está funcionando corretamente.',
@@ -127,6 +128,9 @@ export const pt = {
     'toast-cat-imported': 'Categorias importadas',
     'toast-deleted': 'Exclusão concluída',
     'no-logs-for-day': 'Sem registros para este dia',
+
+    'notification-btn-ok': 'OK',
+    'notification-btn-close': 'Fechar',
 
     'import-err-fatal': 'Formato de arquivo inválido. Importação abortada.',
     'import-err-partial': '{errorCount} de {total} linhas estão corrompidas. Deseja importar apenas as {validCount} linhas válidas?',

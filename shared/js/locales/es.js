@@ -53,6 +53,7 @@ export const es = {
     'alarm-action-pause': 'Pausar tarea',
     'alarm-action-start': 'Iniciar categoría',
     'alarm-placeholder-message': 'Ingrese mensaje...',
+    'alarm-tooltip-confirmation': 'Mantener la notificación hasta hacer clic en Aceptar, luego ejecutar la acción',
     'toast-alarm-saved': 'Alarma guardada',
     'btn-test-notification': 'Probar notificación',
     'test-notification-message': 'Esta es una prueba de notificación. Está funcionando correctamente.',
@@ -127,6 +128,9 @@ export const es = {
     'toast-cat-imported': 'Categorías importadas',
     'toast-deleted': 'Eliminación completada',
     'no-logs-for-day': 'No hay registros para este día',
+
+    'notification-btn-ok': 'Aceptar',
+    'notification-btn-close': 'Cerrar',
 
     'import-err-fatal': 'Formato de archivo no válido. Importación abortada.',
     'import-err-partial': '{errorCount} de {total} filas están dañadas. ¿Desea importar solo las {validCount} filas válidas?',

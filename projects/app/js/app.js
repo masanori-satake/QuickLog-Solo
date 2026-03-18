@@ -1173,6 +1173,10 @@ async function renderAlarmList() {
                     <span data-i18n="alarm-label-enabled">${t('alarm-label-enabled')}</span>
                 </label>
                 <input type="time" class="alarm-time" value="${alarm.time || '09:00'}">
+                <label class="alarm-confirm-label" title="${t('alarm-tooltip-confirmation')}">
+                    <input type="checkbox" class="alarm-confirm hidden" ${alarm.requireConfirmation ? 'checked' : ''}>
+                    <span class="material-symbols-outlined">task_alt</span>
+                </label>
             </div>
             <div class="alarm-row">
                 <span class="alarm-label" data-i18n="alarm-label-message">${t('alarm-label-message')}</span>
@@ -1198,6 +1202,7 @@ async function renderAlarmList() {
         const updateAlarm = async () => {
             alarm.enabled = item.querySelector('.alarm-enabled').checked;
             alarm.time = item.querySelector('.alarm-time').value;
+            alarm.requireConfirmation = item.querySelector('.alarm-confirm').checked;
             alarm.message = item.querySelector('.alarm-message').value.trim();
             alarm.action = item.querySelector('.alarm-action').value;
             alarm.actionCategory = item.querySelector('.alarm-category').value;
@@ -1218,6 +1223,7 @@ async function renderAlarmList() {
 
         item.querySelector('.alarm-enabled').onchange = updateAlarm;
         item.querySelector('.alarm-time').onchange = updateAlarm;
+        item.querySelector('.alarm-confirm').onchange = updateAlarm;
         item.querySelector('.alarm-message').onchange = updateAlarm;
         item.querySelector('.alarm-action').onchange = updateAlarm;
         item.querySelector('.alarm-category').onchange = updateAlarm;

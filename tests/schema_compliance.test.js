@@ -194,5 +194,57 @@ describe('Schema Compliance Tests', () => {
             expect(validateSettingsSchema(data)).toBe(false);
             expect(ajvValidateSettings(data)).toBe(false);
         });
+
+        test('should validate correct alarms entry in settings', () => {
+            const data = {
+                app: 'QuickLog-Solo',
+                kind: 'QuickLogSolo/Settings',
+                version: '1.0',
+                entries: [
+                    {
+                        key: 'alarms',
+                        value: [
+                            {
+                                id: 1,
+                                enabled: true,
+                                time: '09:00',
+                                message: 'Good morning',
+                                action: 'start',
+                                actionCategory: 'Dev',
+                                requireConfirmation: true
+                            }
+                        ]
+                    }
+                ]
+            };
+            expect(validateSettingsSchema(data)).toBe(true);
+            expect(ajvValidateSettings(data)).toBe(true);
+        });
+
+        test('should reject alarms entry with missing requireConfirmation', () => {
+            const data = {
+                app: 'QuickLog-Solo',
+                kind: 'QuickLogSolo/Settings',
+                version: '1.0',
+                entries: [
+                    {
+                        key: 'alarms',
+                        value: [
+                            {
+                                id: 1,
+                                enabled: true,
+                                time: '09:00',
+                                message: 'Good morning',
+                                action: 'none',
+                                actionCategory: ''
+                                // missing requireConfirmation
+                            }
+                        ]
+                    }
+                ]
+            };
+            expect(validateSettingsSchema(data)).toBe(false);
+            expect(ajvValidateSettings(data)).toBe(false);
+        });
     });
 });
