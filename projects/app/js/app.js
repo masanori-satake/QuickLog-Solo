@@ -1174,8 +1174,8 @@ async function renderAlarmList() {
                 </label>
                 <input type="time" class="alarm-time" value="${alarm.time || '09:00'}">
                 <label class="alarm-confirm-label" title="${t('alarm-tooltip-confirmation')}">
-                    <input type="checkbox" class="alarm-confirm hidden" ${alarm.requireConfirmation ? 'checked' : ''}>
                     <span class="material-symbols-outlined">task_alt</span>
+                    <input type="checkbox" class="alarm-confirm" ${alarm.requireConfirmation ? 'checked' : ''}>
                 </label>
             </div>
             <div class="alarm-row">

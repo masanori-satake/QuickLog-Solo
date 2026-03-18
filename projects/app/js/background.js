@@ -196,6 +196,9 @@ function openSidePanel() {
 chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIndex) => {
     if (!notificationId.startsWith('alarm_')) return;
 
+    // Immediately open the side panel to preserve user gesture
+    openSidePanel();
+
     const alarmId = parseInt(notificationId.split('_')[1]);
     const state = await getCurrentAppState();
     const alarmData = state.alarms.find(a => a.id === alarmId);
@@ -207,11 +210,8 @@ chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIn
             // "OK" button clicked (if action exists, it's at index 0)
             await executeAlarmAction(alarmData, state.activeTask);
         }
-        // "Close" button is at index 0 (if no action) or index 1 (if action exists)
-        // Both cases just need to open the side panel (and notification closes automatically)
     }
 
-    openSidePanel();
     chrome.notifications.clear(notificationId);
 });
 

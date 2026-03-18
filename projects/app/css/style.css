@@ -1493,17 +1493,26 @@ body.theme-dark button:active {
 .alarm-confirm-label {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     cursor: pointer;
     color: var(--md-sys-color-on-surface-variant);
     transition: color 0.2s;
-    width: 32px;
-    height: 32px;
+    gap: 4px;
+}
+
+.alarm-confirm-label .material-symbols-outlined {
+    font-size: 1.5rem;
+    padding: 4px;
     border-radius: 50%;
 }
 
-.alarm-confirm-label:hover {
+.alarm-confirm-label:hover .material-symbols-outlined {
     background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.alarm-confirm {
+    width: 16px !important;
+    height: 16px !important;
 }
 
 .alarm-label {
