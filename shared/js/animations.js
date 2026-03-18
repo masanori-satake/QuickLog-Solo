@@ -31,6 +31,7 @@ export class AnimationEngine {
         this.perfViolations = 0;
         this.maxViolations = 20;
         this.isDrawPending = false;
+        this.lastDrawRequestTime = 0;
         this.warmupFrames = 0;
         this.WARMUP_LIMIT = 180; // 3 seconds @ 60fps
 
