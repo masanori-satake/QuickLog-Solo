@@ -26,7 +26,7 @@ test.describe('Quick Start Guide Verification', () => {
   });
 
   test('should display screenshots correctly in Japanese', async ({ page }) => {
-    await page.goto(`http://localhost:8080/projects/web/guide.html?lang=ja`);
+    await page.goto(`/projects/web/guide.html?lang=ja`);
 
     const imgMain = page.locator('#img-main');
     await expect(imgMain).toHaveAttribute('src', 'shared/assets/guide/01_main_ja.png');
@@ -43,7 +43,7 @@ test.describe('Quick Start Guide Verification', () => {
   });
 
   test('should display screenshots correctly in English', async ({ page }) => {
-    await page.goto(`http://localhost:8080/projects/web/guide.html?lang=en`);
+    await page.goto(`/projects/web/guide.html?lang=en`);
 
     const imgMain = page.locator('#img-main');
     await expect(imgMain).toHaveAttribute('src', 'shared/assets/guide/01_main_en.png');

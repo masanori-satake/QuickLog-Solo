@@ -4,13 +4,13 @@ test('Feedback implementation verification', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
 
   // 1. Check Language Flags
-  await page.goto('http://localhost:8080/projects/web/index.html');
+  await page.goto('/projects/web/index.html');
   const langOptions = await page.locator('#lang-select-landing option').allTextContents();
   console.log('Lang Options:', langOptions);
   expect(langOptions[0]).toContain('🇺🇸');
 
   // 2. Check Category Editor UI
-  await page.goto('http://localhost:8080/projects/category-editor/index.html');
+  await page.goto('/projects/category-editor/index.html');
   await page.waitForSelector('.category-item');
 
   // Check pane width (approx) - Allow for border
