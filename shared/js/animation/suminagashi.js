@@ -55,10 +55,10 @@ export default class Suminagashi extends AnimationBase {
     constructor() {
         super();
         this.particles = [];
-        this.fieldU = null;     // Horizontal velocity component
-        this.fieldV = null;     // Vertical velocity component
-        this.bufferU = null;    // Buffer for velocity diffusion
-        this.bufferV = null;    // Buffer for velocity diffusion
+        this.fieldU = new Float32Array(0);     // Horizontal velocity component
+        this.fieldV = new Float32Array(0);     // Vertical velocity component
+        this.bufferU = new Float32Array(0);    // Buffer for velocity diffusion
+        this.bufferV = new Float32Array(0);    // Buffer for velocity diffusion
         this.cols = 0;
         this.rows = 0;
         this.width = 0;

@@ -60,9 +60,9 @@ export default class PhysarumMold extends AnimationBase {
     constructor() {
         super();
         this.agents = [];
-        this.trailMap = null;       // Pheromone levels (Float32Array)
-        this.trailMapBuffer = null; // Buffer for diffusion
-        this.foodMap = null;        // Food availability (Float32Array)
+        this.trailMap = new Float32Array(0);       // Pheromone levels (Float32Array)
+        this.trailMapBuffer = new Float32Array(0); // Buffer for diffusion
+        this.foodMap = new Float32Array(0);        // Food availability (Float32Array)
         this.cols = 0;
         this.rows = 0;
         this.width = 0;

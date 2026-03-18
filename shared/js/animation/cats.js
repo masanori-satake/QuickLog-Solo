@@ -33,6 +33,14 @@ export default class Cats extends AnimationBase {
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
 
+    constructor() {
+        super();
+        this.cats = [];
+        this.foods = [];
+        this.lastPlatforms = [];
+        this.groundY = 0;
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理

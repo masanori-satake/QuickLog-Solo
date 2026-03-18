@@ -33,6 +33,12 @@ export default class Ripple extends AnimationBase {
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
 
+    constructor() {
+        super();
+        this.ripples = [];
+        this.maxRadius = 0;
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理

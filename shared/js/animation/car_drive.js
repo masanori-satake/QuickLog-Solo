@@ -34,6 +34,13 @@ export default class CarDrive extends AnimationBase {
 
     config = { mode: 'canvas', exclusionStrategy: 'mask' };
 
+    constructor() {
+        super();
+        this.mountains = [];
+        this.stars = [];
+        this.horizonY = 0;
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理

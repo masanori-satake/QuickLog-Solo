@@ -51,7 +51,7 @@ export default class PlasmaDischarge extends AnimationBase {
 
     constructor() {
         super();
-        this.stuck = null;   // Uint8Array: 1 if occupied, 0 if free
+        this.stuck = new Uint8Array(0);   // Uint8Array: 1 if occupied, 0 if free
         this.particles = []; // Random walkers
         this.cols = 0;
         this.rows = 0;

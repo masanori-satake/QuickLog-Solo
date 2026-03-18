@@ -34,6 +34,13 @@ export default class NewtonsCradle extends AnimationBase {
 
     config = { mode: 'canvas', exclusionStrategy: 'mask' };
 
+    constructor() {
+        super();
+        this.ballCount = 0;
+        this.ballRadius = 0;
+        this.stringLength = 0;
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理

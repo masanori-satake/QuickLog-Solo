@@ -33,6 +33,12 @@ export default class HeroPot extends AnimationBase {
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
 
+    constructor() {
+        super();
+        this.hero = { shards: [] };
+        this.pots = [];
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理

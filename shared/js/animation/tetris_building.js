@@ -33,6 +33,16 @@ export default class TetrisBuilding extends AnimationBase {
 
     config = { mode: 'matrix', exclusionStrategy: 'mask' };
 
+    constructor() {
+        super();
+        this.grid = [];
+        this.cols = 0;
+        this.rows = 0;
+        this.yOffset = 0;
+        this.xOffset = 0;
+        this.cellSize = 0;
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理
@@ -45,7 +55,7 @@ export default class TetrisBuilding extends AnimationBase {
         // テトリス・グリッドの設定
         this.cols = 6;
         this.cellSize = 12; // 2x2 matrix cells
-        this.rows = Math.floor((height - 12) / this.cellSize);
+        this.rows = Math.max(0, Math.floor((height - 12) / this.cellSize));
 
         // Horizontal placement (default to left)
         // 水平位置の初期設定（デフォルトは左端）

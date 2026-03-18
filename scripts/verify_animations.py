@@ -42,7 +42,11 @@ def verify_animations():
             else:
                 violations.extend(validate_metadata_text(metadata_text, filename))
 
-            # 2. Verify the rest of the code with masking
+            # 2. Ensure explicit constructor for defensive initialization
+            if not re.search(r'\bconstructor\s*\(\s*\)\s*\{', raw_content):
+                violations.append(f"Violation in {filename}: Missing explicit constructor. All animations must initialize state arrays in the constructor for robustness.")
+
+            # 3. Verify the rest of the code with masking
             clean_content = remove_comments_and_strings(raw_content)
             for pattern in FORBIDDEN_PATTERNS:
                 if re.search(pattern, clean_content):
