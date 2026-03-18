@@ -34,6 +34,13 @@ export default class MigratingBirds extends AnimationBase {
 
     config = { mode: 'sprite', exclusionStrategy: 'jump' };
 
+    constructor() {
+        super();
+        this.yBase = 0;
+        this.birdCount = 0;
+        this.spacing = 0;
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理

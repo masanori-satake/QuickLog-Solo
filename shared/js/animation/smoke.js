@@ -33,6 +33,11 @@ export default class Smoke extends AnimationBase {
 
     config = { mode: 'canvas', exclusionStrategy: 'mask' };
 
+    constructor() {
+        super();
+        this.particles = [];
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理

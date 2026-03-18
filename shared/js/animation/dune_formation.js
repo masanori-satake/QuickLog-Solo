@@ -57,7 +57,7 @@ export default class DuneFormation extends AnimationBase {
     constructor() {
         super();
         this.particles = [];
-        this.grid = null; // 1D Float32Array
+        this.grid = new Float32Array(0); // 1D Float32Array
         this.cols = 0;
         this.rows = 0;
         this.width = 0;

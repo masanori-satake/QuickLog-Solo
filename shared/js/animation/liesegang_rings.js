@@ -55,11 +55,11 @@ export default class LiesegangRings extends AnimationBase {
 
     constructor() {
         super();
-        this.gridA = null;       // Concentration of chemical A
-        this.gridB = null;       // Concentration of chemical B
-        this.bufferA = null;     // Buffer for diffusion
-        this.bufferB = null;     // Buffer for diffusion
-        this.precipitate = null; // 1 if precipitate exists, 0 otherwise
+        this.gridA = new Float32Array(0);       // Concentration of chemical A
+        this.gridB = new Float32Array(0);       // Concentration of chemical B
+        this.bufferA = new Float32Array(0);     // Buffer for diffusion
+        this.bufferB = new Float32Array(0);     // Buffer for diffusion
+        this.precipitate = new Uint8Array(0);   // 1 if precipitate exists, 0 otherwise
         this.cols = 0;
         this.rows = 0;
         this.width = 0;

@@ -30,6 +30,11 @@ export default class TestPattern extends AnimationBase {
 
     config = { mode: 'sprite', exclusionStrategy: 'freedom' };
 
+    constructor() {
+        super();
+        this.dots = [];
+    }
+
     setup(width, height) {
         this.dots = [];
         const step = 6;

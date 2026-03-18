@@ -34,6 +34,12 @@ export default class CoffeeDrip extends AnimationBase {
 
     config = { mode: 'canvas', exclusionStrategy: 'mask' };
 
+    constructor() {
+        super();
+        this.width = 0;
+        this.height = 0;
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理

@@ -22,6 +22,7 @@ export class AnimationEngine {
         this.activeAnimationId = null;
         this.config = { exclusionStrategy: 'mask' };
         this.initialized = false;
+        this.setupDone = false;
         this.requestRawBitmap = false;
         this.onRawBitmapDraw = null;
         this.onStop = null;
@@ -117,6 +118,7 @@ export class AnimationEngine {
         this.startTime = startTime;
         this.color = color;
         this.initialized = false;
+        this.setupDone = false;
         this.perfViolations = 0;
         this.warmupFrames = 0;
 
@@ -184,6 +186,7 @@ export class AnimationEngine {
     }
 
     _renderDots(dots) {
+        if (!dots) return;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.fillStyle = this.color;
         dots.forEach(dot => {
@@ -205,6 +208,7 @@ export class AnimationEngine {
         }
         this.activeAnimationId = null;
         this.initialized = false;
+        this.setupDone = false;
         if (this.ctx) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
@@ -217,7 +221,7 @@ export class AnimationEngine {
     }
 
     draw() {
-        if (!this.worker || !this.initialized) return;
+        if (!this.worker || !this.initialized || !this.setupDone) return;
 
         // If a draw is already pending in the worker, skip this frame
         // to avoid queuing up messages and causing latency spikes.
@@ -259,7 +263,10 @@ export class AnimationEngine {
         const parent = this.canvas.parentElement;
         if (!parent) return;
         const rect = parent.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) return;
+        if (rect.width === 0 || rect.height === 0) {
+            this.setupDone = false;
+            return;
+        }
 
         this.canvas.width = Math.floor(rect.width);
         this.canvas.height = Math.floor(rect.height);
@@ -270,6 +277,7 @@ export class AnimationEngine {
                 w = this._getPseudoInfo().totalWidth;
             }
             this.worker.postMessage({ type: 'setup', payload: { width: w, height: this.canvas.height } });
+            this.setupDone = true;
         }
     }
 }

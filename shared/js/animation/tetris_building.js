@@ -33,6 +33,16 @@ export default class TetrisBuilding extends AnimationBase {
 
     config = { mode: 'matrix', exclusionStrategy: 'mask' };
 
+    constructor() {
+        super();
+        this.grid = [];
+        this.cols = 0;
+        this.rows = 0;
+        this.yOffset = 0;
+        this.xOffset = 0;
+        this.cellSize = 0;
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理

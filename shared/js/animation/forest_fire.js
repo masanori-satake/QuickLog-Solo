@@ -60,9 +60,9 @@ export default class ForestFire extends AnimationBase {
 
     constructor() {
         super();
-        this.grid = null;        // Current state
-        this.gridBuffer = null;  // Next state
-        this.timers = null;      // Time remaining for burning cells
+        this.grid = new Uint8Array(0);        // Current state
+        this.gridBuffer = new Uint8Array(0);  // Next state
+        this.timers = new Uint8Array(0);      // Time remaining for burning cells
         this.cols = 0;
         this.rows = 0;
         this.width = 0;

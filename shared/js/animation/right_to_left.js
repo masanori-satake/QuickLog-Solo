@@ -34,6 +34,12 @@ export default class RightToLeft extends AnimationBase {
 
     config = { mode: 'sprite', exclusionStrategy: 'jump' };
 
+    constructor() {
+        super();
+        this.width = 0;
+        this.height = 0;
+    }
+
     /**
      * Initial setup and resizing
      * 初期設定およびリサイズ時の処理
