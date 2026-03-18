@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Settings Persistence', () => {
   test.beforeEach(async ({ page }) => {
     const dbName = `SettingsTestDB_${Math.random().toString(36).substring(7)}`;
-    await page.goto(`?db=${dbName}`);
+    await page.goto(`/projects/app/app.html?db=${dbName}`);
     await page.waitForSelector('#app');
 
     // Handle persistence modal if it appears

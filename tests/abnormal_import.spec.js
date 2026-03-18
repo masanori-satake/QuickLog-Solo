@@ -8,7 +8,7 @@ test.describe('Abnormal Import Cases', () => {
         await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 
         const dbName = `ImportTestDB_${Math.random().toString(36).substring(7)}`;
-        await page.goto(`?lang=ja&db=${dbName}`);
+        await page.goto(`/projects/app/app.html?lang=ja&db=${dbName}`);
         await page.waitForSelector('.category-btn');
         // Open settings and go to categories tab
         await page.click('#settings-toggle');

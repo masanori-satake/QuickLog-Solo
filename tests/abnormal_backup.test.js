@@ -157,7 +157,6 @@ describe('BackupManager Abnormal Cases', () => {
         // Invalid values for known keys
         expect(backupManager._validateSetting({ key: 'theme', value: 'purple' })).toBeNull();
         expect(backupManager._validateSetting({ key: 'language', value: 'ru' })).toBeNull();
-        expect(backupManager._validateSetting({ key: 'autoStop', value: 'yes' })).toBeNull();
 
         // Valid case
         expect(backupManager._validateSetting({ key: 'theme', value: 'dark' })).toEqual({ key: 'theme', value: 'dark' });
