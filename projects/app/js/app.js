@@ -1,5 +1,5 @@
 import {
-    initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbDelete, dbClear, dbImportCategories,
+    initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbAddMultiple, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS
@@ -2034,6 +2034,10 @@ function setupEventListeners() {
             if (lines.length === 0) return;
 
             const existingLogs = await dbGetAll(STORE_LOGS);
+            // Optimization: Create a Set of keys for O(1) duplicate lookup
+            const existingKeys = new Set(existingLogs.map(l => `${l.category}|${l.startTime}`));
+            const importedKeys = new Set(); // To prevent duplicates within the same CSV
+
             const now = Date.now();
             const FUTURE_BUFFER = 5 * 60 * 1000; // 5 minutes allowance
 
@@ -2048,8 +2052,9 @@ function setupEventListeners() {
                     continue;
                 }
                 const [, category, startStr, endStr] = parts;
-                const startTime = parseInt(startStr);
-                const endTime = endStr ? parseInt(endStr) : null;
+                const startTime = parseInt(startStr, 10);
+                const rawEndTime = endStr ? parseInt(endStr, 10) : null;
+                const endTime = isNaN(rawEndTime) ? null : rawEndTime;
 
                 // 1. Basic Validation
                 if (!category || isNaN(startTime)) {
@@ -2070,7 +2075,8 @@ function setupEventListeners() {
                 }
 
                 // 4. Duplicate Check (exact match of category and startTime)
-                if (existingLogs.some(l => l.category === category && l.startTime === startTime)) {
+                const recordKey = `${category}|${startTime}`;
+                if (existingKeys.has(recordKey) || importedKeys.has(recordKey)) {
                     duplicateCount++;
                     continue;
                 }
@@ -2080,6 +2086,7 @@ function setupEventListeners() {
                     startTime,
                     endTime: endTime
                 });
+                importedKeys.add(recordKey);
             }
 
             if (validRows.length === 0) {
@@ -2100,9 +2107,8 @@ function setupEventListeners() {
                 if (!proceed) return;
             }
 
-            for (const row of validRows) {
-                await dbPut(STORE_LOGS, row);
-            }
+            // Optimization: Batch insertion in a single transaction
+            await dbAddMultiple(STORE_LOGS, validRows);
 
             updateUI();
             broadcastSync('reload');

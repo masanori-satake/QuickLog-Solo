@@ -49,6 +49,7 @@ test.describe('Maintenance and Initialization', () => {
 
         // 5. Verify custom category still exists
         await page.click('#settings-toggle');
+        await page.waitForSelector('#settings-popup', { state: 'visible' });
         await page.click('button[data-tab="categories"]');
         await expect(page.locator('.category-edit-name[value="KeepMe"]')).toBeVisible();
     });
@@ -71,6 +72,7 @@ test.describe('Maintenance and Initialization', () => {
 
         // 3. Verify custom category is gone
         await page.click('#settings-toggle');
+        await page.waitForSelector('#settings-popup', { state: 'visible' });
         await page.click('button[data-tab="categories"]');
         await expect(page.locator('.category-edit-name[value="DeleteMe"]')).not.toBeVisible();
     });
