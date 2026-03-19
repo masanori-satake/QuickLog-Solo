@@ -390,7 +390,9 @@ export function initUI(state, elements) {
             }
 
             if (state.updatePreview) state.updatePreview();
-        } catch { }
+        } catch (e) {
+            console.error('Error rendering detail:', e);
+        }
     }
 
     function updateAnimationInfo() {

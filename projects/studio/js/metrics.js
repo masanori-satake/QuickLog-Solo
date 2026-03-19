@@ -5,7 +5,7 @@
 export function initMetrics(state, elements) {
     const {
         metricsPanel, showMetricsCheck, metricLatency, metricDensity,
-        metricChange, metricStatus, needleLatency, needleDensity,
+        metricChange, needleLatency, needleDensity,
         needleChange, consoleSection, consoleOutput, clearConsoleBtn,
         toggleConsoleBtn, tapeCounterEl
     } = elements;
@@ -13,11 +13,6 @@ export function initMetrics(state, elements) {
     let metricsInterval = null;
     let lastImageData = null;
     let lastLatency = 0;
-
-    function getMsg(key) {
-        if (state.getMsg) return state.getMsg(key);
-        return key;
-    }
 
     function updateMeter(needle, value, max) {
         if (!needle) return;

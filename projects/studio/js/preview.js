@@ -8,15 +8,10 @@ export function initPreview(state, elements) {
         rawCanvasContainer, rawCanvas, shrinkPreviewBtn, expandPreviewBtn,
         previewContainer, colorPresetsContainer, speedSlider, speedValue,
         stopBtn, rewindBtn, playBtn, ffBtn, pauseBtn, ejectBtn, sampleSelect,
-        configMode, configExclusionStrategy, configRewindable
+        configMode, configRewindable
     } = elements;
 
     let isScrubbing = false;
-
-    function getMsg(key) {
-        if (state.getMsg) return state.getMsg(key);
-        return key;
-    }
 
     function setupColorPresets() {
         const colors = [

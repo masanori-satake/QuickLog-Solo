@@ -5,7 +5,7 @@
 export function initIO(state, elements) {
     const {
         downloadBtn, uploadBtn, uploadInput, prBtn, prModal,
-        closePrBtns, metaName, metaAuthor, metaDesc, configRewindable,
+        closePrBtns, metaName, metaAuthor, configRewindable,
         configMode, configExclusionStrategy, inputVars, inputSetup,
         inputDraw, inputInteraction
     } = elements;
