@@ -307,4 +307,6 @@ export const ja = {
     'toast-export-success': 'コピーに成功しました',
     'toast-no-categories': 'コピーするカテゴリがありません',
     'page-break-label': '改ページ',
+    'undo': '元に戻す',
+    'redo': 'やり直し',
 };

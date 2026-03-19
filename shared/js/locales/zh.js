@@ -285,4 +285,6 @@ export const zh = {
     'toast-export-success': '复制成功',
     'toast-no-categories': '没有可复制的分类',
     'page-break-label': '换页',
+    'undo': '撤销',
+    'redo': '重做',
 };

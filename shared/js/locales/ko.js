@@ -285,4 +285,6 @@ export const ko = {
     'toast-export-success': '복사 성공',
     'toast-no-categories': '복사할 카테고리가 없습니다',
     'page-break-label': '페이지 나누기',
+    'undo': '실행 취소',
+    'redo': '다시 실행',
 };

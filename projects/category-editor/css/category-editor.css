@@ -835,6 +835,12 @@ input:checked + .slider::before {
     background-color: var(--md-sys-color-surface-container-highest);
 }
 
+.history-controls .icon-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    background: transparent;
+}
+
 .primary-btn, .secondary-btn, .tertiary-btn {
     display: flex;
     align-items: center;
@@ -881,4 +887,11 @@ body.theme-light .primary-btn:hover {
 
 body.theme-light .secondary-btn:hover {
     filter: brightness(0.95);
+}
+
+/* History Controls (Ordered for specificity) */
+.history-controls {
+    display: flex;
+    gap: 4px;
+    margin-left: 12px;
 }
