@@ -96,7 +96,9 @@ export function initDataIO(state, elements) {
             showToast(t('toast-import-success'));
         } catch (err) {
             console.error(err);
-            if (err.name !== 'NotAllowedError') {
+            if (err.name === 'NotAllowedError') {
+                 console.warn('Clipboard access denied');
+            } else {
                  showToast(t('toast-import-failed'));
             }
         }

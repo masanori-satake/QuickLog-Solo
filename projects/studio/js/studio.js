@@ -26,6 +26,7 @@ const state = {
     },
     engine: null,
     currentState: StudioState.STOPPED,
+    isScrubbing: false,
     virtualElapsedMs: 0,
     lastFrameTime: 0,
     isDirty: false,

@@ -11,8 +11,6 @@ export function initPreview(state, elements) {
         configMode, configRewindable
     } = elements;
 
-    let isScrubbing = false;
-
     function setupColorPresets() {
         const colors = [
             '#0056d2', '#1976d2', '#039be5', '#0097a7', '#00796b', '#388e3c',
@@ -155,10 +153,10 @@ export function initPreview(state, elements) {
     }
 
     async function scrub(direction) {
-        if (state.currentState === 'STOPPED' || isScrubbing) return;
+        if (state.currentState === 'STOPPED' || state.isScrubbing) return;
         if (direction === -1 && rewindBtn.disabled) return;
 
-        isScrubbing = true;
+        state.isScrubbing = true;
         const originalState = state.currentState;
         const btn = direction === -1 ? rewindBtn : ffBtn;
         btn.classList.add('active');
@@ -188,7 +186,7 @@ export function initPreview(state, elements) {
         }
 
         btn.classList.remove('active');
-        isScrubbing = false;
+        state.isScrubbing = false;
 
         if (state.currentState !== 'STOPPED') {
             if (originalState === 'PLAYING') {

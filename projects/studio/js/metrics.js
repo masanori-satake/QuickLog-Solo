@@ -54,7 +54,11 @@ export function initMetrics(state, elements) {
     }
 
     function startMetricsCollection(engine) {
+        if (metricsInterval) {
+            clearInterval(metricsInterval);
+        }
         lastImageData = null;
+        lastLatency = 0;
 
         if (!engine._handleWorkerMessage._isPatched) {
             const original = engine._handleWorkerMessage;
@@ -126,7 +130,11 @@ export function initMetrics(state, elements) {
     }
 
     function stopMetricsCollection() {
-        clearInterval(metricsInterval);
+        if (metricsInterval) {
+            clearInterval(metricsInterval);
+            metricsInterval = null;
+        }
+        lastImageData = null;
     }
 
     function updateTapeCounter(virtualElapsedMs) {
