@@ -389,10 +389,10 @@ function setupEventListeners() {
                     const cat = categories[idx];
                     if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
 
-                    const currentTags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+                    const currentTags = getCategoryTags(cat);
                     if (!currentTags.includes(tag)) {
                         currentTags.push(tag);
-                        cat.tags = currentTags.join(', ');
+                        updateCategoryTags(cat, currentTags);
                     }
                 });
                 renderTags();
@@ -780,6 +780,11 @@ function renderDetail() {
         const labelTheme = document.querySelector('label[data-i18n="setting-theme"]');
         const labelAnimation = document.querySelector('label[for="edit-animation"]');
 
+        const isMulti = selectedIndices.length > 1;
+        if (labelTags) labelTags.textContent = t(isMulti ? 'tags-common' : 'tags');
+        if (labelTheme) labelTheme.textContent = t(isMulti ? 'setting-theme-common' : 'setting-theme');
+        if (labelAnimation) labelAnimation.textContent = t(isMulti ? 'setting-animation-by-category-common' : 'setting-animation-by-category');
+
         if (selectedIndices.length === 0) {
             detailSection.classList.add('hidden');
             previewNameEl.textContent = '';
@@ -787,11 +792,6 @@ function renderDetail() {
             animInfoEl.classList.add('hidden');
             previewOverlay.classList.remove('anim-active');
             previewContainer.classList.remove('anim-active');
-
-            // Reset labels
-            if (labelTags) labelTags.textContent = t('tags');
-            if (labelTheme) labelTheme.textContent = t('setting-theme');
-            if (labelAnimation) labelAnimation.textContent = t('setting-animation-by-category');
             return;
         }
 
@@ -813,11 +813,6 @@ function renderDetail() {
 
             editNameInput.value = '';
             editNameInput.disabled = true;
-
-            // Multiple Selection: Labels become (Common)
-            if (labelTags) labelTags.textContent = t('tags-common');
-            if (labelTheme) labelTheme.textContent = t('setting-theme-common');
-            if (labelAnimation) labelAnimation.textContent = t('setting-animation-by-category-common');
 
             // Enable tag input for multi-selection
             tagInput.disabled = isFirstPageBreak;
@@ -861,11 +856,6 @@ function renderDetail() {
         }
 
         const idx = selectedIndices[0];
-
-        // Single Selection: Labels revert to original
-        if (labelTags) labelTags.textContent = t('tags');
-        if (labelTheme) labelTheme.textContent = t('setting-theme');
-        if (labelAnimation) labelAnimation.textContent = t('setting-animation-by-category');
         const cat = categories[idx];
         const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
 
@@ -959,6 +949,26 @@ function updateAnimationInfo() {
     }
 }
 
+/**
+ * Helper to get tags as an array from a category object.
+ * @param {object} cat
+ * @returns {string[]}
+ */
+function getCategoryTags(cat) {
+    if (!cat || !cat.tags) return [];
+    return cat.tags.split(',').map(t => t.trim()).filter(Boolean);
+}
+
+/**
+ * Helper to update tags on a category object from an array.
+ * @param {object} cat
+ * @param {string[]} tags
+ */
+function updateCategoryTags(cat, tags) {
+    if (!cat) return;
+    cat.tags = tags.join(', ');
+}
+
 function renderTags() {
     tagListEl.innerHTML = '';
     if (selectedIndices.length === 0) return;
@@ -966,13 +976,13 @@ function renderTags() {
     let commonTags = [];
     if (selectedIndices.length === 1) {
         const idx = selectedIndices[0];
-        commonTags = categories[idx].tags ? categories[idx].tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+        commonTags = getCategoryTags(categories[idx]);
     } else {
         // Compute intersection for multiple selection
         const tagSets = selectedIndices
             .map(idx => categories[idx])
             .filter(cat => !cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
-            .map(cat => new Set(cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : []));
+            .map(cat => new Set(getCategoryTags(cat)));
 
         if (tagSets.length > 0) {
             const firstSet = tagSets[0];
@@ -1000,9 +1010,9 @@ function renderTags() {
             selectedIndices.forEach(idx => {
                 const cat = categories[idx];
                 if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
-                const tags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+                const tags = getCategoryTags(cat);
                 const filtered = tags.filter(t => t !== tag);
-                cat.tags = filtered.join(', ');
+                updateCategoryTags(cat, filtered);
             });
             renderTags();
             updateCodeView();
@@ -1133,7 +1143,7 @@ function updateCodeView() {
         if (!isPageBreak) {
             entry.name = cat.name;
             entry.color = cat.color;
-            entry.tags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+            entry.tags = getCategoryTags(cat);
             entry.animation = cat.animation || 'default';
         }
         return JSON.stringify(entry);
