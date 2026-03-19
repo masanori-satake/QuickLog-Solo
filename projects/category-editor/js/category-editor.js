@@ -217,10 +217,8 @@ function setupEventListeners() {
     deleteSelectedBtn.addEventListener('click', () => {
         if (selectedIndices.length === 0) return;
         if (confirm(t('confirm-delete-selected', { count: selectedIndices.length }))) {
-            const indicesToRemove = [...selectedIndices].sort((a, b) => b - a);
-            indicesToRemove.forEach(idx => {
-                categories.splice(idx, 1);
-            });
+            const selectedSet = new Set(selectedIndices);
+            categories = categories.filter((_, idx) => !selectedSet.has(idx));
             selectedIndices = [];
             lastSelectedIndex = -1;
             renderCategoryList();
@@ -479,6 +477,7 @@ function renderCategoryList() {
                     selectedIndices = selectedIndices.filter(i => i !== idx);
                 } else {
                     selectedIndices.push(idx);
+                    selectedIndices = [...new Set(selectedIndices)]; // Ensure uniqueness
                 }
                 lastSelectedIndex = idx;
             } else if (e.shiftKey && lastSelectedIndex !== -1) {
