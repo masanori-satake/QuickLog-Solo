@@ -21,7 +21,7 @@ let currentTheme = 'dark';
 // History Management
 let historyStack = [];
 let redoStack = [];
-const HISTORY_LIMIT = 51; // Allow up to 50 undo steps
+const HISTORY_LIMIT = 50; // Allow up to 50 undo steps
 let isRecordingInput = false;
 let inputInitialState = null;
 
@@ -170,10 +170,15 @@ function updateTranslations() {
 }
 
 // --- History Logic ---
-function saveHistory() {
-    commitInput(); // Ensure pending input is saved before any other action
+/**
+ * Records the current state into the history stack BEFORE a modification.
+ * This ensures that undoing will return to this exact state.
+ */
+function recordAction() {
+    commitInput(); // Close any open text editing session
     const state = JSON.stringify(categories);
-    // Only save if different from last state
+
+    // Only save if different from last recorded state
     if (historyStack.length > 0 && historyStack[historyStack.length - 1] === state) return;
 
     historyStack.push(state);
@@ -185,28 +190,27 @@ function saveHistory() {
 }
 
 function clearHistory() {
-    historyStack = [JSON.stringify(categories)];
+    historyStack = [];
     redoStack = [];
     updateHistoryButtons();
 }
 
 function undo() {
-    if (historyStack.length <= 1) return;
     commitInput();
+    if (historyStack.length === 0) return;
 
     const currentState = JSON.stringify(categories);
     redoStack.push(currentState);
 
-    historyStack.pop(); // Remove current state
-    const previousState = historyStack[historyStack.length - 1];
+    const previousState = historyStack.pop();
     categories = JSON.parse(previousState);
 
     refreshUIAfterHistoryChange();
 }
 
 function redo() {
-    if (redoStack.length === 0) return;
     commitInput();
+    if (redoStack.length === 0) return;
 
     const currentState = JSON.stringify(categories);
     historyStack.push(currentState);
@@ -218,7 +222,7 @@ function redo() {
 }
 
 function updateHistoryButtons() {
-    undoBtn.disabled = historyStack.length <= 1;
+    undoBtn.disabled = historyStack.length === 0;
     redoBtn.disabled = redoStack.length === 0;
 }
 
@@ -256,29 +260,13 @@ function commitInput() {
 
     const currentState = JSON.stringify(categories);
     if (currentState !== inputInitialState) {
-        // We push the initial state as the "before" snapshot if history is empty
-        // But saveHistory handles the logic of pushing current state.
-        // Actually, if we use the same saveHistory logic, it works.
-        // The requirement is: "save state before editing starts".
-
-        // Let's adjust: saveHistory normally saves the current state.
-        // For input, we want to have the state BEFORE the input in history,
-        // and then the state AFTER the input in history.
-
-        // If we just call saveHistory() now, it saves the state AFTER the input.
-        // But we need to make sure the state BEFORE the input was already in history.
-        // It usually is, because any action that leads to input (like selecting or adding)
-        // would have called saveHistory.
-
-        const lastSaved = historyStack[historyStack.length - 1];
-        if (lastSaved !== currentState) {
-            historyStack.push(currentState);
-            if (historyStack.length > HISTORY_LIMIT) {
-                historyStack.shift();
-            }
-            redoStack = [];
-            updateHistoryButtons();
+        // Record the initial state (before typing) into history
+        historyStack.push(inputInitialState);
+        if (historyStack.length > HISTORY_LIMIT) {
+            historyStack.shift();
         }
+        redoStack = [];
+        updateHistoryButtons();
     }
     inputInitialState = null;
 }
@@ -325,7 +313,7 @@ function setupEventListeners() {
     redoBtn.addEventListener('click', redo);
 
     addCategoryBtn.addEventListener('click', () => {
-        saveHistory();
+        recordAction();
         const newCat = {
             name: 'New Category',
             color: 'primary',
@@ -338,7 +326,6 @@ function setupEventListeners() {
         renderCategoryList();
         renderDetail();
         updateCodeView();
-        saveHistory();
 
         // Scroll to bottom
         categoryListEl.scrollTop = categoryListEl.scrollHeight;
@@ -347,7 +334,7 @@ function setupEventListeners() {
     deleteSelectedBtn.addEventListener('click', () => {
         if (selectedIndices.length === 0) return;
         if (confirm(t('confirm-delete-selected', { count: selectedIndices.length }))) {
-            saveHistory();
+            recordAction();
             const selectedSet = new Set(selectedIndices);
             categories = categories.filter((_, idx) => !selectedSet.has(idx));
             selectedIndices = [];
@@ -355,12 +342,11 @@ function setupEventListeners() {
             renderCategoryList();
             renderDetail();
             updateCodeView();
-            saveHistory();
         }
     });
 
     addPageBreakBtn.addEventListener('click', () => {
-        saveHistory();
+        recordAction();
         const newPB = {
             name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
@@ -370,7 +356,6 @@ function setupEventListeners() {
         renderCategoryList();
         renderDetail();
         updateCodeView();
-        saveHistory();
 
         // Scroll to bottom
         categoryListEl.scrollTop = categoryListEl.scrollHeight;
@@ -399,7 +384,7 @@ function setupEventListeners() {
             e.preventDefault();
             const tag = tagInput.value.trim().replace(/,/g, '');
             if (tag && selectedIndices.length === 1) {
-                saveHistory();
+                recordAction();
                 const idx = selectedIndices[0];
                 const currentTags = categories[idx].tags ? categories[idx].tags.split(',').map(t => t.trim()) : [];
                 if (!currentTags.includes(tag)) {
@@ -409,14 +394,13 @@ function setupEventListeners() {
                     updateCodeView();
                 }
                 tagInput.value = '';
-                saveHistory();
             }
         }
     });
 
     editAnimationSelect.addEventListener('change', (e) => {
         if (selectedIndices.length === 0) return;
-        saveHistory();
+        recordAction();
         const animation = e.target.value;
         selectedIndices.forEach(idx => {
             const cat = categories[idx];
@@ -426,7 +410,6 @@ function setupEventListeners() {
         });
         renderDetail();
         updateCodeView();
-        saveHistory();
     });
 
     editAnimationSelect.addEventListener('mouseenter', () => {
@@ -442,22 +425,20 @@ function setupEventListeners() {
 
     newStartBtn.addEventListener('click', () => {
         if (confirm(t('confirm-load-default'))) {
-            saveHistory();
+            recordAction();
             loadDefaultCategories();
-            saveHistory();
         }
     });
 
     clearAllBtn.addEventListener('click', () => {
         if (confirm(t('confirm-clear-all'))) {
-            saveHistory();
+            recordAction();
             categories = [];
             selectedIndices = [];
             lastSelectedIndex = -1;
             renderCategoryList();
             renderDetail();
             updateCodeView();
-            saveHistory();
         }
     });
 
@@ -540,7 +521,7 @@ function setupEventListeners() {
 
         const prevSelectedItems = selectedIndices.map(i => categories[i]);
 
-        saveHistory();
+        recordAction();
         categories = newCategories;
         selectedIndices = prevSelectedItems.map(item => categories.indexOf(item)).filter(i => i !== -1);
         lastSelectedIndex = categories.indexOf(dragItem);
@@ -548,7 +529,6 @@ function setupEventListeners() {
         renderCategoryList();
         renderDetail();
         updateCodeView();
-        saveHistory();
     });
 }
 
@@ -616,7 +596,7 @@ function renderCategoryList() {
             deleteBtn.title = t('delete');
             deleteBtn.onclick = (e) => {
                 e.stopPropagation();
-                saveHistory();
+                recordAction();
                 categories.splice(idx, 1);
                 selectedIndices = selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
                 if (lastSelectedIndex === idx) lastSelectedIndex = -1;
@@ -624,7 +604,6 @@ function renderCategoryList() {
                 renderCategoryList();
                 renderDetail();
                 updateCodeView();
-                saveHistory();
             };
             item.appendChild(deleteBtn);
         } else {
@@ -697,9 +676,8 @@ function showCategoryMenu(e, idx) {
     duplicateBtn.appendChild(document.createTextNode(' ' + t('duplicate')));
     duplicateBtn.onclick = (event) => {
         event.stopPropagation();
-        saveHistory();
+        recordAction();
         duplicateCategory(idx);
-        saveHistory();
         menu.remove();
     };
 
@@ -714,7 +692,7 @@ function showCategoryMenu(e, idx) {
         event.stopPropagation();
         const cat = categories[idx];
         if (confirm(t('confirm-delete-category', { name: cat.name }))) {
-            saveHistory();
+            recordAction();
             categories.splice(idx, 1);
             selectedIndices = selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
             if (lastSelectedIndex === idx) lastSelectedIndex = -1;
@@ -722,7 +700,6 @@ function showCategoryMenu(e, idx) {
             renderCategoryList();
             renderDetail();
             updateCodeView();
-            saveHistory();
         }
         menu.remove();
     };
@@ -974,12 +951,11 @@ function renderTags() {
 
         removeBtn.onclick = (e) => {
             e.stopPropagation();
-            saveHistory();
+            recordAction();
             tags.splice(tIdx, 1);
             categories[idx].tags = tags.join(', ');
             renderTags();
             updateCodeView();
-            saveHistory();
         };
         tagListEl.appendChild(pill);
     });
@@ -1000,7 +976,7 @@ function renderColorPalette() {
 
         opt.onclick = () => {
             if (selectedIndices.length === 0) return;
-            saveHistory();
+            recordAction();
             selectedIndices.forEach(idx => {
                 const cat = categories[idx];
                 if (!cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
@@ -1010,7 +986,6 @@ function renderColorPalette() {
             renderDetail();
             renderCategoryList();
             updateCodeView();
-            saveHistory();
         };
         colorPaletteEl.appendChild(opt);
     });
@@ -1158,14 +1133,13 @@ async function handleImport() {
             }
         }
 
-        saveHistory();
+        recordAction();
         categories = validItems;
         selectedIndices = categories.length > 0 ? [0] : [];
         lastSelectedIndex = categories.length > 0 ? 0 : -1;
         renderCategoryList();
         renderDetail();
         updateCodeView();
-        saveHistory();
         showToast(t('toast-import-success'));
     } catch (err) {
         console.error(err);

@@ -835,6 +835,12 @@ input:checked + .slider::before {
     background-color: var(--md-sys-color-surface-container-highest);
 }
 
+.history-controls .icon-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    background: transparent;
+}
+
 .primary-btn, .secondary-btn, .tertiary-btn {
     display: flex;
     align-items: center;
@@ -888,10 +894,4 @@ body.theme-light .secondary-btn:hover {
     display: flex;
     gap: 4px;
     margin-left: 12px;
-}
-
-.history-controls .icon-btn:disabled {
-    opacity: 0.3;
-    cursor: default;
-    background: transparent;
 }
