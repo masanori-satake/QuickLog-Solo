@@ -6,132 +6,181 @@ import { animations } from '../shared/js/animation_registry.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { messages } from '../shared/js/messages.js';
 
-let currentLang = 'en';
-let metaLang = 'en';
-let metaData = {
-    name: {},
-    description: {}
-};
-let engine = null;
+import { initEditor } from './editor.js';
+import { initMetrics } from './metrics.js';
+import { initPreview } from './preview.js';
+import { initIO } from './io.js';
+
 const StudioState = {
     STOPPED: 'STOPPED',
     PLAYING: 'PLAYING',
     PAUSED: 'PAUSED'
 };
-let currentState = StudioState.STOPPED;
-let isScrubbing = false;
-let virtualElapsedMs = 0;
-let lastFrameTime = 0;
 
-let isDirty = false;
-let workerUrl = null;
-let currentPreviewColor = '#0056d2'; // Default primary
-let currentTheme = 'dark';
-let isWordWrap = true;
-let currentSpeed = 1.0;
+const state = {
+    currentLang: 'en',
+    metaLang: 'en',
+    metaData: {
+        name: {},
+        description: {}
+    },
+    engine: null,
+    currentState: StudioState.STOPPED,
+    isScrubbing: false,
+    virtualElapsedMs: 0,
+    lastFrameTime: 0,
+    isDirty: false,
+    workerUrl: null,
+    currentPreviewColor: '#0056d2',
+    currentTheme: 'dark',
+    currentSpeed: 1.0,
+
+    // Methods to be filled by modules or studio.js
+    getMsg: (key) => (messages[state.currentLang] && messages[state.currentLang][key]) || messages.en[key] || key,
+    markDirty: () => { state.isDirty = true; },
+    showToast: (msg) => {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+};
 
 // DOM Elements
-const sampleSelect = document.getElementById('sample-select');
-const langSelect = document.getElementById('lang-select-studio');
-const themeToggle = document.getElementById('theme-toggle');
-const metaLangSelect = document.getElementById('meta-lang-select');
-const codeTabs = document.querySelectorAll('.code-tab');
-const editors = document.querySelectorAll('.editor-container');
+const elements = {
+    sampleSelect: document.getElementById('sample-select'),
+    langSelect: document.getElementById('lang-select-studio'),
+    themeToggle: document.getElementById('theme-toggle'),
+    metaLangSelect: document.getElementById('meta-lang-select'),
+    codeTabs: document.querySelectorAll('.code-tab'),
+    editors: document.querySelectorAll('.editor-container'),
 
-const stopBtn = document.getElementById('stop-btn');
-const rewindBtn = document.getElementById('rewind-btn');
-const playBtn = document.getElementById('play-btn');
-const ffBtn = document.getElementById('ff-btn');
-const pauseBtn = document.getElementById('pause-btn');
-const ejectBtn = document.getElementById('eject-btn');
-const tapeCounterEl = document.getElementById('tape-counter');
+    stopBtn: document.getElementById('stop-btn'),
+    rewindBtn: document.getElementById('rewind-btn'),
+    playBtn: document.getElementById('play-btn'),
+    ffBtn: document.getElementById('ff-btn'),
+    pauseBtn: document.getElementById('pause-btn'),
+    ejectBtn: document.getElementById('eject-btn'),
+    tapeCounterEl: document.getElementById('tape-counter'),
 
-const downloadBtn = document.getElementById('download-btn');
-const uploadBtn = document.getElementById('upload-btn');
-const uploadInput = document.getElementById('studio-upload-input');
-const prBtn = document.getElementById('pr-btn');
-const prModal = document.getElementById('pr-modal');
-const closePrBtns = document.querySelectorAll('.close-modal-btn');
+    downloadBtn: document.getElementById('download-btn'),
+    uploadBtn: document.getElementById('upload-btn'),
+    uploadInput: document.getElementById('studio-upload-input'),
+    prBtn: document.getElementById('pr-btn'),
+    prModal: document.getElementById('pr-modal'),
+    closePrBtns: document.querySelectorAll('.close-modal-btn'),
 
-const inputVars = document.getElementById('input-vars');
-const inputSetup = document.getElementById('input-setup');
-const inputDraw = document.getElementById('input-draw');
-const inputInteraction = document.getElementById('input-interaction');
+    inputVars: document.getElementById('input-vars'),
+    inputSetup: document.getElementById('input-setup'),
+    inputDraw: document.getElementById('input-draw'),
+    inputInteraction: document.getElementById('input-interaction'),
 
-const metaName = document.getElementById('meta-name');
-const metaAuthor = document.getElementById('meta-author');
-const metaDesc = document.getElementById('meta-desc');
-const configMode = document.getElementById('config-mode');
-const configExclusionStrategy = document.getElementById('config-exclusion-strategy');
-const configRewindable = document.getElementById('config-rewindable');
+    metaName: document.getElementById('meta-name'),
+    metaAuthor: document.getElementById('meta-author'),
+    metaDesc: document.getElementById('meta-desc'),
+    configMode: document.getElementById('config-mode'),
+    configExclusionStrategy: document.getElementById('config-exclusion-strategy'),
+    configRewindable: document.getElementById('config-rewindable'),
 
-const canvas = document.getElementById('animation-canvas');
-const exclusionSim = document.getElementById('exclusion-simulator');
-const metricsPanel = document.getElementById('metrics-panel');
-const showMetricsCheck = document.getElementById('show-metrics');
-const showExclusionCheck = document.getElementById('show-exclusion');
-const showCanvasLabel = document.getElementById('show-canvas-label');
-const showCanvasCheck = document.getElementById('show-canvas');
-const shrinkPreviewBtn = document.getElementById('shrink-preview');
-const expandPreviewBtn = document.getElementById('expand-preview');
-const previewContainer = document.getElementById('preview-container');
-const rawCanvasContainer = document.getElementById('raw-canvas-container');
-const rawCanvas = document.getElementById('raw-canvas');
-const colorPresetsContainer = document.getElementById('preview-color-presets');
-const speedSlider = document.getElementById('preview-speed');
-const speedValue = document.getElementById('speed-value');
+    canvas: document.getElementById('animation-canvas'),
+    exclusionSim: document.getElementById('exclusion-simulator'),
+    metricsPanel: document.getElementById('metrics-panel'),
+    showMetricsCheck: document.getElementById('show-metrics'),
+    showExclusionCheck: document.getElementById('show-exclusion'),
+    showCanvasLabel: document.getElementById('show-canvas-label'),
+    showCanvasCheck: document.getElementById('show-canvas'),
+    shrinkPreviewBtn: document.getElementById('shrink-preview'),
+    expandPreviewBtn: document.getElementById('expand-preview'),
+    previewContainer: document.getElementById('preview-container'),
+    rawCanvasContainer: document.getElementById('raw-canvas-container'),
+    rawCanvas: document.getElementById('raw-canvas'),
+    colorPresetsContainer: document.getElementById('preview-color-presets'),
+    speedSlider: document.getElementById('preview-speed'),
+    speedValue: document.getElementById('speed-value'),
 
-const metricLatency = document.getElementById('metric-latency');
-const metricDensity = document.getElementById('metric-density');
-const metricChange = document.getElementById('metric-change');
-const metricStatus = document.getElementById('metric-status');
+    metricLatency: document.getElementById('metric-latency'),
+    metricDensity: document.getElementById('metric-density'),
+    metricChange: document.getElementById('metric-change'),
+    metricStatus: document.getElementById('metric-status'),
 
-const needleLatency = document.getElementById('meter-latency').querySelector('.meter-needle');
-const needleDensity = document.getElementById('meter-density').querySelector('.meter-needle');
-const needleChange = document.getElementById('meter-change').querySelector('.meter-needle');
+    needleLatency: document.getElementById('meter-latency').querySelector('.meter-needle'),
+    needleDensity: document.getElementById('meter-density').querySelector('.meter-needle'),
+    needleChange: document.getElementById('meter-change').querySelector('.meter-needle'),
 
-const toggleWrapBtn = document.getElementById('toggle-wrap');
-const showSearchBtn = document.getElementById('show-search');
-const searchBar = document.getElementById('search-bar');
-const searchInput = document.getElementById('search-input');
-const replaceInput = document.getElementById('replace-input');
-const btnReplace = document.getElementById('btn-replace');
-const btnReplaceAll = document.getElementById('btn-replace-all');
-const closeSearchBtn = document.getElementById('close-search');
+    toggleWrapBtn: document.getElementById('toggle-wrap'),
+    showSearchBtn: document.getElementById('show-search'),
+    searchBar: document.getElementById('search-bar'),
+    searchInput: document.getElementById('search-input'),
+    replaceInput: document.getElementById('replace-input'),
+    btnReplace: document.getElementById('btn-replace'),
+    btnReplaceAll: document.getElementById('btn-replace-all'),
+    closeSearchBtn: document.getElementById('close-search'),
 
-const consoleSection = document.getElementById('console-section');
-const consoleOutput = document.getElementById('console-output');
-const clearConsoleBtn = document.getElementById('clear-console');
-const toggleConsoleBtn = document.getElementById('toggle-console');
+    consoleSection: document.getElementById('console-section'),
+    consoleOutput: document.getElementById('console-output'),
+    clearConsoleBtn: document.getElementById('clear-console'),
+    toggleConsoleBtn: document.getElementById('toggle-console')
+};
+
+let editorMod, metricsMod, previewMod, ioMod;
 
 // Initialize
 function init() {
     setupLanguage();
     setupTheme();
-    setupEngine();
+    state.engine = new AnimationEngine(elements.canvas);
+
+    // Modules initialization
+    editorMod = initEditor(state, elements);
+    metricsMod = initMetrics(state, elements);
+    previewMod = initPreview(state, elements);
+    ioMod = initIO(state, elements);
+
+    // Register module methods to state for cross-module calls
+    state.updateAllHighlight = editorMod.updateAllHighlight;
+    state.updateAllGutter = editorMod.updateAllGutter;
+    state.startMetricsCollection = metricsMod.startMetricsCollection;
+    state.stopMetricsCollection = metricsMod.stopMetricsCollection;
+    state.resetMeters = metricsMod.resetMeters;
+    state.updateTapeCounter = () => metricsMod.updateTapeCounter(state.virtualElapsedMs);
+    state.appendConsole = metricsMod.appendConsole;
+    state.showConsole = metricsMod.showConsole;
+    state.updateExclusionAreas = previewMod.updateExclusionAreas;
+    state.updateCanvasControlVisibility = previewMod.updateCanvasControlVisibility;
+    state.updateTapeControlState = previewMod.updateTapeControlState;
+    state.adjustPreviewHeight = previewMod.adjustPreviewHeight;
+    state.buildModuleCode = ioMod.buildModuleCode;
+
+    // Studio.js specific state methods
+    state.startTest = startTest;
+    state.stopTest = stopTest;
+    state.pauseTest = pauseTest;
+    state.resumeTest = resumeTest;
+    state.resetStudioUI = resetStudioUI;
+    state.saveCurrentMetaData = saveCurrentMetaData;
+    state.loadCurrentMetaData = loadCurrentMetaData;
+    state.parseAndPopulate = parseAndPopulate;
+    state.requestStudioDraw = _requestStudioDraw;
+
     populateSamples();
-    setupColorPresets();
     setupEventListeners();
-    setupDraggableResizable();
-    setupEditorEnhancements();
 
     // Initial UI state
-    updateAllGutter();
-    updateAllHighlight();
+    state.updateAllGutter();
+    state.updateAllHighlight();
 }
 
 function setupTheme() {
     const savedTheme = localStorage.getItem('studio-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    // Body class is already set by inline script to prevent flickering
-    themeToggle.checked = (currentTheme === 'dark');
+    state.currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    elements.themeToggle.checked = (state.currentTheme === 'dark');
 }
 
 function applyTheme() {
     document.body.classList.remove('theme-light', 'theme-dark');
-    document.body.classList.add(`theme-${currentTheme}`);
+    document.body.classList.add(`theme-${state.currentTheme}`);
 }
 
 function setupLanguage() {
@@ -153,10 +202,10 @@ function setupLanguage() {
         }
     }
 
-    currentLang = matched;
-    metaLang = matched;
-    langSelect.value = matched;
-    metaLangSelect.value = matched;
+    state.currentLang = matched;
+    state.metaLang = matched;
+    elements.langSelect.value = matched;
+    elements.metaLangSelect.value = matched;
     updateTranslations();
     updateBackLink();
 }
@@ -164,15 +213,15 @@ function setupLanguage() {
 function updateBackLink() {
     const backLink = document.querySelector('.back-link');
     if (backLink) {
-        backLink.href = `../web/index.html?lang=${encodeURIComponent(currentLang)}`;
+        backLink.href = `../web/index.html?lang=${encodeURIComponent(state.currentLang)}`;
     }
 }
 
 function updateTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (messages[currentLang] && messages[currentLang][key]) {
-            el.textContent = messages[currentLang][key];
+        if (messages[state.currentLang] && messages[state.currentLang][key]) {
+            el.textContent = messages[state.currentLang][key];
         } else if (messages._common && messages._common[key]) {
             el.textContent = messages._common[key];
         } else if (messages.en[key] !== undefined) {
@@ -182,8 +231,8 @@ function updateTranslations() {
 
     document.querySelectorAll('[data-i18n-html]').forEach(el => {
         const key = el.getAttribute('data-i18n-html');
-        if (messages[currentLang] && messages[currentLang][key]) {
-            el.innerHTML = messages[currentLang][key];
+        if (messages[state.currentLang] && messages[state.currentLang][key]) {
+            el.innerHTML = messages[state.currentLang][key];
         } else if (messages.en[key]) {
             el.innerHTML = messages.en[key];
         }
@@ -191,8 +240,8 @@ function updateTranslations() {
 
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
         const key = el.getAttribute('data-i18n-title');
-        if (messages[currentLang] && messages[currentLang][key]) {
-            el.title = messages[currentLang][key];
+        if (messages[state.currentLang] && messages[state.currentLang][key]) {
+            el.title = messages[state.currentLang][key];
         } else if (messages.en[key] !== undefined) {
             el.title = messages.en[key];
         }
@@ -200,37 +249,9 @@ function updateTranslations() {
 
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
-        if (messages[currentLang] && messages[currentLang][key]) {
-            el.placeholder = messages[currentLang][key];
+        if (messages[state.currentLang] && messages[state.currentLang][key]) {
+            el.placeholder = messages[state.currentLang][key];
         }
-    });
-}
-
-function setupEngine() {
-    engine = new AnimationEngine(canvas);
-}
-
-function setupColorPresets() {
-    const colors = [
-        '#0056d2', '#1976d2', '#039be5', '#0097a7', '#00796b', '#388e3c',
-        '#7cb342', '#fbc02d', '#ffa000', '#f57c00', '#d32f2f', '#c2185b',
-        '#8e24aa', '#5e35b1', '#303f9f'
-    ];
-
-    colors.forEach(color => {
-        const div = document.createElement('div');
-        div.className = 'color-preset';
-        if (color === currentPreviewColor) div.classList.add('active');
-        div.style.backgroundColor = color;
-        div.addEventListener('click', () => {
-            currentPreviewColor = color;
-            document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-            div.classList.add('active');
-            if (currentState !== StudioState.STOPPED && engine) {
-                engine.color = color;
-            }
-        });
-        colorPresetsContainer.appendChild(div);
     });
 }
 
@@ -238,382 +259,194 @@ function populateSamples() {
     animations.forEach(anim => {
         const option = document.createElement('option');
         option.value = anim.id;
-        const name = typeof anim.metadata.name === 'object' ? anim.metadata.name[currentLang] || anim.metadata.name.en : anim.metadata.name;
+        const name = typeof anim.metadata.name === 'object' ? anim.metadata.name[state.currentLang] || anim.metadata.name.en : anim.metadata.name;
         const glyph = anim.devOnly ? '\u3000 ' : '📦 ';
         option.textContent = glyph + name;
-        sampleSelect.appendChild(option);
+        elements.sampleSelect.appendChild(option);
     });
 }
 
 function setupEventListeners() {
-    langSelect.addEventListener('change', (e) => {
-        currentLang = e.target.value;
+    elements.langSelect.addEventListener('change', (e) => {
+        state.currentLang = e.target.value;
 
         const url = new URL(window.location);
-        url.searchParams.set('lang', currentLang);
+        url.searchParams.set('lang', state.currentLang);
         window.history.replaceState({}, '', url);
 
         updateTranslations();
         updateBackLink();
 
-        // Re-populate samples to update names
-        const val = sampleSelect.value;
-        sampleSelect.innerHTML = '<option value="" data-i18n="sample-select-placeholder">サンプルを選択...</option>';
-        updateTranslations(); // Refill placeholder
+        const val = elements.sampleSelect.value;
+        elements.sampleSelect.innerHTML = '<option value="" data-i18n="sample-select-placeholder">サンプルを選択...</option>';
+        updateTranslations();
         populateSamples();
-        sampleSelect.value = val;
+        elements.sampleSelect.value = val;
     });
 
-    themeToggle.addEventListener('change', () => {
-        currentTheme = themeToggle.checked ? 'dark' : 'light';
-        localStorage.setItem('studio-theme', currentTheme);
+    elements.themeToggle.addEventListener('change', () => {
+        state.currentTheme = elements.themeToggle.checked ? 'dark' : 'light';
+        localStorage.setItem('studio-theme', state.currentTheme);
         applyTheme();
     });
 
-    metaLangSelect.addEventListener('change', (e) => {
+    elements.metaLangSelect.addEventListener('change', (e) => {
         saveCurrentMetaData();
-        metaLang = e.target.value;
+        state.metaLang = e.target.value;
         loadCurrentMetaData();
     });
 
-    metaName.addEventListener('input', () => {
+    elements.metaName.addEventListener('input', () => {
         saveCurrentMetaData();
-        markDirty();
+        state.markDirty();
     });
-    metaDesc.addEventListener('input', () => {
+    elements.metaDesc.addEventListener('input', () => {
         saveCurrentMetaData();
-        markDirty();
+        state.markDirty();
     });
-    metaAuthor.addEventListener('input', markDirty);
-    configMode.addEventListener('change', () => {
-        markDirty();
-        updateCanvasControlVisibility();
+    elements.metaAuthor.addEventListener('input', state.markDirty);
+    elements.configMode.addEventListener('change', () => {
+        state.markDirty();
+        state.updateCanvasControlVisibility();
     });
-    configExclusionStrategy.addEventListener('change', () => {
-        markDirty();
-        updateExclusionAreas();
+    elements.configExclusionStrategy.addEventListener('change', () => {
+        state.markDirty();
+        state.updateExclusionAreas();
     });
-    configRewindable.addEventListener('change', () => {
-        markDirty();
-        updateTapeControlState();
+    elements.configRewindable.addEventListener('change', () => {
+        state.markDirty();
+        state.updateTapeControlState();
     });
 
-    [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
-        el.addEventListener('input', () => {
-            markDirty();
-            updateGutter(el);
-            updateHighlight(el);
-        });
-        el.addEventListener('scroll', () => {
-            syncScroll(el);
-        });
-    });
-
-    sampleSelect.addEventListener('change', (e) => {
+    elements.sampleSelect.addEventListener('change', (e) => {
         if (e.target.value) {
-            if (currentState !== StudioState.STOPPED) {
+            if (state.currentState !== StudioState.STOPPED) {
                 stopTest();
             }
-            resetStudioUI(false); // Don't reset everything if just changing sample
+            resetStudioUI(false);
             loadSample(e.target.value);
         }
     });
 
-    codeTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            codeTabs.forEach(t => t.classList.remove('active'));
-            editors.forEach(e => e.classList.remove('active'));
-            tab.classList.add('active');
-            const targetId = tab.getAttribute('data-target');
-            const target = document.getElementById(targetId);
-            target.classList.add('active');
-
-            // Refresh highlighting and gutter for the newly visible editor
-            const textarea = target.querySelector('textarea');
-            if (textarea) {
-                updateHighlight(textarea);
-                updateGutter(textarea);
-                syncScroll(textarea);
-            }
-        });
-    });
-
-    playBtn.addEventListener('click', () => {
-        if (currentState === StudioState.STOPPED) {
-            startTest();
-        } else if (currentState === StudioState.PAUSED) {
-            resumeTest();
-        }
-    });
-
-    stopBtn.addEventListener('click', stopTest);
-
-    pauseBtn.addEventListener('click', () => {
-        if (currentState === StudioState.PLAYING) {
-            pauseTest();
-        } else if (currentState === StudioState.PAUSED) {
-            resumeTest();
-        }
-    });
-
-    rewindBtn.addEventListener('click', () => scrub(-1));
-    ffBtn.addEventListener('click', () => scrub(1));
-
-    ejectBtn.addEventListener('click', () => {
-        if (currentState === StudioState.STOPPED) {
-            sampleSelect.value = '';
-            resetStudioUI(true);
-        }
-    });
-
-    downloadBtn.addEventListener('click', downloadAnimation);
-    uploadBtn.addEventListener('click', () => uploadInput.click());
-    uploadInput.addEventListener('change', handleUpload);
-    prBtn.addEventListener('click', () => prModal.classList.remove('hidden'));
-    closePrBtns.forEach(btn => btn.addEventListener('click', () => prModal.classList.add('hidden')));
-    prModal.addEventListener('click', (e) => {
-        if (e.target === prModal) {
-            prModal.classList.add('hidden');
-        }
-    });
-
-    showMetricsCheck.addEventListener('change', (e) => {
-        metricsPanel.style.display = e.target.checked ? 'grid' : 'none';
-    });
-
-    showExclusionCheck.addEventListener('change', (e) => {
-        exclusionSim.style.display = e.target.checked ? 'flex' : 'none';
-        updateExclusionAreas();
-    });
-
-    showCanvasCheck.addEventListener('change', (e) => {
-        const checked = e.target.checked;
-        rawCanvasContainer.classList.toggle('hidden', !checked);
-        if (engine) engine.requestRawBitmap = checked;
-    });
-
     window.addEventListener('beforeunload', (e) => {
-        if (isDirty) {
+        if (state.isDirty) {
             e.preventDefault();
             e.returnValue = '';
         }
     });
 
-    window.addEventListener('resize', () => {
-        if (engine) engine.resize();
-        // Wait for potential wrapping to finish before updating gutter
-        setTimeout(updateAllGutter, 50);
-    });
-
     window.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
             e.preventDefault();
-            searchBar.classList.toggle('hidden');
-            if (!searchBar.classList.contains('hidden')) {
-                searchInput.focus();
-            }
-        } else if (e.key === 'Escape') {
-            if (!prModal.classList.contains('hidden')) {
-                prModal.classList.add('hidden');
-            }
-            if (!searchBar.classList.contains('hidden')) {
-                searchBar.classList.add('hidden');
+            elements.searchBar.classList.toggle('hidden');
+            if (!elements.searchBar.classList.contains('hidden')) {
+                elements.searchInput.focus();
             }
         }
     });
-
-    shrinkPreviewBtn.addEventListener('click', () => adjustPreviewHeight(-20));
-    expandPreviewBtn.addEventListener('click', () => adjustPreviewHeight(20));
-
-    speedSlider.addEventListener('input', (e) => {
-        currentSpeed = parseFloat(e.target.value);
-        speedValue.textContent = currentSpeed.toFixed(1);
-        // Speed is now handled in engine.draw override for testing
-    });
-
-    toggleWrapBtn.addEventListener('click', () => {
-        isWordWrap = !isWordWrap;
-        toggleWrapBtn.classList.toggle('active', isWordWrap);
-        document.querySelectorAll('.editor-textarea, .editor-highlight').forEach(el => {
-            if (isWordWrap) {
-                el.classList.remove('no-wrap');
-            } else {
-                el.classList.add('no-wrap');
-            }
-        });
-        updateAllGutter();
-    });
-
-    showSearchBtn.addEventListener('click', () => {
-        searchBar.classList.toggle('hidden');
-        if (!searchBar.classList.contains('hidden')) {
-            searchInput.focus();
-        }
-    });
-
-    closeSearchBtn.addEventListener('click', () => {
-        searchBar.classList.add('hidden');
-    });
-
-
-    btnReplace.addEventListener('click', () => handleReplace(false));
-    btnReplaceAll.addEventListener('click', () => handleReplace(true));
-
-    toggleConsoleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleConsole();
-    });
-
-    document.querySelector('.console-header').addEventListener('click', () => {
-        toggleConsole();
-    });
-
-    clearConsoleBtn.addEventListener('click', () => {
-        consoleOutput.innerHTML = '';
-    });
-}
-
-function markDirty() {
-    isDirty = true;
-}
-
-function updateCanvasControlVisibility() {
-    const isCanvasMode = configMode.value === 'canvas';
-    const hasSample = !!sampleSelect.value;
-    showCanvasLabel.style.display = isCanvasMode ? 'flex' : 'none';
-    if (isCanvasMode && hasSample) {
-        showCanvasCheck.checked = true;
-        rawCanvasContainer.classList.remove('hidden');
-        if (engine) engine.requestRawBitmap = true;
-    } else {
-        showCanvasCheck.checked = false;
-        rawCanvasContainer.classList.add('hidden');
-        if (engine) engine.requestRawBitmap = false;
-    }
 }
 
 function resetStudioUI(full = true) {
     if (full) {
-        // 1. Metadata - Editor Language (metaLang)
-        metaLang = currentLang;
-        metaLangSelect.value = currentLang;
-        metaData = {
+        state.metaLang = state.currentLang;
+        elements.metaLangSelect.value = state.currentLang;
+        state.metaData = {
             name: {},
             description: {}
         };
-        metaName.value = '';
-        metaAuthor.value = '';
-        metaDesc.value = '';
+        elements.metaName.value = '';
+        elements.metaAuthor.value = '';
+        elements.metaDesc.value = '';
 
-        // Reset inputs
-        inputVars.value = '';
-        inputSetup.value = '';
-        inputDraw.value = '';
-        inputInteraction.value = '';
-        updateAllHighlight();
-        updateAllGutter();
+        elements.inputVars.value = '';
+        elements.inputSetup.value = '';
+        elements.inputDraw.value = '';
+        elements.inputInteraction.value = '';
+        state.updateAllHighlight();
+        state.updateAllGutter();
     }
 
-    // 2. Configuration
-    configRewindable.checked = false;
-    configExclusionStrategy.value = 'mask';
-    updateTapeControlState();
-    updateCanvasControlVisibility();
+    elements.configRewindable.checked = false;
+    elements.configExclusionStrategy.value = 'mask';
+    state.updateTapeControlState();
+    state.updateCanvasControlVisibility();
 
-    // 3. Preview
-    // Reset Color
     const defaultColor = '#0056d2';
-    currentPreviewColor = defaultColor;
+    state.currentPreviewColor = defaultColor;
     document.querySelectorAll('.color-preset').forEach(p => {
-        const isDefault = p.style.backgroundColor === 'rgb(0, 86, 210)'; // #0056d2
+        const isDefault = p.style.backgroundColor === 'rgb(0, 86, 210)';
         p.classList.toggle('active', isDefault);
     });
-    if (currentState !== StudioState.STOPPED && engine) engine.color = defaultColor;
+    if (state.currentState !== StudioState.STOPPED && state.engine) state.engine.color = defaultColor;
 
-    // Reset Speed
-    currentSpeed = 1.0;
-    speedSlider.value = 1.0;
-    speedValue.textContent = '1.0';
+    state.currentSpeed = 1.0;
+    elements.speedSlider.value = 1.0;
+    elements.speedValue.textContent = '1.0';
 
-    // Reset Checkboxes
-    showMetricsCheck.checked = true;
-    metricsPanel.style.display = 'grid';
-    showExclusionCheck.checked = true;
-    exclusionSim.style.display = 'flex';
+    elements.showMetricsCheck.checked = true;
+    elements.metricsPanel.style.display = 'grid';
+    elements.showExclusionCheck.checked = true;
+    elements.exclusionSim.style.display = 'flex';
 
-    // Reset Preview Height
-    previewContainer.style.height = '150px';
-    rawCanvasContainer.style.height = '150px';
+    elements.previewContainer.style.height = '150px';
+    elements.rawCanvasContainer.style.height = '150px';
 
-    // Reset Simulator position/size
-    exclusionSim.style.top = '40px';
-    exclusionSim.style.left = '40px';
-    exclusionSim.style.width = '120px';
-    exclusionSim.style.height = '40px';
+    elements.exclusionSim.style.top = '40px';
+    elements.exclusionSim.style.left = '40px';
+    elements.exclusionSim.style.width = '120px';
+    elements.exclusionSim.style.height = '40px';
 
-    // Reset Tape Counter
-    virtualElapsedMs = 0;
-    updateTapeCounter();
+    state.virtualElapsedMs = 0;
+    state.updateTapeCounter();
 
-    if (engine) engine.resize();
-    updateExclusionAreas();
-}
-
-function adjustPreviewHeight(delta) {
-    const currentHeight = previewContainer.offsetHeight;
-    const newHeight = Math.max(100, Math.min(600, currentHeight + delta));
-    previewContainer.style.height = `${newHeight}px`;
-    rawCanvasContainer.style.height = `${newHeight}px`;
-    if (engine) engine.resize();
+    if (state.engine) state.engine.resize();
+    state.updateExclusionAreas();
 }
 
 async function loadSample(id) {
     const anim = animations.find(a => a.id === id);
     if (!anim) return;
 
-    // We need to fetch the file content to extract the logic
     try {
         const response = await fetch(`shared/js/animation/${id}.js`);
         const text = await response.text();
         parseAndPopulate(text, anim.metadata);
-        updateCanvasControlVisibility();
-        updateAllGutter();
-        updateAllHighlight();
+        state.updateCanvasControlVisibility();
+        state.updateAllGutter();
+        state.updateAllHighlight();
     } catch {
         console.error('Failed to load sample');
     }
 }
 
 function saveCurrentMetaData() {
-    metaData.name[metaLang] = metaName.value;
-    metaData.description[metaLang] = metaDesc.value;
+    state.metaData.name[state.metaLang] = elements.metaName.value;
+    state.metaData.description[state.metaLang] = elements.metaDesc.value;
 }
 
 function loadCurrentMetaData() {
-    metaName.value = metaData.name[metaLang] || '';
-    metaDesc.value = metaData.description[metaLang] || '';
+    elements.metaName.value = state.metaData.name[state.metaLang] || '';
+    elements.metaDesc.value = state.metaData.description[state.metaLang] || '';
 }
 
 function parseAndPopulate(code, metadata) {
-    isDirty = false;
-    metaData.name = typeof metadata.name === 'object' ? { ...metadata.name } : { en: metadata.name };
-    metaData.description = typeof metadata.description === 'object' ? { ...metadata.description } : { en: metadata.description || '' };
+    state.isDirty = false;
+    state.metaData.name = typeof metadata.name === 'object' ? { ...metadata.name } : { en: metadata.name };
+    state.metaData.description = typeof metadata.description === 'object' ? { ...metadata.description } : { en: metadata.description || '' };
     loadCurrentMetaData();
 
-    metaAuthor.value = metadata.author || '';
+    elements.metaAuthor.value = metadata.author || '';
 
-    // Extract config & metadata
     const modeMatch = code.match(/mode:\s*['"](canvas|matrix|sprite)['"]/);
-    configMode.value = modeMatch ? modeMatch[1] : 'canvas';
+    elements.configMode.value = modeMatch ? modeMatch[1] : 'canvas';
 
     const strategyMatch = code.match(/exclusionStrategy:\s*['"](mask|jump|freedom)['"]/);
-    configExclusionStrategy.value = strategyMatch ? strategyMatch[1] : 'mask';
+    elements.configExclusionStrategy.value = strategyMatch ? strategyMatch[1] : 'mask';
 
-    configRewindable.checked = /rewindable:\s*true/.test(code);
-    updateTapeControlState();
-    updateExclusionAreas();
+    elements.configRewindable.checked = /rewindable:\s*true/.test(code);
+    state.updateTapeControlState();
+    state.updateExclusionAreas();
 
-    // Find class body
     const classMatch = code.match(/export\s+default\s+class\s+\w+\s+extends\s+AnimationBase\s*\{/);
     if (!classMatch) return;
 
@@ -627,53 +460,39 @@ function parseAndPopulate(code, metadata) {
     }
     let classContent = code.substring(classStart, pos - 1);
 
-    // Extract specific methods
-    inputSetup.value = extractMethod(classContent, 'setup');
-    inputDraw.value = extractMethod(classContent, 'draw');
+    elements.inputSetup.value = extractMethod(classContent, 'setup');
+    elements.inputDraw.value = extractMethod(classContent, 'draw');
 
-    // Cleanup draw parameters if they still include width/height from old versions
-    if (inputDraw.value) {
-        inputDraw.value = inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*,\s*/, 'draw(ctx, { ');
-        inputDraw.value = inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*\}\s*\)/, 'draw(ctx, params)');
+    if (elements.inputDraw.value) {
+        elements.inputDraw.value = elements.inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*,\s*/, 'draw(ctx, { ');
+        elements.inputDraw.value = elements.inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*\}\s*\)/, 'draw(ctx, params)');
     }
 
-    // Cleanup legacy config properties
     classContent = classContent.replace(/usePseudoSpace:\s*(true|false),?\s*/g, '');
     classContent = classContent.replace(/ignoreExclusion:\s*(true|false),?\s*/g, '');
 
     const onClick = extractMethod(classContent, 'onClick');
     const onMouseMove = extractMethod(classContent, 'onMouseMove');
-    inputInteraction.value = (onClick ? onClick + '\n\n' : '') + (onMouseMove ? onMouseMove : '');
+    elements.inputInteraction.value = (onClick ? onClick + '\n\n' : '') + (onMouseMove ? onMouseMove : '');
 
-    if (!inputSetup.value) inputSetup.value = 'setup(width, height) {\n  this.width = width;\n  this.height = height;\n}';
-    if (!inputDraw.value) inputDraw.value = 'draw(ctx, { elapsedMs, progress, step, exclusionAreas }) {\n  \n}';
-    if (!inputInteraction.value) inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
+    if (!elements.inputSetup.value) elements.inputSetup.value = 'setup(width, height) {\n  this.width = width;\n  this.height = height;\n}';
+    if (!elements.inputDraw.value) elements.inputDraw.value = 'draw(ctx, { elapsedMs, progress, step, exclusionAreas }) {\n  \n}';
+    if (!elements.inputInteraction.value) elements.inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
 
-    // Remove extracted parts from classContent to get variables/other members
-    // We do this aggressively to avoid duplicate declarations in the exported file
     let vars = classContent;
     const toRemove = ['metadata', 'config', 'setup', 'draw', 'onClick', 'onMouseMove'];
 
     toRemove.forEach(name => {
         let r;
-        // Use a while loop to remove all occurrences of the property/method name
         while ((r = findRange(vars, name)) !== null) {
             vars = vars.substring(0, r.start) + vars.substring(r.end);
         }
     });
 
-    // Clean up empty semicolons and multiple newlines left behind
     vars = vars.replace(/^\s*;+/gm, '').replace(/;+\s*$/gm, '').replace(/\n\s*\n\s*\n/g, '\n\n');
-
-    inputVars.value = vars.trim();
+    elements.inputVars.value = vars.trim();
 }
 
-/**
- * Extracts a method body from class content.
- * @param {string} code
- * @param {string} name
- * @returns {string}
- */
 function extractMethod(code, name) {
     const range = findRange(code, name);
     if (!range) return '';
@@ -682,7 +501,6 @@ function extractMethod(code, name) {
 
 function deindent(text) {
     const lines = text.split('\n');
-    // Find minimum indentation (ignoring empty lines)
     const minIndent = lines.reduce((min, line) => {
         if (line.trim().length === 0) return min;
         const match = line.match(/^\s*/);
@@ -722,7 +540,6 @@ function findRange(text, namePattern) {
                 if (parenCount === 0) {
                     braceCount--;
                     if (started && braceCount === 0) {
-                        // Look ahead for optional semicolon
                         let end = i + 1;
                         while (end < text.length && (text[end] === ';' || text[end] === ' ' || text[end] === '\t')) {
                             end++;
@@ -740,70 +557,59 @@ function findRange(text, namePattern) {
     return null;
 }
 
-function getMsg(key) {
-    return (messages[currentLang] && messages[currentLang][key]) || messages.en[key] || key;
-}
-
 function startTest() {
-    currentState = StudioState.PLAYING;
-    playBtn.classList.add('active');
-    pauseBtn.classList.remove('active');
+    state.currentState = StudioState.PLAYING;
+    elements.playBtn.classList.add('active');
+    elements.pauseBtn.classList.remove('active');
 
-    // Disable inputs
     setInputDisabled(true);
 
-    // Build the module code
-    const fullCode = buildModuleCode();
+    const fullCode = state.buildModuleCode();
     const blob = new Blob([fullCode], { type: 'application/javascript' });
-    if (workerUrl) URL.revokeObjectURL(workerUrl);
-    workerUrl = URL.createObjectURL(blob);
+    if (state.workerUrl) URL.revokeObjectURL(state.workerUrl);
+    state.workerUrl = URL.createObjectURL(blob);
 
-    virtualElapsedMs = 0;
-    lastFrameTime = performance.now();
+    state.virtualElapsedMs = 0;
+    state.lastFrameTime = performance.now();
 
-    // Configure engine for testing
-    engine.config = {
-        mode: configMode.value,
-        exclusionStrategy: configExclusionStrategy.value
+    state.engine.config = {
+        mode: elements.configMode.value,
+        exclusionStrategy: elements.configExclusionStrategy.value
     };
 
-    updateExclusionAreas();
+    state.updateExclusionAreas();
 
-    // We start the engine using the blob URL as module path
-    // We need to pass a special ID to trigger blob loading in the engine's start method logic
-    // But since the engine normally constructs the path, we'll patch it to use our blob.
+    const originalStart = state.engine.start;
+    const originalDraw = state.engine.draw;
 
-    const originalStart = engine.start;
-    const originalDraw = engine.draw;
-
-    engine.draw = function() {
-        if (currentState === StudioState.PAUSED || isScrubbing) return;
+    state.engine.draw = function() {
+        if (state.currentState === StudioState.PAUSED || state.isScrubbing) return;
 
         const now = performance.now();
-        if (currentState === StudioState.PLAYING) {
-            const delta = (now - lastFrameTime) * currentSpeed;
-            virtualElapsedMs += delta;
+        if (state.currentState === StudioState.PLAYING) {
+            const delta = (now - state.lastFrameTime) * state.currentSpeed;
+            state.virtualElapsedMs += delta;
         }
-        lastFrameTime = now;
+        state.lastFrameTime = now;
 
-        updateTapeCounter();
-        _requestStudioDraw(virtualElapsedMs);
+        state.updateTapeCounter();
+        _requestStudioDraw(state.virtualElapsedMs);
     };
 
-    engine.start = function(name, startTime, color) {
+    state.engine.start = function(name, startTime, color) {
         this.stop();
-        this.activeAnimationId = 'test'; // Identifier
+        this.activeAnimationId = 'test';
         this.startTime = startTime;
         this.color = color;
         this.initialized = false;
         this.perfViolations = 0;
         this.isDrawPending = false;
-        this.requestRawBitmap = showCanvasCheck.checked;
+        this.requestRawBitmap = elements.showCanvasCheck.checked;
         this.onRawBitmapDraw = (bitmap) => {
-            const ctx = rawCanvas.getContext('2d');
-            if (rawCanvas.width !== engine.canvas.width || rawCanvas.height !== engine.canvas.height) {
-                rawCanvas.width = engine.canvas.width;
-                rawCanvas.height = engine.canvas.height;
+            const ctx = elements.rawCanvas.getContext('2d');
+            if (elements.rawCanvas.width !== state.engine.canvas.width || elements.rawCanvas.height !== state.engine.canvas.height) {
+                elements.rawCanvas.width = state.engine.canvas.width;
+                elements.rawCanvas.height = state.engine.canvas.height;
             }
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, bitmap.width, bitmap.height);
@@ -813,632 +619,98 @@ function startTest() {
 
         this.worker = new Worker(new URL('../shared/js/animation_worker.js', import.meta.url), { type: 'module' });
         this.worker.onmessage = (e) => this._handleWorkerMessage(e);
-        this.worker.postMessage({ type: 'init', payload: { modulePath: workerUrl } });
-        this.worker.postMessage({ type: 'setSpeed', payload: 1.0 }); // Speed handled in virtual time
+        this.worker.postMessage({ type: 'init', payload: { modulePath: state.workerUrl } });
+        this.worker.postMessage({ type: 'setSpeed', payload: 1.0 });
     };
 
-    engine.start('test', Date.now(), currentPreviewColor);
+    state.engine.start('test', Date.now(), state.currentPreviewColor);
 
-    // Keep references to restore later if needed, though stopTest will handle it
-    engine._originalStart = originalStart;
-    engine._originalDraw = originalDraw;
+    state.engine._originalStart = originalStart;
+    state.engine._originalDraw = originalDraw;
 
-    metricStatus.textContent = getMsg('status-running');
-    metricStatus.style.color = '#4caf50';
+    elements.metricStatus.textContent = state.getMsg('status-running');
+    elements.metricStatus.style.color = '#4caf50';
 
-    startMetricsCollection();
+    state.startMetricsCollection(state.engine);
 }
 
 function stopTest() {
-    currentState = StudioState.STOPPED;
-    playBtn.classList.remove('active');
-    pauseBtn.classList.remove('active');
+    state.currentState = StudioState.STOPPED;
+    elements.playBtn.classList.remove('active');
+    elements.pauseBtn.classList.remove('active');
 
     setInputDisabled(false);
-    if (engine) {
-        engine.stop();
-        // Restore original methods
-        if (engine._originalStart) engine.start = engine._originalStart;
-        if (engine._originalDraw) engine.draw = engine._originalDraw;
+    if (state.engine) {
+        state.engine.stop();
+        if (state.engine._originalStart) state.engine.start = state.engine._originalStart;
+        if (state.engine._originalDraw) state.engine.draw = state.engine._originalDraw;
     }
 
-    // Clear raw canvas on stop
-    const ctx = rawCanvas.getContext('2d');
+    const ctx = elements.rawCanvas.getContext('2d');
     ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, rawCanvas.width, rawCanvas.height);
+    ctx.fillRect(0, 0, elements.rawCanvas.width, elements.rawCanvas.height);
 
-    metricStatus.textContent = getMsg('status-ready');
-    metricStatus.style.color = 'inherit';
-    stopMetricsCollection();
-    resetMeters();
+    elements.metricStatus.textContent = state.getMsg('status-ready');
+    elements.metricStatus.style.color = 'inherit';
+    state.stopMetricsCollection();
+    state.resetMeters();
 }
 
 function pauseTest() {
-    if (currentState !== StudioState.PLAYING) return;
-    currentState = StudioState.PAUSED;
-    pauseBtn.classList.add('active');
-    playBtn.classList.remove('active');
+    if (state.currentState !== StudioState.PLAYING) return;
+    state.currentState = StudioState.PAUSED;
+    elements.pauseBtn.classList.add('active');
+    elements.playBtn.classList.remove('active');
 
-    metricStatus.textContent = getMsg('status-paused');
-    metricStatus.style.color = '#ffa000';
+    elements.metricStatus.textContent = state.getMsg('status-paused');
+    elements.metricStatus.style.color = '#ffa000';
 }
 
 function resumeTest() {
-    if (currentState !== StudioState.PAUSED && currentState !== StudioState.STOPPED) return;
-    if (currentState === StudioState.STOPPED) {
+    if (state.currentState !== StudioState.PAUSED && state.currentState !== StudioState.STOPPED) return;
+    if (state.currentState === StudioState.STOPPED) {
         startTest();
         return;
     }
-    currentState = StudioState.PLAYING;
-    pauseBtn.classList.remove('active');
-    playBtn.classList.add('active');
-    lastFrameTime = performance.now();
+    state.currentState = StudioState.PLAYING;
+    elements.pauseBtn.classList.remove('active');
+    elements.playBtn.classList.add('active');
+    state.lastFrameTime = performance.now();
 
-    metricStatus.textContent = getMsg('status-running');
-    metricStatus.style.color = '#4caf50';
+    elements.metricStatus.textContent = state.getMsg('status-running');
+    elements.metricStatus.style.color = '#4caf50';
 }
 
-/**
- * Scrubbing logic (Rewind / Fast Forward)
- * @param {number} direction -1 for rewind, 1 for fast forward
- */
-async function scrub(direction) {
-    if (currentState === StudioState.STOPPED || isScrubbing) return;
-    if (direction === -1 && rewindBtn.disabled) return;
-
-    isScrubbing = true;
-    const originalState = currentState;
-    const btn = direction === -1 ? rewindBtn : ffBtn;
-    btn.classList.add('active');
-
-    const interval = 10; // min interval 10ms
-    const count = 10;
-    const stepSize = 100 * currentSpeed; // 100ms per step
-
-    for (let i = 0; i < count; i++) {
-        // Handle stop during scrubbing
-        if (currentState === StudioState.STOPPED) break;
-
-        if (direction === -1) {
-            virtualElapsedMs = Math.max(0, virtualElapsedMs - stepSize);
-        } else {
-            virtualElapsedMs += stepSize;
-        }
-
-        updateTapeCounter();
-
-        // Ensure worker is ready (best effort)
-        const startWait = performance.now();
-        while (engine.isDrawPending && performance.now() - startWait < 50) {
-            await new Promise(r => setTimeout(r, 2));
-        }
-
-        _requestStudioDraw(virtualElapsedMs);
-        await new Promise(resolve => setTimeout(resolve, interval));
-    }
-
-    btn.classList.remove('active');
-    isScrubbing = false;
-
-    // Restore state if not stopped
-    if (currentState !== StudioState.STOPPED) {
-        if (originalState === StudioState.PLAYING) {
-            lastFrameTime = performance.now();
-        }
-    }
-}
-
-/**
- * Shared drawing request logic for Studio test mode
- */
 function _requestStudioDraw(elapsed) {
-    if (!engine || !engine.worker || !engine.initialized || engine.isDrawPending) return;
+    if (!state.engine || !state.engine.worker || !state.engine.initialized || state.engine.isDrawPending) return;
 
-    const progress = (elapsed % engine.cycleMs) / engine.cycleMs;
-    let drawWidth = engine.canvas.width;
-    if (engine.config.exclusionStrategy === 'jump') {
-        drawWidth = engine._getPseudoInfo().totalWidth;
+    const progress = (elapsed % state.engine.cycleMs) / state.engine.cycleMs;
+    let drawWidth = state.engine.canvas.width;
+    if (state.engine.config.exclusionStrategy === 'jump') {
+        drawWidth = state.engine._getPseudoInfo().totalWidth;
     }
 
     const params = {
         width: drawWidth,
-        height: engine.canvas.height,
-        canvasWidth: engine.canvas.width,
+        height: state.engine.canvas.height,
+        canvasWidth: state.engine.canvas.width,
         elapsedMs: elapsed,
         progress,
         step: Math.floor(progress * 240),
-        exclusionAreas: engine.config.exclusionStrategy === 'jump' ? [] : engine._getVirtualExclusionAreas(),
-        realExclusionAreas: engine.exclusionAreas,
-        requestRawBitmap: engine.requestRawBitmap
+        exclusionAreas: state.engine.config.exclusionStrategy === 'jump' ? [] : state.engine._getVirtualExclusionAreas(),
+        realExclusionAreas: state.engine.exclusionAreas,
+        requestRawBitmap: state.engine.requestRawBitmap
     };
 
-    engine.lastDrawRequestTime = performance.now();
-    engine.isDrawPending = true;
-    engine.worker.postMessage({ type: 'draw', payload: params });
-}
-
-function updateTapeCounter() {
-    const totalSeconds = Math.floor(virtualElapsedMs / 1000);
-    // Use 4 digits for a "mechanical" look as requested
-    tapeCounterEl.textContent = String(totalSeconds % 10000).padStart(4, '0');
-}
-
-function updateTapeControlState() {
-    rewindBtn.disabled = !configRewindable.checked;
+    state.engine.lastDrawRequestTime = performance.now();
+    state.engine.isDrawPending = true;
+    state.engine.worker.postMessage({ type: 'draw', payload: params });
 }
 
 function setInputDisabled(disabled) {
-    [metaName, metaAuthor, metaDesc, configMode, configExclusionStrategy, configRewindable, inputVars, inputSetup, inputDraw, inputInteraction, sampleSelect].forEach(el => {
+    [elements.metaName, elements.metaAuthor, elements.metaDesc, elements.configMode, elements.configExclusionStrategy, elements.configRewindable, elements.inputVars, elements.inputSetup, elements.inputDraw, elements.inputInteraction, elements.sampleSelect].forEach(el => {
         el.disabled = disabled;
     });
-}
-
-function buildModuleCode() {
-    const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
-    const animationBaseUrl = `${baseUrl}/shared/js/animation_base.js`;
-
-    const escapeJSString = (str) => {
-        return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    };
-
-    const indentCode = (code, spaces) => {
-        if (!code || !code.trim()) return '';
-        return code.split('\n').map(line => ' '.repeat(spaces) + line).join('\n').trimStart();
-    };
-
-    saveCurrentMetaData();
-
-    return `import { AnimationBase } from '${animationBaseUrl}';
-
-export default class CustomAnimation extends AnimationBase {
-    static metadata = {
-        specVersion: '1.0',
-        name: ${JSON.stringify(metaData.name, null, 8).trimStart()},
-        description: ${JSON.stringify(metaData.description, null, 8).trimStart()},
-        author: "${escapeJSString(metaAuthor.value)}",
-        rewindable: ${configRewindable.checked}
-    };
-
-    config = {
-        mode: '${configMode.value}',
-        exclusionStrategy: '${configExclusionStrategy.value}'
-    };
-
-    ${indentCode(inputVars.value, 4)}
-
-    ${indentCode(inputSetup.value, 4)}
-
-    ${indentCode(inputDraw.value, 4)}
-
-    ${indentCode(inputInteraction.value, 4)}
-}`;
-}
-
-function downloadAnimation() {
-    let code = buildModuleCode();
-    // For final download, replace the absolute URL back to relative if it was for testing
-    code = code.replace(/import\s*{\s*AnimationBase\s*}\s*from\s*['"].*\/js\/animation_base\.js['"]/, "import { AnimationBase } from '../animation_base.js'");
-    const blob = new Blob([code], { type: 'application/javascript' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${metaName.value.toLowerCase().replace(/\s+/g, '_') || 'animation'}.js`;
-    a.click();
-    URL.revokeObjectURL(url);
-    isDirty = false;
-    showToast(getMsg('toast-downloaded-js'));
-}
-
-function handleUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const content = event.target.result;
-        if (file.name.endsWith('.json')) {
-            try {
-                const data = JSON.parse(content);
-                // Populate fields from JSON
-                metaData.name = typeof data.name === 'object' ? { ...data.name } : { en: data.name || '' };
-                metaData.description = typeof data.description === 'object' ? { ...data.description } : { en: data.description || '' };
-                loadCurrentMetaData();
-                metaAuthor.value = data.author || '';
-                configMode.value = data.mode || 'canvas';
-                configExclusionStrategy.value = data.exclusionStrategy || 'mask';
-                configRewindable.checked = !!data.rewindable;
-                updateTapeControlState();
-                inputVars.value = data.vars || '';
-                inputSetup.value = data.setup || '';
-                inputDraw.value = data.draw || '';
-                inputInteraction.value = data.interaction || '';
-                isDirty = false;
-                showToast(getMsg('toast-loaded-json'));
-                updateAllHighlight();
-                updateAllGutter();
-            } catch {
-                showToast(getMsg('toast-invalid-json'));
-            }
-        } else if (file.name.endsWith('.js')) {
-            parseAndPopulate(content, { name: 'Imported', description: '', author: '' });
-            isDirty = false;
-            showToast(getMsg('toast-loaded-js'));
-            updateAllHighlight();
-            updateAllGutter();
-        }
-    };
-    reader.readAsText(file);
-}
-
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 3000);
-}
-
-// Metrics Collection
-let metricsInterval = null;
-let lastImageData = null;
-let lastLatency = 0;
-
-function startMetricsCollection() {
-    lastImageData = null;
-
-    // Patch engine to track latency and errors
-    if (!engine._handleWorkerMessage._isPatched) {
-        const original = engine._handleWorkerMessage;
-        engine._handleWorkerMessage = function(e) {
-            if (e.data.type === 'drawResponse') {
-                lastLatency = performance.now() - engine.lastDrawRequestTime;
-            } else if (e.data.type === 'error') {
-                appendConsole(e.data.payload, 'error');
-                showConsole();
-                stopTest();
-            } else if (e.data.type === 'log') {
-                appendConsole(e.data.payload, e.data.level || 'info');
-            }
-            original.call(engine, e);
-        };
-        engine._handleWorkerMessage._original = original;
-        engine._handleWorkerMessage._isPatched = true;
-    }
-
-    metricsInterval = setInterval(() => {
-        if (!engine || !engine.canvas) return;
-
-        const ctx = engine.canvas.getContext('2d');
-        const width = engine.canvas.width;
-        const height = engine.canvas.height;
-        if (width === 0 || height === 0) return;
-
-        const imgDataObj = ctx.getImageData(0, 0, width, height);
-        const imgData = imgDataObj.data;
-        let nonZero = 0;
-        let changed = 0;
-
-        for (let i = 0; i < imgData.length; i += 4) {
-            const isNonZero = imgData[i] + imgData[i+1] + imgData[i+2] > 0;
-            if (isNonZero) nonZero++;
-
-            if (lastImageData) {
-                if (imgData[i] !== lastImageData[i] ||
-                    imgData[i+1] !== lastImageData[i+1] ||
-                    imgData[i+2] !== lastImageData[i+2]) {
-                    changed++;
-                }
-            }
-        }
-
-        const density = (nonZero / (width * height)) * 100;
-        metricDensity.textContent = `${density.toFixed(1)} %`;
-        updateMeter(needleDensity, density, 100);
-
-        if (lastImageData) {
-            const changeRate = (changed / (width * height)) * 100;
-            metricChange.textContent = `${changeRate.toFixed(1)} %`;
-            updateMeter(needleChange, changeRate, 50); // 50% as max for change rate scaling
-        }
-        lastImageData = imgData;
-
-        metricLatency.textContent = `${lastLatency.toFixed(1)} ms`;
-        updateMeter(needleLatency, lastLatency, 100); // 100ms as max for meter scaling
-
-        if (lastLatency > 50) {
-            metricLatency.style.color = '#f44336';
-        } else if (lastLatency > 16) {
-            metricLatency.style.color = '#ff9800';
-        } else {
-            metricLatency.style.color = '#4caf50';
-        }
-
-    }, 1000);
-}
-
-function stopMetricsCollection() {
-    clearInterval(metricsInterval);
-}
-
-function updateMeter(needle, value, max) {
-    if (!needle) return;
-    // Map 0 -> max to -45deg -> +45deg (based on user request)
-    const percent = Math.min(1, value / max);
-    const angle = -45 + (percent * 90);
-    needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-}
-
-function resetMeters() {
-    [needleLatency, needleDensity, needleChange].forEach(needle => {
-        if (needle) needle.style.transform = 'translateX(-50%) rotate(-45deg)';
-    });
-    metricLatency.textContent = '-- ms';
-    metricDensity.textContent = '-- %';
-    metricChange.textContent = '-- %';
-}
-
-// Draggable Resizable Exclusion Simulator
-function setupDraggableResizable() {
-    let isDragging = false;
-    let isResizing = false;
-    let currentResizer = null;
-    let startX, startY, startLeft, startTop, startWidth, startHeight;
-
-    exclusionSim.addEventListener('mousedown', (e) => {
-        if (e.target.classList.contains('resizer')) {
-            isResizing = true;
-            currentResizer = e.target;
-        } else {
-            isDragging = true;
-        }
-        startX = e.clientX;
-        startY = e.clientY;
-        startLeft = exclusionSim.offsetLeft;
-        startTop = exclusionSim.offsetTop;
-        startWidth = exclusionSim.offsetWidth;
-        startHeight = exclusionSim.offsetHeight;
-        e.preventDefault();
-    });
-
-    window.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            exclusionSim.style.left = `${startLeft + dx}px`;
-            exclusionSim.style.top = `${startTop + dy}px`;
-            updateExclusionAreas();
-        } else if (isResizing) {
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            if (currentResizer.classList.contains('se')) {
-                exclusionSim.style.width = `${startWidth + dx}px`;
-                exclusionSim.style.height = `${startHeight + dy}px`;
-            } else if (currentResizer.classList.contains('sw')) {
-                exclusionSim.style.width = `${startWidth - dx}px`;
-                exclusionSim.style.left = `${startLeft + dx}px`;
-                exclusionSim.style.height = `${startHeight + dy}px`;
-            } else if (currentResizer.classList.contains('ne')) {
-                exclusionSim.style.width = `${startWidth + dx}px`;
-                exclusionSim.style.height = `${startHeight - dy}px`;
-                exclusionSim.style.top = `${startTop + dy}px`;
-            } else if (currentResizer.classList.contains('nw')) {
-                exclusionSim.style.width = `${startWidth - dx}px`;
-                exclusionSim.style.left = `${startLeft + dx}px`;
-                exclusionSim.style.height = `${startHeight - dy}px`;
-                exclusionSim.style.top = `${startTop + dy}px`;
-            }
-            updateExclusionAreas();
-        }
-    });
-
-    window.addEventListener('mouseup', () => {
-        isDragging = false;
-        isResizing = false;
-        currentResizer = null;
-    });
-}
-
-function updateExclusionAreas() {
-    if (!engine) return;
-
-    if (rawCanvas.width !== engine.canvas.width || rawCanvas.height !== engine.canvas.height) {
-        rawCanvas.width = engine.canvas.width;
-        rawCanvas.height = engine.canvas.height;
-    }
-
-    if (showExclusionCheck.checked) {
-        const rect = exclusionSim.getBoundingClientRect();
-        const canvasRect = canvas.getBoundingClientRect();
-
-        const area = {
-            x: rect.left - canvasRect.left,
-            y: rect.top - canvasRect.top,
-            width: rect.width,
-            height: rect.height
-        };
-        engine.setExclusionAreas([area]);
-    } else {
-        engine.setExclusionAreas([]);
-    }
-
-    if (currentState !== StudioState.STOPPED && engine.initialized) {
-        // Just trigger a resize to update worker state without full restart
-        engine.resize();
-    }
-}
-
-// Editor Enhancements
-function setupEditorEnhancements() {
-    const textareas = [inputVars, inputSetup, inputDraw, inputInteraction];
-    textareas.forEach(ta => {
-        ta.addEventListener('keydown', (e) => handleKeyDown(e, ta));
-    });
-}
-
-function handleKeyDown(e, ta) {
-    if (e.key === 'Tab') {
-        e.preventDefault();
-        const start = ta.selectionStart;
-        const end = ta.selectionEnd;
-        ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
-        ta.selectionStart = ta.selectionEnd = start + 2;
-        updateHighlight(ta);
-    } else if (e.key === 'Enter') {
-        // Auto-indent
-        const start = ta.selectionStart;
-        const line = ta.value.substring(0, start).split('\n').pop();
-        const match = line.match(/^\s*/);
-        if (match && match[0].length > 0) {
-            e.preventDefault();
-            const indent = '\n' + match[0];
-            ta.value = ta.value.substring(0, start) + indent + ta.value.substring(start);
-            ta.selectionStart = ta.selectionEnd = start + indent.length;
-            updateHighlight(ta);
-            updateGutter(ta);
-        }
-    } else if (['{', '[', '(', '"', "'"].includes(e.key)) {
-        // Auto-complete
-        const pairs = { '{': '}', '[': ']', '(': ')', '"': '"', "'": "'" };
-        const start = ta.selectionStart;
-        const end = ta.selectionEnd;
-        if (start === end) {
-            e.preventDefault();
-            ta.value = ta.value.substring(0, start) + e.key + pairs[e.key] + ta.value.substring(end);
-            ta.selectionStart = ta.selectionEnd = start + 1;
-            updateHighlight(ta);
-        }
-    }
-}
-
-function updateHighlight(ta) {
-    const highlightEl = ta.parentElement.querySelector('.editor-highlight');
-    if (!highlightEl) return;
-
-    const code = ta.value;
-    const lines = code.split('\n');
-
-    const rules = [
-        { regex: /\/\/.*/g, class: 'hl-comment' },
-        { regex: /\/\*[\s\S]*?\*\//g, class: 'hl-comment' },
-        { regex: /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, class: 'hl-string' },
-        { regex: /\b(class|extends|export|default|static|this|new|if|else|for|while|return|function|let|const|var|async|await|try|catch|finally|throw)\b/g, class: 'hl-keyword' },
-        { regex: /\b\d+\b/g, class: 'hl-number' },
-        { regex: /\b(\w+)(?=\s*\()/g, class: 'hl-function' },
-        { regex: /[{}[\]()]/g, class: 'hl-bracket' }
-    ];
-
-    const processedLines = lines.map(line => {
-        let escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const tokens = [];
-
-        rules.forEach((rule, idx) => {
-            escaped = escaped.replace(rule.regex, (match) => {
-                const id = `__TOKEN_${idx}_${tokens.length}__`;
-                tokens.push({ id, html: `<span class="${rule.class}">${match}</span>` });
-                return id;
-            });
-        });
-
-        tokens.forEach(token => {
-            escaped = escaped.replace(token.id, token.html);
-        });
-
-        return `<div class="logical-line">${escaped || ' '}</div>`;
-    });
-
-    highlightEl.innerHTML = processedLines.join('');
-}
-
-function updateGutter(ta) {
-    const gutter = ta.closest('.editor-body').querySelector('.editor-gutter');
-    if (!gutter) return;
-
-    gutter.innerHTML = '';
-
-    // To support word wrap, we need to ensure each gutter line matches the height of the editor line.
-    const highlight = ta.parentElement.querySelector('.editor-highlight');
-
-    // Ensure highlight is up to date before measuring
-    updateHighlight(ta);
-
-    const logicalLines = highlight.querySelectorAll('.logical-line');
-    logicalLines.forEach((lineEl, idx) => {
-        const numDiv = document.createElement('div');
-        numDiv.textContent = idx + 1;
-        numDiv.style.height = `${lineEl.offsetHeight}px`;
-        numDiv.style.lineHeight = `${lineEl.offsetHeight}px`;
-        numDiv.style.display = 'flex';
-        numDiv.style.alignItems = 'flex-start';
-        numDiv.style.justifyContent = 'flex-end';
-        gutter.appendChild(numDiv);
-    });
-}
-
-function syncScroll(ta) {
-    const wrapper = ta.parentElement;
-    const highlight = wrapper.querySelector('.editor-highlight');
-    const gutter = ta.closest('.editor-body').querySelector('.editor-gutter');
-
-    if (highlight) {
-        highlight.scrollTop = ta.scrollTop;
-        highlight.scrollLeft = ta.scrollLeft;
-    }
-    if (gutter) {
-        gutter.scrollTop = ta.scrollTop;
-    }
-}
-
-function updateAllHighlight() {
-    [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateHighlight(ta));
-}
-
-function updateAllGutter() {
-    [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateGutter(ta));
-}
-
-
-function handleReplace(all) {
-    const activeTab = document.querySelector('.code-tab.active');
-    const targetId = activeTab.getAttribute('data-target');
-    const ta = document.getElementById(targetId).querySelector('textarea');
-    if (!ta) return;
-
-    const search = searchInput.value;
-    const replace = replaceInput.value;
-    if (!search) return;
-
-    const code = ta.value;
-    if (all) {
-        ta.value = code.split(search).join(replace);
-    } else {
-        ta.value = code.replace(search, replace);
-    }
-    updateHighlight(ta);
-    updateGutter(ta);
-    markDirty();
-}
-
-function appendConsole(msg, type = '') {
-    const line = document.createElement('div');
-    line.className = `console-line ${type}`;
-    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-    consoleOutput.appendChild(line);
-    consoleOutput.scrollTop = consoleOutput.scrollHeight;
-
-    // Auto-open on error
-    if (type === 'error') {
-        showConsole();
-    }
-}
-
-function toggleConsole() {
-    consoleSection.classList.toggle('collapsed');
-    const isCollapsed = consoleSection.classList.contains('collapsed');
-    toggleConsoleBtn.querySelector('span').textContent = isCollapsed ? 'expand_less' : 'expand_more';
-}
-
-function showConsole() {
-    consoleSection.classList.remove('collapsed');
-    toggleConsoleBtn.querySelector('span').textContent = 'expand_more';
 }
 
 init();
