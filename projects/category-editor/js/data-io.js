@@ -92,6 +92,7 @@ export function initDataIO(state, elements) {
             state.lastSelectedIndex = state.categories.length > 0 ? 0 : -1;
             if (state.renderCategoryList) state.renderCategoryList();
             if (state.renderDetail) state.renderDetail();
+            if (state.renderGlobalTagBox) state.renderGlobalTagBox();
             updateCodeView();
             showToast(t('toast-import-success'));
         } catch (err) {

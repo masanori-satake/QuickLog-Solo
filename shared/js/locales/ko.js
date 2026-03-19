@@ -290,4 +290,5 @@ export const ko = {
     'page-break-label': '페이지 나누기',
     'undo': '실행 취소',
     'redo': '다시 실행',
+    'tag-box-title': '태그 박스',
 };

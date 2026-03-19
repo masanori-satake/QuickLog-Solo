@@ -290,4 +290,5 @@ export const es = {
     'page-break-label': 'Salto de página',
     'undo': 'Deshacer',
     'redo': 'Rehacer',
+    'tag-box-title': 'Caja de etiquetas',
 };

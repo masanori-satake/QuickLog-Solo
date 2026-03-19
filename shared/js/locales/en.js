@@ -312,4 +312,5 @@ export const en = {
     'page-break-label': 'Page Break',
     'undo': 'Undo',
     'redo': 'Redo',
+    'tag-box-title': 'Tag Box',
 };
