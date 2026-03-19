@@ -58,6 +58,18 @@ body {
     gap: 8px;
 }
 
+.history-controls {
+    display: flex;
+    gap: 4px;
+    margin-left: 12px;
+}
+
+.history-controls .icon-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    background: transparent;
+}
+
 .back-link {
     text-decoration: none;
     color: var(--md-sys-color-on-surface);

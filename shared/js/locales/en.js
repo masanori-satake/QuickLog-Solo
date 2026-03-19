@@ -307,4 +307,6 @@ export const en = {
     'toast-export-success': 'Copy successful',
     'toast-no-categories': 'No categories to copy',
     'page-break-label': 'Page Break',
+    'undo': 'Undo',
+    'redo': 'Redo',
 };

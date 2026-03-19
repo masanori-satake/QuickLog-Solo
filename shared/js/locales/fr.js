@@ -285,4 +285,6 @@ export const fr = {
     'toast-export-success': 'Copie réussie',
     'toast-no-categories': 'Aucune catégorie à copier',
     'page-break-label': 'Saut de page',
+    'undo': 'Annuler',
+    'redo': 'Rétablir',
 };

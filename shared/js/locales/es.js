@@ -285,4 +285,6 @@ export const es = {
     'toast-export-success': 'Copiado exitoso',
     'toast-no-categories': 'No hay categorías para copiar',
     'page-break-label': 'Salto de página',
+    'undo': 'Deshacer',
+    'redo': 'Rehacer',
 };

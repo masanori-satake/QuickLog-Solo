@@ -18,6 +18,13 @@ let lastSelectedIndex = -1;
 let animationEngine = null;
 let currentTheme = 'dark';
 
+// History Management
+let historyStack = [];
+let redoStack = [];
+const HISTORY_LIMIT = 51; // Allow up to 50 undo steps
+let isRecordingInput = false;
+let inputInitialState = null;
+
 // DOM Elements
 const categoryListEl = document.getElementById('category-list');
 const detailSection = document.getElementById('detail-section');
@@ -44,6 +51,9 @@ const clearAllBtn = document.getElementById('clear-all-btn');
 
 const langSelect = document.getElementById('lang-select-editor');
 const themeToggle = document.getElementById('theme-toggle');
+
+const undoBtn = document.getElementById('undo-btn');
+const redoBtn = document.getElementById('redo-btn');
 
 const COLORS = [
     'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
@@ -89,6 +99,7 @@ function init() {
 
     // Start with default categories
     loadDefaultCategories();
+    clearHistory();
 }
 
 
@@ -158,6 +169,120 @@ function updateTranslations() {
     });
 }
 
+// --- History Logic ---
+function saveHistory() {
+    commitInput(); // Ensure pending input is saved before any other action
+    const state = JSON.stringify(categories);
+    // Only save if different from last state
+    if (historyStack.length > 0 && historyStack[historyStack.length - 1] === state) return;
+
+    historyStack.push(state);
+    if (historyStack.length > HISTORY_LIMIT) {
+        historyStack.shift();
+    }
+    redoStack = [];
+    updateHistoryButtons();
+}
+
+function clearHistory() {
+    historyStack = [JSON.stringify(categories)];
+    redoStack = [];
+    updateHistoryButtons();
+}
+
+function undo() {
+    if (historyStack.length <= 1) return;
+    commitInput();
+
+    const currentState = JSON.stringify(categories);
+    redoStack.push(currentState);
+
+    historyStack.pop(); // Remove current state
+    const previousState = historyStack[historyStack.length - 1];
+    categories = JSON.parse(previousState);
+
+    refreshUIAfterHistoryChange();
+}
+
+function redo() {
+    if (redoStack.length === 0) return;
+    commitInput();
+
+    const currentState = JSON.stringify(categories);
+    historyStack.push(currentState);
+
+    const nextState = redoStack.pop();
+    categories = JSON.parse(nextState);
+
+    refreshUIAfterHistoryChange();
+}
+
+function updateHistoryButtons() {
+    undoBtn.disabled = historyStack.length <= 1;
+    redoBtn.disabled = redoStack.length === 0;
+}
+
+function refreshUIAfterHistoryChange() {
+    // Attempt to keep selection if possible
+    const prevSelectedIndices = [...selectedIndices];
+    renderCategoryList();
+
+    // Validate selectedIndices after data change
+    selectedIndices = prevSelectedIndices.filter(idx => idx < categories.length);
+    if (selectedIndices.length === 0 && categories.length > 0) {
+        selectedIndices = [0];
+        lastSelectedIndex = 0;
+    } else if (categories.length === 0) {
+        selectedIndices = [];
+        lastSelectedIndex = -1;
+    }
+
+    renderCategoryList(); // Re-render to show active state
+    renderDetail();
+    updateCodeView();
+    updateHistoryButtons();
+}
+
+// --- Input History Logic ---
+function startInputRecording() {
+    if (isRecordingInput) return;
+    isRecordingInput = true;
+    inputInitialState = JSON.stringify(categories);
+}
+
+function commitInput() {
+    if (!isRecordingInput) return;
+    isRecordingInput = false;
+
+    const currentState = JSON.stringify(categories);
+    if (currentState !== inputInitialState) {
+        // We push the initial state as the "before" snapshot if history is empty
+        // But saveHistory handles the logic of pushing current state.
+        // Actually, if we use the same saveHistory logic, it works.
+        // The requirement is: "save state before editing starts".
+
+        // Let's adjust: saveHistory normally saves the current state.
+        // For input, we want to have the state BEFORE the input in history,
+        // and then the state AFTER the input in history.
+
+        // If we just call saveHistory() now, it saves the state AFTER the input.
+        // But we need to make sure the state BEFORE the input was already in history.
+        // It usually is, because any action that leads to input (like selecting or adding)
+        // would have called saveHistory.
+
+        const lastSaved = historyStack[historyStack.length - 1];
+        if (lastSaved !== currentState) {
+            historyStack.push(currentState);
+            if (historyStack.length > HISTORY_LIMIT) {
+                historyStack.shift();
+            }
+            redoStack = [];
+            updateHistoryButtons();
+        }
+    }
+    inputInitialState = null;
+}
+
 function setupAnimationEngine() {
     const canvas = document.getElementById('animation-canvas');
     animationEngine = new AnimationEngine(canvas);
@@ -196,7 +321,11 @@ function setupEventListeners() {
         renderDetail();
     });
 
+    undoBtn.addEventListener('click', undo);
+    redoBtn.addEventListener('click', redo);
+
     addCategoryBtn.addEventListener('click', () => {
+        saveHistory();
         const newCat = {
             name: 'New Category',
             color: 'primary',
@@ -209,6 +338,7 @@ function setupEventListeners() {
         renderCategoryList();
         renderDetail();
         updateCodeView();
+        saveHistory();
 
         // Scroll to bottom
         categoryListEl.scrollTop = categoryListEl.scrollHeight;
@@ -217,6 +347,7 @@ function setupEventListeners() {
     deleteSelectedBtn.addEventListener('click', () => {
         if (selectedIndices.length === 0) return;
         if (confirm(t('confirm-delete-selected', { count: selectedIndices.length }))) {
+            saveHistory();
             const selectedSet = new Set(selectedIndices);
             categories = categories.filter((_, idx) => !selectedSet.has(idx));
             selectedIndices = [];
@@ -224,10 +355,12 @@ function setupEventListeners() {
             renderCategoryList();
             renderDetail();
             updateCodeView();
+            saveHistory();
         }
     });
 
     addPageBreakBtn.addEventListener('click', () => {
+        saveHistory();
         const newPB = {
             name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
@@ -237,9 +370,18 @@ function setupEventListeners() {
         renderCategoryList();
         renderDetail();
         updateCodeView();
+        saveHistory();
 
         // Scroll to bottom
         categoryListEl.scrollTop = categoryListEl.scrollHeight;
+    });
+
+    editNameInput.addEventListener('focus', () => {
+        startInputRecording();
+    });
+
+    editNameInput.addEventListener('blur', () => {
+        commitInput();
     });
 
     editNameInput.addEventListener('input', (e) => {
@@ -257,6 +399,7 @@ function setupEventListeners() {
             e.preventDefault();
             const tag = tagInput.value.trim().replace(/,/g, '');
             if (tag && selectedIndices.length === 1) {
+                saveHistory();
                 const idx = selectedIndices[0];
                 const currentTags = categories[idx].tags ? categories[idx].tags.split(',').map(t => t.trim()) : [];
                 if (!currentTags.includes(tag)) {
@@ -266,12 +409,14 @@ function setupEventListeners() {
                     updateCodeView();
                 }
                 tagInput.value = '';
+                saveHistory();
             }
         }
     });
 
     editAnimationSelect.addEventListener('change', (e) => {
         if (selectedIndices.length === 0) return;
+        saveHistory();
         const animation = e.target.value;
         selectedIndices.forEach(idx => {
             const cat = categories[idx];
@@ -281,6 +426,7 @@ function setupEventListeners() {
         });
         renderDetail();
         updateCodeView();
+        saveHistory();
     });
 
     editAnimationSelect.addEventListener('mouseenter', () => {
@@ -296,23 +442,44 @@ function setupEventListeners() {
 
     newStartBtn.addEventListener('click', () => {
         if (confirm(t('confirm-load-default'))) {
+            saveHistory();
             loadDefaultCategories();
+            saveHistory();
         }
     });
 
     clearAllBtn.addEventListener('click', () => {
         if (confirm(t('confirm-clear-all'))) {
+            saveHistory();
             categories = [];
             selectedIndices = [];
             lastSelectedIndex = -1;
             renderCategoryList();
             renderDetail();
             updateCodeView();
+            saveHistory();
         }
     });
 
     btnShowCode.addEventListener('click', () => {
         codeModalEl.classList.remove('hidden');
+    });
+
+    window.addEventListener('keydown', (e) => {
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const cmdKey = isMac ? e.metaKey : e.ctrlKey;
+
+        if (cmdKey && e.key.toLowerCase() === 'z') {
+            if (e.shiftKey) {
+                redo();
+            } else {
+                undo();
+            }
+            e.preventDefault();
+        } else if (cmdKey && e.key.toLowerCase() === 'y') {
+            redo();
+            e.preventDefault();
+        }
     });
 
     window.addEventListener('click', (e) => {
@@ -373,6 +540,7 @@ function setupEventListeners() {
 
         const prevSelectedItems = selectedIndices.map(i => categories[i]);
 
+        saveHistory();
         categories = newCategories;
         selectedIndices = prevSelectedItems.map(item => categories.indexOf(item)).filter(i => i !== -1);
         lastSelectedIndex = categories.indexOf(dragItem);
@@ -380,6 +548,7 @@ function setupEventListeners() {
         renderCategoryList();
         renderDetail();
         updateCodeView();
+        saveHistory();
     });
 }
 
@@ -447,6 +616,7 @@ function renderCategoryList() {
             deleteBtn.title = t('delete');
             deleteBtn.onclick = (e) => {
                 e.stopPropagation();
+                saveHistory();
                 categories.splice(idx, 1);
                 selectedIndices = selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
                 if (lastSelectedIndex === idx) lastSelectedIndex = -1;
@@ -454,6 +624,7 @@ function renderCategoryList() {
                 renderCategoryList();
                 renderDetail();
                 updateCodeView();
+                saveHistory();
             };
             item.appendChild(deleteBtn);
         } else {
@@ -526,7 +697,9 @@ function showCategoryMenu(e, idx) {
     duplicateBtn.appendChild(document.createTextNode(' ' + t('duplicate')));
     duplicateBtn.onclick = (event) => {
         event.stopPropagation();
+        saveHistory();
         duplicateCategory(idx);
+        saveHistory();
         menu.remove();
     };
 
@@ -541,6 +714,7 @@ function showCategoryMenu(e, idx) {
         event.stopPropagation();
         const cat = categories[idx];
         if (confirm(t('confirm-delete-category', { name: cat.name }))) {
+            saveHistory();
             categories.splice(idx, 1);
             selectedIndices = selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
             if (lastSelectedIndex === idx) lastSelectedIndex = -1;
@@ -548,6 +722,7 @@ function showCategoryMenu(e, idx) {
             renderCategoryList();
             renderDetail();
             updateCodeView();
+            saveHistory();
         }
         menu.remove();
     };
@@ -799,10 +974,12 @@ function renderTags() {
 
         removeBtn.onclick = (e) => {
             e.stopPropagation();
+            saveHistory();
             tags.splice(tIdx, 1);
             categories[idx].tags = tags.join(', ');
             renderTags();
             updateCodeView();
+            saveHistory();
         };
         tagListEl.appendChild(pill);
     });
@@ -823,6 +1000,7 @@ function renderColorPalette() {
 
         opt.onclick = () => {
             if (selectedIndices.length === 0) return;
+            saveHistory();
             selectedIndices.forEach(idx => {
                 const cat = categories[idx];
                 if (!cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
@@ -832,6 +1010,7 @@ function renderColorPalette() {
             renderDetail();
             renderCategoryList();
             updateCodeView();
+            saveHistory();
         };
         colorPaletteEl.appendChild(opt);
     });
@@ -979,12 +1158,14 @@ async function handleImport() {
             }
         }
 
+        saveHistory();
         categories = validItems;
         selectedIndices = categories.length > 0 ? [0] : [];
         lastSelectedIndex = categories.length > 0 ? 0 : -1;
         renderCategoryList();
         renderDetail();
         updateCodeView();
+        saveHistory();
         showToast(t('toast-import-success'));
     } catch (err) {
         console.error(err);
