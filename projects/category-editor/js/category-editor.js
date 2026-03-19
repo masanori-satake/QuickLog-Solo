@@ -812,6 +812,7 @@ function renderDetail() {
             }
 
             editNameInput.value = '';
+            editNameInput.placeholder = `(${t('tags-common')})`;
             editNameInput.disabled = true;
 
             // Enable tag input for multi-selection
@@ -865,6 +866,7 @@ function renderDetail() {
         if (isPageBreak) {
             if (previewSection) previewSection.classList.add('hidden');
             editNameInput.value = t('page-break-label');
+            editNameInput.placeholder = '';
             editNameInput.disabled = true;
             tagInput.disabled = true;
             editAnimationSelect.value = 'none';
@@ -888,6 +890,7 @@ function renderDetail() {
 
         if (previewSection) previewSection.classList.remove('hidden');
         editNameInput.disabled = false;
+        editNameInput.placeholder = t('label-name');
         tagInput.disabled = false;
         editAnimationSelect.disabled = false;
         colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
