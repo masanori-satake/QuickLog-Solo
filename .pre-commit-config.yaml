@@ -23,7 +23,7 @@ repos:
     hooks:
     -   id: verify-submission-language
         name: verify-submission-language
-        entry: python3 scripts/verify_submission_language.py --commit-msg-file
+        entry: python3 scripts/language_check.py --commit-msg-file
         language: python
         stages: [commit-msg]
     -   id: stylelint
