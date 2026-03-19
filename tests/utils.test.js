@@ -83,6 +83,19 @@ describe('Utils Module', () => {
         test('handles special characters in base name', () => {
             expect(generateDuplicateName('Task [A]', ['Task [A] (1)'])).toBe('Task [A] (2)');
         });
+
+        test('handles multi-byte characters', () => {
+            expect(generateDuplicateName('作業', ['作業'])).toBe('作業 (1)');
+            expect(generateDuplicateName('作業 (1)', ['作業 (1)', '作業 (2)'])).toBe('作業 (3)');
+        });
+
+        test('handles cases where base name is part of another name', () => {
+            expect(generateDuplicateName('Task', ['Task-Force (1)'])).toBe('Task (1)');
+        });
+
+        test('handles large numbers', () => {
+            expect(generateDuplicateName('Task', ['Task (999)'])).toBe('Task (1000)');
+        });
     });
 
 });
