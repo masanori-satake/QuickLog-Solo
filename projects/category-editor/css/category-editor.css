@@ -141,6 +141,11 @@ body {
     margin-bottom: 16px;
 }
 
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
 .category-list {
     flex: 1;
     overflow-y: auto;
