@@ -29,10 +29,6 @@ const ORPHANED_TASK_MIN_DURATION_MS = 1000;
 let db;
 let dbPromise = null;
 
-/**
- * Opens the IndexedDB connection.
- * Returns a promise that resolves to the database instance.
- */
 const DB_OPEN_TIMEOUT_MS = 5000;
 
 /**
@@ -391,39 +387,6 @@ async function setupInitialData(languageSetting) {
             cat.order = i;
             await dbPut(STORE_CATEGORIES, cat);
         }
-    } else {
-        // Migration: Ensure existing categories have tags and animation if missing
-        const categoriesToUpdate = [];
-        for (const cat of existingCategories) {
-            let changed = false;
-            if (cat.tags === undefined) {
-                const def = initialCategories.find(d => d.name === cat.name);
-                cat.tags = def ? def.tags : '';
-                changed = true;
-            }
-            if (cat.animation === undefined) {
-                const def = initialCategories.find(d => d.name === cat.name);
-                cat.animation = def ? def.animation : 'default';
-                changed = true;
-            }
-            if (changed) {
-                categoriesToUpdate.push(cat);
-            }
-        }
-
-        if (categoriesToUpdate.length > 0) {
-            console.log(`QuickLog-Solo: Migrating ${categoriesToUpdate.length} categories...`);
-            await new Promise((resolve, reject) => {
-                if (!db) { reject(new Error('DB not initialized')); return; }
-                const tx = db.transaction(STORE_CATEGORIES, 'readwrite');
-                const store = tx.objectStore(STORE_CATEGORIES);
-                tx.oncomplete = () => resolve();
-                tx.onerror = (e) => reject(e.target.error);
-                for (const cat of categoriesToUpdate) {
-                    store.put(cat);
-                }
-            });
-        }
     }
 
     const allLogs = await dbGetAll(STORE_LOGS);
@@ -488,27 +451,6 @@ async function setupInitialData(languageSetting) {
             });
         }
         await dbAddMultiple(STORE_ALARMS, defaultAlarms);
-    } else {
-        // Migration: Ensure existing alarms have requireConfirmation
-        const alarmsToUpdate = [];
-        for (const alarm of existingAlarms) {
-            if (alarm.requireConfirmation === undefined) {
-                alarm.requireConfirmation = false;
-                alarmsToUpdate.push(alarm);
-            }
-        }
-        if (alarmsToUpdate.length > 0) {
-            console.log(`QuickLog-Solo: Migrating ${alarmsToUpdate.length} alarms...`);
-            await new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_ALARMS, 'readwrite');
-                const store = tx.objectStore(STORE_ALARMS);
-                tx.oncomplete = () => resolve();
-                tx.onerror = (e) => reject(e.target.error);
-                for (const alarm of alarmsToUpdate) {
-                    store.put(alarm);
-                }
-            });
-        }
     }
 
     // Generate dummy history if no logs exist
