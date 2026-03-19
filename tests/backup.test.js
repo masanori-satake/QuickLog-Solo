@@ -8,7 +8,9 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     STORE_LOGS: 'logs',
     STORE_SETTINGS: 'settings',
     STORE_CATEGORIES: 'categories',
-    SETTING_KEY_ANIMATION: 'animation'
+    SETTING_KEY_ANIMATION: 'animation',
+    SETTING_KEY_BACKUP_CONFIG: 'backupConfig',
+    SETTING_KEY_BACKUP_DIR_HANDLE: 'backupDirectoryHandle'
 }));
 
 const { backupManager, BACKUP_STATUS } = await import('../projects/app/js/backup.js');
@@ -28,8 +30,8 @@ describe('BackupManager', () => {
     test('init restores handle and checks permission', async () => {
         const mockHandle = { queryPermission: jest.fn().mockResolvedValue('prompt') };
         db.dbGet.mockImplementation((store, key) => {
-            if (key === 'backupConfig') return Promise.resolve({ value: { lastBackupTime: '2025-01-01' } });
-            if (key === 'backupDirectoryHandle') return Promise.resolve({ value: mockHandle });
+            if (key === db.SETTING_KEY_BACKUP_CONFIG) return Promise.resolve({ value: { lastBackupTime: '2025-01-01' } });
+            if (key === db.SETTING_KEY_BACKUP_DIR_HANDLE) return Promise.resolve({ value: mockHandle });
             return Promise.resolve(null);
         });
 
@@ -72,7 +74,7 @@ describe('BackupManager', () => {
 
         expect(backupManager.status).toBe(BACKUP_STATUS.SUCCESS);
         expect(backupManager.config.lastBackupTime).toBeDefined();
-        expect(db.dbPut).toHaveBeenCalledWith(db.STORE_SETTINGS, expect.objectContaining({ key: 'backupConfig' }));
+        expect(db.dbPut).toHaveBeenCalledWith(db.STORE_SETTINGS, expect.objectContaining({ key: db.SETTING_KEY_BACKUP_CONFIG }));
     });
 
     test('sync handles missing permission', async () => {

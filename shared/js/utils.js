@@ -102,3 +102,27 @@ export function isValidColor(color) {
     return VALID_COLORS.includes(color);
 }
 
+/**
+ * Generates a unique name for a duplicated category.
+ * Append (n) suffix based on existing names.
+ * @param {string} baseName
+ * @param {string[]} existingNames
+ * @returns {string}
+ */
+export function generateDuplicateName(baseName, existingNames) {
+    const cleanBase = baseName.replace(/\s*\(\d+\)$/, '').trim();
+    let maxNum = 0;
+    const pattern = new RegExp(`^${cleanBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\((\\d+)\\)$`);
+
+    existingNames.forEach(name => {
+        const match = name.match(pattern);
+        if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > maxNum) maxNum = num;
+        }
+        // Note: Exact matches of cleanBase without a suffix are ignored here.
+        // We only care about the maximum sequential (n) to determine the next number.
+    });
+
+    return `${cleanBase} (${maxNum + 1})`;
+}

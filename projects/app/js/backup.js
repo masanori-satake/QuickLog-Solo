@@ -1,4 +1,8 @@
-import { dbGetAll, dbGet, dbPut, dbAddMultiple, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, SETTING_KEY_ANIMATION } from '../shared/js/db.js';
+import {
+    dbGetAll, dbGet, dbPut, dbAddMultiple,
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
+    SETTING_KEY_ANIMATION, SETTING_KEY_BACKUP_CONFIG, SETTING_KEY_BACKUP_DIR_HANDLE
+} from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 import {
     SCHEMA_VERSION_1_0,
@@ -7,8 +11,6 @@ import {
     SCHEMA_TYPE_HISTORY_TASK, SCHEMA_TYPE_HISTORY_IDLE, SCHEMA_TYPE_HISTORY_STOP,
     validateCategorySchema, validateHistorySchema, validateSettingsSchema
 } from '../shared/js/schema.js';
-
-export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 
 const FILE_NAME_CATEGORIES = 'categories.ndjson';
 const FILE_NAME_SETTINGS = 'settings.json';
@@ -46,7 +48,7 @@ class BackupManager {
 
     async tryRestoreHandle() {
         try {
-            const handle = await dbGet(STORE_SETTINGS, 'backupDirectoryHandle');
+            const handle = await dbGet(STORE_SETTINGS, SETTING_KEY_BACKUP_DIR_HANDLE);
             if (handle) {
                 this.directoryHandle = handle.value;
             }
@@ -87,7 +89,7 @@ class BackupManager {
 
     async setDirectory(handle) {
         this.directoryHandle = handle;
-        await dbPut(STORE_SETTINGS, { key: 'backupDirectoryHandle', value: handle });
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BACKUP_DIR_HANDLE, value: handle });
         await this._updateStatus();
     }
 
@@ -173,7 +175,7 @@ class BackupManager {
 
         // Backup Settings (JSON) - excluding backup-specific ones to avoid loops
         const allSettings = await dbGetAll(STORE_SETTINGS);
-        const filteredSettings = allSettings.filter(s => s.key !== 'backupDirectoryHandle' && s.key !== SETTING_KEY_BACKUP_CONFIG);
+        const filteredSettings = allSettings.filter(s => s.key !== SETTING_KEY_BACKUP_DIR_HANDLE && s.key !== SETTING_KEY_BACKUP_CONFIG);
         const settingsData = {
             app: 'QuickLog-Solo',
             kind: SCHEMA_KIND_SETTINGS,
@@ -437,15 +439,6 @@ class BackupManager {
             // Might fail if permission is not granted
         }
         return count;
-    }
-
-    // Removed: requestImmediateBackup()
-    // Removed: scheduleBackup()
-    // Removed: _startDirtyMonitor()
-
-    async flush() {
-        // Manual backup only now
-        await this.sync();
     }
 }
 

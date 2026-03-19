@@ -20,6 +20,8 @@ export const SETTING_KEY_ANIMATION = 'animation';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 export const SETTING_KEY_LANGUAGE = 'language';
 export const SETTING_KEY_REPORT_SETTINGS = 'reportSettings';
+export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
+export const SETTING_KEY_BACKUP_DIR_HANDLE = 'backupDirectoryHandle';
 
 const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
