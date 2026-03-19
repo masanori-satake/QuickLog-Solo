@@ -5,7 +5,7 @@
 import { animations as animationRegistry } from '../shared/js/animation_registry.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { messages } from '../shared/js/messages.js';
-import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK, generateDuplicateName } from '../shared/js/utils.js';
 import {
     validateCategorySchema, SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0,
     SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK
@@ -510,21 +510,7 @@ function showCategoryMenu(e, idx) {
 
 function duplicateCategory(idx) {
     const original = categories[idx];
-    const baseName = original.name.replace(/\s*\(\d+\)$/, '').trim();
-
-    // Find the next available number
-    let maxNum = 0;
-    const pattern = new RegExp(`^${baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\((\\d+)\\)$`);
-
-    categories.forEach(cat => {
-        const match = cat.name.match(pattern);
-        if (match) {
-            const num = parseInt(match[1]);
-            if (num > maxNum) maxNum = num;
-        }
-    });
-
-    const newName = `${baseName} (${maxNum + 1})`;
+    const newName = generateDuplicateName(original.name, categories.map(c => c.name));
     const newCat = { ...original, name: newName };
 
     categories.splice(idx + 1, 0, newCat);

@@ -1,5 +1,5 @@
 import {
-    escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor
+    escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName
 } from '../shared/js/utils.js';
 
 describe('Utils Module', () => {
@@ -56,6 +56,32 @@ describe('Utils Module', () => {
             expect(isValidColor('primary')).toBe(true);
             expect(isValidColor('teal')).toBe(true);
             expect(isValidColor('not-a-color')).toBe(false);
+        });
+    });
+
+    describe('generateDuplicateName', () => {
+        test('appends (1) when no duplicates exist', () => {
+            expect(generateDuplicateName('Task', [])).toBe('Task (1)');
+        });
+
+        test('increments number based on existing suffixes', () => {
+            expect(generateDuplicateName('Task', ['Task (1)', 'Task (2)'])).toBe('Task (3)');
+        });
+
+        test('handles base name with existing suffix', () => {
+            expect(generateDuplicateName('Task (1)', ['Task (1)'])).toBe('Task (2)');
+        });
+
+        test('ignores unrelated names', () => {
+            expect(generateDuplicateName('Task', ['Other (1)'])).toBe('Task (1)');
+        });
+
+        test('finds maximum number even if out of order', () => {
+            expect(generateDuplicateName('Task', ['Task (5)', 'Task (2)'])).toBe('Task (6)');
+        });
+
+        test('handles special characters in base name', () => {
+            expect(generateDuplicateName('Task [A]', ['Task [A] (1)'])).toBe('Task [A] (2)');
         });
     });
 
