@@ -1989,6 +1989,9 @@ function setupEventListeners() {
             setImporting(true);
             await dbImportCategories(finalItems, importMode);
 
+            // Artificial delay to ensure visual feedback as per UI standards
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             showToast(t('toast-cat-imported'));
             renderCategories();
             renderCategoryEditor();
@@ -2161,11 +2164,6 @@ function setupEventListeners() {
             location.reload();
         });
     });
-}
-
-// Expose for testing
-if (window.location.hostname === 'localhost') {
-    window.backupManager = backupManager;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
