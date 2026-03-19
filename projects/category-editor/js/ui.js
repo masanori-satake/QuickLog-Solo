@@ -95,6 +95,7 @@ export function initUI(state, elements) {
                         else if (state.lastSelectedIndex > idx) state.lastSelectedIndex--;
                         renderCategoryList();
                         renderDetail();
+                        renderGlobalTagBox();
                         if (state.updateCodeView) state.updateCodeView();
                     };
                     item.appendChild(deleteBtn);
@@ -187,6 +188,7 @@ export function initUI(state, elements) {
                 else if (state.lastSelectedIndex > idx) state.lastSelectedIndex--;
                 renderCategoryList();
                 renderDetail();
+                renderGlobalTagBox();
                 if (state.updateCodeView) state.updateCodeView();
             }
             menu.remove();
@@ -211,6 +213,7 @@ export function initUI(state, elements) {
         state.lastSelectedIndex = idx + 1;
         renderCategoryList();
         renderDetail();
+        renderGlobalTagBox();
         if (state.updateCodeView) state.updateCodeView();
     }
 
@@ -607,6 +610,7 @@ export function initUI(state, elements) {
             state.lastSelectedIndex = -1;
             renderCategoryList();
             renderDetail();
+            renderGlobalTagBox();
             if (state.updateCodeView) state.updateCodeView();
         }
     });
@@ -741,6 +745,7 @@ export function initUI(state, elements) {
             state.lastSelectedIndex = -1;
             renderCategoryList();
             renderDetail();
+            renderGlobalTagBox();
             if (state.updateCodeView) state.updateCodeView();
         }
     });

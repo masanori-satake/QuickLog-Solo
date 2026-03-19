@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Category Editor Tag Box', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ context, page }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('http://localhost:8080/projects/category-editor/index.html?lang=ja');
     await page.waitForSelector('.category-item');
 
@@ -145,5 +146,72 @@ test.describe('Category Editor Tag Box', () => {
     // Tag Box should now only have newTag
     await expect(globalTags).toHaveCount(1);
     await expect(globalTags).toHaveText('newTag');
+  });
+
+  test('Tag Box updates after Clear All operation', async ({ page }) => {
+    await page.evaluate(() => {
+        window.state.categories = [
+            { name: "CatA", color: "primary", tags: "tagA", animation: "default" }
+        ];
+        window.state.renderCategoryList();
+        window.state.renderGlobalTagBox();
+    });
+
+    await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(1);
+
+    // Click Clear All button
+    page.on('dialog', dialog => dialog.accept());
+    await page.click('#clear-all-btn');
+
+    // Tag Box should be empty
+    await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(0);
+  });
+
+  test('Tag Box updates after Import operation', async ({ page }) => {
+    await page.evaluate(() => {
+        window.state.categories = [];
+        window.state.renderCategoryList();
+        window.state.renderGlobalTagBox();
+    });
+
+    await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(0);
+
+    const importData = JSON.stringify({
+        kind: 'QuickLogSolo/Category',
+        version: '1.0',
+        type: 'category',
+        name: 'ImportedCat',
+        color: 'teal',
+        tags: ['importedTag']
+    });
+
+    await page.evaluate((text) => navigator.clipboard.writeText(text), importData);
+    await page.click('#import-btn');
+
+    // Tag Box should now have importedTag
+    await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(1);
+    await expect(page.locator('#global-tag-list .tag-pill')).toHaveText('importedTag');
+  });
+
+  test('Tag Box updates after deleting a category', async ({ page }) => {
+    await page.evaluate(() => {
+        window.state.categories = [
+            { name: "CatA", color: "primary", tags: "tagA", animation: "default" },
+            { name: "CatB", color: "secondary", tags: "tagB", animation: "default" }
+        ];
+        window.state.selectedIndices = [0];
+        window.state.renderCategoryList();
+        window.state.renderGlobalTagBox();
+    });
+
+    await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(2);
+
+    // Delete selected category (CatA)
+    page.on('dialog', dialog => dialog.accept());
+    await page.click('#delete-selected-btn');
+
+    // Tag Box should now only have tagB
+    await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(1);
+    await expect(page.locator('#global-tag-list .tag-pill')).toHaveText('tagB');
   });
 });
