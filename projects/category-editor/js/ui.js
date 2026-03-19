@@ -10,7 +10,8 @@ export function initUI(state, elements) {
         categoryListEl, detailSection, editNameInput, tagListEl,
         tagInput, colorPaletteEl, editAnimationSelect, previewNameEl,
         animInfoEl, animDescEl, animAuthorEl, addCategoryBtn,
-        deleteSelectedBtn, addPageBreakBtn, newStartBtn, clearAllBtn
+        deleteSelectedBtn, addPageBreakBtn, newStartBtn, clearAllBtn,
+        globalTagListEl
     } = elements;
 
     const COLORS = [
@@ -432,6 +433,39 @@ export function initUI(state, elements) {
         cat.tags = tags.join(', ');
     }
 
+    function renderGlobalTagBox() {
+        if (!globalTagListEl) return;
+        globalTagListEl.innerHTML = '';
+
+        const allTags = new Set();
+        state.categories.forEach(cat => {
+            if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
+            getCategoryTags(cat).forEach(tag => allTags.add(tag));
+        });
+
+        const sortedTags = Array.from(allTags).sort((a, b) => a.localeCompare(b, state.currentLang));
+
+        sortedTags.forEach(tag => {
+            const pill = document.createElement('span');
+            pill.className = 'tag-pill';
+            pill.textContent = tag;
+            pill.draggable = true;
+            pill.dataset.tag = tag;
+
+            pill.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', tag);
+                e.dataTransfer.effectAllowed = 'copy';
+                pill.classList.add('dragging');
+            });
+
+            pill.addEventListener('dragend', () => {
+                pill.classList.remove('dragging');
+            });
+
+            globalTagListEl.appendChild(pill);
+        });
+    }
+
     function renderTags() {
         tagListEl.innerHTML = '';
         if (state.selectedIndices.length === 0) return;
@@ -477,6 +511,7 @@ export function initUI(state, elements) {
                     updateCategoryTags(cat, filtered);
                 });
                 renderTags();
+                renderGlobalTagBox();
                 if (state.updateCodeView) state.updateCodeView();
             };
             tagListEl.appendChild(pill);
@@ -625,8 +660,50 @@ export function initUI(state, elements) {
                     }
                 });
                 renderTags();
+                renderGlobalTagBox();
                 if (state.updateCodeView) state.updateCodeView();
                 tagInput.value = '';
+            }
+        }
+    });
+
+    tagInput.addEventListener('dragover', (e) => {
+        if (tagInput.disabled) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        tagInput.classList.add('drag-over');
+    });
+
+    tagInput.addEventListener('dragleave', () => {
+        tagInput.classList.remove('drag-over');
+    });
+
+    tagInput.addEventListener('drop', (e) => {
+        if (tagInput.disabled) return;
+        e.preventDefault();
+        tagInput.classList.remove('drag-over');
+        const tag = e.dataTransfer ? e.dataTransfer.getData('text/plain') : null;
+
+        if (tag && state.selectedIndices.length > 0) {
+            let changed = false;
+            state.selectedIndices.forEach(idx => {
+                const cat = state.categories[idx];
+                if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
+
+                const currentTags = getCategoryTags(cat);
+                if (!currentTags.includes(tag)) {
+                    if (!changed) {
+                        if (state.recordAction) state.recordAction();
+                        changed = true;
+                    }
+                    currentTags.push(tag);
+                    updateCategoryTags(cat, currentTags);
+                }
+            });
+            if (changed) {
+                renderTags();
+                renderGlobalTagBox();
+                if (state.updateCodeView) state.updateCodeView();
             }
         }
     });
@@ -726,6 +803,7 @@ export function initUI(state, elements) {
         renderCategoryList,
         renderDetail,
         renderColorPalette,
+        renderGlobalTagBox,
         populateAnimationOptions,
         getCategoryTags,
         COLOR_CODES

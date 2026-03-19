@@ -290,4 +290,5 @@ export const de = {
     'page-break-label': 'Seitenumbruch',
     'undo': 'Rückgängig machen',
     'redo': 'Wiederholen',
+    'tag-box-title': 'Tag-Box',
 };

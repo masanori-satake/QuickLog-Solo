@@ -290,4 +290,5 @@ export const zh = {
     'page-break-label': '换页',
     'undo': '撤销',
     'redo': '重做',
+    'tag-box-title': '标签箱',
 };

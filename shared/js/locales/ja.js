@@ -312,4 +312,5 @@ export const ja = {
     'page-break-label': '改ページ',
     'undo': '元に戻す',
     'redo': 'やり直し',
+    'tag-box-title': 'タグボックス',
 };

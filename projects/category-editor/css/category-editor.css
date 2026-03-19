@@ -285,6 +285,13 @@ body {
 }
 
 /* Detail Pane */
+.edit-pane-divider {
+    height: 1px;
+    background-color: var(--md-sys-color-outline-variant);
+    margin: 0 -24px;
+    flex-shrink: 0;
+}
+
 .detail-section {
     transition: all 0.3s ease;
 }
@@ -337,6 +344,12 @@ option {
 input[type="text"]:focus, select:focus {
     outline: 2px solid var(--md-sys-color-primary);
     border-color: transparent;
+}
+
+input[type="text"].drag-over {
+    background-color: var(--md-sys-color-secondary-container);
+    border: 2px dashed var(--md-sys-color-primary);
+    outline: none;
 }
 
 input[type="text"]:disabled, select:disabled {
@@ -464,6 +477,24 @@ input[type="text"]:disabled, select:disabled {
     color: var(--md-sys-color-on-secondary-container);
     border-radius: 16px;
     font-size: 0.8rem;
+    transition: transform 0.1s;
+}
+
+#global-tag-list .tag-pill {
+    cursor: grab;
+    user-select: none;
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+#global-tag-list .tag-pill:hover {
+    background-color: var(--md-sys-color-surface-variant);
+    transform: scale(1.05);
+}
+
+#global-tag-list .tag-pill:active {
+    cursor: grabbing;
 }
 
 .tag-remove {

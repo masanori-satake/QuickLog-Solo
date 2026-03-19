@@ -69,7 +69,7 @@ test.describe('Category Editor Multi-selection Tags', () => {
     await items.nth(1).click();
     await page.keyboard.up('Shift');
 
-    const tagPills = page.locator('.tag-pill');
+    const tagPills = page.locator('#tag-list .tag-pill');
     await expect(tagPills).toHaveCount(2);
     await expect(tagPills.nth(0)).toHaveText(/tagB/);
     await expect(tagPills.nth(1)).toHaveText(/tagC/);
@@ -94,8 +94,8 @@ test.describe('Category Editor Multi-selection Tags', () => {
     await page.keyboard.up('Shift');
 
     // 1. Common tag is tagB
-    await expect(page.locator('.tag-pill')).toHaveCount(1);
-    await expect(page.locator('.tag-pill')).toHaveText(/tagB/);
+    await expect(page.locator('#tag-list .tag-pill')).toHaveCount(1);
+    await expect(page.locator('#tag-list .tag-pill')).toHaveText(/tagB/);
 
     // 2. Add tagE
     await page.fill('#tag-input', 'tagE');

@@ -60,6 +60,7 @@ const elements = {
     exportBtn: document.getElementById('export-btn'),
     newStartBtn: document.getElementById('new-start-btn'),
     clearAllBtn: document.getElementById('clear-all-btn'),
+    globalTagListEl: document.getElementById('global-tag-list'),
     langSelect: document.getElementById('lang-select-editor'),
     themeToggle: document.getElementById('theme-toggle'),
     undoBtn: document.getElementById('undo-btn'),
@@ -76,6 +77,7 @@ function init() {
     setupAnimationEngine();
 
     // Module initialization
+    window.state = state;
     historyMod = initHistory(state, elements);
     uiMod = initUI(state, elements);
     dataIoMod = initDataIO(state, elements);
@@ -91,6 +93,7 @@ function init() {
     state.renderCategoryList = uiMod.renderCategoryList;
     state.renderDetail = uiMod.renderDetail;
     state.renderColorPalette = uiMod.renderColorPalette;
+    state.renderGlobalTagBox = uiMod.renderGlobalTagBox;
     state.populateAnimationOptions = uiMod.populateAnimationOptions;
 
     state.updateCodeView = dataIoMod.updateCodeView;
@@ -104,6 +107,7 @@ function init() {
     uiMod.renderColorPalette();
     uiMod.populateAnimationOptions();
     loadDefaultCategories();
+    uiMod.renderGlobalTagBox();
     state.clearHistory();
 }
 
@@ -251,6 +255,7 @@ function loadDefaultCategories() {
     state.lastSelectedIndex = 0;
     state.renderCategoryList();
     state.renderDetail();
+    state.renderGlobalTagBox();
     state.updateCodeView();
 }
 
@@ -269,6 +274,7 @@ function refreshUIAfterHistoryChange() {
 
     state.renderCategoryList();
     state.renderDetail();
+    state.renderGlobalTagBox();
     state.updateCodeView();
     historyMod.updateHistoryButtons();
 }

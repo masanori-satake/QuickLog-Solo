@@ -290,4 +290,5 @@ export const fr = {
     'page-break-label': 'Saut de page',
     'undo': 'Annuler',
     'redo': 'Rétablir',
+    'tag-box-title': 'Boîte à tags',
 };

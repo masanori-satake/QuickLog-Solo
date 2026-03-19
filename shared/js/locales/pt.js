@@ -290,4 +290,5 @@ export const pt = {
     'page-break-label': 'Quebra de página',
     'undo': 'Desfazer',
     'redo': 'Refazer',
+    'tag-box-title': 'Caixa de tags',
 };
