@@ -52,6 +52,14 @@ jobs:
           scripts/**
           package.json
 
+    - name: Get app-related changed files
+      id: app-changes
+      uses: tj-actions/changed-files@v45
+      with:
+        files: |
+          projects/app/**
+          shared/**
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -77,6 +85,6 @@ jobs:
       timeout-minutes: 2
 
     - name: Verify version impact
-      if: (github.event_name == 'pull_request' && steps.changed-files.outputs.any_changed == 'true') || github.event_name == 'workflow_dispatch'
+      if: (github.event_name == 'pull_request' && steps.app-changes.outputs.any_changed == 'true') || github.event_name == 'workflow_dispatch'
       run: python3 scripts/verify_version_impact.py
       timeout-minutes: 2
