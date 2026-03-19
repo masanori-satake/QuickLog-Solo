@@ -119,10 +119,9 @@ export function generateDuplicateName(baseName, existingNames) {
         if (match) {
             const num = parseInt(match[1], 10);
             if (num > maxNum) maxNum = num;
-        } else if (name === cleanBase) {
-            // Found base name without suffix, but it doesn't count towards maxNum unless we want it to.
-            // Requirement says increment from max sequential (n).
         }
+        // Note: Exact matches of cleanBase without a suffix are ignored here.
+        // We only care about the maximum sequential (n) to determine the next number.
     });
 
     return `${cleanBase} (${maxNum + 1})`;
