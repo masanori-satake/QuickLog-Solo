@@ -383,16 +383,20 @@ function setupEventListeners() {
         if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
             const tag = tagInput.value.trim().replace(/,/g, '');
-            if (tag && selectedIndices.length === 1) {
+            if (tag && selectedIndices.length > 0) {
                 recordAction();
-                const idx = selectedIndices[0];
-                const currentTags = categories[idx].tags ? categories[idx].tags.split(',').map(t => t.trim()) : [];
-                if (!currentTags.includes(tag)) {
-                    currentTags.push(tag);
-                    categories[idx].tags = currentTags.join(', ');
-                    renderTags();
-                    updateCodeView();
-                }
+                selectedIndices.forEach(idx => {
+                    const cat = categories[idx];
+                    if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
+
+                    const currentTags = getCategoryTags(cat);
+                    if (!currentTags.includes(tag)) {
+                        currentTags.push(tag);
+                        updateCategoryTags(cat, currentTags);
+                    }
+                });
+                renderTags();
+                updateCodeView();
                 tagInput.value = '';
             }
         }
@@ -585,40 +589,42 @@ function renderCategoryList() {
             item.appendChild(nameSpan);
         }
 
-        if (isPageBreak) {
-            // Delete button for Page Break
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'icon-btn delete-item-btn';
-            const deleteIcon = document.createElement('span');
-            deleteIcon.className = 'material-symbols-outlined';
-            deleteIcon.textContent = 'delete';
-            deleteBtn.appendChild(deleteIcon);
-            deleteBtn.title = t('delete');
-            deleteBtn.onclick = (e) => {
-                e.stopPropagation();
-                recordAction();
-                categories.splice(idx, 1);
-                selectedIndices = selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
-                if (lastSelectedIndex === idx) lastSelectedIndex = -1;
-                else if (lastSelectedIndex > idx) lastSelectedIndex--;
-                renderCategoryList();
-                renderDetail();
-                updateCodeView();
-            };
-            item.appendChild(deleteBtn);
-        } else {
-            // More button for regular categories
-            const moreBtn = document.createElement('button');
-            moreBtn.className = 'icon-btn more-item-btn';
-            const moreIcon = document.createElement('span');
-            moreIcon.className = 'material-symbols-outlined';
-            moreIcon.textContent = 'more_vert';
-            moreBtn.appendChild(moreIcon);
-            moreBtn.onclick = (e) => {
-                e.stopPropagation();
-                showCategoryMenu(e, idx);
-            };
-            item.appendChild(moreBtn);
+        if (selectedIndices.length <= 1) {
+            if (isPageBreak) {
+                // Delete button for Page Break
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'icon-btn delete-item-btn';
+                const deleteIcon = document.createElement('span');
+                deleteIcon.className = 'material-symbols-outlined';
+                deleteIcon.textContent = 'delete';
+                deleteBtn.appendChild(deleteIcon);
+                deleteBtn.title = t('delete');
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    recordAction();
+                    categories.splice(idx, 1);
+                    selectedIndices = selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
+                    if (lastSelectedIndex === idx) lastSelectedIndex = -1;
+                    else if (lastSelectedIndex > idx) lastSelectedIndex--;
+                    renderCategoryList();
+                    renderDetail();
+                    updateCodeView();
+                };
+                item.appendChild(deleteBtn);
+            } else {
+                // More button for regular categories
+                const moreBtn = document.createElement('button');
+                moreBtn.className = 'icon-btn more-item-btn';
+                const moreIcon = document.createElement('span');
+                moreIcon.className = 'material-symbols-outlined';
+                moreIcon.textContent = 'more_vert';
+                moreBtn.appendChild(moreIcon);
+                moreBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    showCategoryMenu(e, idx);
+                };
+                item.appendChild(moreBtn);
+            }
         }
 
         item.onclick = (e) => {
@@ -769,6 +775,16 @@ function renderDetail() {
         clearCategoryClasses(previewOverlay);
         clearCategoryClasses(previewContainer);
 
+        // Labels for dynamic text change
+        const labelTags = document.querySelector('label[for="tag-input"]');
+        const labelTheme = document.querySelector('label[data-i18n="setting-theme"]');
+        const labelAnimation = document.querySelector('label[for="edit-animation"]');
+
+        const isMulti = selectedIndices.length > 1;
+        if (labelTags) labelTags.textContent = t(isMulti ? 'tags-common' : 'tags');
+        if (labelTheme) labelTheme.textContent = t(isMulti ? 'setting-theme-common' : 'setting-theme');
+        if (labelAnimation) labelAnimation.textContent = t(isMulti ? 'setting-animation-by-category-common' : 'setting-animation-by-category');
+
         if (selectedIndices.length === 0) {
             detailSection.classList.add('hidden');
             previewNameEl.textContent = '';
@@ -796,9 +812,12 @@ function renderDetail() {
             }
 
             editNameInput.value = '';
+            editNameInput.placeholder = `(${t('tags-common')})`;
             editNameInput.disabled = true;
-            tagInput.disabled = true;
-            tagListEl.innerHTML = '';
+
+            // Enable tag input for multi-selection
+            tagInput.disabled = isFirstPageBreak;
+            renderTags();
 
             updateColorSelection(firstCat.color || 'primary');
             editAnimationSelect.value = firstCat.animation || 'default';
@@ -847,6 +866,7 @@ function renderDetail() {
         if (isPageBreak) {
             if (previewSection) previewSection.classList.add('hidden');
             editNameInput.value = t('page-break-label');
+            editNameInput.placeholder = '';
             editNameInput.disabled = true;
             tagInput.disabled = true;
             editAnimationSelect.value = 'none';
@@ -870,6 +890,7 @@ function renderDetail() {
 
         if (previewSection) previewSection.classList.remove('hidden');
         editNameInput.disabled = false;
+        editNameInput.placeholder = t('label-name');
         tagInput.disabled = false;
         editAnimationSelect.disabled = false;
         colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
@@ -931,12 +952,49 @@ function updateAnimationInfo() {
     }
 }
 
+/**
+ * Helper to get tags as an array from a category object.
+ * @param {object} cat
+ * @returns {string[]}
+ */
+function getCategoryTags(cat) {
+    if (!cat || !cat.tags) return [];
+    return cat.tags.split(',').map(t => t.trim()).filter(Boolean);
+}
+
+/**
+ * Helper to update tags on a category object from an array.
+ * @param {object} cat
+ * @param {string[]} tags
+ */
+function updateCategoryTags(cat, tags) {
+    if (!cat) return;
+    cat.tags = tags.join(', ');
+}
+
 function renderTags() {
     tagListEl.innerHTML = '';
-    if (selectedIndices.length !== 1) return;
-    const idx = selectedIndices[0];
-    const tags = categories[idx].tags ? categories[idx].tags.split(',').map(t => t.trim()).filter(Boolean) : [];
-    tags.forEach((tag, tIdx) => {
+    if (selectedIndices.length === 0) return;
+
+    let commonTags = [];
+    if (selectedIndices.length === 1) {
+        const idx = selectedIndices[0];
+        commonTags = getCategoryTags(categories[idx]);
+    } else {
+        // Compute intersection for multiple selection
+        const tagSets = selectedIndices
+            .map(idx => categories[idx])
+            .filter(cat => !cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
+            .map(cat => new Set(getCategoryTags(cat)));
+
+        if (tagSets.length > 0) {
+            const firstSet = tagSets[0];
+            commonTags = Array.from(firstSet).filter(tag => tagSets.every(s => s.has(tag)));
+            commonTags.sort((a, b) => a.localeCompare(b, currentLang));
+        }
+    }
+
+    commonTags.forEach((tag) => {
         const pill = document.createElement('span');
         pill.className = 'tag-pill';
 
@@ -952,8 +1010,13 @@ function renderTags() {
         removeBtn.onclick = (e) => {
             e.stopPropagation();
             recordAction();
-            tags.splice(tIdx, 1);
-            categories[idx].tags = tags.join(', ');
+            selectedIndices.forEach(idx => {
+                const cat = categories[idx];
+                if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
+                const tags = getCategoryTags(cat);
+                const filtered = tags.filter(t => t !== tag);
+                updateCategoryTags(cat, filtered);
+            });
             renderTags();
             updateCodeView();
         };
@@ -1083,7 +1146,7 @@ function updateCodeView() {
         if (!isPageBreak) {
             entry.name = cat.name;
             entry.color = cat.color;
-            entry.tags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+            entry.tags = getCategoryTags(cat);
             entry.animation = cat.animation || 'default';
         }
         return JSON.stringify(entry);

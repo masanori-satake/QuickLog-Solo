@@ -297,6 +297,9 @@ export const en = {
     // Category Editor
     'category-editor-title': 'QL-Category Editor',
     'category-detail': 'Category Detail',
+    'tags-common': 'Tags (Common)',
+    'setting-theme-common': 'Theme (Common)',
+    'setting-animation-by-category-common': 'Animation (Common)',
     'section-code-view': 'NDJSON View',
     'btn-new-start': 'Start from Default',
     'btn-clear-all': 'Clear All',

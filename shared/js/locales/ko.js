@@ -275,6 +275,9 @@ export const ko = {
     // Category Editor
     'category-editor-title': '업무 카테고리 에디터',
     'category-detail': '카테고리 상세',
+    'tags-common': '태그(공통)',
+    'setting-theme-common': '테마(공통)',
+    'setting-animation-by-category-common': '배경 애니메이션 설정(공통)',
     'section-code-view': 'NDJSON 뷰',
     'btn-new-start': '기본 세트에서 시작',
     'btn-clear-all': '모두 지우기',

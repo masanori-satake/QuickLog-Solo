@@ -132,7 +132,7 @@ test.describe('Category Editor Features', () => {
     const tagInput = page.locator('#tag-input');
 
     await expect(nameInput).toBeDisabled();
-    await expect(tagInput).toBeDisabled();
+    await expect(tagInput).not.toBeDisabled(); // Changed: tagInput is now enabled in multi-selection
 
     // Name input should be cleared
     await expect(nameInput).toHaveValue('');
