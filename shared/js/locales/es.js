@@ -275,6 +275,9 @@ export const es = {
     // Category Editor
     'category-editor-title': 'Editor de Categorías de Negocio',
     'category-detail': 'Detalle de Categoría',
+    'tags-common': 'Etiquetas (Común)',
+    'setting-theme-common': 'Tema (Común)',
+    'setting-animation-by-category-common': 'Animación (Común)',
     'section-code-view': 'Vista NDJSON',
     'btn-new-start': 'Comenzar desde el predeterminado',
     'btn-clear-all': 'Limpiar todo',

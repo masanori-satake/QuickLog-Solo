@@ -275,6 +275,9 @@ export const fr = {
     // Category Editor
     'category-editor-title': 'Éditeur de catégories professionnelles',
     'category-detail': 'Détails de la catégorie',
+    'tags-common': 'Tags (Commun)',
+    'setting-theme-common': 'Thème (Commun)',
+    'setting-animation-by-category-common': 'Animation (Commun)',
     'section-code-view': 'Vue NDJSON',
     'btn-new-start': 'Démarrer à partir du jeu par défaut',
     'btn-clear-all': 'Tout effacer',

@@ -297,6 +297,9 @@ export const ja = {
     // Category Editor
     'category-editor-title': '業務カテゴリ・エディタ',
     'category-detail': 'カテゴリ詳細',
+    'tags-common': 'タグ(共通)',
+    'setting-theme-common': 'テーマ(共通)',
+    'setting-animation-by-category-common': '背景アニメーション設定(共通)',
     'section-code-view': 'NDJSONビュー',
     'btn-new-start': '標準セットから作成',
     'btn-clear-all': '全てクリア',

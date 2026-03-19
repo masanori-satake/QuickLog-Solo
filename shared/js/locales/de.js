@@ -275,6 +275,9 @@ export const de = {
     // Category Editor
     'category-editor-title': 'Geschäftskategorie-Editor',
     'category-detail': 'Kategoriedetails',
+    'tags-common': 'Tags (Gemeinsam)',
+    'setting-theme-common': 'Design (Gemeinsam)',
+    'setting-animation-by-category-common': 'Hintergrundanimation (Gemeinsam)',
     'section-code-view': 'NDJSON-Ansicht',
     'btn-new-start': 'Vom Standardsatz starten',
     'btn-clear-all': 'Alles löschen',

@@ -275,6 +275,9 @@ export const zh = {
     // Category Editor
     'category-editor-title': '业务分类编辑器',
     'category-detail': '分类详情',
+    'tags-common': '标签(共通)',
+    'setting-theme-common': '主题(共通)',
+    'setting-animation-by-category-common': '背景动画设置(共通)',
     'section-code-view': 'NDJSON 视图',
     'btn-new-start': '从默认集开始',
     'btn-clear-all': '全部清除',
