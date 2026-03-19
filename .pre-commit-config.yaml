@@ -19,6 +19,13 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+-   repo: local
+    hooks:
+    -   id: verify-submission-language
+        name: verify-submission-language
+        entry: python3 scripts/language_check.py --commit-msg-file
+        language: python
+        stages: [commit-msg]
     -   id: stylelint
         name: stylelint
         entry: npx stylelint "**/*.css"
