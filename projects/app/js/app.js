@@ -26,6 +26,7 @@ const URL_PARAM_TEST_RESUMABLE = 'test_resumable';
 
 const MAX_LOGS_DISPLAY = 100;
 const TOAST_DURATION_MS = 2000;
+const IMPORT_FEEDBACK_DELAY_MS = 500;
 const ITEMS_PER_PAGE = 16;
 
 const EXCLUSION_PADDING_X = 4;
@@ -1990,7 +1991,7 @@ function setupEventListeners() {
             await dbImportCategories(finalItems, importMode);
 
             // Artificial delay to ensure visual feedback as per UI standards
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, IMPORT_FEEDBACK_DELAY_MS));
 
             showToast(t('toast-cat-imported'));
             renderCategories();
