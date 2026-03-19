@@ -112,6 +112,7 @@ export const ko = {
     'confirm-end-task': '작업을 종료하시겠습니까?',
     'confirm-cancel': '취소',
     'confirm-delete-category': '"{name}" 카테고리를 삭제하시겠습니까?\n(이전 로그의 카테고리 색상이 사라집니다)',
+    'confirm-delete-selected': '선택한 {count}개 항목을 삭제하시겠습니까?',
     'confirm-import-overwrite': '기존 카테고리를 모두 삭제하고 덮어쓰시겠습니까?',
     'confirm-export-csv': '로그 데이터를 CSV로 내보냅니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',
     'confirm-import-csv': 'CSV에서 로그를 가져옵니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',

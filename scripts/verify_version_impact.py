@@ -22,11 +22,15 @@ def get_base_commit():
     except subprocess.CalledProcessError:
         return None
 
-def get_commits_since(commit_hash):
+def get_commits_since(commit_hash, paths=None):
     if not commit_hash:
         return []
 
     cmd = ["git", "log", f"{commit_hash}..HEAD", "--format=%B", "-z"]
+    if paths:
+        cmd.append("--")
+        cmd.extend(paths)
+
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         commits = result.stdout.split('\0')
@@ -39,6 +43,9 @@ def get_commits_since(commit_hash):
             res_mb = subprocess.run(cmd_merge_base, capture_output=True, text=True, check=True)
             mb = res_mb.stdout.strip()
             cmd = ["git", "log", f"{mb}..HEAD", "--format=%B", "-z"]
+            if paths:
+                cmd.append("--")
+                cmd.extend(paths)
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             commits = result.stdout.split('\0')
             return [c.strip() for c in commits if c.strip()]
@@ -76,7 +83,9 @@ def check_impact():
     base_commit = get_base_commit()
     print(f"Comparing against base commit: {base_commit}")
 
-    commits = get_commits_since(base_commit)
+    # Only consider commits that touch app-related files
+    impactful_paths = ["projects/app/", "shared/"]
+    commits = get_commits_since(base_commit, impactful_paths)
     required_bump = determine_required_bump(commits)
 
     if not required_bump:

@@ -112,6 +112,7 @@ export const es = {
     'confirm-end-task': '¿Realmente desea finalizar la tarea?',
     'confirm-cancel': 'Cancelar',
     'confirm-delete-category': '¿Eliminar categoría "{name}"?\n(Los colores desaparecerán de registros antiguos)',
+    'confirm-delete-selected': '¿Desea eliminar los {count} elementos seleccionados?',
     'confirm-import-overwrite': '¿Eliminar todas las categorías y sobrescribir?',
     'confirm-export-csv': 'Los datos se exportarán como CSV. Se finalizará la tarea actual. ¿Continuar?',
     'confirm-import-csv': 'Los datos se importarán desde CSV. Se finalizará la tarea actual. ¿Continuar?',

@@ -112,6 +112,7 @@ export const fr = {
     'confirm-end-task': 'Voulez-vous vraiment terminer la tâche ?',
     'confirm-cancel': 'Annuler',
     'confirm-delete-category': 'Supprimer la catégorie "{name}" ?\n(Les couleurs disparaîtront des anciens journaux)',
+    'confirm-delete-selected': 'Voulez-vous supprimer les {count} éléments sélectionnés ?',
     'confirm-import-overwrite': 'Supprimer toutes les catégories et écraser ?',
     'confirm-export-csv': 'Les données seront exportées en CSV. La tâche actuelle sera terminée. Continuer ?',
     'confirm-import-csv': 'Les données seront importées de CSV. La tâche actuelle sera terminée. Continuer ?',

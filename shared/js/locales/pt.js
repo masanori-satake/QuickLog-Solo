@@ -112,6 +112,7 @@ export const pt = {
     'confirm-end-task': 'Deseja realmente finalizar a tarefa?',
     'confirm-cancel': 'Cancelar',
     'confirm-delete-category': 'Excluir categoria "{name}"?\n(Cores sumirão de registros antigos)',
+    'confirm-delete-selected': 'Deseja excluir os {count} itens selecionados?',
     'confirm-import-overwrite': 'Excluir todas as categorias e sobrescrever?',
     'confirm-export-csv': 'Os dados serão exportados em CSV. A tarefa atual será finalizada. Continuar?',
     'confirm-import-csv': 'Os dados serão importados do CSV. A tarefa atual será finalizada. Continuar?',
