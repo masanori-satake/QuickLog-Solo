@@ -630,26 +630,58 @@ function renderDetail() {
         if (selectedIndices.length > 1) {
             detailSection.classList.remove('hidden');
             const previewSection = document.querySelector('.preview-section');
-            if (previewSection) previewSection.classList.add('hidden');
+
+            const firstIdx = selectedIndices[0];
+            const firstCat = categories[firstIdx];
+            const isFirstPageBreak = firstCat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+
+            if (isFirstPageBreak) {
+                if (previewSection) previewSection.classList.add('hidden');
+                editAnimationSelect.disabled = true;
+            } else {
+                if (previewSection) previewSection.classList.remove('hidden');
+                editAnimationSelect.disabled = false;
+            }
 
             editNameInput.value = '';
             editNameInput.disabled = true;
             tagInput.disabled = true;
             tagListEl.innerHTML = '';
 
-            const firstIdx = selectedIndices[0];
-            const firstCat = categories[firstIdx];
             updateColorSelection(firstCat.color || 'primary');
             editAnimationSelect.value = firstCat.animation || 'default';
-            editAnimationSelect.disabled = false;
 
             colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
-                opt.style.pointerEvents = 'auto';
-                opt.style.opacity = '1';
+                if (isFirstPageBreak) {
+                    opt.classList.remove('selected');
+                    opt.style.pointerEvents = 'none';
+                    opt.style.opacity = '0.5';
+                } else {
+                    opt.style.pointerEvents = 'auto';
+                    opt.style.opacity = '1';
+                }
             });
 
             updateAnimationInfo();
-            if (animationEngine) animationEngine.stop();
+
+            if (isFirstPageBreak) {
+                if (animationEngine) animationEngine.stop();
+            } else {
+                previewNameEl.textContent = firstCat.name;
+                const color = firstCat.color || 'primary';
+                const animation = firstCat.animation || 'default';
+                const animActive = animation !== 'none';
+
+                if (animActive) {
+                    previewOverlay.classList.add('anim-active');
+                    previewOverlay.classList.add(`cat-${color}`);
+                    previewContainer.classList.add('anim-active');
+                } else {
+                    previewOverlay.classList.remove('anim-active');
+                    previewContainer.classList.remove('anim-active');
+                }
+                updatePreview();
+            }
             return;
         }
 
@@ -838,7 +870,7 @@ function populateAnimationOptions() {
 
 function updatePreview() {
     if (!animationEngine) return;
-    if (selectedIndices.length !== 1) {
+    if (selectedIndices.length === 0) {
         animationEngine.stop();
         return;
     }
