@@ -13,7 +13,8 @@ import {
 
 let currentLang = 'en';
 let categories = [];
-let selectedIndex = -1;
+let selectedIndices = [];
+let lastSelectedIndex = -1;
 let animationEngine = null;
 let currentTheme = 'dark';
 
@@ -34,6 +35,7 @@ const codeModalEl = document.getElementById('code-modal');
 const btnShowCode = document.getElementById('btn-show-code');
 
 const addCategoryBtn = document.getElementById('add-category-btn');
+const deleteSelectedBtn = document.getElementById('delete-selected-btn');
 const addPageBreakBtn = document.getElementById('add-page-break-btn');
 const importBtn = document.getElementById('import-btn');
 const exportBtn = document.getElementById('export-btn');
@@ -202,7 +204,8 @@ function setupEventListeners() {
             tags: ''
         };
         categories.push(newCat);
-        selectedIndex = categories.length - 1;
+        selectedIndices = [categories.length - 1];
+        lastSelectedIndex = categories.length - 1;
         renderCategoryList();
         renderDetail();
         updateCodeView();
@@ -211,12 +214,28 @@ function setupEventListeners() {
         categoryListEl.scrollTop = categoryListEl.scrollHeight;
     });
 
+    deleteSelectedBtn.addEventListener('click', () => {
+        if (selectedIndices.length === 0) return;
+        if (confirm(t('confirm-delete-selected', { count: selectedIndices.length }))) {
+            const indicesToRemove = [...selectedIndices].sort((a, b) => b - a);
+            indicesToRemove.forEach(idx => {
+                categories.splice(idx, 1);
+            });
+            selectedIndices = [];
+            lastSelectedIndex = -1;
+            renderCategoryList();
+            renderDetail();
+            updateCodeView();
+        }
+    });
+
     addPageBreakBtn.addEventListener('click', () => {
         const newPB = {
             name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
         categories.push(newPB);
-        selectedIndex = categories.length - 1;
+        selectedIndices = [categories.length - 1];
+        lastSelectedIndex = categories.length - 1;
         renderCategoryList();
         renderDetail();
         updateCodeView();
@@ -226,11 +245,12 @@ function setupEventListeners() {
     });
 
     editNameInput.addEventListener('input', (e) => {
-        if (selectedIndex === -1) return;
+        if (selectedIndices.length !== 1) return;
+        const idx = selectedIndices[0];
         const name = e.target.value;
-        categories[selectedIndex].name = name;
+        categories[idx].name = name;
         previewNameEl.textContent = name;
-        updateListItem(selectedIndex);
+        updateListItem(idx);
         updateCodeView();
     });
 
@@ -238,11 +258,12 @@ function setupEventListeners() {
         if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
             const tag = tagInput.value.trim().replace(/,/g, '');
-            if (tag && selectedIndex !== -1) {
-                const currentTags = categories[selectedIndex].tags ? categories[selectedIndex].tags.split(',').map(t => t.trim()) : [];
+            if (tag && selectedIndices.length === 1) {
+                const idx = selectedIndices[0];
+                const currentTags = categories[idx].tags ? categories[idx].tags.split(',').map(t => t.trim()) : [];
                 if (!currentTags.includes(tag)) {
                     currentTags.push(tag);
-                    categories[selectedIndex].tags = currentTags.join(', ');
+                    categories[idx].tags = currentTags.join(', ');
                     renderTags();
                     updateCodeView();
                 }
@@ -252,8 +273,14 @@ function setupEventListeners() {
     });
 
     editAnimationSelect.addEventListener('change', (e) => {
-        if (selectedIndex === -1) return;
-        categories[selectedIndex].animation = e.target.value;
+        if (selectedIndices.length === 0) return;
+        const animation = e.target.value;
+        selectedIndices.forEach(idx => {
+            const cat = categories[idx];
+            if (!cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+                cat.animation = animation;
+            }
+        });
         renderDetail();
         updateCodeView();
     });
@@ -278,7 +305,8 @@ function setupEventListeners() {
     clearAllBtn.addEventListener('click', () => {
         if (confirm(t('confirm-clear-all'))) {
             categories = [];
-            selectedIndex = -1;
+            selectedIndices = [];
+            lastSelectedIndex = -1;
             renderCategoryList();
             renderDetail();
             updateCodeView();
@@ -345,8 +373,12 @@ function setupEventListeners() {
 
         const newCategories = items.map(item => categories[parseInt(item.dataset.index)]);
 
+        const prevSelectedItems = selectedIndices.map(i => categories[i]);
+
         categories = newCategories;
-        selectedIndex = categories.indexOf(dragItem);
+        selectedIndices = prevSelectedItems.map(item => categories.indexOf(item)).filter(i => i !== -1);
+        lastSelectedIndex = categories.indexOf(dragItem);
+
         renderCategoryList();
         renderDetail();
         updateCodeView();
@@ -363,7 +395,8 @@ function loadDefaultCategories() {
     ];
 
     categories = defaultSet;
-    selectedIndex = 0;
+    selectedIndices = [0];
+    lastSelectedIndex = 0;
     renderCategoryList();
     renderDetail();
     updateCodeView();
@@ -374,7 +407,7 @@ function renderCategoryList() {
     categories.forEach((cat, idx) => {
         const item = document.createElement('div');
         const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
-        item.className = 'category-item' + (isPageBreak ? ' page-break' : '') + (idx === selectedIndex ? ' active' : '');
+        item.className = 'category-item' + (isPageBreak ? ' page-break' : '') + (selectedIndices.includes(idx) ? ' active' : '');
         item.draggable = true;
         item.dataset.index = idx;
 
@@ -417,8 +450,9 @@ function renderCategoryList() {
             deleteBtn.onclick = (e) => {
                 e.stopPropagation();
                 categories.splice(idx, 1);
-                if (selectedIndex === idx) selectedIndex = -1;
-                else if (selectedIndex > idx) selectedIndex--;
+                selectedIndices = selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
+                if (lastSelectedIndex === idx) lastSelectedIndex = -1;
+                else if (lastSelectedIndex > idx) lastSelectedIndex--;
                 renderCategoryList();
                 renderDetail();
                 updateCodeView();
@@ -439,8 +473,28 @@ function renderCategoryList() {
             item.appendChild(moreBtn);
         }
 
-        item.onclick = () => {
-            selectedIndex = idx;
+        item.onclick = (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (selectedIndices.includes(idx)) {
+                    selectedIndices = selectedIndices.filter(i => i !== idx);
+                } else {
+                    selectedIndices.push(idx);
+                }
+                lastSelectedIndex = idx;
+            } else if (e.shiftKey && lastSelectedIndex !== -1) {
+                const start = Math.min(lastSelectedIndex, idx);
+                const end = Math.max(lastSelectedIndex, idx);
+                const range = [];
+                for (let i = start; i <= end; i++) {
+                    range.push(i);
+                }
+                // When using shift-click, usually we union or replace.
+                // Standard explorer behavior is to replace selection with range from anchor to current.
+                selectedIndices = range;
+            } else {
+                selectedIndices = [idx];
+                lastSelectedIndex = idx;
+            }
             renderCategoryList();
             renderDetail();
         };
@@ -489,8 +543,9 @@ function showCategoryMenu(e, idx) {
         const cat = categories[idx];
         if (confirm(t('confirm-delete-category', { name: cat.name }))) {
             categories.splice(idx, 1);
-            if (selectedIndex === idx) selectedIndex = -1;
-            else if (selectedIndex > idx) selectedIndex--;
+            selectedIndices = selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
+            if (lastSelectedIndex === idx) lastSelectedIndex = -1;
+            else if (lastSelectedIndex > idx) lastSelectedIndex--;
             renderCategoryList();
             renderDetail();
             updateCodeView();
@@ -514,7 +569,8 @@ function duplicateCategory(idx) {
     const newCat = { ...original, name: newName };
 
     categories.splice(idx + 1, 0, newCat);
-    selectedIndex = idx + 1;
+    selectedIndices = [idx + 1];
+    lastSelectedIndex = idx + 1;
     renderCategoryList();
     renderDetail();
     updateCodeView();
@@ -562,7 +618,7 @@ function renderDetail() {
         clearCategoryClasses(previewOverlay);
         clearCategoryClasses(previewContainer);
 
-        if (selectedIndex === -1 || selectedIndex >= categories.length) {
+        if (selectedIndices.length === 0) {
             detailSection.classList.add('hidden');
             previewNameEl.textContent = '';
             if (animationEngine) animationEngine.stop();
@@ -572,7 +628,34 @@ function renderDetail() {
             return;
         }
 
-        const cat = categories[selectedIndex];
+        if (selectedIndices.length > 1) {
+            detailSection.classList.remove('hidden');
+            const previewSection = document.querySelector('.preview-section');
+            if (previewSection) previewSection.classList.add('hidden');
+
+            editNameInput.value = '';
+            editNameInput.disabled = true;
+            tagInput.disabled = true;
+            tagListEl.innerHTML = '';
+
+            const firstIdx = selectedIndices[0];
+            const firstCat = categories[firstIdx];
+            updateColorSelection(firstCat.color || 'primary');
+            editAnimationSelect.value = firstCat.animation || 'default';
+            editAnimationSelect.disabled = false;
+
+            colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
+                opt.style.pointerEvents = 'auto';
+                opt.style.opacity = '1';
+            });
+
+            updateAnimationInfo();
+            if (animationEngine) animationEngine.stop();
+            return;
+        }
+
+        const idx = selectedIndices[0];
+        const cat = categories[idx];
         const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
 
         detailSection.classList.remove('hidden');
@@ -614,7 +697,7 @@ function renderDetail() {
         editNameInput.value = cat.name;
         previewNameEl.textContent = cat.name;
         renderTags();
-        updateColorSelection();
+        updateColorSelection(cat.color || 'primary');
         editAnimationSelect.value = cat.animation || 'default';
         updateAnimationInfo();
 
@@ -667,8 +750,10 @@ function updateAnimationInfo() {
 
 function renderTags() {
     tagListEl.innerHTML = '';
-    const tags = categories[selectedIndex].tags ? categories[selectedIndex].tags.split(',').map(t => t.trim()).filter(Boolean) : [];
-    tags.forEach((tag, idx) => {
+    if (selectedIndices.length !== 1) return;
+    const idx = selectedIndices[0];
+    const tags = categories[idx].tags ? categories[idx].tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+    tags.forEach((tag, tIdx) => {
         const pill = document.createElement('span');
         pill.className = 'tag-pill';
 
@@ -683,8 +768,8 @@ function renderTags() {
 
         removeBtn.onclick = (e) => {
             e.stopPropagation();
-            tags.splice(idx, 1);
-            categories[selectedIndex].tags = tags.join(', ');
+            tags.splice(tIdx, 1);
+            categories[idx].tags = tags.join(', ');
             renderTags();
             updateCodeView();
         };
@@ -706,8 +791,13 @@ function renderColorPalette() {
         opt.appendChild(check);
 
         opt.onclick = () => {
-            if (selectedIndex === -1) return;
-            categories[selectedIndex].color = color;
+            if (selectedIndices.length === 0) return;
+            selectedIndices.forEach(idx => {
+                const cat = categories[idx];
+                if (!cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+                    cat.color = color;
+                }
+            });
             renderDetail();
             renderCategoryList();
             updateCodeView();
@@ -716,9 +806,7 @@ function renderColorPalette() {
     });
 }
 
-function updateColorSelection() {
-    if (selectedIndex === -1) return;
-    const color = categories[selectedIndex].color || 'primary';
+function updateColorSelection(color) {
     colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
         opt.classList.toggle('selected', opt.dataset.color === color);
     });
@@ -751,11 +839,12 @@ function populateAnimationOptions() {
 
 function updatePreview() {
     if (!animationEngine) return;
-    if (selectedIndex === -1) {
+    if (selectedIndices.length !== 1) {
         animationEngine.stop();
         return;
     }
-    const cat = categories[selectedIndex];
+    const idx = selectedIndices[0];
+    const cat = categories[idx];
     const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
     const animation = cat.animation || 'default';
 
@@ -860,7 +949,8 @@ async function handleImport() {
         }
 
         categories = validItems;
-        selectedIndex = categories.length > 0 ? 0 : -1;
+        selectedIndices = categories.length > 0 ? [0] : [];
+        lastSelectedIndex = categories.length > 0 ? 0 : -1;
         renderCategoryList();
         renderDetail();
         updateCodeView();

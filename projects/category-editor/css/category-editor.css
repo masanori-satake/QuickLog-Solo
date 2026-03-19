@@ -3,7 +3,7 @@
 :root {
     --header-height: 64px;
     --footer-height: 72px;
-    --list-width: 400px;
+    --list-width: 600px;
 }
 
 body {
@@ -34,7 +34,7 @@ body {
 }
 
 .header-content-wrapper {
-    max-width: 1200px;
+    max-width: 1800px;
     width: 100%;
     margin: 0 auto;
     display: flex;
@@ -84,7 +84,7 @@ body {
 }
 
 .main-content-wrapper {
-    max-width: 1200px;
+    max-width: 1800px;
     width: 100%;
     display: flex;
     overflow: hidden;
@@ -709,7 +709,7 @@ input[type="text"]:focus, select:focus {
 }
 
 .footer-content-wrapper {
-    max-width: 1200px;
+    max-width: 1800px;
     width: 100%;
     margin: 0 auto;
     display: flex;

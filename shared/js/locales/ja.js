@@ -128,6 +128,7 @@ export const ja = {
     'confirm-end-task': '本当に作業を終了しますか？',
     'confirm-cancel': 'キャンセル',
     'confirm-delete-category': 'カテゴリ「{name}」を削除しますか？\n（過去のログからはカテゴリ色が消えます）',
+    'confirm-delete-selected': '選択した {count} 件を削除しますか？',
     'confirm-import-overwrite': '既存のカテゴリをすべて削除して上書きしますか？',
     'confirm-export-csv': 'ログデータをCSVとしてエクスポートします。実行中の作業がある場合は終了されます。よろしいですか？',
     'confirm-import-csv': 'CSVファイルからログデータをインポートします。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？',

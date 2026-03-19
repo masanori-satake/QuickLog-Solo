@@ -128,6 +128,7 @@ export const en = {
     'confirm-end-task': 'Do you really want to end the task?',
     'confirm-cancel': 'Cancel',
     'confirm-delete-category': 'Do you want to delete category "{name}"?\n(Category colors will be removed from past logs)',
+    'confirm-delete-selected': 'Do you want to delete the selected {count} items?',
     'confirm-import-overwrite': 'Delete all existing categories and overwrite?',
     'confirm-export-csv': 'Logs will be exported as CSV. Any active task will be ended. Proceed?',
     'confirm-import-csv': 'Logs will be imported from CSV and appended. Any active task will be ended. Proceed?',
