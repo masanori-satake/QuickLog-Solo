@@ -112,6 +112,7 @@ export const de = {
     'confirm-end-task': 'Möchten Sie die Aufgabe wirklich beenden?',
     'confirm-cancel': 'Abbrechen',
     'confirm-delete-category': 'Kategorie "{name}" löschen?\n(Kategoriefarben werden aus alten Protokollen entfernt)',
+    'confirm-delete-selected': 'Möchten Sie die ausgewählten {count} Elemente löschen?',
     'confirm-import-overwrite': 'Alle bestehenden Kategorien löschen und überschreiben?',
     'confirm-export-csv': 'Daten werden als CSV exportiert. Laufende Aufgaben werden beendet. Fortfahren?',
     'confirm-import-csv': 'Daten werden aus CSV importiert. Laufende Aufgaben werden beendet. Fortfahren?',

@@ -112,6 +112,7 @@ export const zh = {
     'confirm-end-task': '确定要结束任务吗？',
     'confirm-cancel': '取消',
     'confirm-delete-category': '删除分类 "{name}"？\n（旧日志中的分类颜色将消失）',
+    'confirm-delete-selected': '是否删除所选的 {count} 个项目？',
     'confirm-import-overwrite': '删除所有现有分类并覆盖？',
     'confirm-export-csv': '日志将导出为 CSV。当前任务将结束。是否继续？',
     'confirm-import-csv': '将从 CSV 导入日志。当前任务将结束。是否继续？',
