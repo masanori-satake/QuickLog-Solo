@@ -223,12 +223,14 @@ body.theme-dark {
 }
 
 /* Category Background & Text Colors (Shared Components) */
+
 /* These classes serve dual purposes:
    1. Direct application of theme colors to UI elements.
    2. Definition of CSS variables for high-transparency overlays (see style.css and category-editor.css). */
 .cat-primary {
     --current-cat-container: var(--custom-cat-primary-container);
     --current-cat-on-container: var(--custom-cat-on-primary-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -236,6 +238,7 @@ body.theme-dark {
 .cat-secondary {
     --current-cat-container: var(--custom-cat-secondary-container);
     --current-cat-on-container: var(--custom-cat-on-secondary-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -243,6 +246,7 @@ body.theme-dark {
 .cat-tertiary {
     --current-cat-container: var(--custom-cat-tertiary-container);
     --current-cat-on-container: var(--custom-cat-on-tertiary-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -250,6 +254,7 @@ body.theme-dark {
 .cat-error {
     --current-cat-container: var(--custom-cat-error-container);
     --current-cat-on-container: var(--custom-cat-on-error-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -257,6 +262,7 @@ body.theme-dark {
 .cat-neutral {
     --current-cat-container: var(--custom-cat-neutral-container);
     --current-cat-on-container: var(--custom-cat-on-neutral-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -264,6 +270,7 @@ body.theme-dark {
 .cat-outline {
     --current-cat-container: var(--custom-cat-outline-container);
     --current-cat-on-container: var(--custom-cat-on-outline-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -271,6 +278,7 @@ body.theme-dark {
 .cat-teal {
     --current-cat-container: var(--custom-cat-teal-container);
     --current-cat-on-container: var(--custom-cat-on-teal-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -278,6 +286,7 @@ body.theme-dark {
 .cat-green {
     --current-cat-container: var(--custom-cat-green-container);
     --current-cat-on-container: var(--custom-cat-on-green-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -285,6 +294,7 @@ body.theme-dark {
 .cat-yellow {
     --current-cat-container: var(--custom-cat-yellow-container);
     --current-cat-on-container: var(--custom-cat-on-yellow-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -292,6 +302,7 @@ body.theme-dark {
 .cat-orange {
     --current-cat-container: var(--custom-cat-orange-container);
     --current-cat-on-container: var(--custom-cat-on-orange-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -299,6 +310,7 @@ body.theme-dark {
 .cat-pink {
     --current-cat-container: var(--custom-cat-pink-container);
     --current-cat-on-container: var(--custom-cat-on-pink-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -306,6 +318,7 @@ body.theme-dark {
 .cat-indigo {
     --current-cat-container: var(--custom-cat-indigo-container);
     --current-cat-on-container: var(--custom-cat-on-indigo-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -313,6 +326,7 @@ body.theme-dark {
 .cat-brown {
     --current-cat-container: var(--custom-cat-brown-container);
     --current-cat-on-container: var(--custom-cat-on-brown-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
@@ -320,6 +334,7 @@ body.theme-dark {
 .cat-cyan {
     --current-cat-container: var(--custom-cat-cyan-container);
     --current-cat-on-container: var(--custom-cat-on-cyan-container);
+
     background-color: var(--current-cat-container) !important;
     color: var(--current-cat-on-container) !important;
 }
