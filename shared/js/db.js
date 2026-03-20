@@ -34,6 +34,7 @@ const DB_OPEN_TIMEOUT_MS = 5000;
 /**
  * Opens the IndexedDB connection.
  * Returns a promise that resolves to the database instance.
+ * Exported for testing purposes only.
  */
 export function openDatabase() {
     if (dbPromise) return dbPromise;
@@ -278,6 +279,10 @@ export async function dbGetActiveTask() {
     });
 }
 
+/**
+ * Closes the IndexedDB connection.
+ * Exported for testing purposes only.
+ */
 export function closeDatabase() {
     if (db) {
         db.close();
