@@ -865,6 +865,29 @@ main {
     margin-bottom: 1rem;
 }
 
+.stats-row-compact {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 1rem;
+}
+
+.stats-col {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.stats-col label {
+    display: inline;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.stats-col p {
+    margin: 0;
+    font-weight: bold;
+}
+
 .setting-item label {
     display: block;
     font-weight: var(--md-sys-typescale-label-large-weight);
