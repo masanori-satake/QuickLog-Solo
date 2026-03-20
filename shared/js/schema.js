@@ -30,7 +30,13 @@ export function validateCategorySchema(data) {
     if (data.type === SCHEMA_TYPE_CATEGORY) {
         if (!isValidCategoryName(data.name)) return false;
         if (!isValidColor(data.color)) return false;
-        if (data.tags !== undefined && !Array.isArray(data.tags)) return false;
+        if (data.tags !== undefined) {
+            if (!Array.isArray(data.tags)) return false;
+            if (data.tags.length > 20) return false;
+            for (const tag of data.tags) {
+                if (typeof tag !== 'string' || tag.length === 0 || tag.length > 30) return false;
+            }
+        }
         if (data.animation !== undefined && (typeof data.animation !== 'string' || data.animation.length > 50)) return false;
         return true;
     } else if (data.type === SCHEMA_TYPE_PAGE_BREAK) {
@@ -58,8 +64,14 @@ export function validateHistorySchema(data) {
     if (type === SCHEMA_TYPE_HISTORY_TASK) {
         if (typeof data.category !== 'string' || data.category.length === 0 || data.category.length > 100) return false;
         if (data.color !== undefined && !isValidColor(data.color)) return false;
-        if (data.tags !== undefined && !Array.isArray(data.tags)) return false;
-        if (data.memo !== undefined && (typeof data.memo !== 'string' || data.memo.length > 100)) return false;
+        if (data.tags !== undefined) {
+            if (!Array.isArray(data.tags)) return false;
+            if (data.tags.length > 20) return false;
+            for (const tag of data.tags) {
+                if (typeof tag !== 'string' || tag.length === 0 || tag.length > 30) return false;
+            }
+        }
+        if (data.memo !== undefined && (typeof data.memo !== 'string' || data.memo.length > 1000)) return false;
         if (data.resumableCategory !== undefined || data.isManualStop !== undefined) return false;
         return true;
     } else if (type === SCHEMA_TYPE_HISTORY_IDLE) {

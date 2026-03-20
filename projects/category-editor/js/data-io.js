@@ -49,7 +49,19 @@ export function initDataIO(state, elements) {
             const text = await navigator.clipboard.readText();
             if (!text) return;
 
+            // Security: Limit clipboard text size (e.g., 1MB)
+            if (text.length > 1024 * 1024) {
+                showToast(t('toast-import-failed') + ' (Data too large)');
+                return;
+            }
+
             const lines = text.split('\n').filter(l => l.trim());
+
+            // Security: Limit number of lines
+            if (lines.length > 1000) {
+                showToast(t('toast-import-failed') + ' (Too many items)');
+                return;
+            }
             const validItems = [];
             let errorCount = 0;
 

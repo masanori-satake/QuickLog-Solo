@@ -44,7 +44,7 @@ export function initUI(state, elements) {
     }
 
     function renderCategoryList() {
-        categoryListEl.innerHTML = '';
+        categoryListEl.replaceChildren();
         state.categories.forEach((cat, idx) => {
             const item = document.createElement('div');
             const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
@@ -350,7 +350,7 @@ export function initUI(state, elements) {
                 editAnimationSelect.value = 'none';
                 editAnimationSelect.disabled = true;
 
-                tagListEl.innerHTML = '';
+                tagListEl.replaceChildren();
                 colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
                     opt.classList.remove('selected');
                     opt.style.pointerEvents = 'none';
@@ -407,7 +407,7 @@ export function initUI(state, elements) {
 
         if (!animId || animId === 'none') {
             animDescEl.textContent = '';
-            animAuthorEl.innerHTML = '&nbsp;';
+            animAuthorEl.textContent = '\u00A0';
             return;
         }
 
@@ -424,7 +424,7 @@ export function initUI(state, elements) {
             animAuthorEl.textContent = `${t('anim-author-label')}: ${author}`;
         } else {
             animDescEl.textContent = '';
-            animAuthorEl.innerHTML = '&nbsp;';
+            animAuthorEl.textContent = '\u00A0';
         }
     }
 
@@ -440,7 +440,7 @@ export function initUI(state, elements) {
 
     function renderGlobalTagBox() {
         if (!globalTagListEl) return;
-        globalTagListEl.innerHTML = '';
+        globalTagListEl.replaceChildren();
 
         const allTags = new Set();
         state.categories.forEach(cat => {
@@ -472,7 +472,7 @@ export function initUI(state, elements) {
     }
 
     function renderTags() {
-        tagListEl.innerHTML = '';
+        tagListEl.replaceChildren();
         if (state.selectedIndices.length === 0) return;
 
         let commonTags = [];
@@ -524,7 +524,7 @@ export function initUI(state, elements) {
     }
 
     function renderColorPalette() {
-        colorPaletteEl.innerHTML = '';
+        colorPaletteEl.replaceChildren();
         COLORS.forEach(color => {
             const opt = document.createElement('div');
             opt.className = 'color-option';
@@ -561,7 +561,7 @@ export function initUI(state, elements) {
 
     function renderTagReplaceModal() {
         if (!replaceTableBodyEl) return;
-        replaceTableBodyEl.innerHTML = '';
+        replaceTableBodyEl.replaceChildren();
 
         const allTags = new Set();
         state.categories.forEach(cat => {
@@ -603,7 +603,7 @@ export function initUI(state, elements) {
             input.placeholder = t('placeholder-tags');
 
             const updatePills = () => {
-                list.innerHTML = '';
+                list.replaceChildren();
                 const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
                 tags.forEach((t, i) => {
                     const p = document.createElement('span');
@@ -630,10 +630,11 @@ export function initUI(state, elements) {
             input.onkeydown = (e) => {
                 if (e.key === 'Enter' || e.key === ',') {
                     e.preventDefault();
-                    const newTag = input.value.trim().replace(/,/g, '');
+                    let newTag = input.value.trim().replace(/,/g, '');
                     if (newTag) {
+                        if (newTag.length > 30) newTag = newTag.substring(0, 30);
                         const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
-                        if (!tags.includes(newTag)) {
+                        if (!tags.includes(newTag) && tags.length < 20) {
                             tags.push(newTag);
                             editor.dataset.tags = tags.join(',');
                             input.value = '';
@@ -655,7 +656,7 @@ export function initUI(state, elements) {
                 const droppedTag = e.dataTransfer.getData('text/plain');
                 if (droppedTag) {
                     const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
-                    if (!tags.includes(droppedTag)) {
+                    if (!tags.includes(droppedTag) && tags.length < 20) {
                         tags.push(droppedTag);
                         editor.dataset.tags = tags.join(',');
                         updatePills();
@@ -749,7 +750,7 @@ export function initUI(state, elements) {
 
     function populateAnimationOptions() {
         const currentVal = editAnimationSelect.value;
-        editAnimationSelect.innerHTML = '';
+        editAnimationSelect.replaceChildren();
 
         const noneOpt = document.createElement('option');
         noneOpt.value = 'none';
@@ -830,7 +831,11 @@ export function initUI(state, elements) {
     editNameInput.addEventListener('input', (e) => {
         if (state.selectedIndices.length !== 1) return;
         const idx = state.selectedIndices[0];
-        const name = e.target.value;
+        let name = e.target.value;
+        if (name.length > 50) {
+            name = name.substring(0, 50);
+            e.target.value = name;
+        }
         state.categories[idx].name = name;
         previewNameEl.textContent = name;
         updateListItem(idx);
@@ -840,22 +845,29 @@ export function initUI(state, elements) {
     tagInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
-            const tag = tagInput.value.trim().replace(/,/g, '');
+            let tag = tagInput.value.trim().replace(/,/g, '');
             if (tag && state.selectedIndices.length > 0) {
-                if (state.recordAction) state.recordAction();
+                if (tag.length > 30) tag = tag.substring(0, 30);
+                let changed = false;
                 state.selectedIndices.forEach(idx => {
                     const cat = state.categories[idx];
                     if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
 
                     const currentTags = getCategoryTags(cat);
-                    if (!currentTags.includes(tag)) {
+                    if (!currentTags.includes(tag) && currentTags.length < 20) {
+                        if (!changed) {
+                            if (state.recordAction) state.recordAction();
+                            changed = true;
+                        }
                         currentTags.push(tag);
                         updateCategoryTags(cat, currentTags);
                     }
                 });
-                renderTags();
-                renderGlobalTagBox();
-                if (state.updateCodeView) state.updateCodeView();
+                if (changed) {
+                    renderTags();
+                    renderGlobalTagBox();
+                    if (state.updateCodeView) state.updateCodeView();
+                }
                 tagInput.value = '';
             }
         }
@@ -879,18 +891,21 @@ export function initUI(state, elements) {
         const tag = e.dataTransfer ? e.dataTransfer.getData('text/plain') : null;
 
         if (tag && state.selectedIndices.length > 0) {
+            let sanitizedTag = tag.trim();
+            if (sanitizedTag.length > 30) sanitizedTag = sanitizedTag.substring(0, 30);
+
             let changed = false;
             state.selectedIndices.forEach(idx => {
                 const cat = state.categories[idx];
                 if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
 
                 const currentTags = getCategoryTags(cat);
-                if (!currentTags.includes(tag)) {
+                if (!currentTags.includes(sanitizedTag) && currentTags.length < 20) {
                     if (!changed) {
                         if (state.recordAction) state.recordAction();
                         changed = true;
                     }
-                    currentTags.push(tag);
+                    currentTags.push(sanitizedTag);
                     updateCategoryTags(cat, currentTags);
                 }
             });
