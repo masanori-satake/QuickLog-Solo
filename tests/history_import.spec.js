@@ -174,13 +174,13 @@ test.describe('History CSV Import Robustness', () => {
         await page.click('#import-csv-btn');
         await page.click('#confirm-ok-btn');
         const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles(filePath);
-
         // Should show fatal error modal because no valid rows found
         page.once('dialog', async dialog => {
             expect(dialog.message()).toContain('Invalid file format');
             await dialog.dismiss();
         });
+
+        await fileChooser.setFiles(filePath);
 
         await page.click('.close-btn');
         await expect(page.locator('.log-item:has-text("ErrorTask")')).not.toBeVisible();
