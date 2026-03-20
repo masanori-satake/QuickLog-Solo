@@ -1492,6 +1492,8 @@ async function renderCategoryEditor() {
             nameInput.type = 'text';
             nameInput.className = 'category-edit-name';
             nameInput.value = cat.name;
+            // Also set value attribute for test compatibility (tests/maintenance.spec.js)
+            nameInput.setAttribute('value', cat.name);
             const deleteBtn = createEl('button');
             deleteBtn.className = 'delete-cat-btn';
             deleteBtn.title = t('tooltip-delete-category');
