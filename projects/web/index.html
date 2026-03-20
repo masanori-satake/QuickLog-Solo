@@ -39,7 +39,6 @@
                 <div class="browser-support-icons">
                     <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" alt="Chrome" title="Chrome Support">
                     <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt="Edge" title="Edge Support">
-                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" title="Firefox Support">
                 </div>
                 <h2 class="display-large" data-i18n="hero-title">1秒で記録、1秒で集計。</h2>
                 <p class="body-large" data-i18n="hero-desc">QuickLog-Soloは、業務記録を負担に感じるが、ツールの透明性や安全性に厳しい技術者のために設計された、ミニマリスト向けサイドバー型作業メモツールです。</p>
@@ -55,11 +54,9 @@
                         <div class="dropdown-content">
                             <div class="dropdown-group-label" data-i18n="dl-release-group">リリース版</div>
                             <a href="../../releases/QuickLog-Solo-Chrome.zip"><span data-i18n="dl-chrome">Chrome / Edge 用</span> (.zip)</a>
-                            <a href="../../releases/QuickLog-Solo-Firefox.zip"><span data-i18n="dl-firefox">Firefox 用</span> (.zip)</a>
 
                             <div class="dropdown-group-label" data-i18n="dl-dev-group" style="border-top: 1px solid var(--md-sys-color-outline-variant); margin-top: 4px; padding-top: 8px;">開発版</div>
                             <a href="../../releases/QuickLog-Solo-Chrome-Dev.zip"><span data-i18n="dl-chrome-dev">Chrome / Edge 用 (Dev)</span> (.zip)</a>
-                            <a href="../../releases/QuickLog-Solo-Firefox-Dev.zip"><span data-i18n="dl-firefox-dev">Firefox 用 (Dev)</span> (.zip)</a>
 
                             <div style="font-size: 0.7rem; color: var(--md-sys-color-on-surface-variant); padding: 8px 16px; border-top: 1px solid var(--md-sys-color-outline-variant); margin: 0;">
                                 <a href="https://github.com/masanori-satake/QuickLog-Solo/releases" style="text-decoration: underline; color: inherit; display: block; padding: 0;" data-i18n="dl-note">※過去のバージョンはGitHubリリースページから入手可能です。</a>
@@ -138,11 +135,10 @@
                         <h4 data-i18n="setup-install-title">インストール方法</h4>
                         <div class="tab-container">
                             <div class="setup-tabs">
-                                <button class="setup-tab-btn active" onclick="showSetup('chrome', event)">Chrome / Edge</button>
-                                <button class="setup-tab-btn" onclick="showSetup('firefox', event)">Firefox</button>
+                                <button class="setup-tab-btn active" onclick="showSetup('release', event)" data-i18n="setup-release-tab">リリース版 (Store)</button>
+                                <button class="setup-tab-btn" onclick="showSetup('dev', event)" data-i18n="setup-dev-tab">開発版 (Zip)</button>
                             </div>
-                            <div id="setup-chrome" class="setup-tab-content">
-                                <h5 style="margin: 8px 0;" data-i18n="setup-release-title">リリース版 (推奨)</h5>
+                            <div id="setup-release" class="setup-tab-content">
                                 <ol>
                                     <li>
                                         <a href="https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh" target="_blank" style="display: inline-block; margin-bottom: 8px;">
@@ -151,8 +147,8 @@
                                     </li>
                                     <li data-i18n="setup-chrome-release-note">Chrome Web Storeから「Chromeに追加」をクリックするだけでインストール完了です。新しいバージョンに自動でアップデートされます。</li>
                                 </ol>
-
-                                <h5 style="margin: 16px 0 8px;" data-i18n="setup-dev-title">開発版 (Zip)</h5>
+                            </div>
+                            <div id="setup-dev" class="setup-tab-content hidden">
                                 <ol>
                                     <li data-i18n="setup-chrome-step-1">ZIPファイルをダウンロードして解凍します。</li>
                                     <li data-i18n="setup-chrome-step-2">ブラウザの拡張機能管理ページのURLをコピーして開きます。</li>
@@ -163,20 +159,6 @@
                                     <li data-i18n="setup-chrome-step-3">「デベロッパーモード」をONにします。</li>
                                     <li data-i18n="setup-chrome-step-4">「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。</li>
                                 </ol>
-                            </div>
-                            <div id="setup-firefox" class="setup-tab-content hidden">
-                                <ol>
-                                    <li data-i18n="setup-firefox-step-1">ZIPファイルをダウンロードして解凍します。</li>
-                                    <li>
-                                        <span data-i18n="setup-firefox-step-2">FirefoxのデバッグページのURLをコピーして開きます。</span><br>
-                                        <a href="about:debugging#/runtime/this-firefox" class="internal-link" onclick="copyUrl('about:debugging#/runtime/this-firefox', event)"><code>about:debugging</code> <span class="material-symbols-outlined">content_copy</span></a>
-                                    </li>
-                                    <li data-i18n="setup-firefox-step-3">「一時的な拡張機能を読み込む...」をクリックします。</li>
-                                    <li>
-                                        <span data-i18n="setup-firefox-step-4">解凍したフォルダ内の manifest.json を選択します。</span>
-                                    </li>
-                                </ol>
-                                <p class="note" data-i18n="setup-firefox-note">※ Firefoxの「一時的な拡張機能」はブラウザ再起動時にリセットされるため、継続利用にはアドオンストアからの配布（今後予定）または開発者設定が必要です。</p>
                             </div>
                         </div>
                         <div style="margin-top: 16px; display: flex; align-items: center; gap: 8px;">
@@ -292,9 +274,8 @@
                 "dl-release-group": "リリース版 (Release)",
                 "dl-dev-group": "開発版 (Dev)",
                 "dl-chrome-dev": "Chrome / Edge 用 (Dev)",
-                "dl-firefox-dev": "Firefox 用 (Dev)",
-                "setup-release-title": "リリース版 (Release)",
-                "setup-dev-title": "開発版 (Dev)",
+                "setup-release-tab": "リリース版 (Store)",
+                "setup-dev-tab": "開発版 (Zip)",
                 "setup-chrome-release-note": "Chrome Web Storeから「Chromeに追加」をクリックするだけでインストール完了です。新しいバージョンに自動でアップデートされます。",
                 "policy-title": "大事なポリシー",
                 "policy-local-desc": "データはブラウザ内の IndexedDB に保存され（バックアップを実行した際にはローカルファイルシステムにも保存されます）、外部サーバーへの送信は一切行われません。",
@@ -318,11 +299,6 @@
                 "setup-chrome-step-2": "ブラウザの拡張機能管理ページのURLをコピーして開きます。",
                 "setup-chrome-step-3": "「デベロッパーモード」をONにします。",
                 "setup-chrome-step-4": "「パッケージ化されていない拡張機能を読み込む」を選択し、解凍したフォルダを選択します。",
-                "setup-firefox-step-1": "ZIPファイルをダウンロードして解凍します。",
-                "setup-firefox-step-2": "FirefoxのデバッグページのURLをコピーして開きます。",
-                "setup-firefox-step-3": "「一時的な拡張機能を読み込む...」をクリックします。",
-                "setup-firefox-step-4": "解凍したフォルダ内の manifest.json を選択します。",
-                "setup-firefox-note": "※ Firefoxの「一時的な拡張機能」はブラウザ再起動時にリセットされるため、継続利用にはアドオンストアからの配布（今後予定）または開発者設定が必要です。",
                 "setup-install-note": "※ 外部サーバーを介さないため、安心してお使いいただけます。",
                 "setup-uninstall-title": "アンインストール方法",
                 "setup-uninstall-desc": "拡張機能管理画面から「削除」を選択するだけです。IndexedDBに保存されたデータもブラウザの仕様に従い削除されます。",
@@ -339,7 +315,6 @@
                 "preview-note": "※ プレビュー版ではサイドパネルでの動作をシミュレートしています。",
                 "copy-success": "URLをコピーしました！",
                 "dl-chrome": "Chrome / Edge 用",
-                "dl-firefox": "Firefox 用",
                 "dl-note": "※過去のバージョンはGitHubリリースページから入手可能です。",
                 "link-guide": "Quick Start Guide を見る",
                 "cta-studio": "QL-Animation Studio (β版) で遊ぶ",
@@ -370,12 +345,11 @@
                 "hero-desc": "QuickLog-Solo is a minimalist sidebar work memo tool designed for those who find tracking work a burden but demand transparency and security.",
                 "cta-test": "Try in Browser",
                 "cta-download": "Download Zip",
-                "dl-release-group": "リリース版 (Release)",
-                "dl-dev-group": "開発版 (Dev)",
+                "dl-release-group": "Release",
+                "dl-dev-group": "Dev",
                 "dl-chrome-dev": "For Chrome / Edge (Dev)",
-                "dl-firefox-dev": "For Firefox (Dev)",
-                "setup-release-title": "リリース版 (Release)",
-                "setup-dev-title": "開発版 (Dev)",
+                "setup-release-tab": "Release (Store)",
+                "setup-dev-tab": "Dev (Zip)",
                 "setup-chrome-release-note": "Simply click 'Add to Chrome' on the Chrome Web Store to complete the installation. It will be automatically updated to new versions.",
                 "policy-title": "Key Policies",
                 "policy-local-desc": "Data is saved in IndexedDB (and also to the local file system when the backup is executed). No server uploads, ever.",
@@ -399,11 +373,6 @@
                 "setup-chrome-step-2": "Copy and open the extension management URL in your browser.",
                 "setup-chrome-step-3": "Turn on 'Developer mode'.",
                 "setup-chrome-step-4": "Click 'Load unpacked' and select the extracted folder.",
-                "setup-firefox-step-1": "Download and extract the ZIP file.",
-                "setup-firefox-step-2": "Copy and open the Firefox debugging page URL.",
-                "setup-firefox-step-3": "Click 'Load Temporary Add-on...'.",
-                "setup-firefox-step-4": "Select manifest.json in the extracted folder.",
-                "setup-firefox-note": "* Firefox 'Temporary Add-ons' reset on browser restart. Continued use requires developer settings or the upcoming Add-on Store release.",
                 "setup-install-note": "* Privacy-first: All operations are local, no external servers involved.",
                 "setup-uninstall-title": "Uninstallation",
                 "setup-uninstall-desc": "Simply remove it from the extension management screen. IndexedDB data will be deleted per browser rules.",
@@ -420,7 +389,6 @@
                 "preview-note": "* The preview version simulates behavior in the sidebar.",
                 "copy-success": "URL Copied!",
                 "dl-chrome": "For Chrome / Edge",
-                "dl-firefox": "For Firefox",
                 "dl-note": "* Past versions are available on the GitHub Releases page.",
                 "link-guide": "View Quick Start Guide",
                 "cta-studio": "Play in QL-Animation Studio (Beta)",
@@ -452,12 +420,11 @@
                 "hero-desc": "QuickLog-Solo ist ein minimalistisches Sidebar-Arbeitsnotiz-Tool für alle, die eine Arbeitszeiterfassung als Belastung empfinden, aber Wert auf Transparenz und Sicherheit legen.",
                 "cta-test": "Im Browser testen",
                 "cta-download": "Zip herunterladen",
-                "dl-release-group": "リリース版 (Release)",
-                "dl-dev-group": "開発版 (Dev)",
+                "dl-release-group": "Release",
+                "dl-dev-group": "Dev",
                 "dl-chrome-dev": "Für Chrome / Edge (Dev)",
-                "dl-firefox-dev": "Für Firefox (Dev)",
-                "setup-release-title": "リリース版 (Release)",
-                "setup-dev-title": "開発版 (Dev)",
+                "setup-release-tab": "Release (Store)",
+                "setup-dev-tab": "Entwickler (Zip)",
                 "setup-chrome-release-note": "Klicken Sie einfach im Chrome Web Store auf 'Hinzufügen', um die Installation abzuschließen.",
                 "policy-title": "Wichtige Richtlinien",
                 "policy-local-desc": "Daten werden in der IndexedDB gespeichert (wenn das Backup ausgeführt wird, auch im lokalen Dateisystem). Niemals Server-Uploads.",
@@ -481,11 +448,6 @@
                 "setup-chrome-step-2": "URL zur Erweiterungsverwaltung kopieren und öffnen.",
                 "setup-chrome-step-3": "'Entwicklermodus' aktivieren.",
                 "setup-chrome-step-4": "'Entpackte Erweiterung laden' und Ordner auswählen.",
-                "setup-firefox-step-1": "ZIP-Datei herunterladen und entpacken.",
-                "setup-firefox-step-2": "Firefox-Debugging-Seite öffnen.",
-                "setup-firefox-step-3": "'Temporäres Add-on laden...' klicken.",
-                "setup-firefox-step-4": "manifest.json im Ordner auswählen.",
-                "setup-firefox-note": "* Temporäre Add-ons in Firefox werden beim Neustart zurückgesetzt.",
                 "setup-install-note": "* Datenschutz an erster Stelle: Alle Operationen erfolgen lokal.",
                 "setup-uninstall-title": "Deinstallation",
                 "setup-uninstall-desc": "Einfach aus der Erweiterungsverwaltung entfernen.",
@@ -502,7 +464,6 @@
                 "preview-note": "* Die Vorschau simuliert das Verhalten in der Sidebar.",
                 "copy-success": "URL kopiert!",
                 "dl-chrome": "Für Chrome / Edge",
-                "dl-firefox": "Für Firefox",
                 "dl-note": "* Ältere Versionen sind auf der GitHub-Release-Seite verfügbar.",
                 "cta-studio": "In QL-Animation Studio (Beta) spielen",
                 "faq-4-q": "Q. Kann ich weitere Animationen hinzufügen?",
@@ -533,12 +494,11 @@
                 "hero-desc": "QuickLog-Solo es una herramienta minimalista de barra lateral diseñada para quienes encuentran el seguimiento del trabajo una carga pero exigen transparencia y seguridad.",
                 "cta-test": "Probar en navegador",
                 "cta-download": "Descargar Zip",
-                "dl-release-group": "リリース版 (Release)",
-                "dl-dev-group": "開発版 (Dev)",
+                "dl-release-group": "Release",
+                "dl-dev-group": "Dev",
                 "dl-chrome-dev": "Para Chrome / Edge (Dev)",
-                "dl-firefox-dev": "Para Firefox (Dev)",
-                "setup-release-title": "リリース版 (Release)",
-                "setup-dev-title": "開発版 (Dev)",
+                "setup-release-tab": "Versión Release (Store)",
+                "setup-dev-tab": "Versión Dev (Zip)",
                 "setup-chrome-release-note": "Simplemente haz clic en 'Añadir a Chrome' en Chrome Web Store para completar la instalación. Se actualizará automáticamente a las nuevas versiones.",
                 "policy-title": "Políticas clave",
                 "policy-local-desc": "Los datos se guardan en IndexedDB (y también en el sistema de archivos local cuando se realiza el respaldo). Sin cargas al servidor.",
@@ -562,11 +522,6 @@
                 "setup-chrome-step-2": "Copie y abra la URL de gestión de extensiones.",
                 "setup-chrome-step-3": "Active el 'Modo de desarrollador'.",
                 "setup-chrome-step-4": "Haga clic en 'Cargar descomprimida' y seleccione la carpeta.",
-                "setup-firefox-step-1": "Descargue y extraiga el archivo ZIP.",
-                "setup-firefox-step-2": "Copie y abra la página de depuración de Firefox.",
-                "setup-firefox-step-3": "Haga clic en 'Cargar complemento temporal...'.",
-                "setup-firefox-step-4": "Seleccione el archivo manifest.json.",
-                "setup-firefox-note": "* Los complementos temporales de Firefox se eliminan al reiniciar.",
                 "setup-install-note": "* Privacidad primero: Todo es local, sin servidores externos.",
                 "setup-uninstall-title": "Desinstalación",
                 "setup-uninstall-desc": "Simplemente elimínela de la pantalla de extensiones.",
@@ -583,7 +538,6 @@
                 "preview-note": "* La versión de vista previa simula el comportamiento en la barra lateral.",
                 "copy-success": "¡URL copiada!",
                 "dl-chrome": "Para Chrome / Edge",
-                "dl-firefox": "Para Firefox",
                 "dl-note": "* Las versiones anteriores están disponibles en la página de lanzamientos de GitHub.",
                 "cta-studio": "Jugar en QL-Animation Studio (Beta)",
                 "faq-4-q": "¿Puedo añadir más animaciones?",
@@ -614,12 +568,11 @@
                 "hero-desc": "QuickLog-Solo est un outil de notes de travail minimaliste conçu pour ceux qui trouvent le suivi du travail pénible mais exigent transparence et sécurité.",
                 "cta-test": "Essayer en ligne",
                 "cta-download": "Télécharger le Zip",
-                "dl-release-group": "リリース版 (Release)",
-                "dl-dev-group": "開発版 (Dev)",
+                "dl-release-group": "Release",
+                "dl-dev-group": "Dev",
                 "dl-chrome-dev": "Pour Chrome / Edge (Dev)",
-                "dl-firefox-dev": "Pour Firefox (Dev)",
-                "setup-release-title": "リリース版 (Release)",
-                "setup-dev-title": "開発版 (Dev)",
+                "setup-release-tab": "Version Release (Store)",
+                "setup-dev-tab": "Version Dev (Zip)",
                 "setup-chrome-release-note": "Cliquez simplement sur 'Ajouter à Chrome' dans le Chrome Web Store pour terminer l'installation. Elle sera automatiquement mise à jour vers les nouvelles versions.",
                 "policy-title": "Politiques clés",
                 "policy-local-desc": "Données sauvegardées dans IndexedDB (et également sur le système de fichiers local lorsque la sauvegarde est effectuée). Pas d'upload serveur.",
@@ -643,11 +596,6 @@
                 "setup-chrome-step-2": "Ouvrez la page de gestion des extensions.",
                 "setup-chrome-step-3": "Activez le 'Mode développeur'.",
                 "setup-chrome-step-4": "Cliquez sur 'Charger l'extension non empaquetée'.",
-                "setup-firefox-step-1": "Téléchargez et extrayez le ZIP.",
-                "setup-firefox-step-2": "Ouvrez la page de débogage de Firefox.",
-                "setup-firefox-step-3": "Cliquez sur 'Charger un module temporaire...'.",
-                "setup-firefox-step-4": "Sélectionnez le manifest.json.",
-                "setup-firefox-note": "* Les modules temporaires Firefox reset au redémarrage.",
                 "setup-install-note": "* Confidentialité : Opérations locales, sans serveurs externes.",
                 "setup-uninstall-title": "Désinstallation",
                 "setup-uninstall-desc": "Supprimez-la simplement de la page des extensions.",
@@ -664,7 +612,6 @@
                 "preview-note": "* L'aperçu simule le comportement dans la barre latérale.",
                 "copy-success": "URL copiée !",
                 "dl-chrome": "Pour Chrome / Edge",
-                "dl-firefox": "Pour Firefox",
                 "dl-note": "* Les anciennes versions sont disponibles sur la page des versions GitHub.",
                 "cta-studio": "Jouer dans QL-Animation Studio (Beta)",
                 "faq-4-q": "Q. Puis-je ajouter d'autres animations ?",
@@ -695,12 +642,11 @@
                 "hero-desc": "QuickLog-Solo é uma ferramenta de notas de trabalho minimalista projetada para quem acha o rastreio do trabalho um fardo, mas exige transparência e segurança.",
                 "cta-test": "Testar no Navegador",
                 "cta-download": "Baixar Zip",
-                "dl-release-group": "リリース版 (Release)",
-                "dl-dev-group": "開発版 (Dev)",
+                "dl-release-group": "Release",
+                "dl-dev-group": "Dev",
                 "dl-chrome-dev": "Para Chrome / Edge (Dev)",
-                "dl-firefox-dev": "Para Firefox (Dev)",
-                "setup-release-title": "リリース版 (Release)",
-                "setup-dev-title": "開発版 (Dev)",
+                "setup-release-tab": "Versão Release (Store)",
+                "setup-dev-tab": "Versão Dev (Zip)",
                 "setup-chrome-release-note": "Basta clicar em 'Usar no Chrome' na Chrome Web Store para concluir a instalação. Ela será atualizada automaticamente para novas versões.",
                 "policy-title": "Políticas Principais",
                 "policy-local-desc": "Dados salvos no IndexedDB (e também no sistema de arquivos local quando o backup for executado). Sem uploads para servidores.",
@@ -724,11 +670,6 @@
                 "setup-chrome-step-2": "Abra a URL de gestão de extensões.",
                 "setup-chrome-step-3": "Ative o 'Modo do desenvolvedor'.",
                 "setup-chrome-step-4": "Clique em 'Carregar sem pacote' e escolha a pasta.",
-                "setup-firefox-step-1": "Baixe e extraia o arquivo ZIP.",
-                "setup-firefox-step-2": "Abra a página de depuração do Firefox.",
-                "setup-firefox-step-3": "Clique em 'Carregar extensão temporária...'.",
-                "setup-firefox-step-4": "Selecione o manifest.json na pasta.",
-                "setup-firefox-note": "* Extensões temporárias do Firefox resetam ao reiniciar.",
                 "setup-install-note": "* Privacidade: Operações locais, sem servidores externos.",
                 "setup-uninstall-title": "Desinstalação",
                 "setup-uninstall-desc": "Basta remover da tela de gestão de extensões.",
@@ -745,8 +686,7 @@
                 "preview-note": "* A versão de prévia simula o comportamento na barra lateral.",
                 "copy-success": "URL Copiada!",
                 "dl-chrome": "Para Chrome / Edge",
-                "dl-firefox": "Para Firefox",
-                "dl-note": "* Versões anteriores estão disponíveis na página de lançamientos do GitHub.",
+                "dl-note": "* Versões anteriores estão disponíveis na página de lançamentos do GitHub.",
                 "cta-studio": "Jogar no QL-Animation Studio (Beta)",
                 "faq-4-q": "P. Posso adicionar mais animações?",
                 "faq-4-a": "R. Continuaremos a adicionar mais com o tempo. Também esperamos incorporar animações criadas pela comunidade. Se estiver interessado, experimente o QL-Animation Studio!",
@@ -776,12 +716,11 @@
                 "hero-desc": "QuickLog-Solo는 업무 기록을 부담스럽게 느끼지만 투명성과 보안을 중시하는 모든 분을 위해 설계된 미니멀리스트 사이드바 작업 메모 도구입니다.",
                 "cta-test": "브라우저에서 체험하기",
                 "cta-download": "Zip 다운로드",
-                "dl-release-group": "リリース版 (Release)",
-                "dl-dev-group": "開発版 (Dev)",
+                "dl-release-group": "릴리스 버전 (Release)",
+                "dl-dev-group": "개발 버전 (Dev)",
                 "dl-chrome-dev": "Chrome / Edge 용 (Dev)",
-                "dl-firefox-dev": "Firefox 용 (Dev)",
-                "setup-release-title": "リリース版 (Release)",
-                "setup-dev-title": "開発版 (Dev)",
+                "setup-release-tab": "릴리스 버전 (Store)",
+                "setup-dev-tab": "개발 버전 (Zip)",
                 "setup-chrome-release-note": "Chrome 웹 스토어에서 'Chrome에 추가'를 클릭하기만 하면 설치가 완료됩니다. 새 버전으로 자동 업데이트됩니다.",
                 "policy-title": "핵심 정책",
                 "policy-local-desc": "데이터는 IndexedDB에 저장됩니다(백업을 실행했을 때는 로컬 파일 시스템에도 저장됩니다). 서버 업로드는 절대 없습니다.",
@@ -805,11 +744,6 @@
                 "setup-chrome-step-2": "확장 프로그램 관리 페이지 URL을 복사하여 엽니다.",
                 "setup-chrome-step-3": "'개발자 모드'를 켭니다.",
                 "setup-chrome-step-4": "'압축해제된 확장 프로그램을 로드합니다'를 클릭하고 폴더를 선택합니다.",
-                "setup-firefox-step-1": "ZIP 파일을 다운로드하고 압축을 풉니다.",
-                "setup-firefox-step-2": "Firefox 디버깅 페이지 URL을 엽니다.",
-                "setup-firefox-step-3": "'일시적인 부가 기능 로드...'를 클릭합니다.",
-                "setup-firefox-step-4": "폴더 내의 manifest.json을 선택합니다.",
-                "setup-firefox-note": "* Firefox의 일시적 부가 기능은 재시작 시 초기화됩니다.",
                 "setup-install-note": "* 프라이버시 우선: 모든 작업은 로컬에서 이루어지며 외부 서버를 거치지 않습니다.",
                 "setup-uninstall-title": "제거 방법",
                 "setup-uninstall-desc": "확장 프로그램 관리 화면에서 삭제하기만 하면 됩니다.",
@@ -826,7 +760,6 @@
                 "preview-note": "* 미리보기 버전은 사이드바에서의 동작을 시뮬레이션합니다.",
                 "copy-success": "URL 복사됨!",
                 "dl-chrome": "Chrome / Edge 용",
-                "dl-firefox": "Firefox 용",
                 "dl-note": "* 이전 버전은 GitHub 릴리스 페이지에서 확인할 수 있습니다.",
                 "cta-studio": "QL-Animation Studio(Beta)에서 놀기",
                 "faq-4-q": "Q. 애니메이션을 추가할 수 있나요?",
@@ -857,12 +790,11 @@
                 "hero-desc": "QuickLog-Solo 是一款专为觉得记录工作繁琐但追求透明度与安全性的用户设计的极简侧边栏工作笔记工具。",
                 "cta-test": "浏览器试用",
                 "cta-download": "下载 Zip",
-                "dl-release-group": "リリース版 (Release)",
-                "dl-dev-group": "開発版 (Dev)",
+                "dl-release-group": "发行版 (Release)",
+                "dl-dev-group": "开发版 (Dev)",
                 "dl-chrome-dev": "适用于 Chrome / Edge (Dev)",
-                "dl-firefox-dev": "适用于 Firefox (Dev)",
-                "setup-release-title": "リリース版 (Release)",
-                "setup-dev-title": "開発版 (Dev)",
+                "setup-release-tab": "发行版 (Store)",
+                "setup-dev-tab": "开发版 (Zip)",
                 "setup-chrome-release-note": "只需在 Chrome 网上应用店点击“添加至 Chrome”即可完成安装。它将自动更新到新版本。",
                 "policy-title": "核心政策",
                 "policy-local-desc": "数据保存在 IndexedDB 中（执行备份时也会保存到本地文件系统）。绝不上传服务器。",
@@ -886,11 +818,6 @@
                 "setup-chrome-step-2": "复制并打开扩展程序管理页面。",
                 "setup-chrome-step-3": "开启“开发者模式”。",
                 "setup-chrome-step-4": "点击“加载已解压的扩展程序”并选择文件夹。",
-                "setup-firefox-step-1": "下载并解压 ZIP 文件。",
-                "setup-firefox-step-2": "打开 Firefox 调试页面。",
-                "setup-firefox-step-3": "点击“临时载入附加组件...”。",
-                "setup-firefox-step-4": "选择文件夹中的 manifest.json。",
-                "setup-firefox-note": "* Firefox 临时附加组件会在重启时重置。",
                 "setup-install-note": "* 隐私至上：所有操作均为本地，无需外部服务器。",
                 "setup-uninstall-title": "卸载方法",
                 "setup-uninstall-desc": "只需在扩展程序管理页面中删除即可。",
@@ -907,7 +834,6 @@
                 "preview-note": "* 预览版模拟了在侧边栏中的运行状态。",
                 "copy-success": "URL 已复制！",
                 "dl-chrome": "适用于 Chrome / Edge",
-                "dl-firefox": "适用于 Firefox",
                 "dl-note": "* 过去版本也可以在 GitHub Releases 页面获取。",
                 "cta-studio": "在 QL-Animation Studio (Beta) 中体验",
                 "faq-4-q": "Q. 我可以添加更多动画吗？",

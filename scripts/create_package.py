@@ -99,9 +99,6 @@ def create_packages():
     chrome_zip = os.path.join(dist_dir, f"{package_name}-Chrome.zip")
     success_chrome = create_zip(chrome_zip, "manifest.chrome.json", "temp_package_release_chrome")
 
-    firefox_zip = os.path.join(dist_dir, f"{package_name}-Firefox.zip")
-    success_firefox = create_zip(firefox_zip, "manifest.firefox.json", "temp_package_release_firefox")
-
     # --- Dev Build Pipeline ---
     print("Generating development registry...")
     subprocess.run(["python3", "scripts/generate_animation_registry.py"], check=True)
@@ -109,14 +106,11 @@ def create_packages():
     chrome_dev_zip = os.path.join(dist_dir, f"{package_name}-Chrome-Dev.zip")
     success_chrome_dev = create_zip(chrome_dev_zip, "manifest.chrome.json", "temp_package_dev_chrome", is_dev=True, version=version)
 
-    firefox_dev_zip = os.path.join(dist_dir, f"{package_name}-Firefox-Dev.zip")
-    success_firefox_dev = create_zip(firefox_dev_zip, "manifest.firefox.json", "temp_package_dev_firefox", is_dev=True, version=version)
-
     # Restoration
     subprocess.run(["python3", "scripts/generate_animation_registry.py"], check=True)
     subprocess.run(["python3", "scripts/generate_png_icons.py"], check=True)
 
-    return success_chrome and success_firefox and success_chrome_dev and success_firefox_dev
+    return success_chrome and success_chrome_dev
 
 if __name__ == "__main__":
     if create_packages(): exit(0)
