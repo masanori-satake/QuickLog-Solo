@@ -158,4 +158,31 @@ test.describe('History CSV Import Robustness', () => {
         await page.click('.close-btn');
         await expect(page.locator('.log-item:has-text("ValidTask")')).toBeVisible({ timeout: 10000 });
     });
+
+    test('should REJECT CSV import with startTime > endTime', async ({ page }) => {
+        const dbName = getDbName();
+        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        await page.waitForSelector('.category-btn');
+
+        const now = Date.now();
+        const csv = `id,category,startTime,endTime\n5,ErrorTask,${now},${now - 1000}`;
+        const filePath = await createTempCSV(csv);
+
+        await page.click('#settings-toggle');
+        await page.click('button[data-tab="general"]');
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.click('#import-csv-btn');
+        await page.click('#confirm-ok-btn');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles(filePath);
+
+        // Should show fatal error modal because no valid rows found
+        page.once('dialog', async dialog => {
+            expect(dialog.message()).toContain('Invalid file format');
+            await dialog.dismiss();
+        });
+
+        await page.click('.close-btn');
+        await expect(page.locator('.log-item:has-text("ErrorTask")')).not.toBeVisible();
+    });
 });
