@@ -529,14 +529,14 @@ input[type="text"]:disabled, select:disabled {
 .preview-container {
     position: relative;
     width: 100%;
+    max-width: 400px;
+    margin: 8px auto 0;
     height: 80px;
-    border: 1px solid var(--md-sys-color-outline-variant);
     background-color: var(--md-sys-color-surface-container-high);
     border-radius: var(--md-sys-shape-medium);
     overflow: hidden;
     box-shadow: var(--md-sys-elevation-1);
     flex-shrink: 0;
-    margin-top: 8px;
 }
 
 #preview-container.anim-active {
@@ -571,7 +571,7 @@ input[type="text"]:disabled, select:disabled {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: var(--md-sys-spacing-1);
+    padding: 0 var(--md-sys-spacing-1);
     pointer-events: none;
     transition: background-color 0.3s;
 }
@@ -665,17 +665,15 @@ input[type="text"]:disabled, select:disabled {
     font-weight: var(--md-sys-typescale-title-large-weight);
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
     line-height: 1.2;
-    margin-bottom: var(--md-sys-spacing-0-5);
+    margin: 0 0 var(--md-sys-spacing-0-5);
     text-align: center;
-    width: fit-content;
-    max-width: 90%;
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--md-sys-color-on-surface);
-    display: flex;
-    justify-content: center;
 }
 
 .preview-timer-box {
