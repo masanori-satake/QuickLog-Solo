@@ -480,6 +480,11 @@ input[type="text"]:disabled, select:disabled {
     transition: transform 0.1s;
 }
 
+.replace-table .tag-pill {
+    display: inline-flex;
+    cursor: grab;
+}
+
 #global-tag-list .tag-pill {
     cursor: grab;
     user-select: none;
@@ -961,11 +966,6 @@ body.theme-light .secondary-btn:hover {
 
 .replace-table .after-col {
     width: 70%;
-}
-
-.replace-table .tag-pill {
-    display: inline-flex;
-    cursor: grab;
 }
 
 .after-input-wrapper {
