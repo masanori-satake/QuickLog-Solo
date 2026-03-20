@@ -116,8 +116,7 @@ def main():
     # 2. Update other files
     files_to_update = [
         'projects/app/version.json',
-        'projects/app/manifest.chrome.json',
-        'projects/app/manifest.firefox.json'
+        'projects/app/manifest.chrome.json'
     ]
 
     for filepath in files_to_update:
