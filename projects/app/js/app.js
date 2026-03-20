@@ -351,7 +351,7 @@ async function renderCategories() {
     console.log('QuickLog-Solo: Rendering categories...');
     const list = getEl(ID_CATEGORY_LIST);
     if (!list) return;
-    list.innerHTML = '';
+    list.replaceChildren();
 
     pageCategories.forEach(cat => {
         const btn = createEl('button');
@@ -373,7 +373,7 @@ async function renderCategories() {
 function renderPaginationDots(totalPages) {
     const container = getEl(ID_CATEGORY_PAGINATION);
     if (!container) return;
-    container.innerHTML = '';
+    container.replaceChildren();
 
     for (let i = 0; i < totalPages; i++) {
         const dot = createEl('div');
@@ -403,7 +403,7 @@ async function renderLogs() {
 
     const logList = getEl(ID_LOG_LIST);
     if (!logList) return;
-    logList.innerHTML = '';
+    logList.replaceChildren();
 
     let lastDate = '';
     const days = t('day-names');
@@ -431,13 +431,23 @@ function createLogElement(log, categoryMap) {
     const startTimeStr = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const endTimeStr = log.endTime ? new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
-    let timeRangeHtml;
+    // Tags are hidden in history as per requirements
+    const timeRangeSpan = createEl('span');
+    timeRangeSpan.className = 'log-time';
     if (log.isManualStop) {
-        timeRangeHtml = `<span class="log-time"><span style="visibility:hidden">${startTimeStr}</span>-${endTimeStr}</span>`;
+        const hiddenStart = createEl('span');
+        hiddenStart.style.visibility = 'hidden';
+        hiddenStart.textContent = startTimeStr;
+        timeRangeSpan.appendChild(hiddenStart);
+        timeRangeSpan.appendChild(document.createTextNode(`-${endTimeStr}`));
     } else if (log.endTime) {
-        timeRangeHtml = `<span class="log-time">${startTimeStr}-${endTimeStr}</span>`;
+        timeRangeSpan.textContent = `${startTimeStr}-${endTimeStr}`;
     } else {
-        timeRangeHtml = `<span class="log-time">${startTimeStr}-<span style="visibility:hidden">${startTimeStr}</span></span>`;
+        timeRangeSpan.appendChild(document.createTextNode(`${startTimeStr}-`));
+        const hiddenEnd = createEl('span');
+        hiddenEnd.style.visibility = 'hidden';
+        hiddenEnd.textContent = startTimeStr;
+        timeRangeSpan.appendChild(hiddenEnd);
     }
 
     const durationMs = log.endTime ? log.endTime - log.startTime : 0;
@@ -457,12 +467,21 @@ function createLogElement(log, categoryMap) {
         colorClass = `dot-${color}`;
     }
 
-    // Tags are hidden in history as per requirements
-    li.innerHTML = `
-        ${timeRangeHtml}
-        <span class="log-name"><span class="category-dot ${colorClass}"></span>${escapeHtml(displayName)}</span>
-        <span class="log-duration">${durationText}</span>
-    `;
+    const nameSpan = createEl('span');
+    nameSpan.className = 'log-name';
+    const dotSpan = createEl('span');
+    dotSpan.className = `category-dot ${colorClass}`;
+    nameSpan.appendChild(dotSpan);
+    nameSpan.appendChild(document.createTextNode(displayName));
+
+    const durSpan = createEl('span');
+    durSpan.className = 'log-duration';
+    durSpan.textContent = durationText;
+
+    li.appendChild(timeRangeSpan);
+    li.appendChild(nameSpan);
+    li.appendChild(durSpan);
+
     return li;
 }
 
@@ -684,7 +703,7 @@ function updateAnimationSelect() {
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
         const currentLang = getLanguage();
-        animSelect.innerHTML = '';
+        animSelect.replaceChildren();
 
         const noneOpt = createEl('option');
         noneOpt.value = 'none';
@@ -713,7 +732,7 @@ function updateFontSelect() {
         const currentFont = fontSelect.value;
         const currentLang = getLanguage();
 
-        fontSelect.innerHTML = '';
+        fontSelect.replaceChildren();
         const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
 
         filteredFonts.forEach(f => {
@@ -793,13 +812,23 @@ async function updateUI() {
         if (nameEl) nameEl.textContent = displayCategoryName;
 
         if (elements.pauseBtn) {
+            elements.pauseBtn.replaceChildren();
+            const icon = createEl('span');
+            icon.className = 'material-symbols-outlined btn-icon';
+            const text = createEl('span');
+            text.className = 'btn-text';
+
             if (isPaused) {
-                elements.pauseBtn.innerHTML = `<span class="material-symbols-outlined btn-icon">play_arrow</span><span class="btn-text">${t('resume')}</span>`;
+                icon.textContent = 'play_arrow';
+                text.textContent = t('resume');
                 elements.pauseBtn.disabled = !activeTask.resumableCategory;
             } else {
-                elements.pauseBtn.innerHTML = `<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">${t('pause')}</span>`;
+                icon.textContent = 'pause';
+                text.textContent = t('pause');
                 elements.pauseBtn.disabled = false;
             }
+            elements.pauseBtn.appendChild(icon);
+            elements.pauseBtn.appendChild(text);
         }
         if (elements.endBtn) elements.endBtn.disabled = false;
 
@@ -825,7 +854,15 @@ async function updateUI() {
 
         if (elements.pauseBtn) {
             elements.pauseBtn.disabled = true;
-            elements.pauseBtn.innerHTML = `<span class="material-symbols-outlined btn-icon">pause</span><span class="btn-text">${t('pause')}</span>`;
+            elements.pauseBtn.replaceChildren();
+            const icon = createEl('span');
+            icon.className = 'material-symbols-outlined btn-icon';
+            icon.textContent = 'pause';
+            const text = createEl('span');
+            text.className = 'btn-text';
+            text.textContent = t('pause');
+            elements.pauseBtn.appendChild(icon);
+            elements.pauseBtn.appendChild(text);
         }
         if (elements.endBtn) elements.endBtn.disabled = true;
 
@@ -951,7 +988,7 @@ async function renderTagAggregationCalendar() {
 
 function renderCalendar(containerId, selectedDate, onSelect) {
     const container = getEl(containerId);
-    container.innerHTML = '';
+    container.replaceChildren();
 
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth();
@@ -1024,7 +1061,7 @@ async function updateTagAggregationUI() {
     const tagAgg = calculateTagAggregation(dayLogs, t('no-tags'));
 
     const table = getEl(ID_TAG_AGGREGATION_TABLE);
-    table.innerHTML = '';
+    table.replaceChildren();
 
     const sortedTags = Object.keys(tagAgg).sort((a, b) => {
         if (a === t('no-tags')) return 1;
@@ -1134,7 +1171,7 @@ function showMultiChoice(message, choices) {
         }
 
         msgEl.innerText = message;
-        container.innerHTML = '';
+        container.replaceChildren();
 
         choices.forEach(choice => {
             const btn = createEl('button');
@@ -1171,43 +1208,108 @@ async function renderAlarmList() {
     const alarms = await dbGetAll(STORE_ALARMS);
     alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
 
-    list.innerHTML = '';
+    list.replaceChildren();
 
     alarms.forEach(alarm => {
         const item = createEl('div');
         item.className = 'alarm-item';
-        item.innerHTML = `
-            <div class="alarm-row">
-                <label class="alarm-enabled-label">
-                    <input type="checkbox" class="alarm-enabled" ${alarm.enabled ? 'checked' : ''}>
-                    <span data-i18n="alarm-label-enabled">${t('alarm-label-enabled')}</span>
-                </label>
-                <input type="time" class="alarm-time" value="${alarm.time || '09:00'}">
-                <label class="alarm-confirm-label" title="${t('alarm-tooltip-confirmation')}">
-                    <span class="material-symbols-outlined">task_alt</span>
-                    <input type="checkbox" class="alarm-confirm" ${alarm.requireConfirmation ? 'checked' : ''}>
-                </label>
-            </div>
-            <div class="alarm-row">
-                <span class="alarm-label" data-i18n="alarm-label-message">${t('alarm-label-message')}</span>
-                <input type="text" class="alarm-message" value="${escapeHtml(alarm.message || '')}" placeholder="${t('alarm-placeholder-message')}">
-            </div>
-            <div class="alarm-row">
-                <span class="alarm-label" data-i18n="alarm-label-action">${t('alarm-label-action')}</span>
-                <select class="alarm-action">
-                    <option value="none" ${alarm.action === 'none' ? 'selected' : ''} data-i18n="alarm-action-none">${t('alarm-action-none')}</option>
-                    <option value="stop" ${alarm.action === 'stop' ? 'selected' : ''} data-i18n="alarm-action-stop">${t('alarm-action-stop')}</option>
-                    <option value="pause" ${alarm.action === 'pause' ? 'selected' : ''} data-i18n="alarm-action-pause">${t('alarm-action-pause')}</option>
-                    <option value="start" ${alarm.action === 'start' ? 'selected' : ''} data-i18n="alarm-action-start">${t('alarm-action-start')}</option>
-                </select>
-            </div>
-            <div class="alarm-row alarm-category-row ${alarm.action === 'start' ? '' : 'hidden'}">
-                <span class="alarm-label" data-i18n="alarm-label-category">${t('alarm-label-category')}</span>
-                <select class="alarm-category">
-                    ${workCategories.map(c => `<option value="${escapeHtml(c.name)}" ${alarm.actionCategory === c.name ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
-                </select>
-            </div>
-        `;
+
+        // Row 1
+        const row1 = createEl('div');
+        row1.className = 'alarm-row';
+
+        const enabledLabel = createEl('label');
+        enabledLabel.className = 'alarm-enabled-label';
+        const enabledCheck = createEl('input');
+        enabledCheck.type = 'checkbox';
+        enabledCheck.className = 'alarm-enabled';
+        enabledCheck.checked = alarm.enabled;
+        const enabledText = createEl('span');
+        enabledText.setAttribute('data-i18n', 'alarm-label-enabled');
+        enabledText.textContent = t('alarm-label-enabled');
+        enabledLabel.appendChild(enabledCheck);
+        enabledLabel.appendChild(enabledText);
+
+        const timeInput = createEl('input');
+        timeInput.type = 'time';
+        timeInput.className = 'alarm-time';
+        timeInput.value = alarm.time || '09:00';
+
+        const confirmLabel = createEl('label');
+        confirmLabel.className = 'alarm-confirm-label';
+        confirmLabel.title = t('alarm-tooltip-confirmation');
+        const confirmIcon = createEl('span');
+        confirmIcon.className = 'material-symbols-outlined';
+        confirmIcon.textContent = 'task_alt';
+        const confirmCheck = createEl('input');
+        confirmCheck.type = 'checkbox';
+        confirmCheck.className = 'alarm-confirm';
+        confirmCheck.checked = alarm.requireConfirmation;
+        confirmLabel.appendChild(confirmIcon);
+        confirmLabel.appendChild(confirmCheck);
+
+        row1.appendChild(enabledLabel);
+        row1.appendChild(timeInput);
+        row1.appendChild(confirmLabel);
+
+        // Row 2
+        const row2 = createEl('div');
+        row2.className = 'alarm-row';
+        const msgLabel = createEl('span');
+        msgLabel.className = 'alarm-label';
+        msgLabel.setAttribute('data-i18n', 'alarm-label-message');
+        msgLabel.textContent = t('alarm-label-message');
+        const msgInput = createEl('input');
+        msgInput.type = 'text';
+        msgInput.className = 'alarm-message';
+        msgInput.value = alarm.message || '';
+        msgInput.placeholder = t('alarm-placeholder-message');
+        row2.appendChild(msgLabel);
+        row2.appendChild(msgInput);
+
+        // Row 3
+        const row3 = createEl('div');
+        row3.className = 'alarm-row';
+        const actionLabel = createEl('span');
+        actionLabel.className = 'alarm-label';
+        actionLabel.setAttribute('data-i18n', 'alarm-label-action');
+        actionLabel.textContent = t('alarm-label-action');
+        const actionSelect = createEl('select');
+        actionSelect.className = 'alarm-action';
+        ['none', 'stop', 'pause', 'start'].forEach(val => {
+            const opt = createEl('option');
+            opt.value = val;
+            opt.textContent = t(`alarm-action-${val}`);
+            opt.setAttribute('data-i18n', `alarm-action-${val}`);
+            if (alarm.action === val) opt.selected = true;
+            actionSelect.appendChild(opt);
+        });
+        row3.appendChild(actionLabel);
+        row3.appendChild(actionSelect);
+
+        // Row 4
+        const row4 = createEl('div');
+        row4.className = `alarm-row alarm-category-row ${alarm.action === 'start' ? '' : 'hidden'}`;
+        const catLabel = createEl('span');
+        catLabel.className = 'alarm-label';
+        catLabel.setAttribute('data-i18n', 'alarm-label-category');
+        catLabel.textContent = t('alarm-label-category');
+        const catSelect = createEl('select');
+        catSelect.className = 'alarm-category';
+        workCategories.forEach(c => {
+            const opt = createEl('option');
+            opt.value = c.name;
+            opt.textContent = c.name;
+            if (alarm.actionCategory === c.name) opt.selected = true;
+            catSelect.appendChild(opt);
+        });
+        row4.appendChild(catLabel);
+        row4.appendChild(catSelect);
+
+        item.appendChild(row1);
+        item.appendChild(row2);
+        item.appendChild(row3);
+        item.appendChild(row4);
 
         const updateAlarm = async () => {
             alarm.enabled = item.querySelector('.alarm-enabled').checked;
@@ -1312,7 +1414,7 @@ async function renderCategoryEditor() {
     if (!list) return;
     let categories = await dbGetAll(STORE_CATEGORIES);
     categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    list.innerHTML = '';
+    list.replaceChildren();
 
     const colors = [
         'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
@@ -1338,15 +1440,34 @@ async function renderCategoryEditor() {
         };
 
         if (isPageBreak) {
-            item.innerHTML = `
-                <div class="cat-editor-row row-1">
-                    <span class="material-symbols-outlined drag-handle" style="cursor: grab;" title="${t('tooltip-drag-handle')}">drag_indicator</span>
-                    <span class="page-break-label"><span class="material-symbols-outlined">insert_page_break</span> <span>${t('page-break')}</span></span>
-                    <button class="delete-cat-btn" title="${t('tooltip-delete-category')}">
-                        <span class="material-symbols-outlined">delete</span>
-                    </button>
-                </div>
-            `;
+            const row1 = createEl('div');
+            row1.className = 'cat-editor-row row-1';
+            const dragHandle = createEl('span');
+            dragHandle.className = 'material-symbols-outlined drag-handle';
+            dragHandle.style.cursor = 'grab';
+            dragHandle.textContent = 'drag_indicator';
+            dragHandle.title = t('tooltip-drag-handle');
+            const pbLabel = createEl('span');
+            pbLabel.className = 'page-break-label';
+            const pbIcon = createEl('span');
+            pbIcon.className = 'material-symbols-outlined';
+            pbIcon.textContent = 'insert_page_break';
+            const pbText = createEl('span');
+            pbText.textContent = t('page-break');
+            pbLabel.appendChild(pbIcon);
+            pbLabel.appendChild(document.createTextNode(' '));
+            pbLabel.appendChild(pbText);
+            const deleteBtn = createEl('button');
+            deleteBtn.className = 'delete-cat-btn';
+            deleteBtn.title = t('tooltip-delete-category');
+            const deleteIcon = createEl('span');
+            deleteIcon.className = 'material-symbols-outlined';
+            deleteIcon.textContent = 'delete';
+            deleteBtn.appendChild(deleteIcon);
+            row1.appendChild(dragHandle);
+            row1.appendChild(pbLabel);
+            row1.appendChild(deleteBtn);
+            item.appendChild(row1);
         } else {
             const animOptions = [
                 { value: 'none', label: t('anim-none'), tooltip: '' },
@@ -1360,32 +1481,77 @@ async function renderCategoryEditor() {
                 })
             ];
 
-            item.innerHTML = `
-                <div class="cat-editor-row row-1">
-                    <span class="material-symbols-outlined drag-handle" style="cursor: grab;" title="${t('tooltip-drag-handle')}">drag_indicator</span>
-                    <input type="text" class="category-edit-name" value="${escapeHtml(cat.name)}">
-                    <button class="delete-cat-btn" title="${t('tooltip-delete-category')}">
-                        <span class="material-symbols-outlined">delete</span>
-                    </button>
-                </div>
-                <div class="cat-editor-row row-2">
-                    <div class="custom-color-dropdown">
-                        <div class="color-dropdown-trigger" style="background-color: ${getColorCode(cat.color)}"></div>
-                        <div class="color-dropdown-menu hidden">
-                            ${colors.map(color => `<div class="color-dropdown-item ${color === cat.color ? 'selected' : ''}" data-color="${color}" style="background-color: ${getColorCode(color)}"></div>`).join('')}
-                        </div>
-                    </div>
-                    <select class="category-edit-animation">
-                        ${animOptions.map(opt => `<option value="${opt.value}" ${cat.animation === opt.value ? 'selected' : ''} title="${escapeHtml(opt.tooltip || '')}">${escapeHtml(opt.label)}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="cat-editor-row row-3">
-                    <div class="tag-container">
-                        <div class="tag-list"></div>
-                        <input type="text" class="tag-input" placeholder="${t('placeholder-tags')}">
-                    </div>
-                </div>
-            `;
+            const row1 = createEl('div');
+            row1.className = 'cat-editor-row row-1';
+            const dragHandle = createEl('span');
+            dragHandle.className = 'material-symbols-outlined drag-handle';
+            dragHandle.style.cursor = 'grab';
+            dragHandle.textContent = 'drag_indicator';
+            dragHandle.title = t('tooltip-drag-handle');
+            const nameInput = createEl('input');
+            nameInput.type = 'text';
+            nameInput.className = 'category-edit-name';
+            nameInput.value = cat.name;
+            const deleteBtn = createEl('button');
+            deleteBtn.className = 'delete-cat-btn';
+            deleteBtn.title = t('tooltip-delete-category');
+            const deleteIcon = createEl('span');
+            deleteIcon.className = 'material-symbols-outlined';
+            deleteIcon.textContent = 'delete';
+            deleteBtn.appendChild(deleteIcon);
+            row1.appendChild(dragHandle);
+            row1.appendChild(nameInput);
+            row1.appendChild(deleteBtn);
+
+            const row2 = createEl('div');
+            row2.className = 'cat-editor-row row-2';
+            const colorDropdown = createEl('div');
+            colorDropdown.className = 'custom-color-dropdown';
+            const colorTrigger = createEl('div');
+            colorTrigger.className = 'color-dropdown-trigger';
+            colorTrigger.style.backgroundColor = getColorCode(cat.color);
+            const colorMenu = createEl('div');
+            colorMenu.className = 'color-dropdown-menu hidden';
+            colors.forEach(color => {
+                const colorItem = createEl('div');
+                colorItem.className = 'color-dropdown-item' + (color === cat.color ? ' selected' : '');
+                colorItem.dataset.color = color;
+                colorItem.style.backgroundColor = getColorCode(color);
+                colorMenu.appendChild(colorItem);
+            });
+            colorDropdown.appendChild(colorTrigger);
+            colorDropdown.appendChild(colorMenu);
+
+            const animSelect = createEl('select');
+            animSelect.className = 'category-edit-animation';
+            animOptions.forEach(opt => {
+                const optEl = createEl('option');
+                optEl.value = opt.value;
+                optEl.textContent = opt.label;
+                optEl.title = opt.tooltip || '';
+                if (cat.animation === opt.value) optEl.selected = true;
+                animSelect.appendChild(optEl);
+            });
+            row2.appendChild(colorDropdown);
+            row2.appendChild(animSelect);
+
+            const row3 = createEl('div');
+            row3.className = 'cat-editor-row row-3';
+            const tagContainer = createEl('div');
+            tagContainer.className = 'tag-container';
+            const tagList = createEl('div');
+            tagList.className = 'tag-list';
+            const tagInput = createEl('input');
+            tagInput.type = 'text';
+            tagInput.className = 'tag-input';
+            tagInput.placeholder = t('placeholder-tags');
+            tagContainer.appendChild(tagList);
+            tagContainer.appendChild(tagInput);
+            row3.appendChild(tagContainer);
+
+            item.appendChild(row1);
+            item.appendChild(row2);
+            item.appendChild(row3);
             item.dataset.name = cat.name;
         }
 
@@ -1463,17 +1629,23 @@ async function renderCategoryEditor() {
             const tagInput = item.querySelector('.tag-input');
 
             const renderTags = () => {
-                tagListEl.innerHTML = '';
+                tagListEl.replaceChildren();
                 const tagStr = cat.tags || '';
                 const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
                 tags.forEach((tag, idx) => {
                     const pill = createEl('span');
                     pill.className = 'tag-pill';
-                    pill.innerHTML = `
-                        <span class="tag-text">${escapeHtml(tag)}</span>
-                        <span class="tag-remove material-symbols-outlined" data-index="${idx}">close</span>
-                    `;
-                    pill.querySelector('.tag-remove').onclick = async () => {
+                    const tagText = createEl('span');
+                    tagText.className = 'tag-text';
+                    tagText.textContent = tag;
+                    const tagRemove = createEl('span');
+                    tagRemove.className = 'tag-remove material-symbols-outlined';
+                    tagRemove.textContent = 'close';
+                    tagRemove.dataset.index = idx;
+                    pill.appendChild(tagText);
+                    pill.appendChild(tagRemove);
+
+                    tagRemove.onclick = async () => {
                         tags.splice(idx, 1);
                         cat.tags = tags.join(',');
                         await dbPut(STORE_CATEGORIES, cat);
@@ -1944,7 +2116,19 @@ function setupEventListeners() {
             const text = await navigator.clipboard.readText();
             if (!text) return;
 
+            // Security: Limit clipboard text size (e.g., 1MB)
+            if (text.length > 1024 * 1024) {
+                alert(t('alert-import-error') + '\n(Data too large)');
+                return;
+            }
+
             const lines = text.split(/\r?\n/).filter(line => line.trim());
+
+            // Security: Limit number of lines
+            if (lines.length > 1000) {
+                alert(t('alert-import-error') + '\n(Too many items)');
+                return;
+            }
             const total = lines.length;
             let errorCount = 0;
 
@@ -2048,8 +2232,20 @@ function setupEventListeners() {
         if (!file) return;
 
         try {
+            // Security: Limit file size (e.g., 5MB for CSV history)
+            if (file.size > 5 * 1024 * 1024) {
+                alert(t('alert-import-error') + '\n(File too large)');
+                return;
+            }
+
             const text = await file.text();
             const lines = text.split(/\r?\n/).filter(line => line.trim() !== '').slice(1);
+
+            // Security: Limit number of lines
+            if (lines.length > 50000) {
+                alert(t('alert-import-error') + '\n(Too many lines)');
+                return;
+            }
             if (lines.length === 0) return;
 
             const existingLogs = await dbGetAll(STORE_LOGS);
@@ -2172,8 +2368,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const dbParam = urlParams.get('db');
     if (dbParam) {
-        console.log(`QuickLog-Solo: Using custom database: ${dbParam}`);
-        setDatabaseName(dbParam);
+        // Strict validation for database name: alphanumeric and underscores only, max 50 chars
+        if (/^[a-zA-Z0-9_]{1,50}$/.test(dbParam)) {
+            console.log(`QuickLog-Solo: Using custom database: ${dbParam}`);
+            setDatabaseName(dbParam);
+        } else {
+            console.warn('QuickLog-Solo: Invalid database name parameter ignored.');
+        }
     }
 
     try {

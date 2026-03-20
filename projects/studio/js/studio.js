@@ -231,10 +231,10 @@ function updateTranslations() {
 
     document.querySelectorAll('[data-i18n-html]').forEach(el => {
         const key = el.getAttribute('data-i18n-html');
-        if (messages[state.currentLang] && messages[state.currentLang][key]) {
-            el.innerHTML = messages[state.currentLang][key];
-        } else if (messages.en[key]) {
-            el.innerHTML = messages.en[key];
+        const html = (messages[state.currentLang] && messages[state.currentLang][key]) || messages.en[key];
+        if (html) {
+            // data-i18n-html is only for trusted translation strings
+            el.innerHTML = html;
         }
     });
 
@@ -278,7 +278,13 @@ function setupEventListeners() {
         updateBackLink();
 
         const val = elements.sampleSelect.value;
-        elements.sampleSelect.innerHTML = '<option value="" data-i18n="sample-select-placeholder">サンプルを選択...</option>';
+        elements.sampleSelect.replaceChildren();
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.setAttribute('data-i18n', 'sample-select-placeholder');
+        placeholder.textContent = state.getMsg('sample-select-placeholder');
+        elements.sampleSelect.appendChild(placeholder);
+
         updateTranslations();
         populateSamples();
         elements.sampleSelect.value = val;
@@ -296,15 +302,26 @@ function setupEventListeners() {
         loadCurrentMetaData();
     });
 
-    elements.metaName.addEventListener('input', () => {
+    elements.metaName.addEventListener('input', (e) => {
+        if (e.target.value.length > 50) {
+            e.target.value = e.target.value.substring(0, 50);
+        }
         saveCurrentMetaData();
         state.markDirty();
     });
-    elements.metaDesc.addEventListener('input', () => {
+    elements.metaDesc.addEventListener('input', (e) => {
+        if (e.target.value.length > 200) {
+            e.target.value = e.target.value.substring(0, 200);
+        }
         saveCurrentMetaData();
         state.markDirty();
     });
-    elements.metaAuthor.addEventListener('input', state.markDirty);
+    elements.metaAuthor.addEventListener('input', (e) => {
+        if (e.target.value.length > 50) {
+            e.target.value = e.target.value.substring(0, 50);
+        }
+        state.markDirty();
+    });
     elements.configMode.addEventListener('change', () => {
         state.markDirty();
         state.updateCanvasControlVisibility();

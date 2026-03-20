@@ -956,7 +956,7 @@
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (translations[safeLang][key]) {
-                    el.innerText = translations[safeLang][key];
+                    el.textContent = translations[safeLang][key];
                 }
             });
 
@@ -1039,14 +1039,20 @@
             event.preventDefault();
             const target = event.currentTarget;
             navigator.clipboard.writeText(url).then(() => {
-                const originalHtml = target.innerHTML;
+                const originalNodes = Array.from(target.childNodes);
                 const feedbackText = translations[currentLang]["copy-success"];
-                target.innerHTML = '<span style="font-size: 0.8em; font-weight: bold;">' + feedbackText + '</span>';
+
+                const feedbackSpan = document.createElement('span');
+                feedbackSpan.style.fontSize = '0.8em';
+                feedbackSpan.style.fontWeight = 'bold';
+                feedbackSpan.textContent = feedbackText;
+
+                target.replaceChildren(feedbackSpan);
                 const originalColor = target.style.color;
                 target.style.color = 'var(--md-sys-color-tertiary)';
 
                 setTimeout(() => {
-                    target.innerHTML = originalHtml;
+                    target.replaceChildren(...originalNodes);
                     target.style.color = originalColor;
                 }, 2000);
             }).catch(err => {
@@ -1060,7 +1066,13 @@
             // Use a separate database for preview to avoid conflict with the actual extension.
             // Support 'db' URL parameter for test isolation.
             const urlParams = new URLSearchParams(window.location.search);
-            const dbName = urlParams.get('db') || 'QuickLogSoloDB_Preview';
+            let dbName = urlParams.get('db') || 'QuickLogSoloDB_Preview';
+
+            // Strict validation for database name
+            if (!/^[a-zA-Z0-9_]{1,50}$/.test(dbName)) {
+                dbName = 'QuickLogSoloDB_Preview';
+            }
+
             const deleteRequest = indexedDB.deleteDatabase(dbName);
 
             deleteRequest.onsuccess = () => {

@@ -148,7 +148,7 @@ export function initMetrics(state, elements) {
     });
 
     clearConsoleBtn.addEventListener('click', () => {
-        consoleOutput.innerHTML = '';
+        consoleOutput.replaceChildren();
     });
 
     toggleConsoleBtn.addEventListener('click', (e) => {

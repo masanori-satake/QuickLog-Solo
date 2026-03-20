@@ -82,14 +82,22 @@ export function initEditor(state, elements) {
             return `<div class="logical-line">${escaped || ' '}</div>`;
         });
 
-        highlightEl.innerHTML = processedLines.join('');
+        highlightEl.replaceChildren();
+        processedLines.forEach(lineHtml => {
+            const temp = document.createElement('div');
+            // Safe here because processedLines are already escaped for user content
+            // and tags are controlled constants/tokens.
+            temp.innerHTML = lineHtml;
+            const lineEl = temp.firstElementChild;
+            if (lineEl) highlightEl.appendChild(lineEl);
+        });
     }
 
     function updateGutter(ta) {
         const gutter = ta.closest('.editor-body').querySelector('.editor-gutter');
         if (!gutter) return;
 
-        gutter.innerHTML = '';
+        gutter.replaceChildren();
         updateHighlight(ta);
 
         const highlight = ta.parentElement.querySelector('.editor-highlight');
