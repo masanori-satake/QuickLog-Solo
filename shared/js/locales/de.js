@@ -291,4 +291,8 @@ export const de = {
     'undo': 'Rückgängig machen',
     'redo': 'Wiederholen',
     'tag-box-title': 'Tag-Box',
+    'tag-replace-title': 'Tags ersetzen',
+    'tag-replace-before': 'Vorher',
+    'tag-replace-after': 'Nachher',
+    'tooltip-replace-tags': 'Tags ersetzen',
 };

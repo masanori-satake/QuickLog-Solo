@@ -313,4 +313,8 @@ export const en = {
     'undo': 'Undo',
     'redo': 'Redo',
     'tag-box-title': 'Tag Box',
+    'tag-replace-title': 'Replace Tags',
+    'tag-replace-before': 'Before',
+    'tag-replace-after': 'After',
+    'tooltip-replace-tags': 'Replace Tags',
 };

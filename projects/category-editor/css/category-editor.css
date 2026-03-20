@@ -117,12 +117,19 @@ body {
 
 .section-title {
     font-size: 1rem;
-    margin-top: 0;
-    margin-bottom: 16px;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 8px;
     color: var(--md-sys-color-on-surface-variant);
+}
+
+.card > .section-title {
+    margin-bottom: 16px;
+}
+
+.section-header .section-title {
+    margin-bottom: 0;
 }
 
 /* Category List */
@@ -346,7 +353,8 @@ input[type="text"]:focus, select:focus {
     border-color: transparent;
 }
 
-input[type="text"].drag-over {
+input[type="text"].drag-over,
+.tag-editor.drag-over {
     background-color: var(--md-sys-color-secondary-container);
     border: 2px dashed var(--md-sys-color-primary);
     outline: none;
@@ -478,6 +486,11 @@ input[type="text"]:disabled, select:disabled {
     border-radius: 16px;
     font-size: 0.8rem;
     transition: transform 0.1s;
+}
+
+.replace-table .tag-pill {
+    display: inline-flex;
+    cursor: grab;
 }
 
 #global-tag-list .tag-pill {
@@ -722,6 +735,10 @@ input[type="text"]:disabled, select:disabled {
     box-shadow: var(--md-sys-elevation-3);
 }
 
+#tag-replace-modal .modal-content {
+    max-width: 900px;
+}
+
 .modal-header {
     padding: 24px 24px 16px;
     display: flex;
@@ -933,4 +950,46 @@ body.theme-light .secondary-btn:hover {
     display: flex;
     gap: 4px;
     margin-left: 12px;
+}
+
+/* Tag Replace Modal Styles */
+.replace-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.replace-table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.85rem;
+}
+
+.replace-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    vertical-align: middle;
+}
+
+.replace-table .before-col {
+    width: 30%;
+}
+
+.replace-table .after-col {
+    width: 70%;
+}
+
+.after-input-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.after-input-wrapper .tag-editor {
+    flex: 1;
+}
+
+.after-input-wrapper .icon-btn:hover {
+    color: var(--md-sys-color-error);
 }

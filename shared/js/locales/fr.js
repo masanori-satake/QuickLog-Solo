@@ -291,4 +291,8 @@ export const fr = {
     'undo': 'Annuler',
     'redo': 'Rétablir',
     'tag-box-title': 'Boîte à tags',
+    'tag-replace-title': 'Remplacer les tags',
+    'tag-replace-before': 'Avant',
+    'tag-replace-after': 'Après',
+    'tooltip-replace-tags': 'Remplacer les tags',
 };

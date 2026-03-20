@@ -11,7 +11,9 @@ export function initUI(state, elements) {
         tagInput, colorPaletteEl, editAnimationSelect, previewNameEl,
         animInfoEl, animDescEl, animAuthorEl, addCategoryBtn,
         deleteSelectedBtn, addPageBreakBtn, newStartBtn, clearAllBtn,
-        globalTagListEl
+        globalTagListEl, tagReplaceModalEl, replaceTableBodyEl,
+        tagReplaceBtn, tagReplaceCloseBtn, closeTagReplaceModalBtn,
+        modalUndoBtn, modalRedoBtn
     } = elements;
 
     const COLORS = [
@@ -557,6 +559,194 @@ export function initUI(state, elements) {
         });
     }
 
+    function renderTagReplaceModal() {
+        if (!replaceTableBodyEl) return;
+        replaceTableBodyEl.innerHTML = '';
+
+        const allTags = new Set();
+        state.categories.forEach(cat => {
+            if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
+            getCategoryTags(cat).forEach(tag => allTags.add(tag));
+        });
+
+        const sortedTags = Array.from(allTags).sort((a, b) => a.localeCompare(b, state.currentLang));
+
+        sortedTags.forEach(tag => {
+            const row = document.createElement('tr');
+
+            const beforeCell = document.createElement('td');
+            beforeCell.className = 'before-col';
+            const pill = document.createElement('span');
+            pill.className = 'tag-pill';
+            pill.textContent = tag;
+            pill.draggable = true;
+            pill.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', tag);
+                e.dataTransfer.effectAllowed = 'copy';
+            });
+            beforeCell.appendChild(pill);
+
+            const afterCell = document.createElement('td');
+            afterCell.className = 'after-col';
+            const inputWrapper = document.createElement('div');
+            inputWrapper.className = 'after-input-wrapper';
+
+            const editor = document.createElement('div');
+            editor.className = 'tag-editor';
+            editor.dataset.originalTag = tag;
+            editor.dataset.tags = tag;
+
+            const list = document.createElement('div');
+            list.className = 'tag-list';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = t('placeholder-tags');
+
+            const updatePills = () => {
+                list.innerHTML = '';
+                const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+                tags.forEach((t, i) => {
+                    const p = document.createElement('span');
+                    p.className = 'tag-pill';
+
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = t;
+                    p.appendChild(textSpan);
+
+                    const removeBtn = document.createElement('span');
+                    removeBtn.className = 'material-symbols-outlined tag-remove';
+                    removeBtn.textContent = 'close';
+                    removeBtn.onclick = () => {
+                        tags.splice(i, 1);
+                        editor.dataset.tags = tags.join(',');
+                        updatePills();
+                    };
+                    p.appendChild(removeBtn);
+
+                    list.appendChild(p);
+                });
+            };
+
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const newTag = input.value.trim().replace(/,/g, '');
+                    if (newTag) {
+                        const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+                        if (!tags.includes(newTag)) {
+                            tags.push(newTag);
+                            editor.dataset.tags = tags.join(',');
+                            input.value = '';
+                            updatePills();
+                        }
+                    }
+                }
+            };
+
+            editor.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+                editor.classList.add('drag-over');
+            });
+            editor.addEventListener('dragleave', () => editor.classList.remove('drag-over'));
+            editor.addEventListener('drop', (e) => {
+                e.preventDefault();
+                editor.classList.remove('drag-over');
+                const droppedTag = e.dataTransfer.getData('text/plain');
+                if (droppedTag) {
+                    const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+                    if (!tags.includes(droppedTag)) {
+                        tags.push(droppedTag);
+                        editor.dataset.tags = tags.join(',');
+                        updatePills();
+                    }
+                }
+            });
+
+            editor.appendChild(list);
+            editor.appendChild(input);
+            updatePills();
+
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'icon-btn';
+            const clearIcon = document.createElement('span');
+            clearIcon.className = 'material-symbols-outlined';
+            clearIcon.textContent = 'delete';
+            clearBtn.appendChild(clearIcon);
+            clearBtn.onclick = () => {
+                editor.dataset.tags = '';
+                updatePills();
+            };
+
+            inputWrapper.appendChild(editor);
+            inputWrapper.appendChild(clearBtn);
+            afterCell.appendChild(inputWrapper);
+
+            row.appendChild(beforeCell);
+            row.appendChild(afterCell);
+            replaceTableBodyEl.appendChild(row);
+        });
+
+        updateModalHistoryButtons();
+    }
+
+    function updateModalHistoryButtons() {
+        if (modalUndoBtn) modalUndoBtn.disabled = (state.historyStack.length === 0);
+        if (modalRedoBtn) modalRedoBtn.disabled = (state.redoStack.length === 0);
+    }
+
+    function performTagReplace() {
+        const rows = replaceTableBodyEl.querySelectorAll('tr');
+        const replaceMap = new Map();
+        rows.forEach(row => {
+            const editor = row.querySelector('.tag-editor');
+            const original = editor.dataset.originalTag;
+            const replacement = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+            replaceMap.set(original, replacement);
+        });
+
+        if (state.recordAction) state.recordAction();
+
+        let anyChanged = false;
+        state.categories.forEach(cat => {
+            if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
+            const tags = getCategoryTags(cat);
+            let newTags = [];
+            let changed = false;
+
+            tags.forEach(tag => {
+                if (replaceMap.has(tag)) {
+                    const replacements = replaceMap.get(tag);
+                    if (replacements.length > 0) {
+                        replacements.forEach(r => {
+                            if (!newTags.includes(r)) {
+                                newTags.push(r);
+                            }
+                        });
+                    }
+                    changed = true;
+                } else {
+                    if (!newTags.includes(tag)) {
+                        newTags.push(tag);
+                    }
+                }
+            });
+
+            if (changed) {
+                updateCategoryTags(cat, newTags);
+                anyChanged = true;
+            }
+        });
+
+        if (anyChanged) {
+            renderTags();
+            renderGlobalTagBox();
+            renderTagReplaceModal(); // Re-render table with new state
+            if (state.updateCodeView) state.updateCodeView();
+            updateModalHistoryButtons();
+        }
+    }
+
     function populateAnimationOptions() {
         const currentVal = editAnimationSelect.value;
         editAnimationSelect.innerHTML = '';
@@ -750,6 +940,38 @@ export function initUI(state, elements) {
         }
     });
 
+    if (tagReplaceBtn) {
+        tagReplaceBtn.addEventListener('click', () => {
+            performTagReplace();
+        });
+    }
+
+    if (tagReplaceCloseBtn) {
+        tagReplaceCloseBtn.addEventListener('click', () => {
+            tagReplaceModalEl.classList.add('hidden');
+        });
+    }
+
+    if (closeTagReplaceModalBtn) {
+        closeTagReplaceModalBtn.addEventListener('click', () => {
+            tagReplaceModalEl.classList.add('hidden');
+        });
+    }
+
+    if (modalUndoBtn) {
+        modalUndoBtn.addEventListener('click', () => {
+            if (state.undo) state.undo();
+            renderTagReplaceModal();
+        });
+    }
+
+    if (modalRedoBtn) {
+        modalRedoBtn.addEventListener('click', () => {
+            if (state.redo) state.redo();
+            renderTagReplaceModal();
+        });
+    }
+
     // Drag and Drop
     let dropIndicator = document.createElement('div');
     dropIndicator.className = 'drop-indicator';
@@ -809,6 +1031,8 @@ export function initUI(state, elements) {
         renderDetail,
         renderColorPalette,
         renderGlobalTagBox,
+        renderTagReplaceModal,
+        updateModalHistoryButtons,
         populateAnimationOptions,
         getCategoryTags,
         COLOR_CODES

@@ -291,4 +291,8 @@ export const ko = {
     'undo': '실행 취소',
     'redo': '다시 실행',
     'tag-box-title': '태그 박스',
+    'tag-replace-title': '태그 바꾸기',
+    'tag-replace-before': '이전',
+    'tag-replace-after': '이후',
+    'tooltip-replace-tags': '태그 바꾸기',
 };
