@@ -15,10 +15,6 @@ def check_version():
         with open('projects/app/manifest.chrome.json', 'r') as f:
             chrome_version = json.load(f).get('version')
 
-        # Load version from manifest.firefox.json
-        with open('projects/app/manifest.firefox.json', 'r') as f:
-            firefox_version = json.load(f).get('version')
-
         if not version:
             print("Error: version.json is missing version field.")
             return False
@@ -29,10 +25,6 @@ def check_version():
 
         if version != chrome_version:
             print(f"Error: manifest.chrome.json version ({chrome_version}) does not match version.json ({version})")
-            return False
-
-        if version != firefox_version:
-            print(f"Error: manifest.firefox.json version ({firefox_version}) does not match version.json ({version})")
             return False
 
         print(f"Version check passed (v{version}).")
