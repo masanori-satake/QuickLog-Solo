@@ -726,3 +726,21 @@ npx stylelint "**/*.css"
 - [テスト計画・ケース定義書 (README_TEST.md)](README_TEST.md)
 - [背景アニメーション・モジュール仕様書 (animation_module_spec.md)](animation_module_spec.md)
 - [AI エージェント指針 (AGENTS.md)](../AGENTS.md)
+
+---
+
+## 12. 運用・トラブルシューティング
+
+### CodeQL: "3 configurations not found" 警告の解消
+GitHub のプルリクエストにおいて、CodeQL スキャンの結果に以下のような警告が表示されることがあります。
+`Warning: Code scanning cannot determine the alerts introduced by this pull request, because 3 configurations present on refs/heads/main were not found: Default setup / language:actions / language:javascript-typescript / language:python`
+
+**原因:**
+GitHub の「Default setup」設定と `main` ブランチの状態に不整合が生じている場合に発生します。特にリポジトリの設定変更やブランチの乖離が原因となることが多いです。
+
+**解決策:**
+1. リポジトリの **Settings > Code security and analysis** を開く。
+2. **CodeQL analysis** の横にある「...」ボタンをクリックし、一度 **Disable CodeQL** を選択する。
+3. 数分待った後、再度同じ場所から **Set up > Default** を選択して有効化する。
+4. `main` ブランチで自動的にスキャンが開始されるので、完了を待つ。
+5. プルリクエストを再度確認し、警告が解消されていることを確認する。
