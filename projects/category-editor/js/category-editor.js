@@ -258,11 +258,11 @@ function setupEventListeners() {
 
 function loadDefaultCategories() {
     const defaultSet = [
-        { name: state.t('init-cat-dev'), color: 'primary', tags: 'dev, code', animation: 'digital_rain' },
-        { name: state.t('init-cat-meeting'), color: 'secondary', tags: 'meeting, sync', animation: 'migrating_birds' },
-        { name: state.t('init-cat-research'), color: 'tertiary', tags: 'research, tech', animation: 'ripple' },
-        { name: state.t('init-cat-admin'), color: 'neutral', tags: 'admin, mail', animation: 'dot_typing' },
-        { name: state.t('init-cat-break'), color: 'outline', tags: 'break, refresh', animation: 'coffee_drip' }
+        { name: state.t('init-cat-dev'), color: 'primary', tags: state.t('init-tag-dev'), animation: 'digital_rain' },
+        { name: state.t('init-cat-meeting'), color: 'secondary', tags: state.t('init-tag-meeting'), animation: 'migrating_birds' },
+        { name: state.t('init-cat-research'), color: 'tertiary', tags: state.t('init-tag-research'), animation: 'ripple' },
+        { name: state.t('init-cat-admin'), color: 'neutral', tags: state.t('init-tag-admin'), animation: 'dot_typing' },
+        { name: state.t('init-cat-break'), color: 'outline', tags: state.t('init-tag-break'), animation: 'coffee_drip' }
     ];
 
     state.categories = defaultSet;

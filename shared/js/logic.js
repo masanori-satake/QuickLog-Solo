@@ -1,5 +1,6 @@
 import { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, escapeHtml } from './utils.js';
+import { t } from './i18n.js';
 
 export function formatDuration(ms) {
     const hours = Math.floor(ms / 3600000);
@@ -140,7 +141,7 @@ function prepareReportItems(logs, options) {
     let displayLogs = filteredLogs.map(log => ({
         startTime: log.startTime,
         endTime: log.endTime,
-        category: log.category === '__IDLE__' ? (options.idleText || '(待機)') : log.category
+        category: log.category === '__IDLE__' ? (options.idleText || t('idle-category-log')) : log.category
     }));
 
     if (adjustIntervalMs > 0) {
