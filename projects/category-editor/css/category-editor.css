@@ -537,12 +537,11 @@ input[type="text"]:disabled, select:disabled {
     overflow: hidden;
     box-shadow: var(--md-sys-elevation-1);
     flex-shrink: 0;
+    border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 #preview-container.anim-active {
     background-color: transparent !important;
-    box-shadow: none;
-    border-color: var(--md-sys-color-outline);
 }
 
 #preview-overlay-base.anim-active {
