@@ -346,7 +346,8 @@ input[type="text"]:focus, select:focus {
     border-color: transparent;
 }
 
-input[type="text"].drag-over {
+input[type="text"].drag-over,
+.tag-editor.drag-over {
     background-color: var(--md-sys-color-secondary-container);
     border: 2px dashed var(--md-sys-color-primary);
     outline: none;
@@ -974,7 +975,7 @@ body.theme-light .secondary-btn:hover {
     align-items: center;
 }
 
-.after-input-wrapper input {
+.after-input-wrapper .tag-editor {
     flex: 1;
 }
 

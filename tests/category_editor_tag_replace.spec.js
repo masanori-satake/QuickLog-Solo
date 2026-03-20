@@ -50,8 +50,14 @@ test.describe('Category Editor Tag Replace', () => {
 
     // Find row for tagA and change it to tagX
     const rowA = modal.locator('tr:has-text("tagA")');
-    const inputA = rowA.locator('input');
+    const editorA = rowA.locator('.tag-editor');
+    const inputA = editorA.locator('input');
+
+    // First remove existing tagA pill
+    await editorA.locator('.tag-pill:has-text("tagA") .tag-remove').click();
+    // Then add tagX
     await inputA.fill('tagX');
+    await inputA.press('Enter');
 
     await page.click('#tag-replace-btn');
 
@@ -80,29 +86,19 @@ test.describe('Category Editor Tag Replace', () => {
 
     await page.click('#open-tag-replace-btn');
     const rowA = page.locator('#tag-replace-modal tr:has-text("tagA")');
-    await rowA.locator('input').fill('tagX, tagY');
+    const editorA = rowA.locator('.tag-editor');
+    const inputA = editorA.locator('input');
+
+    await editorA.locator('.tag-pill:has-text("tagA") .tag-remove').click();
+    await inputA.fill('tagX');
+    await inputA.press(',');
+    await inputA.fill('tagY');
+    await inputA.press('Enter');
+
     await page.click('#tag-replace-btn');
 
     const categories = await page.evaluate(() => window.state.categories);
     expect(categories[0].tags).toBe('tagX, tagY');
-  });
-
-  test('Delete a tag by clearing input', async ({ page }) => {
-    await page.evaluate(() => {
-        window.state.categories = [
-            { name: "CatA", color: "primary", tags: "tagA, tagB", animation: "default" }
-        ];
-        window.state.renderCategoryList();
-        window.state.renderGlobalTagBox();
-    });
-
-    await page.click('#open-tag-replace-btn');
-    const rowA = page.locator('#tag-replace-modal tr:has-text("tagA")');
-    await rowA.locator('input').fill('');
-    await page.click('#tag-replace-btn');
-
-    const categories = await page.evaluate(() => window.state.categories);
-    expect(categories[0].tags).toBe('tagB');
   });
 
   test('Delete a tag using trash icon', async ({ page }) => {
@@ -117,7 +113,8 @@ test.describe('Category Editor Tag Replace', () => {
     await page.click('#open-tag-replace-btn');
     const rowA = page.locator('#tag-replace-modal tr:has-text("tagA")');
     await rowA.locator('.after-input-wrapper .icon-btn').click();
-    await expect(rowA.locator('input')).toHaveValue('');
+    // Verify pills in after-col are gone (before-col still has one)
+    await expect(rowA.locator('.after-col .tag-pill')).toHaveCount(0);
 
     await page.click('#tag-replace-btn');
     const categories = await page.evaluate(() => window.state.categories);
@@ -136,7 +133,13 @@ test.describe('Category Editor Tag Replace', () => {
     await page.click('#open-tag-replace-btn');
     const modal = page.locator('#tag-replace-modal');
     const rowA = modal.locator('tr:has-text("tagA")');
-    await rowA.locator('input').fill('tagX');
+    const editorA = rowA.locator('.tag-editor');
+    const inputA = editorA.locator('input');
+
+    await editorA.locator('.tag-pill .tag-remove').click();
+    await inputA.fill('tagX');
+    await inputA.press('Enter');
+
     await page.click('#tag-replace-btn');
 
     const categoriesAfterReplace = await page.evaluate(() => window.state.categories);
@@ -155,7 +158,8 @@ test.describe('Category Editor Tag Replace', () => {
     expect(categoriesAfterRedo[0].tags).toBe('tagX');
     // Table should re-render and now show tagX as the source tag
     await expect(modal.locator('tr:has-text("tagX")')).toBeVisible();
-    await expect(modal.locator('tr:has-text("tagX") input')).toHaveValue('tagX');
+    // Verify pill is present in after-col
+    await expect(modal.locator('tr:has-text("tagX") .after-col .tag-pill:has-text("tagX")')).toBeVisible();
   });
 
   test('Drag and drop a tag pill in the modal', async ({ page }) => {
@@ -171,13 +175,13 @@ test.describe('Category Editor Tag Replace', () => {
     await page.click('#open-tag-replace-btn');
     const modal = page.locator('#tag-replace-modal');
 
-    // Drag tagB pill to tagA input
+    // Drag tagB pill to tagA editor
     await page.evaluate(() => {
         const rows = Array.from(document.querySelectorAll('#tag-replace-modal tr'));
         const rowA = rows.find(r => r.innerText.includes('tagA'));
         const rowB = rows.find(r => r.innerText.includes('tagB'));
-        const pillB = rowB.querySelector('.tag-pill');
-        const inputA = rowA.querySelector('input');
+        const pillB = rowB.querySelector('.before-col .tag-pill');
+        const editorA = rowA.querySelector('.tag-editor');
 
         const dataTransfer = new DataTransfer();
         dataTransfer.setData('text/plain', 'tagB');
@@ -186,12 +190,13 @@ test.describe('Category Editor Tag Replace', () => {
         pillB.dispatchEvent(dragStartEvent);
 
         const dropEvent = new DragEvent('drop', { dataTransfer, bubbles: true });
-        inputA.dispatchEvent(dropEvent);
+        editorA.dispatchEvent(dropEvent);
     });
 
-    const inputA = modal.locator('tr:has-text("tagA") input');
-    // It appends with comma
-    await expect(inputA).toHaveValue('tagA, tagB');
+    const editorA = modal.locator('tr:has-text("tagA") .tag-editor');
+    // Both tagA and tagB pills should be present
+    await expect(editorA.locator('.tag-pill:has-text("tagA")')).toBeVisible();
+    await expect(editorA.locator('.tag-pill:has-text("tagB")')).toBeVisible();
 
     await page.click('#tag-replace-btn');
     const categories = await page.evaluate(() => window.state.categories);

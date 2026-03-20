@@ -591,36 +591,82 @@ export function initUI(state, elements) {
             const inputWrapper = document.createElement('div');
             inputWrapper.className = 'after-input-wrapper';
 
+            const editor = document.createElement('div');
+            editor.className = 'tag-editor';
+            editor.dataset.originalTag = tag;
+            editor.dataset.tags = tag;
+
+            const list = document.createElement('div');
+            list.className = 'tag-list';
             const input = document.createElement('input');
             input.type = 'text';
-            input.value = tag;
-            input.dataset.originalTag = tag;
+            input.placeholder = t('placeholder-tags');
 
-            input.addEventListener('dragover', (e) => {
+            const updatePills = () => {
+                list.innerHTML = '';
+                const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+                tags.forEach((t, i) => {
+                    const p = document.createElement('span');
+                    p.className = 'tag-pill';
+                    p.innerHTML = `<span>${t}</span><span class="material-symbols-outlined tag-remove">close</span>`;
+                    p.querySelector('.tag-remove').onclick = () => {
+                        tags.splice(i, 1);
+                        editor.dataset.tags = tags.join(',');
+                        updatePills();
+                    };
+                    list.appendChild(p);
+                });
+            };
+
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const newTag = input.value.trim().replace(/,/g, '');
+                    if (newTag) {
+                        const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+                        if (!tags.includes(newTag)) {
+                            tags.push(newTag);
+                            editor.dataset.tags = tags.join(',');
+                            input.value = '';
+                            updatePills();
+                        }
+                    }
+                }
+            };
+
+            editor.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'copy';
-                input.classList.add('drag-over');
+                editor.classList.add('drag-over');
             });
-            input.addEventListener('dragleave', () => input.classList.remove('drag-over'));
-            input.addEventListener('drop', (e) => {
+            editor.addEventListener('dragleave', () => editor.classList.remove('drag-over'));
+            editor.addEventListener('drop', (e) => {
                 e.preventDefault();
-                input.classList.remove('drag-over');
+                editor.classList.remove('drag-over');
                 const droppedTag = e.dataTransfer.getData('text/plain');
                 if (droppedTag) {
-                    const currentTags = input.value.split(',').map(t => t.trim()).filter(Boolean);
-                    if (!currentTags.includes(droppedTag)) {
-                        currentTags.push(droppedTag);
-                        input.value = currentTags.join(', ');
+                    const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+                    if (!tags.includes(droppedTag)) {
+                        tags.push(droppedTag);
+                        editor.dataset.tags = tags.join(',');
+                        updatePills();
                     }
                 }
             });
 
+            editor.appendChild(list);
+            editor.appendChild(input);
+            updatePills();
+
             const clearBtn = document.createElement('button');
             clearBtn.className = 'icon-btn';
             clearBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
-            clearBtn.onclick = () => { input.value = ''; };
+            clearBtn.onclick = () => {
+                editor.dataset.tags = '';
+                updatePills();
+            };
 
-            inputWrapper.appendChild(input);
+            inputWrapper.appendChild(editor);
             inputWrapper.appendChild(clearBtn);
             afterCell.appendChild(inputWrapper);
 
@@ -641,9 +687,9 @@ export function initUI(state, elements) {
         const rows = replaceTableBodyEl.querySelectorAll('tr');
         const replaceMap = new Map();
         rows.forEach(row => {
-            const input = row.querySelector('input');
-            const original = input.dataset.originalTag;
-            const replacement = input.value.split(',').map(t => t.trim()).filter(Boolean);
+            const editor = row.querySelector('.tag-editor');
+            const original = editor.dataset.originalTag;
+            const replacement = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
             replaceMap.set(original, replacement);
         });
 
