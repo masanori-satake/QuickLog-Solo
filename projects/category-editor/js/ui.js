@@ -608,12 +608,21 @@ export function initUI(state, elements) {
                 tags.forEach((t, i) => {
                     const p = document.createElement('span');
                     p.className = 'tag-pill';
-                    p.innerHTML = `<span>${t}</span><span class="material-symbols-outlined tag-remove">close</span>`;
-                    p.querySelector('.tag-remove').onclick = () => {
+
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = t;
+                    p.appendChild(textSpan);
+
+                    const removeBtn = document.createElement('span');
+                    removeBtn.className = 'material-symbols-outlined tag-remove';
+                    removeBtn.textContent = 'close';
+                    removeBtn.onclick = () => {
                         tags.splice(i, 1);
                         editor.dataset.tags = tags.join(',');
                         updatePills();
                     };
+                    p.appendChild(removeBtn);
+
                     list.appendChild(p);
                 });
             };
@@ -660,7 +669,10 @@ export function initUI(state, elements) {
 
             const clearBtn = document.createElement('button');
             clearBtn.className = 'icon-btn';
-            clearBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+            const clearIcon = document.createElement('span');
+            clearIcon.className = 'material-symbols-outlined';
+            clearIcon.textContent = 'delete';
+            clearBtn.appendChild(clearIcon);
             clearBtn.onclick = () => {
                 editor.dataset.tags = '';
                 updatePills();

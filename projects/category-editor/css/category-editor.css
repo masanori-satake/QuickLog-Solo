@@ -117,12 +117,19 @@ body {
 
 .section-title {
     font-size: 1rem;
-    margin-top: 0;
-    margin-bottom: 16px;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 8px;
     color: var(--md-sys-color-on-surface-variant);
+}
+
+.card > .section-title {
+    margin-bottom: 16px;
+}
+
+.section-header .section-title {
+    margin-bottom: 0;
 }
 
 /* Category List */
@@ -726,6 +733,10 @@ input[type="text"]:disabled, select:disabled {
     display: flex;
     flex-direction: column;
     box-shadow: var(--md-sys-elevation-3);
+}
+
+#tag-replace-modal .modal-content {
+    max-width: 900px;
 }
 
 .modal-header {
