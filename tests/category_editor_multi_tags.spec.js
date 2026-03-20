@@ -58,7 +58,6 @@ test.describe('Category Editor Multi-selection Tags', () => {
     // Use evaluate to set the data in a global variable and call handleImport if possible,
     // or just mock the clipboard read.
     await page.evaluate((text) => {
-        const originalReadText = navigator.clipboard.readText;
         navigator.clipboard.readText = () => Promise.resolve(text);
     }, ndjson);
     await page.click('#import-btn');
@@ -82,7 +81,6 @@ test.describe('Category Editor Multi-selection Tags', () => {
     ].join('\n');
 
     await page.evaluate((text) => {
-        const originalReadText = navigator.clipboard.readText;
         navigator.clipboard.readText = () => Promise.resolve(text);
     }, ndjson);
     await page.click('#import-btn');
