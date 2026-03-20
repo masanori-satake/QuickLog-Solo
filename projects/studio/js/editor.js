@@ -63,33 +63,56 @@ export function initEditor(state, elements) {
             { regex: /[{}[\]()]/g, class: 'hl-bracket' }
         ];
 
-        const processedLines = lines.map(line => {
-            let escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            const tokens = [];
-
-            rules.forEach((rule, idx) => {
-                escaped = escaped.replace(rule.regex, (match) => {
-                    const id = `__TOKEN_${idx}_${tokens.length}__`;
-                    tokens.push({ id, html: `<span class="${rule.class}">${match}</span>` });
-                    return id;
-                });
-            });
-
-            tokens.forEach(token => {
-                escaped = escaped.replace(token.id, token.html);
-            });
-
-            return `<div class="logical-line">${escaped || ' '}</div>`;
-        });
-
         highlightEl.replaceChildren();
-        processedLines.forEach(lineHtml => {
-            const temp = document.createElement('div');
-            // Safe here because processedLines are already escaped for user content
-            // and tags are controlled constants/tokens.
-            temp.innerHTML = lineHtml;
-            const lineEl = temp.firstElementChild;
-            if (lineEl) highlightEl.appendChild(lineEl);
+        lines.forEach(line => {
+            const lineDiv = document.createElement('div');
+            lineDiv.className = 'logical-line';
+            if (!line) {
+                lineDiv.textContent = '\u00A0';
+                highlightEl.appendChild(lineDiv);
+                return;
+            }
+
+            let parts = [{ text: line, isToken: false }];
+
+            rules.forEach(rule => {
+                const newParts = [];
+                parts.forEach(part => {
+                    if (part.isToken) {
+                        newParts.push(part);
+                        return;
+                    }
+
+                    let lastIndex = 0;
+                    let match;
+                    const regex = new RegExp(rule.regex); // Create new to reset lastIndex
+                    while ((match = regex.exec(part.text)) !== null) {
+                        if (match.index > lastIndex) {
+                            newParts.push({ text: part.text.substring(lastIndex, match.index), isToken: false });
+                        }
+                        newParts.push({ text: match[0], isToken: true, className: rule.class });
+                        lastIndex = regex.lastIndex;
+                        if (!regex.global) break;
+                        if (match.index === regex.lastIndex) regex.lastIndex++; // Avoid infinite loop
+                    }
+                    if (lastIndex < part.text.length) {
+                        newParts.push({ text: part.text.substring(lastIndex), isToken: false });
+                    }
+                });
+                parts = newParts;
+            });
+
+            parts.forEach(part => {
+                if (part.isToken) {
+                    const span = document.createElement('span');
+                    span.className = part.className;
+                    span.textContent = part.text;
+                    lineDiv.appendChild(span);
+                } else {
+                    lineDiv.appendChild(document.createTextNode(part.text));
+                }
+            });
+            highlightEl.appendChild(lineDiv);
         });
     }
 
