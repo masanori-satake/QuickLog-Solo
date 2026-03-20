@@ -294,6 +294,5 @@ export const ko = {
     'tag-replace-title': '태그 바꾸기',
     'tag-replace-before': '이전',
     'tag-replace-after': '이후',
-    'btn-replace': '바꾸기',
     'tooltip-replace-tags': '태그 바꾸기',
 };

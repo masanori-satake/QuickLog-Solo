@@ -294,6 +294,5 @@ export const pt = {
     'tag-replace-title': 'Substituir tags',
     'tag-replace-before': 'Antes',
     'tag-replace-after': 'Depois',
-    'btn-replace': 'Substituir',
     'tooltip-replace-tags': 'Substituir tags',
 };

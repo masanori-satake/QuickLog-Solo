@@ -294,6 +294,5 @@ export const fr = {
     'tag-replace-title': 'Remplacer les tags',
     'tag-replace-before': 'Avant',
     'tag-replace-after': 'Après',
-    'btn-replace': 'Remplacer',
     'tooltip-replace-tags': 'Remplacer les tags',
 };

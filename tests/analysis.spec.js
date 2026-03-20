@@ -128,8 +128,13 @@ test.describe('Analysis and Reporting', () => {
         await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
-        const now = Date.now();
-        await page.evaluate(({now, dbName}) => {
+        // Use a fixed time (noon today) to ensure logs stay on the same calendar day
+        // even if the test runs near midnight.
+        const noon = new Date();
+        noon.setHours(12, 0, 0, 0);
+        const baseTime = noon.getTime();
+
+        await page.evaluate(({baseTime, dbName}) => {
             return new Promise((resolve) => {
                 const request = indexedDB.open(dbName);
                 request.onsuccess = (e) => {
@@ -139,21 +144,21 @@ test.describe('Analysis and Reporting', () => {
                     store.clear().onsuccess = () => {
                         store.add({
                             category: 'TaskA',
-                            startTime: now - 3600000,
-                            endTime: now - 1800000,
+                            startTime: baseTime - 3600000, // 11:00
+                            endTime: baseTime - 1800000,  // 11:30
                             tags: 'Tag1, Tag2'
                         });
                         store.add({
                             category: 'TaskB',
-                            startTime: now - 1800000,
-                            endTime: now,
+                            startTime: baseTime - 1800000, // 11:30
+                            endTime: baseTime,            // 12:00
                             tags: 'Tag1'
                         });
                         tx.oncomplete = () => resolve();
                     };
                 };
             });
-        }, {now, dbName});
+        }, {baseTime, dbName});
 
         await page.reload();
         await page.waitForSelector('.category-btn');

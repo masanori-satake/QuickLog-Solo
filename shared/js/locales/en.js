@@ -316,6 +316,5 @@ export const en = {
     'tag-replace-title': 'Replace Tags',
     'tag-replace-before': 'Before',
     'tag-replace-after': 'After',
-    'btn-replace': 'Replace',
     'tooltip-replace-tags': 'Replace Tags',
 };

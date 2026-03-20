@@ -316,6 +316,5 @@ export const ja = {
     'tag-replace-title': 'タグの置換',
     'tag-replace-before': '置換前',
     'tag-replace-after': '置換後',
-    'btn-replace': '置換',
     'tooltip-replace-tags': 'タグの置換',
 };
