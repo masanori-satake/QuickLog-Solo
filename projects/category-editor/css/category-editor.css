@@ -934,3 +934,50 @@ body.theme-light .secondary-btn:hover {
     gap: 4px;
     margin-left: 12px;
 }
+
+/* Tag Replace Modal Styles */
+.replace-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.replace-table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.85rem;
+}
+
+.replace-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    vertical-align: middle;
+}
+
+.replace-table .before-col {
+    width: 30%;
+}
+
+.replace-table .after-col {
+    width: 70%;
+}
+
+.replace-table .tag-pill {
+    display: inline-flex;
+    cursor: grab;
+}
+
+.after-input-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.after-input-wrapper input {
+    flex: 1;
+}
+
+.after-input-wrapper .icon-btn:hover {
+    color: var(--md-sys-color-error);
+}

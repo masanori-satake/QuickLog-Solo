@@ -136,7 +136,12 @@
                 <div class="edit-pane-divider"></div>
 
                 <section class="tag-box-section card">
-                    <h2 class="section-title"><span class="material-symbols-outlined">sell</span> <span data-i18n="tag-box-title">Tag Box</span></h2>
+                    <div class="section-header">
+                        <h2 class="section-title" style="margin-bottom:0"><span class="material-symbols-outlined">sell</span> <span data-i18n="tag-box-title">Tag Box</span></h2>
+                        <div class="header-actions">
+                            <button id="open-tag-replace-btn" class="icon-btn" data-i18n-title="tooltip-replace-tags"><span class="material-symbols-outlined">find_replace</span></button>
+                        </div>
+                    </div>
                     <div id="global-tag-list" class="tag-list">
                         <!-- All unique tags will be populated here -->
                     </div>
@@ -187,6 +192,44 @@
             </div>
             <div class="modal-footer">
                 <button class="primary-btn" onclick="document.getElementById('code-modal').classList.add('hidden')" data-i18n="btn-close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tag-replace-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <h3 class="section-title" style="margin:0">
+                        <span class="material-symbols-outlined">find_replace</span>
+                        <span data-i18n="tag-replace-title">Replace Tags</span>
+                    </h3>
+                    <div class="history-controls">
+                        <button id="modal-undo-btn" class="icon-btn" data-i18n-title="undo" disabled><span class="material-symbols-outlined">undo</span></button>
+                        <button id="modal-redo-btn" class="icon-btn" data-i18n-title="redo" disabled><span class="material-symbols-outlined">redo</span></button>
+                    </div>
+                </div>
+                <button id="close-tag-replace-modal-btn" class="icon-btn"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="modal-body">
+                <table class="replace-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="tag-replace-before">Before</th>
+                            <th data-i18n="tag-replace-after">After</th>
+                        </tr>
+                    </thead>
+                    <tbody id="replace-table-body">
+                        <!-- Replace rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button id="tag-replace-btn" class="primary-btn">
+                    <span class="material-symbols-outlined">find_replace</span>
+                    <span data-i18n="btn-replace">Replace</span>
+                </button>
+                <button id="tag-replace-close-btn" class="secondary-btn" data-i18n="btn-close">Close</button>
             </div>
         </div>
     </div>

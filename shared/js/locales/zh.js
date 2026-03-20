@@ -291,4 +291,9 @@ export const zh = {
     'undo': '撤销',
     'redo': '重做',
     'tag-box-title': '标签箱',
+    'tag-replace-title': '替换标签',
+    'tag-replace-before': '替换前',
+    'tag-replace-after': '替换后',
+    'btn-replace': '替换',
+    'tooltip-replace-tags': '替换标签',
 };

@@ -291,4 +291,9 @@ export const es = {
     'undo': 'Deshacer',
     'redo': 'Rehacer',
     'tag-box-title': 'Caja de etiquetas',
+    'tag-replace-title': 'Reemplazar etiquetas',
+    'tag-replace-before': 'Antes',
+    'tag-replace-after': 'Después',
+    'btn-replace': 'Reemplazar',
+    'tooltip-replace-tags': 'Reemplazar etiquetas',
 };

@@ -291,4 +291,9 @@ export const pt = {
     'undo': 'Desfazer',
     'redo': 'Refazer',
     'tag-box-title': 'Caixa de tags',
+    'tag-replace-title': 'Substituir tags',
+    'tag-replace-before': 'Antes',
+    'tag-replace-after': 'Depois',
+    'btn-replace': 'Substituir',
+    'tooltip-replace-tags': 'Substituir tags',
 };

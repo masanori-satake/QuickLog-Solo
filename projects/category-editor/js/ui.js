@@ -11,7 +11,9 @@ export function initUI(state, elements) {
         tagInput, colorPaletteEl, editAnimationSelect, previewNameEl,
         animInfoEl, animDescEl, animAuthorEl, addCategoryBtn,
         deleteSelectedBtn, addPageBreakBtn, newStartBtn, clearAllBtn,
-        globalTagListEl
+        globalTagListEl, tagReplaceModalEl, replaceTableBodyEl,
+        tagReplaceBtn, tagReplaceCloseBtn, closeTagReplaceModalBtn,
+        modalUndoBtn, modalRedoBtn
     } = elements;
 
     const COLORS = [
@@ -557,6 +559,136 @@ export function initUI(state, elements) {
         });
     }
 
+    function renderTagReplaceModal() {
+        if (!replaceTableBodyEl) return;
+        replaceTableBodyEl.innerHTML = '';
+
+        const allTags = new Set();
+        state.categories.forEach(cat => {
+            if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
+            getCategoryTags(cat).forEach(tag => allTags.add(tag));
+        });
+
+        const sortedTags = Array.from(allTags).sort((a, b) => a.localeCompare(b, state.currentLang));
+
+        sortedTags.forEach(tag => {
+            const row = document.createElement('tr');
+
+            const beforeCell = document.createElement('td');
+            beforeCell.className = 'before-col';
+            const pill = document.createElement('span');
+            pill.className = 'tag-pill';
+            pill.textContent = tag;
+            pill.draggable = true;
+            pill.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', tag);
+                e.dataTransfer.effectAllowed = 'copy';
+            });
+            beforeCell.appendChild(pill);
+
+            const afterCell = document.createElement('td');
+            afterCell.className = 'after-col';
+            const inputWrapper = document.createElement('div');
+            inputWrapper.className = 'after-input-wrapper';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = tag;
+            input.dataset.originalTag = tag;
+
+            input.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+                input.classList.add('drag-over');
+            });
+            input.addEventListener('dragleave', () => input.classList.remove('drag-over'));
+            input.addEventListener('drop', (e) => {
+                e.preventDefault();
+                input.classList.remove('drag-over');
+                const droppedTag = e.dataTransfer.getData('text/plain');
+                if (droppedTag) {
+                    const currentTags = input.value.split(',').map(t => t.trim()).filter(Boolean);
+                    if (!currentTags.includes(droppedTag)) {
+                        currentTags.push(droppedTag);
+                        input.value = currentTags.join(', ');
+                    }
+                }
+            });
+
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'icon-btn';
+            clearBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+            clearBtn.onclick = () => { input.value = ''; };
+
+            inputWrapper.appendChild(input);
+            inputWrapper.appendChild(clearBtn);
+            afterCell.appendChild(inputWrapper);
+
+            row.appendChild(beforeCell);
+            row.appendChild(afterCell);
+            replaceTableBodyEl.appendChild(row);
+        });
+
+        updateModalHistoryButtons();
+    }
+
+    function updateModalHistoryButtons() {
+        if (modalUndoBtn) modalUndoBtn.disabled = (state.historyStack.length === 0);
+        if (modalRedoBtn) modalRedoBtn.disabled = (state.redoStack.length === 0);
+    }
+
+    function performTagReplace() {
+        const rows = replaceTableBodyEl.querySelectorAll('tr');
+        const replaceMap = new Map();
+        rows.forEach(row => {
+            const input = row.querySelector('input');
+            const original = input.dataset.originalTag;
+            const replacement = input.value.split(',').map(t => t.trim()).filter(Boolean);
+            replaceMap.set(original, replacement);
+        });
+
+        if (state.recordAction) state.recordAction();
+
+        let anyChanged = false;
+        state.categories.forEach(cat => {
+            if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
+            const tags = getCategoryTags(cat);
+            let newTags = [];
+            let changed = false;
+
+            tags.forEach(tag => {
+                if (replaceMap.has(tag)) {
+                    const replacements = replaceMap.get(tag);
+                    if (replacements.length > 0) {
+                        replacements.forEach(r => {
+                            if (!newTags.includes(r)) {
+                                newTags.push(r);
+                            }
+                        });
+                    }
+                    changed = true;
+                } else {
+                    if (!newTags.includes(tag)) {
+                        newTags.push(tag);
+                    }
+                }
+            });
+
+            if (changed) {
+                updateCategoryTags(cat, newTags);
+                anyChanged = true;
+            }
+        });
+
+        if (anyChanged) {
+            renderTags();
+            renderGlobalTagBox();
+            renderTagReplaceModal(); // Re-render table with new state
+            if (state.updateCodeView) state.updateCodeView();
+            updateModalHistoryButtons();
+        }
+    }
+
     function populateAnimationOptions() {
         const currentVal = editAnimationSelect.value;
         editAnimationSelect.innerHTML = '';
@@ -750,6 +882,38 @@ export function initUI(state, elements) {
         }
     });
 
+    if (tagReplaceBtn) {
+        tagReplaceBtn.addEventListener('click', () => {
+            performTagReplace();
+        });
+    }
+
+    if (tagReplaceCloseBtn) {
+        tagReplaceCloseBtn.addEventListener('click', () => {
+            tagReplaceModalEl.classList.add('hidden');
+        });
+    }
+
+    if (closeTagReplaceModalBtn) {
+        closeTagReplaceModalBtn.addEventListener('click', () => {
+            tagReplaceModalEl.classList.add('hidden');
+        });
+    }
+
+    if (modalUndoBtn) {
+        modalUndoBtn.addEventListener('click', () => {
+            if (state.undo) state.undo();
+            renderTagReplaceModal();
+        });
+    }
+
+    if (modalRedoBtn) {
+        modalRedoBtn.addEventListener('click', () => {
+            if (state.redo) state.redo();
+            renderTagReplaceModal();
+        });
+    }
+
     // Drag and Drop
     let dropIndicator = document.createElement('div');
     dropIndicator.className = 'drop-indicator';
@@ -809,6 +973,8 @@ export function initUI(state, elements) {
         renderDetail,
         renderColorPalette,
         renderGlobalTagBox,
+        renderTagReplaceModal,
+        updateModalHistoryButtons,
         populateAnimationOptions,
         getCategoryTags,
         COLOR_CODES

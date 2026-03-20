@@ -64,7 +64,15 @@ const elements = {
     langSelect: document.getElementById('lang-select-editor'),
     themeToggle: document.getElementById('theme-toggle'),
     undoBtn: document.getElementById('undo-btn'),
-    redoBtn: document.getElementById('redo-btn')
+    redoBtn: document.getElementById('redo-btn'),
+    openTagReplaceBtn: document.getElementById('open-tag-replace-btn'),
+    tagReplaceModalEl: document.getElementById('tag-replace-modal'),
+    replaceTableBodyEl: document.getElementById('replace-table-body'),
+    tagReplaceBtn: document.getElementById('tag-replace-btn'),
+    tagReplaceCloseBtn: document.getElementById('tag-replace-close-btn'),
+    closeTagReplaceModalBtn: document.getElementById('close-tag-replace-modal-btn'),
+    modalUndoBtn: document.getElementById('modal-undo-btn'),
+    modalRedoBtn: document.getElementById('modal-redo-btn')
 };
 
 let historyMod, uiMod, dataIoMod;
@@ -213,6 +221,13 @@ function setupEventListeners() {
         elements.codeModalEl.classList.remove('hidden');
     });
 
+    if (elements.openTagReplaceBtn) {
+        elements.openTagReplaceBtn.addEventListener('click', () => {
+            if (uiMod.renderTagReplaceModal) uiMod.renderTagReplaceModal();
+            elements.tagReplaceModalEl.classList.remove('hidden');
+        });
+    }
+
     window.addEventListener('keydown', (e) => {
         const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
         const cmdKey = isMac ? e.metaKey : e.ctrlKey;
@@ -277,6 +292,7 @@ function refreshUIAfterHistoryChange() {
     state.renderGlobalTagBox();
     state.updateCodeView();
     historyMod.updateHistoryButtons();
+    if (uiMod.updateModalHistoryButtons) uiMod.updateModalHistoryButtons();
 }
 
 function updatePreview() {
