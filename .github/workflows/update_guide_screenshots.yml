@@ -1,6 +1,8 @@
 name: "更新: ガイド用スクリーンショット (Update: Guide Screenshots)"
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
     paths:
