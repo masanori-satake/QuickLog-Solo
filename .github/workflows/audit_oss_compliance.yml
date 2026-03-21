@@ -27,8 +27,8 @@ permissions:
   actions: read
 
 jobs:
-  scanoss-audit:
-    name: SCANOSS Code Scan
+  osv-scan:
+    name: Google OSV-Scanner
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -36,11 +36,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Run SCANOSS Code Scan
-      id: scanoss-code-scan-step
-      uses: scanoss/code-scan-action@v1
+    - name: Run OSV-Scanner
+      uses: google/osv-scanner-action/osv-scanner-action@v1
       with:
-        scanPath: projects
-        policies: undeclared
-        scanossSettings: true
-        settingsFilepath: scanoss.json
+        scan-args: |
+          --recursive
+          ./projects
+          ./package.json

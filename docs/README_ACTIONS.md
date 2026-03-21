@@ -17,7 +17,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 | グループ | ワークフロー名 | ファイル | 概要 | トリガー |
 | :--- | :--- | :--- | :--- | :--- |
 | **Audit** | **監査: コードとバージョンの整合性** | `audit_integrity.yml` | ルートディレクトリのクリーンネス、バージョン整合性の検証 | `main`へのPush/PR, 手動 |
-| **Audit** | **監査: OSSコンプライアンス** | `audit_oss_compliance.yml` | SCANOSSによる外部コード混入（スニペット盗用）の監査 | `main`へのPush/PR, 手動 |
+| **Audit** | **監査: OSSコンプライアンス** | `audit_oss_compliance.yml` | Google OSV-ScannerによるOSS依存関係と脆弱性の監査 | `main`へのPush/PR, 手動 |
 | **Test** | **テスト: コード品質 (Lint/Unit)** | `test_quality.yml` | ESLint, Stylelint, Jest による静的解析とユニットテスト | `main`へのPush/PR, 手動 |
 | **Test** | **テスト: E2E** | `test_e2e.yml` | Playwright による End-to-End テスト | `main`へのPR, 手動 |
 | **Test** | **テスト: アニメーション品質** | `test_animation.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (*1), 手動 |
