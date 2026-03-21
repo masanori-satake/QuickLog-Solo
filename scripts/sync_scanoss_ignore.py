@@ -16,7 +16,19 @@ def main():
         for pattern in patterns:
             f.write(f"{pattern}\n")
 
-    print(f"Sync complete. .scanossignore now has {len(patterns)} patterns.")
+    # Also sync to projects/.scanossignore because scanPath is now projects
+    if not os.path.exists('projects'):
+        os.makedirs('projects')
+
+    with open('projects/.scanossignore', 'w') as f:
+        f.write("# Generated from scanoss.json - do not edit directly\n")
+        for pattern in patterns:
+            # When scanPath is 'projects', patterns in projects/.scanossignore
+            # should be relative to projects/ or global.
+            # Most of our patterns (node_modules, .*, etc.) are global-safe.
+            f.write(f"{pattern}\n")
+
+    print(f"Sync complete. .scanossignore and projects/.scanossignore updated.")
 
 if __name__ == "__main__":
     main()
