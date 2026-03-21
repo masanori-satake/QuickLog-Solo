@@ -68,9 +68,11 @@ test.describe('Maintenance and Initialization', () => {
 
         // Page reloads
         await page.waitForURL(url => !url.href.includes('DeleteMe')); // Ensure navigation happened
-        await page.waitForSelector('.category-btn');
+        await page.waitForSelector('.category-btn', { state: 'visible' });
 
         // 3. Verify custom category is gone
+        // Use a small delay to ensure event listeners are attached after reload
+        await page.waitForTimeout(500);
         await page.click('#settings-toggle');
         await page.waitForSelector('#settings-popup', { state: 'visible' });
         await page.click('button[data-tab="categories"]');
