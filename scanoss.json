@@ -38,7 +38,22 @@
           "eslint.config.js",
           "jest.config.cjs",
           "jest.setup.js",
-          "playwright.config.js"
+          "playwright.config.js",
+          "*.png",
+          "*.zip",
+          "*.svg",
+          "*.jpg",
+          "*.jpeg",
+          "*.gif",
+          "*.ico",
+          "*.webp",
+          "*.rev",
+          "*.idx",
+          "*.pack",
+          "*.woff",
+          "*.woff2",
+          "*.ttf",
+          "*.eot"
         ]
       }
     }
