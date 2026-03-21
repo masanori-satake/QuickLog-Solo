@@ -321,4 +321,6 @@ export const es = {
     'tag-replace-before': 'Antes',
     'tag-replace-after': 'Después',
     'tooltip-replace-tags': 'Reemplazar etiquetas',
+    'privacy-policy-local-only': 'Todo el procesamiento se completa dentro del navegador y no hay coordinación con servidores externos. Su información nunca se filtrará al exterior.',
+    'privacy-policy-local-only-short': 'Solo local',
 };

@@ -321,4 +321,6 @@ export const ko = {
     'tag-replace-before': '이전',
     'tag-replace-after': '이후',
     'tooltip-replace-tags': '태그 바꾸기',
+    'privacy-policy-local-only': '모든 처리는 브라우저 내에서 완료되며 외부 서버와 연동되지 않습니다. 입력한 정보가 외부로 유출되지 않습니다.',
+    'privacy-policy-local-only-short': '로컬 완결',
 };

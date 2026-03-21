@@ -140,6 +140,40 @@ button {
     color: var(--md-sys-color-primary);
 }
 
+.privacy-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 16px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-primary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: help;
+    border: 1px solid var(--md-sys-color-primary-container);
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.privacy-badge:hover {
+    background-color: var(--md-sys-color-primary-container);
+}
+
+.privacy-badge .material-symbols-outlined {
+    font-size: 16px;
+}
+
+@media (max-width: 900px) {
+    .privacy-text {
+        display: none;
+    }
+    .privacy-badge {
+        padding: 4px;
+    }
+}
+
 /* Theme Switch */
 .theme-switch-wrapper {
     display: flex;

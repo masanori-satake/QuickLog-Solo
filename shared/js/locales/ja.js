@@ -342,4 +342,6 @@ export const ja = {
     'tag-replace-before': '置換前',
     'tag-replace-after': '置換後',
     'tooltip-replace-tags': 'タグの置換',
+    'privacy-policy-local-only': '全てブラウザ内で処理が完結しており、外部のサーバとは連携していません。入力した情報が外に漏れることはありません。',
+    'privacy-policy-local-only-short': 'ローカル完結',
 };

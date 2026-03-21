@@ -321,4 +321,6 @@ export const fr = {
     'tag-replace-before': 'Avant',
     'tag-replace-after': 'Après',
     'tooltip-replace-tags': 'Remplacer les tags',
+    'privacy-policy-local-only': 'Tous les traitements sont effectués au sein du navigateur et il n\'y a aucune coordination avec des serveurs externes. Vos informations ne seront jamais divulguées à l\'extérieur.',
+    'privacy-policy-local-only-short': 'Local uniquement',
 };

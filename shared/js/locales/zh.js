@@ -321,4 +321,6 @@ export const zh = {
     'tag-replace-before': '替换前',
     'tag-replace-after': '替换后',
     'tooltip-replace-tags': '替换标签',
+    'privacy-policy-local-only': '所有处理均在浏览器内完成，不与外部服务器通信。您的信息绝不会泄露到外部。',
+    'privacy-policy-local-only-short': '仅限本地',
 };

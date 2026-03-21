@@ -342,4 +342,6 @@ export const en = {
     'tag-replace-before': 'Before',
     'tag-replace-after': 'After',
     'tooltip-replace-tags': 'Replace Tags',
+    'privacy-policy-local-only': 'All processing is completed within the browser, and there is no coordination with external servers. Your information will never be leaked outside.',
+    'privacy-policy-local-only-short': 'Local Only',
 };
