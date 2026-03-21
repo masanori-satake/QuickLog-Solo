@@ -321,4 +321,6 @@ export const pt = {
     'tag-replace-before': 'Antes',
     'tag-replace-after': 'Depois',
     'tooltip-replace-tags': 'Substituir tags',
+    'privacy-policy-local-only': 'Todo o processamento é concluído no navegador e não há coordenação com servidores externos. Suas informações nunca serão vazadas para o exterior.',
+    'privacy-policy-local-only-short': 'Apenas local',
 };

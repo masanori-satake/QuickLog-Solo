@@ -321,4 +321,6 @@ export const de = {
     'tag-replace-before': 'Vorher',
     'tag-replace-after': 'Nachher',
     'tooltip-replace-tags': 'Tags ersetzen',
+    'privacy-policy-local-only': 'Alle Verarbeitungen erfolgen lokal im Browser, und es gibt keine Kommunikation mit externen Servern. Ihre Informationen werden niemals nach außen weitergegeben.',
+    'privacy-policy-local-only-short': 'Nur lokal',
 };
