@@ -63,14 +63,14 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: "chore: update guide screenshots [skip ci]"
+        commit_message: "chore: update guide screenshots"
         file_pattern: 'shared/assets/guide/*.png'
 
     - name: Create Pull Request (Manual/Main)
       if: github.event_name != 'pull_request'
       uses: peter-evans/create-pull-request@v7.0.5
       with:
-        commit-message: "chore: update guide screenshots [skip ci]"
+        commit-message: "chore: update guide screenshots"
         add-paths: 'shared/assets/guide/*.png'
         branch: "chore/update-guide-screenshots"
         title: "chore: update guide screenshots"
