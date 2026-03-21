@@ -21,26 +21,16 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
-  contents: read
-  pull-requests: write
-  checks: write
   actions: read
+  security-events: write
+  contents: read
 
 jobs:
-  scanoss-audit:
-    name: SCANOSS Code Scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Run SCANOSS Code Scan
-      id: scanoss-code-scan-step
-      uses: scanoss/code-scan-action@v1
-      with:
-        scanPath: .
-        policies: undeclared
-        scanossSettings: true
-        settingsFilepath: scanoss.json
+  osv-scan:
+    name: Google OSV-Scanner
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.9.1"
+    with:
+      scan-args: |-
+        --recursive
+        ./projects
+        ./package.json

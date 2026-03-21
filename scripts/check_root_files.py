@@ -28,8 +28,6 @@ ALLOWED_ROOT_ITEMS = {
     "releases",
     ".vercelignore",
     "node_modules",
-    "scanoss.json",
-    ".scanossignore",
 }
 
 def check_root_directory():
