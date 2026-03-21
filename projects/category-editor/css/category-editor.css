@@ -442,6 +442,10 @@ input[type="text"]:disabled, select:disabled {
     color: var(--md-sys-color-on-surface-variant);
 }
 
+.privacy-badge .material-symbols-outlined {
+    font-size: 16px;
+}
+
 .color-option .material-symbols-outlined {
     font-size: 16px;
     opacity: 0;
@@ -883,6 +887,26 @@ body.theme-light .secondary-btn:hover {
     display: flex;
     gap: 4px;
     margin-left: 12px;
+}
+
+.privacy-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 16px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-primary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: help;
+    border: 1px solid var(--md-sys-color-primary-container);
+    transition: background-color 0.2s;
+}
+
+.privacy-badge:hover {
+    background-color: var(--md-sys-color-primary-container);
 }
 
 @media (width <= 900px) {
