@@ -137,7 +137,10 @@ h1 {
     vertical-align: middle;
 }
 
-.btn-primary, .btn-secondary, .btn-tertiary, .btn-google-form {
+.btn-primary,
+.btn-secondary,
+.btn-tertiary,
+.btn-google-form {
     padding: var(--md-sys-spacing-1-5) var(--md-sys-spacing-3);
     border-radius: var(--md-sys-shape-full);
     text-decoration: none;
@@ -149,11 +152,27 @@ h1 {
     justify-content: center;
     border: none;
     cursor: pointer;
+    gap: 8px;
 }
 
 .btn-primary {
     background-color: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
+}
+
+.btn-secondary {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.btn-tertiary {
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+
+.btn-google-form {
+    background-color: #7248b9;
+    color: #fff;
 }
 
 .btn-primary:hover {
@@ -162,41 +181,22 @@ h1 {
     filter: brightness(1.1);
 }
 
-.btn-secondary {
-    background-color: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
-}
-
 .btn-secondary:hover {
     box-shadow: var(--md-sys-elevation-1);
     transform: translateY(-1px);
     filter: brightness(1.05);
 }
 
-.btn-google-form {
-    background-color: #7248B9;
-    color: #FFFFFF;
+.btn-tertiary:hover {
+    box-shadow: var(--md-sys-elevation-1);
+    transform: translateY(-1px);
+    filter: brightness(1.05);
 }
 
 .btn-google-form:hover {
     box-shadow: var(--md-sys-elevation-1);
     transform: translateY(-1px);
     filter: brightness(1.1);
-}
-
-.btn-tertiary {
-    background-color: var(--md-sys-color-tertiary-container);
-    color: var(--md-sys-color-on-tertiary-container);
-}
-
-.btn-primary, .btn-secondary, .btn-tertiary, .btn-google-form {
-    gap: 8px;
-}
-
-.btn-tertiary:hover {
-    box-shadow: var(--md-sys-elevation-1);
-    transform: translateY(-1px);
-    filter: brightness(1.05);
 }
 
 .card {
