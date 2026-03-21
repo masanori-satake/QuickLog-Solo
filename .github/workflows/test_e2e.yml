@@ -3,6 +3,12 @@ name: "テスト: E2E (Test: End-to-End)"
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
   pull_request:
     branches: [ main ]
     paths:
