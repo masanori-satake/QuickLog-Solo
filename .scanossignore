@@ -42,3 +42,4 @@ playwright.config.js
 *.eot
 *.map
 *.min.js
+shared/js/locales

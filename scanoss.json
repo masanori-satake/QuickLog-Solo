@@ -55,7 +55,8 @@
           "*.ttf",
           "*.eot",
           "*.map",
-          "*.min.js"
+          "*.min.js",
+          "shared/js/locales"
         ]
       }
     }
