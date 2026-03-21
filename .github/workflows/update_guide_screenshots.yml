@@ -3,6 +3,11 @@ name: "更新: ガイド用スクリーンショット (Update: Guide Screenshot
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'projects/**'
+      - 'scripts/**'
+      - 'projects/web/guide.html'
+      - 'package.json'
   pull_request:
     branches: [ main ]
     paths:

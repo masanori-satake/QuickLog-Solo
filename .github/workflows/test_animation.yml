@@ -7,6 +7,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'shared/js/animation/**'
+      - 'projects/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
   pull_request:
     branches:
       - main
