@@ -27,6 +27,7 @@
           "projects/category-editor/shared",
           "projects/web/shared",
           "screenshots",
+          "package-lock.json",
           ".scanossignore",
           "scanoss.json",
           ".gitignore",
@@ -37,22 +38,7 @@
           "eslint.config.js",
           "jest.config.cjs",
           "jest.setup.js",
-          "playwright.config.js",
-          "*.png",
-          "*.zip",
-          "*.svg",
-          "*.jpg",
-          "*.jpeg",
-          "*.gif",
-          "*.ico",
-          "*.webp",
-          "*.rev",
-          "*.idx",
-          "*.pack",
-          "*.woff",
-          "*.woff2",
-          "*.ttf",
-          "*.eot"
+          "playwright.config.js"
         ]
       }
     }
