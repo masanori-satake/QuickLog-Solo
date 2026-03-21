@@ -78,7 +78,7 @@ export const en = {
     'developer': 'Developer',
     'about-stats-logs': 'Log Count',
     'about-stats-categories': 'Category Count',
-    'about-description': 'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved in IndexedDB within your browser (and also to the local file system when the backup is executed) and is never sent externally. It features a lightweight, secure design with no external libraries, allowing for quick recording anytime from the sidebar.',
+    'about-description': 'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved in IndexedDB within your browser (and also to the local file system when the backup is executed) and is never sent externally. It maintains high transparency and security through strict dependency verification via GitHub Actions and continuous auditing with Google OSV-Scanner.',
     'about-disclaimer': '[Disclaimer] This is a personal open-source project and is provided "AS IS" without warranty of any kind. The developer shall not be liable for any damages arising from its use. Use at your own risk.',
 
     // Auto Stop & Page Break

@@ -86,7 +86,7 @@ export const ko = {
     'developer': '개발자',
     'about-stats-logs': '로그 수',
     'about-stats-categories': '카테고리 수',
-    'about-description': 'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 메모 도구입니다. 데이터는 브라우저의 IndexedDB에 저장되며(백업을 실행했을 때는 로컬 파일 시스템에도 저장됩니다) 외부로 전송되지 않습니다. 외부 라이브러리를 사용하지 않는 가볍고 안전한 설계로, 사이드 패널에서 언제든지 신속하게 기록할 수 있습니다.',
+    'about-description': 'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 메모 도구입니다. 데이터는 브라우저의 IndexedDB에 저장되며(백업을 실행했을 때는 로컬 파일 시스템에도 저장됩니다) 외부로 전송되지 않습니다. GitHub Actions를 통한 엄격한 의존성 검증과 Google OSV-Scanner의 지속적인 감사를 통해 높은 투명성과 보안성을 유지합니다.',
     'about-disclaimer': '[면책 조항] 이 프로젝트는 개인 오픈 소스 프로젝트이며 어떠한 보증도 제공하지 않습니다. 개발자는 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 사용자의 책임 하에 이용해 주십시오.',
     'maintenance-clear-logs': '로그 삭제',
     'btn-clear-logs': '모든 로그 삭제',
