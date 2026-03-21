@@ -40,7 +40,7 @@ jobs:
       id: scanoss-code-scan-step
       uses: scanoss/code-scan-action@v1
       with:
-        scanPath: .
+        scanPath: projects
         policies: undeclared
         scanossSettings: true
         settingsFilepath: scanoss.json
