@@ -53,7 +53,9 @@
           "*.woff",
           "*.woff2",
           "*.ttf",
-          "*.eot"
+          "*.eot",
+          "*.map",
+          "*.min.js"
         ]
       }
     }
