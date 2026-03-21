@@ -92,7 +92,7 @@ jobs:
 
     - name: 4. 外部OSS依存関係なしの確認 (No Production Dependencies)
       id: verify-no-deps
-      run: python3 scripts/verify_no_production_dependencies.py
+      run: python3 scripts/audit_production_dependencies.py
 
     - name: 透明性レポートのサマリー作成 (Transparency Report Summary)
       if: always()
