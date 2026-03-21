@@ -86,7 +86,7 @@ export const zh = {
     'developer': '开发者',
     'about-stats-logs': '日志数量',
     'about-stats-categories': '分类数量',
-    'about-description': 'QuickLog-Solo 是一款注重隐私的极简工作笔记工具。数据保存在您浏览器的 IndexedDB 中（执行备份时也会保存到本地文件系统），且绝不上传服务器。它采用不使用外部库的轻量级、安全设计，可随时通过侧边栏快速记录。',
+    'about-description': 'QuickLog-Solo 是一款注重隐私的极简工作笔记工具。数据保存在您浏览器的 IndexedDB 中（执行备份时也会保存到本地文件系统），且绝不上传服务器。通过 GitHub Actions 的严格依赖校验和 Google OSV-Scanner 的持续审计，确保高度的透明性与安全性。',
     'about-disclaimer': '[免责声明] 这是一个个人开源项目，按“原样”提供，不附带任何形式的保证。开发者不对因使用本软件而产生的任何损害承担责任。请自行承担使用风险。',
     'maintenance-clear-logs': '清空日志',
     'btn-clear-logs': '删除所有日志',

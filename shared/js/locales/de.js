@@ -86,7 +86,7 @@ export const de = {
     'developer': 'Entwickler',
     'about-stats-logs': 'Anzahl der Protokolle',
     'about-stats-categories': 'Anzahl der Kategorien',
-    'about-description': 'QuickLog-Solo ist ein datenschutzorientiertes minimalistisches Arbeitsnotiz-Tool. Die Daten werden in der IndexedDB Ihres Browsers gespeichert (wenn das Backup ausgeführt wird, auch im lokalen Dateisystem) und niemals extern übertragen. Es zeichnet sich durch ein leichtgewichtiges, sicheres Design ohne externe Bibliotheken aus und ermöglicht so jederzeit schnelle Aufzeichnungen über die Seitenleiste.',
+    'about-description': 'QuickLog-Solo ist ein datenschutzorientiertes minimalistisches Arbeitsnotiz-Tool. Die Daten werden in der IndexedDB Ihres Browsers gespeichert (wenn das Backup ausgeführt wird, auch im lokalen Dateisystem) und niemals extern übertragen. Es gewährleistet hohe Transparenz und Sicherheit durch strikte Abhängigkeitsprüfung via GitHub Actions und kontinuierliche Prüfungen mit Google OSV-Scanner.',
     'about-disclaimer': '[Haftungsausschluss] Dies ist ein persönliches Open-Source-Projekt und wird ohne jegliche Gewährleistung zur Verfügung gestellt. Der Entwickler haftet nicht für Schäden, die aus der Nutzung resultieren. Nutzung auf eigene Gefahr.',
     'maintenance-clear-logs': 'Protokolle löschen',
     'btn-clear-logs': 'Alle Protokolle löschen',
