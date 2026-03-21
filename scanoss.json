@@ -28,23 +28,6 @@
           "screenshots",
           "package-lock.json",
           "scanoss.json",
-          "*.png",
-          "*.zip",
-          "*.svg",
-          "*.jpg",
-          "*.jpeg",
-          "*.gif",
-          "*.ico",
-          "*.webp",
-          "*.rev",
-          "*.idx",
-          "*.pack",
-          "*.woff",
-          "*.woff2",
-          "*.ttf",
-          "*.eot",
-          "*.map",
-          "*.min.js",
           "shared/js/locales"
         ]
       }
