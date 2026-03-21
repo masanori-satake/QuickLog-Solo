@@ -3,15 +3,6 @@ name: "監査: 透明性とセキュリティ (Audit: Transparency and Security)
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'projects/**'
-      - 'shared/**'
-      - 'tests/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'eslint.config.js'
-      - '.stylelintrc.json'
   pull_request:
     branches: [ main ]
     paths:

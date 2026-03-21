@@ -16,15 +16,16 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 
 | グループ | ワークフロー名 | ファイル | 概要 | トリガー |
 | :--- | :--- | :--- | :--- | :--- |
-| **Audit** | **監査: 透明性とセキュリティ** | `audit.yml` | コード整合性、バージョン検証、OSS脆弱性検査、依存関係監査 | `main`へのPush/PR, 手動 |
-| **Test** | **テスト: コード品質 (Lint/Unit)** | `test_quality.yml` | ESLint, Stylelint, Jest による静的解析とユニットテスト | `main`へのPush/PR, 手動 |
-| **Test** | **テスト: E2E** | `test_e2e.yml` | Playwright による End-to-End テスト | `main`へのPR, 手動 |
-| **Test** | **テスト: アニメーション品質** | `test_animation.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (*1), 手動 |
-| **Release** | **リリース: Webアプリケーションのデプロイ** | `release_web_deploy.yml` | Vercelへの自動デプロイ（Landing Page, Studio等） | `main`へのPush/PR, 手動 |
+| Audit | **監査: 透明性とセキュリティ** | `audit.yml` | コード整合性、バージョン検証、OSS脆弱性検査、依存関係監査 | `main`へのPush/PR (*1), 手動 |
+| Test | **テスト: コード品質 (Lint/Unit)** | `test_quality.yml` | ESLint, Stylelint, Jest による静的解析とユニットテスト | `main`へのPush/PR (*1), 手動 |
+| Test | **テスト: E2E** | `test_e2e.yml` | Playwright による End-to-End テスト | `main`へのPush/PR (*1), 手動 |
+| Test | **テスト: アニメーション品質** | `test_animation.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPush/PR (*1, *2), 手動 |
+| Release | **リリース: Webアプリケーションのデプロイ** | `release_web_deploy.yml` | Vercelへの自動デプロイ（Landing Page, Studio等） | `main`へのPush/PR (*1), 手動 |
 | **Release** | **リリース: 拡張機能パッケージの公開** | `release_extension_packages.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
-| **Update** | **更新: ガイド用スクリーンショット** | `update_guide_screenshots.yml` | クイックスタートガイド用画像のリポジトリ自動反映 | `main`へのPush/PR, 手動 |
+| Update | **更新: ガイド用スクリーンショット** | `update_guide_screenshots.yml` | クイックスタートガイド用画像のリポジトリ自動反映 | `main`へのPush/PR (*1), 手動 |
 
-- (*1) `shared/js/animation/**` に変更がある場合のみ実行
+- (*1) `main`へのPush時は `paths` フィルタに関わらず常に実行されます。
+- (*2) PR時は `shared/js/animation/**` に変更がある場合のみ実行されます。
 
 ---
 
@@ -95,7 +96,7 @@ graph TD
 #### 特徴的な条件判断
 - **トリガーの最適化**: ほとんどのワークフローには `paths` フィルタが設定されており、関連性のないファイル（ドキュメントのみの変更など）の更新時には実行をスキップすることで、リソース（Vercel デプロイ枠など）を節約します。
 - **整合性・品質チェック**: `projects/app/`, `shared/`, `tests/`, `scripts/` 等の重要ファイルに変更がある場合のみ実行（`tj-actions/changed-files` を活用）。手動実行時は全ファイルを対象。
-- **E2Eテスト**: `test_e2e.yml` はプルリクエストまたは手動実行時のみ、かつ関連ファイルに変更がある場合のみ実行されます。Push時は実行されません。
+- **E2Eテスト**: `test_e2e.yml` はプルリクエスト、プッシュ（mainマージ時）、または手動実行時に実行されます。
 
 ---
 

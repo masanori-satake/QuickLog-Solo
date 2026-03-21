@@ -1,6 +1,8 @@
 name: "テスト: E2E (Test: End-to-End)"
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
     paths:
