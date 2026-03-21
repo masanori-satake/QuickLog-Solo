@@ -16,8 +16,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 
 | グループ | ワークフロー名 | ファイル | 概要 | トリガー |
 | :--- | :--- | :--- | :--- | :--- |
-| **Audit** | **監査: コードとバージョンの整合性** | `audit_integrity.yml` | ルートディレクトリのクリーンネス、バージョン整合性の検証 | `main`へのPush/PR, 手動 |
-| **Audit** | **監査: OSSコンプライアンス** | `audit_oss_compliance.yml` | Google OSV-ScannerによるOSS依存関係と脆弱性の監査 | `main`へのPush/PR, 手動 |
+| **Audit** | **監査: 透明性とセキュリティ** | `audit.yml` | コード整合性、バージョン検証、OSS脆弱性検査、依存関係監査 | `main`へのPush/PR, 手動 |
 | **Test** | **テスト: コード品質 (Lint/Unit)** | `test_quality.yml` | ESLint, Stylelint, Jest による静的解析とユニットテスト | `main`へのPush/PR, 手動 |
 | **Test** | **テスト: E2E** | `test_e2e.yml` | Playwright による End-to-End テスト | `main`へのPR, 手動 |
 | **Test** | **テスト: アニメーション品質** | `test_animation.yml` | アニメーションモジュールの品質（描画率、変化率）評価 | `main`へのPR (*1), 手動 |
@@ -54,7 +53,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
   3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
   4. 生成された画像は `shared/assets/guide/` に保存されます。
 - **自動化**: `update_guide_screenshots.yml` ワークフローにより、コード変更時にこれらの画像が自動的に再生成され、リポジトリにコミットされます。
-- **検証**: CI (`audit_integrity.yml`, `test_quality.yml`, `test_e2e.yml`) の E2E テストフェーズ（`test_e2e.yml`）において、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
+- **検証**: CI (`audit.yml`, `test_quality.yml`, `test_e2e.yml`) の E2E テストフェーズ（`test_e2e.yml`）において、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
 
 ---
 
@@ -71,9 +70,9 @@ graph TD
     Start([トリガー: Push/PR/Dispatch]) --> Checkout[リポジトリのチェックアウト]
     Checkout --> GetChanged{変更ファイルの取得}
 
-    subgraph "Audit (audit_integrity.yml)"
-        GetChanged --> CleanCheck[ルートクリーンネス検証]
-        CleanCheck --> VerCheck[バージョン整合性チェック]
+    subgraph "Audit (audit.yml)"
+        GetChanged --> CleanCheck[整合性・バージョン・依存関係検証]
+        CleanCheck --> OSVScan[OSV-Scannerによる監査]
     end
 
     subgraph "Quality (test_quality.yml)"
@@ -117,11 +116,10 @@ Node.js **v24** 環境で動作します。本番用の Release ZIP と検証用
 
 ```mermaid
 flowchart LR
-    Dev[開発者] -- PR作成 --> Audit[監査: 整合性監査]
+    Dev[開発者] -- PR作成 --> Audit[監査: 透明性とセキュリティ]
     Dev -- PR作成 --> Test[テスト: 品質テスト/E2E]
-    Dev -- PR作成 --> OSS[監査: OSSコンプライアンス]
 
-    Audit & Test & OSS -- Merge --> Main[mainブランチ]
+    Audit & Test -- Merge --> Main[mainブランチ]
     Main -- Push --> Deploy[リリース: Webデプロイ]
 
     Main -- Tag v* --> Rel[リリース: 拡張機能パッケージ作成]
