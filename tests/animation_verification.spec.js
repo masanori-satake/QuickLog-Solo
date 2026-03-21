@@ -4,7 +4,8 @@ test.describe('Animation Rendering Verification', () => {
     test('should render Digital Rain animation and produce canvas content', async ({ page }) => {
         // Use a unique DB to avoid state contamination
         const dbName = `AnimVerifyDB_${Date.now()}`;
-        await page.goto(`/projects/app/app.html?db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?db=${dbName}`);
 
         // Wait for app to be fully initialized
         await page.waitForSelector('.category-btn');

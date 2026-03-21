@@ -12,7 +12,8 @@ test.describe('Analysis and Reporting', () => {
     test('should generate Markdown report correctly', async ({ page }) => {
         const dbName = getDbName();
         // Force English
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         // Check for dummy data generation
@@ -36,7 +37,8 @@ test.describe('Analysis and Reporting', () => {
 
     test('should apply Report options: Emoji, End Time, Duration', async ({ page }) => {
         const dbName = getDbName();
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         await page.click('#copy-report-btn');
@@ -59,7 +61,8 @@ test.describe('Analysis and Reporting', () => {
 
     test('should apply Report adjustment (rounding)', async ({ page }) => {
         const dbName = getDbName();
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         // 10:03 to 10:17
@@ -125,7 +128,8 @@ test.describe('Analysis and Reporting', () => {
 
     test('should calculate Tag Aggregation correctly', async ({ page }) => {
         const dbName = getDbName();
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         // Use a fixed time (noon today) to ensure logs stay on the same calendar day
@@ -172,7 +176,8 @@ test.describe('Analysis and Reporting', () => {
 
     test('should navigate dates in Report Modal', async ({ page }) => {
         const dbName = getDbName();
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         await page.click('#copy-report-btn');

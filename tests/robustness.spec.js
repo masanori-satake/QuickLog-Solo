@@ -49,7 +49,8 @@ test.describe('Robustness and Persistence', () => {
     const dbName = `RobustnessDB_${Math.random().toString(36).substring(7)}`;
 
     // Use URL parameter to inject a category with a long name
-    await page.goto(`/projects/app/app.html?db=${dbName}`);
+    // baseURL in playwright.config.js points to /projects/app/app.html
+    await page.goto(`?db=${dbName}`);
     await page.waitForSelector('.category-btn');
 
     // Add long category via settings

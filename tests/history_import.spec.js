@@ -16,7 +16,8 @@ test.describe('History CSV Import Robustness', () => {
 
     test('should REJECT CSV import with future timestamps', async ({ page }) => {
         const dbName = getDbName();
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         const now = Date.now();
@@ -47,7 +48,8 @@ test.describe('History CSV Import Robustness', () => {
 
     test('should handle overlapping time periods (allow but import)', async ({ page }) => {
         const dbName = getDbName();
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         const now = Date.now();
@@ -88,7 +90,8 @@ test.describe('History CSV Import Robustness', () => {
 
     test('should skip duplicate logs', async ({ page }) => {
         const dbName = getDbName();
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         const now = Date.now();
@@ -136,7 +139,8 @@ test.describe('History CSV Import Robustness', () => {
 
     test('should handle malformed CSV lines with partial error modal', async ({ page }) => {
         const dbName = getDbName();
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         const csv = `id,category,startTime,endTime\nInvalid,Line,Here\n4,ValidTask,${Date.now() - 100000},${Date.now()}`;
@@ -161,7 +165,8 @@ test.describe('History CSV Import Robustness', () => {
 
     test('should REJECT CSV import with startTime > endTime', async ({ page }) => {
         const dbName = getDbName();
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
         const now = Date.now();
