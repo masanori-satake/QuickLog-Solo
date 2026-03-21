@@ -63,15 +63,15 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: "chore: update guide screenshots"
+        commit_message: "chore: ガイド用スクリーンショットの更新"
         file_pattern: 'shared/assets/guide/*.png'
 
     - name: Create Pull Request (Manual/Main)
       if: github.event_name != 'pull_request'
       uses: peter-evans/create-pull-request@v7.0.5
       with:
-        commit-message: "chore: update guide screenshots"
+        commit-message: "chore: ガイド用スクリーンショットの更新"
         add-paths: 'shared/assets/guide/*.png'
         branch: "chore/update-guide-screenshots"
-        title: "chore: update guide screenshots"
-        body: "Automated update of guide screenshots."
+        title: "chore: ガイド用スクリーンショットの更新"
+        body: "自動生成されたガイド用スクリーンショットの更新です。"
