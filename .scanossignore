@@ -1,7 +1,6 @@
 # Generated from scanoss.json - do not edit directly
 node_modules
-.git
-.github
+.*
 tests
 scripts
 docs
@@ -14,7 +13,6 @@ projects/category-editor/shared
 projects/web/shared
 screenshots
 package-lock.json
-.*
 scanoss.json
 *.png
 *.zip
