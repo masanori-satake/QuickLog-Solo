@@ -209,7 +209,7 @@ async function updateTimer() {
     const now = Date.now();
 
     const elapsed = now - activeTask.startTime;
-    const timeStr = formatDuration(elapsed).toString();
+    const timeStr = formatDuration(elapsed);
 
     const el = getEl(ID_ELAPSED_TIME);
     if (el) el.textContent = timeStr;
