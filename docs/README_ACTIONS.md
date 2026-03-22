@@ -24,8 +24,17 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 | **Release** | **リリース: 拡張機能パッケージの公開** | `release_extension_packages.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
 | Update | **更新: ガイド用スクリーンショット** | `update_guide_screenshots.yml` | クイックスタートガイド用画像のリポジトリ自動反映 | `main`へのPush/PR (*1), 手動 |
 
-- (*1) `main`へのPush時は `paths` フィルタに関わらず常に実行されます。
+- (*1) `main`へのPush時は `paths` フィルタに関わらず常に実行されます（ブランチ保護ルールとの兼ね合い）。
 - (*2) PR時は `shared/js/animation/**` に変更がある場合のみ実行されます。
+
+## ワークフロー設計指針
+
+### ブランチトリガーと無限ループ防止
+PR マージ時の動作を確実にするため、および自動更新による無限ループを防ぐため、以下の指針を徹底しています。
+
+- **マージトリガー:** PR マージ時にワークフローを確実に実行するため、`pull_request` トリガーに加えて、`main` ブランチへの `push` トリガーを明示的に含めます。
+- **無限ループの防止:** アセットを自動生成してリポジトリにコミットするワークフロー（`update_guide_screenshots.yml` 等）では、`push` トリガーに `paths` フィルタを設定し、生成されたアセット自体（例: `shared/assets/guide/*.png`）を監視対象から**除外**します。これにより、自動コミットが自身のトリガーを再度引くことを防ぎます。
+- **ブランチ名:** 開発およびマージ先ブランチには一貫して `main` を使用します。`master` はレガシー名称として使用を禁止します。
 
 ---
 
@@ -151,3 +160,14 @@ flowchart LR
 
 本ドキュメントは、GitHub Actions のワークフローファイル（`.github/workflows/*.yml`）に変更が加えられた際、または新しいワークフローが追加された際に、自律的に更新される必要があります。
 詳細は `AGENTS.md` の指示に従ってください。
+
+---
+
+## 免責事項 (Disclaimer)
+本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
+利用に際して生じたいかなる損害についても、開発者は一切の責任を負いません。
+MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
+
+This software is a personal open-source project and is provided **"AS IS"** without warranty of any kind.
+The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from the use of this software.
+Use at your own risk, as per the MIT License.
