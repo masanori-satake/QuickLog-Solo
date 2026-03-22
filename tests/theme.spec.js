@@ -3,7 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Theme switching', () => {
   test.beforeEach(async ({ page }) => {
     const dbName = `ThemeTestDB_${Math.random().toString(36).substring(7)}`;
-    await page.goto(`/projects/app/app.html?db=${dbName}`);
+    // baseURL in playwright.config.js points to /projects/app/app.html
+    await page.goto(`?db=${dbName}`);
     await page.waitForSelector('#app');
 
     // Handle persistence modal if it appears

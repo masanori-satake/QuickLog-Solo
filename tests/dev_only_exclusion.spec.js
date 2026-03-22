@@ -4,7 +4,8 @@ test.describe('Animation Verification and Dev-Only Exclusion', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the app (running from source)
     const dbName = `DevExclusionDB_${Math.random().toString(36).substring(7)}`;
-    await page.goto(`/projects/app/app.html?db=${dbName}`);
+    // baseURL in playwright.config.js points to /projects/app/app.html
+    await page.goto(`?db=${dbName}`);
     // Wait for DB initialization
     await page.waitForTimeout(1000);
   });

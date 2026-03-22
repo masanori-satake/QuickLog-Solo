@@ -7,7 +7,8 @@ test.describe('Data Import and Export Consistency', () => {
     test.beforeEach(async ({ context, page }) => {
         await context.grantPermissions(['clipboard-read', 'clipboard-write']);
         const dbName = `DataIOTestDB_${Math.random().toString(36).substring(7)}`;
-        await page.goto(`/projects/app/app.html?lang=en&db=${dbName}`);
+        // baseURL in playwright.config.js points to /projects/app/app.html
+        await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
     });
 
