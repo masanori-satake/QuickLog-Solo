@@ -101,6 +101,10 @@ npm test
 
 ### E2Eテスト (Playwright)
 ※事前にローカルサーバー（Vite 等）を起動しておく必要があります（デフォルト: 8080ポート）。
+`npm run test:e2e` コマンドは、実行前に `scripts/generate_animation_registry.py` を呼び出し、アニメーションレジストリが最新の状態であることを保証します。
+
+Playwright テストは `playwright.config.js` で `baseURL` が `http://localhost:8080/projects/app/app.html` に設定されています。そのため、テストケース内では `page.goto('')` や `page.goto('?param=value')` のように相対パスでナビゲーションを行ってください。これにより、リポジトリルートに `index.html` が存在しない問題に起因するテスト失敗を防ぎます。
+
 ```bash
 npm run test:e2e
 ```
