@@ -1,4 +1,4 @@
-export const ko = {
+export default {
     'title': 'QuickLog-Solo',
     'copy-report-btn': '일일 보고서 복사',
     'copy-report-title': '일일 보고서 복사',

@@ -25,6 +25,7 @@ ALLOWED_ROOT_ITEMS = {
     "shared",
     "tests",
     "vercel.json",
+    "crowdin.yml",
     "releases",
     ".vercelignore",
     "node_modules",
