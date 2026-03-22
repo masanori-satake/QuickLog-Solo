@@ -42,7 +42,6 @@ const ID_FONT_SELECT = 'font-select';
 const ID_ANIMATION_SELECT = 'animation-select';
 const ID_LANGUAGE_SELECT = 'language-select';
 const ID_CATEGORY_LIST = 'category-list';
-const ID_CATEGORY_PAGINATION = 'category-pagination';
 const ID_LOG_LIST = 'log-list';
 const ID_ELAPSED_TIME = 'elapsed-time';
 const ID_STATUS_LABEL = 'status-label';
@@ -209,7 +208,7 @@ async function updateTimer() {
     const now = Date.now();
 
     const elapsed = now - activeTask.startTime;
-    const timeStr = formatDuration(elapsed).toString();
+    const timeStr = formatDuration(elapsed);
 
     const el = getEl(ID_ELAPSED_TIME);
     if (el) el.textContent = timeStr;
@@ -371,7 +370,7 @@ async function renderCategories() {
 }
 
 function renderPaginationDots(totalPages) {
-    const container = getEl(ID_CATEGORY_PAGINATION);
+    const container = getEl('category-pagination');
     if (!container) return;
     container.replaceChildren();
 

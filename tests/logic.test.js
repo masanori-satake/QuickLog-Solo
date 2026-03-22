@@ -25,16 +25,17 @@ describe('Logic Module', () => {
     describe('formatDuration', () => {
         test('formats milliseconds correctly', () => {
             const ms = (2 * 3600000) + (15 * 60000) + 30000;
-            const duration = formatDuration(ms);
-            expect(duration.hours).toBe(2);
-            expect(duration.minutes).toBe(15);
-            expect(duration.seconds).toBe(30);
-            expect(duration.toString()).toBe('02:15:30');
+            expect(formatDuration(ms)).toBe('02:15:30');
         });
 
         test('handles single digits with padding', () => {
             const ms = (1 * 3600000) + (5 * 60000) + 9000;
-            expect(formatDuration(ms).toString()).toBe('01:05:09');
+            expect(formatDuration(ms)).toBe('01:05:09');
+        });
+
+        test('handles long durations (100+ hours)', () => {
+            const ms = (123 * 3600000) + (45 * 60000) + 6000;
+            expect(formatDuration(ms)).toBe('123:45:06');
         });
     });
 
@@ -433,6 +434,23 @@ describe('Logic Module', () => {
             const report = generateReport(logs, { ...defaultOptions, adjust: '1440', endTime: 'show' });
             expect(report).toContain('10:00');
             expect(report).toContain('12:00');
+        });
+
+        test('handles multiple tasks with gaps during time adjustment', () => {
+            const logs = [
+                { startTime: new Date('2026-03-03T10:02:00').getTime(), endTime: new Date('2026-03-03T10:08:00').getTime(), category: 'Task 1' },
+                { startTime: new Date('2026-03-03T11:02:00').getTime(), endTime: new Date('2026-03-03T11:08:00').getTime(), category: 'Task 2' }
+            ];
+            // Adjust to 10m.
+            // 10:02 (first) fixed
+            // 10:08 rounded to 10:10? but must be <= next original (11:02). OK.
+            // 11:02 rounded to 11:00? but must be >= previous adjusted (10:10). OK.
+            // 11:08 (last) fixed
+            const report = generateReport(logs, { ...defaultOptions, adjust: '10', endTime: 'show' });
+            expect(report).toContain('10:02');
+            expect(report).toContain('10:10');
+            expect(report).toContain('11:00');
+            expect(report).toContain('11:08');
         });
 
         test('returns empty string for unknown format', () => {
