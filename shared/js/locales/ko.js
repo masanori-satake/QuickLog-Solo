@@ -105,7 +105,7 @@ export const ko = {
     'backup-last-time': '마지막 백업',
     'backup-directory': '디렉토리',
     'backup-file-count': '파일 수',
-    'backup-file-count-unit': '일분',
+    'backup-file-count-unit': '일치',
     'backup-description-new': '브라우저 캐시 삭제 등으로 IndexedDB 데이터가 사라지는 것을 방지하기 위해 정기적인 백업을 권장합니다. 백업 데이터가 있으면 다른 브라우저로의 이동도 원활하게 할 수 있습니다.',
     'toast-backup-completed': '백업이 완료되었습니다',
 
@@ -119,7 +119,7 @@ export const ko = {
     'confirm-clear-logs': '모든 로그를 삭제합니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',
     'confirm-reset-all': '카테고리와 설정을 초기화합니다. 계속하시겠습니까? (로그는 유지됨)',
     'confirm-reset-settings': '설정을 초기화합니다. 계속하시겠습니까? (로그와 카테고리는 유지됨)',
-    'alert-invalid-category': '유효하지 않은 카테고리 이름입니다. (50자 이내, "{idle}" 예약어)',
+    'alert-invalid-category': '유효하지 않은 카테고리 이름입니다. (50자 이내, "{idle}"은 사용할 수 없습니다)',
     'alert-duplicate-category': '동일한 이름의 카테고리가 이미 존재합니다.',
     'alert-import-error': '카테고리 가져오기에 실패했습니다.',
     'alert-init-error': '앱 초기화에 실패했습니다.',
