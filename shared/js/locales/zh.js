@@ -199,7 +199,7 @@ export const zh = {
     'init-cat-design': '🎨 设计/UI/UX',
     'init-cat-bug': '🐛 Bug 修复',
     'init-cat-release': '🚀 发布与部署',
-    'init-cat-tool': '🛠 工具维护',
+    'init-cat-tool': '🛠 工具维护与自动化',
     'init-cat-schedule': '🗓 日程与任务管理',
     'init-cat-chat': '💬 聊天/Slack/Teams',
     'init-cat-wiki': '📖 文档/Wiki 更新',
