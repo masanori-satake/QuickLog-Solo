@@ -1,5 +1,8 @@
 name: "監査: 翻訳の整合性と他言語混入 (Audit: Localization Integrity)"
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main ]
