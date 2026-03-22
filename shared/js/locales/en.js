@@ -1,16 +1,16 @@
-export const ja = {
+export default {
     // UI Header & Sections
     'title': 'QuickLog-Solo',
     'copy-report-btn': '日報コピー',
     'copy-report-title': '日報コピー',
-    'tag-aggregation-title': 'Tag Aggregation',
-    'copy-aggregation-btn': 'Copy Stats',
-    'tags': 'Tags',
-    'no-tags': 'No Tags',
+    'tag-aggregation-title': 'タグ集計',
+    'copy-aggregation-btn': '集計コピー',
+    'tags': 'タグ',
+    'no-tags': 'タグ無し',
     'settings': '設定',
     'delete': '削除',
     'duplicate': '複製',
-    'btn-copy': 'Copy',
+    'btn-copy': 'コピー',
     // Controls
     'pause': '一時停止',
     'resume': '再開',
