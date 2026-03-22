@@ -1,4 +1,4 @@
-export const ja = {
+export default {
     // UI Header & Sections
     'title': 'QuickLog-Solo',
     'copy-report-btn': '日報コピー',

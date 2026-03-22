@@ -1,4 +1,4 @@
-export const en = {
+export default {
     // UI Header & Sections
     'title': 'QuickLog-Solo',
     'copy-report-btn': 'Copy Daily Report',

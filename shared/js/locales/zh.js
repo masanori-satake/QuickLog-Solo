@@ -1,4 +1,4 @@
-export const zh = {
+export default {
     'title': 'QuickLog-Solo',
     'copy-report-btn': '复制日报',
     'copy-report-title': '复制日报',

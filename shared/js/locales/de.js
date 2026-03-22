@@ -1,4 +1,4 @@
-export const de = {
+export default {
     'title': 'QuickLog-Solo',
     'copy-report-btn': 'Tagesbericht kopieren',
     'copy-report-title': 'Tagesbericht kopieren',
