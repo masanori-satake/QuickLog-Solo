@@ -37,6 +37,8 @@ test.describe('I18n display verification', () => {
             await expect(generalTab).toBeVisible();
 
             // Take screenshot
+            // The directory is ensured to exist, or we can use Playwright's automatic results.
+            // But manually specifying a path is fine for local verification.
             await page.screenshot({ path: `tests/screenshots/lang_verify_${lang}.png` });
         });
     }
