@@ -1,0 +1,37 @@
+name: "監査: 翻訳の整合性と他言語混入 (Audit: Localization Integrity)"
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'shared/js/locales/**'
+      - 'projects/web/*.html'
+      - 'scripts/audit_localization_mixing.py'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'shared/js/locales/**'
+      - 'projects/web/*.html'
+      - 'scripts/audit_localization_mixing.py'
+  workflow_dispatch:
+
+jobs:
+  audit-localization:
+    name: 翻訳ファイルの言語混入監査 (Audit Localization Mixing)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Run Localization Audit
+      run: python3 scripts/audit_localization_mixing.py
