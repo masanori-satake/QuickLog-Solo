@@ -137,6 +137,16 @@ flowchart LR
     end
 ```
 
+## トラブルシューティング
+
+### GitHub Security タブに "Action workflow file not found" と表示される場合
+
+以前存在していたワークフローファイル（例: `audit_oss_compliance.yml`）が削除されたり、`audit.yml` に統合されたりした際、GitHub の Code scanning 設定に古い登録が残ることがあります。この場合、以下の手順で設定を削除してください。
+
+1. リポジトリの **Security** タブを開く。
+2. 左メニューの **Code scanning** をクリック。
+3. 右上の **Status page**（または「...」メニュー）から、不要になった構成（例: `audit_oss_compliance.yml`）を選択して **Delete**（削除）してください。
+
 ## ドキュメントの維持管理
 
 本ドキュメントは、GitHub Actions のワークフローファイル（`.github/workflows/*.yml`）に変更が加えられた際、または新しいワークフローが追加された際に、自律的に更新される必要があります。
