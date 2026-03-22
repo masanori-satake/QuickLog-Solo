@@ -145,7 +145,7 @@ flowchart LR
 
 1. リポジトリの **Security** タブを開く。
 2. 左メニューの **Code scanning** をクリック。
-3. 右上の **Status page**（または「...」メニュー）から、不要になった構成（例: `audit_oss_compliance.yml`）を選択して **Delete**（削除）してください。
+3. 右上の **Tool status** ボタンをクリックしてステータスページを開き、不要になった構成（例: `audit_oss_compliance.yml`）の「...」メニューから **Delete**（削除）を選択してください。
 
 ## ドキュメントの維持管理
 
