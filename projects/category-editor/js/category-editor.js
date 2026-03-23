@@ -103,6 +103,7 @@ function init() {
     state.renderColorPalette = uiMod.renderColorPalette;
     state.renderGlobalTagBox = uiMod.renderGlobalTagBox;
     state.populateAnimationOptions = uiMod.populateAnimationOptions;
+    state.updateListItem = uiMod.updateListItem;
 
     state.updateCodeView = dataIoMod.updateCodeView;
 

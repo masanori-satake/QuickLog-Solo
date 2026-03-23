@@ -143,4 +143,31 @@ test.describe('Category Editor Features', () => {
     await expect(tagInput).not.toBeDisabled();
     await expect(nameInput).not.toHaveValue('');
   });
+
+  test('Single Category Name Editing Persistence', async ({ page }) => {
+    const items = page.locator('.category-item');
+    const nameInput = page.locator('#edit-name');
+    const previewName = page.locator('#preview-name');
+
+    // Select first item
+    await items.nth(0).click();
+    const originalName = await nameInput.inputValue();
+
+    // Edit name
+    const newName = 'Edited Category Name';
+    await nameInput.fill(newName);
+
+    // 1. Verify preview updates immediately
+    await expect(previewName).toHaveText(newName);
+
+    // 2. Verify list item updates immediately (UI synchronization check)
+    const listItemName = items.nth(0).locator('.cat-name');
+    await expect(listItemName).toHaveText(newName);
+
+    // 3. Verify internal state/NDJSON view updates
+    await page.click('#btn-show-code');
+    const codeView = await page.textContent('#code-view');
+    expect(codeView).toContain(`"name":"${newName}"`);
+    expect(codeView).not.toContain(`"name":"${originalName}"`);
+  });
 });

@@ -1049,6 +1049,7 @@ export function initUI(state, elements) {
         renderTagReplaceModal,
         updateModalHistoryButtons,
         populateAnimationOptions,
+        updateListItem,
         getCategoryTags,
         COLOR_CODES
     };

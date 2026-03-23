@@ -171,3 +171,14 @@ graph LR
 > This document shares reference information from the project developer's own setup (Vercel).
 > The developer does not specifically endorse Vercel, nor does the developer guarantee that these steps will continue to function correctly in the future, including for other services.
 > Management of sensitive information and deployments associated with automation settings are entirely at the user's own risk.
+
+---
+
+## 免責事項 (Disclaimer)
+本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
+利用に際して生じたいかなる損害についても、開発者は一切の責任を負いません。
+MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
+
+This software is a personal open-source project and is provided **"AS IS"** without warranty of any kind.
+The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from the use of this software.
+Use at your own risk, as per the MIT License.

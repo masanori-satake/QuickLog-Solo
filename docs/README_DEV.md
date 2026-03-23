@@ -307,7 +307,52 @@ sequenceDiagram
 
 ---
 
-## 4. QL-Animation Studio
+## 4. QL-Category Editor
+
+### モジュール構成 (Category Editor)
+
+Category Editor は、アプリで使用するカテゴリ設定を視覚的に編集するためのツールです。
+
+- **js/category-editor.js (メイン):** 初期化、言語・テーマ設定、共通状態の管理、アニメーションエンジンのセットアップ。
+- **js/history.js (履歴):** 履歴スタック（Undo/Redo）の管理。テキスト入力の確定タイミング（blur）に合わせた履歴記録。
+- **js/ui.js (UI制御):** カテゴリリストの描画、詳細パネルのレンダリング、ドラッグ＆ドロップによる並べ替え、カラーパレット、タグ管理。
+- **js/data-io.js (データ入出力):** NDJSON形式によるインポート/エクスポート、クリップボード操作、スキーマバリデーションとの連携。
+
+### アーキテクチャ図 (Category Editor)
+
+```mermaid
+graph TD
+    classDef common fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef unique fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+
+    subgraph Editor_Project
+        EditorHTML[index.html]:::unique
+        EditorJS[js/category-editor.js]:::unique
+    end
+
+    subgraph Shared_Modules
+            Anim["shared/js/animations.js (共通)"]:::common
+        Registry["shared/js/animation_registry.js (共通)"]:::common
+            I18n["shared/js/i18n.js (共通)"]:::common
+            Messages["shared/js/messages.js (共通)"]:::common
+            Utils["shared/js/utils.js (共通)"]:::common
+    end
+
+    EditorHTML --> EditorJS
+    EditorJS --> Anim
+    EditorJS --> I18n
+    Anim --> Worker["js/animation_worker.js (共通)"]:::common
+```
+
+### 主な振る舞い
+- **ライブプレビュー:** 共通の `AnimationEngine` を使用し、製品版と全く同じ描画ロジックで色の組み合わせやアニメーションの挙動を確認できます。
+- **NDJSON インポート/エクスポート:** クリップボードを介して、メインアプリの設定と互換性のある NDJSON 形式でカテゴリ設定を一括操作できます。
+- **ドラッグ＆ドロップ:** カテゴリの並べ替えを直感的に行い、その結果を `order` 属性に反映させます。
+- **ページ区切り (Page Break):** メインアプリのページネーションを制御するための特殊なカテゴリ（`SYSTEM_CATEGORY_PAGE_BREAK`）を挿入・編集できます。
+
+---
+
+## 5. QL-Animation Studio
 
 ### モジュール構成 (Studio)
 
@@ -468,51 +513,6 @@ graph TD
     - **Density (密度):** キャンバス上の点灯ドットの割合。
     - **Change Rate (変化率):** 1フレーム前と比較して、状態（色）が変化した画素の割合。
 
----
-
-## 5. QL-Category Editor
-
-### モジュール構成 (Category Editor)
-
-Category Editor は、アプリで使用するカテゴリ設定を視覚的に編集するためのツールです。
-
-- **js/category-editor.js (メイン):** 初期化、言語・テーマ設定、共通状態の管理、アニメーションエンジンのセットアップ。
-- **js/history.js (履歴):** 履歴スタック（Undo/Redo）の管理。テキスト入力の確定タイミング（blur）に合わせた履歴記録。
-- **js/ui.js (UI制御):** カテゴリリストの描画、詳細パネルのレンダリング、ドラッグ＆ドロップによる並べ替え、カラーパレット、タグ管理。
-- **js/data-io.js (データ入出力):** NDJSON形式によるインポート/エクスポート、クリップボード操作、スキーマバリデーションとの連携。
-
-### アーキテクチャ図 (Category Editor)
-
-```mermaid
-graph TD
-    classDef common fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef unique fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
-
-    subgraph Editor_Project
-        EditorHTML[index.html]:::unique
-        EditorJS[js/category-editor.js]:::unique
-    end
-
-    subgraph Shared_Modules
-            Anim["shared/js/animations.js (共通)"]:::common
-        Registry["shared/js/animation_registry.js (共通)"]:::common
-            I18n["shared/js/i18n.js (共通)"]:::common
-            Messages["shared/js/messages.js (共通)"]:::common
-            Utils["shared/js/utils.js (共通)"]:::common
-    end
-
-    EditorHTML --> EditorJS
-    EditorJS --> Anim
-    EditorJS --> I18n
-    Anim --> Worker["js/animation_worker.js (共通)"]:::common
-```
-
-### 主な振る舞い
-- **ライブプレビュー:** 共通の `AnimationEngine` を使用し、製品版と全く同じ描画ロジックで色の組み合わせやアニメーションの挙動を確認できます。
-- **NDJSON インポート/エクスポート:** クリップボードを介して、メインアプリの設定と互換性のある NDJSON 形式でカテゴリ設定を一括操作できます。
-- **ドラッグ＆ドロップ:** カテゴリの並べ替えを直感的に行い、その結果を `order` 属性に反映させます。
-- **ページ区切り (Page Break):** メインアプリのページネーションを制御するための特殊なカテゴリ（`SYSTEM_CATEGORY_PAGE_BREAK`）を挿入・編集できます。
-
 ### Animation Engine (共通エンジン) の仕様と使用方法
 
 `js/animations.js` に実装されている `AnimationEngine` は、メインアプリ、Studio、Category Editor のすべてで共通の描画基盤として使用されます。
@@ -599,6 +599,7 @@ graph TD
     - `iframe` 内で `app.html` を起動します。
     - 本番のデータを破壊しないよう、URLパラメータ（`?db=QuickLogSoloDB_Preview`）を使用して一時的なデータベース（Mock DB）を割り当て、環境を分離しています。
 - **多言語化:** `js/messages.js` のリソースを使用し、ブラウザの言語設定に応じた自動切り替えと、手動選択をサポートしています。
+- **内部リンクの多言語対応:** 内部ページ（`transparency.html`, `guide.html` 等）へのリンクは、`updateLink(elementId, targetUrl)` ヘルパー関数を使用して生成します。これにより、遷移先へ現在の `lang` パラメータが確実に引き継がれます。
 
 ### クイックスタートガイド (guide.html)
 - **印刷最適化:** A4 1枚程度に収まるよう CSS `media print` を調整しており、PDF 保存や物理的な印刷に対応したレイアウトを提供します。
