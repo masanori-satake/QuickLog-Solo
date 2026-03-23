@@ -193,8 +193,8 @@ export default {
     'report-header-category': 'Category',
     'report-adjust-title': 'Time Adjustment',
     'report-adjust-none': 'None',
-    'report-adjust-5m': '5-minute intervals',
-    'report-adjust-10m': '10-minute intervals',
+    'report-adjust-5m': '5 min',
+    'report-adjust-10m': '10 min',
     // Initial Categories
     'init-cat-dev': '💻 Development/Coding',
     'init-cat-meeting': '🤝 Team Meeting/Regular Sync',
