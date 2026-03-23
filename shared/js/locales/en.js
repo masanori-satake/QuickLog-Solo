@@ -11,12 +11,10 @@ export default {
     'delete': 'Delete',
     'duplicate': 'Duplicate',
     'btn-copy': 'Copy',
-
     // Controls
     'pause': 'Pause',
     'resume': 'Resume',
     'stop': 'Stop',
-
     // Settings Modal
     'tab-general': 'General',
     'tab-categories': 'Categories',
@@ -24,10 +22,11 @@ export default {
     'tab-backup': 'Backup',
     'tab-alarms': 'Alarms',
     'tab-about': 'About',
-
     // Alarms Tab
-    'alarm-setting-description': 'Display a message at a specified time and automatically "Stop", "Pause", or "Start" tasks as needed.',
-    'alarm-note-extension-only': '* The alarm feature only works when installed as a browser extension. Notifications and auto-actions are not executed in the preview version.',
+    'alarm-setting-description':
+        'Display a message at a specified time and automatically "Stop", "Pause", or "Start" tasks as needed.',
+    'alarm-note-extension-only':
+        '* The alarm feature only works when installed as a browser extension. Notifications and auto-actions are not executed in the preview version.',
     'alarm-label-enabled': 'Enabled',
     'alarm-label-time': 'Time',
     'alarm-label-message': 'Message',
@@ -42,11 +41,9 @@ export default {
     'toast-alarm-saved': 'Alarm saved',
     'btn-test-notification': 'Test Notification',
     'test-notification-message': 'This is a notification test. It is working correctly.',
-
     // Common labels
     'setting-enabled': 'Enabled (ON)',
     'setting-disabled': 'Disabled (OFF)',
-
     // General Tab
     'setting-language': 'Language',
     'lang-auto': 'Browser Language',
@@ -62,7 +59,6 @@ export default {
     'setting-history-csv': 'History (CSV)',
     'btn-export-csv': 'Export',
     'btn-import-csv': 'Import',
-
     // Categories Tab
     'placeholder-new-category': 'New category...',
     'placeholder-tags': 'Tags (comma separated)',
@@ -72,20 +68,19 @@ export default {
     'import-setting': 'Import Mode:',
     'import-append': 'Append',
     'import-overwrite': 'Overwrite',
-
     // About Tab
     'version': 'Version',
     'developer': 'Developer',
     'about-stats-logs': 'Log Count',
     'about-stats-categories': 'Category Count',
-    'about-description': 'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved in IndexedDB within your browser (and also to the local file system when the backup is executed) and is never sent externally. It maintains high transparency and security through strict dependency verification via GitHub Actions and continuous auditing with Google OSV-Scanner.',
-    'about-disclaimer': '[Disclaimer] This is a personal open-source project and is provided "AS IS" without warranty of any kind. The developer shall not be liable for any damages arising from its use. Use at your own risk.',
-
+    'about-description':
+        'QuickLog-Solo is a privacy-focused, minimalist note-taking tool. Data is stored in IndexedDB within your browser (and also on your local file system when backups are performed), and no data is transmitted externally. High transparency and security are maintained through dependency verification with GitHub Actions and continuous auditing with Google OSV-Scanner.',
+    'about-disclaimer':
+        '[Disclaimer] This is a personal open-source project and is provided "AS IS" without warranty of any kind. The developer shall not be liable for any damages arising from its use. Use at your own risk.',
     // Auto Stop & Page Break
     'page-break': 'Page Break',
     'btn-add-page-break': 'Add Page Break',
     'confirm-delete-page-break': 'Do you want to delete this page break?',
-
     // Tooltips
     'tooltip-copy-report': 'Copy daily report to clipboard',
     'tooltip-copy-aggregation': 'Copy tag aggregation results to clipboard',
@@ -100,7 +95,6 @@ export default {
     'tooltip-status-paused': 'Paused',
     'tooltip-status-stopped': 'Finished',
     'tooltip-calendar': 'Select date',
-
     // Maintenance Tab
     'maintenance-clear-logs': 'Clear Logs',
     'btn-clear-logs': 'Delete All Logs',
@@ -110,7 +104,6 @@ export default {
     'maintenance-reset-settings': 'Reset Settings Only',
     'maintenance-reset-settings-desc': 'Logs and categories will be preserved.',
     'btn-reset-settings': 'Reset Settings Only',
-
     // Backup Tab
     'btn-backup-start': 'Start Backup',
     'btn-backup-run': 'Execute Backup',
@@ -121,53 +114,53 @@ export default {
     'backup-directory': 'Directory',
     'backup-file-count': 'File Count',
     'backup-file-count-unit': 'days',
-    'backup-description-new': 'Regular backups are recommended to prevent data loss in IndexedDB due to browser cache clearing. With backup data, you can also smoothly transition to other browsers.',
+    'backup-description-new':
+        'Regular backups are recommended to prevent the loss of IndexedDB data due to browser cache clearing or other issues. Having backup data also allows for a smoother transition to other browsers.',
     'toast-backup-completed': 'Backup completed',
-
     // Messages & Dialogs
     'confirm-end-task': 'Do you really want to end the task?',
     'confirm-cancel': 'Cancel',
-    'confirm-delete-category': 'Do you want to delete category "{name}"?\n(Category colors will be removed from past logs)',
+    'confirm-delete-category':
+        'Do you want to delete category "{name}"?\n(Category colors will be removed from past logs)',
     'confirm-delete-selected': 'Do you want to delete the selected {count} items?',
     'confirm-import-overwrite': 'Delete all existing categories and overwrite?',
     'confirm-export-csv': 'Logs will be exported as CSV. Any active task will be ended. Proceed?',
     'confirm-import-csv': 'Logs will be imported from CSV and appended. Any active task will be ended. Proceed?',
     'confirm-clear-logs': 'All logs will be deleted. Any active task will be ended. Proceed?',
-    'confirm-reset-all': 'Categories and settings will be reset. Any active task will be ended. Proceed? (Logs will be preserved)',
-    'confirm-reset-settings': 'Settings will be reset. Any active task will be ended. Proceed? (Logs and categories will be preserved)',
-
+    'confirm-reset-all':
+        'Categories and settings will be reset. Any active task will be ended. Proceed? (Logs will be preserved)',
+    'confirm-reset-settings':
+        'Settings will be reset. Any active task will be ended. Proceed? (Logs and categories will be preserved)',
     'alert-invalid-category': 'Invalid category name. (Max 50 chars, "{idle}" is reserved)',
     'alert-duplicate-category': 'A category with the same name already exists.',
     'alert-import-error': 'Failed to import categories. Please check the file format.',
     'alert-init-error': 'Failed to initialize the application. Please reload the page.',
-
     'toast-copied': 'Copied!',
     'toast-done': 'Done!',
     'toast-imported': 'Import completed.',
     'toast-cat-imported': 'Categories imported',
     'toast-deleted': 'Deletion completed',
     'no-logs-for-day': 'No logs for this day',
-
     'notification-btn-ok': 'OK',
     'notification-btn-close': 'Close',
-
     'import-err-fatal': 'Invalid file format. Importing aborted.',
-    'import-err-partial': '{errorCount} out of {total} rows are corrupted. Do you want to import only the {validCount} valid rows?',
-    'import-err-field': 'Some data is incomplete (e.g., invalid color). Do you want to apply default values and import all, or skip the invalid rows?',
+    'import-err-partial':
+        '{errorCount} out of {total} rows are corrupted. Do you want to import only the {validCount} valid rows?',
+    'import-err-field':
+        'Some data is incomplete (e.g., invalid color). Do you want to apply default values and import all, or skip the invalid rows?',
     'import-btn-import-valid': 'Import Valid Only',
     'import-btn-apply-fallback': 'Apply Defaults',
     'import-btn-skip-invalid': 'Skip Invalid Rows',
     'import-btn-abort': 'Abort',
-
-    'backup-err-0byte': 'An empty backup file ({name}) was found. This might indicate an error. Do you want to ignore this file and continue?',
+    'backup-err-0byte':
+        'An empty backup file ({name}) was found. This might indicate an error. Do you want to ignore this file and continue?',
     'backup-btn-ignore-continue': 'Ignore & Continue',
     'backup-btn-abort-investigate': 'Abort & Investigate',
-
-    'backup-err-locked': 'The file is locked by another program or you don\'t have permission. Please close other apps and try again.',
+    'backup-err-locked':
+        "The file is locked by another program or you don't have permission. Please close other apps and try again.",
     'backup-err-not-found': 'Backup directory not found. Please select the directory again.',
     'backup-err-unknown': 'An unexpected error occurred: {message}',
     'toast-backup-failed-detail': 'Backup failed. Reason: {reason}',
-
     // Dynamic Elements
     'day-names': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     'idle-category': '(Idle)',
@@ -178,7 +171,6 @@ export default {
     'anim-none': 'None',
     'anim-author-label': 'Author',
     'anim-unknown-author': 'Unknown',
-
     // Report Settings
     'report-emoji-keep': 'Keep',
     'report-emoji-remove': 'Remove',
@@ -201,9 +193,8 @@ export default {
     'report-header-category': 'Category',
     'report-adjust-title': 'Time Adjustment',
     'report-adjust-none': 'None',
-    'report-adjust-5m': '5 min',
-    'report-adjust-10m': '10 min',
-
+    'report-adjust-5m': '5-minute intervals',
+    'report-adjust-10m': '10-minute intervals',
     // Initial Categories
     'init-cat-dev': '💻 Development/Coding',
     'init-cat-meeting': '🤝 Team Meeting/Regular Sync',
@@ -217,7 +208,7 @@ export default {
     'init-cat-client': '📞 Client Call/Communication',
     'init-cat-doc': '📝 Documentation/Reporting',
     'init-cat-design': '🎨 Design/UI/UX',
-    'init-cat-bug': '🐛 Bug Fix/Quality Imp.',
+    'init-cat-bug': '🐛 Bug fixes and quality improvements',
     'init-cat-release': '🚀 Release/Deployment',
     'init-cat-tool': '🛠 Tooling/Automation',
     'init-cat-schedule': '🗓 Scheduling/Task Mgmt',
@@ -230,7 +221,6 @@ export default {
     'init-cat-data': '📊 Data Analysis/SQL',
     'init-cat-wfh': '🏠 Home Office Setup',
     'init-cat-move': '🚶 Travel/Outing',
-
     // Initial Tags
     'init-tag-dev': 'development, coding',
     'init-tag-meeting': 'meeting',
@@ -243,7 +233,7 @@ export default {
     'init-tag-client': 'client',
     'init-tag-doc': 'documentation, reporting',
     'init-tag-design': 'design',
-    'init-tag-bug': 'bugfix',
+    'init-tag-bug': 'Bug fixes',
     'init-tag-release': 'release',
     'init-tag-tool': 'tool',
     'init-tag-schedule': 'management',
@@ -255,7 +245,6 @@ export default {
     'init-tag-sec': 'security',
     'init-tag-data': 'analysis',
     'init-tag-move': 'travel',
-
     // QL-Animation Studio
     'studio-title': 'QL-Animation Studio (Beta)',
     'sample-select-placeholder': 'Select a sample...',
@@ -300,7 +289,8 @@ export default {
     'btn-close': 'Close',
     'pr-guide-title': 'Pull Request Preparation',
     'pr-step-1': 'Download your animation as a <code>.js</code> file.',
-    'pr-step-2': 'Fork the <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> repository.',
+    'pr-step-2':
+        'Fork the <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> repository.',
     'pr-step-3': 'Place your file in <code>shared/js/animation/</code>.',
     'pr-step-4': 'Commit your changes and create a Pull Request!',
     'pr-note': 'Your contribution makes this tool better for everyone!',
@@ -318,7 +308,6 @@ export default {
     'btn-replace-all': 'Replace All',
     'section-console': 'Console',
     'btn-clear-console': 'Clear Console',
-
     // Category Editor
     'category-editor-title': 'QL-Category Editor',
     'category-detail': 'Category Detail',
@@ -342,6 +331,7 @@ export default {
     'tag-replace-before': 'Before',
     'tag-replace-after': 'After',
     'tooltip-replace-tags': 'Replace Tags',
-    'privacy-policy-local-only': 'All processing is completed within the browser, and there is no coordination with external servers. Your information will never be leaked outside.',
+    'privacy-policy-local-only':
+        'All processing is completed within the browser, and there is no coordination with external servers. Your information will never be leaked outside.',
     'privacy-policy-local-only-short': 'Local Only',
 };
