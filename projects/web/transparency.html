@@ -40,55 +40,92 @@
             <section class="transparency-hero">
                 <span class="material-symbols-outlined hero-icon">verified_user</span>
                 <h2 data-i18n="hero-title">透明性と安全性の維持</h2>
-                <p data-i18n="hero-desc">QuickLog-Soloは、技術的な裏付けに基づいた透明性と安全性を最も重視しています。GitHubや専門知識に不慣れな方でも、私たちの取り組みを安心してご理解いただけるよう、ここで詳しく説明します。</p>
+                <p data-i18n="hero-desc">QuickLog-Soloは、技術的な裏付けに基づいた透明性と安全性を最も重視しています。私たちがどのような考えでプロジェクトを運営し、どのような手段で安全を確保しているのかを、ここですべて公開します。</p>
+                <div class="audit-badge-container">
+                    <a href="https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/audit.yml" target="_blank" class="audit-badge-link">
+                        <img src="https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/audit.yml/badge.svg" alt="Audit Status">
+                    </a>
+                </div>
             </section>
 
             <div class="report-grid">
                 <section class="report-card">
                     <div class="card-header">
-                        <span class="material-symbols-outlined">code</span>
-                        <h3 data-i18n="vanilla-title">1. 外部ライブラリへの依存ゼロ</h3>
+                        <span class="material-symbols-outlined">shield_person</span>
+                        <h3 data-i18n="privacy-title">1. データはあなただけのもの</h3>
                     </div>
-                    <p data-i18n="vanilla-desc">QuickLog-Soloは、外部ライブラリ（OSS）を一切使用せず、「純粋なJavaScript」のみで構築されています。これは「ブラックボックス」を排除することを意味します。すべてのコードが公開されており、第三者による検証が容易です。</p>
-                    <div class="status-badge success">
-                        <span class="material-symbols-outlined">check_circle</span>
-                        <span data-i18n="status-no-deps">外部依存関係なし</span>
+                    <div class="concern-box">
+                        <span class="concern-label" data-i18n="concern-label">心配なこと:</span>
+                        <span data-i18n="privacy-concern">入力した内容がどこかのサーバーに送られていませんか？</span>
                     </div>
-                </section>
-
-                <section class="report-card">
-                    <div class="card-header">
-                        <span class="material-symbols-outlined">security</span>
-                        <h3 data-i18n="audit-title">2. 継続的な自動セキュリティ監査</h3>
+                    <p data-i18n="privacy-simple">結論から言うと、送られることは絶対にありません。データはあなたのPCの中にのみ保存されます。技術的には「外部との通信を物理的に遮断する」設定を組み込んでおり、この安全性はコードが更新されるたびに自動で厳格にテストされています。</p>
+                    <div class="tech-evidence">
+                        <span class="tech-label" data-i18n="tech-label">技術的な裏付け:</span>
+                        <span data-i18n="privacy-tech">Content Security Policy (CSP) による外部通信の完全遮断。</span>
                     </div>
-                    <p data-i18n="audit-desc">GitHub Actionsという仕組みを利用し、開発の全工程でコードの整合性と安全性を自動的にチェックしています。AIなどによる意図しないコードの混入や、脆弱性のリスクを常に監視し、高い基準を維持しています。</p>
-                    <div class="status-badge success">
-                        <span class="material-symbols-outlined">published_with_changes</span>
-                        <span data-i18n="status-audit-passed">自動監査パス</span>
+                    <div class="frequency-badge">
+                        <span class="material-symbols-outlined">schedule</span>
+                        <span data-i18n="freq-always">常に有効 / 更新ごとに自動検証</span>
                     </div>
                 </section>
 
                 <section class="report-card">
                     <div class="card-header">
-                        <span class="material-symbols-outlined">search_check</span>
-                        <h3 data-i18n="osv-title">3. Google OSV-Scanner による監査</h3>
+                        <span class="material-symbols-outlined">visibility</span>
+                        <h3 data-i18n="integrity-title">2. 隠し事のないオープンなコード</h3>
                     </div>
-                    <p data-i18n="osv-desc">Googleが提供する脆弱性スキャンツール「OSV-Scanner」を導入しています。これにより、万が一開発環境などのツールに既知の脆弱性が発見された場合でも、即座に検知して対応できる体制を整えています。</p>
-                    <div class="status-badge success">
+                    <div class="concern-box">
+                        <span class="concern-label" data-i18n="concern-label">心配なこと:</span>
+                        <span data-i18n="integrity-concern">中身が複雑すぎて、悪いプログラムが紛れ込んでいませんか？</span>
+                    </div>
+                    <p data-i18n="integrity-simple">中身をブラックボックスにしないために、私たちは「外部の複雑な部品（ライブラリ）」を一切使わずに開発しています。すべてのプログラムが透明で、中身を誰でも確認できる状態にあります。AIなどによって意図しないプログラムが混入していないか、毎回チェックを行っています。</p>
+                    <div class="tech-evidence">
+                        <span class="tech-label" data-i18n="tech-label">技術的な裏付け:</span>
+                        <span data-i18n="integrity-tech">Zero Production Dependencies ポリシー。独自スクリプトによる整合性監査。</span>
+                    </div>
+                    <div class="frequency-badge">
+                        <span class="material-symbols-outlined">update</span>
+                        <span data-i18n="freq-on-change">コード更新ごとに100%実施</span>
+                    </div>
+                </section>
+
+                <section class="report-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">health_and_safety</span>
+                        <h3 data-i18n="vulnerability-title">3. 脆弱性からの継続的な保護</h3>
+                    </div>
+                    <div class="concern-box">
+                        <span class="concern-label" data-i18n="concern-label">心配なこと:</span>
+                        <span data-i18n="vulnerability-concern">セキュリティ上の弱点（脆弱性）が放置されていませんか？</span>
+                    </div>
+                    <p data-i18n="vulnerability-simple">私たちは、Googleが提供する最新のセキュリティスキャンツール（OSV-Scanner）を導入しています。これにより、万が一開発ツールなどに弱点が見つかった場合でも、即座に検知して修正できる体制を整えています。この監視は、人間が忘れても自動で行われるようになっています。</p>
+                    <div class="tech-evidence">
+                        <span class="tech-label" data-i18n="tech-label">技術的な裏付け:</span>
+                        <span data-i18n="vulnerability-tech">Google OSV-Scanner による継続的な脆弱性データベース照合。</span>
+                    </div>
+                    <div class="frequency-badge">
+                        <span class="material-symbols-outlined">monitor_heart</span>
+                        <span data-i18n="freq-constant">自動監視 / 定期実行</span>
+                    </div>
+                </section>
+
+                <section class="report-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">hourglass_empty</span>
+                        <h3 data-i18n="longevity-title">4. 将来にわたって変わらない安心</h3>
+                    </div>
+                    <div class="concern-box">
+                        <span class="concern-label" data-i18n="concern-label">心配なこと:</span>
+                        <span data-i18n="longevity-concern">ある日突然、サービスが終了して使えなくなりませんか？</span>
+                    </div>
+                    <p data-i18n="longevity-simple">QuickLog-Soloは、特定の企業のサービスや、流行り廃りの激しい最新技術に依存していません。「10年後も変わらず動くこと」を目標に、最も基本的な技術のみで構築されています。たとえ私たちが開発をやめたとしても、あなたのPCにあるアプリは動き続けます。</p>
+                    <div class="tech-evidence">
+                        <span class="tech-label" data-i18n="tech-label">技術的な裏付け:</span>
+                        <span data-i18n="longevity-tech">フレームワーク非依存の Vanilla JS 設計。外部APIへの非依存。</span>
+                    </div>
+                    <div class="frequency-badge">
                         <span class="material-symbols-outlined">verified</span>
-                        <span data-i18n="status-osv-safe">Google OSV 監査済み</span>
-                    </div>
-                </section>
-
-                <section class="report-card">
-                    <div class="card-header">
-                        <span class="material-symbols-outlined">lock</span>
-                        <h3 data-i18n="local-title">4. ローカル完結のプライバシー</h3>
-                    </div>
-                    <p data-i18n="local-desc">あなたの記録はすべてブラウザ内にのみ保存されます。外部サーバーへの送信は一切行われず、私たち開発者であってもあなたのデータを見ることはできません。この事実は、ブラウザの開発者ツールで誰でも確認可能です。</p>
-                    <div class="status-badge success">
-                        <span class="material-symbols-outlined">shield</span>
-                        <span data-i18n="status-local-only">Local Only</span>
+                        <span data-i18n="freq-design">設計思想として100%遵守</span>
                     </div>
                 </section>
             </div>
@@ -116,168 +153,248 @@
                 "back-to-top": "トップページへ",
                 "page-title-text": "透明性レポート",
                 "hero-title": "透明性と安全性の維持",
-                "hero-desc": "QuickLog-Soloは、技術的な裏付けに基づいた透明性と安全性を最も重視しています。GitHubや専門知識に不慣れな方でも、私たちの取り組みを安心してご理解いただけるよう、ここで詳しく説明します。",
-                "vanilla-title": "1. 外部ライブラリへの依存ゼロ",
-                "vanilla-desc": "QuickLog-Soloは、外部ライブラリ（OSS）を一切使用せず、「純粋なJavaScript」のみで構築されています。これは「ブラックボックス」を排除することを意味します。すべてのコードが公開されており、第三者による検証が容易です。",
-                "status-no-deps": "外部依存関係なし",
-                "audit-title": "2. 継続的な自動セキュリティ監査",
-                "audit-desc": "GitHub Actionsという仕組みを利用し、開発の全工程でコードの整合性と安全性を自動的にチェックしています。AIなどによる意図しないコードの混入や、脆弱性のリスクを常に監視し、高い基準を維持しています。",
-                "status-audit-passed": "自動監査パス",
-                "osv-title": "3. Google OSV-Scanner による監査",
-                "osv-desc": "Googleが提供する脆弱性スキャンツール「OSV-Scanner」を導入しています。これにより、万が一開発環境などのツールに既知の脆弱性が発見された場合でも、即座に検知して対応できる体制を整えています。",
-                "status-osv-safe": "Google OSV 監査済み",
-                "local-title": "4. ローカル完結のプライバシー",
-                "local-desc": "あなたの記録はすべてブラウザ内にのみ保存されます。外部サーバーへの送信は一切行われず、私たち開発者であってもあなたのデータを見ることはできません。この事実は、ブラウザの開発者ツールで誰でも確認可能です。",
-                "status-local-only": "Local Only",
+                "hero-desc": "QuickLog-Soloは、技術的な裏付けに基づいた透明性と安全性を最も重視しています。私たちがどのような考えでプロジェクトを運営し、どのような手段で安全を確保しているのかを、ここですべて公開します。",
+                "concern-label": "心配なこと:",
+                "tech-label": "技術的な裏付け:",
+                "freq-always": "常に有効 / 更新ごとに自動検証",
+                "freq-on-change": "コード更新ごとに100%実施",
+                "freq-constant": "自動監視 / 定期実行",
+                "freq-design": "設計思想として100%遵守",
+                "privacy-title": "1. データはあなただけのもの",
+                "privacy-concern": "入力した内容がどこかのサーバーに送られていませんか？",
+                "privacy-simple": "結論から言うと、送られることは絶対にありません。データはあなたのPCの中にのみ保存されます。技術的には「外部との通信を物理的に遮断する」設定を組み込んでおり、この安全性はコードが更新されるたびに自動で厳格にテストされています。",
+                "privacy-tech": "Content Security Policy (CSP) による外部通信の完全遮断。",
+                "integrity-title": "2. 隠し事のないオープンなコード",
+                "integrity-concern": "中身が複雑すぎて、悪いプログラムが紛れ込んでいませんか？",
+                "integrity-simple": "中身をブラックボックスにしないために、私たちは「外部の複雑な部品（ライブラリ）」を一切使わずに開発しています。すべてのプログラムが透明で、中身を誰でも確認できる状態にあります。AIなどによって意図しないプログラムが混入していないか、毎回チェックを行っています。",
+                "integrity-tech": "Zero Production Dependencies ポリシー。独自スクリプトによる整合性監査。",
+                "vulnerability-title": "3. 脆弱性からの継続的な保護",
+                "vulnerability-concern": "セキュリティ上の弱点（脆弱性）が放置されていませんか？",
+                "vulnerability-simple": "私たちは、Googleが提供する最新のセキュリティスキャンツール（OSV-Scanner）を導入しています。これにより、万が一開発ツールなどに弱点が見つかった場合でも、即座に検知して修正できる体制を整えています。この監視は、人間が忘れても自動で行われるようになっています。",
+                "vulnerability-tech": "Google OSV-Scanner による継続的な脆弱性データベース照合。",
+                "longevity-title": "4. 将来にわたって変わらない安心",
+                "longevity-concern": "ある日突然、サービスが終了して使えなくなりませんか？",
+                "longevity-simple": "QuickLog-Soloは、特定の企業のサービスや、流行り廃りの激しい最新技術に依存していません。「10年後も変わらず動くこと」を目標に、最も基本的な技術のみで構築されています。たとえ私たちが開発をやめたとしても、あなたのPCにあるアプリは動き続けます。",
+                "longevity-tech": "フレームワーク非依存の Vanilla JS 設計。外部APIへの非依存。",
                 "log-title": "詳細な監査ログ（技術者向け）",
                 "log-desc": "上記の内容を裏付ける技術的な監査ログ（GitHub Actionsの実行結果）を公開しています。専門的な知識をお持ちの方は、こちらから直接検証いただくことが可能です。",
-                "btn-view-log": "監査ログをGitHubで見る"
+                "btn-view-log": "最新の監査結果（サマリー）をGitHubで見る"
             },
             en: {
                 "back-to-top": "Back to Home",
                 "page-title-text": "Transparency Report",
                 "hero-title": "Maintaining Transparency & Security",
-                "hero-desc": "QuickLog-Solo prioritizes transparency and security based on technical evidence. This page explains our efforts in plain language for everyone, including those unfamiliar with GitHub or technical details.",
-                "vanilla-title": "1. Zero External Dependencies",
-                "vanilla-desc": "Built with pure JavaScript, using no external libraries (OSS). This eliminates 'black boxes' and ensures all code is open and easy for anyone to verify.",
-                "status-no-deps": "No Production Dependencies",
-                "audit-title": "2. Continuous Automated Audits",
-                "audit-desc": "We use GitHub Actions to automatically check code integrity and security at every stage of development. We constantly monitor for risks, including unintended code injection.",
-                "status-audit-passed": "Audit Passed",
-                "osv-title": "3. Google OSV-Scanner Auditing",
-                "osv-desc": "By using Google's OSV-Scanner, we ensure that even if vulnerabilities are found in development tools, they are detected and addressed immediately.",
-                "status-osv-safe": "Google OSV Audited",
-                "local-title": "4. Local-Only Privacy",
-                "local-desc": "Your data stays in your browser. No data is sent to external servers, and even we, the developers, cannot access your records. Anyone can verify this using browser developer tools.",
-                "status-local-only": "Local Only",
+                "hero-desc": "QuickLog-Solo prioritizes transparency and security based on technical evidence. Here, we disclose our philosophy and the methods we use to ensure your safety.",
+                "concern-label": "Common Concern:",
+                "tech-label": "Technical Evidence:",
+                "freq-always": "Always Active / Verified on every update",
+                "freq-on-change": "100% executed on every code change",
+                "freq-constant": "Automated Monitoring / Periodic Execution",
+                "freq-design": "100% adhered to by design",
+                "privacy-title": "1. Your Data is Yours Alone",
+                "privacy-concern": "Is my recorded content being sent to a server somewhere?",
+                "privacy-simple": "Simply put, no. Your data never leaves your PC. We have integrated settings that physically block external communication. This safety is strictly and automatically tested every time the code is updated.",
+                "privacy-tech": "Full blocking of external communication via Content Security Policy (CSP).",
+                "integrity-title": "2. Open Code with No Secrets",
+                "integrity-concern": "Is the code too complex? Could there be malicious programs hidden inside?",
+                "integrity-simple": "To avoid 'black boxes,' we develop without using any complex external libraries. All our code is transparent and open for anyone to inspect. We perform checks on every update to ensure no unintended code has been injected.",
+                "integrity-tech": "Zero Production Dependencies policy. Integrity audits via proprietary scripts.",
+                "vulnerability-title": "3. Continuous Protection from Vulnerabilities",
+                "vulnerability-concern": "Are security weaknesses being left unaddressed?",
+                "vulnerability-simple": "We use Google's OSV-Scanner, a state-of-the-art security tool. This allows us to immediately detect and fix any weaknesses in our development tools. This monitoring is automated, so it happens even if a human forgets.",
+                "vulnerability-tech": "Continuous vulnerability database matching via Google OSV-Scanner.",
+                "longevity-title": "4. Peace of Mind for the Future",
+                "longevity-concern": "Will the service suddenly end and become unusable one day?",
+                "longevity-simple": "QuickLog-Solo does not depend on specific corporate services or volatile new technologies. It is built with fundamental tech to ensure it works for 10+ years. Even if we stop development, the app on your PC will keep working.",
+                "longevity-tech": "Framework-independent Vanilla JS design. No reliance on external APIs.",
                 "log-title": "Detailed Audit Logs (For Technical Users)",
-                "log-desc": "We publish technical audit logs that back up these claims. If you have the expertise, you can verify the results directly on GitHub.",
-                "btn-view-log": "View Audit Logs on GitHub"
+                "log-desc": "We publish technical audit logs that back up these claims. Experts can verify the results directly on GitHub.",
+                "btn-view-log": "View Latest Audit Summary on GitHub"
             },
             de: {
                 "back-to-top": "Zurück zur Startseite",
                 "page-title-text": "Transparenzbericht",
                 "hero-title": "Transparenz & Sicherheit",
-                "hero-desc": "QuickLog-Solo legt Wert auf Transparenz und Sicherheit. Diese Seite erklärt unsere Maßnahmen in einfacher Sprache.",
-                "vanilla-title": "1. Keine externen Abhängigkeiten",
-                "vanilla-desc": "Erstellt mit reinem JavaScript, ohne externe Bibliotheken. Dies eliminiert 'Blackboxen' und gewährleistet, dass der gesamte Code offen und leicht zu überprüfen ist.",
-                "status-no-deps": "Keine Produktionsabhängigkeiten",
-                "audit-title": "2. Kontinuierliche automatisierte Audits",
-                "audit-desc": "Wir nutzen GitHub Actions, um die Code-Integrität und -Sicherheit in jeder Phase der Entwicklung automatisch zu überprüfen.",
-                "status-audit-passed": "Audit bestanden",
-                "osv-title": "3. Google OSV-Scanner Prüfung",
-                "osv-desc": "Durch die Verwendung des OSV-Scanners von Google stellen wir sicher, dass Schwachstellen sofort erkannt und behoben werden.",
-                "status-osv-safe": "Google OSV geprüft",
-                "local-title": "4. Lokale Privatsphäre",
-                "local-desc": "Ihre Daten bleiben in Ihrem Browser. Es werden keine Daten an externe Server gesendet.",
-                "status-local-only": "Lokal begrenzt",
+                "hero-desc": "QuickLog-Solo legt Wert auf Transparenz und Sicherheit. Hier legen wir unsere Philosophie und Methoden offen.",
+                "concern-label": "Sorge:",
+                "tech-label": "Technischer Beleg:",
+                "freq-always": "Immer aktiv / Bei jedem Update verifiziert",
+                "freq-on-change": "100% bei jeder Codeänderung ausgeführt",
+                "freq-constant": "Automatisierte Überwachung",
+                "freq-design": "Designbedingt zu 100% eingehalten",
+                "privacy-title": "1. Ihre Daten gehören nur Ihnen",
+                "privacy-concern": "Werden meine Inhalte an einen Server gesendet?",
+                "privacy-simple": "Nein. Ihre Daten verlassen nie Ihren PC. Wir blockieren die externe Kommunikation technisch.",
+                "privacy-tech": "Content Security Policy (CSP) zur Blockierung externer Kommunikation.",
+                "integrity-title": "2. Offener Code ohne Geheimnisse",
+                "integrity-concern": "Könnten bösartige Programme versteckt sein?",
+                "integrity-simple": "Wir verwenden keine komplexen externen Bibliotheken. Unser Code ist für jeden einsehbar.",
+                "integrity-tech": "Zero Production Dependencies Richtlinie.",
+                "vulnerability-title": "3. Schutz vor Schwachstellen",
+                "vulnerability-concern": "Werden Sicherheitslücken ignoriert?",
+                "vulnerability-simple": "Wir nutzen den OSV-Scanner von Google, um Schwachstellen sofort zu erkennen.",
+                "vulnerability-tech": "Kontinuierliche Abgleiche mit der Google OSV-Datenbank.",
+                "longevity-title": "4. Langfristige Sicherheit",
+                "longevity-concern": "Wird der Dienst eines Tages eingestellt?",
+                "longevity-simple": "QuickLog-Solo ist so konzipiert, dass es auch in 10 Jahren noch funktioniert, unabhängig von uns.",
+                "longevity-tech": "Framework-unabhängiges Vanilla JS Design.",
                 "log-title": "Detaillierte Audit-Protokolle",
-                "log-desc": "Wir veröffentlichen technische Audit-Protokolle, die diese Angaben bestätigen.",
+                "log-desc": "Technische Protokolle finden Sie auf GitHub.",
                 "btn-view-log": "Audit-Protokolle auf GitHub ansehen"
             },
             es: {
                 "back-to-top": "Volver al inicio",
                 "page-title-text": "Informe de transparencia",
                 "hero-title": "Transparencia y Seguridad",
-                "hero-desc": "QuickLog-Solo prioriza la transparencia y la seguridad. Esta página explica nuestros esfuerzos en un lenguaje sencillo.",
-                "vanilla-title": "1. Cero dependencias externas",
-                "vanilla-desc": "Construido con JavaScript puro, sin bibliotecas externas. Esto elimina las 'cajas negras' y garantiza que todo el código esté abierto.",
-                "status-no-deps": "Sin dependencias de producción",
-                "audit-title": "2. Auditorías automáticas continuas",
-                "audit-desc": "Usamos GitHub Actions para verificar automáticamente la integridad y seguridad del código en cada etapa del desarrollo.",
-                "status-audit-passed": "Auditoría aprobada",
-                "osv-title": "3. Auditoría con Google OSV-Scanner",
-                "osv-desc": "Al usar OSV-Scanner de Google, nos aseguramos de que las vulnerabilidades se detecten y aborden de inmediato.",
-                "status-osv-safe": "Google OSV auditado",
-                "local-title": "4. Privacidad local",
-                "local-desc": "Sus datos permanecen en su navegador. No se envían datos a servidores externos.",
-                "status-local-only": "Solo local",
+                "hero-desc": "QuickLog-Solo prioriza la transparencia y la seguridad. Aquí detallamos cómo protegemos su información.",
+                "concern-label": "Preocupación:",
+                "tech-label": "Evidencia técnica:",
+                "freq-always": "Siempre activo / Verificado en cada actualización",
+                "freq-on-change": "Ejecutado al 100% en cada cambio de código",
+                "freq-constant": "Monitoreo automatizado",
+                "freq-design": "Cumplido al 100% por diseño",
+                "privacy-title": "1. Sus datos son solo suyos",
+                "privacy-concern": "¿Se envían mis datos a algún servidor?",
+                "privacy-simple": "No. Sus datos nunca salen de su PC. Bloqueamos técnicamente cualquier comunicación externa.",
+                "privacy-tech": "Bloqueo total mediante Content Security Policy (CSP).",
+                "integrity-title": "2. Código abierto sin secretos",
+                "integrity-concern": "¿Hay programas maliciosos ocultos?",
+                "integrity-simple": "No usamos librerías externas complejas. Todo nuestro código es transparente.",
+                "integrity-tech": "Política de Zero Production Dependencies.",
+                "vulnerability-title": "3. Protección contra vulnerabilidades",
+                "vulnerability-concern": "¿Se descuidan los fallos de seguridad?",
+                "vulnerability-simple": "Usamos OSV-Scanner de Google para detectar y corregir fallos automáticamente.",
+                "vulnerability-tech": "Cotejo continuo con la base de datos Google OSV.",
+                "longevity-title": "4. Tranquilidad para el futuro",
+                "longevity-concern": "¿Dejará de funcionar el servicio algún día?",
+                "longevity-simple": "Está construido para durar más de 10 años, sin depender de nosotros.",
+                "longevity-tech": "Diseño Vanilla JS sin dependencias de frameworks.",
                 "log-title": "Logs de auditoría detallados",
-                "log-desc": "Publicamos logs técnicos de auditoría que respaldan estas afirmaciones.",
+                "log-desc": "Puede verificar los detalles técnicos en GitHub.",
                 "btn-view-log": "Ver logs de auditoría en GitHub"
             },
             fr: {
                 "back-to-top": "Retour à l'accueil",
                 "page-title-text": "Rapport de transparence",
                 "hero-title": "Transparence et Sécurité",
-                "hero-desc": "QuickLog-Solo privilégie la transparence et la sécurité. Cette page explique nos efforts en langage clair.",
-                "vanilla-title": "1. Zéro dépendance externe",
-                "vanilla-desc": "Construit avec du JavaScript pur, sans bibliothèques externes. Cela élimine les 'boîtes noires' et garantit que tout le code est ouvert.",
-                "status-no-deps": "Aucune dépendance de production",
-                "audit-title": "2. Audits automatisés continus",
-                "audit-desc": "Nous utilisons GitHub Actions pour vérifier automatiquement l'intégrité et la sécurité du code à chaque étape du développement.",
-                "status-audit-passed": "Audit réussi",
-                "osv-title": "3. Audit Google OSV-Scanner",
-                "osv-desc": "En utilisant l'OSV-Scanner de Google, nous nous assurons que les vulnérabilités sont détectées et traitées immédiatement.",
-                "status-osv-safe": "Google OSV audité",
-                "local-title": "4. Confidentialité locale",
-                "local-desc": "Vos données restent dans votre navigateur. Aucune donnée n'est envoyée à des serveurs externes.",
-                "status-local-only": "Local uniquement",
+                "hero-desc": "QuickLog-Solo privilégie la transparence et la sécurité. Voici comment nous assurons votre protection.",
+                "concern-label": "Préoccupation :",
+                "tech-label": "Preuve technique :",
+                "freq-always": "Toujours actif / Vérifié à chaque mise à jour",
+                "freq-on-change": "Exécuté à 100% à chaque modification",
+                "freq-constant": "Surveillance automatisée",
+                "freq-design": "Respecté à 100% par conception",
+                "privacy-title": "1. Vos données vous appartiennent",
+                "privacy-concern": "Mes données sont-elles envoyées sur un serveur ?",
+                "privacy-simple": "Non. Vos données ne quittent jamais votre PC. Nous bloquons techniquement toute communication externe.",
+                "privacy-tech": "Blocage via Content Security Policy (CSP).",
+                "integrity-title": "2. Code ouvert sans secrets",
+                "integrity-concern": "Y a-t-il des programmes malveillants cachés ?",
+                "integrity-simple": "Nous n'utilisons aucune bibliothèque externe complexe. Tout notre code est transparent.",
+                "integrity-tech": "Politique Zero Production Dependencies.",
+                "vulnerability-title": "3. Protection contre les vulnérabilités",
+                "vulnerability-concern": "Les failles de sécurité sont-elles ignorées ?",
+                "vulnerability-simple": "Nous utilisons l'OSV-Scanner de Google pour détecter les failles automatiquement.",
+                "vulnerability-tech": "Vérification continue via Google OSV.",
+                "longevity-title": "4. Sérénité pour l'avenir",
+                "longevity-concern": "Le service s'arrêtera-t-il un jour ?",
+                "longevity-simple": "Conçu pour durer plus de 10 ans, indépendamment de nous.",
+                "longevity-tech": "Conception Vanilla JS sans framework.",
                 "log-title": "Logs d'audit détaillés",
-                "log-desc": "Nous publions des logs d'audit techniques qui soutiennent ces affirmations.",
+                "log-desc": "Vérifiez les détails techniques sur GitHub.",
                 "btn-view-log": "Voir les logs d'audit sur GitHub"
             },
             pt: {
                 "back-to-top": "Voltar ao início",
                 "page-title-text": "Relatório de transparência",
                 "hero-title": "Transparência e Segurança",
-                "hero-desc": "QuickLog-Solo prioriza a transparência e a segurança. Esta página explica nossos esforços em linguagem clara.",
-                "vanilla-title": "1. Zero dependências externas",
-                "vanilla-desc": "Construído com JavaScript puro, sem bibliotecas externas. Isso elimina 'caixas pretas' e garante que todo o código seja aberto.",
-                "status-no-deps": "Sem dependências de produção",
-                "audit-title": "2. Auditorias automatizadas contínuas",
-                "audit-desc": "Usamos o GitHub Actions para verificar automaticamente a integridade e a segurança do código em todas as etapas do desenvolvimento.",
-                "status-audit-passed": "Auditoria aprovada",
-                "osv-title": "3. Auditoria com Google OSV-Scanner",
-                "osv-desc": "Ao usar o OSV-Scanner do Google, garantimos que as vulnerabilidades sejam detectadas e resolvidas imediatamente.",
-                "status-osv-safe": "Google OSV auditado",
-                "local-title": "4. Privacidade local apenas",
-                "local-desc": "Seus dados permanecem no seu navegador. Nenhum dado é enviado para servidores externos.",
-                "status-local-only": "Apenas local",
+                "hero-desc": "QuickLog-Solo prioriza a transparência e a segurança. Aqui explicamos como protegemos seus dados.",
+                "concern-label": "Preocupação:",
+                "tech-label": "Evidência técnica:",
+                "freq-always": "Sempre ativo / Verificado em cada atualização",
+                "freq-on-change": "100% executado em cada alteração",
+                "freq-constant": "Monitoramento automatizado",
+                "freq-design": "100% cumprido por design",
+                "privacy-title": "1. Seus dados pertencem só a você",
+                "privacy-concern": "Meus dados são enviados para algum servidor?",
+                "privacy-simple": "Não. Seus dados nunca saem do seu PC. Bloqueamos tecnicamente qualquer comunicação externa.",
+                "privacy-tech": "Bloqueio total via Content Security Policy (CSP).",
+                "integrity-title": "2. Código aberto sem segredos",
+                "integrity-concern": "Existem programas maliciosos escondidos?",
+                "integrity-simple": "Não usamos bibliotecas externas complexas. Todo o nosso código é transparente.",
+                "integrity-tech": "Política de Zero Production Dependencies.",
+                "vulnerability-title": "3. Proteção contra vulnerabilidades",
+                "vulnerability-concern": "As falhas de segurança são ignoradas?",
+                "vulnerability-simple": "Usamos o OSV-Scanner do Google para detectar falhas automaticamente.",
+                "vulnerability-tech": "Conferência contínua com a base Google OSV.",
+                "longevity-title": "4. Tranquilidade para o futuro",
+                "longevity-concern": "O serviço vai parar de funcionar algum dia?",
+                "longevity-simple": "Construído para durar mais de 10 anos, sem depender de nós.",
+                "longevity-tech": "Design Vanilla JS sem frameworks.",
                 "log-title": "Logs de auditoria detalhados",
-                "log-desc": "Publicamos logs de auditoria técnica que sustentam essas afirmações.",
+                "log-desc": "Verifique os detalhes técnicos no GitHub.",
                 "btn-view-log": "Ver logs de auditoria no GitHub"
             },
             ko: {
                 "back-to-top": "홈으로 돌아가기",
                 "page-title-text": "투명성 보고서",
                 "hero-title": "투명성 및 보안 유지",
-                "hero-desc": "QuickLog-Solo는 기술적 근거를 바탕으로 투명성과 보안을 최우선으로 합니다. GitHub나 전문 지식에 익숙하지 않은 분들도 안심하고 이해하실 수 있도록 여기서 자세히 설명합니다.",
-                "vanilla-title": "1. 외부 라이브러리 의존성 제로",
-                "vanilla-desc": "외부 라이브러리(OSS)를 전혀 사용하지 않고 '순수 JavaScript'만으로 구축되었습니다. 이는 '블랙박스'를 제거하고 모든 코드를 투명하게 공개함을 의미합니다.",
-                "status-no-deps": "외부 의존성 없음",
-                "audit-title": "2. 지속적인 자동 보안 감사",
-                "audit-desc": "GitHub Actions를 통해 개발 모든 단계에서 코드 정합성과 보안을 자동으로 체크합니다. 의도치 않은 코드 혼입이나 취약점 리스크를 상시 모니터링합니다.",
-                "status-audit-passed": "자동 감사 통과",
-                "osv-title": "3. Google OSV-Scanner를 통한 감사",
-                "osv-desc": "Google의 취약점 스캔 도구인 OSV-Scanner를 도입하여 개발 환경 도구의 취약점까지 즉각 감지하고 대응할 수 있는 체계를 갖추고 있습니다.",
-                "status-osv-safe": "Google OSV 감사 완료",
-                "local-title": "4. 로컬 완결형 프라이버시",
-                "local-desc": "귀하의 기록은 브라우저 내에만 저장됩니다. 외부 서버로의 전송은 일체 없으며 개발자조차 귀하의 데이터를 볼 수 없습니다.",
-                "status-local-only": "로컬 전용",
+                "hero-desc": "QuickLog-Solo는 기술적 근거를 바탕으로 투명성과 보안을 최우선으로 합니다. 우리가 어떻게 프로젝트를 운영하고 안전을 확보하는지 여기에서 모두 공개합니다.",
+                "concern-label": "우려되는 점:",
+                "tech-label": "기술적 근거:",
+                "freq-always": "항상 활성화 / 업데이트마다 자동 검증",
+                "freq-on-change": "코드 변경 시마다 100% 실행",
+                "freq-constant": "자동 모니터링 / 정기 실행",
+                "freq-design": "설계 원칙으로 100% 준수",
+                "privacy-title": "1. 데이터는 오직 귀하의 것",
+                "privacy-concern": "입력한 내용이 어딘가의 서버로 전송되고 있나요?",
+                "privacy-simple": "결론부터 말씀드리면, 절대 전송되지 않습니다. 데이터는 귀하의 PC에만 저장됩니다. 기술적으로 외부 통신을 차단하며, 이는 업데이트마다 자동으로 테스트됩니다.",
+                "privacy-tech": "Content Security Policy (CSP)를 통한 외부 통신 완전 차단.",
+                "integrity-title": "2. 숨김없는 공개 코드",
+                "integrity-concern": "코드가 너무 복잡해서 악성 프로그램이 숨어있지 않을까요?",
+                "integrity-simple": "블랙박스를 없애기 위해 외부 라이브러리를 사용하지 않고 개발합니다. 모든 코드는 투명하게 공개되어 누구나 확인할 수 있습니다.",
+                "integrity-tech": "Zero Production Dependencies 정책 및 정합성 감사.",
+                "vulnerability-title": "3. 취약점으로부터의 지속적인 보호",
+                "vulnerability-concern": "보안상 약점이 방치되고 있지는 않나요?",
+                "vulnerability-simple": "Google의 OSV-Scanner를 도입하여 개발 도구의 약점까지 즉각 감지하고 수정할 수 있는 체계를 갖추고 있습니다.",
+                "vulnerability-tech": "Google OSV-Scanner를 통한 지속적인 취약점 데이터베이스 대조.",
+                "longevity-title": "4. 미래에도 변함없는 안심",
+                "longevity-concern": "어느 날 갑자기 서비스가 종료되어 못 쓰게 되지 않을까요?",
+                "longevity-simple": "특정 기업의 서비스나 유행하는 기술에 의존하지 않습니다. 10년 후에도 변함없이 동작하도록 가장 기본적인 기술로 구축되었습니다.",
+                "longevity-tech": "프레임워크 의존성 없는 Vanilla JS 설계.",
                 "log-title": "상세 감사 로그 (기술자용)",
-                "log-desc": "위 내용을 뒷받침하는 기술적인 감사 로그를 공개하고 있습니다. 전문 지식이 있는 분은 직접 검증하실 수 있습니다.",
+                "log-desc": "기술적인 감사 로그를 GitHub에서 직접 확인하실 수 있습니다.",
                 "btn-view-log": "GitHub에서 감사 로그 보기"
             },
             zh: {
                 "back-to-top": "返回首页",
                 "page-title-text": "透明性报告",
                 "hero-title": "维持透明与安全",
-                "hero-desc": "QuickLog-Solo 将基于技术证据的透明度与安全性放在首位。本页面用通俗易懂的语言向所有人说明我们的努力。",
-                "vanilla-title": "1. 零外部库依赖",
-                "vanilla-desc": "完全使用纯 JavaScript 构建，不使用任何外部库 (OSS)。这意味着消除了“黑箱”，确保所有代码公开且易于验证。",
-                "status-no-deps": "无生产环境依赖",
-                "audit-title": "2. 持续自动化安全审计",
-                "audit-desc": "我们利用 GitHub Actions 在开发的每个阶段自动检查代码的完整性与安全性，始终监控潜在风险。",
-                "status-audit-passed": "自动审计通过",
-                "osv-title": "3. Google OSV-Scanner 审计",
-                "osv-desc": "通过引入 Google 的 OSV-Scanner 脆弱性扫描工具，我们确保即使开发工具发现漏洞也能立即检测并修复。",
-                "status-osv-safe": "Google OSV 已审计",
-                "local-title": "4. 本地隐私保护",
-                "local-desc": "您的记录仅保存在浏览器中。绝不向外部服务器发送数据，即使是开发者也无法访问您的数据。",
-                "status-local-only": "仅限本地",
+                "hero-desc": "QuickLog-Solo 将基于技术证据的透明度与安全性放在首位。在这里，我们公开所有的运营理念与安全保障手段。",
+                "concern-label": "担心的事：",
+                "tech-label": "技术依据：",
+                "freq-always": "始终有效 / 每次更新自动验证",
+                "freq-on-change": "每次代码变更 100% 执行",
+                "freq-constant": "自动监控 / 定期执行",
+                "freq-design": "作为设计理念 100% 遵守",
+                "privacy-title": "1. 数据仅属于您个人",
+                "privacy-concern": "输入的内容会被发送到服务器吗？",
+                "privacy-simple": "绝对不会。数据仅保存在您的电脑中。我们通过技术手段物理隔绝外部通信，且每次代码更新都会自动验证此安全性。",
+                "privacy-tech": "通过 Content Security Policy (CSP) 完全拦截外部通信。",
+                "integrity-title": "2. 无秘密的开放代码",
+                "integrity-concern": "代码是否太复杂？其中会隐藏恶意程序吗？",
+                "integrity-simple": "为了不产生“黑箱”，我们不使用任何外部复杂库进行开发。所有程序均透明公开，任何人都可以检查，并防止意外程序混入。",
+                "integrity-tech": "Zero Production Dependencies 政策及整合性审计。",
+                "vulnerability-title": "3. 持续防御脆弱性",
+                "vulnerability-concern": "安全漏洞会被置之不理吗？",
+                "vulnerability-simple": "我们引入了 Google 的 OSV-Scanner 安全扫描工具。即使开发工具发现漏洞，也能立即检测并修复，且此过程是自动化的。",
+                "vulnerability-tech": "通过 Google OSV-Scanner 持续比对脆弱性数据库。",
+                "longevity-title": "4. 面向未来的长久安心",
+                "longevity-concern": "某天服务会突然停止而无法使用吗？",
+                "longevity-simple": "它不依赖于特定公司的服务或流行技术。目标是“10年后依然能运行”，即使我们停止开发，它依然能在您的电脑上运行。",
+                "longevity-tech": "无框架依赖的 Vanilla JS 设计。",
                 "log-title": "详细审计日志（面向技术人员）",
-                "log-desc": "我们公开了支持上述内容的详细技术审计日志。具备专业知识的用户可以直接验证结果。",
+                "log-desc": "您可以在 GitHub 上直接验证详细的技术审计日志。",
                 "btn-view-log": "在 GitHub 上查看审计日志"
             }
         };

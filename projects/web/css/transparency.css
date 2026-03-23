@@ -115,8 +115,59 @@ body {
 .report-card p {
     font-size: 0.95rem;
     color: var(--md-sys-color-on-surface-variant);
-    margin-bottom: var(--md-sys-spacing-3);
-    flex: 1;
+    margin-bottom: var(--md-sys-spacing-2);
+}
+
+.concern-box {
+    background-color: #fff8f8;
+    border-left: 4px solid #ff5252;
+    padding: var(--md-sys-spacing-1) var(--md-sys-spacing-1-5);
+    margin-bottom: var(--md-sys-spacing-2);
+    border-radius: 0 8px 8px 0;
+}
+
+.concern-label {
+    font-weight: 700;
+    color: #d32f2f;
+    margin-right: 8px;
+    font-size: 0.85rem;
+}
+
+.tech-evidence {
+    background-color: var(--md-sys-color-surface-container-high);
+    padding: var(--md-sys-spacing-1-5);
+    border-radius: 12px;
+    margin-top: auto;
+    margin-bottom: var(--md-sys-spacing-2);
+}
+
+.tech-label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--md-sys-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.tech-evidence span:not(.tech-label) {
+    font-size: 0.85rem;
+    font-family: 'Roboto Mono', monospace;
+    color: var(--md-sys-color-on-surface);
+}
+
+.frequency-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: var(--md-sys-shape-full);
+    font-weight: 500;
+    font-size: 0.75rem;
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    align-self: flex-start;
 }
 
 .status-badge {
