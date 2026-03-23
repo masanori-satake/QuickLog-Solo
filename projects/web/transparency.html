@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickLog-Solo - Transparency Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+Symbols:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="shared/css/m3-theme.css">
+    <link rel="stylesheet" href="css/transparency.css">
+    <link rel="icon" href="shared/assets/icon.svg" type="image/svg+xml">
+</head>
+<body class="theme-light">
+    <div id="transparency-container">
+        <header class="transparency-header">
+            <div class="header-content">
+                <a href="index.html" class="back-link">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    <span data-i18n="back-to-top">トップページへ</span>
+                </a>
+                <h1 data-i18n="page-title-text">透明性レポート</h1>
+            </div>
+            <div class="lang-switcher">
+                <select onchange="setLanguage(this.value)" id="lang-select-transparency" class="lang-select">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="pt">🇧🇷 Português</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="zh">🇨🇳 简体中文</option>
+                </select>
+            </div>
+        </header>
+
+        <main class="transparency-main">
+            <section class="transparency-hero">
+                <span class="material-symbols-outlined hero-icon">verified_user</span>
+                <h2 data-i18n="hero-title">透明性と安全性の維持</h2>
+                <p data-i18n="hero-desc">QuickLog-Soloは、技術的な裏付けに基づいた透明性と安全性を最も重視しています。GitHubや専門知識に不慣れな方でも、私たちの取り組みを安心してご理解いただけるよう、ここで詳しく説明します。</p>
+            </section>
+
+            <div class="report-grid">
+                <section class="report-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">code</span>
+                        <h3 data-i18n="vanilla-title">1. 外部ライブラリへの依存ゼロ</h3>
+                    </div>
+                    <p data-i18n="vanilla-desc">QuickLog-Soloは、外部ライブラリ（OSS）を一切使用せず、「純粋なJavaScript」のみで構築されています。これは「ブラックボックス」を排除することを意味します。すべてのコードが公開されており、第三者による検証が容易です。</p>
+                    <div class="status-badge success">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span data-i18n="status-no-deps">外部依存関係なし</span>
+                    </div>
+                </section>
+
+                <section class="report-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">security</span>
+                        <h3 data-i18n="audit-title">2. 継続的な自動セキュリティ監査</h3>
+                    </div>
+                    <p data-i18n="audit-desc">GitHub Actionsという仕組みを利用し、開発の全工程でコードの整合性と安全性を自動的にチェックしています。AIなどによる意図しないコードの混入や、脆弱性のリスクを常に監視し、高い基準を維持しています。</p>
+                    <div class="status-badge success">
+                        <span class="material-symbols-outlined">published_with_changes</span>
+                        <span data-i18n="status-audit-passed">自動監査パス</span>
+                    </div>
+                </section>
+
+                <section class="report-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">search_check</span>
+                        <h3 data-i18n="osv-title">3. Google OSV-Scanner による監査</h3>
+                    </div>
+                    <p data-i18n="osv-desc">Googleが提供する脆弱性スキャンツール「OSV-Scanner」を導入しています。これにより、万が一開発環境などのツールに既知の脆弱性が発見された場合でも、即座に検知して対応できる体制を整えています。</p>
+                    <div class="status-badge success">
+                        <span class="material-symbols-outlined">verified</span>
+                        <span data-i18n="status-osv-safe">Google OSV 監査済み</span>
+                    </div>
+                </section>
+
+                <section class="report-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">lock</span>
+                        <h3 data-i18n="local-title">4. ローカル完結のプライバシー</h3>
+                    </div>
+                    <p data-i18n="local-desc">あなたの記録はすべてブラウザ内にのみ保存されます。外部サーバーへの送信は一切行われず、私たち開発者であってもあなたのデータを見ることはできません。この事実は、ブラウザの開発者ツールで誰でも確認可能です。</p>
+                    <div class="status-badge success">
+                        <span class="material-symbols-outlined">shield</span>
+                        <span data-i18n="status-local-only">Local Only</span>
+                    </div>
+                </section>
+            </div>
+
+            <section class="technical-log card">
+                <h3 data-i18n="log-title">詳細な監査ログ（技術者向け）</h3>
+                <p data-i18n="log-desc">上記の内容を裏付ける技術的な監査ログ（GitHub Actionsの実行結果）を公開しています。専門的な知識をお持ちの方は、こちらから直接検証いただくことが可能です。</p>
+                <div class="log-actions">
+                    <a href="https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/audit.yml" target="_blank" class="btn-primary">
+                        <span class="material-symbols-outlined">history_edu</span>
+                        <span data-i18n="btn-view-log">監査ログをGitHubで見る</span>
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <footer class="transparency-footer">
+            <p>&copy; 2026 Masanori SATAKE. QuickLog-Solo Transparency Report.</p>
+        </footer>
+    </div>
+
+    <script>
+        const translations = {
+            ja: {
+                "back-to-top": "トップページへ",
+                "page-title-text": "透明性レポート",
+                "hero-title": "透明性と安全性の維持",
+                "hero-desc": "QuickLog-Soloは、技術的な裏付けに基づいた透明性と安全性を最も重視しています。GitHubや専門知識に不慣れな方でも、私たちの取り組みを安心してご理解いただけるよう、ここで詳しく説明します。",
+                "vanilla-title": "1. 外部ライブラリへの依存ゼロ",
+                "vanilla-desc": "QuickLog-Soloは、外部ライブラリ（OSS）を一切使用せず、「純粋なJavaScript」のみで構築されています。これは「ブラックボックス」を排除することを意味します。すべてのコードが公開されており、第三者による検証が容易です。",
+                "status-no-deps": "外部依存関係なし",
+                "audit-title": "2. 継続的な自動セキュリティ監査",
+                "audit-desc": "GitHub Actionsという仕組みを利用し、開発の全工程でコードの整合性と安全性を自動的にチェックしています。AIなどによる意図しないコードの混入や、脆弱性のリスクを常に監視し、高い基準を維持しています。",
+                "status-audit-passed": "自動監査パス",
+                "osv-title": "3. Google OSV-Scanner による監査",
+                "osv-desc": "Googleが提供する脆弱性スキャンツール「OSV-Scanner」を導入しています。これにより、万が一開発環境などのツールに既知の脆弱性が発見された場合でも、即座に検知して対応できる体制を整えています。",
+                "status-osv-safe": "Google OSV 監査済み",
+                "local-title": "4. ローカル完結のプライバシー",
+                "local-desc": "あなたの記録はすべてブラウザ内にのみ保存されます。外部サーバーへの送信は一切行われず、私たち開発者であってもあなたのデータを見ることはできません。この事実は、ブラウザの開発者ツールで誰でも確認可能です。",
+                "status-local-only": "Local Only",
+                "log-title": "詳細な監査ログ（技術者向け）",
+                "log-desc": "上記の内容を裏付ける技術的な監査ログ（GitHub Actionsの実行結果）を公開しています。専門的な知識をお持ちの方は、こちらから直接検証いただくことが可能です。",
+                "btn-view-log": "監査ログをGitHubで見る"
+            },
+            en: {
+                "back-to-top": "Back to Home",
+                "page-title-text": "Transparency Report",
+                "hero-title": "Maintaining Transparency & Security",
+                "hero-desc": "QuickLog-Solo prioritizes transparency and security based on technical evidence. This page explains our efforts in plain language for everyone, including those unfamiliar with GitHub or technical details.",
+                "vanilla-title": "1. Zero External Dependencies",
+                "vanilla-desc": "Built with pure JavaScript, using no external libraries (OSS). This eliminates 'black boxes' and ensures all code is open and easy for anyone to verify.",
+                "status-no-deps": "No Production Dependencies",
+                "audit-title": "2. Continuous Automated Audits",
+                "audit-desc": "We use GitHub Actions to automatically check code integrity and security at every stage of development. We constantly monitor for risks, including unintended code injection.",
+                "status-audit-passed": "Audit Passed",
+                "osv-title": "3. Google OSV-Scanner Auditing",
+                "osv-desc": "By using Google's OSV-Scanner, we ensure that even if vulnerabilities are found in development tools, they are detected and addressed immediately.",
+                "status-osv-safe": "Google OSV Audited",
+                "local-title": "4. Local-Only Privacy",
+                "local-desc": "Your data stays in your browser. No data is sent to external servers, and even we, the developers, cannot access your records. Anyone can verify this using browser developer tools.",
+                "status-local-only": "Local Only",
+                "log-title": "Detailed Audit Logs (For Technical Users)",
+                "log-desc": "We publish technical audit logs that back up these claims. If you have the expertise, you can verify the results directly on GitHub.",
+                "btn-view-log": "View Audit Logs on GitHub"
+            },
+            de: {
+                "back-to-top": "Zurück zur Startseite",
+                "page-title-text": "Transparenzbericht",
+                "hero-title": "Transparenz & Sicherheit",
+                "hero-desc": "QuickLog-Solo legt Wert auf Transparenz und Sicherheit. Diese Seite erklärt unsere Maßnahmen in einfacher Sprache.",
+                "vanilla-title": "1. Keine externen Abhängigkeiten",
+                "vanilla-desc": "Erstellt mit reinem JavaScript, ohne externe Bibliotheken. Dies eliminiert 'Blackboxen' und gewährleistet, dass der gesamte Code offen und leicht zu überprüfen ist.",
+                "status-no-deps": "Keine Produktionsabhängigkeiten",
+                "audit-title": "2. Kontinuierliche automatisierte Audits",
+                "audit-desc": "Wir nutzen GitHub Actions, um die Code-Integrität und -Sicherheit in jeder Phase der Entwicklung automatisch zu überprüfen.",
+                "status-audit-passed": "Audit bestanden",
+                "osv-title": "3. Google OSV-Scanner Prüfung",
+                "osv-desc": "Durch die Verwendung des OSV-Scanners von Google stellen wir sicher, dass Schwachstellen sofort erkannt und behoben werden.",
+                "status-osv-safe": "Google OSV geprüft",
+                "local-title": "4. Lokale Privatsphäre",
+                "local-desc": "Ihre Daten bleiben in Ihrem Browser. Es werden keine Daten an externe Server gesendet.",
+                "status-local-only": "Lokal begrenzt",
+                "log-title": "Detaillierte Audit-Protokolle",
+                "log-desc": "Wir veröffentlichen technische Audit-Protokolle, die diese Angaben bestätigen.",
+                "btn-view-log": "Audit-Protokolle auf GitHub ansehen"
+            },
+            es: {
+                "back-to-top": "Volver al inicio",
+                "page-title-text": "Informe de transparencia",
+                "hero-title": "Transparencia y Seguridad",
+                "hero-desc": "QuickLog-Solo prioriza la transparencia y la seguridad. Esta página explica nuestros esfuerzos en un lenguaje sencillo.",
+                "vanilla-title": "1. Cero dependencias externas",
+                "vanilla-desc": "Construido con JavaScript puro, sin bibliotecas externas. Esto elimina las 'cajas negras' y garantiza que todo el código esté abierto.",
+                "status-no-deps": "Sin dependencias de producción",
+                "audit-title": "2. Auditorías automáticas continuas",
+                "audit-desc": "Usamos GitHub Actions para verificar automáticamente la integridad y seguridad del código en cada etapa del desarrollo.",
+                "status-audit-passed": "Auditoría aprobada",
+                "osv-title": "3. Auditoría con Google OSV-Scanner",
+                "osv-desc": "Al usar OSV-Scanner de Google, nos aseguramos de que las vulnerabilidades se detecten y aborden de inmediato.",
+                "status-osv-safe": "Google OSV auditado",
+                "local-title": "4. Privacidad local",
+                "local-desc": "Sus datos permanecen en su navegador. No se envían datos a servidores externos.",
+                "status-local-only": "Solo local",
+                "log-title": "Logs de auditoría detallados",
+                "log-desc": "Publicamos logs técnicos de auditoría que respaldan estas afirmaciones.",
+                "btn-view-log": "Ver logs de auditoría en GitHub"
+            },
+            fr: {
+                "back-to-top": "Retour à l'accueil",
+                "page-title-text": "Rapport de transparence",
+                "hero-title": "Transparence et Sécurité",
+                "hero-desc": "QuickLog-Solo privilégie la transparence et la sécurité. Cette page explique nos efforts en langage clair.",
+                "vanilla-title": "1. Zéro dépendance externe",
+                "vanilla-desc": "Construit avec du JavaScript pur, sans bibliothèques externes. Cela élimine les 'boîtes noires' et garantit que tout le code est ouvert.",
+                "status-no-deps": "Aucune dépendance de production",
+                "audit-title": "2. Audits automatisés continus",
+                "audit-desc": "Nous utilisons GitHub Actions pour vérifier automatiquement l'intégrité et la sécurité du code à chaque étape du développement.",
+                "status-audit-passed": "Audit réussi",
+                "osv-title": "3. Audit Google OSV-Scanner",
+                "osv-desc": "En utilisant l'OSV-Scanner de Google, nous nous assurons que les vulnérabilités sont détectées et traitées immédiatement.",
+                "status-osv-safe": "Google OSV audité",
+                "local-title": "4. Confidentialité locale",
+                "local-desc": "Vos données restent dans votre navigateur. Aucune donnée n'est envoyée à des serveurs externes.",
+                "status-local-only": "Local uniquement",
+                "log-title": "Logs d'audit détaillés",
+                "log-desc": "Nous publions des logs d'audit techniques qui soutiennent ces affirmations.",
+                "btn-view-log": "Voir les logs d'audit sur GitHub"
+            },
+            pt: {
+                "back-to-top": "Voltar ao início",
+                "page-title-text": "Relatório de transparência",
+                "hero-title": "Transparência e Segurança",
+                "hero-desc": "QuickLog-Solo prioriza a transparência e a segurança. Esta página explica nossos esforços em linguagem clara.",
+                "vanilla-title": "1. Zero dependências externas",
+                "vanilla-desc": "Construído com JavaScript puro, sem bibliotecas externas. Isso elimina 'caixas pretas' e garante que todo o código seja aberto.",
+                "status-no-deps": "Sem dependências de produção",
+                "audit-title": "2. Auditorias automatizadas contínuas",
+                "audit-desc": "Usamos o GitHub Actions para verificar automaticamente a integridade e a segurança do código em todas as etapas do desenvolvimento.",
+                "status-audit-passed": "Auditoria aprovada",
+                "osv-title": "3. Auditoria com Google OSV-Scanner",
+                "osv-desc": "Ao usar o OSV-Scanner do Google, garantimos que as vulnerabilidades sejam detectadas e resolvidas imediatamente.",
+                "status-osv-safe": "Google OSV auditado",
+                "local-title": "4. Privacidade local apenas",
+                "local-desc": "Seus dados permanecem no seu navegador. Nenhum dado é enviado para servidores externos.",
+                "status-local-only": "Apenas local",
+                "log-title": "Logs de auditoria detalhados",
+                "log-desc": "Publicamos logs de auditoria técnica que sustentam essas afirmações.",
+                "btn-view-log": "Ver logs de auditoria no GitHub"
+            },
+            ko: {
+                "back-to-top": "홈으로 돌아가기",
+                "page-title-text": "투명성 보고서",
+                "hero-title": "투명성 및 보안 유지",
+                "hero-desc": "QuickLog-Solo는 기술적 근거를 바탕으로 투명성과 보안을 최우선으로 합니다. GitHub나 전문 지식에 익숙하지 않은 분들도 안심하고 이해하실 수 있도록 여기서 자세히 설명합니다.",
+                "vanilla-title": "1. 외부 라이브러리 의존성 제로",
+                "vanilla-desc": "외부 라이브러리(OSS)를 전혀 사용하지 않고 '순수 JavaScript'만으로 구축되었습니다. 이는 '블랙박스'를 제거하고 모든 코드를 투명하게 공개함을 의미합니다.",
+                "status-no-deps": "외부 의존성 없음",
+                "audit-title": "2. 지속적인 자동 보안 감사",
+                "audit-desc": "GitHub Actions를 통해 개발 모든 단계에서 코드 정합성과 보안을 자동으로 체크합니다. 의도치 않은 코드 혼입이나 취약점 리스크를 상시 모니터링합니다.",
+                "status-audit-passed": "자동 감사 통과",
+                "osv-title": "3. Google OSV-Scanner를 통한 감사",
+                "osv-desc": "Google의 취약점 스캔 도구인 OSV-Scanner를 도입하여 개발 환경 도구의 취약점까지 즉각 감지하고 대응할 수 있는 체계를 갖추고 있습니다.",
+                "status-osv-safe": "Google OSV 감사 완료",
+                "local-title": "4. 로컬 완결형 프라이버시",
+                "local-desc": "귀하의 기록은 브라우저 내에만 저장됩니다. 외부 서버로의 전송은 일체 없으며 개발자조차 귀하의 데이터를 볼 수 없습니다.",
+                "status-local-only": "로컬 전용",
+                "log-title": "상세 감사 로그 (기술자용)",
+                "log-desc": "위 내용을 뒷받침하는 기술적인 감사 로그를 공개하고 있습니다. 전문 지식이 있는 분은 직접 검증하실 수 있습니다.",
+                "btn-view-log": "GitHub에서 감사 로그 보기"
+            },
+            zh: {
+                "back-to-top": "返回首页",
+                "page-title-text": "透明性报告",
+                "hero-title": "维持透明与安全",
+                "hero-desc": "QuickLog-Solo 将基于技术证据的透明度与安全性放在首位。本页面用通俗易懂的语言向所有人说明我们的努力。",
+                "vanilla-title": "1. 零外部库依赖",
+                "vanilla-desc": "完全使用纯 JavaScript 构建，不使用任何外部库 (OSS)。这意味着消除了“黑箱”，确保所有代码公开且易于验证。",
+                "status-no-deps": "无生产环境依赖",
+                "audit-title": "2. 持续自动化安全审计",
+                "audit-desc": "我们利用 GitHub Actions 在开发的每个阶段自动检查代码的完整性与安全性，始终监控潜在风险。",
+                "status-audit-passed": "自动审计通过",
+                "osv-title": "3. Google OSV-Scanner 审计",
+                "osv-desc": "通过引入 Google 的 OSV-Scanner 脆弱性扫描工具，我们确保即使开发工具发现漏洞也能立即检测并修复。",
+                "status-osv-safe": "Google OSV 已审计",
+                "local-title": "4. 本地隐私保护",
+                "local-desc": "您的记录仅保存在浏览器中。绝不向外部服务器发送数据，即使是开发者也无法访问您的数据。",
+                "status-local-only": "仅限本地",
+                "log-title": "详细审计日志（面向技术人员）",
+                "log-desc": "我们公开了支持上述内容的详细技术审计日志。具备专业知识的用户可以直接验证结果。",
+                "btn-view-log": "在 GitHub 上查看审计日志"
+            }
+        };
+
+        function setLanguage(lang) {
+            const allowedLangs = ['en', 'ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+            const safeLang = allowedLangs.includes(lang) ? lang : 'en';
+
+            const url = new URL(window.location);
+            url.searchParams.set('lang', safeLang);
+            window.history.replaceState({}, '', url);
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[safeLang][key]) {
+                    el.textContent = translations[safeLang][key];
+                }
+            });
+
+            // Update back link
+            const backLink = document.querySelector('.back-link');
+            if (backLink) {
+                backLink.href = `index.html?lang=${encodeURIComponent(safeLang)}`;
+            }
+
+            // Update dropdown
+            document.getElementById('lang-select-transparency').value = safeLang;
+
+            // Update page title
+            const titles = {
+                ja: "QuickLog-Solo - 透明性レポート",
+                en: "QuickLog-Solo - Transparency Report",
+                de: "QuickLog-Solo - Transparenzbericht",
+                es: "QuickLog-Solo - Informe de transparencia",
+                fr: "QuickLog-Solo - Rapport de transparence",
+                pt: "QuickLog-Solo - Relatório de transparência",
+                ko: "QuickLog-Solo - 투명성 보고서",
+                zh: "QuickLog-Solo - 透明性报告"
+            };
+            document.title = titles[safeLang] || titles['en'];
+        }
+
+        // Initialize language
+        const params = new URLSearchParams(window.location.search);
+        const lang = params.get('lang') || (navigator.language.startsWith('ja') ? 'ja' : 'en');
+        setLanguage(lang);
+    </script>
+</body>
+</html>

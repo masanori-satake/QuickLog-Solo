@@ -1,0 +1,189 @@
+/* transparency.css - Transparency Report specific styles */
+
+body {
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
+    font-family: Roboto, 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    height: auto;
+    overflow-y: auto;
+}
+
+#transparency-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--md-sys-spacing-2);
+}
+
+.transparency-header {
+    padding: var(--md-sys-spacing-4) 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    margin-bottom: var(--md-sys-spacing-4);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-2);
+}
+
+.back-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--md-sys-color-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.transparency-header h1 {
+    font-size: var(--md-sys-typescale-headline-small-size);
+    margin: 0;
+}
+
+.lang-select {
+    padding: 6px 12px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 20px;
+    background-color: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.transparency-hero {
+    text-align: center;
+    margin-bottom: var(--md-sys-spacing-6);
+    padding: var(--md-sys-spacing-4) 0;
+}
+
+.hero-icon {
+    font-size: 64px !important;
+    color: var(--md-sys-color-primary);
+    margin-bottom: var(--md-sys-spacing-2);
+}
+
+.transparency-hero h2 {
+    font-size: var(--md-sys-typescale-display-small-size);
+    margin-bottom: var(--md-sys-spacing-2);
+    color: var(--md-sys-color-on-background);
+}
+
+.transparency-hero p {
+    font-size: 1.1rem;
+    color: var(--md-sys-color-on-surface-variant);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: var(--md-sys-spacing-3);
+    margin-bottom: var(--md-sys-spacing-6);
+}
+
+.report-card {
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: var(--md-sys-shape-large);
+    padding: var(--md-sys-spacing-3);
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-1-5);
+    margin-bottom: var(--md-sys-spacing-2);
+}
+
+.card-header .material-symbols-outlined {
+    color: var(--md-sys-color-secondary);
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: var(--md-sys-typescale-title-large-size);
+}
+
+.report-card p {
+    font-size: 0.95rem;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: var(--md-sys-spacing-3);
+    flex: 1;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--md-sys-shape-full);
+    font-weight: 500;
+    font-size: 0.875rem;
+    align-self: flex-start;
+}
+
+.status-badge.success {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.technical-log.card {
+    background-color: var(--md-sys-color-surface-container-high);
+    padding: var(--md-sys-spacing-4);
+    border-radius: var(--md-sys-shape-large);
+    text-align: center;
+    margin-bottom: var(--md-sys-spacing-8);
+}
+
+.technical-log h3 {
+    margin-top: 0;
+    color: var(--md-sys-color-primary);
+}
+
+.log-actions {
+    margin-top: var(--md-sys-spacing-3);
+}
+
+.btn-primary {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    padding: 12px 24px;
+    border-radius: var(--md-sys-shape-full);
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    box-shadow: var(--md-sys-elevation-2);
+    filter: brightness(1.1);
+}
+
+.transparency-footer {
+    text-align: center;
+    padding: var(--md-sys-spacing-4) 0;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.875rem;
+}
+
+@media (width <= 600px) {
+    .report-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .transparency-hero h2 {
+        font-size: 1.75rem;
+    }
+}
