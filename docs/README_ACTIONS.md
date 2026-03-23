@@ -32,6 +32,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 ### ブランチトリガーと無限ループ防止
 PR マージ時の動作を確実にするため、および自動更新による無限ループを防ぐため、以下の指針を徹底しています。
 
+- **PR作成権限の確保:** 資産の自動更新などで Pull Request を自動作成するワークフロー（`peter-evans/create-pull-request` 等を使用する場合）を正しく動作させるため、リポジトリ設定の **Settings > Actions > General > Workflow permissions** にて **"Allow GitHub Actions to create and approve pull requests"** を有効にする必要があります。これは YAML ファイル内で `pull-requests: write` を指定している場合でも必要な設定です。
 - **マージトリガー:** PR マージ時にワークフローを確実に実行するため、`pull_request` トリガーに加えて、`main` ブランチへの `push` トリガーを明示的に含めます。
 - **無限ループの防止:** アセットを自動生成してリポジトリにコミットするワークフロー（`update_guide_screenshots.yml` 等）では、`push` トリガーに `paths` フィルタを設定し、生成されたアセット自体（例: `shared/assets/guide/*.png`）を監視対象から**除外**します。これにより、自動コミットが自身のトリガーを再度引くことを防ぎます。
 - **ブランチ名:** 開発およびマージ先ブランチには一貫して `main` を使用します。`master` はレガシー名称として使用を禁止します。
