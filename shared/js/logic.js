@@ -1,5 +1,5 @@
 import { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
-import { SYSTEM_CATEGORY_IDLE, escapeHtml } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, escapeHtml, escapeTsv } from './utils.js';
 import { t } from './i18n.js';
 
 export function formatDuration(ms) {
@@ -107,6 +107,8 @@ export function generateReport(logs, options) {
     switch (format) {
         case 'csv':
             return formatAsCsv(items);
+        case 'tsv':
+            return formatAsTsv(items);
         case 'html':
             return formatAsHtml(items, options);
         case 'markdown':
@@ -209,6 +211,14 @@ function formatAsCsv(items) {
         csv += `${item.start},${item.end},"${item.category.replace(/"/g, '""')}",${item.durText}\n`;
     });
     return csv;
+}
+
+function formatAsTsv(items) {
+    let tsv = 'startTime\tendTime\tcategory\tduration\n';
+    items.forEach(item => {
+        tsv += `${item.start}\t${item.end}\t${escapeTsv(item.category)}\t${item.durText}\n`;
+    });
+    return tsv;
 }
 
 function formatAsHtml(items, options) {

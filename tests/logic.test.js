@@ -332,6 +332,20 @@ describe('Logic Module', () => {
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,\d{1,2}:\d{2}( [AP]M)?,"Task 1",30m/);
         });
 
+        test('generates tsv report', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'tsv' });
+            expect(report).toContain('startTime\tendTime\tcategory\tduration');
+            expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?\t\d{1,2}:\d{2}( [AP]M)?\tTask 1\t30m/);
+        });
+
+        test('tsv report handles quotes and tabs in category', () => {
+            const logsWithTab = [
+                { startTime: 1000, endTime: 2000, category: 'Task "A"\tB' }
+            ];
+            const report = generateReport(logsWithTab, { ...defaultOptions, format: 'tsv' });
+            expect(report).toContain('"Task ""A""\tB"');
+        });
+
         test('handles emoji removal', () => {
             const report = generateReport(sampleLogs, { ...defaultOptions, emoji: 'remove' });
             expect(report).toMatch(/- \d{1,2}:\d{2}( [AP]M)? \| Task 2/);

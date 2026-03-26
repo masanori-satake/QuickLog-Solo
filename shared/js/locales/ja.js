@@ -192,6 +192,7 @@ export default {
     'report-format-wiki': 'Wikiマークアップ',
     'report-format-html': 'HTML表',
     'report-format-csv': 'CSV',
+    'report-format-tsv': 'TSV',
     'report-format-text-table': 'テキスト(表形式)',
     'report-format-text-plain': 'テキスト(枠無し)',
     'report-emoji-title': '絵文字除去',

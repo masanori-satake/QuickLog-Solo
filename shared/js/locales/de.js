@@ -173,6 +173,7 @@ export default {
     'report-format-wiki': 'Wiki-Markup',
     'report-format-html': 'HTML-Tabelle',
     'report-format-csv': 'CSV',
+    'report-format-tsv': 'TSV',
     'report-format-text-table': 'Text (Tabellenformat)',
     'report-format-text-plain': 'Text (ohne Rahmen)',
     'report-emoji-title': 'Emoji-Entfernung',

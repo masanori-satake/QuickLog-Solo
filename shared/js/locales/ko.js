@@ -173,6 +173,7 @@ export default {
     'report-format-wiki': 'Wiki 마크업',
     'report-format-html': 'HTML 표',
     'report-format-csv': 'CSV',
+    'report-format-tsv': 'TSV',
     'report-format-text-table': '텍스트(표 형식)',
     'report-format-text-plain': '텍스트(테두리 없음)',
     'report-emoji-title': '이모지 제거',
