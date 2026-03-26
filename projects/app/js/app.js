@@ -7,7 +7,7 @@ import {
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation } from '../shared/js/logic.js';
-import { escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
+import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { animations } from '../shared/js/animation_registry.js';
 import {

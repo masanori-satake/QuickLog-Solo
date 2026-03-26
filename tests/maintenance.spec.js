@@ -49,6 +49,8 @@ test.describe('Maintenance and Initialization', () => {
         await expect(page.locator('body')).not.toHaveClass(/theme-dark/);
 
         // 5. Verify custom category still exists
+        // Use a small delay to ensure event listeners are attached after reload
+        await page.waitForTimeout(500);
         await page.click('#settings-toggle');
         await page.waitForSelector('#settings-popup', { state: 'visible' });
         await page.click('button[data-tab="categories"]');

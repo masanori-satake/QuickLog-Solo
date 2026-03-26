@@ -96,6 +96,7 @@ graph TD
     -   履歴ログ・カテゴリ情報は NDJSON形式、設定情報は JSON形式で保存。
 -   **js/utils.js (共通):** 共通定数、バリデーション、HTMLエスケープ、時刻計算補助。
 -   **js/i18n.js / messages.js (共通):** 多言語対応ロジックと、各言語ごとの翻訳リソース。
+- **shared/js/locales/*.js:** 各言語固有の翻訳定義。`common.js` を除き、すべて `export default` を使用してメッセージオブジェクトを公開します。
 
 ---
 
@@ -350,6 +351,10 @@ graph TD
 - **ドラッグ＆ドロップ:** カテゴリの並べ替えを直感的に行い、その結果を `order` 属性に反映させます。
 - **ページ区切り (Page Break):** メインアプリのページネーションを制御するための特殊なカテゴリ（`SYSTEM_CATEGORY_PAGE_BREAK`）を挿入・編集できます。
 
+### UI の差分更新 (Granular Updates)
+パフォーマンス向上のため、リスト全体を再描画せずに特定の項目のみを更新する仕組みを備えています。
+- **`updateListItem(idx)`**: `ui.js` からエクスポートされ、`category-editor.js` の `state.updateListItem` に登録されます。入力イベント（名前の変更など）に連動して、リスト上の該当する DOM 要素のみを同期します。
+
 ---
 
 ## 5. QL-Animation Studio
@@ -513,7 +518,9 @@ graph TD
     - **Density (密度):** キャンバス上の点灯ドットの割合。
     - **Change Rate (変化率):** 1フレーム前と比較して、状態（色）が変化した画素の割合。
 
-### Animation Engine (共通エンジン) の仕様と使用方法
+---
+
+## 6. Animation Engine (共通エンジン) の仕様と使用方法
 
 `js/animations.js` に実装されている `AnimationEngine` は、メインアプリ、Studio、Category Editor のすべてで共通の描画基盤として使用されます。
 
@@ -615,6 +622,11 @@ graph TD
 
 ## 8. 開発ワークフロー
 
+### コーディング・スタイル規約 (CSS & Linting)
+- **CSS 継承と詳細度**: `landing.css` 等において、不必要な重複セレクタを避け、ベースとなるスタイルから派生するセレクタへと正しく降順の詳細度（descending specificity）を維持してください。
+- **色の指定**: 6桁の 16進数カラーコード（例: `#FFFFFF`）を一貫して使用してください。
+- **表示制御**: 要素の表示・非表示の切り替えには、標準化された `.hidden { display: none !important; }` ユーティリティクラスを使用してください。
+
 ### ディレクトリ構成
 - `projects/app/`: メインプロジェクト（ブラウザ拡張機能）のソースコード一式。
 - `projects/studio/`, `projects/category-editor/`, `projects/web/`: 各サブプロジェクトのルート。
@@ -626,12 +638,20 @@ graph TD
 ### バージョン管理
 `npm run version:bump` コマンドにより、`projects/app/version.json`, `package.json`, `projects/app/manifest.*.json` を一括更新します。
 
+### ブランチ同期とマージ
+`main` ブランチからのプルやマージを行う際、意図せずマージされた場合や同期が必要な場合は、自作ロジックを優先してコンフリクトを解消します。特に Python スクリプト等でマージマーカーによる構文エラーが発生していないか、提出前に手動で確認してください。
+
 ### ビルドとパッケージング
 `npm run build` により、以下の処理を自動実行します：
 1. **PNGアイコン生成**: `shared/assets/icon.svg` から各サイズ（16/32/48/128）の `icon.png` を生成します (`scripts/generate_png_icons.py`)。
 2. **アニメーションレジストリ生成**: `shared/js/animation/` 内の全モジュールをスキャンし、`shared/js/animation_registry.js` を自動生成します (`scripts/generate_animation_registry.py`)。
 3. **バージョン整合性チェック**: `package.json`, `projects/app/version.json`, マニフェストファイル間でのバージョン番号の一致を確認します (`scripts/check_version.py`)。
 4. **ZIPパッケージ作成**: Chrome 用のマニフェストを適用し、`releases/` ディレクトリに配布用 ZIP パッケージを作成します (`scripts/create_package.py`)。
+
+### フロントエンド開発用サーバー
+ローカル環境で表示確認を行うためのサーバーを起動できます。
+- **実行コマンド**: `npm run dev`
+- **代替コマンド**: `npm run dev` スクリプトが定義されていない場合は、直接 Vite を使用して起動します： `npx vite --port 8080`
 
 ### その他の管理スクリプト
 - **scripts/bump_version.py**: バージョン番号をインクリメントし、関連ファイルすべてを同期更新します。

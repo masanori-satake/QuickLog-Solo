@@ -3,7 +3,7 @@ import { t, setLanguage } from './i18n.js';
 import { validateCategorySchema, SCHEMA_TYPE_PAGE_BREAK } from './schema.js';
 
 export let DB_NAME = 'QuickLogSoloDB';
-export const DB_VERSION = 2;
+const DB_VERSION = 2;
 
 export function setDatabaseName(name) {
     DB_NAME = name;
