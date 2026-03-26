@@ -1,5 +1,5 @@
 import { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
-import { SYSTEM_CATEGORY_IDLE, escapeHtml, escapeTsv } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, escapeHtml, escapeTsv, escapeCsv } from './utils.js';
 import { t } from './i18n.js';
 
 export function formatDuration(ms) {
@@ -208,7 +208,7 @@ function prepareReportItems(logs, options) {
 function formatAsCsv(items) {
     let csv = 'startTime,endTime,category,duration\n';
     items.forEach(item => {
-        csv += `${item.start},${item.end},"${item.category.replace(/"/g, '""')}",${item.durText}\n`;
+        csv += `${item.start},${item.end},${escapeCsv(item.category)},${item.durText}\n`;
     });
     return csv;
 }

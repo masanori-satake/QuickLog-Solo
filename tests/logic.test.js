@@ -329,7 +329,7 @@ describe('Logic Module', () => {
         test('generates csv report', () => {
             const report = generateReport(sampleLogs, { ...defaultOptions, format: 'csv' });
             expect(report).toContain('startTime,endTime,category,duration');
-            expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,\d{1,2}:\d{2}( [AP]M)?,"Task 1",30m/);
+            expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,\d{1,2}:\d{2}( [AP]M)?,Task 1,30m/);
         });
 
         test('generates tsv report', () => {
