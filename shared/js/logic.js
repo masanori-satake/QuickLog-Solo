@@ -1,5 +1,5 @@
 import { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
-import { SYSTEM_CATEGORY_IDLE, escapeHtml } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, escapeHtml, escapeTsv, escapeCsv } from './utils.js';
 import { t } from './i18n.js';
 
 export function formatDuration(ms) {
@@ -107,6 +107,8 @@ export function generateReport(logs, options) {
     switch (format) {
         case 'csv':
             return formatAsCsv(items);
+        case 'tsv':
+            return formatAsTsv(items);
         case 'html':
             return formatAsHtml(items, options);
         case 'markdown':
@@ -204,11 +206,15 @@ function prepareReportItems(logs, options) {
 }
 
 function formatAsCsv(items) {
-    let csv = 'startTime,endTime,category,duration\n';
-    items.forEach(item => {
-        csv += `${item.start},${item.end},"${item.category.replace(/"/g, '""')}",${item.durText}\n`;
-    });
-    return csv;
+    const header = 'startTime,endTime,category,duration';
+    const lines = items.map(item => `${item.start},${item.end},${escapeCsv(item.category)},${item.durText}`);
+    return [header, ...lines].join('\n') + '\n';
+}
+
+function formatAsTsv(items) {
+    const header = 'startTime\tendTime\tcategory\tduration';
+    const lines = items.map(item => `${item.start}\t${item.end}\t${escapeTsv(item.category)}\t${item.durText}`);
+    return [header, ...lines].join('\n') + '\n';
 }
 
 function formatAsHtml(items, options) {

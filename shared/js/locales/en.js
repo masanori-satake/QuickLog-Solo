@@ -192,6 +192,7 @@ export default {
     'report-format-wiki': 'Wiki markup',
     'report-format-html': 'HTML Table',
     'report-format-csv': 'CSV',
+    'report-format-tsv': 'TSV',
     'report-format-text-table': 'Text (Table)',
     'report-format-text-plain': 'Text (Plain)',
     'report-emoji-title': 'Emoji Removal',

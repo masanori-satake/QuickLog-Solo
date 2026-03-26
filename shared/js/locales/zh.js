@@ -173,6 +173,7 @@ export default {
     'report-format-wiki': 'Wiki 标记',
     'report-format-html': 'HTML 表格',
     'report-format-csv': 'CSV',
+    'report-format-tsv': 'TSV',
     'report-format-text-table': '文本 (表格形式)',
     'report-format-text-plain': '文本 (无框)',
     'report-emoji-title': '移除表情',

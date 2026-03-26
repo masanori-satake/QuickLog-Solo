@@ -23,6 +23,21 @@ export function escapeHtml(str) {
 }
 
 /**
+ * Escapes a string for TSV field.
+ * Quotes the field if it contains tabs, quotes, or newlines.
+ * Escapes double quotes by doubling them.
+ * @param {string} str
+ * @returns {string}
+ */
+export function escapeTsv(str) {
+    if (typeof str !== 'string') return str;
+    if (str.includes('\t') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+}
+
+/**
  * Escapes a string for CSV field.
  * Quotes the field if it contains commas, quotes, or newlines.
  * Escapes double quotes by doubling them.

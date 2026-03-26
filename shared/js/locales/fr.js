@@ -173,6 +173,7 @@ export default {
     'report-format-wiki': 'Balisage Wiki',
     'report-format-html': 'Tableau HTML',
     'report-format-csv': 'CSV',
+    'report-format-tsv': 'TSV',
     'report-format-text-table': 'Texte (format tableau)',
     'report-format-text-plain': 'Texte (sans cadre)',
     'report-emoji-title': 'Suppression d\'émojis',

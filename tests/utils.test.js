@@ -1,5 +1,5 @@
 import {
-    escapeHtml, escapeCsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName
+    escapeHtml, escapeCsv, escapeTsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName
 } from '../shared/js/utils.js';
 
 describe('Utils Module', () => {
@@ -22,6 +22,21 @@ describe('Utils Module', () => {
         });
         test('handles newlines', () => {
             expect(escapeCsv('a\nb')).toBe('"a\nb"');
+        });
+    });
+
+    describe('escapeTsv', () => {
+        test('quotes fields with tabs', () => {
+            expect(escapeTsv('a\tb')).toBe('"a\tb"');
+        });
+        test('escapes quotes', () => {
+            expect(escapeTsv('a"b')).toBe('"a""b"');
+        });
+        test('handles newlines', () => {
+            expect(escapeTsv('a\nb')).toBe('"a\nb"');
+        });
+        test('does not quote fields with commas', () => {
+            expect(escapeTsv('a,b')).toBe('a,b');
         });
     });
 
