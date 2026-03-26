@@ -206,19 +206,15 @@ function prepareReportItems(logs, options) {
 }
 
 function formatAsCsv(items) {
-    let csv = 'startTime,endTime,category,duration\n';
-    items.forEach(item => {
-        csv += `${item.start},${item.end},${escapeCsv(item.category)},${item.durText}\n`;
-    });
-    return csv;
+    const header = 'startTime,endTime,category,duration';
+    const lines = items.map(item => `${item.start},${item.end},${escapeCsv(item.category)},${item.durText}`);
+    return [header, ...lines].join('\n') + '\n';
 }
 
 function formatAsTsv(items) {
-    let tsv = 'startTime\tendTime\tcategory\tduration\n';
-    items.forEach(item => {
-        tsv += `${item.start}\t${item.end}\t${escapeTsv(item.category)}\t${item.durText}\n`;
-    });
-    return tsv;
+    const header = 'startTime\tendTime\tcategory\tduration';
+    const lines = items.map(item => `${item.start}\t${item.end}\t${escapeTsv(item.category)}\t${item.durText}`);
+    return [header, ...lines].join('\n') + '\n';
 }
 
 function formatAsHtml(items, options) {
