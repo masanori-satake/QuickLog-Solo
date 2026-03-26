@@ -1,5 +1,6 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
+    dbGetByName, getCurrentAppState, dbGetActiveTask,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
@@ -119,6 +120,39 @@ describe('DB Module', () => {
         const settings = await initDB();
         expect(settings.activeTask.isPaused).toBe(true);
         expect(settings.activeTask.category).toBe(SYSTEM_CATEGORY_IDLE);
+    });
+
+    test('dbGetByName finds category by name', async () => {
+        await openDatabase();
+        await dbAdd(STORE_CATEGORIES, { name: 'UniqueCat', color: 'primary' });
+        const cat = await dbGetByName(STORE_CATEGORIES, 'UniqueCat');
+        expect(cat).toBeDefined();
+        expect(cat.name).toBe('UniqueCat');
+
+        const nonExistent = await dbGetByName(STORE_CATEGORIES, 'NonExistent');
+        expect(nonExistent).toBeUndefined();
+    });
+
+    test('getCurrentAppState returns current configuration', async () => {
+        await openDatabase();
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_THEME, value: 'dark' });
+        await dbAdd(STORE_CATEGORIES, { name: 'Cat 1', order: 0 });
+
+        const state = await getCurrentAppState();
+        expect(state.theme).toBe('dark');
+        expect(state.categories.length).toBeGreaterThan(0);
+        expect(state.activeTask).toBeDefined();
+    });
+
+    test('dbGetActiveTask finds task without endTime', async () => {
+        await openDatabase();
+        const now = Date.now();
+        await dbAdd(STORE_LOGS, { category: 'Closed', startTime: now - 2000, endTime: now - 1000 });
+        await dbAdd(STORE_LOGS, { category: 'Active', startTime: now - 500, endTime: null });
+
+        const activeTask = await dbGetActiveTask();
+        expect(activeTask).toBeDefined();
+        expect(activeTask.category).toBe('Active');
     });
 
     test('initDB migrates open idle log to pauseState', async () => {
