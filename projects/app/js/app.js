@@ -894,8 +894,11 @@ async function openReportModal() {
         getEl(ID_REPORT_FORMAT_SELECT).value = reportSettings.format;
         getEl(ID_REPORT_EMOJI_SELECT).value = reportSettings.emoji;
         getEl(ID_REPORT_ENDTIME_SELECT).value = reportSettings.endTime;
+        updateDurationSelectOptions(reportSettings.format);
         getEl(ID_REPORT_DURATION_SELECT).value = reportSettings.duration;
         getEl(ID_REPORT_ADJUST_SELECT).value = reportSettings.adjust || 'none';
+    } else {
+        updateDurationSelectOptions(getEl(ID_REPORT_FORMAT_SELECT).value);
     }
 
     updateReportUI();
@@ -911,6 +914,38 @@ async function openTagAggregationModal() {
 
     await updateTagAggregationUI();
     getEl(ID_TAG_AGGREGATION_MODAL).classList.remove('hidden');
+}
+
+function updateDurationSelectOptions(format) {
+    const select = getEl(ID_REPORT_DURATION_SELECT);
+    if (!select) return;
+
+    const currentValue = select.value;
+    select.replaceChildren();
+
+    const addOption = (value, i18nKey) => {
+        const opt = createEl('option');
+        opt.value = value;
+        opt.textContent = t(i18nKey);
+        opt.setAttribute('data-i18n', i18nKey);
+        select.appendChild(opt);
+    };
+
+    addOption('none', 'report-duration-none');
+
+    if (format === 'csv' || format === 'tsv') {
+        addOption('right', 'report-endtime-show'); // Use "Show" (あり) label for "right"
+        if (currentValue === 'bottom') {
+            select.value = 'right';
+            reportSettings.duration = 'right';
+        } else {
+            select.value = currentValue;
+        }
+    } else {
+        addOption('right', 'report-duration-right');
+        addOption('bottom', 'report-duration-bottom');
+        select.value = currentValue;
+    }
 }
 
 async function updateReportUI() {
@@ -1861,6 +1896,11 @@ function setupEventListeners() {
         getEl(id)?.addEventListener('change', (e) => {
             const key = e.target.dataset.key || id.replace('report-', '').replace('-select', '');
             reportSettings[key] = e.target.value;
+
+            if (id === ID_REPORT_FORMAT_SELECT) {
+                updateDurationSelectOptions(e.target.value);
+            }
+
             updateReportUI();
             saveReportSettings();
         });

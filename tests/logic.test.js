@@ -326,14 +326,30 @@ describe('Logic Module', () => {
             expect(report).toMatch(/- \d{1,2}:\d{2}( [AP]M)? \| \(待機\)/);
         });
 
-        test('generates csv report', () => {
+        test('generates csv report (default: no endTime, no duration)', () => {
             const report = generateReport(sampleLogs, { ...defaultOptions, format: 'csv' });
+            expect(report).toContain('startTime,category');
+            expect(report).not.toContain('endTime');
+            expect(report).not.toContain('duration');
+            expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,Task 1/);
+        });
+
+        test('generates csv report with endTime and duration', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'csv', endTime: 'show', duration: 'right' });
             expect(report).toContain('startTime,endTime,category,duration');
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,\d{1,2}:\d{2}( [AP]M)?,Task 1,30m/);
         });
 
-        test('generates tsv report', () => {
+        test('generates tsv report (default: no endTime, no duration)', () => {
             const report = generateReport(sampleLogs, { ...defaultOptions, format: 'tsv' });
+            expect(report).toContain('startTime\tcategory');
+            expect(report).not.toContain('endTime');
+            expect(report).not.toContain('duration');
+            expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?\tTask 1/);
+        });
+
+        test('generates tsv report with endTime and duration', () => {
+            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'tsv', endTime: 'show', duration: 'right' });
             expect(report).toContain('startTime\tendTime\tcategory\tduration');
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?\t\d{1,2}:\d{2}( [AP]M)?\tTask 1\t30m/);
         });

@@ -106,9 +106,9 @@ export function generateReport(logs, options) {
 
     switch (format) {
         case 'csv':
-            return formatAsCsv(items);
+            return formatAsCsv(items, options);
         case 'tsv':
-            return formatAsTsv(items);
+            return formatAsTsv(items, options);
         case 'html':
             return formatAsHtml(items, options);
         case 'markdown':
@@ -205,15 +205,39 @@ function prepareReportItems(logs, options) {
     });
 }
 
-function formatAsCsv(items) {
-    const header = 'startTime,endTime,category,duration';
-    const lines = items.map(item => `${item.start},${item.end},${escapeCsv(item.category)},${item.durText}`);
+function formatAsCsv(items, options) {
+    const { endTime, duration } = options;
+    const columns = ['startTime'];
+    if (endTime === 'show') columns.push('endTime');
+    columns.push('category');
+    if (duration !== 'none') columns.push('duration');
+
+    const header = columns.join(',');
+    const lines = items.map(item => {
+        const row = [item.start];
+        if (endTime === 'show') row.push(item.end);
+        row.push(escapeCsv(item.category));
+        if (duration !== 'none') row.push(item.durText);
+        return row.join(',');
+    });
     return [header, ...lines].join('\n') + '\n';
 }
 
-function formatAsTsv(items) {
-    const header = 'startTime\tendTime\tcategory\tduration';
-    const lines = items.map(item => `${item.start}\t${item.end}\t${escapeTsv(item.category)}\t${item.durText}`);
+function formatAsTsv(items, options) {
+    const { endTime, duration } = options;
+    const columns = ['startTime'];
+    if (endTime === 'show') columns.push('endTime');
+    columns.push('category');
+    if (duration !== 'none') columns.push('duration');
+
+    const header = columns.join('\t');
+    const lines = items.map(item => {
+        const row = [item.start];
+        if (endTime === 'show') row.push(item.end);
+        row.push(escapeTsv(item.category));
+        if (duration !== 'none') row.push(item.durText);
+        return row.join('\t');
+    });
     return [header, ...lines].join('\n') + '\n';
 }
 
