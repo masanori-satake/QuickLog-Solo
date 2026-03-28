@@ -70,6 +70,7 @@ jobs:
       with:
         commit_message: "chore: ガイド用スクリーンショットの更新"
         file_pattern: 'shared/assets/guide/*.png'
+        branch: ${{ github.head_ref }}
 
     - name: Create Pull Request (Manual/Main)
       if: github.event_name != 'pull_request'
