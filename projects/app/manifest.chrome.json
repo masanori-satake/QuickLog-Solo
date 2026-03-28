@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "QuickLog-Solo",
-  "version": "0.44.1",
-  "description": "1秒で記録、1秒で集計 - ミニマリスト向けサイドパネル作業メモツール",
+  "default_locale": "en",
+  "name": "__MSG_extensionName__",
+  "version": "0.45.0",
+  "description": "__MSG_extensionDescription__",
   "permissions": [
     "sidePanel",
     "alarms",
@@ -13,7 +14,7 @@
     "extension_pages": "default-src 'self'; connect-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://raw.githubusercontent.com;"
   },
   "action": {
-    "default_title": "QuickLog-Soloを開く",
+    "default_title": "__MSG_actionTitle__",
     "default_icon": {
       "16": "shared/assets/icon16.png",
       "32": "shared/assets/icon32.png",
