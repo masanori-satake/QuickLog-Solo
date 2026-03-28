@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "QuickLog-Solo"
+  },
+  "extensionDescription": {
+    "message": "1秒で記録、1秒で集計、1秒で安心 - ミニマリスト向けサイドパネル作業メモツール"
+  },
+  "actionTitle": {
+    "message": "QuickLog-Soloを開く"
+  }
+}
