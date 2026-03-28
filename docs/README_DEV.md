@@ -84,6 +84,7 @@ graph TD
 -   **js/logic.js (ロジック層 / 共通):**
     -   タスクの開始・終了・一時停止の純粋な状態遷移ロジック。
     -   時間のフォーマット計算、レポート生成ロジック、タグ集計。
+    -   `formatDuration` は `HH:MM:SS` 文字列を直接返す（100時間以上にも対応）。
     -   DOMに依存せず、純粋なデータ処理に特化。
 -   **js/db.js (データ層 / 共通):**
     -   IndexedDB (Raw API) のカプセル化。
@@ -572,7 +573,7 @@ engine.worker.postMessage({ type: 'init', payload: { modulePath: blobUrl } });
 
 ---
 
-## 6. Webサイト・資産 (Landing Page & Quick Start Guide)
+## 7. Webサイト・資産 (Landing Page & Quick Start Guide)
 
 ### アーキテクチャ図 (Web Assets)
 
@@ -614,13 +615,13 @@ graph TD
 
 ---
 
-## 7. 設計原則と行動指針
+## 8. 設計原則と行動指針
 
 本プロジェクトで採用している設計原則（SLAP, DRY, KISS, YAGNI, OCP）の詳細および具体的な行動指針については、[AGENTS.md](AGENTS.md) を参照してください。
 
 ---
 
-## 8. 開発ワークフロー
+## 9. 開発ワークフロー
 
 ### コーディング・スタイル規約 (CSS & Linting)
 - **CSS 継承と詳細度**: `landing.css` 等において、不必要な重複セレクタを避け、ベースとなるスタイルから派生するセレクタへと正しく降順の詳細度（descending specificity）を維持してください。
@@ -664,7 +665,7 @@ graph TD
 
 ---
 
-## 9. テストと品質管理
+## 10. テストと品質管理
 
 ### テスト環境の仮想化 (Virtualization)
 
@@ -732,7 +733,7 @@ npx stylelint "**/*.css"
 
 ---
 
-## 10. 拡張・修正時の注意点
+## 11. 拡張・修正時の注意点
 
 1. **ドキュメントの更新:** 実装の修正や拡張を行った場合、必ず関連ドキュメントを更新してください。
 2. **Vanilla JS の維持:** プロダクションコードにおける外部ライブラリの導入は原則禁止です。
@@ -740,7 +741,7 @@ npx stylelint "**/*.css"
 
 ---
 
-## 11. 関連ドキュメント
+## 12. 関連ドキュメント
 
 - [製品仕様書 (spec.md)](spec.md)
 - [テスト計画・ケース定義書 (README_TEST.md)](README_TEST.md)
@@ -749,7 +750,7 @@ npx stylelint "**/*.css"
 
 ---
 
-## 12. 運用・トラブルシューティング
+## 13. 運用・トラブルシューティング
 
 ### CodeQL: "3 configurations not found" 警告の解消
 GitHub のプルリクエストにおいて、CodeQL スキャンの結果に以下のような警告が表示されることがあります。

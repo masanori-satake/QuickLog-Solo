@@ -142,7 +142,6 @@ async function setupAlarms() {
                     when: scheduledTime,
                     periodInMinutes: 1440 // Daily repeat
                 });
-                console.log(`QuickLog-Solo: Scheduled alarm ${alarm.id} at ${new Date(scheduledTime).toLocaleString()}`);
             }
         }
     } catch (error) {
@@ -156,8 +155,6 @@ async function setupAlarms() {
  * Executes the logic associated with an alarm.
  */
 async function executeAlarmAction(alarmData, activeTask) {
-    console.log(`QuickLog-Solo: Executing alarm action: ${alarmData.action}`);
-
     if (alarmData.action === 'stop') {
         await stopTaskLogic(activeTask, true);
     } else if (alarmData.action === 'pause') {
@@ -256,11 +253,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             const isRedundantStart = alarmData.action === 'start' && activeTask && !activeTask.isPaused && activeTask.category === alarmData.actionCategory;
 
             if (isRedundantStop || isRedundantPause || isRedundantStart) {
-                console.log(`QuickLog-Solo: Alarm [ID: ${alarmData.id}] skipped because state would not change (${alarmData.action})`);
                 return;
             }
-
-            console.log(`QuickLog-Solo: Alarm triggered [ID: ${alarmData.id}] message: ${alarmData.message}`);
 
             const hasAction = alarmData.action && alarmData.action !== 'none';
             const requireConfirmation = !!alarmData.requireConfirmation;

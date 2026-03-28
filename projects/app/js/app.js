@@ -348,7 +348,6 @@ async function renderCategories() {
     }
     lastCategoryRenderData = currentRenderData;
 
-    console.log('QuickLog-Solo: Rendering categories...');
     const list = getEl(ID_CATEGORY_LIST);
     if (!list) return;
     list.replaceChildren();
@@ -568,7 +567,6 @@ function initAnimationEngine() {
 function setupBroadcastChannel() {
     syncChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
     syncChannel.onmessage = (event) => {
-        console.log('QuickLog-Solo: Received sync message', event.data);
         if (event.data.type === 'reload') {
             location.reload();
         } else if (event.data.type === 'alarms-updated') {
@@ -757,7 +755,6 @@ function updateFontSelect() {
 }
 
 async function updateUI() {
-    console.log('QuickLog-Solo: updateUI called');
     if (timerInterval) clearInterval(timerInterval);
 
     try {
@@ -2406,7 +2403,6 @@ function setupEventListeners() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('QuickLog-Solo: DOMContentLoaded');
     const urlParams = new URLSearchParams(window.location.search);
     const dbParam = urlParams.get('db');
     if (dbParam) {

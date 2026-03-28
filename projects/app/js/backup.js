@@ -127,7 +127,6 @@ class BackupManager {
             this.status = BACKUP_STATUS.SUCCESS;
         } catch (e) {
             if (e.message === 'ABORT_BY_USER') {
-                console.log('QuickLog-Solo: Backup aborted by user');
                 this.status = BACKUP_STATUS.SUCCESS;
             } else {
                 console.error('QuickLog-Solo: Backup failed', e);
@@ -320,7 +319,6 @@ class BackupManager {
                 const dateStr = entry.name.replace('.ndjson', '');
                 if (new Date(dateStr).getTime() < threshold - 86400000) {
                     await this.directoryHandle.removeEntry(entry.name);
-                    console.log(`QuickLog-Solo: Cleaned up old backup file: ${entry.name}`);
                 }
             }
         }
