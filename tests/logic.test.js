@@ -37,6 +37,11 @@ describe('Logic Module', () => {
             const ms = (123 * 3600000) + (45 * 60000) + 6000;
             expect(formatDuration(ms)).toBe('123:45:06');
         });
+
+        test('handles extremely long durations (1000+ hours)', () => {
+            const ms = (1024 * 3600000) + (59 * 60000) + 59000;
+            expect(formatDuration(ms)).toBe('1024:59:59');
+        });
     });
 
     describe('formatLogDuration', () => {
