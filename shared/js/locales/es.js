@@ -58,8 +58,8 @@ export default {
     'btn-test-notification': 'Probar notificación',
     'test-notification-message': 'Esta es una prueba de notificación. Está funcionando correctamente.',
 
-    'setting-enabled': 'Activado (SÍ)',
-    'setting-disabled': 'Desactivado (NO)',
+    'setting-enabled': 'Activado (ON)',
+    'setting-disabled': 'Desactivado (OFF)',
     'setting-language': 'Idioma',
     'lang-auto': 'Idioma del navegador',
     'lang-ja': 'Japonés',

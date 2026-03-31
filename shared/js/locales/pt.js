@@ -59,7 +59,7 @@ export default {
     'test-notification-message': 'Este é um teste de notificação. Está funcionando corretamente.',
 
     'setting-enabled': 'Ativado (LIGADO)',
-    'setting-disabled': 'Deactivado (DESLIGADO)',
+    'setting-disabled': 'Desativado (DESLIGADO)',
     'setting-language': 'Idioma',
     'lang-auto': 'Idioma do navegador',
     'lang-ja': 'Japonês',
