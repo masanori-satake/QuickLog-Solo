@@ -758,8 +758,16 @@ npx stylelint "**/*.css"
 
 ```bash
 # PRブランチにて実行
+# 1. 作業中の変更がある場合は、念のため stash 等で一時退避します
+git stash
+
+# 2. main ブランチの最新状態を強制的に反映させます
 git fetch origin main
 git checkout origin/main -- .
+
+# 3. 必要に応じて退避した変更を戻します
+git stash pop
+
 # この後、PRで意図していた変更（package.json の更新等）を再度適用し、コミットします。
 ```
 これにより、`unrelated histories` エラーや意図しないファイルの削除を確実に防ぐことができます。
