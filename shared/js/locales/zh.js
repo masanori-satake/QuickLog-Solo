@@ -189,7 +189,7 @@ export default {
     'init-cat-dev': '💻 开发与编程',
     'init-cat-meeting': '🤝 团队会议',
     'init-cat-research': '🔍 调查与研究',
-    'init-cat-admin': '行政事务・邮件处理 📝',
+    'init-cat-admin': '行政事务、邮件处理 📝',
     'init-cat-focus': '🔥 深度专注任务',
     'init-cat-skill': '📚 自我提升',
     'init-cat-idea': '💡 构思与规划',
