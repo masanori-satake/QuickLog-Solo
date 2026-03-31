@@ -2422,9 +2422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        console.log('QuickLog-Solo: Initializing DB...');
         await initDB();
-        console.log('QuickLog-Solo: DB Initialized');
 
         initAnimationEngine();
         await backupManager.init();
