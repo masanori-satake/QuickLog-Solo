@@ -252,7 +252,7 @@ export default {
     'strategy-jump': 'FG 영역 뛰어넘기 (Jump)',
     'strategy-freedom': '자유로운 공간 활용 (Freedom)',
     'label-rewindable': '되감기 가능',
-    'label-show-metrics': '표시',
+    'label-show-metrics': '측정치 표시',
     'label-show-exclusion': '제외 영역',
     'label-show-canvas': '캔버스',
     'label-preview-color': '미리보기 색상',
