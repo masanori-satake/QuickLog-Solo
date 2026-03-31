@@ -3,6 +3,10 @@ import { t, setLanguage } from './i18n.js';
 import { validateCategorySchema, SCHEMA_TYPE_PAGE_BREAK } from './schema.js';
 
 export let DB_NAME = 'QuickLogSoloDB';
+/**
+ * Internal IndexedDB version.
+ * This constant is for internal use only and must not be exported.
+ */
 const DB_VERSION = 2;
 
 export function setDatabaseName(name) {

@@ -752,6 +752,26 @@ npx stylelint "**/*.css"
 
 ## 13. 運用・トラブルシューティング
 
+### PR ブランチの整合性と復旧
+依存関係の更新（Dependabot 等）や並行開発によって、`main` ブランチに存在するファイルが PR ブランチで消失したり、古い状態にリバートされたりすることがあります。
+このような不整合を解消し、PR に必要な変更のみを正しく含めるには、以下の手順で `main` のファイル状態を PR ブランチに同期してください。
+
+```bash
+# PRブランチにて実行
+# 1. 作業中の変更がある場合は、念のため stash 等で一時退避します
+git stash
+
+# 2. main ブランチの最新状態を強制的に反映させます
+git fetch origin main
+git checkout origin/main -- .
+
+# 3. 必要に応じて退避した変更を戻します
+git stash pop
+
+# この後、PRで意図していた変更（package.json の更新等）を再度適用し、コミットします。
+```
+これにより、`unrelated histories` エラーや意図しないファイルの削除を確実に防ぐことができます。
+
 ### CodeQL: "3 configurations not found" 警告の解消
 GitHub のプルリクエストにおいて、CodeQL スキャンの結果に以下のような警告が表示されることがあります。
 `Warning: Code scanning cannot determine the alerts introduced by this pull request, because 3 configurations present on refs/heads/main were not found: Default setup / language:actions / language:javascript-typescript / language:python`

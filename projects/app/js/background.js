@@ -36,7 +36,6 @@ function configureSidePanel() {
  */
 async function initializeBackground() {
     try {
-        console.log('QuickLog-Solo: Initializing background worker (Lite)...');
         // Use Lite initialization for faster wake-up
         const state = await initDB(true);
 
@@ -47,7 +46,6 @@ async function initializeBackground() {
 
         setupBroadcastChannel();
         await setupAlarms();
-        console.log('QuickLog-Solo: Background worker initialized.');
     } catch (error) {
         console.error('QuickLog-Solo: Initialization failed:', error);
         throw error;
