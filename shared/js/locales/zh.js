@@ -180,7 +180,7 @@ export default {
     'report-endtime-title': '结束时间',
     'report-duration-title': '所需时间',
     'report-header-time': '时间',
-    'report-header-category': '类别',
+    'report-header-category': '分类',
     'report-adjust-title': '时间调整',
     'report-adjust-none': '无',
     'report-adjust-5m': '5分钟间隔',
