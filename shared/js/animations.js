@@ -135,7 +135,6 @@ export class AnimationEngine {
 
         // Use absolute URL for module loading to be more robust across different loading contexts
         const moduleUrl = new URL(`./animation/${this.activeAnimationId}.js`, import.meta.url).href;
-        console.log(`QuickLog-Solo: Starting animation "${name}" (${this.activeAnimationId})`);
         this.worker.postMessage({ type: 'init', payload: { modulePath: moduleUrl } });
     }
 
