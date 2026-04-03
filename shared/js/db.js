@@ -584,15 +584,12 @@ async function cleanupOldLogs() {
 
     if (logsToDelete.length === 0) return;
 
-    console.log(`QuickLog-Solo: Cleaning up ${logsToDelete.length} old logs...`);
-
     return new Promise((resolve, reject) => {
         if (!db) { reject(new Error('DB not initialized')); return; }
         const tx = db.transaction(STORE_LOGS, 'readwrite');
         const store = tx.objectStore(STORE_LOGS);
 
         tx.oncomplete = () => {
-            console.log('QuickLog-Solo: Cleanup completed.');
             resolve();
         };
         tx.onerror = (e) => reject(e.target.error);

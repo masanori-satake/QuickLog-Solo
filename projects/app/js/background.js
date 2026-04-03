@@ -110,7 +110,6 @@ async function setupAlarms() {
     if (isSettingUpAlarms) return;
     isSettingUpAlarms = true;
     try {
-        console.log('QuickLog-Solo: Refreshing alarms...');
         const state = await getCurrentAppState();
         const alarms = state.alarms;
 

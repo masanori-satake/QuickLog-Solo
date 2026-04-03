@@ -34,8 +34,10 @@ describe('Logic Module', () => {
         });
 
         test('handles long durations (100+ hours)', () => {
-            const ms = (123 * 3600000) + (45 * 60000) + 6000;
-            expect(formatDuration(ms)).toBe('123:45:06');
+            const ms = (100 * 3600000);
+            expect(formatDuration(ms)).toBe('100:00:00');
+            const ms2 = (123 * 3600000) + (45 * 60000) + 6000;
+            expect(formatDuration(ms2)).toBe('123:45:06');
         });
 
         test('handles extremely long durations (1000+ hours)', () => {
