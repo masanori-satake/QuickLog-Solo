@@ -48,3 +48,7 @@ By avoiding external frameworks and libraries, we eliminate the risk of "Depende
 ## Disclaimer / 免責事項
 Please refer to the [README.md](README.md) and [LICENSE](LICENSE) for our full disclaimer.
 詳細な免責事項については、[README.md](README.md) および [LICENSE](LICENSE) を参照してください。
+
+This software is a personal open-source project and is provided **"AS IS"** without warranty of any kind.
+The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from the use of this software.
+Use at your own risk, as per the MIT License.
