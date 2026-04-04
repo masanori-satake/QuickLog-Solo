@@ -225,25 +225,29 @@ describe('Schema Compliance Tests', () => {
             };
             expect(validateSettingsSchema(data)).toBe(false);
             expect(ajvValidateSettings(data)).toBe(false);
-
-            const base = {
-                app: 'QuickLog-Solo',
-                kind: 'QuickLogSolo/Settings',
-                version: '1.0',
-                entries: [{ key: 'reportSettings', value: {} }]
-            };
-            // Missing required fields
-            expect(validateSettingsSchema(base)).toBe(false);
-            // Invalid options
-            const val = { format: 'csv', emoji: 'maybe', endTime: 'never', duration: 'left', adjust: '7' };
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'reportSettings', value: val }] })).toBe(false);
         });
 
         test('should reject settings with invalid reportSettings property', () => {
-            const data = {
+            const base = {
                 app: 'QuickLog-Solo',
                 kind: 'QuickLogSolo/Settings',
-                version: '1.0',
+                version: '1.0'
+            };
+
+            // Missing required fields
+            const dataMissing = { ...base, entries: [{ key: 'reportSettings', value: {} }] };
+            expect(validateSettingsSchema(dataMissing)).toBe(false);
+            expect(ajvValidateSettings(dataMissing)).toBe(false);
+
+            // Invalid options
+            const val = { format: 'csv', emoji: 'maybe', endTime: 'never', duration: 'left', adjust: '7' };
+            const dataInvalid = { ...base, entries: [{ key: 'reportSettings', value: val }] };
+            expect(validateSettingsSchema(dataInvalid)).toBe(false);
+            expect(ajvValidateSettings(dataInvalid)).toBe(false);
+
+            // Invalid format string
+            const dataInvalidFormat = {
+                ...base,
                 entries: [
                     {
                         key: 'reportSettings',
@@ -257,8 +261,8 @@ describe('Schema Compliance Tests', () => {
                     }
                 ]
             };
-            expect(validateSettingsSchema(data)).toBe(false);
-            expect(ajvValidateSettings(data)).toBe(false);
+            expect(validateSettingsSchema(dataInvalidFormat)).toBe(false);
+            expect(ajvValidateSettings(dataInvalidFormat)).toBe(false);
         });
 
         test('should validate correct alarms entry in settings', () => {
