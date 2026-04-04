@@ -9,6 +9,9 @@ export let DB_NAME = 'QuickLogSoloDB';
  */
 const DB_VERSION = 2;
 
+/**
+ * Sets the database name for testing or multi-tenant purposes.
+ */
 export function setDatabaseName(name) {
     DB_NAME = name;
 }
@@ -187,6 +190,9 @@ export async function dbGetByName(storeName, name) {
     });
 }
 
+/**
+ * Clears all data from the specified object store.
+ */
 export async function dbClear(storeName) {
     await openDatabase();
     return new Promise((resolve, reject) => {
@@ -242,6 +248,9 @@ export async function dbDelete(storeName, key) {
     });
 }
 
+/**
+ * Returns the count of records in the specified object store.
+ */
 export async function dbCount(storeName) {
     await openDatabase();
     return new Promise((resolve, reject) => {

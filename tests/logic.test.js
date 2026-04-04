@@ -290,6 +290,16 @@ describe('Logic Module', () => {
             expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ category: 'Meeting' }));
             expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
+
+        test('stopTaskLogic handles case where idleLog has no ID (branch coverage)', async () => {
+            const activeNoId = { category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), isPaused: true };
+            dbAdd.mockResolvedValue(123);
+            await stopTaskLogic(activeNoId);
+            // Hits line 372: } else { await dbAdd(STORE_LOGS, idleLog); }
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE
+            }));
+        });
     });
 
     describe('Report Generation Logic', () => {
@@ -493,6 +503,26 @@ describe('Logic Module', () => {
         test('returns empty string for unknown format', () => {
             const report = generateReport(sampleLogs, { ...defaultOptions, format: 'unknown' });
             expect(report).toBe('');
+        });
+
+        test('generateReport supports duration: bottom in various formats', () => {
+            const logs = [{ startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T10:00:01').getTime(), category: 'Dev' }];
+            const options = {
+                format: 'html',
+                duration: 'bottom',
+                endTime: 'show',
+                idleText: '(待機)',
+                headerTime: 'Time',
+                headerCategory: 'Category'
+            };
+            const html = generateReport(logs, options);
+            expect(html).toContain('<br>(1s)');
+
+            const textTable = generateReport(logs, { ...options, format: 'text-table' });
+            expect(textTable).toContain('(1s)');
+
+            const textPlain = generateReport(logs, { ...options, format: 'text-plain' });
+            expect(textPlain).toContain('(1s)');
         });
     });
 

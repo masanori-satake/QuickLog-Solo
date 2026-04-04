@@ -23,6 +23,12 @@ describe('Utils Module', () => {
         test('handles newlines', () => {
             expect(escapeCsv('a\nb')).toBe('"a\nb"');
         });
+        test('handles carriage returns', () => {
+            expect(escapeCsv('a\rb')).toBe('"a\rb"');
+        });
+        test('returns non-string values as is', () => {
+            expect(escapeCsv(123)).toBe(123);
+        });
     });
 
     describe('escapeTsv', () => {
@@ -35,8 +41,14 @@ describe('Utils Module', () => {
         test('handles newlines', () => {
             expect(escapeTsv('a\nb')).toBe('"a\nb"');
         });
+        test('handles carriage returns', () => {
+            expect(escapeTsv('a\rb')).toBe('"a\rb"');
+        });
         test('does not quote fields with commas', () => {
             expect(escapeTsv('a,b')).toBe('a,b');
+        });
+        test('returns non-string values as is', () => {
+            expect(escapeTsv(123)).toBe(123);
         });
     });
 
