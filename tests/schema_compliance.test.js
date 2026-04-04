@@ -71,6 +71,38 @@ describe('Schema Compliance Tests', () => {
             expect(validateCategorySchema(data)).toBe(false);
             expect(ajvValidateCategory(data)).toBe(false);
         });
+
+        test('should reject category with invalid tags array', () => {
+            const base = {
+                kind: 'QuickLogSolo/Category',
+                version: '1.0',
+                type: 'category',
+                name: 'Test',
+                color: 'primary'
+            };
+            // Non-string tag
+            expect(validateCategorySchema({ ...base, tags: [123] })).toBe(false);
+            // Too many tags (limit 20)
+            expect(validateCategorySchema({ ...base, tags: new Array(21).fill('tag') })).toBe(false);
+            // Too long tag (limit 30)
+            expect(validateCategorySchema({ ...base, tags: ['a'.repeat(31)] })).toBe(false);
+            // Empty string tag
+            expect(validateCategorySchema({ ...base, tags: [''] })).toBe(false);
+            // Not an array
+            expect(validateCategorySchema({ ...base, tags: 'not-an-array' })).toBe(false);
+        });
+
+        test('should reject category with too long animation name', () => {
+            const data = {
+                kind: 'QuickLogSolo/Category',
+                version: '1.0',
+                type: 'category',
+                name: 'Test',
+                color: 'primary',
+                animation: 'a'.repeat(51)
+            };
+            expect(validateCategorySchema(data)).toBe(false);
+        });
     });
 
     describe('History Schema Compliance', () => {
@@ -155,11 +187,33 @@ describe('Schema Compliance Tests', () => {
                 version: '1.0',
                 entries: [
                     { key: 'theme', value: 'dark' },
-                    { key: 'defaultAnimation', value: 'ripple' }
+                    { key: 'defaultAnimation', value: 'ripple' },
+                    { key: 'font', value: 'Arial' },
+                    { key: 'language', value: 'ja' }
                 ]
             };
             expect(validateSettingsSchema(data)).toBe(true);
             expect(ajvValidateSettings(data)).toBe(true);
+        });
+
+        test('should reject invalid values for theme and language', () => {
+            const base = {
+                app: 'QuickLog-Solo',
+                kind: 'QuickLogSolo/Settings',
+                version: '1.0'
+            };
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'theme', value: 'blue' }] })).toBe(false);
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'language', value: 'jp' }] })).toBe(false);
+        });
+
+        test('should reject invalid font or animation length', () => {
+            const base = {
+                app: 'QuickLog-Solo',
+                kind: 'QuickLogSolo/Settings',
+                version: '1.0'
+            };
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'font', value: 'a'.repeat(201) }] })).toBe(false);
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'defaultAnimation', value: 'a'.repeat(51) }] })).toBe(false);
         });
 
         test('should reject settings with invalid app name', () => {
@@ -171,6 +225,18 @@ describe('Schema Compliance Tests', () => {
             };
             expect(validateSettingsSchema(data)).toBe(false);
             expect(ajvValidateSettings(data)).toBe(false);
+
+            const base = {
+                app: 'QuickLog-Solo',
+                kind: 'QuickLogSolo/Settings',
+                version: '1.0',
+                entries: [{ key: 'reportSettings', value: {} }]
+            };
+            // Missing required fields
+            expect(validateSettingsSchema(base)).toBe(false);
+            // Invalid options
+            const val = { format: 'csv', emoji: 'maybe', endTime: 'never', duration: 'left', adjust: '7' };
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'reportSettings', value: val }] })).toBe(false);
         });
 
         test('should reject settings with invalid reportSettings property', () => {
@@ -245,6 +311,41 @@ describe('Schema Compliance Tests', () => {
             };
             expect(validateSettingsSchema(data)).toBe(false);
             expect(ajvValidateSettings(data)).toBe(false);
+        });
+
+        test('should reject invalid alarm properties', () => {
+            const baseAlarm = { enabled: true, time: '09:00', message: 'Hi', action: 'none', actionCategory: '', requireConfirmation: false };
+            const base = { app: 'QuickLog-Solo', kind: 'QuickLogSolo/Settings', version: '1.0' };
+
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, enabled: 'yes' }] }] })).toBe(false);
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, time: '9:00' }] }] })).toBe(false);
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, message: 'a'.repeat(201) }] }] })).toBe(false);
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, action: 'jump' }] }] })).toBe(false);
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, actionCategory: 123 }] }] })).toBe(false);
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, requireConfirmation: 'no' }] }] })).toBe(false);
+        });
+    });
+
+    describe('History Schema Edge Cases', () => {
+        const base = { kind: 'QuickLogSolo/History', version: '1.0', startTime: Date.now() };
+
+        test('should reject task with invalid tags or memo', () => {
+            const task = { ...base, type: 'task', category: 'Dev' };
+            expect(validateHistorySchema({ ...task, tags: [123] })).toBe(false);
+            expect(validateHistorySchema({ ...task, tags: new Array(21).fill('t') })).toBe(false);
+            expect(validateHistorySchema({ ...task, memo: 'a'.repeat(1001) })).toBe(false);
+        });
+
+        test('should reject idle with extra fields', () => {
+            const idle = { ...base, type: 'idle' };
+            expect(validateHistorySchema({ ...idle, category: 'Dev' })).toBe(false);
+            expect(validateHistorySchema({ ...idle, isManualStop: true })).toBe(false);
+        });
+
+        test('should reject stop with extra fields', () => {
+            const stop = { ...base, type: 'stop', endTime: Date.now() + 1000, isManualStop: true };
+            expect(validateHistorySchema({ ...stop, category: 'Dev' })).toBe(false);
+            expect(validateHistorySchema({ ...stop, memo: 'memo' })).toBe(false);
         });
     });
 });
