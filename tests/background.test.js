@@ -41,7 +41,8 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     dbGetByName: jest.fn(),
     initDB: jest.fn().mockResolvedValue({ language: 'en' }),
     STORE_CATEGORIES: 'categories',
-    DB_NAME: 'QuickLogSoloDB'
+    DB_NAME: 'QuickLogSoloDB',
+    SYNC_CHANNEL_NAME: 'quicklog_solo_sync'
 }));
 
 jest.unstable_mockModule('../shared/js/logic.js', () => ({

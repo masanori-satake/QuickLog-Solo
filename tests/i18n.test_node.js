@@ -1,49 +1,78 @@
-import { detectBrowserLanguage, setLanguage, getLanguage, t } from '../shared/js/i18n.js';
+import { detectBrowserLanguage, setLanguage, getLanguage, t, applyLanguage } from '../shared/js/i18n.js';
 import { messages } from '../shared/js/messages.js';
 
 /**
- * @jest-environment node
+ * @jest-environment jsdom
  */
 
 describe('i18n Module', () => {
+    let originalLocation;
+    let originalNavigator;
+
+    beforeAll(() => {
+        originalLocation = window.location;
+        originalNavigator = window.navigator;
+    });
+
     beforeEach(() => {
         setLanguage('en');
-        // Clear global mocks
-        global.window = undefined;
-        global.navigator = undefined;
+        // Use history.replaceState to change URL search in JSDOM safely
+        const url = new URL(window.location.href);
+        url.search = '';
+        window.history.replaceState({}, '', url.toString());
+
+        const mockNavigator = {
+            language: 'en-US',
+            userLanguage: undefined
+        };
+        Object.defineProperty(window, 'navigator', {
+            value: mockNavigator,
+            configurable: true
+        });
+    });
+
+    afterAll(() => {
+        window.location = originalLocation;
+        Object.defineProperty(window, 'navigator', {
+            value: originalNavigator,
+            configurable: true
+        });
     });
 
     describe('detectBrowserLanguage', () => {
         test('detects language from URL parameter', () => {
-            // Using a plain object to mock window
-            global.window = {
-                location: {
-                    search: '?lang=ja'
-                }
-            };
+            const url = new URL(window.location.href);
+            url.search = '?lang=ja';
+            window.history.replaceState({}, '', url.toString());
             expect(detectBrowserLanguage()).toBe('ja');
         });
 
         test('detects language from navigator.language', () => {
-            global.navigator = { language: 'de-DE' };
+            Object.defineProperty(window.navigator, 'language', { value: 'de-DE', configurable: true });
             expect(detectBrowserLanguage()).toBe('de');
 
-            global.navigator = { language: 'fr' };
+            Object.defineProperty(window.navigator, 'language', { value: 'fr', configurable: true });
             expect(detectBrowserLanguage()).toBe('fr');
         });
 
         test('detects language from navigator.userLanguage', () => {
-            global.navigator = { userLanguage: 'es' };
+            Object.defineProperty(window.navigator, 'language', { value: undefined, configurable: true });
+            Object.defineProperty(window.navigator, 'userLanguage', { value: 'es', configurable: true });
             expect(detectBrowserLanguage()).toBe('es');
         });
 
         test('fallbacks to en for unsupported language', () => {
-            global.navigator = { language: 'it' };
+            Object.defineProperty(window.navigator, 'language', { value: 'it', configurable: true });
             expect(detectBrowserLanguage()).toBe('en');
         });
 
-        test('handles missing window or navigator gracefully', () => {
+        test('handles missing navigator gracefully', () => {
+            const originalNav = window.navigator;
+            Object.defineProperty(window, 'navigator', { value: undefined, configurable: true });
+
             expect(detectBrowserLanguage()).toBe('en');
+
+            Object.defineProperty(window, 'navigator', { value: originalNav, configurable: true });
         });
     });
 
@@ -54,7 +83,7 @@ describe('i18n Module', () => {
         });
 
         test('handles auto behavior correctly', () => {
-            global.navigator = { language: 'ko' };
+            Object.defineProperty(window.navigator, 'language', { value: 'ko', configurable: true });
             setLanguage('auto');
             expect(getLanguage()).toBe('ko');
         });
@@ -62,6 +91,30 @@ describe('i18n Module', () => {
         test('fallbacks to en for invalid language in setLanguage', () => {
             setLanguage('invalid');
             expect(getLanguage()).toBe('en');
+        });
+    });
+
+    describe('applyLanguage', () => {
+        beforeEach(() => {
+            document.body.innerHTML = `
+                <div id="test-el" data-i18n="init-cat-dev"></div>
+                <button id="test-btn" data-i18n-title="btn-copy"></button>
+                <input id="test-input" data-i18n-placeholder="placeholder-tags">
+            `;
+        });
+
+        test('applies translations to DOM elements', () => {
+            setLanguage('ja');
+            applyLanguage();
+
+            expect(document.getElementById('test-el').textContent).toBe(messages.ja['init-cat-dev']);
+            expect(document.getElementById('test-btn').title).toBe(messages.ja['btn-copy']);
+            expect(document.getElementById('test-input').placeholder).toBe(messages.ja['placeholder-tags']);
+        });
+
+        test('handles missing attributes gracefully', () => {
+            document.body.innerHTML = '<div>No i18n here</div>';
+            expect(() => applyLanguage()).not.toThrow();
         });
     });
 

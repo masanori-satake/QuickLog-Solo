@@ -21,6 +21,8 @@ export const STORE_CATEGORIES = 'categories';
 export const STORE_SETTINGS = 'settings';
 export const STORE_ALARMS = 'alarms';
 
+export const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
+
 export const SETTING_KEY_THEME = 'theme';
 export const SETTING_KEY_FONT = 'font';
 export const SETTING_KEY_ANIMATION = 'animation';
@@ -30,7 +32,7 @@ export const SETTING_KEY_REPORT_SETTINGS = 'reportSettings';
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 export const SETTING_KEY_BACKUP_DIR_HANDLE = 'backupDirectoryHandle';
 
-const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
+export const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
 
 let db;
@@ -264,7 +266,6 @@ export async function dbCount(storeName) {
 
 /**
  * Finds the most recent active task (one without an endTime) without fetching all logs.
- * Exported for testing purposes only.
  * @returns {Promise<Object|null>}
  */
 export async function dbGetActiveTask() {
