@@ -199,10 +199,6 @@
                         <h4 data-i18n="faq-5-q">Q. 不具合を見つけましたがどのように報告すべきですか？</h4>
                         <p data-i18n="faq-5-a">A. 以下から報告いただけます。バグ報告用のテンプレートを用意していますので、そちらから詳細をお知らせください。</p>
                         <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLScTgbpRM6z2TSvy_Njw7oeFJovVQu3wiIyGWLx7IIWqNpwEFg/viewform?usp=header" target="_blank" class="btn-google-form hidden" id="cta-bug-report-google-link" style="text-decoration: none;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" style="fill: currentColor;"><path d="M7 15h7v2H7zm0-4h10v2H7zm0-4h10v2H7zm12-4h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V5h2v3h10V5h2v14z"/></svg>
-                                <span data-i18n="cta-bug-report-google">バグを報告する(匿名可,Googleフォーム)</span>
-                            </a>
                             <a href="https://github.com/masanori-satake/QuickLog-Solo/issues/new?template=bug_report.yml" target="_blank" class="btn-tertiary" style="text-decoration: none;">
                                 <svg height="20" viewBox="0 0 16 16" width="20" style="fill: currentColor;"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
                                 <span data-i18n="cta-bug-report">バグを報告する (GitHub)</span>
@@ -242,6 +238,10 @@
         </main>
 
         <footer class="landing-footer">
+            <div style="margin-bottom: 16px; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+                <a href="transparency.html" id="transparency-link" class="internal-link" style="font-size: 0.8rem;"><span class="material-symbols-outlined">verified_user</span><span data-i18n="footer-transparency">透明性レポート</span></a>
+                <a href="policy.html" id="policy-link" class="internal-link" style="font-size: 0.8rem;"><span class="material-symbols-outlined">policy</span><span data-i18n="footer-policy">プライバシーポリシーと規約</span></a>
+            </div>
             <p class="disclaimer-footer" data-i18n="footer-disclaimer">本ソフトウェアは無保証であり、自己責任でご利用ください。</p>
             <p>&copy; 2026 Masanori SATAKE. Built with Material 3.</p>
             <div style="margin-top: 8px;">
@@ -336,7 +336,8 @@
                 "faq-5-q": "Q. 不具合を見つけましたがどのように報告すべきですか？",
                 "faq-5-a": "A. 以下から報告いただけます。バグ報告用のテンプレートを用意していますので、そちらから詳細をお知らせください。",
                 "cta-bug-report": "バグを報告する (GitHub)",
-                "cta-bug-report-google": "バグを報告する(匿名可,Googleフォーム)",
+                "footer-transparency": "透明性レポート",
+                "footer-policy": "プライバシーポリシーと規約",
                 "faq-6-q": "Q. 新しい機能のアイデアや改善の要望がある場合はどうすればよいですか？",
                 "faq-6-a": "A. 以下から「機能・改善リクエスト」として投稿いただけます。皆さんのアイデアをお待ちしています！",
                 "cta-feature-request": "機能・改善をリクエストする (GitHub)",
@@ -415,7 +416,8 @@
                 "faq-5-q": "Q. I found a bug. How should I report it?",
                 "faq-5-a": "A. You can report it from below. We have a bug report template available for you to provide details.",
                 "cta-bug-report": "Report a Bug (GitHub)",
-                "cta-bug-report-google": "Report a Bug (Anonymous, Google Form)",
+                "footer-transparency": "Transparency Report",
+                "footer-policy": "Privacy Policy & Terms",
                 "faq-6-q": "Q. What should I do if I have ideas for new features or requests for improvements?",
                 "faq-6-a": "A. You can submit them as a \"Feature Request\" from below. We look forward to hearing your ideas!",
                 "cta-feature-request": "Request a Feature (GitHub)",
@@ -494,7 +496,8 @@
                 "faq-5-q": "Q. Ich habe einen Fehler gefunden. Wie soll ich ihn melden?",
                 "faq-5-a": "A. Sie können dies unten melden. Wir haben eine Vorlage für Fehlerberichte, mit der Sie Details angeben können.",
                 "cta-bug-report": "Fehler melden (GitHub)",
-                "cta-bug-report-google": "Fehler melden (Anonym, Google Form)",
+                "footer-transparency": "Transparenzbericht",
+                "footer-policy": "Datenschutz & Bedingungen",
                 "faq-6-q": "Q. Was soll ich tun, wenn ich Ideen für neue Funktionen oder Verbesserungsvorschläge habe?",
                 "faq-6-a": "A. Sie können diese als \"Feature Request\" unten einreichen. Wir freuen uns auf Ihre Ideen!",
                 "cta-feature-request": "Funktion anfordern (GitHub)",
@@ -573,7 +576,8 @@
                 "faq-5-q": "Q. Encontré un error. ¿Cómo debo informarlo?",
                 "faq-5-a": "A. Puede informarlo a continuación. Tenemos una plantilla de informe de errores disponible para que proporcione detalles.",
                 "cta-bug-report": "Informar un error (GitHub)",
-                "cta-bug-report-google": "Informar un error (Anónimo, Google Form)",
+                "footer-transparency": "Informe de transparencia",
+                "footer-policy": "Privacidad y Términos",
                 "faq-6-q": "Q. ¿Qué debo hacer si tengo ideas para nuevas funciones o solicitudes de mejora?",
                 "faq-6-a": "A. Puede enviarlas como una \"Solicitud de función\" (Feature Request) a continuación. ¡Esperamos sus ideas!",
                 "cta-feature-request": "Solicitar una función (GitHub)",
@@ -652,7 +656,8 @@
                 "faq-5-q": "Q. J'ai trouvé un bug. Comment dois-je le signaler ?",
                 "faq-5-a": "A. Vous pouvez le signaler depuis ci-dessous. Nous avons un modèle de rapport de bug pour vous permettre de fournir des détails.",
                 "cta-bug-report": "Signaler un bug (GitHub)",
-                "cta-bug-report-google": "Signaler un bug (Anonyme, Google Form)",
+                "footer-transparency": "Rapport de transparence",
+                "footer-policy": "Confidentialité et Conditions",
                 "faq-6-q": "Q. Que dois-je faire si j'ai des idées de nouvelles fonctionnalités ou des demandes d'amélioration ?",
                 "faq-6-a": "A. Vous pouvez les soumettre en tant que \"Feature Request\" depuis ci-dessous. Nous attendons vos idées avec impatience !",
                 "cta-feature-request": "Suggérer une fonction (GitHub)",
@@ -731,7 +736,8 @@
                 "faq-5-q": "Q. Encontrei um erro. Como devo reportá-lo?",
                 "faq-5-a": "A. Você pode reportá-lo abaixo. Temos um modelo de relatório de erro disponível para você fornecer detalhes.",
                 "cta-bug-report": "Reportar um erro (GitHub)",
-                "cta-bug-report-google": "Reportar um erro (Anônimo, Google Form)",
+                "footer-transparency": "Relatório de transparência",
+                "footer-policy": "Privacidade e Termos",
                 "faq-6-q": "Q. O que devo fazer se tiver ideias para novas funcionalidades ou solicitações de melhoria?",
                 "faq-6-a": "A. Você pode enviá-las como uma \"Solicitação de Recurso\" (Feature Request) abaixo. Aguardamos suas ideias!",
                 "cta-feature-request": "Solicitar um recurso (GitHub)",
@@ -810,7 +816,8 @@
                 "faq-5-q": "Q. 버그를 발견했습니다. 어떻게 보고해야 하나요?",
                 "faq-5-a": "A. 아래에서 보고하실 수 있습니다. 상세 내용을 기입하실 수 있는 버그 보고용 템플릿이 준비되어 있습니다.",
                 "cta-bug-report": "버그 보고 (GitHub)",
-                "cta-bug-report-google": "버그 보고 (익명 가능, Google 폼)",
+                "footer-transparency": "투명성 보고서",
+                "footer-policy": "개인정보 처리방침 및 약관",
                 "faq-6-q": "Q. 새로운 기능 아이디어나 개선 요청이 있는 경우 어떻게 해야 하나요?",
                 "faq-6-a": "A. 아래에서 \"기능 및 개선 요청\"으로 제출하실 수 있습니다. 여러분의 소중한 아이디어를 기다리고 있습니다!",
                 "cta-feature-request": "기능/개선 요청 (GitHub)",
@@ -889,7 +896,8 @@
                 "faq-5-q": "Q. 我发现了 Bug。应该如何报告？",
                 "faq-5-a": "A. 您可以从下方进行报告。我们准备了 Bug 报告模板，方便您提供详细信息。",
                 "cta-bug-report": "报告 Bug (GitHub)",
-                "cta-bug-report-google": "报告 Bug (支持匿名, Google 表单)",
+                "footer-transparency": "透明性报告",
+                "footer-policy": "隐私政策与条款",
                 "faq-6-q": "Q. 如果我有新功能想法或改进建议，该怎么办？",
                 "faq-6-a": "A. 您可以从下方作为“功能请求”进行提交。我们期待您的创意！",
                 "cta-feature-request": "请求新功能 (GitHub)",
@@ -968,16 +976,8 @@
             updateLink('cta-studio-link', '../studio/');
             updateLink('cta-editor-link', '../category-editor/');
             updateLink('quick-start-guide-link', 'guide.html');
-
-            // Show/Hide Google Form bug report button (Japanese only)
-            const googleBugReportBtn = document.getElementById('cta-bug-report-google-link');
-            if (googleBugReportBtn) {
-                if (safeLang === 'ja') {
-                    googleBugReportBtn.classList.remove('hidden');
-                } else {
-                    googleBugReportBtn.classList.add('hidden');
-                }
-            }
+            updateLink('transparency-link', 'transparency.html');
+            updateLink('policy-link', 'policy.html');
 
             // Update page title
             document.title = translations[safeLang]['page-title'] || translations['en']['page-title'];

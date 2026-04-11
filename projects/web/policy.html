@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickLog-Solo - Privacy Policy & Terms of Use</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+Symbols:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="shared/css/m3-theme.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="icon" href="shared/assets/icon.svg" type="image/svg+xml">
+    <style>
+        .policy-main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--md-sys-spacing-4) 0;
+        }
+        .policy-section {
+            margin-bottom: var(--md-sys-spacing-6);
+        }
+        .policy-content {
+            line-height: 1.8;
+        }
+        .policy-content h3 {
+            font-size: var(--md-sys-typescale-title-large-size);
+            color: var(--md-sys-color-secondary);
+            margin-top: var(--md-sys-spacing-3);
+            margin-bottom: var(--md-sys-spacing-1);
+        }
+        .policy-content ul {
+            padding-left: var(--md-sys-spacing-3);
+            margin-bottom: var(--md-sys-spacing-2);
+        }
+    </style>
+</head>
+<body class="theme-light">
+    <div id="landing-container">
+        <header class="landing-header">
+            <div class="header-content">
+                <a href="index.html" class="back-link" id="back-link">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <h1 data-i18n="policy-page-title">ポリシーと規約</h1>
+            </div>
+            <div class="lang-switcher">
+                <select onchange="setLanguage(this.value)" id="lang-select-policy" class="lang-select">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="pt">🇧🇷 Português</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="zh">🇨🇳 简体中文</option>
+                </select>
+            </div>
+        </header>
+
+        <main class="policy-main">
+            <section class="policy-section card">
+                <h2 class="headline-medium" data-i18n="privacy-title">プライバシーポリシー</h2>
+                <div class="policy-content">
+                    <h3 data-i18n="privacy-1-h">データの所在</h3>
+                    <p data-i18n="privacy-1-p">本ソフトウェアで記録されるすべてのデータ（作業ログ、カテゴリ設定、アプリケーション設定）は、利用者のPC上のブラウザ内（IndexedDB）にのみ保存されます。開発者を含む第三者がこれらのデータにアクセスすることは技術的に不可能です。</p>
+
+                    <h3 data-i18n="privacy-2-h">通信とトラッキング</h3>
+                    <p data-i18n="privacy-2-p">本ソフトウェアは、アクセス解析、トラッキング、広告表示、またはデータの外部送信を行うコードを一切含みません。完全なオフライン（ローカル）での動作を基本としています。</p>
+
+                    <h3 data-i18n="privacy-3-h">バックアップ</h3>
+                    <p data-i18n="privacy-3-p">利用者が明示的に「バックアップ」機能を実行した場合に限り、ブラウザの File System Access API を通じて、利用者が指定したローカルフォルダにデータが書き出されます。この際も、外部サーバーを介することはありません。</p>
+                </div>
+            </section>
+
+            <section class="policy-section card">
+                <h2 class="headline-medium" data-i18n="terms-title">利用規約・免責事項</h2>
+                <div class="policy-content">
+                    <h3 data-i18n="terms-1-h">無保証 (AS IS)</h3>
+                    <p data-i18n="terms-1-p">本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、現状のまま（AS IS）で提供されます。明示的か暗示的かを問わず、特定の目的への適合性や正確性を含め、いかなる種類の保証も行いません。</p>
+
+                    <h3 data-i18n="terms-2-h">免責</h3>
+                    <p data-i18n="terms-2-p">本ソフトウェアの利用、または利用できなかったことにより生じたいかなる損害（データの損失、業務の中断、利益の損失、PCの不具合など）についても、開発者は一切の責任を負いません。利用者は、自己の責任において本ソフトウェアを利用するものとします。</p>
+
+                    <h3 data-i18n="terms-3-h">ライセンス</h3>
+                    <p data-i18n="terms-3-p">本ソフトウェアのソースコードは MIT ライセンスの下で公開されています。</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="landing-footer">
+            <p>&copy; 2026 Masanori SATAKE. Privacy & Trust.</p>
+        </footer>
+    </div>
+
+    <script>
+        const translations = {
+            ja: {
+                "policy-page-title": "ポリシーと規約",
+                "privacy-title": "プライバシーポリシー",
+                "privacy-1-h": "データの所在",
+                "privacy-1-p": "本ソフトウェアで記録されるすべてのデータ（作業ログ、カテゴリ設定、アプリケーション設定）は、利用者のPC上のブラウザ内（IndexedDB）にのみ保存されます。開発者を含む第三者がこれらのデータにアクセスすることは技術的に不可能です。",
+                "privacy-2-h": "通信とトラッキング",
+                "privacy-2-p": "本ソフトウェアは、アクセス解析、トラッキング、広告表示、またはデータの外部送信を行うコードを一切含みません。完全なオフライン（ローカル）での動作を基本としています。",
+                "privacy-3-h": "バックアップ",
+                "privacy-3-p": "利用者が明示的に「バックアップ」機能を実行した場合に限り、ブラウザの File System Access API を通じて、利用者が指定したローカルフォルダにデータが書き出されます。この際も、外部サーバーを介することはありません。",
+                "terms-title": "利用規約・免責事項",
+                "terms-1-h": "無保証 (AS IS)",
+                "terms-1-p": "本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、現状のまま（AS IS）で提供されます。明示的か暗示的かを問わず、特定の目的への適合性や正確性を含め、いかなる種類の保証も行いません。",
+                "terms-2-h": "免責",
+                "terms-2-p": "本ソフトウェアの利用、または利用できなかったことにより生じたいかなる損害（データの損失、業務の中断、利益の損失、PCの不具合など）についても、開発者は一切の責任を負いません。利用者は、自己の責任において本ソフトウェアを利用するものとします。",
+                "terms-3-h": "ライセンス",
+                "terms-3-p": "本ソフトウェアのソースコードは MIT ライセンスの下で公開されています。"
+            },
+            en: {
+                "policy-page-title": "Policy & Terms",
+                "privacy-title": "Privacy Policy",
+                "privacy-1-h": "Data Location",
+                "privacy-1-p": "All data recorded by this software (work logs, category settings, application settings) is stored only within the browser (IndexedDB) on your PC. It is technically impossible for any third party, including the developer, to access this data.",
+                "privacy-2-h": "Communication & Tracking",
+                "privacy-2-p": "This software contains zero code for analytics, tracking, advertising, or external data transmission. It operates entirely offline (locally).",
+                "privacy-3-h": "Backup",
+                "privacy-3-p": "Only when you explicitly execute the 'Backup' function, data is exported to a local folder of your choice via the File System Access API. Even then, no external servers are involved.",
+                "terms-title": "Terms of Use & Disclaimer",
+                "terms-1-h": "No Warranty (AS IS)",
+                "terms-1-p": "This software is a personal open-source project and is provided 'AS IS'. We provide no warranties of any kind, whether express or implied, including suitability for a specific purpose or accuracy.",
+                "terms-2-h": "Non-liability",
+                "terms-2-p": "The developer shall not be liable for any damages (data loss, work interruption, loss of profit, PC malfunction, etc.) arising from the use or inability to use this software. Users use this software at their own risk.",
+                "terms-3-h": "License",
+                "terms-3-p": "The source code of this software is released under the MIT License."
+            },
+            de: {
+                "policy-page-title": "Richtlinien & Bedingungen",
+                "privacy-title": "Datenschutzrichtlinie",
+                "privacy-1-h": "Speicherort der Daten",
+                "privacy-1-p": "Alle von dieser Software erfassten Daten (Arbeitsprotokolle, Kategorieeinstellungen, Anwendungseinstellungen) werden ausschließlich im Browser (IndexedDB) auf Ihrem PC gespeichert. Es ist technisch unmöglich für Dritte, einschließlich des Entwicklers, auf diese Daten zuzugreifen.",
+                "privacy-2-h": "Kommunikation & Tracking",
+                "privacy-2-p": "Diese Software enthält keinen Code für Analysen, Tracking, Werbung oder externe Datenübertragung. Sie arbeitet vollständig offline (lokal).",
+                "privacy-3-h": "Sicherung",
+                "privacy-3-p": "Nur wenn Sie explizit die Funktion 'Sicherung' ausführen, werden Daten über die File System Access API in einen lokalen Ordner Ihrer Wahl exportiert. Auch dabei sind keine externen Server beteiligt.",
+                "terms-title": "Nutzungsbedingungen & Haftungsausschluss",
+                "terms-1-h": "Keine Gewährleistung (AS IS)",
+                "terms-1-p": "Diese Software ist ein persönliches Open-Source-Projekt und wird 'WIE BESEHEN' (AS IS) zur Verfügung gestellt. Wir geben keinerlei Gewährleistungen ab, weder ausdrücklich noch stillschweigend.",
+                "terms-2-h": "Haftungsausschluss",
+                "terms-2-p": "Der Entwickler haftet nicht für Schäden (Datenverlust, Betriebsunterbrechung, Gewinnverlust, Fehlfunktionen des PCs usw.), die aus der Nutzung oder Unmöglichkeit der Nutzung dieser Software entstehen. Die Nutzung erfolgt auf eigene Gefahr.",
+                "terms-3-h": "Lizenz",
+                "terms-3-p": "Der Quellcode dieser Software ist unter der MIT-Lizenz veröffentlicht."
+            },
+            es: {
+                "policy-page-title": "Políticas y Términos",
+                "privacy-title": "Política de Privacidad",
+                "privacy-1-h": "Ubicación de los Datos",
+                "privacy-1-p": "Todos los datos registrados por este software (registros de trabajo, categorías, ajustes) se almacenan únicamente en el navegador (IndexedDB) de su PC. Es técnicamente imposible que terceros, incluido el desarrollador, accedan a estos datos.",
+                "privacy-2-h": "Comunicación y Rastreo",
+                "privacy-2-p": "Este software no contiene código para analíticas, rastreo, publicidad o transmisión externa de datos. Funciona completamente fuera de línea (localmente).",
+                "privacy-3-h": "Respaldo",
+                "privacy-3-p": "Solo cuando ejecuta explícitamente la función de 'Respaldo', los datos se exportan a una carpeta local de su elección mediante la File System Access API. Ni siquiera entonces intervienen servidores externos.",
+                "terms-title": "Términos de Uso y Descargo de Responsabilidad",
+                "terms-1-h": "Sin Garantía (AS IS)",
+                "terms-1-p": "Este software es un proyecto personal de código abierto y se proporciona 'TAL CUAL' (AS IS). No ofrecemos garantías de ningún tipo, ya sean expresas o implícitas.",
+                "terms-2-h": "Exención de Responsabilidad",
+                "terms-2-p": "El desarrollador no será responsable de ningún daño (pérdida de datos, interrupción del negocio, pérdida de beneficios, fallos del PC, etc.) derivado del uso o la imposibilidad de uso de este software. El uso es bajo su propio riesgo.",
+                "terms-3-h": "Licencia",
+                "terms-3-p": "El código fuente de este software se publica bajo la Licencia MIT."
+            },
+            fr: {
+                "policy-page-title": "Politiques et Conditions",
+                "privacy-title": "Politique de Confidentialité",
+                "privacy-1-h": "Emplacement des données",
+                "privacy-1-p": "Toutes les données enregistrées par ce logiciel (journaux de travail, catégories, paramètres) sont stockées uniquement dans le navigateur (IndexedDB) de votre PC. Il est techniquement impossible pour un tiers, y compris le développeur, d'accéder à ces données.",
+                "privacy-2-h": "Communication et Suivi",
+                "privacy-2-p": "Ce logiciel ne contient aucun code pour l'analyse, le suivi, la publicité ou la transmission de données externes. Il fonctionne entièrement hors ligne (localement).",
+                "privacy-3-h": "Sauvegarde",
+                "privacy-3-p": "Ce n'est que lorsque vous exécutez explicitement la fonction 'Sauvegarde' que les données sont exportées vers un dossier local de votre choix via l'API File System Access. Même dans ce cas, aucun serveur externe n'est impliqué.",
+                "terms-title": "Conditions d'Utilisation et Clause de Non-responsabilité",
+                "terms-1-h": "Sans Garantie (AS IS)",
+                "terms-1-p": "Ce logiciel est un projet personnel open-source et est fourni 'EN L'ÉTAT' (AS IS). Nous ne fournissons aucune garantie d'aucune sorte, expresse ou implicite.",
+                "terms-2-h": "Non-responsabilité",
+                "terms-2-p": "Le développeur ne sera pas responsable des dommages (perte de données, interruption d'activité, perte de profit, dysfonctionnement du PC, etc.) découlant de l'utilisation ou de l'impossibilité d'utiliser ce logiciel. L'utilisation se fait à vos propres risques.",
+                "terms-3-h": "Licence",
+                "terms-3-p": "Le code source de ce logiciel est publié sous licence MIT."
+            },
+            pt: {
+                "policy-page-title": "Políticas e Termos",
+                "privacy-title": "Política de Privacidade",
+                "privacy-1-h": "Localização dos Dados",
+                "privacy-1-p": "Todos os dados gravados por este software (registros de trabalho, categorias, configurações) são armazenados apenas no navegador (IndexedDB) do seu PC. É tecnicamente impossível para terceiros, incluindo o desenvolvedor, aceder a estes dados.",
+                "privacy-2-h": "Comunicação e Rastreio",
+                "privacy-2-p": "Este software não contém nenhum código para análise, rastreio, publicidade ou transmissão externa de dados. Funciona totalmente offline (localmente).",
+                "privacy-3-h": "Cópia de Segurança",
+                "privacy-3-p": "Apenas quando executa explicitamente a função 'Backup', os dados são exportados para uma pasta local à sua escolha através da File System Access API. Mesmo assim, não há servidores externos envolvidos.",
+                "terms-title": "Termos de Uso e Isenção de Responsabilidade",
+                "terms-1-h": "Sem Garantia (AS IS)",
+                "terms-1-p": "Este software é um projeto pessoal de código aberto e é fornecido 'COMO ESTÁ' (AS IS). Não oferecemos garantias de qualquer tipo, expressas ou implícitas.",
+                "terms-2-h": "Isenção de Responsabilidade",
+                "terms-2-p": "O desenvolvedor não será responsável por quaisquer danos (perda de dados, interrupção de negócio, perda de lucro, mau funcionamento do PC, etc.) decorrentes do uso ou incapacidade de usar este software. O uso é por sua conta e risco.",
+                "terms-3-h": "Licença",
+                "terms-3-p": "O código-fonte deste software é publicado sob a Licença MIT."
+            },
+            ko: {
+                "policy-page-title": "정책 및 약관",
+                "privacy-title": "개인정보 처리방침",
+                "privacy-1-h": "데이터의 소재",
+                "privacy-1-p": "본 소프트웨어에서 기록되는 모든 데이터(작업 로그, 카테고리 설정, 애플리케이션 설정)는 이용자의 PC 브라우저 내(IndexedDB)에만 저장됩니다. 개발자를 포함한 제3자가 이 데이터에 접근하는 것은 기술적으로 불가능합니다.",
+                "privacy-2-h": "통신 및 추적",
+                "privacy-2-p": "본 소프트웨어는 액세스 분석, 트래킹, 광고 표시 또는 데이터의 외부 전송을 수행하는 코드를 전혀 포함하지 않습니다. 완전한 오프라인(로컬) 동작을 기본으로 합니다.",
+                "privacy-3-h": "백업",
+                "privacy-3-p": "이용자가 명시적으로 '백업' 기능을 실행한 경우에만 브라우저의 File System Access API를 통해 이용자가 지정한 로컬 폴더에 데이터가 기록됩니다. 이 경우에도 외부 서버를 거치지 않습니다.",
+                "terms-title": "이용약관 및 면책사항",
+                "terms-1-h": "무보증 (AS IS)",
+                "terms-1-p": "본 소프트웨어는 개인이 개발한 오픈 소스 프로젝트이며, 현재 상태 그대로(AS IS) 제공됩니다. 특정 목적에의 적합성이나 정확성을 포함하여 명시적이든 암시적이든 어떠한 종류의 보증도 하지 않습니다.",
+                "terms-2-h": "면책",
+                "terms-2-p": "본 소프트웨어의 이용 또는 이용 불능으로 인해 발생한 어떠한 손해(데이터 손실, 업무 중단, 이익 손실, PC 고장 등)에 대해서도 개발자는 일체의 책임을 지지 않습니다. 이용자는 자신의 책임하에 본 소프트웨어를 이용해야 합니다.",
+                "terms-3-h": "라이선스",
+                "terms-3-p": "본 소프트웨어의 소스 코드는 MIT 라이선스 하에 공개되어 있습니다."
+            },
+            zh: {
+                "policy-page-title": "政策与条款",
+                "privacy-title": "隐私政策",
+                "privacy-1-h": "数据存储位置",
+                "privacy-1-p": "本软件记录的所有数据（工作日志、分类设置、应用设置）均仅存储在您电脑浏览器的本地存储（IndexedDB）中。包括开发者在内的任何第三方在技术上都无法访问这些数据。",
+                "privacy-2-h": "通信与追踪",
+                "privacy-2-p": "本软件不包含任何用于访问分析、追踪、广告显示或外部数据传输的代码。它完全在离线（本地）状态下运行。",
+                "privacy-3-h": "备份",
+                "privacy-3-p": "仅当您明确执行“备份”功能时，数据才会通过浏览器的 File System Access API 导出到您指定的本地文件夹。在此过程中同样不涉及任何外部服务器。",
+                "terms-title": "使用条款与免责声明",
+                "terms-1-h": "不作保证 (AS IS)",
+                "terms-1-p": "本软件是一个个人开发的开源项目，按“原样”（AS IS）提供。我们不提供任何形式的明示或暗示保证，包括但不限于对特定用途的适用性或准确性的保证。",
+                "terms-2-h": "免责声明",
+                "terms-2-p": "对于因使用或无法使用本软件而导致的任何损害（数据丢失、业务中断、利润损失、电脑故障等），开发者均不承担任何责任。用户需自行承担使用风险。",
+                "terms-3-h": "许可协议",
+                "terms-3-p": "本软件的源代码在 MIT 许可协议下发布。"
+            }
+        };
+
+        function getSafeLang(lang) {
+            const allowedLangs = ['en', 'ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+            return allowedLangs.includes(lang) ? lang : 'en';
+        }
+
+        function setLanguage(lang) {
+            const safeLang = getSafeLang(lang);
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[safeLang][key]) {
+                    el.textContent = translations[safeLang][key];
+                }
+            });
+
+            // Update select value
+            const select = document.getElementById('lang-select-policy');
+            if (select) select.value = safeLang;
+
+            // Update back link
+            const backLink = document.getElementById('back-link');
+            if (backLink) backLink.href = 'index.html?lang=' + encodeURIComponent(safeLang);
+
+            const url = new URL(window.location);
+            if (url.searchParams.get('lang') !== safeLang) {
+                url.searchParams.set('lang', safeLang);
+                window.history.replaceState({}, '', url);
+            }
+
+            // Update font stack
+            const fontStacks = {
+                ja: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+                ko: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+                zh: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+                default: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif"
+            };
+            document.body.style.fontFamily = fontStacks[safeLang] || fontStacks.default;
+
+            // Update page title
+            document.title = 'QuickLog-Solo - ' + (translations[safeLang]['policy-page-title'] || translations['en']['policy-page-title']);
+        }
+
+        // Initialize language
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+        const userLang = navigator.language.split('-')[0];
+        setLanguage(langParam || userLang || 'en');
+    </script>
+</body>
+</html>
