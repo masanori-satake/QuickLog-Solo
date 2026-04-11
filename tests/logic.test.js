@@ -320,12 +320,16 @@ describe('Logic Module', () => {
         };
 
         test('stripEmojis removes emojis correctly', () => {
+            expect(stripEmojis(null)).toBe('');
+            expect(stripEmojis('')).toBe('');
             expect(stripEmojis('💻 Work')).toBe('Work');
             expect(stripEmojis('Meeting 🤝')).toBe('Meeting');
             expect(stripEmojis('🔥 Focus 🔥')).toBe('Focus');
         });
 
         test('getVisualWidth calculates width correctly', () => {
+            expect(getVisualWidth(null)).toBe(0);
+            expect(getVisualWidth('')).toBe(0);
             expect(getVisualWidth('abc')).toBe(3);
             expect(getVisualWidth('あいう')).toBe(6);
             expect(getVisualWidth('aいc')).toBe(4);

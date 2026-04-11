@@ -1,6 +1,6 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
-    dbGetByName, getCurrentAppState, dbGetActiveTask,
+    dbGetByName, getCurrentAppState, dbGetActiveTask, dbAddMultiple, dbClear, setDatabaseName, DB_NAME as ACTUAL_DB_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
@@ -8,7 +8,19 @@ import { t } from '../shared/js/i18n.js';
 import { SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0, SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK } from '../shared/js/schema.js';
 
 describe('DB Module', () => {
-    const DB_NAME = 'QuickLogSoloDB';
+    const DEFAULT_DB_NAME = 'QuickLogSoloDB';
+
+    test('setDatabaseName changes the database name', () => {
+        const newName = 'TestDB_' + Date.now();
+        setDatabaseName(newName);
+        // We can't easily check the exported DB_NAME constant if it was already imported,
+        // but setDatabaseName is designed to affect subsequent openDatabase calls.
+        // Actually, shared/js/db.js exports let DB_NAME.
+        expect(ACTUAL_DB_NAME).toBe(newName);
+
+        // Restore
+        setDatabaseName(DEFAULT_DB_NAME);
+    });
 
     afterEach(() => {
         closeDatabase();
@@ -16,7 +28,7 @@ describe('DB Module', () => {
 
     beforeEach(async () => {
         closeDatabase();
-        const req = indexedDB.deleteDatabase(DB_NAME);
+        const req = indexedDB.deleteDatabase(ACTUAL_DB_NAME);
         await new Promise((resolve, reject) => {
             req.onsuccess = resolve;
             req.onerror = reject;
@@ -188,6 +200,22 @@ describe('DB Module', () => {
         const alarm0900 = alarms.find(a => a.time === '09:00');
         expect(alarm0900).toBeDefined();
         expect(alarm0900.message).toBe('');
+    });
+
+    test('dbAddMultiple handles empty items', async () => {
+        await openDatabase();
+        await dbAddMultiple(STORE_LOGS, []);
+        const count = await dbCount(STORE_LOGS);
+        expect(count).toBe(0);
+    });
+
+    test('dbClear removes all items from a store', async () => {
+        await openDatabase();
+        await dbAdd(STORE_LOGS, { category: 'Test 1', startTime: 100 });
+        await dbAdd(STORE_LOGS, { category: 'Test 2', startTime: 200 });
+        await dbClear(STORE_LOGS);
+        const count = await dbCount(STORE_LOGS);
+        expect(count).toBe(0);
     });
 
     describe('dbImportCategories', () => {

@@ -3,7 +3,7 @@
  * Chrome Extension Service Worker for QuickLog-Solo
  */
 
-import { getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME, initDB } from '../shared/js/db.js';
+import { getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME, initDB, SYNC_CHANNEL_NAME } from '../shared/js/db.js';
 import { stopTaskLogic, pauseTaskLogic, startTaskLogic } from '../shared/js/logic.js';
 import { t, setLanguage } from '../shared/js/i18n.js';
 
@@ -15,7 +15,6 @@ import { t, setLanguage } from '../shared/js/i18n.js';
  * and executes task logic even when the side panel is closed.
  */
 
-const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
 let syncChannel = null;
 let initializationPromise = null;
 

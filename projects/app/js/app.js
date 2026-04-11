@@ -1,6 +1,6 @@
 import {
     initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbAddMultiple, dbDelete, dbClear, dbImportCategories,
-    setDatabaseName, DB_NAME,
+    setDatabaseName, DB_NAME, SYNC_CHANNEL_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS
 } from '../shared/js/db.js';
@@ -33,7 +33,6 @@ const EXCLUSION_PADDING_X = 4;
 const EXCLUSION_PADDING_Y = 2;
 
 const CSV_HEADER = "id,category,startTime,endTime\n";
-const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
 
 const ID_SETTINGS_POPUP = 'settings-popup';
 const ID_SETTINGS_TOGGLE = 'settings-toggle';

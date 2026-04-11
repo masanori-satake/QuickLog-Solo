@@ -1,7 +1,8 @@
 import {
     dbGetAll, dbGet, dbPut, dbAddMultiple,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
-    SETTING_KEY_ANIMATION, SETTING_KEY_BACKUP_CONFIG, SETTING_KEY_BACKUP_DIR_HANDLE
+    SETTING_KEY_ANIMATION, SETTING_KEY_BACKUP_CONFIG, SETTING_KEY_BACKUP_DIR_HANDLE,
+    LOG_CLEANUP_THRESHOLD_MS
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 import {
@@ -14,7 +15,6 @@ import {
 
 const FILE_NAME_CATEGORIES = 'categories.ndjson';
 const FILE_NAME_SETTINGS = 'settings.json';
-const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 
 export const BACKUP_STATUS = {
     DISABLED: 'disabled', // No directory handle

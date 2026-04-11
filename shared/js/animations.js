@@ -2,8 +2,7 @@
  * QuickLog-Solo: Canvas-based Animation Engine
  */
 
-const CELL_SIZE = 6;
-
+import { CELL_SIZE } from './utils.js';
 import { AnimationBase } from './animation_base.js';
 
 export { AnimationBase };

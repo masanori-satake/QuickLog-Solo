@@ -26,10 +26,11 @@ console.error = (...args) => {
 let animation = null;
 let offscreenCanvas = null;
 let offscreenCtx = null;
+import { CELL_SIZE } from './utils.js';
+
 let speedFactor = 1.0;
 let initPromise = null;
 
-const CELL_SIZE = 6;
 const BRIGHTNESS_HIGH = 120;
 const BRIGHTNESS_MID = 60;
 const BRIGHTNESS_LOW = 10;

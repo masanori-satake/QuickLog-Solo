@@ -11,7 +11,8 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     STORE_ALARMS: 'alarms',
     SETTING_KEY_ANIMATION: 'animation',
     SETTING_KEY_BACKUP_CONFIG: 'backupConfig',
-    SETTING_KEY_BACKUP_DIR_HANDLE: 'backupDirectoryHandle'
+    SETTING_KEY_BACKUP_DIR_HANDLE: 'backupDirectoryHandle',
+    LOG_CLEANUP_THRESHOLD_MS: 40 * 24 * 60 * 60 * 1000
 }));
 
 const { backupManager, BACKUP_STATUS } = await import('../projects/app/js/backup.js');
