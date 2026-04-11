@@ -23,11 +23,11 @@ console.error = (...args) => {
     originalConsole.error(...args);
 };
 
-import { CELL_SIZE } from './utils.js';
-
 let animation = null;
 let offscreenCanvas = null;
 let offscreenCtx = null;
+import { CELL_SIZE } from './utils.js';
+
 let speedFactor = 1.0;
 let initPromise = null;
 

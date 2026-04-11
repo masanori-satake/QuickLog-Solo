@@ -66,15 +66,13 @@ describe('i18n Module', () => {
             expect(detectBrowserLanguage()).toBe('en');
         });
 
-        test('handles missing window or navigator gracefully', () => {
-            // Temporarily hide window/navigator
-            // Since we are in JSDOM, it's hard to completely remove them but we can try to test the logic
-            // by calling it when they return falsy values if the code allows.
-            // Actually detectBrowserLanguage checks window and navigator.
+        test('handles missing navigator gracefully', () => {
+            const originalNav = window.navigator;
+            Object.defineProperty(window, 'navigator', { value: undefined, configurable: true });
 
-            // If window is undefined
-            // Note: In JSDOM environment, it's tricky.
-            // We'll skip the "missing window" part as it's mostly for Node.js fallback which we already cover in other tests.
+            expect(detectBrowserLanguage()).toBe('en');
+
+            Object.defineProperty(window, 'navigator', { value: originalNav, configurable: true });
         });
     });
 
