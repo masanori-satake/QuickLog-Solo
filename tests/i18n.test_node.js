@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import { detectBrowserLanguage, setLanguage, getLanguage, t, applyLanguage } from '../shared/js/i18n.js';
 import { messages } from '../shared/js/messages.js';
 
@@ -68,9 +67,6 @@ describe('i18n Module', () => {
         });
 
         test('handles missing window or navigator gracefully', () => {
-            const win = global.window;
-            const nav = global.navigator;
-
             // Temporarily hide window/navigator
             // Since we are in JSDOM, it's hard to completely remove them but we can try to test the logic
             // by calling it when they return falsy values if the code allows.
