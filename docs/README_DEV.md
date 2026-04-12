@@ -211,7 +211,7 @@ stateDiagram-v2
 #### ステータス表示
 バックアップの状態は、設定画面の「バックアップ」タブ内で確認できます。
 - **最終バックアップ時刻:** 前回のバックアップ実行日時が表示されます。
-- **ファイル数:** バックアップフォルダ内に保存されているログファイル（日分）の数が表示されます。韓国語表示では一貫して `일분` (Hanja: 日分) 単位を使用します。
+- **ファイル数:** バックアップフォルダ内に保存されているログファイル（日分）の数が表示されます。韓国語表示では一貫して `일치` (Hanja: 日分) 単位を使用します。
 - **実行ボタン:** 権限が必要な場合は「保存先にアクセスしてバックアップを実行」と表示され、クリックすることで再認証と実行を同時に行えます。
 
 #### セキュリティと制限
@@ -376,7 +376,7 @@ graph TD
     - `iframe` 内で `app.html` を起動します。
     - 本番のデータを破壊しないよう、URLパラメータ（`?db=QuickLogSoloDB_Preview`）を使用して一時的なデータベース（Mock DB）を割り当て、環境を分離しています。
 - **多言語化:** `js/messages.js` のリソースを使用し、ブラウザの言語設定に応じた自動切り替えと、手動選択をサポートしています。
-- **内部リンクの多言語対応:** 内部ページ（`transparency.html`, `guide.html` 等）へのリンクは、`updateLink(elementId, targetUrl)` ヘルパー関数を使用して生成します。これにより、遷移先へ現在の `lang` パラメータが確実に引き継がれます。
+- **内部リンクの多言語対応:** 内部ページ（`transparency.html`, `guide.html` 等）へのリンクは、`updateLink(elementId, targetUrl)` ヘルパー関数を使用して生成します。これにより、遷移先へ現在の `lang` パラメータが確実に引き継がれます。本ヘルパー関数は `landing.js` に実装されています。
 - **匿名バグ報告ボタン:** 日本語設定時のみ表示される Google フォームへのボタン（`#7248B9`）を設置。`.hidden` クラスで言語による表示制御を実施。
 
 ### クイックスタートガイド (guide.html)
@@ -640,6 +640,7 @@ engine.worker.postMessage({ type: 'init', payload: { modulePath: blobUrl } });
 - **代替コマンド**: `npm run dev` スクリプトが定義されていない場合は、直接 Vite を使用して起動します： `npx vite --port 8080`
 
 ### その他の管理スクリプト
+- **スクリプト命名規則:** `.gitignore` により `verify_*.py` および `reproduce_*.py` は一時的なスクリプトとして除外されます。リポジトリで永続的に管理する監査・検証スクリプトは、これらの接頭辞を避け（例: `audit_*.py`）、Git の管理対象となるようにします。
 - **scripts/bump_version.py**: バージョン番号をインクリメントし、関連ファイルすべてを同期更新します。
 - **scripts/verify_animations.py**: アニメーションモジュールのメタデータや安全性を検証します（`npm test` 内で実行）。
 - **scripts/verify_version_impact.py**: コミットメッセージの内容（feat, fix等）に応じて適切なバージョンアップが行われているかを CI 上で検証します。
@@ -677,7 +678,7 @@ graph TD
 
 #### 仮想化の詳細
 - **IndexedDB の仮想化 (`fake-indexeddb`):** 実際のデータベースを使用せず、メモリ上で IndexedDB をエミュレートします。テストごとにデータベースをリセットでき、高速でクリーンなテスト環境を提供します。
-- **DOM 仮想化 (`jsdom`):** `app.js` など UI に密接なモジュールをテストする際、ブラウザの DOM 構造をメモリ上に再現します。`document.querySelector` やイベントリスナーの動作検証が可能です。
+- **DOM 仮想化 (`jsdom`):** `app.js` など UI に密接なモジュールをテストする際、ブラウザの DOM 構造をメモリ上に再現します。`document.querySelector` やイベントリスナーの動作検証が可能です。DOM 操作やブラウザのグローバル変数（`applyLanguage` を使用する `i18n.js` 等）を伴う単体テストでは、`/** @jest-environment jsdom */` コメントを使用して Jest 環境を `jsdom` に設定します。`window.location` や `window.navigator` は、`window.history.replaceState` や `Object.defineProperty` を使用してモック化し、特定の URL パラメータやブラウザ言語設定を再現します。
 - **API のモック化 (Mocking):**
     - **File System Access API:** `backup.test.js` では、`window.showDirectoryPicker` や `FileSystemHandle` を Jest のモック関数 (`jest.fn()`) で置き換えています。これにより、実際のディスク操作を発生させずに、ファイル保存や読み込みのロジック、エラーハンドリングを検証します。
     - **Chrome/Browser Extension API:** `chrome.storage` や `chrome.alarms` などの拡張機能固有の API は、グローバルオブジェクトとしてモックを定義し、期待される動作をシミュレートします。
