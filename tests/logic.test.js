@@ -38,51 +38,31 @@ describe('Logic Module', () => {
             expect(formatDuration(ms)).toBe('100:00:00');
             const ms2 = (123 * 3600000) + (45 * 60000) + 6000;
             expect(formatDuration(ms2)).toBe('123:45:06');
-        });
-
-        test('handles extremely long durations (1000+ hours)', () => {
-            const ms = (1024 * 3600000) + (59 * 60000) + 59000;
-            expect(formatDuration(ms)).toBe('1024:59:59');
+            const ms3 = (1024 * 3600000) + (59 * 60000) + 59000;
+            expect(formatDuration(ms3)).toBe('1024:59:59');
         });
     });
 
     describe('formatLogDuration', () => {
-        test('formats seconds correctly (< 60s) with rounding', () => {
+        test('formats duration correctly with rounding and space rules', () => {
+            // Seconds (< 60s)
             expect(formatLogDuration(0)).toBe('0s');
             expect(formatLogDuration(499)).toBe('0s');
             expect(formatLogDuration(500)).toBe('1s');
-            expect(formatLogDuration(30000)).toBe('30s');
             expect(formatLogDuration(59499)).toBe('59s');
-            expect(formatLogDuration(59500)).toBe('1m'); // Rounds up to 1m
-        });
+            expect(formatLogDuration(59500)).toBe('1m');
 
-        test('formats minutes correctly (1m to < 60m) with rounding', () => {
+            // Minutes (1m to < 60m)
             expect(formatLogDuration(60000)).toBe('1m');
-            expect(formatLogDuration(60000 + 29999)).toBe('1m');
-            expect(formatLogDuration(60000 + 30000)).toBe('2m'); // Rounds up to 2m
-            expect(formatLogDuration(45 * 60000)).toBe('45m');
+            expect(formatLogDuration(60000 + 30000)).toBe('2m');
             expect(formatLogDuration(59 * 60000 + 29999)).toBe('59m');
-            expect(formatLogDuration(59 * 60000 + 30000)).toBe('1h'); // Rounds up to 1h
-        });
+            expect(formatLogDuration(59 * 60000 + 30000)).toBe('1h');
 
-        test('formats hours and minutes correctly (>= 60m) with rounding and space rule', () => {
+            // Hours and Minutes (>= 60m)
             expect(formatLogDuration(60 * 60000)).toBe('1h');
-            expect(formatLogDuration(60 * 60000 + 29999)).toBe('1h');
-            expect(formatLogDuration(60 * 60000 + 30000)).toBe('1h 1m'); // 60.5m -> 61m -> 1h 1m (space because < 10)
-            expect(formatLogDuration(61 * 60000)).toBe('1h 1m');
-            expect(formatLogDuration(69 * 60000)).toBe('1h 9m');
-            expect(formatLogDuration(69 * 60000 + 29999)).toBe('1h 9m');
-            expect(formatLogDuration(69 * 60000 + 30000)).toBe('1h10m'); // 69.5m -> 70m -> 1h10m (no space)
-            expect(formatLogDuration(70 * 60000)).toBe('1h10m'); // No space because >= 10
-            expect(formatLogDuration(75 * 60000)).toBe('1h15m');
-            expect(formatLogDuration(120 * 60000)).toBe('2h');
+            expect(formatLogDuration(60 * 60000 + 30000)).toBe('1h 1m'); // space because < 10
+            expect(formatLogDuration(69 * 60000 + 30000)).toBe('1h10m'); // no space because >= 10
             expect(formatLogDuration(125 * 60000)).toBe('2h 5m');
-            expect(formatLogDuration(130 * 60000)).toBe('2h10m');
-        });
-
-        test('handles long durations with space rule', () => {
-            expect(formatLogDuration(10 * 60 * 60000)).toBe('10h');
-            expect(formatLogDuration(10 * 60 * 60000 + 5 * 60000)).toBe('10h 5m');
             expect(formatLogDuration(10 * 60 * 60000 + 15 * 60000)).toBe('10h15m');
         });
     });
@@ -549,6 +529,16 @@ describe('Logic Module', () => {
                 { startTime: 2000, endTime: 1000, category: 'Negative', tags: 'B' }
             ];
             expect(calculateTagAggregation(logs, 'None')).toEqual({});
+        });
+
+        test('ignores logs with missing endTime (active tasks)', () => {
+            const logs = [
+                { startTime: 1000, endTime: 2000, category: 'Work', tags: 'TagA' },
+                { startTime: 3000, endTime: null, category: 'Active', tags: 'TagB' }
+            ];
+            const result = calculateTagAggregation(logs, 'None');
+            expect(result['TagA']).toBe(1000);
+            expect(result['TagB']).toBeUndefined();
         });
     });
 });

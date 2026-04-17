@@ -41,7 +41,7 @@ export function formatLogDuration(ms) {
 export function calculateTagAggregation(logs, noTagLabel) {
     const tagAgg = {};
     logs.forEach(l => {
-        if (l.isManualStop || l.category === SYSTEM_CATEGORY_IDLE) return;
+        if (l.isManualStop || l.category === SYSTEM_CATEGORY_IDLE || !l.endTime) return;
         const dur = l.endTime - l.startTime;
         if (dur <= 0) return;
 
