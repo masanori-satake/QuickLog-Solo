@@ -266,6 +266,7 @@ export async function dbCount(storeName) {
 
 /**
  * Finds the most recent active task (one without an endTime) without fetching all logs.
+ * Exported for testing purposes only.
  * @returns {Promise<Object|null>}
  */
 export async function dbGetActiveTask() {
