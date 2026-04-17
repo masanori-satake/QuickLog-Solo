@@ -92,10 +92,10 @@ jobs:
           [ -f dist_web/projects/web/index.html ] || (echo "Landing page missing" && exit 1)
 
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25.2.0
+        uses: amondnet/vercel-action@v42
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: dist_web
-          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+          target: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
