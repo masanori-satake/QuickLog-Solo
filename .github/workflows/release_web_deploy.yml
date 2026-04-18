@@ -4,6 +4,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'releases/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vercel.json'
+      - '.github/workflows/release_web_deploy.yml'
   pull_request:
     branches:
       - main
@@ -21,6 +31,10 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -44,7 +58,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4

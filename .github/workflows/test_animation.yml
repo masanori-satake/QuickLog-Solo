@@ -23,6 +23,10 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   evaluate:
     runs-on: ubuntu-latest
@@ -43,7 +47,7 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
       timeout-minutes: 5
 
     - name: Cache Playwright browsers
