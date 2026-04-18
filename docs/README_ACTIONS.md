@@ -2,6 +2,8 @@
 
 本プロジェクトにおける CI/CD および自動化プロセスの概要と詳細をまとめます。
 
+> 2026-04: 再現性とポリシー整合性を高めるため、`npm ci` の採用、`concurrency` による重複実行抑制、`scripts/verify_project_policies.py` と `scripts/language_check.py` を使ったガードを追加しました。
+
 ## 共通設定
 
 GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェクト全体のワークフロー環境を以下のように統一しています。

@@ -3,6 +3,14 @@ name: "テスト: コード品質 (Lint/Unit) (Test: Code Quality)"
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'eslint.config.js'
+      - '.stylelintrc.json'
   pull_request:
     branches: [ main ]
     paths:
@@ -17,6 +25,10 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -50,7 +62,7 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
       timeout-minutes: 5
 
     - name: Run ESLint

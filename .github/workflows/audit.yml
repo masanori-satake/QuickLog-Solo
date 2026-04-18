@@ -19,6 +19,10 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   actions: read
   security-events: write
@@ -40,16 +44,6 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '24'
-        cache: 'npm'
-
-    - name: Install dependencies (Dev only)
-      run: npm install
-      timeout-minutes: 5
 
     - name: Get changed files
       id: changed-files
@@ -73,41 +67,48 @@ jobs:
     - name: 1. ルートディレクトリのクリーンネス確認 (Root Directory Cleanliness)
       run: python3 scripts/check_root_files.py
 
-    - name: 2. バージョン整合性確認 (Version Consistency)
+    - name: 2. プロジェクトポリシー確認 (Project Policy Guard)
+      run: python3 scripts/verify_project_policies.py
+
+    - name: 3. PRコメント使用言語確認 (PR Language Check)
+      if: github.event_name == 'pull_request'
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_BODY: ${{ github.event.pull_request.body }}
+      run: |
+        printf '%s' "$PR_TITLE" | python3 scripts/language_check.py
+        if [ -n "$PR_BODY" ]; then
+          printf '%s' "$PR_BODY" | python3 scripts/language_check.py
+        else
+          echo "PR body is empty. Skipping description language check."
+        fi
+
+    - name: 4. バージョンの一貫性確認 (Version Consistency)
       if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
       run: python3 scripts/check_version.py
 
-    - name: 3. バージョン影響範囲確認 (Version Impact)
+    - name: 5. バージョン影響評価 (Version Impact)
       if: (github.event_name == 'pull_request' && steps.app-changes.outputs.any_changed == 'true') || github.event_name == 'workflow_dispatch'
       run: python3 scripts/verify_version_impact.py
 
-    - name: 4. 外部OSS依存関係なしの確認 (No Production Dependencies)
+    - name: 6. 外部OSS依存関係なしの確認 (No Production Dependencies)
       id: verify-no-deps
       run: python3 scripts/audit_production_dependencies.py
 
-    - name: 透明性レポートのサマリー作成 (Transparency Report Summary)
+    - name: 7. 透明性レポートのサマリー作成 (Transparency Report Summary
       if: always()
       run: |
-        echo "### 🛡️ 透明性レポート (Transparency Report)" >> $GITHUB_STEP_SUMMARY
+        echo "### Transparency Report" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "本プロジェクトの安全性と透明性に関する監査結果です。" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-
-        # 依存関係のステータス
         if [ "${{ steps.verify-no-deps.outcome }}" == "success" ]; then
-          echo "- ✅ **外部OSS依存関係:** なし (Pure Vanilla JS)" >> $GITHUB_STEP_SUMMARY
+          echo "- Pure Vanilla JS policy: passed" >> $GITHUB_STEP_SUMMARY
         else
-          echo "- ❌ **外部OSS依存関係:** 検出されました。確認が必要です。" >> $GITHUB_STEP_SUMMARY
+          echo "- Pure Vanilla JS policy: failed" >> $GITHUB_STEP_SUMMARY
         fi
-
-        # 整合性チェックのステータス
-        echo "- ✅ **コード整合性・バージョン管理:** 正常" >> $GITHUB_STEP_SUMMARY
-
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "QuickLog-Solo は、ユーザーのプライバシーを保護するため、外部ライブラリを一切使用せず、すべての処理をローカルで完結させています。" >> $GITHUB_STEP_SUMMARY
+        echo "- Root cleanliness / policy / version checks: completed" >> $GITHUB_STEP_SUMMARY
 
   osv-scan:
-    name: 5. Google OSV-Scanner による脆弱性検査 (Vulnerability Scan)
+    name: 8. Google OSV-Scanner による脆弱性検査 (Vulnerability Scan)
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.9.1"
     with:
       scan-args: |-
