@@ -3,7 +3,7 @@ ci:
     autofix_prs: true
     autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
     autoupdate_schedule: weekly
-    skip: [jest, create-package]
+    skip: [eslint, stylelint, jest, create-package]
     submodules: false
 
 repos:
@@ -58,27 +58,16 @@ repos:
         entry: python scripts/language_check.py --commit-msg-file
         language: python
         stages: [commit-msg]
-
--   repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v9.16.0
-    hooks:
     -   id: eslint
-        additional_dependencies:
-        -   eslint@10.2.1
-        -   "@eslint/js@10.0.1"
-        -   globals@17.5.0
+        name: eslint
+        entry: npx eslint
+        language: system
         files: \.[jt]sx?$
         types: [file]
-
--   repo: local
-    hooks:
     -   id: stylelint
         name: stylelint
-        entry: stylelint
-        language: node
-        additional_dependencies:
-        -   stylelint@17.8.0
-        -   stylelint-config-standard@40.0.0
+        entry: npx stylelint
+        language: system
         files: \.css$
     -   id: jest
         name: jest
