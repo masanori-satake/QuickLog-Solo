@@ -54,7 +54,7 @@ describe('BackupManager Abnormal Cases', () => {
         mockDirectoryHandle.getFileHandle.mockImplementation(() => { throw error; });
 
         backupManager.directoryHandle = mockDirectoryHandle;
-        
+
 
         await backupManager.sync();
 
@@ -125,7 +125,7 @@ describe('BackupManager Abnormal Cases', () => {
         mockDirectoryHandle.getFileHandle.mockImplementation(() => { throw error; });
 
         backupManager.directoryHandle = mockDirectoryHandle;
-        
+
 
         await backupManager.sync();
 
