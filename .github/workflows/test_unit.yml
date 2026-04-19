@@ -1,4 +1,4 @@
-name: "テスト: コード品質 (Lint/Unit) (Test: Code Quality)"
+name: "テスト: 単体テスト (Unit Test)"
 
 on:
   push:
@@ -36,7 +36,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v4
@@ -52,8 +52,6 @@ jobs:
           shared/**
           tests/**
           package.json
-          eslint.config.js
-          .stylelintrc.json
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
@@ -63,36 +61,6 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
-      timeout-minutes: 5
-
-    - name: Run ESLint
-      if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
-      run: |
-        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          npx eslint .
-        else
-          JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
-          if [ -n "$JS_FILES" ]; then
-            npx eslint $JS_FILES
-          else
-            echo "No JS files changed, skipping ESLint."
-          fi
-        fi
-      timeout-minutes: 5
-
-    - name: Run Stylelint
-      if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
-      run: |
-        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          npx stylelint "**/*.css"
-        else
-          CSS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep '\.css$' || true)
-          if [ -n "$CSS_FILES" ]; then
-            npx stylelint $CSS_FILES
-          else
-            echo "No CSS files changed, skipping Stylelint."
-          fi
-        fi
       timeout-minutes: 5
 
     - name: Run Jest tests

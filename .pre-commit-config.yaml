@@ -1,6 +1,46 @@
+ci:
+    autofix_commit_msg: '[pre-commit.ci] auto fixes from pre-commit.com hooks'
+    autofix_prs: true
+    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+    autoupdate_schedule: weekly
+    skip: [jest, create-package]
+    submodules: false
+
 repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+
 -   repo: local
     hooks:
+    -   id: check-root-files
+        name: check-root-files
+        entry: python3 scripts/check_root_files.py
+        language: python
+        pass_filenames: false
+        always_run: true
+    -   id: verify-project-policies
+        name: verify-project-policies
+        entry: python3 scripts/verify_project_policies.py
+        language: python
+        pass_filenames: false
+        always_run: true
+    -   id: audit-production-dependencies
+        name: audit-production-dependencies
+        entry: python3 scripts/audit_production_dependencies.py
+        language: python
+        pass_filenames: false
+        always_run: true
+    -   id: audit-localization-mixing
+        name: audit-localization-mixing
+        entry: python3 scripts/audit_localization_mixing.py
+        language: python
+        pass_filenames: false
+        always_run: true
     -   id: check-version
         name: check-version
         entry: python3 scripts/check_version.py
@@ -13,28 +53,37 @@ repos:
         language: python
         pass_filenames: false
         files: ^projects/app/(version\.json|manifest\..*\.json)$
-    -   id: eslint
-        name: eslint
-        entry: npx eslint .
-        language: system
-        pass_filenames: false
-        always_run: true
--   repo: local
-    hooks:
     -   id: verify-submission-language
         name: verify-submission-language
         entry: python3 scripts/language_check.py --commit-msg-file
         language: python
         stages: [commit-msg]
+
+-   repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.16.0
+    hooks:
+    -   id: eslint
+        additional_dependencies:
+        -   eslint@10.0.2
+        -   "@eslint/js@10.0.1"
+        -   globals@17.3.0
+        files: \.[jt]sx?$
+        types: [file]
+
+-   repo: https://github.com/pre-commit/mirrors-stylelint
+    rev: v16.11.0
+    hooks:
     -   id: stylelint
-        name: stylelint
-        entry: npx stylelint "**/*.css"
-        language: system
-        pass_filenames: false
-        always_run: true
+        additional_dependencies:
+        -   stylelint@17.3.0
+        -   stylelint-config-standard@40.0.0
+        files: \.css$
+
+-   repo: local
+    hooks:
     -   id: jest
         name: jest
-        entry: node --experimental-vm-modules ./node_modules/.bin/jest
+        entry: npm test
         language: system
         pass_filenames: false
         always_run: true
