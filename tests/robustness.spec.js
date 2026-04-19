@@ -58,7 +58,7 @@ test.describe('Robustness and Persistence', () => {
     await page.click('[data-tab="categories"]');
     await page.locator('#new-category-name-settings').fill(longName);
     await page.click('#add-category-btn-settings');
-    
+
     // Check if added in settings list
     await page.waitForFunction((val) => {
       return Array.from(document.querySelectorAll('.category-edit-name')).some(i => i.value === val);
@@ -66,10 +66,10 @@ test.describe('Robustness and Persistence', () => {
 
     // Wait for the new category to appear in the list (main panel)
     await page.click('.close-btn');
-    
+
     // The category might be on the second page if many exist. fresh DB starts with ~24 default cats.
     const longCatBtn = page.locator('.category-btn').filter({ hasText: longName });
-    
+
     // Need to wait for the panel to be ready
     await page.waitForSelector('.category-btn');
 

@@ -52,8 +52,6 @@ jobs:
           shared/**
           tests/**
           package.json
-          eslint.config.js
-          .stylelintrc.json
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
