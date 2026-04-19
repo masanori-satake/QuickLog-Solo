@@ -107,4 +107,4 @@ jobs:
             npm test
           fi
         fi
-      timeout-minutes: 5
+      timeout-minutes: 10

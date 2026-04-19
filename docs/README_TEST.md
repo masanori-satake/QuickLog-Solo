@@ -7,7 +7,7 @@
 -   **テストランナー:** Jest
 -   **エミュレーション:** jsdom (ブラウザ環境), fake-indexeddb (IndexedDB)
 -   **テスト対象:** `js/logic.js` (ビジネスロジック), `js/db.js` (データアクセス), `js/backup.js` (バックアップ), `js/utils.js` (ユーティリティ) 等
--   **実行タイミング:** 開発時の手動実行、およびコミット時の pre-commit フックによる強制実行。
+-   **実行タイミング:** 開発時の手動実行（`npm test`）、およびコミット時の pre-commit フック（ローカル環境）による検証。PR 時は GitHub Actions (`test_quality.yml`) で実行されます。
 
 ---
 
@@ -107,7 +107,8 @@ UIの確認や特定の状態（長時間経過など）のテストを容易に
 
 ## 4. テストの実行方法
 
-### ユニットテスト
+### ユニットテスト (Jest)
+Node.js v24 環境で実行します。
 ```bash
 npm test
 ```
