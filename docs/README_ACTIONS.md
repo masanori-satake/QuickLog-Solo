@@ -36,7 +36,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 本プロジェクトでは、開発効率の向上とポリシー遵守を目的として **pre-commit** を導入しています。
 
 - **ローカル環境 (pre-commit)**:
-    - 開発者は手元の環境に `pre-commit` をインストールし、コミット前に `pre-commit run --all-files` を実行することで、静的解析 (ESLint, Stylelint) やユニットテスト (Jest) を含むすべての検証をローカルで完結させ、CI でのエラーを最小限に抑えることができます。
+    - 開発者は手元の環境に pre-commit をインストールし、pre-commit install でフックを有効化することで、コミット時に静的解析 (ESLint, Stylelint) やユニットテスト (Jest) を含む検証が自動実行されます。これにより CI でのエラーを最小限に抑えることができます。
 - **pre-commit.ci (PR時)**:
     - プルリクエスト作成時に、リポジトリ整合性やバージョン検証などの軽量な監査を高速に実行します。
     - **制限**: Node.js 環境やブラウザ環境を必要とする検証 (ESLint, Stylelint, Jest, Playwright) は、CI での実行速度や再現性を考慮し、pre-commit.ci では実行をスキップしています。
