@@ -35,15 +35,19 @@ export function formatLogDuration(ms) {
 /**
  * Calculates aggregated duration per tag from a list of logs.
  * @param {Object[]} logs
- * @param {string} noTagLabel
- * @returns {Object} Tag-to-duration mapping
+ * @returns {Object} { tagAgg, noTagDuration, totalWorkDuration }
  */
-export function calculateTagAggregation(logs, noTagLabel) {
+export function calculateTagAggregation(logs) {
     const tagAgg = {};
+    let noTagDuration = 0;
+    let totalWorkDuration = 0;
+
     logs.forEach(l => {
         if (l.isManualStop || l.category === SYSTEM_CATEGORY_IDLE || !l.endTime) return;
         const dur = l.endTime - l.startTime;
         if (dur <= 0) return;
+
+        totalWorkDuration += dur;
 
         const tagStr = l.tags || '';
         if (tagStr) {
@@ -52,10 +56,11 @@ export function calculateTagAggregation(logs, noTagLabel) {
                 tagAgg[tag] = (tagAgg[tag] || 0) + dur;
             });
         } else {
-            tagAgg[noTagLabel] = (tagAgg[noTagLabel] || 0) + dur;
+            noTagDuration += dur;
         }
     });
-    return tagAgg;
+
+    return { tagAgg, noTagDuration, totalWorkDuration };
 }
 
 /**

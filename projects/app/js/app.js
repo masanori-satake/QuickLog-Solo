@@ -1089,18 +1089,14 @@ async function updateTagAggregationUI() {
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
     const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime);
 
-    const tagAgg = calculateTagAggregation(dayLogs, t('no-tags'));
+    const { tagAgg, noTagDuration, totalWorkDuration } = calculateTagAggregation(dayLogs);
 
     const table = getEl(ID_TAG_AGGREGATION_TABLE);
     table.replaceChildren();
 
-    const sortedTags = Object.keys(tagAgg).sort((a, b) => {
-        if (a === t('no-tags')) return 1;
-        if (b === t('no-tags')) return -1;
-        return a.localeCompare(b);
-    });
+    const sortedTags = Object.keys(tagAgg).sort((a, b) => a.localeCompare(b));
 
-    if (sortedTags.length === 0) {
+    if (dayLogs.length === 0) {
         const row = createEl('tr');
         const cell = createEl('td');
         cell.textContent = t('no-logs-for-day');
@@ -1111,18 +1107,17 @@ async function updateTagAggregationUI() {
         return;
     }
 
-    sortedTags.forEach(tag => {
+    const appendAggregationRow = (label, ms) => {
         const row = createEl('tr');
 
         const nameCell = createEl('td');
         nameCell.className = 'tag-name-cell';
-        nameCell.textContent = tag;
-        nameCell.title = tag;
+        nameCell.textContent = label;
+        nameCell.title = label;
         row.appendChild(nameCell);
 
         const durCell = createEl('td');
         durCell.className = 'tag-duration-cell';
-        const ms = tagAgg[tag];
         const h = Math.floor(ms / 3600000);
         const m = Math.floor((ms % 3600000) / 60000);
         durCell.textContent = `${h}:${String(m).padStart(2, '0')}`;
@@ -1143,7 +1138,18 @@ async function updateTagAggregationUI() {
         row.appendChild(copyCell);
 
         table.appendChild(row);
+    };
+
+    // 1. Tag rows
+    sortedTags.forEach(tag => {
+        appendAggregationRow(tag, tagAgg[tag]);
     });
+
+    // 2. Special row: (No Tags)
+    appendAggregationRow(t('no-tags'), noTagDuration);
+
+    // 3. Special row: Total Work Time
+    appendAggregationRow(t('total-work-time'), totalWorkDuration);
 }
 
 function showToast(message = t('toast-done')) {

@@ -76,21 +76,23 @@ describe('Logic Module', () => {
                 { startTime: 8000, endTime: 9000, category: SYSTEM_CATEGORY_IDLE, tags: '' }, // Idle should be ignored
                 { startTime: 9000, endTime: 10000, category: 'Task 4', isManualStop: true } // Manual stop should be ignored
             ];
-            const result = calculateTagAggregation(logs, 'No Tags');
-            expect(result['A']).toBe(1000);
-            expect(result['B']).toBe(1000 + 2000);
-            expect(result['C']).toBe(2000);
-            expect(result['No Tags']).toBe(1000);
-            expect(result[SYSTEM_CATEGORY_IDLE]).toBeUndefined();
+            const { tagAgg, noTagDuration, totalWorkDuration } = calculateTagAggregation(logs);
+            expect(tagAgg['A']).toBe(1000);
+            expect(tagAgg['B']).toBe(1000 + 2000);
+            expect(tagAgg['C']).toBe(2000);
+            expect(noTagDuration).toBe(1000);
+            expect(totalWorkDuration).toBe(1000 + 2000 + 1000);
+            expect(tagAgg[SYSTEM_CATEGORY_IDLE]).toBeUndefined();
         });
 
         test('deduplicates tags in a single log entry', () => {
             const logs = [
                 { startTime: 0, endTime: 1000, category: 'Task', tags: 'A, A, B' }
             ];
-            const result = calculateTagAggregation(logs, 'None');
-            expect(result['A']).toBe(1000); // Not 2000
-            expect(result['B']).toBe(1000);
+            const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
+            expect(tagAgg['A']).toBe(1000); // Not 2000
+            expect(tagAgg['B']).toBe(1000);
+            expect(totalWorkDuration).toBe(1000);
         });
 
         test('handles overlapping tags with different spacing', () => {
@@ -98,10 +100,11 @@ describe('Logic Module', () => {
                 { startTime: 0, endTime: 1000, tags: 'Tag1,Tag2' },
                 { startTime: 1000, endTime: 2000, tags: ' Tag1 , Tag3 ' }
             ];
-            const result = calculateTagAggregation(logs, 'None');
-            expect(result['Tag1']).toBe(2000);
-            expect(result['Tag2']).toBe(1000);
-            expect(result['Tag3']).toBe(1000);
+            const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
+            expect(tagAgg['Tag1']).toBe(2000);
+            expect(tagAgg['Tag2']).toBe(1000);
+            expect(tagAgg['Tag3']).toBe(1000);
+            expect(totalWorkDuration).toBe(2000);
         });
     });
 
@@ -512,7 +515,10 @@ describe('Logic Module', () => {
 
     describe('calculateTagAggregation Edge Cases', () => {
         test('handles empty logs', () => {
-            expect(calculateTagAggregation([], 'None')).toEqual({});
+            const { tagAgg, noTagDuration, totalWorkDuration } = calculateTagAggregation([]);
+            expect(tagAgg).toEqual({});
+            expect(noTagDuration).toBe(0);
+            expect(totalWorkDuration).toBe(0);
         });
 
         test('handles logs with only ignored categories', () => {
@@ -520,7 +526,9 @@ describe('Logic Module', () => {
                 { startTime: 0, endTime: 1000, category: SYSTEM_CATEGORY_IDLE },
                 { startTime: 1000, endTime: 2000, category: 'Work', isManualStop: true }
             ];
-            expect(calculateTagAggregation(logs, 'None')).toEqual({});
+            const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
+            expect(tagAgg).toEqual({});
+            expect(totalWorkDuration).toBe(0);
         });
 
         test('handles zero or negative duration logs', () => {
@@ -528,7 +536,9 @@ describe('Logic Module', () => {
                 { startTime: 1000, endTime: 1000, category: 'Zero', tags: 'A' },
                 { startTime: 2000, endTime: 1000, category: 'Negative', tags: 'B' }
             ];
-            expect(calculateTagAggregation(logs, 'None')).toEqual({});
+            const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
+            expect(tagAgg).toEqual({});
+            expect(totalWorkDuration).toBe(0);
         });
 
         test('ignores logs with missing endTime (active tasks)', () => {
@@ -536,9 +546,10 @@ describe('Logic Module', () => {
                 { startTime: 1000, endTime: 2000, category: 'Work', tags: 'TagA' },
                 { startTime: 3000, endTime: null, category: 'Active', tags: 'TagB' }
             ];
-            const result = calculateTagAggregation(logs, 'None');
-            expect(result['TagA']).toBe(1000);
-            expect(result['TagB']).toBeUndefined();
+            const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
+            expect(tagAgg['TagA']).toBe(1000);
+            expect(tagAgg['TagB']).toBeUndefined();
+            expect(totalWorkDuration).toBe(1000);
         });
     });
 });
