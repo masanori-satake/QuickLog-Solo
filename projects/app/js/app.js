@@ -1135,7 +1135,7 @@ async function updateTagAggregationUI() {
         copyBtn.textContent = 'content_paste';
         copyBtn.title = t('btn-copy');
         copyBtn.onclick = () => {
-            const text = `${tag} | ${durCell.textContent}`;
+            const text = durCell.textContent;
             navigator.clipboard.writeText(text);
             showToast(t('toast-copied'));
         };
