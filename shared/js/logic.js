@@ -1,5 +1,5 @@
 import { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
-import { SYSTEM_CATEGORY_IDLE, escapeHtml, escapeTsv, escapeCsv } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, escapeHtml, escapeTsv, escapeCsv } from './utils.js';
 import { t } from './i18n.js';
 
 export function formatDuration(ms) {
@@ -35,27 +35,33 @@ export function formatLogDuration(ms) {
 /**
  * Calculates aggregated duration per tag from a list of logs.
  * @param {Object[]} logs
- * @param {string} noTagLabel
- * @returns {Object} Tag-to-duration mapping
+ * @returns {Object} { tagAgg, noTagDuration, totalWorkDuration }
  */
-export function calculateTagAggregation(logs, noTagLabel) {
+export function calculateTagAggregation(logs) {
     const tagAgg = {};
+    let noTagDuration = 0;
+    let totalWorkDuration = 0;
+
     logs.forEach(l => {
-        if (l.isManualStop || l.category === SYSTEM_CATEGORY_IDLE || !l.endTime) return;
+        const category = l.category || '';
+        if (l.isManualStop || category === SYSTEM_CATEGORY_IDLE || category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) || !l.endTime) return;
         const dur = l.endTime - l.startTime;
         if (dur <= 0) return;
 
+        totalWorkDuration += dur;
+
         const tagStr = l.tags || '';
-        if (tagStr) {
-            const tags = [...new Set(tagStr.split(',').map(t => t.trim()).filter(Boolean))];
+        const tags = tagStr ? [...new Set(tagStr.split(',').map(t => t.trim()).filter(Boolean))] : [];
+        if (tags.length > 0) {
             tags.forEach(tag => {
                 tagAgg[tag] = (tagAgg[tag] || 0) + dur;
             });
         } else {
-            tagAgg[noTagLabel] = (tagAgg[noTagLabel] || 0) + dur;
+            noTagDuration += dur;
         }
     });
-    return tagAgg;
+
+    return { tagAgg, noTagDuration, totalWorkDuration };
 }
 
 /**
