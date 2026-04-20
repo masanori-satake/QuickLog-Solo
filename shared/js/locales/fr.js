@@ -1,48 +1,33 @@
 export default {
+    // UI Header & Sections
     'title': 'QuickLog-Solo',
     'copy-report-btn': 'Copier rapport journalier',
     'copy-report-title': 'Copier rapport journalier',
     'tag-aggregation-title': 'Agrégation de tags',
     'copy-aggregation-btn': 'Copier stats',
     'tags': 'Tags',
-    'no-tags': 'Pas de tags',
+    'no-tags': '(タグ無し)',
+    'total-work-time': '作業時間',
     'settings': 'Paramètres',
     'delete': 'Supprimer',
     'duplicate': 'Dupliquer',
     'btn-copy': 'Copier',
-
-    // Auto Stop & Page Break
-    'page-break': 'Saut de page',
-    'btn-add-page-break': 'Ajouter un saut de page',
-    'confirm-delete-page-break': 'Voulez-vous supprimer ce saut de page ?',
-
-    // Tooltips
-    'tooltip-copy-report': 'Copier le rapport journalier dans le presse-papiers',
-    'tooltip-copy-aggregation': 'Copier les résultats de l\'agrégation par tag dans le presse-papiers',
-    'tooltip-settings': 'Ouvrir les paramètres',
-    'tooltip-drag-handle': 'Faire glisser pour réordonner',
-    'tooltip-delete-category': 'Supprimer cette catégorie',
-    'tooltip-language-select': 'Changer la langue d\'affichage',
-    'tooltip-theme-select': 'Changer le mode clair/sombre',
-    'tooltip-font-select': 'Choisir la police d\'affichage',
-    'tooltip-animation-select': 'Choisir l\'animation de fond globale',
-    'tooltip-status-running': 'En cours',
-    'tooltip-status-paused': 'En pause',
-    'tooltip-status-stopped': 'Terminé',
-    'tooltip-calendar': 'Choisir la date',
+    // Controls
     'pause': 'Pause',
     'resume': 'Reprendre',
     'stop': 'Arrêter',
+    // Settings Modal
     'tab-general': 'Général',
     'tab-categories': 'Catégories',
     'tab-maintenance': 'Maintenance',
     'tab-backup': 'Sauvegarde',
     'tab-alarms': 'Alarmes',
     'tab-about': 'À propos',
-
     // Alarms Tab
-    'alarm-setting-description': 'Affiche un message à une heure précise et effectue automatiquement des actions telles que « Arrêter », « Pause » ou « Démarrer » les tâches si nécessaire.',
-    'alarm-note-extension-only': '* La fonction d\'alarme ne fonctionne que lorsqu\'elle est installée en tant qu\'extension de navigateur. Les notifications et les actions automatiques ne sont pas exécutées dans la version d\'aperçu.',
+    'alarm-setting-description':
+        'Affiche un message à une heure précise et effectue automatiquement des actions telles que « Arrêter », « Pause » ou « Démarrer » les tâches si nécessaire.',
+    'alarm-note-extension-only':
+        "* La fonction d'alarme ne fonctionne que lorsqu'elle est installée en tant qu'extension de navigateur. Les notifications et les actions automatiques ne sont pas exécutées dans la version d'aperçu.",
     'alarm-label-enabled': 'Activé',
     'alarm-label-time': 'Heure',
     'alarm-label-message': 'Message',
@@ -53,13 +38,14 @@ export default {
     'alarm-action-pause': 'Mettre en pause la tâche',
     'alarm-action-start': 'Démarrer la catégorie',
     'alarm-placeholder-message': 'Entrez le message...',
-    'alarm-tooltip-confirmation': 'Maintenir la notification jusqu\u0027à ce que OK soit cliqué, puis exécuter l\u0027action',
+    'alarm-tooltip-confirmation': "Maintenir la notification jusqu'à ce que OK soit cliqué, puis exécuter l'action",
     'toast-alarm-saved': 'Alarme enregistrée',
     'btn-test-notification': 'Tester la notification',
     'test-notification-message': 'Ceci est un test de notification. Cela fonctionne correctement.',
-
+    // Common labels
     'setting-enabled': 'Activé (ON)',
     'setting-disabled': 'Désactivé (OFF)',
+    // General Tab
     'setting-language': 'Langue',
     'lang-auto': 'Langue du navigateur',
     'lang-ja': 'Japonais',
@@ -70,24 +56,47 @@ export default {
     'theme-dark': 'Mode sombre',
     'setting-font': 'Police',
     'setting-animation-default': 'Animation de fond standard',
-    'setting-animation-by-category': 'Réglage de l\'animation de fond',
+    'setting-animation-by-category': "Réglage de l'animation de fond",
     'setting-history-csv': 'Historique (CSV)',
     'btn-export-csv': 'Exporter',
     'btn-import-csv': 'Importer',
+    // Categories Tab
     'placeholder-new-category': 'Nouvelle catégorie...',
     'placeholder-tags': 'Tags (séparés par des virgules)',
     'category-backup': 'Import/Export de Catégories (Presse-papiers)',
     'btn-export-json': 'Copier (Exporter)',
     'btn-import-json': 'Coller (Importer)',
-    'import-setting': 'Mode d\'importation :',
+    'import-setting': "Mode d'importation :",
     'import-append': 'Ajouter',
     'import-overwrite': 'Écraser',
+    // About Tab
     'version': 'Version',
     'developer': 'Développeur',
     'about-stats-logs': 'Nombre de journaux',
     'about-stats-categories': 'Nombre de catégories',
-    'about-description': 'QuickLog-Solo est un outil de notes de travail minimaliste axé sur la confidentialité. Les données sont enregistrées dans IndexedDB sur votre navigateur (et également sur le système de fichiers local lorsque la sauvegarde est effectuée) et ne sont jamais envoyées à l\'extérieur. Il maintient une transparence et une sécurité élevées grâce à une vérification stricte des dépendances via GitHub Actions et un audit continu avec Google OSV-Scanner.',
-    'about-disclaimer': '[Clause de non-responsabilité] Ceci est un projet personnel open-source et est fourni "EN L\'ÉTAT" sans aucune garantie. Le développeur ne sera pas responsable des dommages résultant de son utilisation. À utiliser à vos propres risques.',
+    'about-description':
+        "QuickLog-Solo est un outil de notes de travail minimaliste axé sur la confidentialité. Les données sont enregistrées dans IndexedDB sur votre navigateur (et également sur le système de fichiers local lorsque la sauvegarde est effectuée) et ne sont jamais envoyées à l'extérieur. Il maintient une transparence et une sécurité élevées grâce à une vérification stricte des dépendances via GitHub Actions et un audit continu avec Google OSV-Scanner.",
+    'about-disclaimer':
+        '[Clause de non-responsabilité] Ceci est un projet personnel open-source et est fourni "EN L\'ÉTAT" sans aucune garantie. Le développeur ne sera pas responsable des dommages résultant de son utilisation. À utiliser à vos propres risques.',
+    // Auto Stop & Page Break
+    'page-break': 'Saut de page',
+    'btn-add-page-break': 'Ajouter un saut de page',
+    'confirm-delete-page-break': 'Voulez-vous supprimer ce saut de page ?',
+    // Tooltips
+    'tooltip-copy-report': 'Copier le rapport journalier dans le presse-papiers',
+    'tooltip-copy-aggregation': "Copier les résultats de l'agrégation par tag dans le presse-papiers",
+    'tooltip-settings': 'Ouvrir les paramètres',
+    'tooltip-drag-handle': 'Faire glisser pour réordonner',
+    'tooltip-delete-category': 'Supprimer cette catégorie',
+    'tooltip-language-select': "Changer la langue d'affichage",
+    'tooltip-theme-select': 'Changer le mode clair/sombre',
+    'tooltip-font-select': "Choisir la police d'affichage",
+    'tooltip-animation-select': "Choisir l'animation de fond globale",
+    'tooltip-status-running': 'En cours',
+    'tooltip-status-paused': 'En pause',
+    'tooltip-status-stopped': 'Terminé',
+    'tooltip-calendar': 'Choisir la date',
+    // Maintenance Tab
     'maintenance-clear-logs': 'Effacer les journaux',
     'btn-clear-logs': 'Supprimer tous les journaux',
     'maintenance-reset-all': 'Réinitialiser paramètres et catégories',
@@ -99,16 +108,17 @@ export default {
     // Backup Tab
     'btn-backup-start': 'Démarrer la sauvegarde',
     'btn-backup-run': 'Exécuter la sauvegarde',
-    'btn-backup-grant-run': 'Autoriser l\u0027accès et sauvegarder',
+    'btn-backup-grant-run': "Autoriser l'accès et sauvegarder",
     'btn-backup-change-dir': 'Changer de destination',
     'backup-status-syncing': 'Synchronisation...',
     'backup-last-time': 'Dernière sauvegarde',
     'backup-directory': 'Répertoire',
     'backup-file-count': 'Fichiers',
     'backup-file-count-unit': 'jours',
-    'backup-description-new': 'Des sauvegardes régulières sont recommandées pour éviter la perte de données dans IndexedDB suite à l\u0027effacement du cache du navigateur. Avec les données de sauvegarde, vous pouvez également passer facilement à d\u0027autres navigateurs.',
+    'backup-description-new':
+        "Des sauvegardes régulières sont recommandées pour éviter la perte de données dans IndexedDB suite à l'effacement du cache du navigateur. Avec les données de sauvegarde, vous pouvez également passer facilement à d'autres navigateurs.",
     'toast-backup-completed': 'Sauvegarde terminée',
-
+    // Messages & Dialogs
     'confirm-end-task': 'Voulez-vous vraiment terminer la tâche ?',
     'confirm-cancel': 'Annuler',
     'confirm-delete-category': 'Supprimer la catégorie "{name}" ?\n(Les couleurs disparaîtront des anciens journaux)',
@@ -121,35 +131,35 @@ export default {
     'confirm-reset-settings': 'Les paramètres seront réinitialisés. Continuer ? (Journaux et catégories conservés)',
     'alert-invalid-category': 'Nom invalide. (Max 50 car., "{idle}" réservé)',
     'alert-duplicate-category': 'Une catégorie portant ce nom existe déjà.',
-    'alert-import-error': 'Échec de l\'importation.',
-    'alert-init-error': 'Échec de l\'initialisation.',
+    'alert-import-error': "Échec de l'importation.",
+    'alert-init-error': "Échec de l'initialisation.",
     'toast-copied': 'Copié !',
     'toast-done': 'Terminé !',
     'toast-imported': 'Importation réussie.',
     'toast-cat-imported': 'Catégories importées',
     'toast-deleted': 'Suppression terminée',
     'no-logs-for-day': 'Aucun journal pour ce jour',
-
     'notification-btn-ok': 'OK',
     'notification-btn-close': 'Fermer',
-
     'import-err-fatal': 'Format de fichier non valide. Importation annulée.',
-    'import-err-partial': '{errorCount} lignes sur {total} sont corrompues. Voulez-vous importer uniquement les {validCount} lignes valides ?',
-    'import-err-field': 'Certaines données sont incomplètes (ex: couleur non valide). Voulez-vous appliquer les valeurs par défaut et tout importer, ou ignorer les lignes non valides ?',
+    'import-err-partial':
+        '{errorCount} lignes sur {total} sont corrompues. Voulez-vous importer uniquement les {validCount} lignes valides ?',
+    'import-err-field':
+        'Certaines données sont incomplètes (ex: couleur non valide). Voulez-vous appliquer les valeurs par défaut et tout importer, ou ignorer les lignes non valides ?',
     'import-btn-import-valid': 'Importer uniquement les valides',
     'import-btn-apply-fallback': 'Appliquer les défauts',
     'import-btn-skip-invalid': 'Ignorer les lignes non valides',
     'import-btn-abort': 'Abandonner',
-
-    'backup-err-0byte': 'Un fichier de sauvegarde vide ({name}) a été trouvé. Cela peut indiquer une erreur. Voulez-vous ignorer ce fichier et continuer ?',
+    'backup-err-0byte':
+        'Un fichier de sauvegarde vide ({name}) a été trouvé. Cela peut indiquer une erreur. Voulez-vous ignorer ce fichier et continuer ?',
     'backup-btn-ignore-continue': 'Ignorer et continuer',
     'backup-btn-abort-investigate': 'Abandonner et enquêter',
-
-    'backup-err-locked': 'Le fichier est verrouillé par un autre programme ou vous n\'avez pas la permission. Veuillez fermer les autres applications et réessayer.',
+    'backup-err-locked':
+        "Le fichier est verrouillé par un autre programme ou vous n'avez pas la permission. Veuillez fermer les autres applications et réessayer.",
     'backup-err-not-found': 'Répertoire de sauvegarde non trouvé. Veuillez sélectionner à nouveau le répertoire.',
-    'backup-err-unknown': 'Une erreur inattendue s\'est produite : {message}',
+    'backup-err-unknown': "Une erreur inattendue s'est produite : {message}",
     'toast-backup-failed-detail': 'Échec de la sauvegarde. Raison : {reason}',
-
+    // Dynamic Elements
     'day-names': ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
     'idle-category': '(En attente)',
     'idle-category-log': '(En attente)',
@@ -159,7 +169,6 @@ export default {
     'anim-none': 'Aucune',
     'anim-author-label': 'Auteur',
     'anim-unknown-author': 'Inconnu',
-
     // Report Settings
     'report-emoji-keep': 'Garder',
     'report-emoji-remove': 'Supprimer',
@@ -176,18 +185,18 @@ export default {
     'report-format-tsv': 'TSV',
     'report-format-text-table': 'Texte (format tableau)',
     'report-format-text-plain': 'Texte (sans cadre)',
-    'report-emoji-title': 'Suppression d\'émojis',
+    'report-emoji-title': "Suppression d'émojis",
     'report-endtime-title': 'Heure de fin',
     'report-duration-title': 'Durée',
     'report-header-time': 'Heure',
     'report-header-category': 'Catégorie',
-    'report-adjust-title': 'Ajustement de l\'heure',
+    'report-adjust-title': "Ajustement de l'heure",
     'report-adjust-none': 'Aucun',
     'report-adjust-5m': '5 min',
     'report-adjust-10m': '10 min',
-
+    // Initial Categories
     'init-cat-dev': '💻 Développement/Code',
-    'init-cat-meeting': '🤝 Réunion d\'équipe',
+    'init-cat-meeting': "🤝 Réunion d'équipe",
     'init-cat-research': '🔍 Recherche/Veille',
     'init-cat-admin': 'Admin/Email 📝',
     'init-cat-focus': '🔥 Tâches de concentration',
@@ -211,7 +220,6 @@ export default {
     'init-cat-data': '📊 Analyse de données',
     'init-cat-wfh': '🏠 Bureau à domicile',
     'init-cat-move': '🚶 Déplacements',
-
     // Initial Tags
     'init-tag-dev': 'développement, code',
     'init-tag-meeting': 'réunion',
@@ -236,11 +244,11 @@ export default {
     'init-tag-sec': 'sécurité',
     'init-tag-data': 'analyse',
     'init-tag-move': 'déplacement',
-
+    // QL-Animation Studio
     'studio-title': 'QL-Animation Studio (Beta)',
-    'sample-select-placeholder': 'Sélectionner une animation d\'exemple...',
+    'sample-select-placeholder': "Sélectionner une animation d'exemple...",
     'section-metadata': 'Métadonnées',
-    'label-metadata-lang': 'Langue de l\'éditeur',
+    'label-metadata-lang': "Langue de l'éditeur",
     'section-config': 'Configuration',
     'section-preview': 'Aperçu',
     'label-name': 'Nom',
@@ -255,15 +263,15 @@ export default {
     'label-show-metrics': 'Afficher les métriques',
     'label-show-exclusion': 'Exclusion',
     'label-show-canvas': 'Canevas',
-    'label-preview-color': 'Couleur d\'aperçu',
+    'label-preview-color': "Couleur d'aperçu",
     'label-speed': 'Vitesse',
-    'btn-shrink-preview': 'Réduire l\'aperçu',
-    'btn-expand-preview': 'Agrandir l\'aperçu',
+    'btn-shrink-preview': "Réduire l'aperçu",
+    'btn-expand-preview': "Agrandir l'aperçu",
     'label-latency': 'Latence',
     'label-density': 'Densité',
     'label-change-rate': 'Taux de changement',
     'label-status': 'Statut',
-    'label-exclusion-area': 'Zone d\'exclusion',
+    'label-exclusion-area': "Zone d'exclusion",
     'status-ready': 'Prêt',
     'status-running': 'En cours',
     'status-paused': 'En pause',
@@ -280,16 +288,17 @@ export default {
     'btn-close': 'Fermer',
     'pr-guide-title': 'Guide de Pull Request',
     'pr-step-1': 'Téléchargez votre animation en tant que fichier <code>.js</code>.',
-    'pr-step-2': 'Forkez le dépôt <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
+    'pr-step-2':
+        'Forkez le dépôt <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
     'pr-step-3': 'Placez votre fichier dans <code>shared/js/animation/</code>.',
     'pr-step-4': 'Soumettez une Pull Request !',
     'pr-note': 'Votre contribution rend cet outil meilleur pour tous !',
-    'back-to-landing': 'Retour à l\'accueil',
+    'back-to-landing': "Retour à l'accueil",
     'toast-downloaded-js': 'Fichier JS téléchargé',
     'toast-loaded-json': 'Chargé depuis JSON',
     'toast-invalid-json': 'JSON invalide',
     'toast-loaded-js': 'Chargé depuis JS',
-    'toast-anim-error': 'Erreur d\'animation : ',
+    'toast-anim-error': "Erreur d'animation : ",
     'btn-toggle-wrap': 'Basculer le retour à la ligne',
     'btn-search': 'Rechercher & Remplacer',
     'search-placeholder': 'Rechercher...',
@@ -298,7 +307,6 @@ export default {
     'btn-replace-all': 'Tout remplacer',
     'section-console': 'Console',
     'btn-clear-console': 'Effacer la console',
-
     // Category Editor
     'category-editor-title': 'Éditeur de catégories professionnelles',
     'category-detail': 'Détails de la catégorie',
@@ -309,7 +317,8 @@ export default {
     'btn-new-start': 'Démarrer à partir du jeu par défaut',
     'btn-clear-all': 'Tout effacer',
     'confirm-clear-all': 'Effacer toutes les catégories ? Continuer ?',
-    'confirm-load-default': 'Les catégories par défaut seront chargées. Les modifications actuelles seront perdues. Continuer ?',
+    'confirm-load-default':
+        'Les catégories par défaut seront chargées. Les modifications actuelles seront perdues. Continuer ?',
     'toast-import-success': 'Collage réussi',
     'toast-import-failed': 'Échec du collage : format non valide',
     'toast-export-success': 'Copie réussie',
@@ -322,6 +331,7 @@ export default {
     'tag-replace-before': 'Avant',
     'tag-replace-after': 'Après',
     'tooltip-replace-tags': 'Remplacer les tags',
-    'privacy-policy-local-only': 'Tous les traitements sont effectués au sein du navigateur et il n\'y a aucune coordination avec des serveurs externes. Vos informations ne seront jamais divulguées à l\'extérieur.',
+    'privacy-policy-local-only':
+        "Tous les traitements sont effectués au sein du navigateur et il n'y a aucune coordination avec des serveurs externes. Vos informations ne seront jamais divulguées à l'extérieur.",
     'privacy-policy-local-only-short': 'Local uniquement',
 };
