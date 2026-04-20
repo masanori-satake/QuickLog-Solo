@@ -20,6 +20,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
 
 const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation } = await import('../shared/js/logic.js');
 const { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
+const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
 
 describe('Logic Module', () => {
     describe('formatDuration', () => {
@@ -524,7 +525,8 @@ describe('Logic Module', () => {
         test('handles logs with only ignored categories', () => {
             const logs = [
                 { startTime: 0, endTime: 1000, category: SYSTEM_CATEGORY_IDLE },
-                { startTime: 1000, endTime: 2000, category: 'Work', isManualStop: true }
+                { startTime: 1000, endTime: 2000, category: 'Work', isManualStop: true },
+                { startTime: 2000, endTime: 3000, category: `${SYSTEM_CATEGORY_PAGE_BREAK}_123` }
             ];
             const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
             expect(tagAgg).toEqual({});
@@ -549,6 +551,16 @@ describe('Logic Module', () => {
             const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
             expect(tagAgg['TagA']).toBe(1000);
             expect(tagAgg['TagB']).toBeUndefined();
+            expect(totalWorkDuration).toBe(1000);
+        });
+
+        test('handles malformed tag strings correctly', () => {
+            const logs = [
+                { startTime: 0, endTime: 1000, category: 'Task', tags: ', , ' }
+            ];
+            const { tagAgg, noTagDuration, totalWorkDuration } = calculateTagAggregation(logs);
+            expect(tagAgg).toEqual({});
+            expect(noTagDuration).toBe(1000);
             expect(totalWorkDuration).toBe(1000);
         });
     });
