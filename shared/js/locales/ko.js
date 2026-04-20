@@ -1,48 +1,33 @@
 export default {
+    // UI Header & Sections
     'title': 'QuickLog-Solo',
     'copy-report-btn': '일일 보고서 복사',
     'copy-report-title': '일일 보고서 복사',
     'tag-aggregation-title': '태그 집계',
     'copy-aggregation-btn': '통계 복사',
     'tags': '태그',
-    'no-tags': '태그 없음',
+    'no-tags': '(タグ無し)',
+    'total-work-time': '作業時間',
     'settings': '설정',
     'delete': '삭제',
     'duplicate': '복제',
     'btn-copy': '복사',
-
-    // Auto Stop & Page Break
-    'page-break': '페이지 나누기',
-    'btn-add-page-break': '페이지 나누기 추가',
-    'confirm-delete-page-break': '이 페이지 나누기를 삭제하시겠습니까?',
-
-    // Tooltips
-    'tooltip-copy-report': '일일 보고서를 클립보드에 복사',
-    'tooltip-copy-aggregation': '태그별 집계 결과를 클립보드에 복사합니다',
-    'tooltip-settings': '설정 열기',
-    'tooltip-drag-handle': '드래그하여 순서 변경',
-    'tooltip-delete-category': '이 카테고리 삭제',
-    'tooltip-language-select': '표시 언어 변경',
-    'tooltip-theme-select': '라이트/다크 모드 전환',
-    'tooltip-font-select': '표시 글꼴 선택',
-    'tooltip-animation-select': '전체 배경 애니메이션 선택',
-    'tooltip-status-running': '실행 중',
-    'tooltip-status-paused': '일시 중지됨',
-    'tooltip-status-stopped': '종료됨',
-    'tooltip-calendar': '날짜 선택',
+    // Controls
     'pause': '일시 중지',
     'resume': '재개',
     'stop': '종료',
+    // Settings Modal
     'tab-general': '일반',
     'tab-categories': '카테고리',
     'tab-maintenance': '유지 관리',
     'tab-backup': '백업',
     'tab-alarms': '알람',
     'tab-about': '정보',
-
     // Alarms Tab
-    'alarm-setting-description': '지정한 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 「종료」, 「일시 중지」, 「시작」합니다.',
-    'alarm-note-extension-only': '* 알람 기능은 브라우저 확장 프로그램으로 설치된 경우에만 작동합니다. 미리보기 버전에서는 알림 및 자동 동작이 실행되지 않습니다.',
+    'alarm-setting-description':
+        '지정한 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 「종료」, 「일시 중지」, 「시작」합니다.',
+    'alarm-note-extension-only':
+        '* 알람 기능은 브라우저 확장 프로그램으로 설치된 경우에만 작동합니다. 미리보기 버전에서는 알림 및 자동 동작이 실행되지 않습니다.',
     'alarm-label-enabled': '활성화됨',
     'alarm-label-time': '시간',
     'alarm-label-message': '메시지',
@@ -57,9 +42,10 @@ export default {
     'toast-alarm-saved': '알람이 저장되었습니다',
     'btn-test-notification': '알림 테스트',
     'test-notification-message': '알림 테스트입니다. 정상적으로 작동하고 있습니다.',
-
+    // Common labels
     'setting-enabled': '활성화 (ON)',
     'setting-disabled': '비활성화 (OFF)',
+    // General Tab
     'setting-language': '표시 언어',
     'lang-auto': '브라우저 언어',
     'lang-ja': '일본어',
@@ -74,6 +60,7 @@ export default {
     'setting-history-csv': '이력 (CSV)',
     'btn-export-csv': '내보내기',
     'btn-import-csv': '가져오기',
+    // Categories Tab
     'placeholder-new-category': '새 카테고리...',
     'placeholder-tags': '태그 (쉼표로 구분)',
     'category-backup': '카테고리 가져오기/내보내기 (클립보드)',
@@ -82,12 +69,34 @@ export default {
     'import-setting': '가져오기 설정:',
     'import-append': '추가',
     'import-overwrite': '덮어쓰기',
+    // About Tab
     'version': '버전',
     'developer': '개발자',
     'about-stats-logs': '로그 수',
     'about-stats-categories': '카테고리 수',
-    'about-description': 'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 메모 도구입니다. 데이터는 브라우저의 IndexedDB에 저장되며(백업을 실행했을 때는 로컬 파일 시스템에도 저장됩니다) 외부로 전송되지 않습니다. GitHub Actions를 통한 엄격한 의존성 검증과 Google OSV-Scanner의 지속적인 감사를 통해 높은 투명성과 보안성을 유지합니다.',
-    'about-disclaimer': '[면책 조항] 이 프로젝트는 개인 오픈 소스 프로젝트이며 어떠한 보증도 제공하지 않습니다. 개발자는 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 사용자의 책임 하에 이용해 주십시오.',
+    'about-description':
+        'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 메모 도구입니다. 데이터는 브라우저의 IndexedDB에 저장되며(백업을 실행했을 때는 로컬 파일 시스템에도 저장됩니다) 외부로 전송되지 않습니다. GitHub Actions를 통한 엄격한 의존성 검증과 Google OSV-Scanner의 지속적인 감사를 통해 높은 투명성과 보안성을 유지합니다.',
+    'about-disclaimer':
+        '[면책 조항] 이 프로젝트는 개인 오픈 소스 프로젝트이며 어떠한 보증도 제공하지 않습니다. 개발자는 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 사용자의 책임 하에 이용해 주십시오.',
+    // Auto Stop & Page Break
+    'page-break': '페이지 나누기',
+    'btn-add-page-break': '페이지 나누기 추가',
+    'confirm-delete-page-break': '이 페이지 나누기를 삭제하시겠습니까?',
+    // Tooltips
+    'tooltip-copy-report': '일일 보고서를 클립보드에 복사',
+    'tooltip-copy-aggregation': '태그별 집계 결과를 클립보드에 복사합니다',
+    'tooltip-settings': '설정 열기',
+    'tooltip-drag-handle': '드래그하여 순서 변경',
+    'tooltip-delete-category': '이 카테고리 삭제',
+    'tooltip-language-select': '표시 언어 변경',
+    'tooltip-theme-select': '라이트/다크 모드 전환',
+    'tooltip-font-select': '표시 글꼴 선택',
+    'tooltip-animation-select': '전체 배경 애니메이션 선택',
+    'tooltip-status-running': '실행 중',
+    'tooltip-status-paused': '일시 중지됨',
+    'tooltip-status-stopped': '종료됨',
+    'tooltip-calendar': '날짜 선택',
+    // Maintenance Tab
     'maintenance-clear-logs': '로그 삭제',
     'btn-clear-logs': '모든 로그 삭제',
     'maintenance-reset-all': '설정 및 카테고리 초기화',
@@ -106,9 +115,10 @@ export default {
     'backup-directory': '디렉토리',
     'backup-file-count': '파일 수',
     'backup-file-count-unit': '일치',
-    'backup-description-new': '브라우저 캐시 삭제 등으로 IndexedDB 데이터가 사라지는 것을 방지하기 위해 정기적인 백업을 권장합니다. 백업 데이터가 있으면 다른 브라우저로의 이동도 원활하게 할 수 있습니다.',
+    'backup-description-new':
+        '브라우저 캐시 삭제 등으로 IndexedDB 데이터가 사라지는 것을 방지하기 위해 정기적인 백업을 권장합니다. 백업 데이터가 있으면 다른 브라우저로의 이동도 원활하게 할 수 있습니다.',
     'toast-backup-completed': '백업이 완료되었습니다',
-
+    // Messages & Dialogs
     'confirm-end-task': '작업을 종료하시겠습니까?',
     'confirm-cancel': '취소',
     'confirm-delete-category': '"{name}" 카테고리를 삭제하시겠습니까?\n(이전 로그의 카테고리 색상이 사라집니다)',
@@ -129,27 +139,27 @@ export default {
     'toast-cat-imported': '카테고리를 가져왔습니다',
     'toast-deleted': '삭제가 완료되었습니다',
     'no-logs-for-day': '이 날의 기록이 없습니다',
-
     'notification-btn-ok': '확인',
     'notification-btn-close': '닫기',
-
     'import-err-fatal': '파일 형식이 올바르지 않습니다. 가져오기를 중단합니다.',
-    'import-err-partial': '전체 {total}행 중 {errorCount}행이 손상되었습니다. 정상적인 {validCount}행만 가져오시겠습니까?',
-    'import-err-field': '일부 데이터에 결함이 있습니다(예: 유효하지 않은 색상). 기본값을 적용하여 모두 가져오시겠습니까, 아니면 결함이 있는 행을 제외하시겠습니까?',
+    'import-err-partial':
+        '전체 {total}행 중 {errorCount}행이 손상되었습니다. 정상적인 {validCount}행만 가져오시겠습니까?',
+    'import-err-field':
+        '일부 데이터에 결함이 있습니다(예: 유효하지 않은 색상). 기본값을 적용하여 모두 가져오시겠습니까, 아니면 결함이 있는 행을 제외하시겠습니까?',
     'import-btn-import-valid': '정상 항목만 가져오기',
     'import-btn-apply-fallback': '기본값 적용',
     'import-btn-skip-invalid': '결함 있는 행 제외',
     'import-btn-abort': '취소',
-
-    'backup-err-0byte': '내용이 비어 있는 백업 파일({name})이 발견되었습니다. 이는 비정상적인 상태일 수 있습니다. 이 파일을 무시하고 계속하시겠습니까?',
+    'backup-err-0byte':
+        '내용이 비어 있는 백업 파일({name})이 발견되었습니다. 이는 비정상적인 상태일 수 있습니다. 이 파일을 무시하고 계속하시겠습니까?',
     'backup-btn-ignore-continue': '무시하고 계속',
     'backup-btn-abort-investigate': '중단하고 조사',
-
-    'backup-err-locked': '파일이 다른 프로그램에서 잠겨 있거나 액세스 권한이 없습니다. 다른 앱을 닫고 다시 시도하십시오.',
+    'backup-err-locked':
+        '파일이 다른 프로그램에서 잠겨 있거나 액세스 권한이 없습니다. 다른 앱을 닫고 다시 시도하십시오.',
     'backup-err-not-found': '백업 폴더를 찾을 수 없습니다. 폴더를 다시 선택하십시오.',
     'backup-err-unknown': '예기치 않은 오류가 발생했습니다: {message}',
     'toast-backup-failed-detail': '백업에 실패했습니다. 상세: {reason}',
-
+    // Dynamic Elements
     'day-names': ['일', '월', '화', '수', '목', '금', '토'],
     'idle-category': '(대기)',
     'idle-category-log': '(대기)',
@@ -159,7 +169,6 @@ export default {
     'anim-none': '없음',
     'anim-author-label': '제작자',
     'anim-unknown-author': '미상',
-
     // Report Settings
     'report-emoji-keep': '있음',
     'report-emoji-remove': '없음',
@@ -185,7 +194,7 @@ export default {
     'report-adjust-none': '안 함',
     'report-adjust-5m': '5분 간격',
     'report-adjust-10m': '10분 간격',
-
+    // Initial Categories
     'init-cat-dev': '💻 개발/프로그래밍',
     'init-cat-meeting': '🤝 팀 회의/정기 미팅',
     'init-cat-research': '🔍 조사/리서치',
@@ -211,7 +220,6 @@ export default {
     'init-cat-data': '📊 데이터 분석/SQL',
     'init-cat-wfh': '🏠 재택근무 환경 정비',
     'init-cat-move': '🚶 이동/외출',
-
     // Initial Tags
     'init-tag-dev': '개발, 설계',
     'init-tag-meeting': '회의',
@@ -236,7 +244,7 @@ export default {
     'init-tag-sec': '보안',
     'init-tag-data': '분석',
     'init-tag-move': '이동',
-
+    // QL-Animation Studio
     'studio-title': 'QL-Animation Studio (Beta)',
     'sample-select-placeholder': '샘플 애니메이션 선택...',
     'section-metadata': '메타데이터',
@@ -280,7 +288,8 @@ export default {
     'btn-close': '닫기',
     'pr-guide-title': '풀 리퀘스트 가이드',
     'pr-step-1': '작성한 애니메이션을 <code>.js</code> 파일로 다운로드합니다.',
-    'pr-step-2': '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> 저장소를 포크합니다.',
+    'pr-step-2':
+        '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> 저장소를 포크합니다.',
     'pr-step-3': '다운로드한 파일을 <code>shared/js/animation/</code>에 추가합니다.',
     'pr-step-4': '풀 리퀘스트를 제출하세요!',
     'pr-note': '여러분의 기여가 이 도구를 더욱 좋게 만듭니다!',
@@ -298,7 +307,6 @@ export default {
     'btn-replace-all': '모두 바꾸기',
     'section-console': '콘솔',
     'btn-clear-console': '콘솔 지우기',
-
     // Category Editor
     'category-editor-title': '업무 카테고리 에디터',
     'category-detail': '카테고리 상세',
@@ -322,6 +330,7 @@ export default {
     'tag-replace-before': '이전',
     'tag-replace-after': '이후',
     'tooltip-replace-tags': '태그 바꾸기',
-    'privacy-policy-local-only': '모든 처리는 브라우저 내에서 완료되며 외부 서버와 연동되지 않습니다. 입력한 정보가 외부로 유출되지 않습니다.',
+    'privacy-policy-local-only':
+        '모든 처리는 브라우저 내에서 완료되며 외부 서버와 연동되지 않습니다. 입력한 정보가 외부로 유출되지 않습니다.',
     'privacy-policy-local-only-short': '로컬 완결',
 };
