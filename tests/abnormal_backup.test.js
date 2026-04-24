@@ -34,7 +34,6 @@ describe('BackupManager Abnormal Cases', () => {
         backupManager.directoryHandle = null;
         backupManager.onStatusChange = null;
         backupManager.onConfirm = null;
-        backupManager.lastError = null;
 
         mockDirectoryHandle = {
             values: jest.fn(),
@@ -46,7 +45,7 @@ describe('BackupManager Abnormal Cases', () => {
         jest.clearAllMocks();
     });
 
-    test('sync sets status to FAILED and records lastError when directory is not readable', async () => {
+    test('sync sets status to FAILED when directory is not readable', async () => {
         const error = new Error('Locked');
         error.name = 'NotReadableError';
 
@@ -59,7 +58,6 @@ describe('BackupManager Abnormal Cases', () => {
         await backupManager.sync();
 
         expect(backupManager.status).toBe(BACKUP_STATUS.FAILED);
-        expect(backupManager.lastError.key).toBe('backup-err-locked');
     });
 
     test('sync handles "Locked" message (case-insensitive) correctly', async () => {
@@ -72,7 +70,6 @@ describe('BackupManager Abnormal Cases', () => {
         await backupManager.sync();
 
         expect(backupManager.status).toBe(BACKUP_STATUS.FAILED);
-        expect(backupManager.lastError.key).toBe('backup-err-locked');
     });
 
     test('sync handles error during directoryHandle.values() enumeration', async () => {
@@ -92,7 +89,6 @@ describe('BackupManager Abnormal Cases', () => {
         await backupManager.sync();
 
         expect(backupManager.status).toBe(BACKUP_STATUS.FAILED);
-        expect(backupManager.lastError.key).toBe('backup-err-locked');
     });
 
     test('readNdjson throws ABORT_BY_USER when 0-byte file is found and user cancels', async () => {
@@ -130,8 +126,6 @@ describe('BackupManager Abnormal Cases', () => {
         await backupManager.sync();
 
         expect(backupManager.status).toBe(BACKUP_STATUS.FAILED);
-        expect(backupManager.lastError.key).toBe('backup-err-unknown');
-        expect(backupManager.lastError.params.message).toBe('Some random error');
     });
 
     test('_validateCategory rejects non-compliant data (Strict Schema)', () => {

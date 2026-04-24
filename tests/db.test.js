@@ -167,6 +167,18 @@ describe('DB Module', () => {
         expect(activeTask.category).toBe('Active');
     });
 
+    test('dbGetActiveTask skips multiple closed tasks to find active one', async () => {
+        await openDatabase();
+        const now = Date.now();
+        await dbAdd(STORE_LOGS, { category: 'Active', startTime: now - 5000, endTime: null });
+        await dbAdd(STORE_LOGS, { category: 'Closed 1', startTime: now - 4000, endTime: now - 3000 });
+        await dbAdd(STORE_LOGS, { category: 'Closed 2', startTime: now - 2000, endTime: now - 1000 });
+
+        const activeTask = await dbGetActiveTask();
+        expect(activeTask).toBeDefined();
+        expect(activeTask.category).toBe('Active');
+    });
+
     test('initDB migrates open idle log to pauseState', async () => {
         await openDatabase();
         const startTime = Date.now();
