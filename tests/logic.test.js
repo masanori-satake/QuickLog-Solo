@@ -495,22 +495,9 @@ describe('Logic Module', () => {
 
         test('handles time adjustment contradictions by falling back to original time', () => {
             // Use concrete times to avoid locale issues. 10:00:00 etc.
-            const t10_00 = new Date('2026-03-03T10:00:00').getTime();
-            const t10_10 = new Date('2026-03-03T10:10:00').getTime();
             const t10_11 = new Date('2026-03-03T10:11:00').getTime();
 
-            const logs = [
-                { startTime: t10_00, endTime: t10_10, category: 'T1' },
-                { startTime: t10_10, endTime: t10_11, category: 'T2' }
-            ];
-            // uniqueTimes: [t10_00, t10_10, t10_11]
-            // adjust: 30m (1,800,000ms). t10_10 rounds to 10:00 or 10:30.
-            // i=1 (t10_10): rounded to 10:00.
-            // prevAdjusted (t10_00) = 10:00.
-            // nextOriginal (t10_11) = 10:11.
-            // 10:00 >= 10:00 && 10:00 <= 10:11 -> OK! Rounded to 10:00.
-
-            // Now a case where it should fail rounding:
+            // A case where it should fail rounding:
             const t10_02 = new Date('2026-03-03T10:02:00').getTime();
             const t10_03 = new Date('2026-03-03T10:03:00').getTime();
             const logs2 = [
