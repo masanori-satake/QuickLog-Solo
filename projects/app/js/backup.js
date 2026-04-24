@@ -32,7 +32,6 @@ class BackupManager {
         this.status = BACKUP_STATUS.DISABLED;
         this.onStatusChange = null;
         this.isSyncing = false;
-        this.lastError = null;
         this.onConfirm = null; // Callback for user confirmation
     }
 
@@ -109,7 +108,6 @@ class BackupManager {
 
         this.isSyncing = true;
         this.status = BACKUP_STATUS.SYNCING;
-        this.lastError = null;
         if (this.onStatusChange) this.onStatusChange(this.status);
 
         try {
@@ -131,23 +129,11 @@ class BackupManager {
             } else {
                 console.error('QuickLog-Solo: Backup failed', e);
                 this.status = BACKUP_STATUS.FAILED;
-                this.lastError = this._handleError(e);
             }
         } finally {
             this.isSyncing = false;
             if (this.onStatusChange) this.onStatusChange(this.status);
         }
-    }
-
-    _handleError(e) {
-        const message = e.message || '';
-        if (e.name === 'NotReadableError' || e.name === 'AbortError' || message.toLowerCase().includes('locked')) {
-            return { key: 'backup-err-locked' };
-        }
-        if (e.name === 'NotFoundError') {
-            return { key: 'backup-err-not-found' };
-        }
-        return { key: 'backup-err-unknown', params: { message: e.message } };
     }
 
     async backupToFiles() {

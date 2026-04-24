@@ -493,6 +493,42 @@ describe('Logic Module', () => {
             expect(report).toBe('');
         });
 
+        test('handles time adjustment contradictions by falling back to original time', () => {
+            // Use concrete times to avoid locale issues. 10:00:00 etc.
+            const t10_11 = new Date('2026-03-03T10:11:00').getTime();
+
+            // A case where it should fail rounding:
+            const t10_02 = new Date('2026-03-03T10:02:00').getTime();
+            const t10_03 = new Date('2026-03-03T10:03:00').getTime();
+            const logs2 = [
+                { startTime: t10_02, endTime: t10_03, category: 'T1' },
+                { startTime: t10_03, endTime: t10_11, category: 'T2' }
+            ];
+            // uniqueTimes: [t10_02, t10_03, t10_11]
+            // adjust: 10m (600,000ms). t10_03 rounds to 10:00.
+            // i=1 (t10_03): rounded to 10:00.
+            // prevAdjusted (t10_02) = 10:02.
+            // nextOriginal (t10_11) = 10:11.
+            // 10:00 is NOT >= 10:02. -> CONTRADICTION! Fallback to original t10_03 (10:03).
+
+            const report = generateReport(logs2, { ...defaultOptions, adjust: '10', endTime: 'show' });
+            // Should contain 10:03 (or 10:03 AM), NOT 10:00
+            expect(report).toMatch(/10:03/);
+        });
+
+        test('generateReport handles CSV/TSV escaping for special characters', () => {
+            const logs = [{
+                startTime: 1000,
+                endTime: 2000,
+                category: 'Task with "quotes", commas, and\nnewlines'
+            }];
+            const csv = generateReport(logs, { ...defaultOptions, format: 'csv' });
+            expect(csv).toContain('"Task with ""quotes"", commas, and\nnewlines"');
+
+            const tsv = generateReport(logs, { ...defaultOptions, format: 'tsv' });
+            expect(tsv).toContain('"Task with ""quotes"", commas, and\nnewlines"');
+        });
+
         test('generateReport supports duration: bottom in various formats', () => {
             const logs = [{ startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T10:00:01').getTime(), category: 'Dev' }];
             const options = {
