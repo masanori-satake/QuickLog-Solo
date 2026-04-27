@@ -127,6 +127,13 @@ export default {
 
     // Messages & Dialogs
     'confirm-end-task': 'Do you really want to end the task?',
+    'history-edit-title': 'Edit History',
+    'history-edit-start-time': 'Start Time',
+    'history-edit-end-time': 'End Time',
+    'history-edit-out-of-range': 'Specified time is out of range.',
+    'confirm-delete-history': 'Do you want to delete this history item?',
+    'btn-apply': 'Apply',
+    'btn-delete': 'Delete',
     'confirm-cancel': 'Cancel',
     'confirm-delete-category': 'Do you want to delete category "{name}"?\n(Category colors will be removed from past logs)',
     'confirm-delete-selected': 'Do you want to delete the selected {count} items?',

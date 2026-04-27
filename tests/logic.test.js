@@ -18,7 +18,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     SETTING_KEY_PAUSE_STATE: 'pauseState'
 }));
 
-const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation } = await import('../shared/js/logic.js');
+const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } = await import('../shared/js/logic.js');
 const { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
 
@@ -598,6 +598,97 @@ describe('Logic Module', () => {
             expect(tagAgg).toEqual({});
             expect(noTagDuration).toBe(1000);
             expect(totalWorkDuration).toBe(1000);
+        });
+    });
+
+    describe('History Edit Logic', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        test('updateHistoryStartTime updates log and propagates to previous contiguous log', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' },
+                { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' }
+            ];
+            dbGetAll.mockResolvedValue(logs);
+
+            await updateHistoryStartTime(2, 2500);
+
+            // Task 2 updated
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                startTime: 2500
+            }));
+            // Task 1 updated (propagation)
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                endTime: 2500
+            }));
+        });
+
+        test('updateHistoryStartTime does not propagate if not contiguous', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 1500, category: 'Task 1' }, // Gap of 500
+                { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' }
+            ];
+            dbGetAll.mockResolvedValue(logs);
+
+            await updateHistoryStartTime(2, 2500);
+
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, startTime: 2500 }));
+            // Task 1 should NOT be updated because there was a gap
+            expect(dbPut).not.toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 1 }));
+        });
+
+        test('updateHistoryStartTime handles stop markers (updates both start and end)', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' },
+                { id: 2, startTime: 2000, endTime: 2000, category: 'IDLE', isManualStop: true }
+            ];
+            dbGetAll.mockResolvedValue(logs);
+
+            await updateHistoryStartTime(2, 2500);
+
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                startTime: 2500,
+                endTime: 2500
+            }));
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                endTime: 2500
+            }));
+        });
+
+        test('deleteHistoryItem deletes log and propagates to next log', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' },
+                { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' },
+                { id: 3, startTime: 3000, endTime: 4000, category: 'Task 3' }
+            ];
+            dbGetAll.mockResolvedValue(logs);
+
+            await deleteHistoryItem(2);
+
+            expect(dbDelete).toHaveBeenCalledWith(STORE_LOGS, 2);
+            // Task 3 updated: its start time becomes Task 2's start time
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 3,
+                startTime: 2000
+            }));
+        });
+
+        test('deleteHistoryItem handles last item (no propagation)', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' }
+            ];
+            dbGetAll.mockResolvedValue(logs);
+
+            await deleteHistoryItem(1);
+
+            expect(dbDelete).toHaveBeenCalledWith(STORE_LOGS, 1);
+            expect(dbPut).not.toHaveBeenCalled();
         });
     });
 });

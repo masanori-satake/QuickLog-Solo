@@ -6,7 +6,7 @@ import {
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
-import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation } from '../shared/js/logic.js';
+import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } from '../shared/js/logic.js';
 import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { animations } from '../shared/js/animation_registry.js';
@@ -189,6 +189,105 @@ async function endTask() {
         await stopTask();
         updateUI();
     }
+}
+
+// --- History Editing ---
+
+async function openHistoryEditModal(log) {
+    const modal = getEl('history-edit-modal');
+    const timeInput = getEl('history-edit-time-input');
+    const titleEl = getEl('history-edit-title');
+    const labelEl = getEl('history-edit-time-label');
+    const warningEl = getEl('history-edit-warning');
+    const applyBtn = getEl('history-edit-apply-btn');
+    const deleteBtn = getEl('history-edit-delete-btn');
+
+    if (!modal || !timeInput) return;
+
+    // Determine if it's a stop marker
+    const isStopMarker = log.isManualStop;
+    titleEl.textContent = isStopMarker ? t('stop') : t('history-edit-title');
+    labelEl.textContent = isStopMarker ? t('history-edit-end-time') : t('history-edit-start-time');
+
+    // Get surrounding logs for range validation
+    const allLogs = await dbGetAll(STORE_LOGS);
+    const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
+    const currentIndex = sortedLogs.findIndex(l => l.id === log.id);
+    const prevLog = currentIndex > 0 ? sortedLogs[currentIndex - 1] : null;
+    const nextLog = currentIndex < sortedLogs.length - 1 ? sortedLogs[currentIndex + 1] : null;
+
+    const currentDayStart = new Date(log.startTime).setHours(0, 0, 0, 0);
+    const currentDayEnd = currentDayStart + 24 * 60 * 60 * 1000 - 1;
+
+    // Initial time value (HH:mm)
+    const initialTime = new Date(log.startTime);
+    timeInput.value = `${String(initialTime.getHours()).padStart(2, '0')}:${String(initialTime.getMinutes()).padStart(2, '0')}`;
+
+    warningEl.classList.add('hidden');
+
+    const validate = () => {
+        const [h, m] = timeInput.value.split(':').map(Number);
+        const newTime = new Date(log.startTime);
+        newTime.setHours(h, m, 0, 0);
+        const newTs = newTime.getTime();
+
+        let isValid = true;
+        // Range validation
+        // 1. Must be within the same day
+        if (newTs < currentDayStart || newTs > currentDayEnd) {
+            isValid = false;
+        }
+        // 2. Must be after previous start (if exists)
+        if (prevLog && newTs < prevLog.startTime) {
+            isValid = false;
+        }
+        // 3. Must be before current end (if not stop marker)
+        if (!isStopMarker && newTs > log.endTime) {
+            isValid = false;
+        }
+        // Special case for stop marker: must not exceed previous start if contiguous
+        if (isStopMarker && prevLog && prevLog.endTime === log.startTime && newTs < prevLog.startTime) {
+            isValid = false;
+        }
+
+        if (isValid) {
+            warningEl.classList.add('hidden');
+        } else {
+            warningEl.classList.remove('hidden');
+        }
+        return isValid;
+    };
+
+    timeInput.oninput = () => {
+        warningEl.classList.add('hidden');
+    };
+
+    applyBtn.onclick = async () => {
+        if (!validate()) return;
+
+        const [h, m] = timeInput.value.split(':').map(Number);
+        const newTime = new Date(log.startTime);
+        newTime.setHours(h, m, 0, 0);
+        const newTs = newTime.getTime();
+
+        await updateHistoryStartTime(log.id, newTs);
+
+        modal.classList.add('hidden');
+        await updateUI();
+        broadcastSync();
+    };
+
+    deleteBtn.onclick = async () => {
+        if (await showConfirm(t('confirm-delete-history'))) {
+            await deleteHistoryItem(log.id);
+
+            modal.classList.add('hidden');
+            await updateUI();
+            broadcastSync();
+        }
+    };
+
+    modal.classList.remove('hidden');
 }
 
 // --- Timer Management ---
@@ -419,6 +518,10 @@ async function renderLogs() {
         }
 
         const li = createLogElement(log, categoryMap);
+    if (log.endTime) {
+        li.style.cursor = 'pointer';
+        li.onclick = () => openHistoryEditModal(log);
+    }
         logList.appendChild(li);
     });
 }
@@ -1823,12 +1926,13 @@ function setupEventListeners() {
         settings: getEl(ID_SETTINGS_POPUP),
         report: getEl(ID_REPORT_MODAL),
         tagAggregation: getEl(ID_TAG_AGGREGATION_MODAL),
-        multiChoice: getEl('multi-choice-modal')
+        multiChoice: getEl('multi-choice-modal'),
+        historyEdit: getEl('history-edit-modal')
     };
 
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
-    queryAll('.close-btn, .report-close-btn, .tag-aggregation-close-btn').forEach(btn => {
+    queryAll('.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-edit-close-btn').forEach(btn => {
         btn.onclick = () => Object.values(popups).forEach(p => p?.classList.add('hidden'));
     });
 

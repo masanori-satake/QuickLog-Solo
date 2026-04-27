@@ -425,3 +425,54 @@ export async function pauseTaskLogic(activeTask) {
     await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
     return pauseState;
 }
+
+/**
+ * Updates the start time of a history log item and propagates the change to the previous item if contiguous.
+ * @param {number} logId
+ * @param {number} newTs
+ */
+export async function updateHistoryStartTime(logId, newTs) {
+    const allLogs = await dbGetAll(STORE_LOGS);
+    const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
+    const log = sortedLogs.find(l => l.id === logId);
+    if (!log) return;
+
+    const currentIndex = sortedLogs.findIndex(l => l.id === logId);
+    const prevLog = currentIndex > 0 ? sortedLogs[currentIndex - 1] : null;
+
+    const oldStartTs = log.startTime;
+    log.startTime = newTs;
+    if (log.isManualStop) {
+        log.endTime = newTs;
+    }
+    await dbPut(STORE_LOGS, log);
+
+    // Propagation logic: if previous log was contiguous, update its end time
+    if (prevLog && prevLog.endTime === oldStartTs) {
+        prevLog.endTime = newTs;
+        await dbPut(STORE_LOGS, prevLog);
+    }
+}
+
+/**
+ * Deletes a history log item and updates the next item's start time to maintain continuity.
+ * @param {number} logId
+ */
+export async function deleteHistoryItem(logId) {
+    const allLogs = await dbGetAll(STORE_LOGS);
+    const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
+    const log = sortedLogs.find(l => l.id === logId);
+    if (!log) return;
+
+    const currentIndex = sortedLogs.findIndex(l => l.id === logId);
+    const nextLog = currentIndex < sortedLogs.length - 1 ? sortedLogs[currentIndex + 1] : null;
+
+    const startTs = log.startTime;
+    await dbDelete(STORE_LOGS, logId);
+
+    // Propagation for deletion: update next item's start time
+    if (nextLog) {
+        nextLog.startTime = startTs;
+        await dbPut(STORE_LOGS, nextLog);
+    }
+}
