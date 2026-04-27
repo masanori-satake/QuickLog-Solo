@@ -120,6 +120,13 @@ export default {
     'toast-backup-completed': '백업이 완료되었습니다',
     // Messages & Dialogs
     'confirm-end-task': '작업을 종료하시겠습니까?',
+    'history-edit-title': '履歴の編集',
+    'history-edit-start-time': '開始時刻',
+    'history-edit-end-time': '終了時刻',
+    'history-edit-out-of-range': '指定された時刻は範囲外です。',
+    'confirm-delete-history': 'この履歴を削除しますか？',
+    'btn-apply': '適用',
+    'btn-delete': '削除',
     'confirm-cancel': '취소',
     'confirm-delete-category': '"{name}" 카테고리를 삭제하시겠습니까?\n(이전 로그의 카테고리 색상이 사라집니다)',
     'confirm-delete-selected': '선택한 {count}개 항목을 삭제하시겠습니까?',
