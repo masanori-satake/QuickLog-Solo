@@ -1,50 +1,33 @@
 export default {
+    // UI Header & Sections
     'title': 'QuickLog-Solo',
     'copy-report-btn': 'Copiar relatório diário',
     'copy-report-title': 'Copiar relatório diário',
     'tag-aggregation-title': 'Agregação de tags',
     'copy-aggregation-btn': 'Copiar estatísticas',
     'tags': 'Tags',
-    'no-tags': '(Sem tags)',
-    'total-work-time': 'Tempo de trabalho',
+    'no-tags': '(タグ無し)',
+    'total-work-time': '作業時間',
     'settings': 'Configurações',
     'delete': 'Excluir',
     'duplicate': 'Duplicar',
     'btn-copy': 'Copiar',
-
-    // Auto Stop & Page Break
-    'page-break': 'Quebra de página',
-    'btn-add-page-break': 'Adicionar quebra de página',
-    'confirm-delete-page-break': 'Deseja excluir esta quebra de página?',
-
-    // Tooltips
-    'tooltip-copy-report': 'Copiar relatório diário para a área de transferência',
-    'tooltip-copy-aggregation': 'Copiar resultados de agregação de tags para a área de transferência',
-    'tooltip-settings': 'Abrir configurações',
-    'tooltip-drag-handle': 'Arraste para reordenar',
-    'tooltip-delete-category': 'Excluir esta categoria',
-    'tooltip-delete-history': 'Excluir este histórico',
-    'tooltip-language-select': 'Alterar idioma de exibição',
-    'tooltip-theme-select': 'Alternar entre modo claro/escuro',
-    'tooltip-font-select': 'Selecionar fonte de exibição',
-    'tooltip-animation-select': 'Selecionar animação de fundo global',
-    'tooltip-status-running': 'Em execução',
-    'tooltip-status-paused': 'Pausado',
-    'tooltip-status-stopped': 'Concluído',
-    'tooltip-calendar': 'Selecionar data',
+    // Controls
     'pause': 'Pausar',
     'resume': 'Retomar',
     'stop': 'Parar',
+    // Settings Modal
     'tab-general': 'Geral',
     'tab-categories': 'Categorias',
     'tab-maintenance': 'Manutenção',
     'tab-backup': 'Backup',
     'tab-alarms': 'Alarmes',
     'tab-about': 'Sobre',
-
     // Alarms Tab
-    'alarm-setting-description': 'Exibe uma mensagem em um horário especificado e executa automaticamente ações como "Parar", "Pausar" ou "Iniciar" tarefas, conforme necessário.',
-    'alarm-note-extension-only': '* O recurso de alarme só funciona quando instalado como uma extensão do navegador. Notificações e ações automáticas não são executadas na versão de visualização.',
+    'alarm-setting-description':
+        'Exibe uma mensagem em um horário especificado e executa automaticamente ações como "Parar", "Pausar" ou "Iniciar" tarefas, conforme necessário.',
+    'alarm-note-extension-only':
+        '* O recurso de alarme só funciona quando instalado como uma extensão do navegador. Notificações e ações automáticas não são executadas na versão de visualização.',
     'alarm-label-enabled': 'Ativado',
     'alarm-label-time': 'Hora',
     'alarm-label-message': 'Mensagem',
@@ -59,9 +42,10 @@ export default {
     'toast-alarm-saved': 'Alarme salvo',
     'btn-test-notification': 'Testar Notificação',
     'test-notification-message': 'Este é um teste de notificação. Está funcionando corretamente.',
-
-    'setting-enabled': 'Ativado (ON)',
-    'setting-disabled': 'Desativado (OFF)',
+    // Common labels
+    'setting-enabled': 'Ativado (LIGADO)',
+    'setting-disabled': 'Deactivado (DESLIGADO)',
+    // General Tab
     'setting-language': 'Idioma',
     'lang-auto': 'Idioma do navegador',
     'lang-ja': 'Japonês',
@@ -76,6 +60,7 @@ export default {
     'setting-history-csv': 'Histórico (CSV)',
     'btn-export-csv': 'Exportar',
     'btn-import-csv': 'Importar',
+    // Categories Tab
     'placeholder-new-category': 'Nova categoria...',
     'placeholder-tags': 'Tags (separadas por vírgulas)',
     'category-backup': 'Importação/Exportação de Categorias (Área de Transferência)',
@@ -84,12 +69,35 @@ export default {
     'import-setting': 'Modo de importação:',
     'import-append': 'Adicionar',
     'import-overwrite': 'Sobrescrever',
+    // About Tab
     'version': 'Versão',
     'developer': 'Desenvolvedor',
     'about-stats-logs': 'Número de registros',
     'about-stats-categories': 'Número de categorias',
-    'about-description': 'QuickLog-Solo é uma ferramenta de notas de trabalho minimalista focada na privacidade. Os dados são salvos no IndexedDB do seu navegador (e também no sistema de arquivos local quando o backup for executado) e nunca são enviados externamente. Mantém alta transparência e segurança por meio da verificação rigorosa de dependências via GitHub Actions e auditoria contínua com o Google OSV-Scanner.',
-    'about-disclaimer': '[Aviso Legal] Este é um projeto pessoal de código aberto e é fornecido "COMO ESTÁ" sem qualquer garantia. O desenvolvedor não será responsável por quaisquer danos decorrentes do seu uso. Use por sua conta e risco.',
+    'about-description':
+        'QuickLog-Solo é uma ferramenta de notas de trabalho minimalista focada na privacidade. Os dados são salvos no IndexedDB do seu navegador (e também no sistema de arquivos local quando o backup for executado) e nunca são enviados externamente. Mantém alta transparência e segurança por meio da verificação rigorosa de dependências via GitHub Actions e auditoria contínua com o Google OSV-Scanner.',
+    'about-disclaimer':
+        '[Aviso Legal] Este é um projeto pessoal de código aberto e é fornecido "COMO ESTÁ" sem qualquer garantia. O desenvolvedor não será responsável por quaisquer danos decorrentes do seu uso. Use por sua conta e risco.',
+    // Auto Stop & Page Break
+    'page-break': 'Quebra de página',
+    'btn-add-page-break': 'Adicionar quebra de página',
+    'confirm-delete-page-break': 'Deseja excluir esta quebra de página?',
+    // Tooltips
+    'tooltip-copy-report': 'Copiar relatório diário para a área de transferência',
+    'tooltip-copy-aggregation': 'Copiar resultados de agregação de tags para a área de transferência',
+    'tooltip-settings': 'Abrir configurações',
+    'tooltip-drag-handle': 'Arraste para reordenar',
+    'tooltip-delete-category': 'Excluir esta categoria',
+    'tooltip-delete-history': 'この履歴を削除します',
+    'tooltip-language-select': 'Alterar idioma de exibição',
+    'tooltip-theme-select': 'Alternar entre modo claro/escuro',
+    'tooltip-font-select': 'Selecionar fonte de exibição',
+    'tooltip-animation-select': 'Selecionar animação de fundo global',
+    'tooltip-status-running': 'Em execução',
+    'tooltip-status-paused': 'Pausado',
+    'tooltip-status-stopped': 'Concluído',
+    'tooltip-calendar': 'Selecionar data',
+    // Maintenance Tab
     'maintenance-clear-logs': 'Limpar registros',
     'btn-clear-logs': 'Excluir todos os registros',
     'maintenance-reset-all': 'Redefinir ajustes e categorias',
@@ -108,18 +116,19 @@ export default {
     'backup-directory': 'Diretório',
     'backup-file-count': 'Arquivos',
     'backup-file-count-unit': 'dias',
-    'backup-description-new': 'Backups regulares são recomendados para evitar a perda de dados no IndexedDB devido à limpeza do cache do navegador. Com os dados de backup, você também pode transitar suavemente para outros navegadores.',
+    'backup-description-new':
+        'Backups regulares são recomendados para evitar a perda de dados no IndexedDB devido à limpeza do cache do navegador. Com os dados de backup, você também pode transitar suavemente para outros navegadores.',
     'toast-backup-completed': 'Backup concluído',
-
+    // Messages & Dialogs
     'confirm-end-task': 'Deseja realmente finalizar a tarefa?',
-    'history-edit-title': 'Editar histórico',
-    'history-edit-stop-title': 'Editar parada',
-    'history-edit-start-time': 'Hora de início',
-    'history-edit-end-time': 'Hora de término',
-    'history-edit-out-of-range': 'O tempo especificado está fora do intervalo.',
-    'confirm-delete-history': 'Deseja excluir este item do histórico?',
-    'btn-apply': 'Aplicar',
-    'btn-delete': 'Excluir',
+    'history-edit-title': '履歴の編集',
+    'history-edit-stop-title': '終了の編集',
+    'history-edit-start-time': '開始時刻',
+    'history-edit-end-time': '終了時刻',
+    'history-edit-out-of-range': '指定された時刻は範囲外です。',
+    'confirm-delete-history': 'この履歴を削除しますか？',
+    'btn-apply': '適用',
+    'btn-delete': '削除',
     'confirm-cancel': 'Cancelar',
     'confirm-delete-category': 'Excluir categoria "{name}"?\n(Cores sumirão de registros antigos)',
     'confirm-delete-selected': 'Deseja excluir os {count} itens selecionados?',
@@ -139,27 +148,27 @@ export default {
     'toast-cat-imported': 'Categorias importadas',
     'toast-deleted': 'Exclusão concluída',
     'no-logs-for-day': 'Sem registros para este dia',
-
     'notification-btn-ok': 'OK',
     'notification-btn-close': 'Fechar',
-
     'import-err-fatal': 'Formato de arquivo inválido. Importação abortada.',
-    'import-err-partial': '{errorCount} de {total} linhas estão corrompidas. Deseja importar apenas as {validCount} linhas válidas?',
-    'import-err-field': 'Alguns dados estão incompletos (ex: cor inválida). Deseja aplicar valores padrão e importar tudo, ou pular as linhas inválidas?',
+    'import-err-partial':
+        '{errorCount} de {total} linhas estão corrompidas. Deseja importar apenas as {validCount} linhas válidas?',
+    'import-err-field':
+        'Alguns dados estão incompletos (ex: cor inválida). Deseja aplicar valores padrão e importar tudo, ou pular as linhas inválidas?',
     'import-btn-import-valid': 'Importar apenas válidos',
     'import-btn-apply-fallback': 'Aplicar padrões',
     'import-btn-skip-invalid': 'Pular linhas inválidas',
     'import-btn-abort': 'Abortar',
-
-    'backup-err-0byte': 'Um arquivo de backup vazio ({name}) foi encontrado. Isso pode indicar um erro. Deseja ignorar este arquivo e continuar?',
+    'backup-err-0byte':
+        'Um arquivo de backup vazio ({name}) foi encontrado. Isso pode indicar um erro. Deseja ignorar este arquivo e continuar?',
     'backup-btn-ignore-continue': 'Ignorar e continuar',
     'backup-btn-abort-investigate': 'Abortar e investigar',
-
-    'backup-err-locked': 'O arquivo está bloqueado por outro programa ou você não tem permissão. Feche outros aplicativos e tente novamente.',
+    'backup-err-locked':
+        'O arquivo está bloqueado por outro programa ou você não tem permissão. Feche outros aplicativos e tente novamente.',
     'backup-err-not-found': 'Diretório de backup não encontrado. Selecione o diretório novamente.',
     'backup-err-unknown': 'Ocorreu um erro inesperado: {message}',
     'toast-backup-failed-detail': 'Falha no backup. Motivo: {reason}',
-
+    // Dynamic Elements
     'day-names': ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
     'idle-category': '(Inativo)',
     'idle-category-log': '(Inativo)',
@@ -169,7 +178,6 @@ export default {
     'anim-none': 'Nenhuma',
     'anim-author-label': 'Autor',
     'anim-unknown-author': 'Desconhecido',
-
     // Report Settings
     'report-emoji-keep': 'Manter',
     'report-emoji-remove': 'Remover',
@@ -195,7 +203,7 @@ export default {
     'report-adjust-none': 'Nenhum',
     'report-adjust-5m': '5 min',
     'report-adjust-10m': '10 min',
-
+    // Initial Categories
     'init-cat-dev': '💻 Desenvolvimento/Código',
     'init-cat-meeting': '🤝 Reunião de equipe',
     'init-cat-research': '🔍 Pesquisa/Estudo',
@@ -221,7 +229,6 @@ export default {
     'init-cat-data': '📊 Análise de dados',
     'init-cat-wfh': '🏠 Home Office',
     'init-cat-move': '🚶 Deslocamento',
-
     // Initial Tags
     'init-tag-dev': 'desenvolvimento, código',
     'init-tag-meeting': 'reunião',
@@ -246,7 +253,7 @@ export default {
     'init-tag-sec': 'segurança',
     'init-tag-data': 'análise',
     'init-tag-move': 'deslocamento',
-
+    // QL-Animation Studio
     'studio-title': 'QL-Animation Studio (Beta)',
     'sample-select-placeholder': 'Selecionar animação de exemplo...',
     'section-metadata': 'Metadatos',
@@ -290,7 +297,8 @@ export default {
     'btn-close': 'Fechar',
     'pr-guide-title': 'Guia de Pull Request',
     'pr-step-1': 'Baixe sua animação como um arquivo <code>.js</code>.',
-    'pr-step-2': 'Faça um fork do repositório <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
+    'pr-step-2':
+        'Faça um fork do repositório <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
     'pr-step-3': 'Coloque seu arquivo em <code>shared/js/animation/</code>.',
     'pr-step-4': 'Envie um Pull Request!',
     'pr-note': 'Sua contribuição torna esta ferramenta melhor para todos!',
@@ -308,7 +316,6 @@ export default {
     'btn-replace-all': 'Substituir tudo',
     'section-console': 'Console',
     'btn-clear-console': 'Limpar console',
-
     // Category Editor
     'category-editor-title': 'Editor de Categorias de Negócios',
     'category-detail': 'Detalhe da Categoria',
@@ -332,6 +339,7 @@ export default {
     'tag-replace-before': 'Antes',
     'tag-replace-after': 'Depois',
     'tooltip-replace-tags': 'Substituir tags',
-    'privacy-policy-local-only': 'Todo o processamento é concluído no navegador e não há coordenação com servidores externos. Suas informações nunca serão vazadas para o exterior.',
+    'privacy-policy-local-only':
+        'Todo o processamento é concluído no navegador e não há coordenação com servidores externos. Suas informações nunca serão vazadas para o exterior.',
     'privacy-policy-local-only-short': 'Apenas local',
 };
