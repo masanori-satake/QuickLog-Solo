@@ -544,6 +544,16 @@ main {
     flex-direction: column;
 }
 
+.close-btn, .report-close-btn, .tag-aggregation-close-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 5;
+}
+
 #history-edit-modal .modal-content {
     height: auto;
     max-height: 90%;
@@ -869,16 +879,6 @@ main {
 }
 
 
-.close-btn, .report-close-btn, .tag-aggregation-close-btn {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
-    font-size: 1.5rem;
-    cursor: pointer;
-    font-weight: bold;
-    z-index: 5;
-}
-
 .tabs {
     display: flex;
     border-bottom: var(--border-width) solid var(--md-sys-color-outline-variant);
@@ -952,6 +952,14 @@ main {
     margin-bottom: var(--md-sys-spacing-0-5);
     font-size: 0.75rem;
     color: var(--md-sys-color-on-surface-variant);
+}
+
+.import-mode-selector label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    cursor: pointer;
 }
 
 .setting-item.horizontal-item {
@@ -1136,14 +1144,6 @@ body.theme-dark button:active {
     gap: var(--md-sys-spacing-1);
     font-size: 0.75rem;
     margin-bottom: var(--md-sys-spacing-1-5);
-}
-
-.import-mode-selector label {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin: 0;
-    cursor: pointer;
 }
 
 .import-mode-selector input[type="radio"] {
