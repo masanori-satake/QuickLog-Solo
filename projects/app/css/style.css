@@ -544,7 +544,7 @@ main {
     flex-direction: column;
 }
 
-.close-btn, .report-close-btn, .tag-aggregation-close-btn {
+.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-edit-close-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.75rem;
@@ -577,7 +577,7 @@ main {
     gap: 8px;
 }
 
-.modal-header-btns .close-btn {
+.modal-header-btns .history-edit-close-btn {
     position: static;
     font-size: 1.5rem;
     line-height: 1;
@@ -589,7 +589,7 @@ main {
     border-radius: 50%;
 }
 
-.modal-header-btns .close-btn:hover {
+.modal-header-btns .history-edit-close-btn:hover {
     background-color: var(--md-sys-color-surface-container-highest);
 }
 
