@@ -1,47 +1,28 @@
 export default {
+    // UI Header & Sections
     'title': 'QuickLog-Solo',
     'copy-report-btn': '复制日报',
     'copy-report-title': '复制日报',
     'tag-aggregation-title': '标签汇总',
     'copy-aggregation-btn': '复制统计',
     'tags': '标签',
-    'no-tags': '(无标签)',
-    'total-work-time': '工作时间',
+    'no-tags': '(タグ無し)',
+    'total-work-time': '作業時間',
     'settings': '设置',
     'delete': '删除',
-    'duplicate': '创建副本',
+    'duplicate': '复制',
     'btn-copy': '复制',
-
-    // Auto Stop & Page Break
-    'page-break': '换页',
-    'btn-add-page-break': '添加换页',
-    'confirm-delete-page-break': '是否删除此换页？',
-
-    // Tooltips
-    'tooltip-copy-report': '复制日报到剪贴板',
-    'tooltip-copy-aggregation': '按标签汇总结果并复制到剪贴板',
-    'tooltip-settings': '打开设置',
-    'tooltip-drag-handle': '拖动以排序',
-    'tooltip-delete-category': '删除此分类',
-    'tooltip-delete-history': '删除此历史记录',
-    'tooltip-language-select': '切换显示语言',
-    'tooltip-theme-select': '切换浅色/深色模式',
-    'tooltip-font-select': '选择显示字体',
-    'tooltip-animation-select': '选择全局背景动画',
-    'tooltip-status-running': '正在运行',
-    'tooltip-status-paused': '已暂停',
-    'tooltip-status-stopped': '已结束',
-    'tooltip-calendar': '选择日期',
+    // Controls
     'pause': '暂停',
     'resume': '继续',
     'stop': '停止',
+    // Settings Modal
     'tab-general': '常规',
     'tab-categories': '分类',
     'tab-maintenance': '维护',
     'tab-backup': '备份',
     'tab-alarms': '闹钟',
     'tab-about': '关于',
-
     // Alarms Tab
     'alarm-setting-description': '在指定时间显示消息，并根据需要自动执行“结束”、“暂停”或“开始”任务。',
     'alarm-note-extension-only': '* 闹钟功能仅在作为浏览器扩展程序安装时有效。预览版中不会执行通知和自动操作。',
@@ -59,9 +40,10 @@ export default {
     'toast-alarm-saved': '闹钟已保存',
     'btn-test-notification': '测试通知',
     'test-notification-message': '这是一条测试通知。它工作正常。',
-
+    // Common labels
     'setting-enabled': '已开启 (ON)',
     'setting-disabled': '已关闭 (OFF)',
+    // General Tab
     'setting-language': '语言',
     'lang-auto': '浏览器语言',
     'lang-ja': '日语',
@@ -76,20 +58,44 @@ export default {
     'setting-history-csv': '历史记录 (CSV)',
     'btn-export-csv': '导出',
     'btn-import-csv': '导入',
+    // Categories Tab
     'placeholder-new-category': '新分类...',
     'placeholder-tags': '标签 (逗号分隔)',
-    'category-backup': '分类导入/导出 (剪贴板)',
+    'category-backup': '类别导入/导出 (剪贴板)',
     'btn-export-json': '复制 (导出)',
     'btn-import-json': '粘贴 (导入)',
     'import-setting': '导入设置:',
     'import-append': '追加',
     'import-overwrite': '覆盖',
+    // About Tab
     'version': '版本',
     'developer': '开发者',
     'about-stats-logs': '日志数量',
     'about-stats-categories': '分类数量',
-    'about-description': 'QuickLog-Solo 是一款注重隐私的极简工作笔记工具。数据保存在您浏览器的 IndexedDB 中（执行备份时也会保存到本地文件系统），且绝不上传服务器。通过 GitHub Actions 的严格依赖校验和 Google OSV-Scanner 的持续审计，确保高度的透明性与安全性。',
-    'about-disclaimer': '[免责声明] 这是一个个人开源项目，按“原样”提供，不附带任何形式的保证。开发者不对因使用本软件而产生的任何损害承担责任。请自行承担使用风险。',
+    'about-description':
+        'QuickLog-Solo 是一款注重隐私的极简工作笔记工具。数据保存在您浏览器的 IndexedDB 中（执行备份时也会保存到本地文件系统），且绝不上传服务器。通过 GitHub Actions 的严格依赖校验和 Google OSV-Scanner 的持续审计，确保高度的透明性与安全性。',
+    'about-disclaimer':
+        '[免责声明] 这是一个个人开源项目，按“原样”提供，不附带任何形式的保证。开发者不对因使用本软件而产生的任何损害承担责任。请自行承担使用风险。',
+    // Auto Stop & Page Break
+    'page-break': '换页',
+    'btn-add-page-break': '添加换页',
+    'confirm-delete-page-break': '是否删除此换页？',
+    // Tooltips
+    'tooltip-copy-report': '复制日报到剪贴板',
+    'tooltip-copy-aggregation': '按标签汇总结果并复制到剪贴板',
+    'tooltip-settings': '打开设置',
+    'tooltip-drag-handle': '拖动以排序',
+    'tooltip-delete-category': '删除此分类',
+    'tooltip-delete-history': 'この履歴を削除します',
+    'tooltip-language-select': '切换显示语言',
+    'tooltip-theme-select': '切换浅色/深色模式',
+    'tooltip-font-select': '选择显示字体',
+    'tooltip-animation-select': '选择全局背景动画',
+    'tooltip-status-running': '正在运行',
+    'tooltip-status-paused': '已暂停',
+    'tooltip-status-stopped': '已结束',
+    'tooltip-calendar': '选择日期',
+    // Maintenance Tab
     'maintenance-clear-logs': '清空日志',
     'btn-clear-logs': '删除所有日志',
     'maintenance-reset-all': '重置设置与分类',
@@ -108,18 +114,19 @@ export default {
     'backup-directory': '保存目录',
     'backup-file-count': '文件数量',
     'backup-file-count-unit': '天',
-    'backup-description-new': '建议定期备份，以防因浏览器缓存清理导致 IndexedDB 数据丢失。有了备份数据，您还可以顺利迁移到其他浏览器。',
+    'backup-description-new':
+        '建议定期备份，以防因浏览器缓存清理导致 IndexedDB 数据丢失。有了备份数据，您还可以顺利迁移到其他浏览器。',
     'toast-backup-completed': '备份完成',
-
+    // Messages & Dialogs
     'confirm-end-task': '确定要结束任务吗？',
-    'history-edit-title': '编辑历史',
-    'history-edit-stop-title': '编辑停止',
-    'history-edit-start-time': '开始时间',
-    'history-edit-end-time': '结束时间',
-    'history-edit-out-of-range': '指定的时间超出范围。',
-    'confirm-delete-history': '您要删除这条历史记录吗？',
-    'btn-apply': '应用',
-    'btn-delete': '删除',
+    'history-edit-title': '履歴の編集',
+    'history-edit-stop-title': '終了の編集',
+    'history-edit-start-time': '開始時刻',
+    'history-edit-end-time': '終了時刻',
+    'history-edit-out-of-range': '指定された時刻は範囲外です。',
+    'confirm-delete-history': 'この履歴を削除しますか？',
+    'btn-apply': '適用',
+    'btn-delete': '削除',
     'confirm-cancel': '取消',
     'confirm-delete-category': '删除分类 "{name}"？\n（旧日志中的分类颜色将消失）',
     'confirm-delete-selected': '是否删除所选的 {count} 个项目？',
@@ -139,28 +146,24 @@ export default {
     'toast-cat-imported': '分类已导入',
     'toast-deleted': '删除完成',
     'no-logs-for-day': '该日无记录',
-
     'notification-btn-ok': '确定',
     'notification-btn-close': '关闭',
-
     'import-err-fatal': '文件格式不正确。导入已中止。',
     'import-err-partial': '在共 {total} 行中，有 {errorCount} 行已损坏。是否仅导入正常的 {validCount} 行？',
     'import-err-field': '部分数据不完整（例如：颜色无效）。是否应用默认值并导入全部，或者跳过无效行？',
     'import-btn-import-valid': '仅导入有效行',
     'import-btn-apply-fallback': '应用默认值',
     'import-btn-skip-invalid': '跳过无效行',
-    'import-btn-abort': '中止',
-
+    'import-btn-abort': '取消',
     'backup-err-0byte': '发现一个空的备份文件 ({name})。这可能表示存在错误。是否忽略此文件并继续？',
     'backup-btn-ignore-continue': '忽略并继续',
     'backup-btn-abort-investigate': '中止并调查',
-
     'backup-err-locked': '文件被另一个程序锁定或您没有权限。请关闭其他应用程序并重试。',
     'backup-err-not-found': '未找到备份目录。请重新选择目录。',
     'backup-err-unknown': '发生未知错误: {message}',
     'toast-backup-failed-detail': '备份失败。原因: {reason}',
-
-    'day-names': ['日', '一', '二', '三', '四', '五', '六'],
+    // Dynamic Elements
+    'day-names': ['天', '一', '二', '三', '四', '五', '六'],
     'idle-category': '(闲置)',
     'idle-category-log': '(闲置)',
     'status-stopped-name': '(已停止)',
@@ -169,7 +172,6 @@ export default {
     'anim-none': '无',
     'anim-author-label': '作者',
     'anim-unknown-author': '未知',
-
     // Report Settings
     'report-emoji-keep': '有',
     'report-emoji-remove': '无',
@@ -190,16 +192,16 @@ export default {
     'report-endtime-title': '结束时间',
     'report-duration-title': '所需时间',
     'report-header-time': '时间',
-    'report-header-category': '分类',
+    'report-header-category': '类别',
     'report-adjust-title': '时间调整',
     'report-adjust-none': '无',
     'report-adjust-5m': '5分钟间隔',
     'report-adjust-10m': '10分钟间隔',
-
+    // Initial Categories
     'init-cat-dev': '💻 开发与编程',
     'init-cat-meeting': '🤝 团队会议',
     'init-cat-research': '🔍 调查与研究',
-    'init-cat-admin': '行政事务、邮件处理 📝',
+    'init-cat-admin': '行政事务 📝',
     'init-cat-focus': '🔥 深度专注任务',
     'init-cat-skill': '📚 自我提升',
     'init-cat-idea': '💡 构思与规划',
@@ -221,7 +223,6 @@ export default {
     'init-cat-data': '📊 数据分析/SQL',
     'init-cat-wfh': '🏠 居家办公环境',
     'init-cat-move': '🚶 出差/移动',
-
     // Initial Tags
     'init-tag-dev': '开发, 设计',
     'init-tag-meeting': '会议',
@@ -246,7 +247,7 @@ export default {
     'init-tag-sec': '安全',
     'init-tag-data': '分析',
     'init-tag-move': '移动',
-
+    // QL-Animation Studio
     'studio-title': 'QL-Animation Studio (Beta)',
     'sample-select-placeholder': '选择示例动画...',
     'section-metadata': '元数据',
@@ -262,7 +263,7 @@ export default {
     'strategy-jump': '跳过 FG 区域 (Jump)',
     'strategy-freedom': '全屏自由 (Freedom)',
     'label-rewindable': '可倒带',
-    'label-show-metrics': '显示指标',
+    'label-show-metrics': '显示',
     'label-show-exclusion': '排除',
     'label-show-canvas': '画布',
     'label-preview-color': '预览颜色',
@@ -290,7 +291,8 @@ export default {
     'btn-close': '关闭',
     'pr-guide-title': 'Pull Request 指南',
     'pr-step-1': '将动画保存为 <code>.js</code> 文件并下载。',
-    'pr-step-2': 'Fork <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> 仓库。',
+    'pr-step-2':
+        'Fork <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> 仓库。',
     'pr-step-3': '将文件放入 <code>shared/js/animation/</code>。',
     'pr-step-4': '提交 Pull Request！',
     'pr-note': '您的贡献让这个工具变得更好！',
@@ -308,7 +310,6 @@ export default {
     'btn-replace-all': '全部替换',
     'section-console': '控制台',
     'btn-clear-console': '清空控制台',
-
     // Category Editor
     'category-editor-title': '业务分类编辑器',
     'category-detail': '分类详情',
