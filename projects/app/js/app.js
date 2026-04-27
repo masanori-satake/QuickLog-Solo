@@ -200,6 +200,7 @@ async function openHistoryEditModal(log) {
     const labelEl = getEl('history-edit-time-label');
     const warningEl = getEl('history-edit-warning');
     const applyBtn = getEl('history-edit-apply-btn');
+    const cancelBtn = getEl('history-edit-cancel-btn');
     const deleteBtn = getEl('history-edit-delete-btn');
 
     if (!modal || !timeInput) return;
@@ -279,6 +280,10 @@ async function openHistoryEditModal(log) {
         modal.classList.add('hidden');
         await updateUI();
         broadcastSync();
+    };
+
+    cancelBtn.onclick = () => {
+        modal.classList.add('hidden');
     };
 
     deleteBtn.onclick = async () => {
@@ -1937,7 +1942,10 @@ function setupEventListeners() {
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
     queryAll('.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-edit-close-btn').forEach(btn => {
-        btn.onclick = () => Object.values(popups).forEach(p => p?.classList.add('hidden'));
+        btn.onclick = (e) => {
+            e.stopPropagation(); // Avoid triggering window.onclick
+            Object.values(popups).forEach(p => p?.classList.add('hidden'));
+        };
     });
 
     window.onclick = (event) => {
