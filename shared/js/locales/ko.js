@@ -113,6 +113,7 @@ export default {
 
     'confirm-end-task': '작업을 종료하시겠습니까?',
     'history-edit-title': '이력 편집',
+    'history-edit-stop-title': '종료 편집',
     'history-edit-start-time': '시작 시간',
     'history-edit-end-time': '종료 시간',
     'history-edit-out-of-range': '지정한 시간이 범위를 벗어났습니다.',

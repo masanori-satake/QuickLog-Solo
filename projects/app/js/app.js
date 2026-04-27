@@ -207,8 +207,13 @@ async function openHistoryEditModal(log) {
 
     // Determine if it's a stop marker
     const isStopMarker = log.isManualStop;
-    titleEl.textContent = isStopMarker ? t('stop') : t('history-edit-title');
-    labelEl.textContent = isStopMarker ? t('history-edit-end-time') : t('history-edit-start-time');
+    const titleKey = isStopMarker ? 'history-edit-stop-title' : 'history-edit-title';
+    const labelKey = isStopMarker ? 'history-edit-end-time' : 'history-edit-start-time';
+
+    titleEl.setAttribute('data-i18n', titleKey);
+    titleEl.textContent = t(titleKey);
+    labelEl.setAttribute('data-i18n', labelKey);
+    labelEl.textContent = t(labelKey);
 
     // Get surrounding logs for range validation
     const allLogs = await dbGetAll(STORE_LOGS);

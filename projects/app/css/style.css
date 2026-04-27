@@ -1013,6 +1013,10 @@ main {
     margin-bottom: 0 !important;
 }
 
+.confirm-btns button {
+    border-radius: var(--md-sys-shape-full);
+}
+
 body.theme-dark {
     color-scheme: dark;
 }
@@ -1385,6 +1389,7 @@ body.theme-dark button:active {
     gap: 1rem;
     margin-top: 1rem;
 }
+
 
 .multi-choice-btns {
     grid-template-columns: 1fr;

@@ -113,6 +113,7 @@ export default {
 
     'confirm-end-task': '¿Realmente desea finalizar la tarea?',
     'history-edit-title': 'Editar historial',
+    'history-edit-stop-title': 'Editar detención',
     'history-edit-start-time': 'Hora de inicio',
     'history-edit-end-time': 'Hora de finalización',
     'history-edit-out-of-range': 'La hora especificada está fuera de rango.',

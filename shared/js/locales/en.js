@@ -129,6 +129,7 @@ export default {
     // Messages & Dialogs
     'confirm-end-task': 'Do you really want to end the task?',
     'history-edit-title': 'Edit History',
+    'history-edit-stop-title': 'Edit Stop',
     'history-edit-start-time': 'Start Time',
     'history-edit-end-time': 'End Time',
     'history-edit-out-of-range': 'Specified time is out of range.',

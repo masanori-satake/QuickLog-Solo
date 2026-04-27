@@ -113,6 +113,7 @@ export default {
 
     'confirm-end-task': '确定要结束任务吗？',
     'history-edit-title': '编辑历史',
+    'history-edit-stop-title': '编辑停止',
     'history-edit-start-time': '开始时间',
     'history-edit-end-time': '结束时间',
     'history-edit-out-of-range': '指定的时间超出范围。',

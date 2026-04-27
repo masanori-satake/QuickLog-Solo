@@ -129,6 +129,7 @@ export default {
     // Messages & Dialogs
     'confirm-end-task': '本当に作業を終了しますか？',
     'history-edit-title': '履歴の編集',
+    'history-edit-stop-title': '終了の編集',
     'history-edit-start-time': '開始時刻',
     'history-edit-end-time': '終了時刻',
     'history-edit-out-of-range': '指定された時刻は範囲外です。',
