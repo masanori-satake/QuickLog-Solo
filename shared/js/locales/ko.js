@@ -88,6 +88,7 @@ export default {
     'tooltip-settings': '설정 열기',
     'tooltip-drag-handle': '드래그하여 순서 변경',
     'tooltip-delete-category': '이 카테고리 삭제',
+    'tooltip-delete-history': 'この履歴を削除します',
     'tooltip-language-select': '표시 언어 변경',
     'tooltip-theme-select': '라이트/다크 모드 전환',
     'tooltip-font-select': '표시 글꼴 선택',
