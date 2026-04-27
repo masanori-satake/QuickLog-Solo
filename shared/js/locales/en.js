@@ -120,6 +120,13 @@ export default {
     'toast-backup-completed': 'Backup completed',
     // Messages & Dialogs
     'confirm-end-task': 'Do you really want to end the task?',
+    'history-edit-title': '履歴の編集',
+    'history-edit-start-time': '開始時刻',
+    'history-edit-end-time': '終了時刻',
+    'history-edit-out-of-range': '指定された時刻は範囲外です。',
+    'confirm-delete-history': 'この履歴を削除しますか？',
+    'btn-apply': '適用',
+    'btn-delete': '削除',
     'confirm-cancel': 'Cancel',
     'confirm-delete-category':
         'Do you want to delete category "{name}"?\n(Category colors will be removed from past logs)',
