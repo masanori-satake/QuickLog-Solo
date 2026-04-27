@@ -452,7 +452,6 @@ export async function updateHistoryStartTime(logId, newTs) {
     let prevIndex = index - 1;
     let lastOldStartTs = oldStartTs;
     let lastNewStartTs = currentNewTs;
-    let lastWasStop = currentLog.isManualStop;
 
     while (prevIndex >= 0) {
         const prevLog = sortedLogs[prevIndex];
@@ -470,7 +469,6 @@ export async function updateHistoryStartTime(logId, newTs) {
         // Move to next (previous) item
         lastOldStartTs = oldPrevStartTs;
         lastNewStartTs = prevLog.startTime;
-        lastWasStop = prevLog.isManualStop;
         prevIndex--;
 
         // If the item we just updated was NOT a stop marker,
