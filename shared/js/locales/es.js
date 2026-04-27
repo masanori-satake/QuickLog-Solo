@@ -1,50 +1,33 @@
 export default {
+    // UI Header & Sections
     'title': 'QuickLog-Solo',
     'copy-report-btn': 'Copiar informe diario',
     'copy-report-title': 'Copiar informe diario',
     'tag-aggregation-title': 'Agregación de etiquetas',
     'copy-aggregation-btn': 'Copiar estadísticas',
     'tags': 'Etiquetas',
-    'no-tags': '(Sin etiquetas)',
-    'total-work-time': 'Tiempo de trabajo',
+    'no-tags': '(タグ無し)',
+    'total-work-time': '作業時間',
     'settings': 'Ajustes',
     'delete': 'Eliminar',
     'duplicate': 'Duplicar',
     'btn-copy': 'Copiar',
-
-    // Auto Stop & Page Break
-    'page-break': 'Salto de página',
-    'btn-add-page-break': 'Añadir salto de página',
-    'confirm-delete-page-break': '¿Desea eliminar este salto de página?',
-
-    // Tooltips
-    'tooltip-copy-report': 'Copiar informe diario al portapapeles',
-    'tooltip-copy-aggregation': 'Copia los resultados de la agregación de etiquetas al portapapeles',
-    'tooltip-settings': 'Abrir ajustes',
-    'tooltip-drag-handle': 'Arrastrar para reordenar',
-    'tooltip-delete-category': 'Eliminar esta categoría',
-    'tooltip-delete-history': 'Eliminar este historial',
-    'tooltip-language-select': 'Cambiar idioma de visualización',
-    'tooltip-theme-select': 'Cambiar modo claro/oscuro',
-    'tooltip-font-select': 'Seleccionar fuente de visualización',
-    'tooltip-animation-select': 'Seleccionar animación de fondo global',
-    'tooltip-status-running': 'En ejecución',
-    'tooltip-status-paused': 'En pausa',
-    'tooltip-status-stopped': 'Finalizado',
-    'tooltip-calendar': 'Seleccionar fecha',
+    // Controls
     'pause': 'Pausa',
     'resume': 'Reanudar',
     'stop': 'Detener',
+    // Settings Modal
     'tab-general': 'General',
     'tab-categories': 'Categorías',
     'tab-maintenance': 'Mantenimiento',
     'tab-backup': 'Respaldo',
     'tab-alarms': 'Alarmas',
     'tab-about': 'Acerca de',
-
     // Alarms Tab
-    'alarm-setting-description': 'Muestra un mensaje a una hora especificada y realiza automáticamente acciones como "Detener", "Pausar" o "Iniciar" tareas según sea necesario.',
-    'alarm-note-extension-only': '* La función de alarma solo funciona cuando está instalada como una extensión de navegador. Las notificaciones y acciones automáticas no se ejecutan en la versión de vista previa.',
+    'alarm-setting-description':
+        'Muestra un mensaje a una hora especificada y realiza automáticamente acciones como "Detener", "Pausar" o "Iniciar" tareas según sea necesario.',
+    'alarm-note-extension-only':
+        '* La función de alarma solo funciona cuando está instalada como una extensión de navegador. Las notificaciones y acciones automáticas no se ejecutan en la versión de vista previa.',
     'alarm-label-enabled': 'Activado',
     'alarm-label-time': 'Hora',
     'alarm-label-message': 'Mensaje',
@@ -59,9 +42,10 @@ export default {
     'toast-alarm-saved': 'Alarma guardada',
     'btn-test-notification': 'Probar notificación',
     'test-notification-message': 'Esta es una prueba de notificación. Está funcionando correctamente.',
-
-    'setting-enabled': 'Activado (ON)',
-    'setting-disabled': 'Desactivado (OFF)',
+    // Common labels
+    'setting-enabled': 'Activado (SÍ)',
+    'setting-disabled': 'Desactivado (NO)',
+    // General Tab
     'setting-language': 'Idioma',
     'lang-auto': 'Idioma del navegador',
     'lang-ja': 'Japonés',
@@ -76,6 +60,7 @@ export default {
     'setting-history-csv': 'Historial (CSV)',
     'btn-export-csv': 'Exportar',
     'btn-import-csv': 'Importar',
+    // Categories Tab
     'placeholder-new-category': 'Nueva categoría...',
     'placeholder-tags': 'Etiquetas (separadas por comas)',
     'category-backup': 'Importar/Exportar Categorías (Portapapeles)',
@@ -84,12 +69,35 @@ export default {
     'import-setting': 'Modo de importación:',
     'import-append': 'Añadir',
     'import-overwrite': 'Sobrescribir',
+    // About Tab
     'version': 'Versión',
     'developer': 'Desarrollador',
     'about-stats-logs': 'Número de registros',
     'about-stats-categories': 'Número de categorías',
-    'about-description': 'QuickLog-Solo es una herramienta de notas de trabajo minimalista centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (y también en el sistema de archivos local cuando se realiza el respaldo) y nunca se envían al exterior. Mantiene una alta transparencia y seguridad mediante la verificación estricta de dependencias vía GitHub Actions y auditorías continuas con Google OSV-Scanner.',
-    'about-disclaimer': '[Descargo de responsabilidad] Este es un proyecto personal de código abierto y se proporciona "TAL CUAL" sin garantía de ningún tipo. El desarrollador no será responsable de ningún daño derivado de su uso. Úselo bajo su propio riesgo.',
+    'about-description':
+        'QuickLog-Solo es una herramienta de notas de trabajo minimalista centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (y también en el sistema de archivos local cuando se realiza el respaldo) y nunca se envían al exterior. Mantiene una alta transparencia y seguridad mediante la verificación estricta de dependencias vía GitHub Actions y auditorías continuas con Google OSV-Scanner.',
+    'about-disclaimer':
+        '[Descargo de responsabilidad] Este es un proyecto personal de código abierto y se proporciona "TAL CUAL" sin garantía de ningún tipo. El desarrollador no será responsable de ningún daño derivado de su uso. Úselo bajo su propio riesgo.',
+    // Auto Stop & Page Break
+    'page-break': 'Salto de página',
+    'btn-add-page-break': 'Añadir salto de página',
+    'confirm-delete-page-break': '¿Desea eliminar este salto de página?',
+    // Tooltips
+    'tooltip-copy-report': 'Copiar informe diario al portapapeles',
+    'tooltip-copy-aggregation': 'Copia los resultados de la agregación de etiquetas al portapapeles',
+    'tooltip-settings': 'Abrir ajustes',
+    'tooltip-drag-handle': 'Arrastrar para reordenar',
+    'tooltip-delete-category': 'Eliminar esta categoría',
+    'tooltip-delete-history': 'この履歴を削除します',
+    'tooltip-language-select': 'Cambiar idioma de visualización',
+    'tooltip-theme-select': 'Cambiar modo claro/oscuro',
+    'tooltip-font-select': 'Seleccionar fuente de visualización',
+    'tooltip-animation-select': 'Seleccionar animación de fondo global',
+    'tooltip-status-running': 'En ejecución',
+    'tooltip-status-paused': 'En pausa',
+    'tooltip-status-stopped': 'Finalizado',
+    'tooltip-calendar': 'Seleccionar fecha',
+    // Maintenance Tab
     'maintenance-clear-logs': 'Borrar registros',
     'btn-clear-logs': 'Eliminar todos los registros',
     'maintenance-reset-all': 'Restablecer ajustes y categorías',
@@ -108,18 +116,19 @@ export default {
     'backup-directory': 'Directorio',
     'backup-file-count': 'Archivos',
     'backup-file-count-unit': 'días',
-    'backup-description-new': 'Se recomiendan respaldos periódicos para evitar la pérdida de datos en IndexedDB debido a la limpieza del caché del navegador. Con los datos de respaldo, también puede realizar la transición sin problemas a otros navegadores.',
+    'backup-description-new':
+        'Se recomiendan respaldos periódicos para evitar la pérdida de datos en IndexedDB debido a la limpieza del caché del navegador. Con los datos de respaldo, también puede realizar la transición sin problemas a otros navegadores.',
     'toast-backup-completed': 'Respaldo completado',
-
+    // Messages & Dialogs
     'confirm-end-task': '¿Realmente desea finalizar la tarea?',
-    'history-edit-title': 'Editar historial',
-    'history-edit-stop-title': 'Editar detención',
-    'history-edit-start-time': 'Hora de inicio',
-    'history-edit-end-time': 'Hora de finalización',
-    'history-edit-out-of-range': 'La hora especificada está fuera de rango.',
-    'confirm-delete-history': '¿Quieres eliminar este elemento del historial?',
-    'btn-apply': 'Aplicar',
-    'btn-delete': 'Eliminar',
+    'history-edit-title': '履歴の編集',
+    'history-edit-stop-title': '終了の編集',
+    'history-edit-start-time': '開始時刻',
+    'history-edit-end-time': '終了時刻',
+    'history-edit-out-of-range': '指定された時刻は範囲外です。',
+    'confirm-delete-history': 'この履歴を削除しますか？',
+    'btn-apply': '適用',
+    'btn-delete': '削除',
     'confirm-cancel': 'Cancelar',
     'confirm-delete-category': '¿Eliminar categoría "{name}"?\n(Los colores desaparecerán de registros antiguos)',
     'confirm-delete-selected': '¿Desea eliminar los {count} elementos seleccionados?',
@@ -127,8 +136,10 @@ export default {
     'confirm-export-csv': 'Los datos se exportarán como CSV. Se finalizará la tarea actual. ¿Continuar?',
     'confirm-import-csv': 'Los datos se importarán desde CSV. Se finalizará la tarea actual. ¿Continuar?',
     'confirm-clear-logs': 'Se eliminarán todos los registros. Se finalizará la tarea actual. ¿Continuar?',
-    'confirm-reset-all': 'Se restablecerán categorías y ajustes. Se finalizará la tarea actual. ¿Continuar? (Los registros se mantienen)',
-    'confirm-reset-settings': 'Se restablecerán los ajustes. Se finalizará la tarea actual. ¿Continuar? (Registros y categorías se mantienen)',
+    'confirm-reset-all':
+        'Se restablecerán categorías y ajustes. Se finalizará la tarea actual. ¿Continuar? (Los registros se mantienen)',
+    'confirm-reset-settings':
+        'Se restablecerán los ajustes. Se finalizará la tarea actual. ¿Continuar? (Registros y categorías se mantienen)',
     'alert-invalid-category': 'Nombre de categoría inválido. (Máx 50 car., "{idle}" reservado)',
     'alert-duplicate-category': 'Ya existe una categoría con ese nombre.',
     'alert-import-error': 'Error al importar categorías.',
@@ -139,27 +150,27 @@ export default {
     'toast-cat-imported': 'Categorías importadas',
     'toast-deleted': 'Eliminación completada',
     'no-logs-for-day': 'No hay registros para este día',
-
     'notification-btn-ok': 'Aceptar',
     'notification-btn-close': 'Cerrar',
-
     'import-err-fatal': 'Formato de archivo no válido. Importación abortada.',
-    'import-err-partial': '{errorCount} de {total} filas están dañadas. ¿Desea importar solo las {validCount} filas válidas?',
-    'import-err-field': 'Algunos datos están incompletos (p. ej., color no válido). ¿Desea aplicar valores predeterminados e importar todo, o saltar las filas no válidas?',
+    'import-err-partial':
+        '{errorCount} de {total} filas están dañadas. ¿Desea importar solo las {validCount} filas válidas?',
+    'import-err-field':
+        'Algunos datos están incompletos (p. ej., color no válido). ¿Desea aplicar valores predeterminados e importar todo, o saltar las filas no válidas?',
     'import-btn-import-valid': 'Importar solo válidos',
     'import-btn-apply-fallback': 'Aplicar valores predeterminados',
     'import-btn-skip-invalid': 'Saltar filas no válidas',
     'import-btn-abort': 'Abortar',
-
-    'backup-err-0byte': 'Se encontró un archivo de respaldo vacío ({name}). Esto podría indicar un error. ¿Desea ignorar este archivo y continuar?',
+    'backup-err-0byte':
+        'Se encontró un archivo de respaldo vacío ({name}). Esto podría indicar un error. ¿Desea ignorar este archivo y continuar?',
     'backup-btn-ignore-continue': 'Ignorar y continuar',
     'backup-btn-abort-investigate': 'Abortar e investigar',
-
-    'backup-err-locked': 'El archivo está bloqueado por otro programa o no tiene permiso. Cierre otras aplicaciones e inténtelo de nuevo.',
+    'backup-err-locked':
+        'El archivo está bloqueado por otro programa o no tiene permiso. Cierre otras aplicaciones e inténtelo de nuevo.',
     'backup-err-not-found': 'Directorio de respaldo no encontrado. Seleccione el directorio de nuevo.',
     'backup-err-unknown': 'Ocurrió un error inesperado: {message}',
     'toast-backup-failed-detail': 'Respaldo fallido. Razón: {reason}',
-
+    // Dynamic Elements
     'day-names': ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
     'idle-category': '(En espera)',
     'idle-category-log': '(En espera)',
@@ -169,7 +180,6 @@ export default {
     'anim-none': 'Ninguna',
     'anim-author-label': 'Autor',
     'anim-unknown-author': 'Desconocido',
-
     // Report Settings
     'report-emoji-keep': 'Mantener',
     'report-emoji-remove': 'Eliminar',
@@ -195,7 +205,7 @@ export default {
     'report-adjust-none': 'Ninguno',
     'report-adjust-5m': '5 min',
     'report-adjust-10m': '10 min',
-
+    // Initial Categories
     'init-cat-dev': '💻 Desarrollo/Programación',
     'init-cat-meeting': '🤝 Reunión de equipo',
     'init-cat-research': '🔍 Investigación/I+D',
@@ -221,7 +231,6 @@ export default {
     'init-cat-data': '📊 Análisis de datos',
     'init-cat-wfh': '🏠 Ajustes de Home Office',
     'init-cat-move': '🚶 Viajes/Traslados',
-
     // Initial Tags
     'init-tag-dev': 'desarrollo, programación',
     'init-tag-meeting': 'reunión',
@@ -246,7 +255,7 @@ export default {
     'init-tag-sec': 'seguridad',
     'init-tag-data': 'análisis',
     'init-tag-move': 'viaje',
-
+    // QL-Animation Studio
     'studio-title': 'QL-Animation Studio (Beta)',
     'sample-select-placeholder': 'Seleccionar animación de ejemplo...',
     'section-metadata': 'Metadatos',
@@ -290,7 +299,8 @@ export default {
     'btn-close': 'Cerrar',
     'pr-guide-title': 'Guía de Pull Request',
     'pr-step-1': 'Descargue su animación como un archivo <code>.js</code>.',
-    'pr-step-2': 'Bifurque el repositorio <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
+    'pr-step-2':
+        'Bifurque el repositorio <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
     'pr-step-3': 'Coloque su archivo en <code>shared/js/animation/</code>.',
     'pr-step-4': '¡Envíe un Pull Request!',
     'pr-note': '¡Su contribución hace que esta herramienta sea mejor para todos!',
@@ -308,7 +318,6 @@ export default {
     'btn-replace-all': 'Reemplazar todo',
     'section-console': 'Consola',
     'btn-clear-console': 'Limpiar consola',
-
     // Category Editor
     'category-editor-title': 'Editor de Categorías de Negocio',
     'category-detail': 'Detalle de Categoría',
@@ -332,6 +341,7 @@ export default {
     'tag-replace-before': 'Antes',
     'tag-replace-after': 'Después',
     'tooltip-replace-tags': 'Reemplazar etiquetas',
-    'privacy-policy-local-only': 'Todo el procesamiento se completa dentro del navegador y no hay coordinación con servidores externos. Su información nunca se filtrará al exterior.',
+    'privacy-policy-local-only':
+        'Todo el procesamiento se completa dentro del navegador y no hay coordinación con servidores externos. Su información nunca se filtrará al exterior.',
     'privacy-policy-local-only-short': 'Solo local',
 };
