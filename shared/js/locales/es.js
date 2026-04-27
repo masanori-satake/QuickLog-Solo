@@ -88,6 +88,7 @@ export default {
     'tooltip-settings': 'Abrir ajustes',
     'tooltip-drag-handle': 'Arrastrar para reordenar',
     'tooltip-delete-category': 'Eliminar esta categoría',
+    'tooltip-delete-history': 'この履歴を削除します',
     'tooltip-language-select': 'Cambiar idioma de visualización',
     'tooltip-theme-select': 'Cambiar modo claro/oscuro',
     'tooltip-font-select': 'Seleccionar fuente de visualización',
