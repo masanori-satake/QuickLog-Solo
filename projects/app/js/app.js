@@ -214,7 +214,6 @@ async function openHistoryEditModal(log) {
     const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
     const currentIndex = sortedLogs.findIndex(l => l.id === log.id);
     const prevLog = currentIndex > 0 ? sortedLogs[currentIndex - 1] : null;
-    const nextLog = currentIndex < sortedLogs.length - 1 ? sortedLogs[currentIndex + 1] : null;
 
     const currentDayStart = new Date(log.startTime).setHours(0, 0, 0, 0);
     const currentDayEnd = currentDayStart + 24 * 60 * 60 * 1000 - 1;
