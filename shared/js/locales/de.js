@@ -113,6 +113,7 @@ export default {
 
     'confirm-end-task': 'Möchten Sie die Aufgabe wirklich beenden?',
     'history-edit-title': 'Verlauf bearbeiten',
+    'history-edit-stop-title': 'Beenden bearbeiten',
     'history-edit-start-time': 'Startzeit',
     'history-edit-end-time': 'Endzeit',
     'history-edit-out-of-range': 'Die angegebene Zeit liegt außerhalb des Bereichs.',

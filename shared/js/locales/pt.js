@@ -113,6 +113,7 @@ export default {
 
     'confirm-end-task': 'Deseja realmente finalizar a tarefa?',
     'history-edit-title': 'Editar histórico',
+    'history-edit-stop-title': 'Editar parada',
     'history-edit-start-time': 'Hora de início',
     'history-edit-end-time': 'Hora de término',
     'history-edit-out-of-range': 'O tempo especificado está fora do intervalo.',
