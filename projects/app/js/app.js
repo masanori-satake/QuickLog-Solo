@@ -223,6 +223,11 @@ async function openHistoryEditModal(log) {
     timeInput.value = `${String(initialTime.getHours()).padStart(2, '0')}:${String(initialTime.getMinutes()).padStart(2, '0')}`;
 
     warningEl.classList.add('hidden');
+    if (isStopMarker) {
+        deleteBtn.classList.add('hidden');
+    } else {
+        deleteBtn.classList.remove('hidden');
+    }
 
     const validate = () => {
         const [h, m] = timeInput.value.split(':').map(Number);
