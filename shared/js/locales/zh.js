@@ -86,6 +86,7 @@ export default {
     'tooltip-settings': '打开设置',
     'tooltip-drag-handle': '拖动以排序',
     'tooltip-delete-category': '删除此分类',
+    'tooltip-delete-history': 'この履歴を削除します',
     'tooltip-language-select': '切换显示语言',
     'tooltip-theme-select': '切换浅色/深色模式',
     'tooltip-font-select': '选择显示字体',
