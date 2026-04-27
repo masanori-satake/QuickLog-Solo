@@ -12,12 +12,10 @@ export default {
     'delete': '削除',
     'duplicate': '複製',
     'btn-copy': 'コピー',
-
     // Controls
     'pause': '一時停止',
     'resume': '再開',
     'stop': '終了',
-
     // Settings Modal
     'tab-general': '一般',
     'tab-categories': 'カテゴリ',
@@ -25,10 +23,11 @@ export default {
     'tab-backup': 'バックアップ',
     'tab-alarms': 'アラーム',
     'tab-about': 'About',
-
     // Alarms Tab
-    'alarm-setting-description': '指定した時刻にメッセージを表示し、必要に応じて作業を自動的に「終了」「一時停止」「開始」します。',
-    'alarm-note-extension-only': '※ アラーム機能はブラウザ拡張機能としてインストールされている場合のみ動作します。プレビュー版では通知や自動動作は実行されません。',
+    'alarm-setting-description':
+        '指定した時刻にメッセージを表示し、必要に応じて作業を自動的に「終了」「一時停止」「開始」します。',
+    'alarm-note-extension-only':
+        '※ アラーム機能はブラウザ拡張機能としてインストールされている場合のみ動作します。プレビュー版では通知や自動動作は実行されません。',
     'alarm-label-enabled': '有効',
     'alarm-label-time': '時刻',
     'alarm-label-message': 'メッセージ',
@@ -43,11 +42,9 @@ export default {
     'toast-alarm-saved': 'アラームを保存しました',
     'btn-test-notification': '通知のテストを実行する',
     'test-notification-message': 'これは通知テストです。正常に表示されています。',
-
     // Common labels
     'setting-enabled': '有効 (ON)',
     'setting-disabled': '無効 (OFF)',
-
     // General Tab
     'setting-language': '表示言語',
     'lang-auto': 'ブラウザの表示言語',
@@ -63,7 +60,6 @@ export default {
     'setting-history-csv': '履歴(CSV)',
     'btn-export-csv': 'エクスポート',
     'btn-import-csv': 'インポート',
-
     // Categories Tab
     'placeholder-new-category': '新しいカテゴリ...',
     'placeholder-tags': 'タグ (カンマ区切り)',
@@ -73,20 +69,19 @@ export default {
     'import-setting': 'インポート設定:',
     'import-append': '追記',
     'import-overwrite': '上書き',
-
     // About Tab
     'version': 'バージョン',
     'developer': '開発者',
     'about-stats-logs': 'ログ件数',
     'about-stats-categories': 'カテゴリ数',
-    'about-description': 'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB に保存され（バックアップを実行した際にはローカルファイルシステムにも保存されます）、外部送信は一切行われません。GitHub Actions による依存関係の検証と Google OSV-Scanner による継続的な監査により、高い透明性と安全性を維持しています。',
-    'about-disclaimer': '【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。',
-
+    'about-description':
+        'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB に保存され（バックアップを実行した際にはローカルファイルシステムにも保存されます）、外部送信は一切行われません。GitHub Actions による依存関係の検証と Google OSV-Scanner による継続的な監査により、高い透明性と安全性を維持しています。',
+    'about-disclaimer':
+        '【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。',
     // Auto Stop & Page Break
     'page-break': '改ページ',
     'btn-add-page-break': '改ページを追加',
     'confirm-delete-page-break': 'この改ページを削除しますか？',
-
     // Tooltips
     'tooltip-copy-report': '日報をクリップボードにコピーします',
     'tooltip-copy-aggregation': 'タグ毎の集計結果をクリップボードにコピーします',
@@ -101,7 +96,6 @@ export default {
     'tooltip-status-paused': '一時停止中',
     'tooltip-status-stopped': '終了済み',
     'tooltip-calendar': '日付を選択します',
-
     // Maintenance Tab
     'maintenance-clear-logs': 'ログの削除',
     'btn-clear-logs': 'ログをすべて削除',
@@ -111,7 +105,6 @@ export default {
     'maintenance-reset-settings': '設定のみの初期化',
     'maintenance-reset-settings-desc': 'ログとカテゴリは維持されます。',
     'btn-reset-settings': '設定のみを初期化',
-
     // Backup Tab
     'btn-backup-start': 'バックアップを開始する',
     'btn-backup-run': 'バックアップを実行する',
@@ -122,53 +115,60 @@ export default {
     'backup-directory': '保存先',
     'backup-file-count': 'ファイル数',
     'backup-file-count-unit': '日分',
-    'backup-description-new': 'ブラウザのキャッシュクリアなどで IndexedDB のデータが消えてしまうのを防ぐため、定期的なバックアップを推奨します。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。',
+    'backup-description-new':
+        'ブラウザのキャッシュクリアなどで IndexedDB のデータが消えてしまうのを防ぐため、定期的なバックアップを推奨します。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。',
     'toast-backup-completed': 'バックアップが完了しました',
-
     // Messages & Dialogs
     'confirm-end-task': '本当に作業を終了しますか？',
+    'history-edit-title': '履歴の編集',
+    'history-edit-start-time': '開始時刻',
+    'history-edit-end-time': '終了時刻',
+    'history-edit-out-of-range': '指定された時刻は範囲外です。',
+    'confirm-delete-history': 'この履歴を削除しますか？',
+    'btn-apply': '適用',
+    'btn-delete': '削除',
     'confirm-cancel': 'キャンセル',
     'confirm-delete-category': 'カテゴリ「{name}」を削除しますか？\n（過去のログからはカテゴリ色が消えます）',
     'confirm-delete-selected': '選択した {count} 件を削除しますか？',
     'confirm-import-overwrite': '既存のカテゴリをすべて削除して上書きしますか？',
-    'confirm-export-csv': 'ログデータをCSVとしてエクスポートします。実行中の作業がある場合は終了されます。よろしいですか？',
-    'confirm-import-csv': 'CSVファイルからログデータをインポートします。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？',
+    'confirm-export-csv':
+        'ログデータをCSVとしてエクスポートします。実行中の作業がある場合は終了されます。よろしいですか？',
+    'confirm-import-csv':
+        'CSVファイルからログデータをインポートします。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？',
     'confirm-clear-logs': '全てのログを削除します。実行中の作業がある場合は終了されます。よろしいですか？',
-    'confirm-reset-all': 'カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログは維持されます）',
-    'confirm-reset-settings': '各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログとカテゴリは維持されます）',
-
+    'confirm-reset-all':
+        'カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログは維持されます）',
+    'confirm-reset-settings':
+        '各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（ログとカテゴリは維持されます）',
     'alert-invalid-category': '無効なカテゴリ名です。（50文字以内、「{idle}」は使用不可）',
     'alert-duplicate-category': '同名のカテゴリが既に存在します。',
     'alert-import-error': 'カテゴリのインポートに失敗しました。ファイル形式を確認してください。',
     'alert-init-error': 'アプリの初期化に失敗しました。ページを再読み込みしてください。',
-
     'toast-copied': 'コピーしました！',
     'toast-done': '完了しました！',
     'toast-imported': 'インポートが完了しました。',
     'toast-cat-imported': 'カテゴリをインポートしました',
     'toast-deleted': '削除が完了しました',
     'no-logs-for-day': 'この日の記録はありません',
-
     'notification-btn-ok': '了解',
     'notification-btn-close': '閉じる',
-
     'import-err-fatal': 'ファイル形式が正しくありません。インポートを中止します。',
     'import-err-partial': '全{total}行中{errorCount}行が破損しています。正常な{validCount}行のみを取り込みますか？',
-    'import-err-field': '一部のデータに不備（例：無効な色）があります。デフォルト値を適用して全て取り込みますか？それとも不備のある行を除外しますか？',
+    'import-err-field':
+        '一部のデータに不備（例：無効な色）があります。デフォルト値を適用して全て取り込みますか？それとも不備のある行を除外しますか？',
     'import-btn-import-valid': '正常分のみ取り込む',
     'import-btn-apply-fallback': 'デフォルト値を適用',
     'import-btn-skip-invalid': '不備のある行を除外',
     'import-btn-abort': '中止',
-
-    'backup-err-0byte': '中身が空のバックアップファイル（{name}）が見つかりました。これは異常な状態の可能性があります。このファイルを無視して続行しますか？',
+    'backup-err-0byte':
+        '中身が空のバックアップファイル（{name}）が見つかりました。これは異常な状態の可能性があります。このファイルを無視して続行しますか？',
     'backup-btn-ignore-continue': '無視して続行',
     'backup-btn-abort-investigate': '中断して調査',
-
-    'backup-err-locked': 'ファイルが他のプログラムでロックされているか、アクセス権限がありません。他のアプリを閉じてから再試行してください。',
+    'backup-err-locked':
+        'ファイルが他のプログラムでロックされているか、アクセス権限がありません。他のアプリを閉じてから再試行してください。',
     'backup-err-not-found': 'バックアップ先フォルダが見つかりません。再度フォルダを選択してください。',
     'backup-err-unknown': '予期せぬエラーが発生しました: {message}',
     'toast-backup-failed-detail': 'バックアップに失敗しました。詳細：{reason}',
-
     // Dynamic Elements
     'day-names': ['日', '月', '火', '水', '木', '金', '土'],
     'idle-category': '(待機中)',
@@ -179,7 +179,6 @@ export default {
     'anim-none': '無し',
     'anim-author-label': '作者',
     'anim-unknown-author': '不明',
-
     // Report Settings
     'report-emoji-keep': 'あり',
     'report-emoji-remove': 'なし',
@@ -205,7 +204,6 @@ export default {
     'report-adjust-none': 'しない',
     'report-adjust-5m': '5分間隔',
     'report-adjust-10m': '10分間隔',
-
     // Initial Categories
     'init-cat-dev': '💻 開発・プログラミング',
     'init-cat-meeting': '🤝 チームミーティング・定例会',
@@ -232,7 +230,6 @@ export default {
     'init-cat-data': '📊 データ分析・SQL',
     'init-cat-wfh': '🏠 在宅ワーク環境整備',
     'init-cat-move': '🚶 移動・外出',
-
     // Initial Tags
     'init-tag-dev': '開発, 設計',
     'init-tag-meeting': '会議',
@@ -257,7 +254,6 @@ export default {
     'init-tag-sec': 'セキュリティ',
     'init-tag-data': '分析',
     'init-tag-move': '移動',
-
     // QL-Animation Studio
     'studio-title': 'QL-Animation Studio (β版)',
     'sample-select-placeholder': 'サンプルを選択...',
@@ -302,7 +298,8 @@ export default {
     'btn-close': '閉じる',
     'pr-guide-title': 'Pull Request の準備',
     'pr-step-1': '作成したアニメーションを <code>.js</code> ファイルとしてダウンロードします。',
-    'pr-step-2': '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> のリポジトリをフォークします。',
+    'pr-step-2':
+        '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> のリポジトリをフォークします。',
     'pr-step-3': 'ダウンロードしたファイルを <code>shared/js/animation/</code> に配置します。',
     'pr-step-4': '変更をコミットして、Pull Request を作成してください！',
     'pr-note': 'あなたの貢献が、このツールをより楽しくします！',
@@ -320,7 +317,6 @@ export default {
     'btn-replace-all': 'すべて置換',
     'section-console': 'コンソール',
     'btn-clear-console': 'コンソールをクリア',
-
     // Category Editor
     'category-editor-title': '業務カテゴリ・エディタ',
     'category-detail': 'カテゴリ詳細',
@@ -344,6 +340,7 @@ export default {
     'tag-replace-before': '置換前',
     'tag-replace-after': '置換後',
     'tooltip-replace-tags': 'タグの置換',
-    'privacy-policy-local-only': '全てブラウザ内で処理が完結しており、外部のサーバとは連携していません。入力した情報が外に漏れることはありません。',
+    'privacy-policy-local-only':
+        '全てブラウザ内で処理が完結しており、外部のサーバとは連携していません。入力した情報が外に漏れることはありません。',
     'privacy-policy-local-only-short': 'ローカル完結',
 };
