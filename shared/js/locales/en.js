@@ -88,6 +88,7 @@ export default {
     'tooltip-settings': 'Open settings',
     'tooltip-drag-handle': 'Drag to reorder',
     'tooltip-delete-category': 'Delete this category',
+    'tooltip-delete-history': 'この履歴を削除します',
     'tooltip-language-select': 'Switch display language',
     'tooltip-theme-select': 'Switch light/dark mode',
     'tooltip-font-select': 'Select display font',
