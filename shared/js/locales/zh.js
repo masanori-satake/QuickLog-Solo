@@ -111,6 +111,13 @@ export default {
     'toast-backup-completed': '备份完成',
 
     'confirm-end-task': '确定要结束任务吗？',
+    'history-edit-title': '编辑历史',
+    'history-edit-start-time': '开始时间',
+    'history-edit-end-time': '结束时间',
+    'history-edit-out-of-range': '指定的时间超出范围。',
+    'confirm-delete-history': '您要删除这条历史记录吗？',
+    'btn-apply': '应用',
+    'btn-delete': '删除',
     'confirm-cancel': '取消',
     'confirm-delete-category': '删除分类 "{name}"？\n（旧日志中的分类颜色将消失）',
     'confirm-delete-selected': '是否删除所选的 {count} 个项目？',

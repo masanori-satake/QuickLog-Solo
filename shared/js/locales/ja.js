@@ -127,6 +127,13 @@ export default {
 
     // Messages & Dialogs
     'confirm-end-task': '本当に作業を終了しますか？',
+    'history-edit-title': '履歴の編集',
+    'history-edit-start-time': '開始時刻',
+    'history-edit-end-time': '終了時刻',
+    'history-edit-out-of-range': '指定された時刻は範囲外です。',
+    'confirm-delete-history': 'この履歴を削除しますか？',
+    'btn-apply': '適用',
+    'btn-delete': '削除',
     'confirm-cancel': 'キャンセル',
     'confirm-delete-category': 'カテゴリ「{name}」を削除しますか？\n（過去のログからはカテゴリ色が消えます）',
     'confirm-delete-selected': '選択した {count} 件を削除しますか？',

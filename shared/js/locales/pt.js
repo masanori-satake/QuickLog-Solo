@@ -111,6 +111,13 @@ export default {
     'toast-backup-completed': 'Backup concluído',
 
     'confirm-end-task': 'Deseja realmente finalizar a tarefa?',
+    'history-edit-title': 'Editar histórico',
+    'history-edit-start-time': 'Hora de início',
+    'history-edit-end-time': 'Hora de término',
+    'history-edit-out-of-range': 'O tempo especificado está fora do intervalo.',
+    'confirm-delete-history': 'Deseja excluir este item do histórico?',
+    'btn-apply': 'Aplicar',
+    'btn-delete': 'Excluir',
     'confirm-cancel': 'Cancelar',
     'confirm-delete-category': 'Excluir categoria "{name}"?\n(Cores sumirão de registros antigos)',
     'confirm-delete-selected': 'Deseja excluir os {count} itens selecionados?',

@@ -111,6 +111,13 @@ export default {
     'toast-backup-completed': 'Sicherung abgeschlossen',
 
     'confirm-end-task': 'Möchten Sie die Aufgabe wirklich beenden?',
+    'history-edit-title': 'Verlauf bearbeiten',
+    'history-edit-start-time': 'Startzeit',
+    'history-edit-end-time': 'Endzeit',
+    'history-edit-out-of-range': 'Die angegebene Zeit liegt außerhalb des Bereichs.',
+    'confirm-delete-history': 'Möchten Sie diesen Verlaufseintrag löschen?',
+    'btn-apply': 'Anwenden',
+    'btn-delete': 'Löschen',
     'confirm-cancel': 'Abbrechen',
     'confirm-delete-category': 'Kategorie "{name}" löschen?\n(Kategoriefarben werden aus alten Protokollen entfernt)',
     'confirm-delete-selected': 'Möchten Sie die ausgewählten {count} Elemente löschen?',

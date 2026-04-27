@@ -111,6 +111,13 @@ export default {
     'toast-backup-completed': 'Sauvegarde terminée',
 
     'confirm-end-task': 'Voulez-vous vraiment terminer la tâche ?',
+    'history-edit-title': 'Modifier l’historique',
+    'history-edit-start-time': 'Heure de début',
+    'history-edit-end-time': 'Heure de fin',
+    'history-edit-out-of-range': 'L’heure spécifiée est hors de portée.',
+    'confirm-delete-history': 'Voulez-vous supprimer cet élément de l’historique ?',
+    'btn-apply': 'Appliquer',
+    'btn-delete': 'Supprimer',
     'confirm-cancel': 'Annuler',
     'confirm-delete-category': 'Supprimer la catégorie "{name}" ?\n(Les couleurs disparaîtront des anciens journaux)',
     'confirm-delete-selected': 'Voulez-vous supprimer les {count} éléments sélectionnés ?',

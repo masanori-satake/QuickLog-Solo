@@ -425,3 +425,98 @@ export async function pauseTaskLogic(activeTask) {
     await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
     return pauseState;
 }
+
+/**
+ * Updates the start time of a history log item and propagates the change to the previous item if contiguous.
+ * @param {number} logId
+ * @param {number} newTs
+ */
+export async function updateHistoryStartTime(logId, newTs) {
+    const allLogs = await dbGetAll(STORE_LOGS);
+    const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
+    const index = sortedLogs.findIndex(l => l.id === logId);
+    if (index === -1) return;
+
+    let currentLog = sortedLogs[index];
+    let currentNewTs = newTs;
+
+    // Update the targeted log
+    const oldStartTs = currentLog.startTime;
+    currentLog.startTime = currentNewTs;
+    if (currentLog.isManualStop) {
+        currentLog.endTime = currentNewTs;
+    }
+    await dbPut(STORE_LOGS, currentLog);
+
+    // Propagate changes to previous items as long as they are contiguous
+    let prevIndex = index - 1;
+    let lastOldStartTs = oldStartTs;
+    let lastNewStartTs = currentNewTs;
+
+    while (prevIndex >= 0) {
+        const prevLog = sortedLogs[prevIndex];
+        if (prevLog.endTime !== lastOldStartTs) break;
+
+        const oldPrevStartTs = prevLog.startTime;
+        prevLog.endTime = lastNewStartTs;
+
+        if (prevLog.isManualStop) {
+            prevLog.startTime = prevLog.endTime;
+        }
+
+        await dbPut(STORE_LOGS, prevLog);
+
+        // Move to next (previous) item
+        lastOldStartTs = oldPrevStartTs;
+        lastNewStartTs = prevLog.startTime;
+        prevIndex--;
+
+        // If the item we just updated was NOT a stop marker,
+        // its start time didn't change, so propagation stops here.
+        if (!prevLog.isManualStop) break;
+    }
+}
+
+/**
+ * Deletes a history log item and updates the next item's start time to maintain continuity.
+ * @param {number} logId
+ */
+export async function deleteHistoryItem(logId) {
+    const allLogs = await dbGetAll(STORE_LOGS);
+    const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
+    const index = sortedLogs.findIndex(l => l.id === logId);
+    if (index === -1) return;
+
+    const log = sortedLogs[index];
+    const oldStartTs = log.startTime;
+    const oldEndTs = log.endTime;
+
+    await dbDelete(STORE_LOGS, logId);
+
+    // Propagation for deletion: update next items as long as they are contiguous
+    let nextIndex = index + 1;
+    let lastOldEndTs = oldEndTs;
+    let lastNewStartTs = oldStartTs;
+
+    while (nextIndex < sortedLogs.length) {
+        const nextLog = sortedLogs[nextIndex];
+        if (nextLog.startTime !== lastOldEndTs) break;
+
+        const oldNextEndTs = nextLog.endTime;
+        nextLog.startTime = lastNewStartTs;
+        if (nextLog.isManualStop) {
+            nextLog.endTime = lastNewStartTs;
+        }
+
+        await dbPut(STORE_LOGS, nextLog);
+
+        // Move to next item
+        lastOldEndTs = oldNextEndTs;
+        lastNewStartTs = nextLog.endTime;
+        nextIndex++;
+
+        // If the item we just updated was NOT a stop marker,
+        // its end time didn't change, so propagation stops here.
+        if (!nextLog.isManualStop) break;
+    }
+}

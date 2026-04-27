@@ -105,6 +105,33 @@
             </div>
         </div>
 
+        <div id="history-edit-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="history-edit-close-btn">&times;</span>
+                <h2 id="history-edit-title" data-i18n="history-edit-title">履歴の編集</h2>
+
+                <div class="setting-item">
+                    <label id="history-edit-time-label" data-i18n="history-edit-start-time">開始時刻</label>
+                    <input type="time" id="history-edit-time-input">
+                </div>
+
+                <div id="history-edit-warning" class="alert-box hidden">
+                    <p id="history-edit-warning-text" data-i18n="history-edit-out-of-range">指定された時刻は範囲外です。</p>
+                </div>
+
+                <div class="confirm-btns">
+                    <button id="history-edit-delete-btn" class="danger-btn">
+                        <span class="material-symbols-outlined">delete</span>
+                        <span data-i18n="btn-delete">削除</span>
+                    </button>
+                    <button id="history-edit-apply-btn" class="primary-btn">
+                        <span class="material-symbols-outlined">done</span>
+                        <span data-i18n="btn-apply">適用</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="report-modal" class="modal hidden">
             <div class="modal-content">
                 <span class="report-close-btn">&times;</span>
