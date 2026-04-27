@@ -120,6 +120,13 @@ export default {
     'toast-backup-completed': 'Respaldo completado',
     // Messages & Dialogs
     'confirm-end-task': '¿Realmente desea finalizar la tarea?',
+    'history-edit-title': '履歴の編集',
+    'history-edit-start-time': '開始時刻',
+    'history-edit-end-time': '終了時刻',
+    'history-edit-out-of-range': '指定された時刻は範囲外です。',
+    'confirm-delete-history': 'この履歴を削除しますか？',
+    'btn-apply': '適用',
+    'btn-delete': '削除',
     'confirm-cancel': 'Cancelar',
     'confirm-delete-category': '¿Eliminar categoría "{name}"?\n(Los colores desaparecerán de registros antiguos)',
     'confirm-delete-selected': '¿Desea eliminar los {count} elementos seleccionados?',
