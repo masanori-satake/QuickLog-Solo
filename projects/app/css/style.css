@@ -544,6 +544,74 @@ main {
     flex-direction: column;
 }
 
+.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-edit-close-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 5;
+}
+
+#history-edit-modal .modal-content {
+    height: auto;
+    max-height: 90%;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--md-sys-spacing-2);
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.modal-header-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-header-btns .history-edit-close-btn {
+    position: static;
+    font-size: 1.5rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.modal-header-btns .history-edit-close-btn:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.modal-header-btns .delete-btn {
+    color: var(--md-sys-color-error);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modal-header-btns .delete-btn:hover {
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
 
 #tag-aggregation-modal .modal-content {
     min-height: 450px;
@@ -811,16 +879,6 @@ main {
 }
 
 
-.close-btn, .report-close-btn, .tag-aggregation-close-btn {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
-    font-size: 1.5rem;
-    cursor: pointer;
-    font-weight: bold;
-    z-index: 5;
-}
-
 .tabs {
     display: flex;
     border-bottom: var(--border-width) solid var(--md-sys-color-outline-variant);
@@ -894,6 +952,36 @@ main {
     margin-bottom: var(--md-sys-spacing-0-5);
     font-size: 0.75rem;
     color: var(--md-sys-color-on-surface-variant);
+}
+
+.import-mode-selector label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.setting-item.horizontal-item {
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-1);
+}
+
+.setting-item.horizontal-item label {
+    margin-bottom: 0;
+    min-width: 80px;
+    font-size: 0.85rem; /* Match alarm labels */
+}
+
+.setting-item.horizontal-item input[type="time"] {
+    flex: 1;
+    font-size: 1rem;
+    padding: 2px 8px;
+    border-radius: var(--md-sys-shape-extra-small);
+    border: 1px solid var(--md-sys-color-outline);
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
 }
 
 .setting-item select, .setting-item input[type="text"] {
@@ -1056,14 +1144,6 @@ body.theme-dark button:active {
     gap: var(--md-sys-spacing-1);
     font-size: 0.75rem;
     margin-bottom: var(--md-sys-spacing-1-5);
-}
-
-.import-mode-selector label {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin: 0;
-    cursor: pointer;
 }
 
 .import-mode-selector input[type="radio"] {

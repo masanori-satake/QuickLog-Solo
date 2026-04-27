@@ -93,6 +93,7 @@ export default {
     'tooltip-settings': '設定を開きます',
     'tooltip-drag-handle': 'ドラッグして順序を入れ替えます',
     'tooltip-delete-category': 'このカテゴリを削除します',
+    'tooltip-delete-history': 'この履歴を削除します',
     'tooltip-language-select': '表示言語を切り替えます',
     'tooltip-theme-select': 'ライト/ダークモードを切り替えます',
     'tooltip-font-select': '表示フォントを選択します',

@@ -23,6 +23,7 @@ export default {
     'tooltip-settings': 'Ouvrir les paramètres',
     'tooltip-drag-handle': 'Faire glisser pour réordonner',
     'tooltip-delete-category': 'Supprimer cette catégorie',
+    'tooltip-delete-history': 'Supprimer cet historique',
     'tooltip-language-select': 'Changer la langue d\'affichage',
     'tooltip-theme-select': 'Changer le mode clair/sombre',
     'tooltip-font-select': 'Choisir la police d\'affichage',
