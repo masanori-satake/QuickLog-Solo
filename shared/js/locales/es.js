@@ -111,6 +111,13 @@ export default {
     'toast-backup-completed': 'Respaldo completado',
 
     'confirm-end-task': '¿Realmente desea finalizar la tarea?',
+    'history-edit-title': 'Editar historial',
+    'history-edit-start-time': 'Hora de inicio',
+    'history-edit-end-time': 'Hora de finalización',
+    'history-edit-out-of-range': 'La hora especificada está fuera de rango.',
+    'confirm-delete-history': '¿Quieres eliminar este elemento del historial?',
+    'btn-apply': 'Aplicar',
+    'btn-delete': 'Eliminar',
     'confirm-cancel': 'Cancelar',
     'confirm-delete-category': '¿Eliminar categoría "{name}"?\n(Los colores desaparecerán de registros antiguos)',
     'confirm-delete-selected': '¿Desea eliminar los {count} elementos seleccionados?',
