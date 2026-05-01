@@ -51,11 +51,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-playwright-
 
-      - name: Install Playwright Browsers
-        run: python3 -m playwright install chromium --with-deps
-
       - name: Install Python Playwright
         run: pip install playwright
+
+      - name: Install Playwright Browsers
+        run: python3 -m playwright install chromium --with-deps
 
       - name: Build packages
         run: npm run build
