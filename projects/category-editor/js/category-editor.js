@@ -75,7 +75,7 @@ const elements = {
     modalRedoBtn: document.getElementById('modal-redo-btn')
 };
 
-let historyMod, uiMod, dataIoMod;
+let historyMod, uiMod;
 
 function init() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -88,7 +88,7 @@ function init() {
     window.state = state;
     historyMod = initHistory(state, elements);
     uiMod = initUI(state, elements);
-    dataIoMod = initDataIO(state, elements);
+    const dataIoMod = initDataIO(state, elements);
 
     // Cross-module state bridge
     state.recordAction = historyMod.recordAction;

@@ -39,11 +39,19 @@ jobs:
       with:
         ref: ${{ github.head_ref || github.ref }}
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '24'
         cache: 'npm'
+
+    - name: Install Python Playwright
+      run: pip install playwright
 
     - name: Install dependencies
       run: npm ci
@@ -58,12 +66,7 @@ jobs:
           ${{ runner.os }}-playwright-
 
     - name: Install Playwright Browsers
-      if: steps.playwright-cache.outputs.cache-hit != 'true'
-      run: npx playwright install chromium --with-deps
-
-    - name: Install Playwright Dependencies (if cache hit)
-      if: steps.playwright-cache.outputs.cache-hit == 'true'
-      run: npx playwright install-deps chromium
+      run: python3 -m playwright install chromium --with-deps
 
     - name: Update screenshots
       run: npm run update-guide-images
