@@ -221,6 +221,29 @@ describe('DB Module', () => {
         expect(count).toBe(0);
     });
 
+    test('initDB works in lite mode', async () => {
+        // Mock getCurrentAppState to simplify
+        const state = await initDB(true);
+        expect(state).toBeDefined();
+        // Should have default settings even in lite mode if it's the first run
+        expect(state.categories.length).toBe(0); // setupInitialData was skipped
+    });
+
+    test('initDB cleans up old logs', async () => {
+        await openDatabase();
+        const oldTime = Date.now() - (41 * 24 * 60 * 60 * 1000); // 41 days ago
+        await dbAdd(STORE_LOGS, { category: 'Old', startTime: oldTime, endTime: oldTime + 1000 });
+        await dbAdd(STORE_LOGS, { category: 'Recent', startTime: Date.now() - 1000, endTime: Date.now() });
+        closeDatabase();
+
+        await initDB(); // Should trigger cleanup
+
+        const logs = await dbGetAll(STORE_LOGS);
+        // Should only contain Recent task (and maybe dummy history if it was empty, but Recent makes it non-empty)
+        expect(logs.find(l => l.category === 'Old')).toBeUndefined();
+        expect(logs.find(l => l.category === 'Recent')).toBeDefined();
+    });
+
     test('dbClear removes all items from a store', async () => {
         await openDatabase();
         await dbAdd(STORE_LOGS, { category: 'Test 1', startTime: 100 });

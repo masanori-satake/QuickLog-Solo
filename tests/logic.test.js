@@ -210,13 +210,12 @@ describe('Logic Module', () => {
                 endTime: customEnd,
                 isManualStop: true
             };
-            dbGetAll.mockResolvedValueOnce([existingStopMarker]);
+            dbGetAll.mockResolvedValue([existingStopMarker]);
 
             const activeTask = { id: 1, category: 'Work', startTime: 1000 };
             await stopTaskLogic(activeTask, true, customEnd);
 
             // dbAdd should NOT be called for the stop marker because it's a duplicate
-            // Note: dbAdd might have been called in other tests, so we check calls specifically
             const stopMarkerAdds = dbAdd.mock.calls.filter(call =>
                 call[0] === STORE_LOGS && call[1].isManualStop === true
             );
@@ -305,6 +304,7 @@ describe('Logic Module', () => {
 
         test('stripEmojis removes emojis correctly', () => {
             expect(stripEmojis(null)).toBe('');
+            expect(stripEmojis(undefined)).toBe('');
             expect(stripEmojis('')).toBe('');
             expect(stripEmojis('💻 Work')).toBe('Work');
             expect(stripEmojis('Meeting 🤝')).toBe('Meeting');
@@ -460,6 +460,11 @@ describe('Logic Module', () => {
             expect(generateReport(logs, { ...defaultOptions, adjust: 'abc' })).toBe(expected);
         });
 
+        test('prepareReportItems returns empty array when no logs', () => {
+            const report = generateReport([], defaultOptions);
+            expect(report).toBe('');
+        });
+
         test('handles very large adjust values', () => {
             const logs = [
                 { startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T11:00:00').getTime(), category: 'Task 1' },
@@ -547,6 +552,7 @@ describe('Logic Module', () => {
 
             const textPlain = generateReport(logs, { ...options, format: 'text-plain' });
             expect(textPlain).toContain('(1s)');
+            expect(textPlain).toContain('Dev');
         });
     });
 
@@ -712,6 +718,18 @@ describe('Logic Module', () => {
 
             expect(dbDelete).toHaveBeenCalledWith(STORE_LOGS, 1);
             expect(dbPut).not.toHaveBeenCalled();
+        });
+
+        test('updateHistoryStartTime handles non-existent ID', async () => {
+            dbGetAll.mockResolvedValue([]);
+            await updateHistoryStartTime(999, 1000);
+            expect(dbPut).not.toHaveBeenCalled();
+        });
+
+        test('deleteHistoryItem handles non-existent ID', async () => {
+            dbGetAll.mockResolvedValue([]);
+            await deleteHistoryItem(999);
+            expect(dbDelete).not.toHaveBeenCalled();
         });
     });
 });

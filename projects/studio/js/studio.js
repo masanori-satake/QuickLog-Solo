@@ -122,7 +122,7 @@ const elements = {
     toggleConsoleBtn: document.getElementById('toggle-console')
 };
 
-let editorMod, metricsMod, previewMod, ioMod;
+let metricsMod;
 
 // Initialize
 function init() {
@@ -131,10 +131,10 @@ function init() {
     state.engine = new AnimationEngine(elements.canvas);
 
     // Modules initialization
-    editorMod = initEditor(state, elements);
+    const editorMod = initEditor(state, elements);
     metricsMod = initMetrics(state, elements);
-    previewMod = initPreview(state, elements);
-    ioMod = initIO(state, elements);
+    const previewMod = initPreview(state, elements);
+    const ioMod = initIO(state, elements);
 
     // Register module methods to state for cross-module calls
     state.updateAllHighlight = editorMod.updateAllHighlight;
