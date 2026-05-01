@@ -122,8 +122,6 @@ const elements = {
     toggleConsoleBtn: document.getElementById('toggle-console')
 };
 
-let metricsMod;
-
 // Initialize
 function init() {
     setupLanguage();
@@ -132,7 +130,7 @@ function init() {
 
     // Modules initialization
     const editorMod = initEditor(state, elements);
-    metricsMod = initMetrics(state, elements);
+    const metricsMod = initMetrics(state, elements);
     const previewMod = initPreview(state, elements);
     const ioMod = initIO(state, elements);
 
