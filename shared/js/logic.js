@@ -429,17 +429,6 @@ export async function pauseTaskLogic(activeTask) {
 }
 
 /**
- * Synchronizes a modified log item with the global pause state in settings if they match.
- * @param {Object} log
- */
-async function syncPauseStateWithLog(log) {
-    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-    if (pauseStateSetting && pauseStateSetting.value && pauseStateSetting.value.id === log.id) {
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...log, isPaused: true } });
-    }
-}
-
-/**
  * Updates the start time of a history log item and propagates the change to the previous item if contiguous.
  * @param {number} logId
  * @param {number} newTs
@@ -460,7 +449,6 @@ export async function updateHistoryStartTime(logId, newTs) {
         currentLog.endTime = currentNewTs;
     }
     await dbPut(STORE_LOGS, currentLog);
-    await syncPauseStateWithLog(currentLog);
 
     // Propagate changes to previous items as long as they are contiguous
     let prevIndex = index - 1;
@@ -479,7 +467,6 @@ export async function updateHistoryStartTime(logId, newTs) {
         }
 
         await dbPut(STORE_LOGS, prevLog);
-        await syncPauseStateWithLog(prevLog);
 
         // Move to next (previous) item
         lastOldStartTs = oldPrevStartTs;
@@ -508,6 +495,15 @@ export async function deleteHistoryItem(logId) {
 
     await dbDelete(STORE_LOGS, logId);
 
+    // Get current pause state ID once for efficiency
+    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    const pauseStateId = pauseStateSetting?.value?.id;
+
+    // If the deleted log was the paused task, clear it from settings
+    if (pauseStateId === logId) {
+        await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    }
+
     // Propagation for deletion: update next items as long as they are contiguous
     let nextIndex = index + 1;
     let lastOldEndTs = oldEndTs;
@@ -524,7 +520,11 @@ export async function deleteHistoryItem(logId) {
         }
 
         await dbPut(STORE_LOGS, nextLog);
-        await syncPauseStateWithLog(nextLog);
+
+        // Sync with pauseState if the updated log is the paused task
+        if (pauseStateId === nextLog.id) {
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...nextLog, isPaused: true } });
+        }
 
         // Move to next item
         lastOldEndTs = oldNextEndTs;
