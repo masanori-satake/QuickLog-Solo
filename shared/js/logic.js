@@ -1,4 +1,4 @@
-import { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
+import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv } from './utils.js';
 import { t } from './i18n.js';
 
@@ -429,6 +429,17 @@ export async function pauseTaskLogic(activeTask) {
 }
 
 /**
+ * Synchronizes a modified log item with the global pause state in settings if they match.
+ * @param {Object} log
+ */
+async function syncPauseStateWithLog(log) {
+    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    if (pauseStateSetting && pauseStateSetting.value && pauseStateSetting.value.id === log.id) {
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...log, isPaused: true } });
+    }
+}
+
+/**
  * Updates the start time of a history log item and propagates the change to the previous item if contiguous.
  * @param {number} logId
  * @param {number} newTs
@@ -449,6 +460,7 @@ export async function updateHistoryStartTime(logId, newTs) {
         currentLog.endTime = currentNewTs;
     }
     await dbPut(STORE_LOGS, currentLog);
+    await syncPauseStateWithLog(currentLog);
 
     // Propagate changes to previous items as long as they are contiguous
     let prevIndex = index - 1;
@@ -467,6 +479,7 @@ export async function updateHistoryStartTime(logId, newTs) {
         }
 
         await dbPut(STORE_LOGS, prevLog);
+        await syncPauseStateWithLog(prevLog);
 
         // Move to next (previous) item
         lastOldStartTs = oldPrevStartTs;
@@ -511,6 +524,7 @@ export async function deleteHistoryItem(logId) {
         }
 
         await dbPut(STORE_LOGS, nextLog);
+        await syncPauseStateWithLog(nextLog);
 
         // Move to next item
         lastOldEndTs = oldNextEndTs;
