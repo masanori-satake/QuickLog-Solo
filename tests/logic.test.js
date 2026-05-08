@@ -633,17 +633,17 @@ describe('Logic Module', () => {
             }));
         });
 
-        test('updateHistoryStartTime does not propagate if not contiguous', async () => {
+        test('updateHistoryStartTime does not propagate if not contiguous (gap > tolerance)', async () => {
             const logs = [
-                { id: 1, startTime: 1000, endTime: 1500, category: 'Task 1' }, // Gap of 500
-                { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' }
+                { id: 1, startTime: 1000, endTime: 1500, category: 'Task 1' }, // Gap of 1500
+                { id: 2, startTime: 3000, endTime: 4000, category: 'Task 2' }
             ];
             dbGetAll.mockResolvedValue(logs);
 
-            await updateHistoryStartTime(2, 2500);
+            await updateHistoryStartTime(2, 3500);
 
-            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, startTime: 2500 }));
-            // Task 1 should NOT be updated because there was a gap
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, startTime: 3500 }));
+            // Task 1 should NOT be updated because there was a gap of 1500ms (> 1000ms tolerance)
             expect(dbPut).not.toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 1 }));
         });
 
@@ -683,6 +683,20 @@ describe('Logic Module', () => {
             expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 1, endTime: 30000 }));
         });
 
+        test('updateHistoryStartTime propagates correctly even with a small gap within tolerance', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' },
+                { id: 2, startTime: 2005, endTime: 3000, category: 'Task 2' } // 5ms gap
+            ];
+            dbGetAll.mockResolvedValue(logs);
+
+            await updateHistoryStartTime(2, 2500);
+
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, startTime: 2500 }));
+            // Task 1 should be updated because the 5ms gap is within CONTIGUITY_TOLERANCE_MS (1000ms)
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 1, endTime: 2500 }));
+        });
+
         test('deleteHistoryItem deletes log and propagates through multiple items including stop markers', async () => {
             const logs = [
                 { id: 1, startTime: 10000, endTime: 20000, category: 'Task 1' },
@@ -706,6 +720,20 @@ describe('Logic Module', () => {
                 id: 4,
                 startTime: 20000
             }));
+        });
+
+        test('deleteHistoryItem propagates correctly even with a small gap within tolerance', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' },
+                { id: 2, startTime: 2005, endTime: 3000, category: 'Task 2' } // 5ms gap
+            ];
+            dbGetAll.mockResolvedValue(logs);
+
+            await deleteHistoryItem(1);
+
+            expect(dbDelete).toHaveBeenCalledWith(STORE_LOGS, 1);
+            // Task 2 should be updated because the 5ms gap is within CONTIGUITY_TOLERANCE_MS (1000ms)
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, startTime: 1000 }));
         });
 
         test('deleteHistoryItem handles last item (no propagation)', async () => {

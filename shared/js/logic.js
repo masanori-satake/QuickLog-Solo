@@ -1,5 +1,5 @@
 import { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, escapeHtml, escapeTsv, escapeCsv } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv } from './utils.js';
 import { t } from './i18n.js';
 
 export function formatDuration(ms) {
@@ -342,11 +342,12 @@ function formatAsText(items, options, isTable) {
 export async function startTaskLogic(categoryName, activeTask, resumableCategory = null, color = null, tags = '') {
     if (activeTask && activeTask.category === categoryName && !activeTask.isPaused) return activeTask;
 
-    await stopTaskLogic(activeTask);
+    const now = Date.now();
+    await stopTaskLogic(activeTask, false, now);
 
     const newLog = {
         category: categoryName,
-        startTime: Date.now(),
+        startTime: now,
         endTime: null,
         resumableCategory: resumableCategory,
         color: color,
@@ -412,11 +413,12 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
 export async function pauseTaskLogic(activeTask) {
     if (!activeTask || activeTask.category === SYSTEM_CATEGORY_IDLE || activeTask.isPaused) return activeTask;
     const lastCategory = activeTask.category;
-    await stopTaskLogic(activeTask);
+    const now = Date.now();
+    await stopTaskLogic(activeTask, false, now);
 
     const pauseState = {
         category: SYSTEM_CATEGORY_IDLE,
-        startTime: Date.now(),
+        startTime: now,
         resumableCategory: lastCategory,
         isPaused: true
     };
@@ -455,7 +457,7 @@ export async function updateHistoryStartTime(logId, newTs) {
 
     while (prevIndex >= 0) {
         const prevLog = sortedLogs[prevIndex];
-        if (prevLog.endTime !== lastOldStartTs) break;
+        if (Math.abs(prevLog.endTime - lastOldStartTs) > CONTIGUITY_TOLERANCE_MS) break;
 
         const oldPrevStartTs = prevLog.startTime;
         prevLog.endTime = lastNewStartTs;
@@ -500,7 +502,7 @@ export async function deleteHistoryItem(logId) {
 
     while (nextIndex < sortedLogs.length) {
         const nextLog = sortedLogs[nextIndex];
-        if (nextLog.startTime !== lastOldEndTs) break;
+        if (Math.abs(nextLog.startTime - lastOldEndTs) > CONTIGUITY_TOLERANCE_MS) break;
 
         const oldNextEndTs = nextLog.endTime;
         nextLog.startTime = lastNewStartTs;
