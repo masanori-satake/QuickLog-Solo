@@ -1,4 +1,4 @@
-import { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
+import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv } from './utils.js';
 import { t } from './i18n.js';
 
@@ -495,6 +495,15 @@ export async function deleteHistoryItem(logId) {
 
     await dbDelete(STORE_LOGS, logId);
 
+    // Get current pause state ID once for efficiency
+    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    const pauseStateId = pauseStateSetting?.value?.id;
+
+    // If the deleted log was the paused task, clear it from settings
+    if (pauseStateId === logId) {
+        await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    }
+
     // Propagation for deletion: update next items as long as they are contiguous
     let nextIndex = index + 1;
     let lastOldEndTs = oldEndTs;
@@ -511,6 +520,11 @@ export async function deleteHistoryItem(logId) {
         }
 
         await dbPut(STORE_LOGS, nextLog);
+
+        // Sync with pauseState if the updated log is the paused task
+        if (pauseStateId === nextLog.id) {
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...nextLog, isPaused: true } });
+        }
 
         // Move to next item
         lastOldEndTs = oldNextEndTs;
