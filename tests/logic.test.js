@@ -342,12 +342,12 @@ describe('Logic Module', () => {
         test('generates csv report with endTime, duration and escaping', () => {
             const logsWithSpecialChars = [
                 ...sampleLogs,
-                { startTime: 1000, endTime: 2000, category: 'Task with "quotes" and commas' }
+                { startTime: 1000, endTime: 2000, category: 'Task with "quotes", commas, and\nnewlines' }
             ];
             const report = generateReport(logsWithSpecialChars, { ...defaultOptions, format: 'csv', endTime: 'show', duration: 'right' });
             expect(report).toContain('startTime,endTime,category,duration');
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,\d{1,2}:\d{2}( [AP]M)?,Task 1,30m/);
-            expect(report).toContain('"Task with ""quotes"" and commas"');
+            expect(report).toContain('"Task with ""quotes"", commas, and\nnewlines"');
         });
 
         test('generates tsv report (default: no endTime, no duration)', () => {
@@ -361,12 +361,12 @@ describe('Logic Module', () => {
         test('generates tsv report with endTime, duration and escaping', () => {
             const logsWithTab = [
                 ...sampleLogs,
-                { startTime: 1000, endTime: 2000, category: 'Task "A"\tB' }
+                { startTime: 1000, endTime: 2000, category: 'Task "A"\tB\nC' }
             ];
             const report = generateReport(logsWithTab, { ...defaultOptions, format: 'tsv', endTime: 'show', duration: 'right' });
             expect(report).toContain('startTime\tendTime\tcategory\tduration');
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?\t\d{1,2}:\d{2}( [AP]M)?\tTask 1\t30m/);
-            expect(report).toContain('"Task ""A""\tB"');
+            expect(report).toContain('"Task ""A""\tB\nC"');
         });
 
 
