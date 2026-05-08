@@ -66,7 +66,6 @@ export function calculateTagAggregation(logs) {
 
 /**
  * Strips all emojis from a string.
- * Exported for testing purposes only.
  */
 export function stripEmojis(str) {
     if (!str) return '';
@@ -76,7 +75,6 @@ export function stripEmojis(str) {
 
 /**
  * Calculates the visual width of a string, accounting for multi-byte characters.
- * Exported for testing purposes only.
  */
 export function getVisualWidth(str) {
     if (!str) return 0;
@@ -95,7 +93,6 @@ export function getVisualWidth(str) {
 
 /**
  * Pads a string to a target visual width.
- * Exported for testing purposes only.
  */
 export function visualPadEnd(str, targetWidth, padChar = ' ') {
     let currentWidth = getVisualWidth(str);

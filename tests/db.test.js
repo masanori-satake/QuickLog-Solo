@@ -222,11 +222,13 @@ describe('DB Module', () => {
     });
 
     test('initDB works in lite mode', async () => {
-        // Mock getCurrentAppState to simplify
+        // Lite mode should skip setupInitialData, so categories should be empty
         const state = await initDB(true);
         expect(state).toBeDefined();
-        // Should have default settings even in lite mode if it's the first run
         expect(state.categories.length).toBe(0); // setupInitialData was skipped
+
+        const logs = await dbGetAll(STORE_LOGS);
+        expect(logs.length).toBe(0); // cleanupOldLogs and dummy data generation also skipped
     });
 
     test('initDB cleans up old logs', async () => {
