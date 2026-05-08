@@ -339,10 +339,15 @@ describe('Logic Module', () => {
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,Task 1/);
         });
 
-        test('generates csv report with endTime and duration', () => {
-            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'csv', endTime: 'show', duration: 'right' });
+        test('generates csv report with endTime, duration and escaping', () => {
+            const logsWithSpecialChars = [
+                ...sampleLogs,
+                { startTime: 1000, endTime: 2000, category: 'Task with "quotes", commas, and\nnewlines' }
+            ];
+            const report = generateReport(logsWithSpecialChars, { ...defaultOptions, format: 'csv', endTime: 'show', duration: 'right' });
             expect(report).toContain('startTime,endTime,category,duration');
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,\d{1,2}:\d{2}( [AP]M)?,Task 1,30m/);
+            expect(report).toContain('"Task with ""quotes"", commas, and\nnewlines"');
         });
 
         test('generates tsv report (default: no endTime, no duration)', () => {
@@ -353,19 +358,17 @@ describe('Logic Module', () => {
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?\tTask 1/);
         });
 
-        test('generates tsv report with endTime and duration', () => {
-            const report = generateReport(sampleLogs, { ...defaultOptions, format: 'tsv', endTime: 'show', duration: 'right' });
+        test('generates tsv report with endTime, duration and escaping', () => {
+            const logsWithTab = [
+                ...sampleLogs,
+                { startTime: 1000, endTime: 2000, category: 'Task "A"\tB\nC' }
+            ];
+            const report = generateReport(logsWithTab, { ...defaultOptions, format: 'tsv', endTime: 'show', duration: 'right' });
             expect(report).toContain('startTime\tendTime\tcategory\tduration');
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?\t\d{1,2}:\d{2}( [AP]M)?\tTask 1\t30m/);
+            expect(report).toContain('"Task ""A""\tB\nC"');
         });
 
-        test('tsv report handles quotes and tabs in category', () => {
-            const logsWithTab = [
-                { startTime: 1000, endTime: 2000, category: 'Task "A"\tB' }
-            ];
-            const report = generateReport(logsWithTab, { ...defaultOptions, format: 'tsv' });
-            expect(report).toContain('"Task ""A""\tB"');
-        });
 
         test('handles emoji removal', () => {
             const report = generateReport(sampleLogs, { ...defaultOptions, emoji: 'remove' });
@@ -465,6 +468,15 @@ describe('Logic Module', () => {
             expect(report).toBe('');
         });
 
+        test('handles single log during time adjustment', () => {
+            const logs = [
+                { startTime: new Date('2026-03-03T10:00:00').getTime(), category: 'Task 1' }
+            ];
+            // Only one unique timestamp.
+            const report = generateReport(logs, { ...defaultOptions, adjust: '10', endTime: 'show' });
+            expect(report).toContain('10:00');
+        });
+
         test('handles very large adjust values', () => {
             const logs = [
                 { startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T11:00:00').getTime(), category: 'Task 1' },
@@ -521,18 +533,6 @@ describe('Logic Module', () => {
             expect(report).toMatch(/10:03/);
         });
 
-        test('generateReport handles CSV/TSV escaping for special characters', () => {
-            const logs = [{
-                startTime: 1000,
-                endTime: 2000,
-                category: 'Task with "quotes", commas, and\nnewlines'
-            }];
-            const csv = generateReport(logs, { ...defaultOptions, format: 'csv' });
-            expect(csv).toContain('"Task with ""quotes"", commas, and\nnewlines"');
-
-            const tsv = generateReport(logs, { ...defaultOptions, format: 'tsv' });
-            expect(tsv).toContain('"Task with ""quotes"", commas, and\nnewlines"');
-        });
 
         test('generateReport supports duration: bottom in various formats', () => {
             const logs = [{ startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T10:00:01').getTime(), category: 'Dev' }];
