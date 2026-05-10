@@ -436,6 +436,10 @@ export async function updateHistoryStartTime(logId, newTs) {
     const index = sortedLogs.findIndex(l => l.id === logId);
     if (index === -1) return;
 
+    // Get current pause state ID once for efficiency
+    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    const pauseStateId = pauseStateSetting?.value?.id;
+
     let currentLog = sortedLogs[index];
     let currentNewTs = newTs;
 
@@ -446,6 +450,11 @@ export async function updateHistoryStartTime(logId, newTs) {
         currentLog.endTime = currentNewTs;
     }
     await dbPut(STORE_LOGS, currentLog);
+
+    // Sync with pauseState if the updated log is the paused task
+    if (pauseStateId === currentLog.id) {
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...currentLog, isPaused: true } });
+    }
 
     // Propagate changes to previous items as long as they are contiguous
     let prevIndex = index - 1;
@@ -464,6 +473,11 @@ export async function updateHistoryStartTime(logId, newTs) {
         }
 
         await dbPut(STORE_LOGS, prevLog);
+
+        // Sync with pauseState if the updated log is the paused task
+        if (pauseStateId === prevLog.id) {
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...prevLog, isPaused: true } });
+        }
 
         // Move to next (previous) item
         lastOldStartTs = oldPrevStartTs;

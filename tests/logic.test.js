@@ -19,7 +19,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
 }));
 
 const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } = await import('../shared/js/logic.js');
-const { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
+const { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
 
 describe('Logic Module', () => {
@@ -618,6 +618,7 @@ describe('Logic Module', () => {
                 { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' }
             ];
             dbGetAll.mockResolvedValue(logs);
+            dbGet.mockResolvedValue({ value: { id: 999 } }); // Different ID
 
             await updateHistoryStartTime(2, 2500);
 
@@ -630,6 +631,25 @@ describe('Logic Module', () => {
             expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
                 id: 1,
                 endTime: 2500
+            }));
+        });
+
+        test('updateHistoryStartTime synchronizes with pauseState', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' },
+                { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' }
+            ];
+            dbGetAll.mockResolvedValue(logs);
+            dbGet.mockResolvedValue({ value: { id: 2 } }); // Task 2 is paused
+
+            await updateHistoryStartTime(2, 2500);
+
+            // Task 2 updated in logs
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, startTime: 2500 }));
+            // pauseState updated in settings
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
+                key: SETTING_KEY_PAUSE_STATE,
+                value: expect.objectContaining({ id: 2, startTime: 2500, isPaused: true })
             }));
         });
 
