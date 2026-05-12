@@ -439,6 +439,7 @@ export async function updateHistoryStartTime(logId, newTs) {
     // Get current pause state ID once for efficiency
     const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
     const pauseStateId = pauseStateSetting?.value?.id;
+    let pauseStateSynced = false;
 
     let currentLog = sortedLogs[index];
     let currentNewTs = newTs;
@@ -454,6 +455,7 @@ export async function updateHistoryStartTime(logId, newTs) {
     // Sync with pauseState if the updated log is the paused task
     if (pauseStateId === currentLog.id) {
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...currentLog, isPaused: true } });
+        pauseStateSynced = true;
     }
 
     // Propagate changes to previous items as long as they are contiguous
@@ -475,8 +477,9 @@ export async function updateHistoryStartTime(logId, newTs) {
         await dbPut(STORE_LOGS, prevLog);
 
         // Sync with pauseState if the updated log is the paused task
-        if (pauseStateId === prevLog.id) {
+        if (!pauseStateSynced && pauseStateId === prevLog.id) {
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...prevLog, isPaused: true } });
+            pauseStateSynced = true;
         }
 
         // Move to next (previous) item
