@@ -1694,7 +1694,24 @@ async function renderAlarmList() {
 
             updateAlarm();
         };
-        mDateInput.onchange = updateAlarm;
+        mDateInput.onchange = () => {
+            const type = typeSelect.value;
+            const day = parseInt(mDateInput.value) || 1;
+
+            holidaySelect.replaceChildren();
+            adjOptions.forEach(val => {
+                if (type === 'monthly_date' && day === 1 && val === 'prev_business_day') return;
+                if (type === 'monthly_end_relative' && val === 'next_business_day') return;
+
+                const opt = createEl('option');
+                opt.value = val;
+                opt.textContent = t(`alarm-adj-${val}`);
+                opt.setAttribute('data-i18n', `alarm-adj-${val}`);
+                if (alarm.holidayAdjustment === val) opt.selected = true;
+                holidaySelect.appendChild(opt);
+            });
+            updateAlarm();
+        };
         mEndInput.onchange = updateAlarm;
         holidaySelect.onchange = updateAlarm;
         msgInput.onchange = updateAlarm;
