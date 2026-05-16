@@ -1,5 +1,5 @@
 import {
-    initDB, getCurrentAppState, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS
+    initDB, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS
 } from '../shared/js/db.js';
 
 export async function initData(state) {

@@ -1,15 +1,15 @@
-import { t } from '../shared/js/i18n.js';
+import { t, applyLanguage } from '../shared/js/i18n.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 
 export function initUI(state, elements) {
     const {
-        alarmListEl, detailPaneEl, emptyStateEl, detailFormEl,
+        alarmListEl, emptyStateEl, detailFormEl,
         alarmIdEl, enabledToggle, timeInput, confirmToggle,
         messageInput, actionSelect, catGroupEl, categorySelect,
         typeSelect, weeklyContainer, monthlyDateContainer, monthlyEndContainer,
         weeklyChipsEl, dayOfMonthInput, daysBeforeEndInput,
         holidayAdjSelect, adjDescEl, businessDaysContainer,
-        exportBtn, importBtn, undoBtn, redoBtn, themeToggle, langSelect
+        undoBtn, redoBtn
     } = elements;
 
     function renderBusinessDays() {
@@ -165,38 +165,17 @@ export function initUI(state, elements) {
         });
     }
 
-    function renderWeeklyChips(alarm) {
-        weeklyChipsEl.replaceChildren();
-        const currentLang = document.documentElement.lang || 'ja';
-        const formatter = new Intl.DateTimeFormat(currentLang, { weekday: 'narrow' });
-        [0, 1, 2, 3, 4, 5, 6].forEach(day => {
-            const d = new Date(2024, 0, 7 + day);
-            const chip = document.createElement('button');
-            chip.className = 'filter-chip' + (alarm.daysOfWeek.includes(day) ? ' active' : '');
-            if (day === 0) chip.classList.add('sunday');
-            if (day === 6) chip.classList.add('saturday');
-            chip.textContent = formatter.format(d);
-            chip.onclick = () => {
-                if (alarm.daysOfWeek.includes(day)) {
-                    alarm.daysOfWeek = alarm.daysOfWeek.filter(d => d !== day);
-                } else {
-                    alarm.daysOfWeek.push(day);
-                }
-                renderWeeklyChips(alarm);
-                if (state.onAlarmChange) state.onAlarmChange(alarm);
-            };
-            weeklyChipsEl.appendChild(chip);
-        });
-    }
-
     function renderHolidayAdjustment(alarm) {
         holidayAdjSelect.replaceChildren();
+        const isDaily = alarm.type === 'daily' || alarm.type === 'daily_business';
+        holidayAdjSelect.disabled = isDaily;
+
         const options = ['none', 'prev_business_day', 'next_business_day', 'skip'];
         options.forEach(val => {
             // Guardrails
             if (val === 'prev_business_day' && alarm.type === 'monthly_date' && alarm.dayOfMonth === 1) return;
             if (val === 'next_business_day' && alarm.type === 'monthly_end_relative') return;
-            if ((alarm.type === 'daily' || alarm.type === 'daily_business') && val !== 'none') return;
+            if (isDaily && val !== 'none') return;
 
             const opt = document.createElement('option');
             opt.value = val;

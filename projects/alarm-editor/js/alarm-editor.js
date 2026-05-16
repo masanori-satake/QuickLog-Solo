@@ -180,6 +180,7 @@ async function init() {
         ui.renderBusinessDays();
         ui.renderAlarmList();
         ui.renderDetail();
+        ui.updateHistoryButtons(history);
         elements.langSelect.value = state.language;
         elements.themeToggle.checked = (state.theme === 'dark');
         document.body.className = `theme-${state.theme}`;
