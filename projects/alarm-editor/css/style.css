@@ -1,8 +1,8 @@
 :root {
     --color-sunday: #d32f2f;
-    --color-on-sunday: #ffffff;
+    --color-on-sunday: #fff;
     --color-saturday: #1976d2;
-    --color-on-saturday: #ffffff;
+    --color-on-saturday: #fff;
 }
 
 body {
