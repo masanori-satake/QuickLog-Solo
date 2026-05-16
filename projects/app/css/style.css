@@ -1590,3 +1590,56 @@ body.theme-dark button:active {
 .alarm-category-row.hidden {
     display: none;
 }
+
+/* Business Days (Filter Chips) */
+.filter-chips {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 2px;
+    background-color: var(--md-sys-color-surface-container-low);
+    padding: 4px;
+    border-radius: var(--md-sys-shape-full);
+    width: fit-content;
+    margin: 4px 0;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.filter-chip {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    transition: all 0.2s;
+}
+
+.filter-chip:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.filter-chip.active {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.filter-chip.sunday:not(.active) { color: #d32f2f; }
+.filter-chip.saturday:not(.active) { color: #1976d2; }
+
+.filter-chip.sunday.active {
+    background-color: #d32f2f;
+    color: #fff;
+}
+
+.filter-chip.saturday.active {
+    background-color: #1976d2;
+    color: #fff;
+}
+
+.filter-chip.active:hover {
+    filter: brightness(0.9);
+}

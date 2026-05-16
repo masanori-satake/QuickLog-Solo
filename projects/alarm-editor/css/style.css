@@ -49,25 +49,40 @@ body {
 
 .filter-chips {
     display: flex;
-    gap: 8px;
+    gap: 4px;
+    background-color: var(--md-sys-color-surface-container-low);
+    padding: 4px;
+    border-radius: 40px;
+    width: fit-content;
+    border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .filter-chip {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--md-sys-color-outline);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid transparent;
     background: none;
-    color: var(--md-sys-color-on-surface);
+    color: var(--md-sys-color-on-surface-variant);
     cursor: pointer;
-    font-weight: 500;
+    font-weight: bold;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-chip:hover {
+    background-color: var(--md-sys-color-surface-variant);
 }
 
 .filter-chip.active {
     background-color: var(--md-sys-color-secondary-container);
     color: var(--md-sys-color-on-secondary-container);
-    border-color: transparent;
 }
+
+.filter-chip.sunday:not(.active) { color: var(--color-sunday); }
+.filter-chip.saturday:not(.active) { color: var(--color-saturday); }
 
 .filter-chip.sunday.active {
     background-color: var(--color-sunday);
