@@ -479,6 +479,23 @@ async function setupInitialData(languageSetting) {
             });
         }
         await dbAddMultiple(STORE_ALARMS, defaultAlarms);
+    } else {
+        // Migration: Add type and scheduling fields to existing alarms if missing
+        let migratedCount = 0;
+        for (const alarm of existingAlarms) {
+            if (alarm.type === undefined) {
+                alarm.type = 'daily_business';
+                alarm.daysOfWeek = alarm.daysOfWeek || [1, 2, 3, 4, 5];
+                alarm.dayOfMonth = alarm.dayOfMonth || 1;
+                alarm.daysBeforeEnd = alarm.daysBeforeEnd || 0;
+                alarm.holidayAdjustment = alarm.holidayAdjustment || 'none';
+                await dbPut(STORE_ALARMS, alarm);
+                migratedCount++;
+            }
+        }
+        if (migratedCount > 0) {
+            console.log(`QuickLog-Solo: Migrated ${migratedCount} alarms to advanced schedule format.`);
+        }
     }
 
     // Generate dummy history if no logs exist

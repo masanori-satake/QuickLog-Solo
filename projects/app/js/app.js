@@ -1413,7 +1413,19 @@ async function renderAlarmList() {
         const item = createEl('div');
         item.className = 'alarm-item';
 
-        // Row 1
+        // Helper to update visibility of conditional rows
+        const updateVisibility = () => {
+            const type = typeSelect.value;
+            const action = actionSelect.value;
+
+            rowWeekly.classList.toggle('hidden', type !== 'weekly');
+            rowMonthlyDate.classList.toggle('hidden', type !== 'monthly_date');
+            rowMonthlyEnd.classList.toggle('hidden', type !== 'monthly_end_relative');
+            rowHoliday.classList.toggle('hidden', type === 'none');
+            rowCategory.classList.toggle('hidden', action !== 'start');
+        };
+
+        // Row 1: Enabled, Time, Confirmation
         const row1 = createEl('div');
         row1.className = 'alarm-row';
 
@@ -1451,9 +1463,120 @@ async function renderAlarmList() {
         row1.appendChild(timeInput);
         row1.appendChild(confirmLabel);
 
-        // Row 2
-        const row2 = createEl('div');
-        row2.className = 'alarm-row';
+        // Row 2: Type Selection
+        const rowType = createEl('div');
+        rowType.className = 'alarm-row';
+        const typeLabel = createEl('span');
+        typeLabel.className = 'alarm-label';
+        typeLabel.setAttribute('data-i18n', 'alarm-label-type');
+        typeLabel.textContent = t('alarm-label-type');
+        const typeSelect = createEl('select');
+        typeSelect.className = 'alarm-type';
+        ['daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'].forEach(val => {
+            const opt = createEl('option');
+            opt.value = val;
+            opt.textContent = t(`alarm-type-${val}`);
+            opt.setAttribute('data-i18n', `alarm-type-${val}`);
+            if (alarm.type === val) opt.selected = true;
+            typeSelect.appendChild(opt);
+        });
+        rowType.appendChild(typeLabel);
+        rowType.appendChild(typeSelect);
+
+        // Row Weekly: Days Selection
+        const rowWeekly = createEl('div');
+        rowWeekly.className = 'alarm-row hidden';
+        const weeklyLabel = createEl('span');
+        weeklyLabel.className = 'alarm-label';
+        weeklyLabel.setAttribute('data-i18n', 'tab-alarms'); // Reuse "Alarms" or similar
+        weeklyLabel.textContent = t('tab-alarms');
+        const weeklyContainer = createEl('div');
+        weeklyContainer.className = 'filter-chips';
+        const currentLang = getLanguage();
+        const formatter = new Intl.DateTimeFormat(currentLang === 'auto' ? undefined : currentLang, { weekday: 'narrow' });
+        [1, 2, 3, 4, 5, 6, 0].forEach(day => {
+            const d = new Date(2024, 0, 7 + day);
+            const chip = createEl('button');
+            chip.className = 'filter-chip' + ((alarm.daysOfWeek || []).includes(day) ? ' active' : '');
+            if (day === 0) chip.classList.add('sunday');
+            if (day === 6) chip.classList.add('saturday');
+            chip.textContent = formatter.format(d);
+            chip.onclick = () => {
+                let days = [...(alarm.daysOfWeek || [])];
+                if (days.includes(day)) {
+                    days = days.filter(d => d !== day);
+                } else {
+                    days.push(day);
+                }
+                alarm.daysOfWeek = days;
+                chip.classList.toggle('active');
+                updateAlarm();
+            };
+            weeklyContainer.appendChild(chip);
+        });
+        rowWeekly.appendChild(weeklyLabel);
+        rowWeekly.appendChild(weeklyContainer);
+
+        // Row Monthly Date
+        const rowMonthlyDate = createEl('div');
+        rowMonthlyDate.className = 'alarm-row hidden';
+        const mDateLabel = createEl('span');
+        mDateLabel.className = 'alarm-label';
+        mDateLabel.setAttribute('data-i18n', 'label-day');
+        mDateLabel.textContent = t('label-day');
+        const mDateInput = createEl('input');
+        mDateInput.type = 'number';
+        mDateInput.min = 1;
+        mDateInput.max = 31;
+        mDateInput.className = 'alarm-day-of-month';
+        mDateInput.value = alarm.dayOfMonth || 1;
+        rowMonthlyDate.appendChild(mDateLabel);
+        rowMonthlyDate.appendChild(mDateInput);
+
+        // Row Monthly End
+        const rowMonthlyEnd = createEl('div');
+        rowMonthlyEnd.className = 'alarm-row hidden';
+        const mEndPreLabel = createEl('span');
+        mEndPreLabel.className = 'alarm-label';
+        mEndPreLabel.setAttribute('data-i18n', 'label-before-end-1');
+        mEndPreLabel.textContent = t('label-before-end-1');
+        const mEndInput = createEl('input');
+        mEndInput.type = 'number';
+        mEndInput.min = 0;
+        mEndInput.max = 30;
+        mEndInput.className = 'alarm-days-before-end';
+        mEndInput.value = alarm.daysBeforeEnd || 0;
+        const mEndPostLabel = createEl('span');
+        mEndPostLabel.setAttribute('data-i18n', 'label-before-end-2');
+        mEndPostLabel.textContent = t('label-before-end-2');
+        rowMonthlyEnd.appendChild(mEndPreLabel);
+        rowMonthlyEnd.appendChild(mEndInput);
+        rowMonthlyEnd.appendChild(mEndPostLabel);
+
+        // Row Holiday Adjustment
+        const rowHoliday = createEl('div');
+        rowHoliday.className = 'alarm-row hidden';
+        const holidayLabel = createEl('span');
+        holidayLabel.className = 'alarm-label';
+        holidayLabel.setAttribute('data-i18n', 'alarm-label-holiday-adjustment');
+        holidayLabel.textContent = t('alarm-label-holiday-adjustment');
+        const holidaySelect = createEl('select');
+        holidaySelect.className = 'alarm-holiday-adj';
+        const adjOptions = ['none', 'prev_business_day', 'next_business_day', 'skip'];
+        adjOptions.forEach(val => {
+            const opt = createEl('option');
+            opt.value = val;
+            opt.textContent = t(`alarm-adj-${val}`);
+            opt.setAttribute('data-i18n', `alarm-adj-${val}`);
+            if (alarm.holidayAdjustment === val) opt.selected = true;
+            holidaySelect.appendChild(opt);
+        });
+        rowHoliday.appendChild(holidayLabel);
+        rowHoliday.appendChild(holidaySelect);
+
+        // Row Message
+        const rowMsg = createEl('div');
+        rowMsg.className = 'alarm-row';
         const msgLabel = createEl('span');
         msgLabel.className = 'alarm-label';
         msgLabel.setAttribute('data-i18n', 'alarm-label-message');
@@ -1463,12 +1586,12 @@ async function renderAlarmList() {
         msgInput.className = 'alarm-message';
         msgInput.value = alarm.message || '';
         msgInput.placeholder = t('alarm-placeholder-message');
-        row2.appendChild(msgLabel);
-        row2.appendChild(msgInput);
+        rowMsg.appendChild(msgLabel);
+        rowMsg.appendChild(msgInput);
 
-        // Row 3
-        const row3 = createEl('div');
-        row3.className = 'alarm-row';
+        // Row Action
+        const rowAction = createEl('div');
+        rowAction.className = 'alarm-row';
         const actionLabel = createEl('span');
         actionLabel.className = 'alarm-label';
         actionLabel.setAttribute('data-i18n', 'alarm-label-action');
@@ -1483,12 +1606,12 @@ async function renderAlarmList() {
             if (alarm.action === val) opt.selected = true;
             actionSelect.appendChild(opt);
         });
-        row3.appendChild(actionLabel);
-        row3.appendChild(actionSelect);
+        rowAction.appendChild(actionLabel);
+        rowAction.appendChild(actionSelect);
 
-        // Row 4
-        const row4 = createEl('div');
-        row4.className = `alarm-row alarm-category-row ${alarm.action === 'start' ? '' : 'hidden'}`;
+        // Row Category
+        const rowCategory = createEl('div');
+        rowCategory.className = 'alarm-row hidden';
         const catLabel = createEl('span');
         catLabel.className = 'alarm-label';
         catLabel.setAttribute('data-i18n', 'alarm-label-category');
@@ -1502,43 +1625,83 @@ async function renderAlarmList() {
             if (alarm.actionCategory === c.name) opt.selected = true;
             catSelect.appendChild(opt);
         });
-        row4.appendChild(catLabel);
-        row4.appendChild(catSelect);
+        rowCategory.appendChild(catLabel);
+        rowCategory.appendChild(catSelect);
 
         item.appendChild(row1);
-        item.appendChild(row2);
-        item.appendChild(row3);
-        item.appendChild(row4);
+        item.appendChild(rowType);
+        item.appendChild(rowWeekly);
+        item.appendChild(rowMonthlyDate);
+        item.appendChild(rowMonthlyEnd);
+        item.appendChild(rowHoliday);
+        item.appendChild(rowMsg);
+        item.appendChild(rowAction);
+        item.appendChild(rowCategory);
 
         const updateAlarm = async () => {
-            alarm.enabled = item.querySelector('.alarm-enabled').checked;
-            alarm.time = item.querySelector('.alarm-time').value;
-            alarm.requireConfirmation = item.querySelector('.alarm-confirm').checked;
-            alarm.message = item.querySelector('.alarm-message').value.trim();
-            alarm.action = item.querySelector('.alarm-action').value;
-            alarm.actionCategory = item.querySelector('.alarm-category').value;
+            alarm.enabled = enabledCheck.checked;
+            alarm.time = timeInput.value;
+            alarm.requireConfirmation = confirmCheck.checked;
+            alarm.type = typeSelect.value;
+            alarm.dayOfMonth = parseInt(mDateInput.value) || 1;
+            alarm.daysBeforeEnd = parseInt(mEndInput.value) || 0;
+            alarm.holidayAdjustment = holidaySelect.value;
+            alarm.message = msgInput.value.trim();
+            alarm.action = actionSelect.value;
+            alarm.actionCategory = catSelect.value;
 
-            await dbPut(STORE_ALARMS, alarm);
-
-            const catRow = item.querySelector('.alarm-category-row');
-            if (alarm.action === 'start') {
-                catRow.classList.remove('hidden');
-            } else {
-                catRow.classList.add('hidden');
+            // Apply guardrails
+            if (alarm.type === 'monthly_date' && alarm.dayOfMonth === 1) {
+                if (alarm.holidayAdjustment === 'prev_business_day') {
+                    alarm.holidayAdjustment = 'none';
+                    holidaySelect.value = 'none';
+                }
+                // Update UI to hide prev_business_day if possible, or just reset
+            }
+            if (alarm.type === 'monthly_end_relative') {
+                if (alarm.holidayAdjustment === 'next_business_day') {
+                    alarm.holidayAdjustment = 'none';
+                    holidaySelect.value = 'none';
+                }
             }
 
-            // Notify background script to update alarms
+            await dbPut(STORE_ALARMS, alarm);
+            updateVisibility();
             broadcastSync('alarms-updated');
-            showToast(t('toast-alarm-saved'));
         };
 
-        item.querySelector('.alarm-enabled').onchange = updateAlarm;
-        item.querySelector('.alarm-time').onchange = updateAlarm;
-        item.querySelector('.alarm-confirm').onchange = updateAlarm;
-        item.querySelector('.alarm-message').onchange = updateAlarm;
-        item.querySelector('.alarm-action').onchange = updateAlarm;
-        item.querySelector('.alarm-category').onchange = updateAlarm;
+        enabledCheck.onchange = updateAlarm;
+        timeInput.onchange = updateAlarm;
+        confirmCheck.onchange = updateAlarm;
+        typeSelect.onchange = () => {
+            // Adjust holiday adjustment options based on guardrails
+            const type = typeSelect.value;
+            const day = parseInt(mDateInput.value) || 1;
 
+            // Re-render options for holidaySelect
+            holidaySelect.replaceChildren();
+            adjOptions.forEach(val => {
+                if (type === 'monthly_date' && day === 1 && val === 'prev_business_day') return;
+                if (type === 'monthly_end_relative' && val === 'next_business_day') return;
+
+                const opt = createEl('option');
+                opt.value = val;
+                opt.textContent = t(`alarm-adj-${val}`);
+                opt.setAttribute('data-i18n', `alarm-adj-${val}`);
+                if (alarm.holidayAdjustment === val) opt.selected = true;
+                holidaySelect.appendChild(opt);
+            });
+
+            updateAlarm();
+        };
+        mDateInput.onchange = updateAlarm;
+        mEndInput.onchange = updateAlarm;
+        holidaySelect.onchange = updateAlarm;
+        msgInput.onchange = updateAlarm;
+        actionSelect.onchange = updateAlarm;
+        catSelect.onchange = updateAlarm;
+
+        updateVisibility();
         list.appendChild(item);
     });
 }
