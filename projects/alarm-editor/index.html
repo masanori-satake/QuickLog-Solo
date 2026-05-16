@@ -6,48 +6,172 @@
     <title data-i18n="alarm-editor-title">Alarm Editor - QuickLog-Solo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="shared/css/m3-theme.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="shared/assets/icon.svg" type="image/svg+xml">
 </head>
 <body class="theme-light">
-    <div id="app" class="editor-layout">
+    <div id="app">
         <header class="editor-header">
-            <div class="header-main">
+            <div class="header-left">
                 <h1 data-i18n="alarm-editor-title">アラームエディタ</h1>
-                <div class="header-actions">
-                    <button id="export-btn" class="secondary-btn">
-                        <span class="material-symbols-outlined">content_copy</span>
-                        <span data-i18n="btn-export-json">コピー (Export)</span>
+                <div class="history-controls">
+                    <button id="undo-btn" class="icon-btn" disabled data-i18n-title="undo">
+                        <span class="material-symbols-outlined">undo</span>
                     </button>
-                    <button id="import-btn" class="secondary-btn">
-                        <span class="material-symbols-outlined">content_paste</span>
-                        <span data-i18n="btn-import-json">貼り付け (Import)</span>
+                    <button id="redo-btn" class="icon-btn" disabled data-i18n-title="redo">
+                        <span class="material-symbols-outlined">redo</span>
                     </button>
                 </div>
             </div>
-            <div class="business-days-section">
-                <label data-i18n="business-days">稼働曜日</label>
-                <div id="business-days-container" class="filter-chips"></div>
+            <div class="header-right">
+                <div class="theme-switch-wrapper">
+                    <span class="material-symbols-outlined">light_mode</span>
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" style="display: none;" />
+                        <div class="slider round"></div>
+                    </label>
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </div>
+                <div class="lang-switcher">
+                    <select id="lang-select-editor" class="lang-select">
+                        <option value="ja" data-i18n="lang-ja-native">🇯🇵 日本語</option>
+                        <option value="en" data-i18n="lang-en-native">🇺🇸 English</option>
+                        <option value="de" data-i18n="lang-de-native">🇩🇪 Deutsch</option>
+                        <option value="es" data-i18n="lang-es-native">🇪🇸 Español</option>
+                        <option value="fr" data-i18n="lang-fr-native">🇫🇷 Français</option>
+                        <option value="pt" data-i18n="lang-pt-native">🇧🇷 Português</option>
+                        <option value="ko" data-i18n="lang-ko-native">🇰🇷 한국어</option>
+                        <option value="zh" data-i18n="lang-zh-native">🇨🇳 简体中文</option>
+                    </select>
+                </div>
             </div>
         </header>
 
         <main class="editor-main">
-            <div id="alarm-editor-list" class="alarm-grid">
-                <!-- Alarms will be rendered here -->
-            </div>
+            <aside class="master-pane">
+                <div class="business-days-section">
+                    <label data-i18n="business-days">稼働曜日</label>
+                    <div id="business-days-container" class="filter-chips"></div>
+                </div>
+                <div id="alarm-editor-list">
+                    <!-- Alarms will be rendered here -->
+                </div>
+            </aside>
+            <section class="detail-pane">
+                <div id="detail-empty-state" class="empty-state">
+                    <p data-i18n="alarm-editor-select-prompt">左側からアラームを選択してください。</p>
+                </div>
+                <div id="alarm-detail-form" class="hidden">
+                    <div class="detail-header">
+                        <h2 id="detail-alarm-id">Alarm #1</h2>
+                        <div class="switch-container">
+                            <span data-i18n="alarm-label-enabled">有効</span>
+                            <label class="switch">
+                                <input type="checkbox" id="alarm-enabled-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">schedule</span>
+                            <span data-i18n="alarm-section-basic">基本設定</span>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label data-i18n="alarm-label-time">時刻</label>
+                                <input type="time" id="alarm-time-input">
+                            </div>
+                            <div class="input-group">
+                                <label data-i18n="alarm-label-confirmation">確認が必要</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="alarm-confirm-toggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label data-i18n="alarm-label-message">メッセージ</label>
+                            <input type="text" id="alarm-message-input" data-i18n-placeholder="alarm-placeholder-message">
+                        </div>
+                    </div>
+
+                    <div class="detail-grid">
+                        <div class="section-card">
+                            <div class="section-title">
+                                <span class="material-symbols-outlined">bolt</span>
+                                <span data-i18n="alarm-section-action">アクション設定</span>
+                            </div>
+                            <div class="input-group">
+                                <label data-i18n="alarm-label-action">実行するアクション</label>
+                                <select id="alarm-action-select"></select>
+                            </div>
+                            <div class="input-group hidden" id="action-category-group">
+                                <label data-i18n="alarm-label-action-category">カテゴリ</label>
+                                <select id="alarm-action-category-select"></select>
+                            </div>
+                        </div>
+
+                        <div class="section-card">
+                            <div class="section-title">
+                                <span class="material-symbols-outlined">event</span>
+                                <span data-i18n="alarm-section-schedule">スケジュール設定</span>
+                            </div>
+                            <div class="input-group">
+                                <label data-i18n="alarm-label-type">タイプ</label>
+                                <select id="alarm-type-select"></select>
+                            </div>
+
+                            <div id="weekly-days-container" class="input-group hidden">
+                                <label data-i18n="alarm-label-days-of-week">曜日</label>
+                                <div id="alarm-weekly-chips" class="filter-chips"></div>
+                            </div>
+
+                            <div id="monthly-date-container" class="input-group hidden">
+                                <label data-i18n="alarm-label-day-of-month">日付</label>
+                                <div class="input-row">
+                                    <input type="number" id="alarm-day-of-month-input" min="1" max="31">
+                                    <span data-i18n="label-day">日</span>
+                                </div>
+                            </div>
+
+                            <div id="monthly-end-container" class="input-group hidden">
+                                <label data-i18n="alarm-label-days-before-end">月末からの日数</label>
+                                <div class="input-row">
+                                    <span data-i18n="label-before-end-1">月末の</span>
+                                    <input type="number" id="alarm-days-before-end-input" min="0" max="31">
+                                    <span data-i18n="label-before-end-2">日前</span>
+                                </div>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <div class="input-group">
+                                <label data-i18n="alarm-label-holiday-adjustment">休日調整</label>
+                                <select id="alarm-holiday-adj-select"></select>
+                                <div id="alarm-adj-desc" class="setting-description-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <footer class="editor-footer">
-            <div class="footer-info">
-                <p data-i18n="privacy-policy-local-only">全てブラウザ内で処理が完結しており、外部のサーバとは連携していません。</p>
+            <div class="footer-right">
+                <button id="import-btn" class="secondary-btn">
+                    <span class="material-symbols-outlined">content_paste</span>
+                    <span data-i18n="btn-import-json">貼り付け (Import)</span>
+                </button>
+                <button id="export-btn" class="primary-btn">
+                    <span class="material-symbols-outlined">content_copy</span>
+                    <span data-i18n="btn-export-json">コピー (Export)</span>
+                </button>
             </div>
-            <a href="../app/app.html" class="back-link">
-                <span class="material-symbols-outlined">arrow_back</span>
-                <span data-i18n="back-to-app">アプリに戻る</span>
-            </a>
         </footer>
 
         <div id="toast" class="hidden"></div>

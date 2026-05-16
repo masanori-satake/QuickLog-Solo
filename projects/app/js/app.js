@@ -1360,8 +1360,8 @@ async function renderBusinessDays() {
     const formatter = new Intl.DateTimeFormat(currentLang === 'auto' ? undefined : currentLang, { weekday: 'narrow' });
 
     // 0: Sun, 1: Mon, ..., 6: Sat
-    // To display Mon-Sun, use [1, 2, 3, 4, 5, 6, 0]
-    [1, 2, 3, 4, 5, 6, 0].forEach(day => {
+    // To display Sun-Sat, use [0, 1, 2, 3, 4, 5, 6]
+    [0, 1, 2, 3, 4, 5, 6].forEach(day => {
         // Let's use a known date: 2024-01-07 is Sunday
         const d = new Date(2024, 0, 7 + day);
         const label = formatter.format(d);
@@ -1377,6 +1377,9 @@ async function renderBusinessDays() {
             if (newDays.includes(day)) {
                 if (newDays.length > 1) {
                     newDays = newDays.filter(d => d !== day);
+                } else {
+                    alert(t('alert-business-days-min'));
+                    return;
                 }
             } else {
                 newDays.push(day);
@@ -1472,7 +1475,7 @@ async function renderAlarmList() {
         typeLabel.textContent = t('alarm-label-type');
         const typeSelect = createEl('select');
         typeSelect.className = 'alarm-type';
-        ['daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'].forEach(val => {
+        ['daily', 'daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'].forEach(val => {
             const opt = createEl('option');
             opt.value = val;
             opt.textContent = t(`alarm-type-${val}`);
@@ -1494,7 +1497,7 @@ async function renderAlarmList() {
         weeklyContainer.className = 'filter-chips';
         const currentLang = getLanguage();
         const formatter = new Intl.DateTimeFormat(currentLang === 'auto' ? undefined : currentLang, { weekday: 'narrow' });
-        [1, 2, 3, 4, 5, 6, 0].forEach(day => {
+        [0, 1, 2, 3, 4, 5, 6].forEach(day => {
             const d = new Date(2024, 0, 7 + day);
             const chip = createEl('button');
             chip.className = 'filter-chip' + ((alarm.daysOfWeek || []).includes(day) ? ' active' : '');
@@ -1562,15 +1565,29 @@ async function renderAlarmList() {
         holidayLabel.textContent = t('alarm-label-holiday-adjustment');
         const holidaySelect = createEl('select');
         holidaySelect.className = 'alarm-holiday-adj';
-        const adjOptions = ['none', 'prev_business_day', 'next_business_day', 'skip'];
-        adjOptions.forEach(val => {
-            const opt = createEl('option');
-            opt.value = val;
-            opt.textContent = t(`alarm-adj-${val}`);
-            opt.setAttribute('data-i18n', `alarm-adj-${val}`);
-            if (alarm.holidayAdjustment === val) opt.selected = true;
-            holidaySelect.appendChild(opt);
-        });
+
+        const updateHolidayOptions = () => {
+            const type = typeSelect.value;
+            const day = parseInt(mDateInput.value) || 1;
+            const adjOptions = ['none', 'prev_business_day', 'next_business_day', 'skip'];
+
+            holidaySelect.replaceChildren();
+            adjOptions.forEach(val => {
+                const opt = createEl('option');
+                opt.value = val;
+                opt.textContent = t(`alarm-adj-${val}`);
+                opt.setAttribute('data-i18n', `alarm-adj-${val}`);
+                if (alarm.holidayAdjustment === val) opt.selected = true;
+
+                // Guardrails
+                if (val === 'prev_business_day' && type === 'monthly_date' && day === 1) opt.disabled = true;
+                if (val === 'next_business_day' && type === 'monthly_end_relative') opt.disabled = true;
+                if ((type === 'daily' || type === 'daily_business') && val !== 'none') opt.disabled = true;
+
+                holidaySelect.appendChild(opt);
+            });
+            holidaySelect.disabled = (type === 'daily' || type === 'daily_business');
+        };
         rowHoliday.appendChild(holidayLabel);
         rowHoliday.appendChild(holidaySelect);
 
@@ -1651,19 +1668,16 @@ async function renderAlarmList() {
             alarm.actionCategory = catSelect.value;
 
             // Apply guardrails
-            if (alarm.type === 'monthly_date' && alarm.dayOfMonth === 1) {
-                if (alarm.holidayAdjustment === 'prev_business_day') {
-                    alarm.holidayAdjustment = 'none';
-                    holidaySelect.value = 'none';
-                }
-                // Update UI to hide prev_business_day if possible, or just reset
+            if (alarm.type === 'monthly_date' && alarm.dayOfMonth === 1 && alarm.holidayAdjustment === 'prev_business_day') {
+                alarm.holidayAdjustment = 'none';
             }
-            if (alarm.type === 'monthly_end_relative') {
-                if (alarm.holidayAdjustment === 'next_business_day') {
-                    alarm.holidayAdjustment = 'none';
-                    holidaySelect.value = 'none';
-                }
+            if (alarm.type === 'monthly_end_relative' && alarm.holidayAdjustment === 'next_business_day') {
+                alarm.holidayAdjustment = 'none';
             }
+            if ((alarm.type === 'daily' || alarm.type === 'daily_business') && alarm.holidayAdjustment !== 'none') {
+                alarm.holidayAdjustment = 'none';
+            }
+            updateHolidayOptions();
 
             await dbPut(STORE_ALARMS, alarm);
             updateVisibility();
@@ -1673,47 +1687,12 @@ async function renderAlarmList() {
         enabledCheck.onchange = updateAlarm;
         timeInput.onchange = updateAlarm;
         confirmCheck.onchange = updateAlarm;
-        typeSelect.onchange = () => {
-            // Adjust holiday adjustment options based on guardrails
-            const type = typeSelect.value;
-            const day = parseInt(mDateInput.value) || 1;
-
-            // Re-render options for holidaySelect
-            holidaySelect.replaceChildren();
-            adjOptions.forEach(val => {
-                if (type === 'monthly_date' && day === 1 && val === 'prev_business_day') return;
-                if (type === 'monthly_end_relative' && val === 'next_business_day') return;
-
-                const opt = createEl('option');
-                opt.value = val;
-                opt.textContent = t(`alarm-adj-${val}`);
-                opt.setAttribute('data-i18n', `alarm-adj-${val}`);
-                if (alarm.holidayAdjustment === val) opt.selected = true;
-                holidaySelect.appendChild(opt);
-            });
-
-            updateAlarm();
-        };
-        mDateInput.onchange = () => {
-            const type = typeSelect.value;
-            const day = parseInt(mDateInput.value) || 1;
-
-            holidaySelect.replaceChildren();
-            adjOptions.forEach(val => {
-                if (type === 'monthly_date' && day === 1 && val === 'prev_business_day') return;
-                if (type === 'monthly_end_relative' && val === 'next_business_day') return;
-
-                const opt = createEl('option');
-                opt.value = val;
-                opt.textContent = t(`alarm-adj-${val}`);
-                opt.setAttribute('data-i18n', `alarm-adj-${val}`);
-                if (alarm.holidayAdjustment === val) opt.selected = true;
-                holidaySelect.appendChild(opt);
-            });
-            updateAlarm();
-        };
+        typeSelect.onchange = updateAlarm;
+        mDateInput.onchange = updateAlarm;
         mEndInput.onchange = updateAlarm;
         holidaySelect.onchange = updateAlarm;
+
+        updateHolidayOptions();
         msgInput.onchange = updateAlarm;
         actionSelect.onchange = updateAlarm;
         catSelect.onchange = updateAlarm;

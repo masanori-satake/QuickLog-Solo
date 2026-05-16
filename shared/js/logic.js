@@ -526,14 +526,14 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
     };
 
     // Candidate search
-    if (alarm.type === 'daily_business' || alarm.type === 'weekly') {
+    if (alarm.type === 'daily' || alarm.type === 'daily_business' || alarm.type === 'weekly') {
         let current = new Date(nowTs);
         current.setHours(hours, minutes, 0, 0);
 
         // Try next 400 days
         for (let i = 0; i < 400; i++) {
             let matchesType = false;
-            if (alarm.type === 'daily_business') {
+            if (alarm.type === 'daily' || alarm.type === 'daily_business') {
                 matchesType = true;
             } else if (alarm.type === 'weekly') {
                 matchesType = alarm.daysOfWeek.includes(current.getDay());
