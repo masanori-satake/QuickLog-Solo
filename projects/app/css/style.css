@@ -1606,9 +1606,10 @@ body.theme-dark button:active {
 
 .filter-chip {
     flex: none;
-    width: 32px;
-    height: 32px;
-    padding: 0;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    margin-bottom: 0 !important;
     font-size: 0.75rem;
     font-weight: bold;
     border-radius: 50%;
