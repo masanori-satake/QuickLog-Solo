@@ -360,7 +360,7 @@ export default {
     'alarm-label-action-category': '시작 카테고리',
     'alarm-label-days-of-week': '요일',
     'alarm-label-day-of-month': '날짜',
-    'alarm-label-days-before-end': '月末부터의 일수',
+    'alarm-label-days-before-end': '월말부터의 일수',
     'alarm-label-confirmation': '확인 필요',
     'alert-alarm-limit': '알람은 최대 10개까지입니다',
     'alert-business-days-min': '근무 요일은 적어도 하나를 선택해야 합니다',

@@ -36,7 +36,8 @@ body {
     padding: 0 24px;
 }
 
-.header-left, .header-right {
+.header-left,
+.header-right {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -69,20 +70,116 @@ body {
     transition: all 0.2s;
 }
 
-.icon-btn:hover:not(:disabled) {
-    background: var(--md-sys-color-surface-container-highest);
-}
-
 .icon-btn:disabled {
     opacity: 0.38;
     cursor: default;
+}
+
+.icon-btn:hover:not(:disabled) {
+    background: var(--md-sys-color-surface-container-highest);
 }
 
 .icon-btn .material-symbols-outlined {
     font-size: 20px;
 }
 
-/* Theme Switch and Language Select */
+/* Generic Inputs */
+input[type="time"],
+input[type="text"],
+input[type="number"],
+select {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--md-sys-color-outline);
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.95rem;
+}
+
+input[type="time"] {
+    width: fit-content;
+}
+
+input[type="number"] {
+    width: 80px;
+}
+
+input:focus,
+select:focus {
+    outline: 2px solid var(--md-sys-color-primary);
+    border-color: transparent;
+}
+
+/* Switch Styles (M3-like) */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 32px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: var(--md-sys-color-outline);
+    transition: 0.4s;
+    border-radius: 32px;
+}
+
+.switch .slider::before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+/* Theme Switch specific adjustments */
+.theme-switch {
+    width: 44px;
+    height: 24px;
+}
+
+.theme-switch .slider {
+    border-radius: 34px;
+}
+
+.theme-switch .slider::before {
+    background-color: var(--md-sys-color-surface-container-highest);
+    bottom: 4px;
+    height: 16px;
+    left: 4px;
+    width: 16px;
+}
+
+/* Switch checked states */
+.switch input:checked + .slider {
+    background-color: var(--md-sys-color-primary);
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(20px);
+}
+
+/* Language switcher select */
+.lang-switcher select {
+    padding: 6px 12px;
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+}
+
+/* Theme Switch and Language Select wrapper */
 .theme-switch-wrapper {
     display: flex;
     align-items: center;
@@ -93,56 +190,6 @@ body {
 .theme-switch-wrapper .material-symbols-outlined {
     font-size: 20px;
     color: var(--md-sys-color-on-surface-variant);
-}
-
-.theme-switch {
-    display: inline-block;
-    height: 24px;
-    position: relative;
-    width: 44px;
-}
-
-.theme-switch input {
-    display: none;
-}
-
-.slider {
-    background-color: var(--md-sys-color-outline);
-    inset: 0;
-    cursor: pointer;
-    position: absolute;
-    transition: 0.4s;
-    border-radius: 34px;
-}
-
-.slider::before {
-    background-color: var(--md-sys-color-surface-container-highest);
-    bottom: 4px;
-    content: "";
-    height: 16px;
-    left: 4px;
-    position: absolute;
-    transition: 0.4s;
-    width: 16px;
-    border-radius: 50%;
-}
-
-input:checked + .slider {
-    background-color: var(--md-sys-color-primary);
-}
-
-input:checked + .slider::before {
-    transform: translateX(20px);
-}
-
-.lang-switcher select {
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--md-sys-color-outline);
-    background-color: var(--md-sys-color-surface);
-    color: var(--md-sys-color-on-surface);
-    font-family: var(--font-family);
-    font-size: 0.9rem;
 }
 
 /* Main Layout */
@@ -225,8 +272,13 @@ input:checked + .slider::before {
     color: var(--md-sys-color-on-secondary-container);
 }
 
-.filter-chip.sunday:not(.active) { color: var(--color-sunday); }
-.filter-chip.saturday:not(.active) { color: var(--color-saturday); }
+.filter-chip.sunday:not(.active) {
+    color: var(--color-sunday);
+}
+
+.filter-chip.saturday:not(.active) {
+    color: var(--color-saturday);
+}
 
 .filter-chip.sunday.active {
     background-color: var(--color-sunday);
@@ -339,23 +391,6 @@ input:checked + .slider::before {
     align-items: center;
 }
 
-input[type="time"], input[type="text"], input[type="number"], select {
-    padding: 10px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--md-sys-color-outline);
-    background-color: var(--md-sys-color-surface);
-    color: var(--md-sys-color-on-surface);
-    font-size: 0.95rem;
-}
-
-input[type="time"] { width: fit-content; }
-input[type="number"] { width: 80px; }
-
-input:focus, select:focus {
-    outline: 2px solid var(--md-sys-color-primary);
-    border-color: transparent;
-}
-
 .setting-description-box {
     font-size: 0.75rem;
     color: var(--md-sys-color-on-surface-variant);
@@ -382,7 +417,9 @@ input:focus, select:focus {
 }
 
 /* Modal and Utility */
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}
 
 .modal {
     position: fixed;
@@ -414,7 +451,8 @@ input:focus, select:focus {
     border-radius: var(--md-sys-shape-full);
 }
 
-.primary-btn, .secondary-btn {
+.primary-btn,
+.secondary-btn {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -441,49 +479,6 @@ input:focus, select:focus {
     gap: 12px;
 }
 
-/* Switch Styles (M3-like) */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 52px;
-    height: 32px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background-color: var(--md-sys-color-outline);
-    transition: .4s;
-    border-radius: 32px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 24px;
-    width: 24px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-
-input:checked + .slider {
-    background-color: var(--md-sys-color-primary);
-}
-
-input:checked + .slider:before {
-    transform: translateX(20px);
-}
-
 #toast {
     position: fixed;
     bottom: 80px;
@@ -495,15 +490,4 @@ input:checked + .slider:before {
     border-radius: 8px;
     z-index: 2000;
     box-shadow: var(--md-sys-elevation-3);
-}
-
-/* M3 Custom Colors for Sunday/Saturday */
-.filter-chip.sunday.active {
-    background-color: var(--color-sunday);
-    color: var(--color-on-sunday);
-}
-
-.filter-chip.saturday.active {
-    background-color: var(--color-saturday);
-    color: var(--color-on-saturday);
 }
