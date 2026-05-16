@@ -202,7 +202,7 @@ describe('DB Module', () => {
     test('initDB sets up default alarms with messages', async () => {
         await initDB();
         const alarms = await dbGetAll(STORE_ALARMS);
-        expect(alarms.length).toBe(5);
+        expect(alarms.length).toBe(10);
 
         const alarm2359 = alarms.find(a => a.time === '23:59');
         expect(alarm2359).toBeDefined();

@@ -4,7 +4,7 @@
  */
 
 import { getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME, initDB, SYNC_CHANNEL_NAME } from '../shared/js/db.js';
-import { stopTaskLogic, pauseTaskLogic, startTaskLogic } from '../shared/js/logic.js';
+import { stopTaskLogic, pauseTaskLogic, startTaskLogic, calculateNextAlarmTime } from '../shared/js/logic.js';
 import { t, setLanguage } from '../shared/js/i18n.js';
 
 /**
@@ -124,20 +124,12 @@ async function setupAlarms() {
 
         for (const alarm of alarms) {
             if (alarm.enabled && alarm.time) {
-                const [hours, minutes] = alarm.time.split(':').map(Number);
-                const alarmDate = new Date();
-                alarmDate.setHours(hours, minutes, 0, 0);
-
-                let scheduledTime = alarmDate.getTime();
-                // If scheduled time is in the past, schedule for tomorrow
-                if (scheduledTime <= now) {
-                    scheduledTime += 24 * 60 * 60 * 1000;
+                const nextTime = calculateNextAlarmTime(alarm, state.businessDays, now);
+                if (nextTime) {
+                    chrome.alarms.create(`ql_alarm_${alarm.id}`, {
+                        when: nextTime
+                    });
                 }
-
-                chrome.alarms.create(`ql_alarm_${alarm.id}`, {
-                    when: scheduledTime,
-                    periodInMinutes: 1440 // Daily repeat
-                });
             }
         }
     } catch (error) {
@@ -230,6 +222,16 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             const alarmId = parseInt(alarm.name.replace('ql_alarm_', ''));
             state = await getCurrentAppState();
             alarmData = state.alarms.find(a => a.id === alarmId);
+
+            // Reschedule for next time
+            if (alarmData && alarmData.enabled) {
+                const nextTime = calculateNextAlarmTime(alarmData, state.businessDays, Date.now());
+                if (nextTime) {
+                    chrome.alarms.create(`ql_alarm_${alarmData.id}`, {
+                        when: nextTime
+                    });
+                }
+            }
         } else if (alarm.name === 'ql_test_alarm') {
             alarmData = {
                 id: 999,

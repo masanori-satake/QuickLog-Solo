@@ -2,7 +2,7 @@ import {
     initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbAddMultiple, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME, SYNC_CHANNEL_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS
+    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
@@ -68,6 +68,7 @@ const ID_VERSION_DISPLAY = 'version-display';
 const ID_STATS_LOG_COUNT = 'stats-log-count';
 const ID_STATS_CATEGORY_COUNT = 'stats-category-count';
 const ID_ALARM_LIST = 'alarm-list';
+const ID_BUSINESS_DAYS_CONTAINER = 'business-days-container';
 const ID_CATEGORY_EDITOR_LIST = 'category-editor-list';
 const ID_NEW_CATEGORY_NAME_SETTINGS = 'new-category-name-settings';
 const ID_COPY_REPORT_BTN = 'copy-report-btn';
@@ -84,6 +85,7 @@ const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
 const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
 
 const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor/';
+const ALARM_EDITOR_URL = 'https://quick-log-solo.vercel.app/alarm-editor/';
 
 const ID_REPORT_MODAL = 'report-modal';
 const ID_REPORT_PREVIEW = 'report-preview';
@@ -766,6 +768,7 @@ async function syncState() {
     if (settingsPopup && !settingsPopup.classList.contains('hidden')) {
             const alarmsTab = getEl('alarms-tab');
             if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
+                await renderBusinessDays();
                 await renderAlarmList();
             }
         const categoriesTab = getEl('categories-tab');
@@ -1343,6 +1346,49 @@ function showMultiChoice(message, choices) {
 }
 
 // --- Alarms ---
+
+async function renderBusinessDays() {
+    const container = getEl(ID_BUSINESS_DAYS_CONTAINER);
+    if (!container) return;
+
+    const state = await getCurrentAppState();
+    const businessDays = state.businessDays || [1, 2, 3, 4, 5];
+
+    container.replaceChildren();
+
+    const currentLang = getLanguage();
+    const formatter = new Intl.DateTimeFormat(currentLang === 'auto' ? undefined : currentLang, { weekday: 'narrow' });
+
+    // 0: Sun, 1: Mon, ..., 6: Sat
+    // To display Mon-Sun, use [1, 2, 3, 4, 5, 6, 0]
+    [1, 2, 3, 4, 5, 6, 0].forEach(day => {
+        const date = new Date(2024, 0, day + 7); // Jan 2024, 7th is Sunday, 8th is Monday... Wait.
+        // Let's use a known date: 2024-01-07 is Sunday
+        const d = new Date(2024, 0, 7 + day);
+        const label = formatter.format(d);
+
+        const chip = createEl('button');
+        chip.className = 'filter-chip' + (businessDays.includes(day) ? ' active' : '');
+        if (day === 0) chip.classList.add('sunday');
+        if (day === 6) chip.classList.add('saturday');
+        chip.textContent = label;
+
+        chip.onclick = async () => {
+            let newDays = [...businessDays];
+            if (newDays.includes(day)) {
+                if (newDays.length > 1) {
+                    newDays = newDays.filter(d => d !== day);
+                }
+            } else {
+                newDays.push(day);
+            }
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: newDays });
+            renderBusinessDays();
+            broadcastSync('alarms-updated');
+        };
+        container.appendChild(chip);
+    });
+}
 
 async function renderAlarmList() {
     const list = getEl(ID_ALARM_LIST);
@@ -2056,7 +2102,10 @@ function setupEventListeners() {
             btn.classList.add('active');
             const target = getEl(`${btn.dataset.tab}-tab`);
             if (target) target.classList.remove('hidden');
-            if (btn.dataset.tab === 'alarms') renderAlarmList();
+            if (btn.dataset.tab === 'alarms') {
+                renderBusinessDays();
+                renderAlarmList();
+            }
             if (btn.dataset.tab === 'categories') renderCategoryEditor();
             if (btn.dataset.tab === 'backup') updateBackupUI();
             if (btn.dataset.tab === 'about') updateAboutStats();
@@ -2093,6 +2142,15 @@ function setupEventListeners() {
         e.preventDefault();
         const lang = getLanguage();
         const url = new URL(CATEGORY_EDITOR_URL);
+        url.searchParams.set('lang', lang);
+        url.searchParams.set('from', 'app');
+        window.open(url.toString(), '_blank', 'noopener');
+    });
+
+    getEl('alarm-editor-link')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const lang = getLanguage();
+        const url = new URL(ALARM_EDITOR_URL);
         url.searchParams.set('lang', lang);
         url.searchParams.set('from', 'app');
         window.open(url.toString(), '_blank', 'noopener');
@@ -2224,6 +2282,60 @@ function setupEventListeners() {
         renderCategories();
         renderCategoryEditor();
         broadcastSync();
+    });
+
+    // Alarm Import/Export
+    getEl('export-alarms-btn')?.addEventListener('click', async () => {
+        const state = await getCurrentAppState();
+        const alarms = state.alarms;
+        const businessDays = state.businessDays;
+
+        const exportData = {
+            app: 'QuickLog-Solo',
+            kind: 'QuickLogSolo/Alarms',
+            version: '1.0',
+            businessDays,
+            alarms: alarms.map(a => {
+                const { id, ...rest } = a;
+                return rest;
+            })
+        };
+
+        try {
+            await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
+            showToast(t('toast-export-success'));
+        } catch (err) {
+            console.error('Failed to copy alarms:', err);
+        }
+    });
+
+    getEl('import-alarms-btn')?.addEventListener('click', async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (!text) return;
+            const data = JSON.parse(text);
+
+            if (data.kind !== 'QuickLogSolo/Alarms' || data.version !== '1.0') {
+                throw new Error('Invalid format');
+            }
+
+            if (await showConfirm(t('confirm-import-overwrite'))) {
+                if (data.businessDays) {
+                    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: data.businessDays });
+                }
+                if (Array.isArray(data.alarms)) {
+                    await dbClear(STORE_ALARMS);
+                    await dbAddMultiple(STORE_ALARMS, data.alarms);
+                }
+                showToast(t('toast-done'));
+                renderBusinessDays();
+                renderAlarmList();
+                broadcastSync('alarms-updated');
+            }
+        } catch (err) {
+            console.error('Failed to import alarms:', err);
+            alert(t('alert-import-error'));
+        }
     });
 
     // Category Import/Export (Clipboard)

@@ -480,6 +480,103 @@ export async function updateHistoryStartTime(logId, newTs) {
  * Deletes a history log item and updates the next item's start time to maintain continuity.
  * @param {number} logId
  */
+/**
+ * Calculates the next execution time for an alarm.
+ * @param {Object} alarm
+ * @param {number[]} businessDays - [0, 1, ..., 6]
+ * @param {number} nowTs - Current timestamp
+ * @returns {number|null} Next execution timestamp or null
+ */
+export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) {
+    if (!alarm.enabled || !alarm.time) return null;
+
+    const [hours, minutes] = alarm.time.split(':').map(Number);
+    const now = new Date(nowTs);
+
+    const isWorkingDay = (d) => businessDays.includes(d.getDay());
+
+    const adjustDate = (date) => {
+        if (isWorkingDay(date) || alarm.holidayAdjustment === 'none') {
+            return date;
+        }
+
+        if (alarm.holidayAdjustment === 'skip') {
+            return null;
+        }
+
+        let d = new Date(date);
+        if (alarm.holidayAdjustment === 'prev_business_day') {
+            // Guard: type3 (monthly_date) with day 1 cannot go back
+            if (alarm.type === 'monthly_date' && alarm.dayOfMonth === 1 && d.getDate() === 1) {
+                // Should have been prevented by UI, but for safety:
+                return d;
+            }
+            for (let i = 0; i < 7; i++) {
+                d.setDate(d.getDate() - 1);
+                if (isWorkingDay(d)) return d;
+            }
+        } else if (alarm.holidayAdjustment === 'next_business_day') {
+            // Guard: type4 (monthly_end_relative) cannot go forward
+            // Requirement says UI should prevent it.
+            for (let i = 0; i < 7; i++) {
+                d.setDate(d.getDate() + 1);
+                if (isWorkingDay(d)) return d;
+            }
+        }
+        return d;
+    };
+
+    // Candidate search
+    if (alarm.type === 'daily_business' || alarm.type === 'weekly') {
+        let current = new Date(nowTs);
+        current.setHours(hours, minutes, 0, 0);
+
+        // Try next 400 days
+        for (let i = 0; i < 400; i++) {
+            let matchesType = false;
+            if (alarm.type === 'daily_business') {
+                matchesType = true;
+            } else if (alarm.type === 'weekly') {
+                matchesType = alarm.daysOfWeek.includes(current.getDay());
+            }
+
+            if (matchesType) {
+                const adjusted = adjustDate(current);
+                if (adjusted && adjusted.getTime() > nowTs) {
+                    return adjusted.getTime();
+                }
+            }
+            current.setDate(current.getDate() + 1);
+        }
+    } else if (alarm.type === 'monthly_date' || alarm.type === 'monthly_end_relative') {
+        let candidateMonth = new Date(nowTs);
+        candidateMonth.setDate(1); // Avoid overflow when moving months
+
+        // Try next 24 months
+        for (let i = 0; i < 24; i++) {
+            const year = candidateMonth.getFullYear();
+            const month = candidateMonth.getMonth();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+
+            let day;
+            if (alarm.type === 'monthly_date') {
+                day = Math.min(alarm.dayOfMonth, lastDay);
+            } else {
+                day = Math.max(1, lastDay - alarm.daysBeforeEnd);
+            }
+
+            let candidate = new Date(year, month, day, hours, minutes, 0, 0);
+            const adjusted = adjustDate(candidate);
+            if (adjusted && adjusted.getTime() > nowTs) {
+                return adjusted.getTime();
+            }
+            candidateMonth.setMonth(candidateMonth.getMonth() + 1);
+        }
+    }
+
+    return null;
+}
+
 export async function deleteHistoryItem(logId) {
     const allLogs = await dbGetAll(STORE_LOGS);
     const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
