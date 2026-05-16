@@ -97,7 +97,7 @@ export function validateSettingsSchema(data) {
     if (data.app !== 'QuickLog-Solo' || data.kind !== SCHEMA_KIND_SETTINGS || data.version !== SCHEMA_VERSION_1_0) return false;
     if (!Array.isArray(data.entries)) return false;
 
-    const allowedKeys = ['theme', 'font', 'defaultAnimation', 'language', 'reportSettings', 'alarms'];
+    const allowedKeys = ['theme', 'font', 'defaultAnimation', 'language', 'reportSettings', 'businessDays', 'alarms'];
 
     for (const entry of data.entries) {
         if (!entry || typeof entry !== 'object' || !allowedKeys.includes(entry.key)) return false;
@@ -131,11 +131,22 @@ export function validateSettingsSchema(data) {
                 if (!['none', '5', '10', '15', '30', '60'].includes(val.adjust)) return false;
                 break;
             }
+            case 'businessDays': {
+                if (!Array.isArray(val)) return false;
+                if (val.length === 0 || val.length > 7) return false;
+                for (const d of val) {
+                    if (![0, 1, 2, 3, 4, 5, 6].includes(d)) return false;
+                }
+                break;
+            }
             case 'alarms': {
                 if (!Array.isArray(val)) return false;
                 for (const alarm of val) {
                     if (typeof alarm !== 'object' || alarm === null) return false;
-                    const required = ['enabled', 'time', 'message', 'action', 'actionCategory', 'requireConfirmation'];
+                    const required = [
+                        'enabled', 'time', 'message', 'action', 'actionCategory', 'requireConfirmation',
+                        'type', 'daysOfWeek', 'dayOfMonth', 'daysBeforeEnd', 'holidayAdjustment'
+                    ];
                     for (const k of required) {
                         if (alarm[k] === undefined) return false;
                     }
@@ -145,6 +156,15 @@ export function validateSettingsSchema(data) {
                     if (!['none', 'stop', 'pause', 'start'].includes(alarm.action)) return false;
                     if (typeof alarm.actionCategory !== 'string' || alarm.actionCategory.length > 100) return false;
                     if (typeof alarm.requireConfirmation !== 'boolean') return false;
+
+                    if (!['daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'].includes(alarm.type)) return false;
+                    if (!Array.isArray(alarm.daysOfWeek)) return false;
+                    for (const d of alarm.daysOfWeek) {
+                        if (![0, 1, 2, 3, 4, 5, 6].includes(d)) return false;
+                    }
+                    if (typeof alarm.dayOfMonth !== 'number' || alarm.dayOfMonth < 1 || alarm.dayOfMonth > 31) return false;
+                    if (typeof alarm.daysBeforeEnd !== 'number' || alarm.daysBeforeEnd < 0 || alarm.daysBeforeEnd > 31) return false;
+                    if (!['none', 'prev_business_day', 'next_business_day', 'skip'].includes(alarm.holidayAdjustment)) return false;
                 }
                 break;
             }

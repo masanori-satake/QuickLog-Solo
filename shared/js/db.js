@@ -29,6 +29,7 @@ export const SETTING_KEY_ANIMATION = 'animation';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 export const SETTING_KEY_LANGUAGE = 'language';
 export const SETTING_KEY_REPORT_SETTINGS = 'reportSettings';
+export const SETTING_KEY_BUSINESS_DAYS = 'businessDays';
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 export const SETTING_KEY_BACKUP_DIR_HANDLE = 'backupDirectoryHandle';
 
@@ -331,6 +332,7 @@ export async function getCurrentAppState() {
     const animation = await dbGet(STORE_SETTINGS, SETTING_KEY_ANIMATION);
     const language = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
     const reportSettings = await dbGet(STORE_SETTINGS, SETTING_KEY_REPORT_SETTINGS);
+    const businessDays = await dbGet(STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS);
     const categories = await dbGetAll(STORE_CATEGORIES);
     const alarms = await dbGetAll(STORE_ALARMS);
 
@@ -349,6 +351,7 @@ export async function getCurrentAppState() {
         animation: animation ? animation.value : 'digital_rain',
         language: language ? language.value : 'auto',
         reportSettings: reportSettings ? reportSettings.value : null,
+        businessDays: businessDays ? businessDays.value : [1, 2, 3, 4, 5],
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
         alarms: alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
         activeTask
@@ -459,18 +462,40 @@ async function setupInitialData(languageSetting) {
     let existingAlarms = await dbGetAll(STORE_ALARMS);
     if (existingAlarms.length === 0) {
         const defaultAlarms = [];
-        for (let i = 0; i < 5; i++) {
-            const isLast = i === 4;
+        for (let i = 0; i < 10; i++) {
+            const isLast = i === 9;
             defaultAlarms.push({
                 enabled: isLast,
                 time: isLast ? "23:59" : "09:00",
                 message: isLast ? t('alarm-action-stop') : "",
                 action: isLast ? "stop" : "none", // none, stop, pause, start
                 actionCategory: "",
-                requireConfirmation: false
+                requireConfirmation: false,
+                type: 'daily_business',
+                daysOfWeek: [1, 2, 3, 4, 5],
+                dayOfMonth: 1,
+                daysBeforeEnd: 0,
+                holidayAdjustment: 'none'
             });
         }
         await dbAddMultiple(STORE_ALARMS, defaultAlarms);
+    } else {
+        // Migration: Add type and scheduling fields to existing alarms if missing
+        let migratedCount = 0;
+        for (const alarm of existingAlarms) {
+            if (alarm.type === undefined) {
+                alarm.type = 'daily_business';
+                alarm.daysOfWeek = alarm.daysOfWeek || [1, 2, 3, 4, 5];
+                alarm.dayOfMonth = alarm.dayOfMonth || 1;
+                alarm.daysBeforeEnd = alarm.daysBeforeEnd || 0;
+                alarm.holidayAdjustment = alarm.holidayAdjustment || 'none';
+                await dbPut(STORE_ALARMS, alarm);
+                migratedCount++;
+            }
+        }
+        if (migratedCount > 0) {
+            console.log(`QuickLog-Solo: Migrated ${migratedCount} alarms to advanced schedule format.`);
+        }
     }
 
     // Generate dummy history if no logs exist

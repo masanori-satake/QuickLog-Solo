@@ -202,7 +202,7 @@ describe('DB Module', () => {
     test('initDB sets up default alarms with messages', async () => {
         await initDB();
         const alarms = await dbGetAll(STORE_ALARMS);
-        expect(alarms.length).toBe(5);
+        expect(alarms.length).toBe(10);
 
         const alarm2359 = alarms.find(a => a.time === '23:59');
         expect(alarm2359).toBeDefined();
@@ -212,6 +212,28 @@ describe('DB Module', () => {
         const alarm0900 = alarms.find(a => a.time === '09:00');
         expect(alarm0900).toBeDefined();
         expect(alarm0900.message).toBe('');
+    });
+
+    test('initDB migrates old alarms to advanced format', async () => {
+        await openDatabase();
+        // Create an old-format alarm (missing type etc.)
+        await dbAdd(STORE_ALARMS, {
+            enabled: true,
+            time: "10:00",
+            message: "Old Alarm",
+            action: "none"
+        });
+        closeDatabase();
+
+        await initDB();
+
+        const alarms = await dbGetAll(STORE_ALARMS);
+        const alarm = alarms.find(a => a.message === "Old Alarm");
+        expect(alarm.type).toBe('daily_business');
+        expect(alarm.daysOfWeek).toEqual([1, 2, 3, 4, 5]);
+        expect(alarm.dayOfMonth).toBe(1);
+        expect(alarm.daysBeforeEnd).toBe(0);
+        expect(alarm.holidayAdjustment).toBe('none');
     });
 
     test('dbAddMultiple handles empty items', async () => {

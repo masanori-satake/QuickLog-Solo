@@ -48,7 +48,8 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
 jest.unstable_mockModule('../shared/js/logic.js', () => ({
     stopTaskLogic: jest.fn(),
     pauseTaskLogic: jest.fn(),
-    startTaskLogic: jest.fn()
+    startTaskLogic: jest.fn(),
+    calculateNextAlarmTime: jest.fn()
 }));
 
 jest.unstable_mockModule('../shared/js/i18n.js', () => ({
