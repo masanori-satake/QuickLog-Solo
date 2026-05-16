@@ -65,7 +65,6 @@ export default {
     'label-before-end-2': 'jours avant la fin (0 est le dernier jour)',
     'back-to-app': 'Retour à l\'application',
     'alarm-setting-description': 'Affiche un message à une heure précise et effectue automatiquement des actions telles que « Terminer », « Suspendre » ou « Démarrer » si nécessaire.',
-    'alarm-setting-description': 'Affiche un message à une heure précise et effectue automatiquement des actions telles que « Arrêter », « Pause » ou « Démarrer » les tâches si nécessaire.',
     'alarm-note-extension-only': '* La fonction d\'alarme ne fonctionne que lorsqu\'elle est installée en tant qu\'extension de navigateur. Les notifications et les actions automatiques ne sont pas exécutées dans la version d\'aperçu.',
     'alarm-label-enabled': 'Activé',
     'alarm-label-time': 'Heure',

@@ -65,7 +65,6 @@ export default {
     'label-before-end-2': 'días antes del final (0 es el último día)',
     'back-to-app': 'Volver a la aplicación',
     'alarm-setting-description': 'Muestra un mensaje a una hora específica y, si es necesario, realiza acciones automáticas como «Finalizar», «Pausar» o «Iniciar».',
-    'alarm-setting-description': 'Muestra un mensaje a una hora especificada y realiza automáticamente acciones como "Detener", "Pausar" o "Iniciar" tareas según sea necesario.',
     'alarm-note-extension-only': '* La función de alarma solo funciona cuando está instalada como una extensión de navegador. Las notificaciones y acciones automáticas no se ejecutan en la versión de vista previa.',
     'alarm-label-enabled': 'Activado',
     'alarm-label-time': 'Hora',

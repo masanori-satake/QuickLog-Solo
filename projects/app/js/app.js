@@ -1362,7 +1362,6 @@ async function renderBusinessDays() {
     // 0: Sun, 1: Mon, ..., 6: Sat
     // To display Mon-Sun, use [1, 2, 3, 4, 5, 6, 0]
     [1, 2, 3, 4, 5, 6, 0].forEach(day => {
-        const date = new Date(2024, 0, day + 7); // Jan 2024, 7th is Sunday, 8th is Monday... Wait.
         // Let's use a known date: 2024-01-07 is Sunday
         const d = new Date(2024, 0, 7 + day);
         const label = formatter.format(d);
@@ -2296,7 +2295,8 @@ function setupEventListeners() {
             version: '1.0',
             businessDays,
             alarms: alarms.map(a => {
-                const { id, ...rest } = a;
+                const rest = { ...a };
+                delete rest.id;
                 return rest;
             })
         };

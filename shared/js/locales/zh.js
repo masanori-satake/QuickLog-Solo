@@ -65,7 +65,6 @@ export default {
     'label-before-end-2': '天 (0为月末当天)',
     'back-to-app': '返回应用',
     'alarm-setting-description': '在指定时间显示消息，并根据需要自动执行“结束”、“暂停”或“开始”操作。',
-    'alarm-setting-description': '在指定时间显示消息，并根据需要自动执行“结束”、“暂停”或“开始”任务。',
     'alarm-note-extension-only': '* 闹钟功能仅在作为浏览器扩展程序安装时有效。预览版中不会执行通知和自动操作。',
     'alarm-label-enabled': '启用',
     'alarm-label-time': '时间',

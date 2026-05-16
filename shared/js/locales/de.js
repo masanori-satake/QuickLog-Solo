@@ -65,7 +65,6 @@ export default {
     'label-before-end-2': 'Tage vor Ende (0 ist der letzte Tag)',
     'back-to-app': 'Zurück zur App',
     'alarm-setting-description': 'Zeigt zu einer bestimmten Zeit eine Nachricht an und führt bei Bedarf automatisch Aktionen wie „Beenden“, „Pause“ oder „Start“ aus.',
-    'alarm-setting-description': 'Zeigt zu einer bestimmten Zeit eine Nachricht an und führt bei Bedarf automatisch Aktionen wie „Beenden“, „Pause“ oder „Start“ aus.',
     'alarm-note-extension-only': '* Die Alarmfunktion funktioniert nur, wenn sie als Browser-Erweiterung installiert ist. Benachrichtigungen und automatische Aktionen werden in der Vorschauversion nicht ausgeführt.',
     'alarm-label-enabled': 'Aktiviert',
     'alarm-label-time': 'Zeit',

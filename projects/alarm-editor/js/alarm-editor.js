@@ -1,5 +1,5 @@
 import {
-    initDB, getCurrentAppState, dbPut, dbClear, dbAddMultiple, dbGetAll, STORE_CATEGORIES, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS, SETTING_KEY_LANGUAGE
+    initDB, getCurrentAppState, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS
 } from '../shared/js/db.js';
 import { t, setLanguage, applyLanguage } from '../shared/js/i18n.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
@@ -304,7 +304,11 @@ function setupEventListeners() {
             kind: 'QuickLogSolo/Alarms',
             version: '1.0',
             businessDays: state.businessDays,
-            alarms: alarms.map(({id, ...rest}) => rest)
+            alarms: alarms.map(a => {
+                const rest = { ...a };
+                delete rest.id;
+                return rest;
+            })
         };
         await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
         showToast(t('toast-export-success'));
@@ -326,6 +330,7 @@ function setupEventListeners() {
                 location.reload();
             }
         } catch (e) {
+            console.error(e);
             alert(t('alert-import-error'));
         }
     };

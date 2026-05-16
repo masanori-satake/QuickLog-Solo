@@ -65,7 +65,6 @@ export default {
     'label-before-end-2': '일 전 (0은 말일)',
     'back-to-app': '앱으로 돌아가기',
     'alarm-setting-description': '지정된 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 "종료", "일시 중지" 또는 "시작"합니다.',
-    'alarm-setting-description': '지정한 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 「종료」, 「일시 중지」, 「시작」합니다.',
     'alarm-note-extension-only': '* 알람 기능은 브라우저 확장 프로그램으로 설치된 경우에만 작동합니다. 미리보기 버전에서는 알림 및 자동 동작이 실행되지 않습니다.',
     'alarm-label-enabled': '활성화됨',
     'alarm-label-time': '시간',

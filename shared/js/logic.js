@@ -491,7 +491,6 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
     if (!alarm.enabled || !alarm.time) return null;
 
     const [hours, minutes] = alarm.time.split(':').map(Number);
-    const now = new Date(nowTs);
 
     const isWorkingDay = (d) => businessDays.includes(d.getDay());
 
