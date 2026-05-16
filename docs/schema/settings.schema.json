@@ -42,6 +42,7 @@
               "defaultAnimation",
               "language",
               "reportSettings",
+                "businessDays",
               "alarms"
             ],
             "description": "The unique key for the setting."
@@ -109,6 +110,20 @@
             }
           },
           {
+            "if": { "properties": { "key": { "const": "businessDays" } } },
+            "then": {
+              "properties": {
+                "value": {
+                  "type": "array",
+                  "items": { "type": "integer", "minimum": 0, "maximum": 6 },
+                  "minItems": 1,
+                  "maxItems": 7,
+                  "uniqueItems": true
+                }
+              }
+            }
+          },
+          {
             "if": { "properties": { "key": { "const": "alarms" } } },
             "then": {
               "properties": {
@@ -116,7 +131,10 @@
                   "type": "array",
                   "items": {
                     "type": "object",
-                    "required": ["enabled", "time", "message", "action", "actionCategory", "requireConfirmation"],
+                    "required": [
+                      "enabled", "time", "message", "action", "actionCategory", "requireConfirmation",
+                      "type", "daysOfWeek", "dayOfMonth", "daysBeforeEnd", "holidayAdjustment"
+                    ],
                     "additionalProperties": false,
                     "properties": {
                       "id": { "type": "integer" },
@@ -125,7 +143,16 @@
                       "message": { "type": "string", "maxLength": 200 },
                       "action": { "type": "string", "enum": ["none", "stop", "pause", "start"] },
                       "actionCategory": { "type": "string", "maxLength": 100 },
-                      "requireConfirmation": { "type": "boolean" }
+                      "requireConfirmation": { "type": "boolean" },
+                      "type": { "type": "string", "enum": ["daily_business", "weekly", "monthly_date", "monthly_end_relative"] },
+                      "daysOfWeek": {
+                        "type": "array",
+                        "items": { "type": "integer", "minimum": 0, "maximum": 6 },
+                        "uniqueItems": true
+                      },
+                      "dayOfMonth": { "type": "integer", "minimum": 1, "maximum": 31 },
+                      "daysBeforeEnd": { "type": "integer", "minimum": 0, "maximum": 31 },
+                      "holidayAdjustment": { "type": "string", "enum": ["none", "prev_business_day", "next_business_day", "skip"] }
                     }
                   }
                 }

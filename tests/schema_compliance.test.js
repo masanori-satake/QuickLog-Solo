@@ -281,7 +281,12 @@ describe('Schema Compliance Tests', () => {
                                 message: 'Good morning',
                                 action: 'start',
                                 actionCategory: 'Dev',
-                                requireConfirmation: true
+                                requireConfirmation: true,
+                                type: 'daily_business',
+                                daysOfWeek: [1, 2, 3, 4, 5],
+                                dayOfMonth: 1,
+                                daysBeforeEnd: 0,
+                                holidayAdjustment: 'none'
                             }
                         ]
                     }
@@ -318,7 +323,19 @@ describe('Schema Compliance Tests', () => {
         });
 
         test('should reject invalid alarm properties', () => {
-            const baseAlarm = { enabled: true, time: '09:00', message: 'Hi', action: 'none', actionCategory: '', requireConfirmation: false };
+            const baseAlarm = {
+                enabled: true,
+                time: '09:00',
+                message: 'Hi',
+                action: 'none',
+                actionCategory: '',
+                requireConfirmation: false,
+                type: 'daily_business',
+                daysOfWeek: [1, 2, 3, 4, 5],
+                dayOfMonth: 1,
+                daysBeforeEnd: 0,
+                holidayAdjustment: 'none'
+            };
             const base = { app: 'QuickLog-Solo', kind: 'QuickLogSolo/Settings', version: '1.0' };
 
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, enabled: 'yes' }] }] })).toBe(false);
