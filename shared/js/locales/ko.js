@@ -362,7 +362,6 @@ export default {
     'alarm-label-day-of-month': '날짜',
     'alarm-label-days-before-end': '월말부터의 일수',
     'alarm-label-confirmation': '확인 필요',
-    'alert-alarm-limit': '알람은 최대 10개까지입니다',
     'alert-business-days-min': '근무 요일은 적어도 하나를 선택해야 합니다',
     'alarm-editor-select-prompt': '왼쪽에서 알람을 선택하십시오.',
     'alarm-label-default-name': 'Alarm #{index}',
@@ -370,5 +369,4 @@ export default {
     'alarm-section-basic': '기본 설정',
     'alarm-section-action': '동작 설정',
     'alarm-section-schedule': '스케줄 설정',
-    'alarm-btn-add': '새 알람 추가',
 };

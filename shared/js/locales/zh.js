@@ -362,7 +362,6 @@ export default {
     'alarm-label-day-of-month': '日期',
     'alarm-label-days-before-end': '距离月末天数',
     'alarm-label-confirmation': '需要确认',
-    'alert-alarm-limit': '闹钟最多允许10个',
     'alert-business-days-min': '请至少选择一个工作日',
     'alarm-editor-select-prompt': '请从左侧选择一个闹钟。',
     'alarm-label-default-name': 'Alarm #{index}',
@@ -370,5 +369,4 @@ export default {
     'alarm-section-basic': '基本设置',
     'alarm-section-action': '操作设置',
     'alarm-section-schedule': '计划设置',
-    'alarm-btn-add': '添加新闹钟',
 };

@@ -67,7 +67,6 @@ export default {
     'alarm-placeholder-message': 'メッセージを入力...',
     'alarm-tooltip-confirmation': '了解ボタンが押されるまで通知を維持し、了解後にアクションを実行します',
     'toast-alarm-saved': 'アラームを保存しました',
-    'alert-alarm-limit': 'アラームは最大10個までです',
     'alert-business-days-min': '稼働曜日は少なくとも1つ選択してください',
     'alarm-editor-select-prompt': '左側からアラームを選択してください。',
     'alarm-label-default-name': 'アラーム #{index}',
@@ -75,7 +74,6 @@ export default {
     'alarm-section-basic': '基本設定',
     'alarm-section-action': 'アクション設定',
     'alarm-section-schedule': 'スケジュール設定',
-    'alarm-btn-add': '新規アラーム追加',
     'btn-test-notification': '通知のテストを実行する',
     'test-notification-message': 'これは通知テストです。正常に表示されています。',
 

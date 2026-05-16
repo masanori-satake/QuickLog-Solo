@@ -145,7 +145,7 @@ select:focus {
     border-radius: 50%;
 }
 
-/* Theme Switch specific adjustments */
+/* Specific theme-switch overrides (placed before high-specificity checked states) */
 .theme-switch {
     width: 44px;
     height: 24px;
@@ -163,7 +163,7 @@ select:focus {
     width: 16px;
 }
 
-/* Switch checked states */
+/* Switch checked states (higher specificity) */
 .switch input:checked + .slider {
     background-color: var(--md-sys-color-primary);
 }

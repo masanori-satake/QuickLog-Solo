@@ -67,7 +67,6 @@ export default {
     'alarm-placeholder-message': 'Enter message...',
     'alarm-tooltip-confirmation': 'Keep notification until OK is clicked, then execute the action',
     'toast-alarm-saved': 'Alarm saved',
-    'alert-alarm-limit': 'Maximum 10 alarms allowed',
     'alert-business-days-min': 'Select at least one business day',
     'alarm-editor-select-prompt': 'Please select an alarm from the left.',
     'alarm-label-default-name': 'Alarm #{index}',
@@ -75,7 +74,6 @@ export default {
     'alarm-section-basic': 'Basic Settings',
     'alarm-section-action': 'Action Settings',
     'alarm-section-schedule': 'Schedule Settings',
-    'alarm-btn-add': 'Add New Alarm',
     'btn-test-notification': 'Test Notification',
     'test-notification-message': 'This is a notification test. It is working correctly.',
 

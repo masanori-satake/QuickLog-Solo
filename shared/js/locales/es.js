@@ -362,7 +362,6 @@ export default {
     'alarm-label-day-of-month': 'Día del Mes',
     'alarm-label-days-before-end': 'Días antes del fin',
     'alarm-label-confirmation': 'Requiere Confirmación',
-    'alert-alarm-limit': 'Máximo 10 alarmas permitidas',
     'alert-business-days-min': 'Seleccione al menos un día laborable',
     'alarm-editor-select-prompt': 'Por favor, seleccione una alarma de la izquierda.',
     'alarm-label-default-name': 'Alarm #{index}',
@@ -370,5 +369,4 @@ export default {
     'alarm-section-basic': 'Ajustes Básicos',
     'alarm-section-action': 'Ajustes de Acción',
     'alarm-section-schedule': 'Ajustes de Horario',
-    'alarm-btn-add': 'Agregar Nueva Alarma',
 };
