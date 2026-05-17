@@ -1,4 +1,4 @@
-import { t, applyLanguage } from '../shared/js/i18n.js';
+import { t } from '../shared/js/i18n.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 
 export function initUI(state, elements) {
