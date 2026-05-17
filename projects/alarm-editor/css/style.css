@@ -410,16 +410,21 @@ select:focus {
     height: var(--footer-height);
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     background-color: var(--md-sys-color-surface-container);
     border-top: 1px solid var(--md-sys-color-outline-variant);
     padding: 0 24px;
 }
 
+.footer-left,
 .footer-right {
     display: flex;
     gap: 12px;
     align-items: center;
+}
+
+.danger-text {
+    color: var(--md-sys-color-error) !important;
 }
 
 /* Modal and Utility */

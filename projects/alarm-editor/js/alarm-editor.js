@@ -41,14 +41,12 @@ const elements = {
     undoBtn: document.getElementById('undo-btn'),
     redoBtn: document.getElementById('redo-btn'),
     themeToggle: document.getElementById('theme-toggle'),
-    langSelect: document.getElementById('lang-select-editor')
+    langSelect: document.getElementById('lang-select-editor'),
+    resetBtn: document.getElementById('reset-btn')
 };
 
 async function init() {
     setDatabaseName('QuickLogSoloAlarmEditorDB');
-    await dbClear(STORE_ALARMS);
-    await dbClear(STORE_SETTINGS);
-    await dbClear(STORE_CATEGORIES);
 
     await initData(state);
 
@@ -151,6 +149,16 @@ async function init() {
         state.language = e.target.value;
         state.onLanguageChange(state.language);
     });
+
+    // Reset button
+    elements.resetBtn.onclick = async () => {
+        if (await showConfirm(t('confirm-reset-all'))) {
+            await dbClear(STORE_ALARMS);
+            await dbClear(STORE_SETTINGS);
+            await dbClear(STORE_CATEGORIES);
+            location.reload();
+        }
+    };
 
     // Export/Import buttons
     elements.exportBtn.onclick = async () => {
