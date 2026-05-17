@@ -135,7 +135,7 @@ export default {
     'btn-clear-logs': 'Delete All Logs',
     'maintenance-reset-all': 'Reset Settings & Categories',
     'maintenance-reset-all-desc': 'Logs will be preserved.',
-    'btn-reset-all': 'Reset Categories & Settings',
+    'btn-reset-all': '全てリセット',
     'btn-reset': 'リセット',
     'maintenance-reset-settings': 'Reset Settings Only',
     'maintenance-reset-settings-desc': 'Logs and categories will be preserved.',
