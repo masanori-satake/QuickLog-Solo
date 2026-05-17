@@ -467,7 +467,7 @@ async function setupInitialData(languageSetting) {
             defaultAlarms.push({
                 enabled: isLast,
                 time: isLast ? "23:59" : "09:00",
-                message: isLast ? t('alarm-action-stop') : "",
+                message: isLast ? "Stop Task" : "",
                 action: isLast ? "stop" : "none", // none, stop, pause, start
                 actionCategory: "",
                 requireConfirmation: false,

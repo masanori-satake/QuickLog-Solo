@@ -247,6 +247,7 @@ export function initUI(state, elements) {
             if ((alarm.type === 'daily' || alarm.type === 'daily_business') && alarm.holidayAdjustment !== 'none') {
                 alarm.holidayAdjustment = 'none';
             }
+            renderAlarmList();
             renderDetail();
             if (state.onAlarmChange) state.onAlarmChange(alarm);
         }
