@@ -127,10 +127,13 @@ export function initUI(state, elements) {
     }
 
     function handleDrop(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
         if (e.stopPropagation) {
             e.stopPropagation();
         }
-        if (dragSrcEl !== this) {
+        if (dragSrcEl && dragSrcEl !== this) {
             const fromIndex = parseInt(dragSrcEl.dataset.index);
             const toIndex = parseInt(this.dataset.index);
             if (state.onReorder) state.onReorder(fromIndex, toIndex);
