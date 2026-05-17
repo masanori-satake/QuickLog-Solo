@@ -145,22 +145,22 @@ select:focus {
     border-radius: 50%;
 }
 
-/* Specific theme-switch overrides (placed before high-specificity checked states) */
-.theme-switch {
-    width: 44px !important;
-    height: 24px !important;
+/* Specific theme-switch overrides (avoiding !important by using higher specificity) */
+.switch.theme-switch {
+    width: 44px;
+    height: 24px;
 }
 
 .theme-switch .slider {
     border-radius: 34px;
 }
 
-.theme-switch .slider::before {
+.switch.theme-switch .slider::before {
     background-color: var(--md-sys-color-surface-container-highest);
-    bottom: 4px !important;
-    height: 16px !important;
-    left: 4px !important;
-    width: 16px !important;
+    bottom: 4px;
+    height: 16px;
+    left: 4px;
+    width: 16px;
 }
 
 /* Switch checked states (higher specificity) */
