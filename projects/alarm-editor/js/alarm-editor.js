@@ -1,4 +1,4 @@
-import { setLanguage, getLanguage, applyLanguage, t, detectBrowserLanguage } from '../shared/js/i18n.js';
+import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
 import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
 import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
 import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, saveLanguage, exportAlarms, importAlarms } from './data-io.js';
@@ -83,16 +83,8 @@ async function init() {
     const urlParams = new URLSearchParams(window.location.search);
     const langParam = urlParams.get('lang');
 
-    if (langParam) {
-        state.language = langParam;
-    } else if (!state.language || state.language === 'auto') {
-        state.language = detectBrowserLanguage();
-    }
-
-    setLanguage(state.language);
-    const currentLang = getLanguage();
-    const supportedLangs = ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-    state.language = supportedLangs.includes(currentLang) ? currentLang : 'en';
+    setLanguage(langParam || state.language || 'auto');
+    state.language = getLanguage();
     elements.langSelect.value = state.language;
 
     // Persist normalized language
