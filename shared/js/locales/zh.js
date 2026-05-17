@@ -133,7 +133,7 @@ export default {
     'btn-clear-logs': '删除所有日志',
     'maintenance-reset-all': '重置设置与分类',
     'maintenance-reset-all-desc': '日志将被保留。',
-    'btn-reset-all': '重置分类与设置',
+    'btn-reset-all': '全てリセット',
     'btn-reset': 'リセット',
     'maintenance-reset-settings': '仅重置设置',
     'maintenance-reset-settings-desc': '日志与分类将被保留。',
