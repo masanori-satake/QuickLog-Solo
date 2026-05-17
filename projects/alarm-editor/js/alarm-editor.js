@@ -97,6 +97,32 @@ async function init() {
     const history = initHistory(state);
     const ui = initUI(state, elements);
 
+    let persistencePromise = Promise.resolve();
+
+    async function syncUI() {
+        ui.renderBusinessDays();
+        ui.renderAlarmList();
+        ui.renderDetail();
+        ui.updateHistoryButtons(history);
+        elements.langSelect.value = state.language;
+        elements.themeToggle.checked = (state.theme === 'dark');
+        document.body.className = `theme-${state.theme}`;
+        applyLanguage();
+
+        // Persist restored state with serialization to prevent race conditions during rapid Undo/Redo
+        persistencePromise = persistencePromise.then(async () => {
+            try {
+                await saveAllAlarms(state.alarms);
+                await saveBusinessDays(state.businessDays);
+            } catch (e) {
+                console.error('Failed to persist history change:', e);
+            }
+        });
+        await persistencePromise;
+    }
+
+    state.onHistoryChange = syncUI;
+
     state.recordAction = () => {
         history.record();
         ui.updateHistoryButtons(history);
@@ -219,7 +245,7 @@ async function init() {
 
     // Keyboard shortcuts for Undo/Redo
     window.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
             e.preventDefault();
             if (e.shiftKey) {
                 if (history.redo()) {
@@ -230,24 +256,13 @@ async function init() {
                     syncUI();
                 }
             }
-        } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
             e.preventDefault();
             if (history.redo()) {
                 syncUI();
             }
         }
     });
-
-    function syncUI() {
-        ui.renderBusinessDays();
-        ui.renderAlarmList();
-        ui.renderDetail();
-        ui.updateHistoryButtons(history);
-        elements.langSelect.value = state.language;
-        elements.themeToggle.checked = (state.theme === 'dark');
-        document.body.className = `theme-${state.theme}`;
-        applyLanguage();
-    }
 }
 
 function showConfirm(msg) {
