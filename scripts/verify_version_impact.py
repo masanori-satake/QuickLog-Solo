@@ -83,8 +83,10 @@ def check_impact():
     base_commit = get_base_commit()
     print(f"Comparing against base commit: {base_commit}")
 
-    # Only consider commits that touch app-related files
-    impactful_paths = ["projects/app/", "shared/"]
+    # Only consider commits that touch app-related files.
+    # We exclude shared/js/locales/ because localization changes do not require a version bump for the Chrome extension.
+    # projects/alarm-editor/ and other sub-projects are also implicitly excluded as they are not in projects/app/.
+    impactful_paths = ["projects/app/", "shared/", ":(exclude)shared/js/locales/"]
     commits = get_commits_since(base_commit, impactful_paths)
     required_bump = determine_required_bump(commits)
 

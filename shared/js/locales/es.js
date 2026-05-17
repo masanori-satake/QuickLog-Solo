@@ -117,6 +117,7 @@ export default {
     'maintenance-reset-all': 'Restablecer ajustes y categorías',
     'maintenance-reset-all-desc': 'Los registros se mantendrán.',
     'btn-reset-all': 'Restablecer categorías y ajustes',
+    'btn-reset': 'Restablecer',
     'maintenance-reset-settings': 'Solo restablecer ajustes',
     'maintenance-reset-settings-desc': 'Los registros y categorías se mantendrán.',
     'btn-reset-settings': 'Solo restablecer ajustes',

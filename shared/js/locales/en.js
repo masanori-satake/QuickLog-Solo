@@ -142,6 +142,7 @@ export default {
     'maintenance-reset-all': 'Reset Settings & Categories',
     'maintenance-reset-all-desc': 'Logs will be preserved.',
     'btn-reset-all': 'Reset Categories & Settings',
+    'btn-reset': 'Reset',
     'maintenance-reset-settings': 'Reset Settings Only',
     'maintenance-reset-settings-desc': 'Logs and categories will be preserved.',
     'btn-reset-settings': 'Reset Settings Only',
