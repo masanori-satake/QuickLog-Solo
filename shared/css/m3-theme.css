@@ -34,6 +34,14 @@
   --md-sys-color-inverse-surface: #313033;
   --md-sys-color-inverse-on-surface: #f4eff4;
 
+  /* --- Semantic Colors for Days (App specific) --- */
+  --app-color-sunday: #d32f2f;
+  --app-color-on-sunday: #fff;
+  --app-color-saturday: #1976d2;
+  --app-color-on-saturday: #fff;
+  --app-color-weekday-active: var(--md-sys-color-tertiary);
+  --app-color-on-weekday-active: var(--md-sys-color-on-tertiary);
+
   /* --- Fonts --- */
   --font-family: 'Roboto', 'Inter', 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
 

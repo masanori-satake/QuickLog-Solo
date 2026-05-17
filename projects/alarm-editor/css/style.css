@@ -145,8 +145,8 @@ select:focus {
     border-radius: 50%;
 }
 
-/* Specific theme-switch overrides (placed before high-specificity checked states) */
-.theme-switch {
+/* Specific theme-switch overrides (avoiding !important by using higher specificity) */
+.switch.theme-switch {
     width: 44px;
     height: 24px;
 }
@@ -155,7 +155,7 @@ select:focus {
     border-radius: 34px;
 }
 
-.theme-switch .slider::before {
+.switch.theme-switch .slider::before {
     background-color: var(--md-sys-color-surface-container-highest);
     bottom: 4px;
     height: 16px;
@@ -212,7 +212,7 @@ select:focus {
     display: flex;
     flex-direction: column;
     padding: 24px;
-    gap: 24px;
+    gap: 16px;
     overflow-y: auto;
     background-color: var(--md-sys-color-surface);
 }
@@ -222,6 +222,12 @@ select:focus {
     grid-template-columns: 1fr 1fr;
     gap: 24px;
     align-items: start;
+}
+
+.detail-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .divider {
@@ -268,26 +274,26 @@ select:focus {
 }
 
 .filter-chip.active {
-    background-color: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
+    background-color: var(--app-color-weekday-active);
+    color: var(--app-color-on-weekday-active);
 }
 
 .filter-chip.sunday:not(.active) {
-    color: var(--color-sunday);
+    color: var(--app-color-sunday);
 }
 
 .filter-chip.saturday:not(.active) {
-    color: var(--color-saturday);
+    color: var(--app-color-saturday);
 }
 
 .filter-chip.sunday.active {
-    background-color: var(--color-sunday);
-    color: var(--color-on-sunday);
+    background-color: var(--app-color-sunday) !important;
+    color: var(--app-color-on-sunday) !important;
 }
 
 .filter-chip.saturday.active {
-    background-color: var(--color-saturday);
-    color: var(--color-on-saturday);
+    background-color: var(--app-color-saturday) !important;
+    color: var(--app-color-on-saturday) !important;
 }
 
 /* Alarm List */

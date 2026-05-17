@@ -1631,8 +1631,8 @@ async function renderAlarmList() {
         rowCategory.className = 'alarm-row hidden';
         const catLabel = createEl('span');
         catLabel.className = 'alarm-label';
-        catLabel.setAttribute('data-i18n', 'alarm-label-category');
-        catLabel.textContent = t('alarm-label-category');
+        catLabel.setAttribute('data-i18n', 'alarm-label-action-category');
+        catLabel.textContent = t('alarm-label-action-category');
         const catSelect = createEl('select');
         catSelect.className = 'alarm-category';
         workCategories.forEach(c => {
