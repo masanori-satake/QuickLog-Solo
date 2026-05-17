@@ -135,7 +135,7 @@ export default {
     'btn-clear-logs': 'Supprimer tous les journaux',
     'maintenance-reset-all': 'Réinitialiser paramètres et catégories',
     'maintenance-reset-all-desc': 'Les journaux seront conservés.',
-    'btn-reset-all': 'Réinitialiser catégories et paramètres',
+    'btn-reset-all': '全てリセット',
     'btn-reset': 'リセット',
     'maintenance-reset-settings': 'Réinitialiser les paramètres uniquement',
     'maintenance-reset-settings-desc': 'Les journaux et catégories seront conservés.',
