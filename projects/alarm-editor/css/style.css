@@ -147,8 +147,8 @@ select:focus {
 
 /* Specific theme-switch overrides (placed before high-specificity checked states) */
 .theme-switch {
-    width: 44px;
-    height: 24px;
+    width: 44px !important;
+    height: 24px !important;
 }
 
 .theme-switch .slider {
@@ -157,10 +157,10 @@ select:focus {
 
 .theme-switch .slider::before {
     background-color: var(--md-sys-color-surface-container-highest);
-    bottom: 4px;
-    height: 16px;
-    left: 4px;
-    width: 16px;
+    bottom: 4px !important;
+    height: 16px !important;
+    left: 4px !important;
+    width: 16px !important;
 }
 
 /* Switch checked states (higher specificity) */
@@ -212,7 +212,7 @@ select:focus {
     display: flex;
     flex-direction: column;
     padding: 24px;
-    gap: 24px;
+    gap: 16px;
     overflow-y: auto;
     background-color: var(--md-sys-color-surface);
 }
@@ -222,6 +222,12 @@ select:focus {
     grid-template-columns: 1fr 1fr;
     gap: 24px;
     align-items: start;
+}
+
+.detail-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .divider {
@@ -268,8 +274,8 @@ select:focus {
 }
 
 .filter-chip.active {
-    background-color: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
+    background-color: var(--md-sys-color-tertiary);
+    color: var(--md-sys-color-on-tertiary);
 }
 
 .filter-chip.sunday:not(.active) {
@@ -281,13 +287,13 @@ select:focus {
 }
 
 .filter-chip.sunday.active {
-    background-color: var(--color-sunday);
-    color: var(--color-on-sunday);
+    background-color: var(--color-sunday) !important;
+    color: var(--color-on-sunday) !important;
 }
 
 .filter-chip.saturday.active {
-    background-color: var(--color-saturday);
-    color: var(--color-on-saturday);
+    background-color: var(--color-saturday) !important;
+    color: var(--color-on-saturday) !important;
 }
 
 /* Alarm List */

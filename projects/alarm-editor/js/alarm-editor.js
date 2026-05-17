@@ -69,7 +69,9 @@ async function init() {
 
     if (state.language) {
         setLanguage(state.language);
-        elements.langSelect.value = state.language;
+        // Map 'auto' or other values to supported select values
+        const supportedLangs = ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+        elements.langSelect.value = supportedLangs.includes(state.language) ? state.language : 'ja';
     }
     applyLanguage();
 
