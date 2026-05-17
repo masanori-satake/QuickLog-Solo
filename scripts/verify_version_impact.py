@@ -83,27 +83,10 @@ def check_impact():
     base_commit = get_base_commit()
     print(f"Comparing against base commit: {base_commit}")
 
-    # Check if there are any changes outside of locales or alarm-editor
-    # If all changes are in shared/js/locales/ or projects/alarm-editor/, no bump required.
-    try:
-        cmd_diff = ["git", "diff", f"{base_commit}..HEAD", "--name-only"]
-        res_diff = subprocess.run(cmd_diff, capture_output=True, text=True, check=True)
-        changed_files = res_diff.stdout.splitlines()
-
-        is_only_localized_or_editor = True
-        for f in changed_files:
-            if not (f.startswith("shared/js/locales/") or f.startswith("projects/alarm-editor/")):
-                is_only_localized_or_editor = False
-                break
-
-        if is_only_localized_or_editor and changed_files:
-            print("Changes are limited to localization or alarm-editor. Skipping version bump requirement.")
-            return True
-    except:
-        pass
-
-    # Only consider commits that touch app-related files
-    impactful_paths = ["projects/app/", "shared/"]
+    # Only consider commits that touch app-related files.
+    # We exclude shared/js/locales/ because localization changes do not require a version bump for the Chrome extension.
+    # projects/alarm-editor/ and other sub-projects are also implicitly excluded as they are not in projects/app/.
+    impactful_paths = ["projects/app/", "shared/", ":(exclude)shared/js/locales/"]
     commits = get_commits_since(base_commit, impactful_paths)
     required_bump = determine_required_bump(commits)
 
