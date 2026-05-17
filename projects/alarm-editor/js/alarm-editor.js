@@ -97,6 +97,8 @@ async function init() {
     const history = initHistory(state);
     const ui = initUI(state, elements);
 
+    let persistencePromise = Promise.resolve();
+
     async function syncUI() {
         ui.renderBusinessDays();
         ui.renderAlarmList();
@@ -107,9 +109,16 @@ async function init() {
         document.body.className = `theme-${state.theme}`;
         applyLanguage();
 
-        // Persist restored state
-        await saveAllAlarms(state.alarms);
-        await saveBusinessDays(state.businessDays);
+        // Persist restored state with serialization to prevent race conditions during rapid Undo/Redo
+        persistencePromise = persistencePromise.then(async () => {
+            try {
+                await saveAllAlarms(state.alarms);
+                await saveBusinessDays(state.businessDays);
+            } catch (e) {
+                console.error('Failed to persist history change:', e);
+            }
+        });
+        await persistencePromise;
     }
 
     state.onHistoryChange = syncUI;
