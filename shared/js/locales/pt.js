@@ -135,7 +135,7 @@ export default {
     'btn-clear-logs': 'Excluir todos os registros',
     'maintenance-reset-all': 'Redefinir ajustes e categorias',
     'maintenance-reset-all-desc': 'Os registros serão mantidos.',
-    'btn-reset-all': 'Redefinir categorias e ajustes',
+    'btn-reset-all': '全てリセット',
     'btn-reset': 'リセット',
     'maintenance-reset-settings': 'Redefinir apenas ajustes',
     'maintenance-reset-settings-desc': 'Registros e categorias serão mantidos.',
