@@ -9,7 +9,7 @@ export function initUI(state, elements) {
         typeSelect, weeklyContainer, monthlyDateContainer, monthlyEndContainer,
         weeklyChipsEl, dayOfMonthInput, daysBeforeEndInput,
         holidayAdjSelect, adjDescEl, businessDaysContainer,
-        undoBtn, redoBtn
+        undoBtn, redoBtn, alarmResetBtn
     } = elements;
 
     function renderBusinessDays() {
@@ -45,18 +45,14 @@ export function initUI(state, elements) {
 
     function renderAlarmList() {
         alarmListEl.replaceChildren();
-        // Ensure exactly 10 alarms
-        for (let i = 0; i < 10; i++) {
-            const alarm = state.alarms[i];
+
+        let unnamedCounter = 1;
+        state.alarms.forEach((alarm, i) => {
             const item = document.createElement('div');
             item.className = 'alarm-item';
-
-            if (!alarm) {
-                item.classList.add('empty');
-                item.textContent = t('alarm-label-not-initialized', { index: i + 1 });
-                alarmListEl.appendChild(item);
-                continue;
-            }
+            item.draggable = true;
+            item.dataset.id = alarm.id;
+            item.dataset.index = i;
 
             if (state.selectedAlarmId === alarm.id) {
                 item.classList.add('active');
@@ -72,30 +68,72 @@ export function initUI(state, elements) {
 
             const msg = document.createElement('span');
             msg.className = 'alarm-msg';
-            msg.textContent = alarm.message || t('alarm-label-default-name', { index: i + 1 });
+            let alarmName = alarm.message;
+            if (!alarmName) {
+                alarmName = t('alarm-label-default-name', { index: unnamedCounter });
+                unnamedCounter++;
+            }
+            msg.textContent = alarmName;
 
-            const toggle = document.createElement('input');
-            toggle.type = 'checkbox';
-            toggle.checked = alarm.enabled;
-            toggle.onclick = (e) => e.stopPropagation();
-            toggle.onchange = () => {
-                alarm.enabled = toggle.checked;
-                renderAlarmList();
-                if (state.onAlarmChange) state.onAlarmChange(alarm);
-            };
+            const statusIcon = document.createElement('span');
+            statusIcon.className = 'material-symbols-outlined alarm-status-icon';
+            statusIcon.textContent = 'notifications';
+            if (!alarm.enabled) {
+                statusIcon.classList.add('disabled');
+            }
 
             item.appendChild(time);
             item.appendChild(icon);
             item.appendChild(msg);
-            item.appendChild(toggle);
+            item.appendChild(statusIcon);
 
             item.onclick = () => {
                 state.selectedAlarmId = alarm.id;
                 renderAlarmList();
                 renderDetail();
             };
+
+            // Drag and Drop
+            item.ondragstart = handleDragStart;
+            item.ondragover = handleDragOver;
+            item.ondrop = handleDrop;
+            item.ondragend = handleDragEnd;
+
             alarmListEl.appendChild(item);
+        });
+    }
+
+    let dragSrcEl = null;
+
+    function handleDragStart(e) {
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.index);
+        this.classList.add('dragging');
+    }
+
+    function handleDragOver(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
         }
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+
+    function handleDrop(e) {
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+        if (dragSrcEl !== this) {
+            const fromIndex = parseInt(dragSrcEl.dataset.index);
+            const toIndex = parseInt(this.dataset.index);
+            if (state.onReorder) state.onReorder(fromIndex, toIndex);
+        }
+        return false;
+    }
+
+    function handleDragEnd() {
+        this.classList.remove('dragging');
     }
 
     function getAlarmTypeIcon(type) {
@@ -120,8 +158,17 @@ export function initUI(state, elements) {
         emptyStateEl.classList.add('hidden');
         detailFormEl.classList.remove('hidden');
 
-        const index = state.alarms.indexOf(alarm);
-        alarmIdEl.textContent = t('alarm-label-default-name', { index: index + 1 });
+        // Calculate dynamic name for the header
+        let unnamedCounter = 1;
+        let alarmName = '';
+        for (const a of state.alarms) {
+            if (a.id === alarm.id) {
+                alarmName = a.message || t('alarm-label-default-name', { index: unnamedCounter });
+                break;
+            }
+            if (!a.message) unnamedCounter++;
+        }
+        alarmIdEl.textContent = alarmName;
 
         enabledToggle.checked = alarm.enabled;
         timeInput.value = alarm.time;
@@ -193,6 +240,13 @@ export function initUI(state, elements) {
             alarm.enabled = enabledToggle.checked;
             renderAlarmList();
             if (state.onAlarmChange) state.onAlarmChange(alarm);
+        }
+    };
+
+    alarmResetBtn.onclick = () => {
+        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        if (alarm && state.onAlarmReset) {
+            state.onAlarmReset(alarm);
         }
     };
     timeInput.onchange = () => {

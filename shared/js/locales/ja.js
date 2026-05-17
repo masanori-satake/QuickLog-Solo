@@ -141,7 +141,7 @@ export default {
     'btn-clear-logs': 'ログをすべて削除',
     'maintenance-reset-all': '設定とカテゴリの初期化',
     'maintenance-reset-all-desc': 'ログは維持されます。',
-    'btn-reset-all': 'カテゴリ・設定を初期化',
+    'btn-reset-all': '全てリセット',
     'btn-reset': 'リセット',
     'maintenance-reset-settings': '設定のみの初期化',
     'maintenance-reset-settings-desc': 'ログとカテゴリは維持されます。',
