@@ -274,26 +274,26 @@ select:focus {
 }
 
 .filter-chip.active {
-    background-color: var(--md-sys-color-tertiary);
-    color: var(--md-sys-color-on-tertiary);
+    background-color: var(--app-color-weekday-active);
+    color: var(--app-color-on-weekday-active);
 }
 
 .filter-chip.sunday:not(.active) {
-    color: var(--color-sunday);
+    color: var(--app-color-sunday);
 }
 
 .filter-chip.saturday:not(.active) {
-    color: var(--color-saturday);
+    color: var(--app-color-saturday);
 }
 
 .filter-chip.sunday.active {
-    background-color: var(--color-sunday) !important;
-    color: var(--color-on-sunday) !important;
+    background-color: var(--app-color-sunday) !important;
+    color: var(--app-color-on-sunday) !important;
 }
 
 .filter-chip.saturday.active {
-    background-color: var(--color-saturday) !important;
-    color: var(--color-on-saturday) !important;
+    background-color: var(--app-color-saturday) !important;
+    color: var(--app-color-on-saturday) !important;
 }
 
 /* Alarm List */

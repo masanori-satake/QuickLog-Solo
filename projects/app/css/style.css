@@ -1645,21 +1645,21 @@ body.theme-dark button:active {
 }
 
 .filter-chip.active {
-    background-color: var(--md-sys-color-tertiary);
-    color: var(--md-sys-color-on-tertiary);
+    background-color: var(--app-color-weekday-active);
+    color: var(--app-color-on-weekday-active);
 }
 
-.filter-chip.sunday:not(.active) { color: var(--md-sys-color-error); }
-.filter-chip.saturday:not(.active) { color: var(--md-sys-color-primary); }
+.filter-chip.sunday:not(.active) { color: var(--app-color-sunday); }
+.filter-chip.saturday:not(.active) { color: var(--app-color-saturday); }
 
 .filter-chip.sunday.active {
-    background-color: var(--md-sys-color-error);
-    color: var(--md-sys-color-on-error);
+    background-color: var(--app-color-sunday);
+    color: var(--app-color-on-sunday);
 }
 
 .filter-chip.saturday.active {
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
+    background-color: var(--app-color-saturday);
+    color: var(--app-color-on-saturday);
 }
 
 .filter-chip.active:hover {
