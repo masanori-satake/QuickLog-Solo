@@ -4,6 +4,7 @@
 
 export const SYSTEM_CATEGORY_IDLE = '__IDLE__';
 export const SYSTEM_CATEGORY_PAGE_BREAK = '__PAGE_BREAK__';
+export const DEFAULT_ALARM_MESSAGE_STOP = 'Stop Task';
 export const CELL_SIZE = 6;
 export const CONTIGUITY_TOLERANCE_MS = 1000;
 

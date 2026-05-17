@@ -1,5 +1,5 @@
 import {
-    initDB, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS
+    initDB, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS, STORE_CATEGORIES
 } from '../shared/js/db.js';
 
 export async function initData(state) {
@@ -31,6 +31,7 @@ export async function exportAlarms(state) {
         kind: 'QuickLogSolo/Alarms',
         version: '1.0',
         businessDays: state.businessDays,
+        categories: state.categories,
         alarms: state.alarms.map(a => {
             const rest = { ...a };
             delete rest.id;
@@ -47,6 +48,10 @@ export async function importAlarms() {
 
     if (data.businessDays) {
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: data.businessDays });
+    }
+    if (data.categories) {
+        await dbClear(STORE_CATEGORIES);
+        await dbAddMultiple(STORE_CATEGORIES, data.categories);
     }
     await dbClear(STORE_ALARMS);
     await dbAddMultiple(STORE_ALARMS, data.alarms);

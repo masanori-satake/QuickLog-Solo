@@ -1,4 +1,6 @@
-import { setLanguage, applyLanguage, t } from '../shared/js/i18n.js';
+import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
+import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
+import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
 import { initData, saveAlarm, saveBusinessDays, exportAlarms, importAlarms } from './data-io.js';
 import { initUI } from './ui.js';
 import { initHistory } from './history.js';
@@ -40,21 +42,25 @@ const elements = {
     undoBtn: document.getElementById('undo-btn'),
     redoBtn: document.getElementById('redo-btn'),
     themeToggle: document.getElementById('theme-toggle'),
-    langSelect: document.getElementById('lang-select-editor')
+    langSelect: document.getElementById('lang-select-editor'),
+    resetBtn: document.getElementById('reset-btn')
 };
 
 async function init() {
+    setDatabaseName('QuickLogSoloAlarmEditorDB');
+
     await initData(state);
 
     // Ensure exactly 10 alarms exist in state
     if (state.alarms.length < 10) {
         for (let i = state.alarms.length; i < 10; i++) {
+            const isLast = i === 9;
             state.alarms.push({
                 id: Date.now() + i,
-                time: '09:00',
-                enabled: false,
-                message: '',
-                action: 'none',
+                time: isLast ? '23:59' : '09:00',
+                enabled: isLast,
+                message: isLast ? DEFAULT_ALARM_MESSAGE_STOP : '',
+                action: isLast ? 'stop' : 'none',
                 type: 'daily_business',
                 daysOfWeek: [1, 2, 3, 4, 5],
                 dayOfMonth: 1,
@@ -70,8 +76,9 @@ async function init() {
     if (state.language) {
         setLanguage(state.language);
         // Map 'auto' or other values to supported select values
+        const currentLang = getLanguage();
         const supportedLangs = ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-        elements.langSelect.value = supportedLangs.includes(state.language) ? state.language : 'ja';
+        elements.langSelect.value = supportedLangs.includes(currentLang) ? currentLang : 'en';
     }
     applyLanguage();
 
@@ -115,6 +122,11 @@ async function init() {
         ui.renderBusinessDays();
         ui.renderAlarmList();
         ui.renderDetail();
+
+        // Update URL QueryString
+        const url = new URL(window.location);
+        url.searchParams.set('lang', lang);
+        window.history.replaceState({}, '', url);
     };
 
     state.showToast = (msg) => {
@@ -138,6 +150,16 @@ async function init() {
         state.language = e.target.value;
         state.onLanguageChange(state.language);
     });
+
+    // Reset button
+    elements.resetBtn.onclick = async () => {
+        if (await showConfirm(t('confirm-reset-all'))) {
+            await dbClear(STORE_ALARMS);
+            await dbClear(STORE_SETTINGS);
+            await dbClear(STORE_CATEGORIES);
+            location.reload();
+        }
+    };
 
     // Export/Import buttons
     elements.exportBtn.onclick = async () => {

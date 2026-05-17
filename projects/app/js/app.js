@@ -2447,12 +2447,14 @@ function setupEventListeners() {
         const state = await getCurrentAppState();
         const alarms = state.alarms;
         const businessDays = state.businessDays;
+        const categories = state.categories;
 
         const exportData = {
             app: 'QuickLog-Solo',
             kind: 'QuickLogSolo/Alarms',
             version: '1.0',
             businessDays,
+            categories,
             alarms: alarms.map(a => {
                 const rest = { ...a };
                 delete rest.id;
