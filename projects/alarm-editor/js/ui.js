@@ -370,25 +370,13 @@ export function initUI(state, elements) {
         undoBtn.disabled = !history.canUndo();
         redoBtn.disabled = !history.canRedo();
         undoBtn.onclick = () => {
-            if (history.undo()) {
-                renderBusinessDays();
-                renderAlarmList();
-                renderDetail();
-                elements.langSelect.value = state.language;
-                elements.themeToggle.checked = (state.theme === 'dark');
-                document.body.className = `theme-${state.theme}`;
-                applyLanguage();
+            if (history.undo() && state.onHistoryChange) {
+                state.onHistoryChange();
             }
         };
         redoBtn.onclick = () => {
-            if (history.redo()) {
-                renderBusinessDays();
-                renderAlarmList();
-                renderDetail();
-                elements.langSelect.value = state.language;
-                elements.themeToggle.checked = (state.theme === 'dark');
-                document.body.className = `theme-${state.theme}`;
-                applyLanguage();
+            if (history.redo() && state.onHistoryChange) {
+                state.onHistoryChange();
             }
         };
     }
