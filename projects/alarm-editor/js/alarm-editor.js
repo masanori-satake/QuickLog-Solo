@@ -1,7 +1,7 @@
 import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
 import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
 import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
-import { initData, saveAlarm, saveBusinessDays, exportAlarms, importAlarms } from './data-io.js';
+import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, exportAlarms, importAlarms } from './data-io.js';
 import { initUI } from './ui.js';
 import { initHistory } from './history.js';
 
@@ -47,7 +47,7 @@ const elements = {
     alarmResetBtn: document.getElementById('alarm-reset-btn')
 };
 
-function getDefaultAlarm(id, index) {
+function getDefaultAlarm(id, index, order) {
     const isLast = index === 9;
     return {
         id: id || Date.now() + index,
@@ -60,7 +60,8 @@ function getDefaultAlarm(id, index) {
         dayOfMonth: 1,
         daysBeforeEnd: 0,
         holidayAdjustment: 'none',
-        requireConfirmation: false
+        requireConfirmation: false,
+        order: order !== undefined ? order : index
     };
 }
 
@@ -72,7 +73,7 @@ async function init() {
     // Ensure exactly 10 alarms exist in state
     if (state.alarms.length < 10) {
         for (let i = state.alarms.length; i < 10; i++) {
-            state.alarms.push(getDefaultAlarm(null, i));
+            state.alarms.push(getDefaultAlarm(null, i, i));
         }
     } else if (state.alarms.length > 10) {
         state.alarms = state.alarms.slice(0, 10);
@@ -137,22 +138,29 @@ async function init() {
     state.onReorder = async (fromIndex, toIndex) => {
         const [movedItem] = state.alarms.splice(fromIndex, 1);
         state.alarms.splice(toIndex, 0, movedItem);
+
+        // Update order property for all alarms to persist sequence
+        state.alarms.forEach((alarm, i) => {
+            alarm.order = i;
+        });
+
         state.recordAction();
         ui.renderAlarmList();
         ui.renderDetail();
-        // Save all alarms to persist order
-        await dbClear(STORE_ALARMS);
-        for (const alarm of state.alarms) {
-            await saveAlarm(alarm);
-        }
+
+        // Save all alarms in one batch to persist order safely
+        await saveAllAlarms(state.alarms);
     };
 
     state.onAlarmReset = async (alarm) => {
         const index = state.alarms.indexOf(alarm);
         if (index === -1) return;
 
-        const defaultAlarm = getDefaultAlarm(alarm.id, index);
+        // Preserve the current order when resetting an alarm
+        const currentOrder = alarm.order;
+        const defaultAlarm = getDefaultAlarm(alarm.id, index, currentOrder);
         Object.assign(alarm, defaultAlarm);
+
         state.recordAction();
         ui.renderAlarmList();
         ui.renderDetail();

@@ -353,7 +353,7 @@ export async function getCurrentAppState() {
         reportSettings: reportSettings ? reportSettings.value : null,
         businessDays: businessDays ? businessDays.value : [1, 2, 3, 4, 5],
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
-        alarms: alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
+        alarms: alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0)),
         activeTask
     };
 }
@@ -475,7 +475,8 @@ async function setupInitialData(languageSetting) {
                 daysOfWeek: [1, 2, 3, 4, 5],
                 dayOfMonth: 1,
                 daysBeforeEnd: 0,
-                holidayAdjustment: 'none'
+                holidayAdjustment: 'none',
+                order: i
             });
         }
         await dbAddMultiple(STORE_ALARMS, defaultAlarms);

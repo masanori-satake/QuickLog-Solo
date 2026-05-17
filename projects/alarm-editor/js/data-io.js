@@ -15,6 +15,12 @@ export async function saveAlarm(alarm) {
     notifySync();
 }
 
+export async function saveAllAlarms(alarms) {
+    await dbClear(STORE_ALARMS);
+    await dbAddMultiple(STORE_ALARMS, alarms);
+    notifySync();
+}
+
 export async function saveBusinessDays(days) {
     await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: days });
     notifySync();
