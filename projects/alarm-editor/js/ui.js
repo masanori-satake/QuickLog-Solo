@@ -51,6 +51,11 @@ export function initUI(state, elements) {
             const item = document.createElement('div');
             item.className = 'alarm-item';
             item.draggable = true;
+
+            const dragHandle = document.createElement('span');
+            dragHandle.className = 'material-symbols-outlined drag-handle';
+            dragHandle.textContent = 'drag_indicator';
+            dragHandle.setAttribute('data-i18n-title', 'tooltip-drag-handle');
             item.dataset.id = alarm.id;
             item.dataset.index = i;
 
@@ -82,6 +87,7 @@ export function initUI(state, elements) {
                 statusIcon.classList.add('disabled');
             }
 
+            item.appendChild(dragHandle);
             item.appendChild(time);
             item.appendChild(icon);
             item.appendChild(msg);

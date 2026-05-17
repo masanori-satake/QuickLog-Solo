@@ -327,6 +327,12 @@ select:focus {
     background-color: var(--md-sys-color-secondary-container);
 }
 
+.alarm-item .drag-handle {
+    color: var(--md-sys-color-outline);
+    cursor: grab;
+    user-select: none;
+}
+
 .alarm-item .alarm-time {
     font-weight: bold;
     font-family: 'Roboto Mono', monospace;
