@@ -1,5 +1,5 @@
 import {
-    initDB, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS, STORE_CATEGORIES
+    initDB, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS, STORE_CATEGORIES, SETTING_KEY_LANGUAGE
 } from '../shared/js/db.js';
 
 export async function initData(state) {
@@ -24,6 +24,10 @@ export async function saveAllAlarms(alarms) {
 export async function saveBusinessDays(days) {
     await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: days });
     notifySync();
+}
+
+export async function saveLanguage(lang) {
+    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LANGUAGE, value: lang });
 }
 
 export function notifySync() {
