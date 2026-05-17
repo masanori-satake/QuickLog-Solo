@@ -327,6 +327,12 @@ select:focus {
     background-color: var(--md-sys-color-secondary-container);
 }
 
+.alarm-item .drag-handle {
+    color: var(--md-sys-color-outline);
+    cursor: grab;
+    user-select: none;
+}
+
 .alarm-item .alarm-time {
     font-weight: bold;
     font-family: 'Roboto Mono', monospace;
@@ -346,12 +352,27 @@ select:focus {
     text-overflow: ellipsis;
 }
 
+.alarm-item .alarm-status-icon {
+    color: var(--md-sys-color-primary);
+    font-size: 20px;
+}
+
+.alarm-item .alarm-status-icon.disabled {
+    color: var(--md-sys-color-outline-variant);
+}
+
+.alarm-item.dragging {
+    opacity: 0.5;
+    border: 2px dashed var(--md-sys-color-primary);
+}
+
 /* Detail Pane Form */
 .detail-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
+    gap: 16px;
 }
 
 .detail-header h2 {

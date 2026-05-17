@@ -1,7 +1,7 @@
 import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
 import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
 import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
-import { initData, saveAlarm, saveBusinessDays, exportAlarms, importAlarms } from './data-io.js';
+import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, exportAlarms, importAlarms } from './data-io.js';
 import { initUI } from './ui.js';
 import { initHistory } from './history.js';
 
@@ -43,8 +43,27 @@ const elements = {
     redoBtn: document.getElementById('redo-btn'),
     themeToggle: document.getElementById('theme-toggle'),
     langSelect: document.getElementById('lang-select-editor'),
-    resetBtn: document.getElementById('reset-btn')
+    resetBtn: document.getElementById('reset-btn'),
+    alarmResetBtn: document.getElementById('alarm-reset-btn')
 };
+
+function getDefaultAlarm(id, index, order) {
+    const isLast = index === 9;
+    return {
+        id: id || Date.now() + index,
+        time: isLast ? '23:59' : '09:00',
+        enabled: isLast,
+        message: isLast ? DEFAULT_ALARM_MESSAGE_STOP : '',
+        action: isLast ? 'stop' : 'none',
+        type: 'daily_business',
+        daysOfWeek: [1, 2, 3, 4, 5],
+        dayOfMonth: 1,
+        daysBeforeEnd: 0,
+        holidayAdjustment: 'none',
+        requireConfirmation: false,
+        order: order !== undefined ? order : index
+    };
+}
 
 async function init() {
     setDatabaseName('QuickLogSoloAlarmEditorDB');
@@ -54,20 +73,7 @@ async function init() {
     // Ensure exactly 10 alarms exist in state
     if (state.alarms.length < 10) {
         for (let i = state.alarms.length; i < 10; i++) {
-            const isLast = i === 9;
-            state.alarms.push({
-                id: Date.now() + i,
-                time: isLast ? '23:59' : '09:00',
-                enabled: isLast,
-                message: isLast ? DEFAULT_ALARM_MESSAGE_STOP : '',
-                action: isLast ? 'stop' : 'none',
-                type: 'daily_business',
-                daysOfWeek: [1, 2, 3, 4, 5],
-                dayOfMonth: 1,
-                daysBeforeEnd: 0,
-                holidayAdjustment: 'none',
-                requireConfirmation: false
-            });
+            state.alarms.push(getDefaultAlarm(null, i, i));
         }
     } else if (state.alarms.length > 10) {
         state.alarms = state.alarms.slice(0, 10);
@@ -127,6 +133,38 @@ async function init() {
         const url = new URL(window.location);
         url.searchParams.set('lang', lang);
         window.history.replaceState({}, '', url);
+    };
+
+    state.onReorder = async (fromIndex, toIndex) => {
+        const [movedItem] = state.alarms.splice(fromIndex, 1);
+        state.alarms.splice(toIndex, 0, movedItem);
+
+        // Update order property for all alarms to persist sequence
+        state.alarms.forEach((alarm, i) => {
+            alarm.order = i;
+        });
+
+        state.recordAction();
+        ui.renderAlarmList();
+        ui.renderDetail();
+
+        // Save all alarms in one batch to persist order safely
+        await saveAllAlarms(state.alarms);
+    };
+
+    state.onAlarmReset = async (alarm) => {
+        const index = state.alarms.indexOf(alarm);
+        if (index === -1) return;
+
+        // Preserve the current order when resetting an alarm
+        const currentOrder = alarm.order;
+        const defaultAlarm = getDefaultAlarm(alarm.id, index, currentOrder);
+        Object.assign(alarm, defaultAlarm);
+
+        state.recordAction();
+        ui.renderAlarmList();
+        ui.renderDetail();
+        await saveAlarm(alarm);
     };
 
     state.showToast = (msg) => {
