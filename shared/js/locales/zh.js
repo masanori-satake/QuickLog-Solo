@@ -117,6 +117,7 @@ export default {
     'maintenance-reset-all': '重置设置与分类',
     'maintenance-reset-all-desc': '日志将被保留。',
     'btn-reset-all': '重置分类与设置',
+    'btn-reset': '重置',
     'maintenance-reset-settings': '仅重置设置',
     'maintenance-reset-settings-desc': '日志与分类将被保留。',
     'btn-reset-settings': '仅重置设置',

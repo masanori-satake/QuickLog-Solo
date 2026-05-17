@@ -117,6 +117,7 @@ export default {
     'maintenance-reset-all': 'Einstellungen & Kategorien zurücksetzen',
     'maintenance-reset-all-desc': 'Protokolle bleiben erhalten.',
     'btn-reset-all': 'Kategorien & Einstellungen zurücksetzen',
+    'btn-reset': 'Zurücksetzen',
     'maintenance-reset-settings': 'Nur Einstellungen zurücksetzen',
     'maintenance-reset-settings-desc': 'Protokolle und Kategorien bleiben erhalten.',
     'btn-reset-settings': 'Nur Einstellungen zurücksetzen',

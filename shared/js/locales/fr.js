@@ -117,6 +117,7 @@ export default {
     'maintenance-reset-all': 'Réinitialiser paramètres et catégories',
     'maintenance-reset-all-desc': 'Les journaux seront conservés.',
     'btn-reset-all': 'Réinitialiser catégories et paramètres',
+    'btn-reset': 'Réinitialiser',
     'maintenance-reset-settings': 'Réinitialiser les paramètres uniquement',
     'maintenance-reset-settings-desc': 'Les journaux et catégories seront conservés.',
     'btn-reset-settings': 'Réinitialiser les paramètres uniquement',
