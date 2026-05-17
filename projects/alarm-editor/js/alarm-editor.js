@@ -1,7 +1,7 @@
 import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
 import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
 import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
-import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, exportAlarms, importAlarms } from './data-io.js';
+import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, saveLanguage, exportAlarms, importAlarms } from './data-io.js';
 import { initUI } from './ui.js';
 import { initHistory } from './history.js';
 
@@ -79,13 +79,17 @@ async function init() {
         state.alarms = state.alarms.slice(0, 10);
     }
 
-    if (state.language) {
-        setLanguage(state.language);
-        // Map 'auto' or other values to supported select values
-        const currentLang = getLanguage();
-        const supportedLangs = ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-        elements.langSelect.value = supportedLangs.includes(currentLang) ? currentLang : 'en';
-    }
+    // Language normalization and persistence
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+
+    setLanguage(langParam || state.language || 'auto');
+    state.language = getLanguage();
+    elements.langSelect.value = state.language;
+
+    // Persist normalized language
+    await saveLanguage(state.language);
+
     applyLanguage();
 
     // Theme handling
@@ -144,16 +148,19 @@ async function init() {
     state.onThemeChange = (theme) => {
         localStorage.setItem('quicklog-theme', theme);
         document.body.className = `theme-${theme}`;
-        state.recordAction();
+        // Theme changes are excluded from Undo/Redo history
     };
 
-    state.onLanguageChange = (lang) => {
+    state.onLanguageChange = async (lang) => {
         setLanguage(lang);
         applyLanguage();
-        state.recordAction();
+        // Language changes are excluded from Undo/Redo history
         ui.renderBusinessDays();
         ui.renderAlarmList();
         ui.renderDetail();
+
+        // Persist language
+        await saveLanguage(lang);
 
         // Update URL QueryString
         const url = new URL(window.location);
