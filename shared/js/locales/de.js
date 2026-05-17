@@ -135,7 +135,7 @@ export default {
     'btn-clear-logs': 'Alle Protokolle löschen',
     'maintenance-reset-all': 'Einstellungen & Kategorien zurücksetzen',
     'maintenance-reset-all-desc': 'Protokolle bleiben erhalten.',
-    'btn-reset-all': 'Kategorien & Einstellungen zurücksetzen',
+    'btn-reset-all': '全てリセット',
     'btn-reset': 'リセット',
     'maintenance-reset-settings': 'Nur Einstellungen zurücksetzen',
     'maintenance-reset-settings-desc': 'Protokolle und Kategorien bleiben erhalten.',
