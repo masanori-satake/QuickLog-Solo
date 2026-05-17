@@ -1,5 +1,6 @@
 import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
 import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
+import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
 import { initData, saveAlarm, saveBusinessDays, exportAlarms, importAlarms } from './data-io.js';
 import { initUI } from './ui.js';
 import { initHistory } from './history.js';
@@ -58,7 +59,7 @@ async function init() {
                 id: Date.now() + i,
                 time: isLast ? '23:59' : '09:00',
                 enabled: isLast,
-                message: isLast ? 'Stop Task' : '',
+                message: isLast ? DEFAULT_ALARM_MESSAGE_STOP : '',
                 action: isLast ? 'stop' : 'none',
                 type: 'daily_business',
                 daysOfWeek: [1, 2, 3, 4, 5],
@@ -77,7 +78,7 @@ async function init() {
         // Map 'auto' or other values to supported select values
         const currentLang = getLanguage();
         const supportedLangs = ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-        elements.langSelect.value = supportedLangs.includes(currentLang) ? currentLang : 'ja';
+        elements.langSelect.value = supportedLangs.includes(currentLang) ? currentLang : 'en';
     }
     applyLanguage();
 

@@ -1,4 +1,4 @@
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, DEFAULT_ALARM_MESSAGE_STOP } from './utils.js';
 import { t, setLanguage } from './i18n.js';
 import { validateCategorySchema, SCHEMA_TYPE_PAGE_BREAK } from './schema.js';
 
@@ -467,7 +467,7 @@ async function setupInitialData(languageSetting) {
             defaultAlarms.push({
                 enabled: isLast,
                 time: isLast ? "23:59" : "09:00",
-                message: isLast ? "Stop Task" : "",
+                message: isLast ? DEFAULT_ALARM_MESSAGE_STOP : "",
                 action: isLast ? "stop" : "none", // none, stop, pause, start
                 actionCategory: "",
                 requireConfirmation: false,
