@@ -135,7 +135,7 @@ export default {
     'btn-clear-logs': '모든 로그 삭제',
     'maintenance-reset-all': '설정 및 카테고리 초기화',
     'maintenance-reset-all-desc': '로그는 유지됩니다.',
-    'btn-reset-all': '카테고리 및 설정 초기화',
+    'btn-reset-all': '全てリセット',
     'btn-reset': 'リセット',
     'maintenance-reset-settings': '설정만 초기화',
     'maintenance-reset-settings-desc': '로그와 카테고리는 유지됩니다.',
