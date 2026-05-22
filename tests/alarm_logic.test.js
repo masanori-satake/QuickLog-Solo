@@ -128,6 +128,7 @@ describe('Alarm Calculation Logic', () => {
 
     test('monthly_date - guard for day 1 and prev_business_day', () => {
         // June 1st (Sat) 2024. prev_business_day adjustment should NOT move to May 31st.
+        // Instead, it should skip June and move to the next valid candidate (July 1st Mon).
         const june1stSat = new Date(2024, 5, 1, 8, 0, 0).getTime();
         const alarm = {
             enabled: true,
@@ -137,9 +138,7 @@ describe('Alarm Calculation Logic', () => {
             holidayAdjustment: 'prev_business_day'
         };
         const next = calculateNextAlarmTime(alarm, businessDays, june1stSat);
-        // It stays June 1st (Sat) because of the guard logic (then it might be skipped if we were searching candidates,
-        // but the core logic for adjustDate returns the same date if it's the 1st of month and prev_business_day).
-        // Wait, if it returns the same date (Sat), it will be > nowTs, so it returns that Sat.
-        expect(new Date(next).toLocaleDateString()).toBe(new Date(2024, 5, 1).toLocaleDateString());
+        // July 1st (Mon) 2024
+        expect(new Date(next).toLocaleDateString()).toBe(new Date(2024, 6, 1).toLocaleDateString());
     });
 });

@@ -19,7 +19,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
 }));
 
 const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } = await import('../shared/js/logic.js');
-const { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
+const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
 
 describe('Logic Module', () => {
@@ -764,7 +764,6 @@ describe('Logic Module', () => {
             const pausedLog = { id: 10, startTime: 1000, endTime: 2000, category: 'Idle', isPaused: true };
             dbGetAll.mockResolvedValue([pausedLog]);
             // Mock dbGet for SETTING_KEY_PAUSE_STATE
-            const { dbGet } = await import('../shared/js/db.js');
             dbGet.mockResolvedValue({ key: SETTING_KEY_PAUSE_STATE, value: { id: 10 } });
 
             await deleteHistoryItem(10);
@@ -778,7 +777,6 @@ describe('Logic Module', () => {
             const log2 = { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' };
             dbGetAll.mockResolvedValue([log1, log2]);
 
-            const { dbGet } = await import('../shared/js/db.js');
             dbGet.mockResolvedValue({ key: SETTING_KEY_PAUSE_STATE, value: { id: 2 } });
 
             await deleteHistoryItem(1);

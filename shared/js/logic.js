@@ -503,8 +503,9 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
         if (alarm.holidayAdjustment === 'prev_business_day') {
             // Guard: type3 (monthly_date) with day 1 cannot go back
             if (alarm.type === 'monthly_date' && alarm.dayOfMonth === 1 && d.getDate() === 1) {
-                // Should have been prevented by UI, but for safety:
-                return d;
+                // Cannot go back before the 1st of the month.
+                // Return null to skip this candidate and let the search continue to the next month.
+                return null;
             }
             for (let i = 0; i < 7; i++) {
                 d.setDate(d.getDate() - 1);
