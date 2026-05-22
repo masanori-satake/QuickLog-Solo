@@ -477,10 +477,6 @@ export async function updateHistoryStartTime(logId, newTs) {
 }
 
 /**
- * Deletes a history log item and updates the next item's start time to maintain continuity.
- * @param {number} logId
- */
-/**
  * Calculates the next execution time for an alarm.
  * @param {Object} alarm
  * @param {number[]} businessDays - [0, 1, ..., 6]
@@ -507,8 +503,9 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
         if (alarm.holidayAdjustment === 'prev_business_day') {
             // Guard: type3 (monthly_date) with day 1 cannot go back
             if (alarm.type === 'monthly_date' && alarm.dayOfMonth === 1 && d.getDate() === 1) {
-                // Should have been prevented by UI, but for safety:
-                return d;
+                // Cannot go back before the 1st of the month.
+                // Return null to skip this candidate and let the search continue to the next month.
+                return null;
             }
             for (let i = 0; i < 7; i++) {
                 d.setDate(d.getDate() - 1);
@@ -576,6 +573,10 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
     return null;
 }
 
+/**
+ * Deletes a history log item and updates the next item's start time to maintain continuity.
+ * @param {number} logId
+ */
 export async function deleteHistoryItem(logId) {
     const allLogs = await dbGetAll(STORE_LOGS);
     const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);

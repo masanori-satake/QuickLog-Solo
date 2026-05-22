@@ -112,4 +112,33 @@ describe('Alarm Calculation Logic', () => {
         const next = calculateNextAlarmTime(alarm, businessDays, nowTs);
         expect(next).toBeNull();
     });
+
+    test('holiday adjustment - next_business_day', () => {
+        // May 18 (Sat) -> should move to May 20 (Mon)
+        const satNow = new Date(2024, 4, 18, 8, 0, 0).getTime();
+        const alarm = {
+            enabled: true,
+            time: "09:00",
+            type: 'daily_business',
+            holidayAdjustment: 'next_business_day'
+        };
+        const next = calculateNextAlarmTime(alarm, businessDays, satNow);
+        expect(new Date(next).toLocaleDateString()).toBe(new Date(2024, 4, 20).toLocaleDateString());
+    });
+
+    test('monthly_date - guard for day 1 and prev_business_day', () => {
+        // June 1st (Sat) 2024. prev_business_day adjustment should NOT move to May 31st.
+        // Instead, it should skip June and move to the next valid candidate (July 1st Mon).
+        const june1stSat = new Date(2024, 5, 1, 8, 0, 0).getTime();
+        const alarm = {
+            enabled: true,
+            time: "09:00",
+            type: 'monthly_date',
+            dayOfMonth: 1,
+            holidayAdjustment: 'prev_business_day'
+        };
+        const next = calculateNextAlarmTime(alarm, businessDays, june1stSat);
+        // July 1st (Mon) 2024
+        expect(new Date(next).toLocaleDateString()).toBe(new Date(2024, 6, 1).toLocaleDateString());
+    });
 });

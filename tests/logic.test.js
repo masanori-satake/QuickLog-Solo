@@ -19,7 +19,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
 }));
 
 const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } = await import('../shared/js/logic.js');
-const { dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
+const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
 
 describe('Logic Module', () => {
@@ -758,6 +758,39 @@ describe('Logic Module', () => {
             dbGetAll.mockResolvedValue([]);
             await deleteHistoryItem(999);
             expect(dbDelete).not.toHaveBeenCalled();
+        });
+
+        test('deleteHistoryItem clears pauseState if deleted log was the paused task', async () => {
+            const pausedLog = { id: 10, startTime: 1000, endTime: 2000, category: 'Idle', isPaused: true };
+            dbGetAll.mockResolvedValue([pausedLog]);
+            // Mock dbGet for SETTING_KEY_PAUSE_STATE
+            dbGet.mockResolvedValue({ key: SETTING_KEY_PAUSE_STATE, value: { id: 10 } });
+
+            await deleteHistoryItem(10);
+
+            expect(dbDelete).toHaveBeenCalledWith(STORE_LOGS, 10);
+            expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+        });
+
+        test('deleteHistoryItem updates pauseState if contiguous log was the paused task', async () => {
+            const log1 = { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' };
+            const log2 = { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' };
+            dbGetAll.mockResolvedValue([log1, log2]);
+
+            dbGet.mockResolvedValue({ key: SETTING_KEY_PAUSE_STATE, value: { id: 2 } });
+
+            await deleteHistoryItem(1);
+
+            // Log 2 updated: startTime should move to 1000
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                startTime: 1000
+            }));
+            // pauseState should be updated as well
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
+                key: SETTING_KEY_PAUSE_STATE,
+                value: expect.objectContaining({ id: 2, startTime: 1000 })
+            }));
         });
     });
 });
