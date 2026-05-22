@@ -477,10 +477,6 @@ export async function updateHistoryStartTime(logId, newTs) {
 }
 
 /**
- * Deletes a history log item and updates the next item's start time to maintain continuity.
- * @param {number} logId
- */
-/**
  * Calculates the next execution time for an alarm.
  * @param {Object} alarm
  * @param {number[]} businessDays - [0, 1, ..., 6]
@@ -576,6 +572,10 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
     return null;
 }
 
+/**
+ * Deletes a history log item and updates the next item's start time to maintain continuity.
+ * @param {number} logId
+ */
 export async function deleteHistoryItem(logId) {
     const allLogs = await dbGetAll(STORE_LOGS);
     const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);

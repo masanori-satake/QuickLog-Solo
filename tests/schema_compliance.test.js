@@ -206,6 +206,22 @@ describe('Schema Compliance Tests', () => {
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'language', value: 'jp' }] })).toBe(false);
         });
 
+        test('should reject invalid businessDays', () => {
+            const base = {
+                app: 'QuickLog-Solo',
+                kind: 'QuickLogSolo/Settings',
+                version: '1.0'
+            };
+            // Not an array
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'businessDays', value: '1,2,3' }] })).toBe(false);
+            // Empty array
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'businessDays', value: [] }] })).toBe(false);
+            // Invalid day number
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'businessDays', value: [1, 7] }] })).toBe(false);
+            // Too many items
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'businessDays', value: [0, 1, 2, 3, 4, 5, 6, 0] }] })).toBe(false);
+        });
+
         test('should reject invalid font or animation length', () => {
             const base = {
                 app: 'QuickLog-Solo',
@@ -344,6 +360,19 @@ describe('Schema Compliance Tests', () => {
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, action: 'jump' }] }] })).toBe(false);
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, actionCategory: 123 }] }] })).toBe(false);
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, requireConfirmation: 'no' }] }] })).toBe(false);
+
+            // Invalid alarm type
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, type: 'hourly' }] }] })).toBe(false);
+            // Invalid holidayAdjustment
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, holidayAdjustment: 'yes' }] }] })).toBe(false);
+            // Invalid daysOfWeek elements
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, daysOfWeek: [1, 8] }] }] })).toBe(false);
+            // Invalid dayOfMonth range
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, dayOfMonth: 32 }] }] })).toBe(false);
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, dayOfMonth: 0 }] }] })).toBe(false);
+            // Invalid daysBeforeEnd range
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, daysBeforeEnd: 32 }] }] })).toBe(false);
+            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, daysBeforeEnd: -1 }] }] })).toBe(false);
         });
     });
 
