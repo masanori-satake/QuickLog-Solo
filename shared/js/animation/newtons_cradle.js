@@ -52,8 +52,8 @@ export default class NewtonsCradle extends AnimationBase {
         // Physics properties
         // 物理的なプロパティ
         this.ballCount = 5;
-        this.ballRadius = 10;
-        this.stringLength = height / 2;
+        this.ballRadius = Math.max(5, height * 0.125);
+        this.stringLength = height * 0.4;
     }
 
     /**

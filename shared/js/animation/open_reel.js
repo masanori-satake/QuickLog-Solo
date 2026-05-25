@@ -58,16 +58,19 @@ export default class OpenReel extends AnimationBase {
         const height = this.height;
         const time = elapsedMs / 1000;
 
+        // Scaling factor based on height (baseline is 80px)
+        const scale = height / 80;
+
         // 1. Reel placement (Avoid UI)
         // 1. リールの配置（UIを避ける）
-        let reelCenterX = 60;
+        let reelCenterX = 60 * scale;
         let reelCenterY = height / 2;
 
         if (exclusionAreas && exclusionAreas.length > 0) {
-            const spots = [60, width - 60];
+            const spots = [60 * scale, width - 60 * scale];
              for (const spot of spots) {
                 const overlap = exclusionAreas.some(area => {
-                    return spot + 50 > area.x && spot - 50 < area.x + area.width;
+                    return spot + 50 * scale > area.x && spot - 50 * scale < area.x + area.width;
                 });
                 if (!overlap) {
                     reelCenterX = spot;
@@ -78,16 +81,16 @@ export default class OpenReel extends AnimationBase {
 
         // 2. VU Meter placement (Avoid UI and Reel)
         // 2. VUメーターの配置（UIとリールを避ける）
-        let vuCenterX = width - 60;
+        let vuCenterX = width - 60 * scale;
         let vuCenterY = height / 2;
 
         if (exclusionAreas && exclusionAreas.length > 0) {
-            const spots = [width - 60, 60];
+            const spots = [width - 60 * scale, 60 * scale];
              for (const spot of spots) {
                 const overlap = exclusionAreas.some(area => {
-                    return spot + 50 > area.x && spot - 50 < area.x + area.width;
+                    return spot + 50 * scale > area.x && spot - 50 * scale < area.x + area.width;
                 });
-                if (!overlap && Math.abs(spot - reelCenterX) > 100) {
+                if (!overlap && Math.abs(spot - reelCenterX) > 100 * scale) {
                     vuCenterX = spot;
                     break;
                 }
@@ -95,19 +98,19 @@ export default class OpenReel extends AnimationBase {
         }
 
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.5;
 
         // 3. Draw Reels
         // 3. リールの描画
         const rotation = time * 2;
-        [ -25, 25 ].forEach(offset => {
-            this.drawReel(ctx, reelCenterX + offset, reelCenterY, rotation);
+        [ -25 * scale, 25 * scale ].forEach(offset => {
+            this.drawReel(ctx, reelCenterX + offset, reelCenterY, rotation, 20 * scale);
         });
 
         // 4. Draw VU Meters
         // 4. VUメーターの描画
-        [ -25, 25 ].forEach(offset => {
-            this.drawVUMeter(ctx, vuCenterX + offset, vuCenterY, time, offset);
+        [ -25 * scale, 25 * scale ].forEach(offset => {
+            this.drawVUMeter(ctx, vuCenterX + offset, vuCenterY, time, offset, scale);
         });
     }
 
@@ -115,9 +118,9 @@ export default class OpenReel extends AnimationBase {
      * Helper to draw a spinning reel
      * 回転するリールの描画ヘルパー
      */
-    drawReel(ctx, rx, ry, rotation) {
+    drawReel(ctx, rx, ry, rotation, radius) {
         ctx.beginPath();
-        ctx.arc(rx, ry, 20, 0, Math.PI * 2);
+        ctx.arc(rx, ry, radius, 0, Math.PI * 2);
         ctx.stroke();
 
         // Spokes / スポーク
@@ -125,7 +128,7 @@ export default class OpenReel extends AnimationBase {
             const angle = rotation + (i * Math.PI * 2 / 3);
             ctx.beginPath();
             ctx.moveTo(rx, ry);
-            ctx.lineTo(rx + Math.cos(angle) * 18, ry + Math.sin(angle) * 18);
+            ctx.lineTo(rx + Math.cos(angle) * (radius * 0.9), ry + Math.sin(angle) * (radius * 0.9));
             ctx.stroke();
         }
     }
@@ -134,9 +137,11 @@ export default class OpenReel extends AnimationBase {
      * Helper to draw a moving VU meter
      * 動くVUメーターの描画ヘルパー
      */
-    drawVUMeter(ctx, vx, vy, time, offset) {
+    drawVUMeter(ctx, vx, vy, time, offset, scale) {
+        const vw = 40 * scale;
+        const vh = 30 * scale;
         // Gauge outline / 外枠
-        ctx.strokeRect(vx - 20, vy - 15, 40, 30);
+        ctx.strokeRect(vx - vw / 2, vy - vh / 2, vw, vh);
 
         // Needle movement / 針の動き
         const freq1 = 8 + (offset > 0 ? 3 : 0);
@@ -145,8 +150,8 @@ export default class OpenReel extends AnimationBase {
         const angle = noise * 0.8; // Scale to keep within gauge / 枠内に収まるよう調整
 
         ctx.beginPath();
-        ctx.moveTo(vx, vy + 10);
-        ctx.lineTo(vx + Math.sin(angle) * 20, vy + 10 - Math.cos(angle) * 20);
+        ctx.moveTo(vx, vy + vh * 0.33);
+        ctx.lineTo(vx + Math.sin(angle) * (vh * 0.66), vy + vh * 0.33 - Math.cos(angle) * (vh * 0.66));
         ctx.stroke();
     }
 }

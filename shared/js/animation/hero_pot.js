@@ -46,7 +46,7 @@ export default class HeroPot extends AnimationBase {
     setup(width, height) {
         this.width = width;
         this.height = height;
-        this.groundY = height - 20;
+        this.groundY = height - Math.max(10, height * 0.25);
 
         // Initialize hero state
         // 勇者の状態を初期化
@@ -189,13 +189,14 @@ export default class HeroPot extends AnimationBase {
 
         // Draw pots
         // 壺の描画
+        const potSize = Math.max(6, height * 0.125);
         this.pots.forEach(p => {
             if (p.state === 'idle') {
-                ctx.fillRect(p.x - 5, p.y - 10, 10, 10);
+                ctx.fillRect(p.x - potSize / 2, p.y - potSize, potSize, potSize);
             } else if (p.state === 'held') {
                 p.x = this.hero.x;
-                p.y = this.hero.y - 15;
-                ctx.fillRect(p.x - 5, p.y - 10, 10, 10);
+                p.y = this.hero.y - (potSize * 1.5);
+                ctx.fillRect(p.x - potSize / 2, p.y - potSize, potSize, potSize);
             }
         });
 
@@ -241,16 +242,17 @@ export default class HeroPot extends AnimationBase {
      * 勇者の描画ヘルパー
      */
     drawHero(ctx, hx, hy) {
-        ctx.fillRect(hx - 2, hy - 15, 4, 15); // Body
-        ctx.fillRect(hx - 4, hy - 18, 8, 4);  // Head
+        const h = Math.max(10, this.height * 0.2);
+        ctx.fillRect(hx - 2, hy - h, 4, h); // Body
+        ctx.fillRect(hx - 4, hy - h - 3, 8, 4);  // Head
 
         // Arms based on state / 状態に合わせた腕の位置
         if (this.hero.state === 'lifting' || this.hero.state === 'walking_with_pot' || this.hero.state === 'throwing') {
-            ctx.fillRect(hx - 6, hy - 15, 2, 8); // Hands up
-            ctx.fillRect(hx + 4, hy - 15, 2, 8);
+            ctx.fillRect(hx - 6, hy - h, 2, h * 0.5); // Hands up
+            ctx.fillRect(hx + 4, hy - h, 2, h * 0.5);
         } else {
-            ctx.fillRect(hx - 6, hy - 10, 2, 8); // Hands down
-            ctx.fillRect(hx + 4, hy - 10, 2, 8);
+            ctx.fillRect(hx - 6, hy - h * 0.66, 2, h * 0.5); // Hands down
+            ctx.fillRect(hx + 4, hy - h * 0.66, 2, h * 0.5);
         }
     }
 }

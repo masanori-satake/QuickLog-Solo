@@ -73,7 +73,7 @@ export default class Spectrum extends AnimationBase {
         const height = this.height;
 
         const barWidth = width / this.barCount;
-        const spacingY = 6;
+        const spacingY = Math.max(3, height / 15); // Adjust vertical spacing / 垂直方向の間隔を調整
 
         for (let i = 0; i < this.barCount; i++) {
             // If bar reaches target, pick a new random target
@@ -91,7 +91,7 @@ export default class Spectrum extends AnimationBase {
             if (this.bars[i] > this.peaks[i]) {
                 this.peaks[i] = this.bars[i];
             } else {
-                this.peaks[i] -= 1; // Peaks fall slowly / ピークはゆっくり下降
+                this.peaks[i] -= 0.5 * (height / 80); // Peaks fall slowly / ピークはゆっくり下降
             }
 
             const x = i * barWidth + barWidth / 2;

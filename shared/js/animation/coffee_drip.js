@@ -55,6 +55,11 @@ export default class CoffeeDrip extends AnimationBase {
      */
     draw(ctx, { elapsedMs = 0, progress = 0, exclusionAreas = [] } = {}) {
         const width = this.width;
+        const height = this.height;
+
+        // Scaling factor based on height (baseline height is 80px)
+        // 高さに基づいたスケーリング係数（基準の高さは80px）
+        const scale = height / 80;
 
         // Find a horizontal center that doesn't overlap with UI text
         // UIテキストと重ならない中央位置を探す
@@ -64,9 +69,10 @@ export default class CoffeeDrip extends AnimationBase {
             // Test several spots to find one with no overlap
             // いくつかの候補点を確認し、重なりのない場所を選ぶ
             const spots = [width * 0.15, width * 0.85, width * 0.25, width * 0.75];
+            const halfW = 30 * scale;
             for (const spot of spots) {
                 const overlap = exclusionAreas.some(area => {
-                    return spot + 30 > area.x && spot - 30 < area.x + area.width;
+                    return spot + halfW > area.x && spot - halfW < area.x + area.width;
                 });
                 if (!overlap) {
                     centerX = spot;
@@ -82,32 +88,32 @@ export default class CoffeeDrip extends AnimationBase {
         // 1. ドリッパーの形状
         ctx.globalAlpha = 0.3;
         ctx.beginPath();
-        ctx.moveTo(centerX - 30, 20);
-        ctx.lineTo(centerX + 30, 20);
-        ctx.lineTo(centerX + 5, 50);
-        ctx.lineTo(centerX - 5, 50);
+        ctx.moveTo(centerX - 30 * scale, 20 * scale);
+        ctx.lineTo(centerX + 30 * scale, 20 * scale);
+        ctx.lineTo(centerX + 5 * scale, 50 * scale);
+        ctx.lineTo(centerX - 5 * scale, 50 * scale);
         ctx.closePath();
         ctx.fill();
 
         // 2. Server/Cup shape
         // 2. サーバー/カップの形状
-        const cupY = 60;
-        const cupWidth = 40;
-        const cupHeight = 30;
+        const cupY = 60 * scale;
+        const cupWidth = 40 * scale;
+        const cupHeight = Math.min(30 * scale, height - cupY - 5);
 
         ctx.globalAlpha = 1.0;
         // Cup Body / 本体
         ctx.beginPath();
         ctx.moveTo(centerX - cupWidth / 2, cupY);
         ctx.lineTo(centerX + cupWidth / 2, cupY);
-        ctx.lineTo(centerX + cupWidth / 2 - 5, cupY + cupHeight);
-        ctx.lineTo(centerX - cupWidth / 2 + 5, cupY + cupHeight);
+        ctx.lineTo(centerX + cupWidth / 2 - 5 * scale, cupY + cupHeight);
+        ctx.lineTo(centerX - cupWidth / 2 + 5 * scale, cupY + cupHeight);
         ctx.closePath();
         ctx.stroke();
 
         // Handle / 持ち手
         ctx.beginPath();
-        ctx.arc(centerX + cupWidth / 2 - 2, cupY + cupHeight / 2, 8, -Math.PI / 2, Math.PI / 2);
+        ctx.arc(centerX + cupWidth / 2 - 2 * scale, cupY + cupHeight / 2, 8 * scale, -Math.PI / 2, Math.PI / 2);
         ctx.stroke();
 
         // 3. Drip droplets
@@ -115,19 +121,19 @@ export default class CoffeeDrip extends AnimationBase {
         const dropP = (elapsedMs / 1000) % 1;
         ctx.globalAlpha = 0.8;
         ctx.beginPath();
-        ctx.arc(centerX, 50 + dropP * 15, 2, 0, Math.PI * 2);
+        ctx.arc(centerX, (50 * scale) + dropP * (10 * scale), 2 * scale, 0, Math.PI * 2);
         ctx.fill();
 
         // 4. Filling coffee
         // 4. 溜まっていくコーヒー
         ctx.globalAlpha = 0.6;
-        const fillMaxHeight = cupHeight - 4;
+        const fillMaxHeight = Math.max(0, cupHeight - 4 * scale);
         const fillHeight = fillMaxHeight * progress;
         ctx.beginPath();
-        ctx.moveTo(centerX - cupWidth / 2 + 2, cupY + cupHeight - 2);
-        ctx.lineTo(centerX + cupWidth / 2 - 2, cupY + cupHeight - 2);
-        ctx.lineTo(centerX + cupWidth / 2 - 2, cupY + cupHeight - 2 - fillHeight);
-        ctx.lineTo(centerX - cupWidth / 2 + 2, cupY + cupHeight - 2 - fillHeight);
+        ctx.moveTo(centerX - cupWidth / 2 + 2 * scale, cupY + cupHeight - 2 * scale);
+        ctx.lineTo(centerX + cupWidth / 2 - 2 * scale, cupY + cupHeight - 2 * scale);
+        ctx.lineTo(centerX + cupWidth / 2 - 2 * scale, cupY + cupHeight - 2 * scale - fillHeight);
+        ctx.lineTo(centerX - cupWidth / 2 + 2 * scale, cupY + cupHeight - 2 * scale - fillHeight);
         ctx.closePath();
         ctx.fill();
 
