@@ -84,24 +84,27 @@ export default class HeartBeat extends AnimationBase {
 
             let yOffset = 0;
             if (!skip) {
+                // Scaling factor based on height
+                const hScale = Math.min(1.0, this.height / 80);
+
                 // ECG Waveform components (P, QRS, T)
                 // 心電図の各成分（P波, QRS群, T波）をシミュレート
                 if (localT < 0.1) {
-                    yOffset = -Math.sin((localT / 0.1) * Math.PI) * 4; // P wave
+                    yOffset = -Math.sin((localT / 0.1) * Math.PI) * (4 * hScale); // P wave
                 } else if (localT < 0.15) {
                     yOffset = 0; // PR interval
                 } else if (localT < 0.17) {
-                    yOffset = ((localT - 0.15) / 0.02) * 4; // Q wave
+                    yOffset = ((localT - 0.15) / 0.02) * (4 * hScale); // Q wave
                 } else if (localT < 0.20) {
-                    yOffset = 4 - ((localT - 0.17) / 0.03) * 44; // R wave (peak)
+                    yOffset = (4 * hScale) - ((localT - 0.17) / 0.03) * (44 * hScale); // R wave (peak)
                 } else if (localT < 0.24) {
-                    yOffset = -40 + ((localT - 0.20) / 0.04) * 48; // S wave
+                    yOffset = (-40 * hScale) + ((localT - 0.20) / 0.04) * (48 * hScale); // S wave
                 } else if (localT < 0.27) {
-                    yOffset = 8 - ((localT - 0.24) / 0.03) * 8; // Baseline return
+                    yOffset = (8 * hScale) - ((localT - 0.24) / 0.03) * (8 * hScale); // Baseline return
                 } else if (localT < 0.35) {
                     yOffset = 0; // ST segment
                 } else if (localT < 0.50) {
-                    yOffset = -Math.sin(((localT - 0.35) / 0.15) * Math.PI) * 6; // T wave
+                    yOffset = -Math.sin(((localT - 0.35) / 0.15) * Math.PI) * (6 * hScale); // T wave
                 }
             }
 

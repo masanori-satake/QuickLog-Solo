@@ -47,7 +47,7 @@ export default class SandClock extends AnimationBase {
         this.width = width;
         this.height = height;
         // Hourglass size / 砂時計のサイズ
-        this.size = Math.min(width, height) * 0.35;
+        this.size = Math.min(width * 0.25, height * 0.35);
     }
 
     /**

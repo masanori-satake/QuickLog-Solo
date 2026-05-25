@@ -123,7 +123,7 @@ export default class NightSky extends AnimationBase {
         if (ufoCycle < 1) {
             const p = ufoCycle;
             let ufoX;
-            const ufoY = height * 0.15;
+            const ufoY = Math.max(10, height * 0.15);
 
             // Movement logic: In -> Stop -> Out
             if (p < 0.3) {

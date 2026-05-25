@@ -56,7 +56,7 @@ export default class MigratingBirds extends AnimationBase {
         // Group properties
         // 群れのプロパティ
         this.birdCount = 7;
-        this.spacing = 25;
+        this.spacing = Math.max(10, height / 3.5); // Dynamically scale spacing / 間隔を動的に調整
     }
 
     /**

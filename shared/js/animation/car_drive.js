@@ -49,9 +49,9 @@ export default class CarDrive extends AnimationBase {
         this.width = width;
         this.height = height;
 
-        // Calculate horizon line (45% from top)
-        // 地平線の位置を計算（上から45%の位置）
-        this.horizonY = height * 0.45;
+        // Calculate horizon line (45% from top, but higher in low heights)
+        // 地平線の位置を計算（上から45%の位置。高さが低いときは少し上げる）
+        this.horizonY = height * (height < 60 ? 0.35 : 0.45);
 
         // Initialize mountains background
         // 背景の山の初期化
@@ -179,21 +179,22 @@ export default class CarDrive extends AnimationBase {
 
         // 6. Player Car
         // 6. 自車
-        const carWidth = 40;
-        const carHeight = 20;
+        const carScale = height < 60 ? 0.6 : 1.0;
+        const carWidth = 40 * carScale;
+        const carHeight = 20 * carScale;
         const drift = Math.sin(time * 2) * 20;
         const cx = width / 2 + drift;
-        const cy = height - 30;
+        const cy = height - (30 * carScale);
 
         ctx.fillStyle = '#000';
         ctx.fillRect(cx - carWidth / 2, cy, carWidth, carHeight);
         ctx.fillStyle = '#fff';
-        ctx.fillRect(cx - carWidth / 2 + 2, cy + 2, carWidth - 4, carHeight - 4);
+        ctx.fillRect(cx - carWidth / 2 + 2 * carScale, cy + 2 * carScale, carWidth - 4 * carScale, carHeight - 4 * carScale);
         ctx.fillStyle = '#000';
-        ctx.fillRect(cx - carWidth / 2 + 6, cy + 4, carWidth - 12, carHeight / 2);
+        ctx.fillRect(cx - carWidth / 2 + 6 * carScale, cy + 4 * carScale, carWidth - 12 * carScale, carHeight / 2);
         ctx.fillStyle = '#fff';
-        ctx.fillRect(cx - carWidth / 2 + 4, cy + carHeight - 6, 6, 3);
-        ctx.fillRect(cx + carWidth / 2 - 10, cy + carHeight - 6, 6, 3);
+        ctx.fillRect(cx - carWidth / 2 + 4 * carScale, cy + carHeight - 6 * carScale, 6 * carScale, 3 * carScale);
+        ctx.fillRect(cx + carWidth / 2 - 10 * carScale, cy + carHeight - 6 * carScale, 6 * carScale, 3 * carScale);
     }
 
     /**

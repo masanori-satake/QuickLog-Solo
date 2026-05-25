@@ -54,8 +54,8 @@ export default class TetrisBuilding extends AnimationBase {
         // Tetris grid configuration
         // テトリス・グリッドの設定
         this.cols = 6;
-        this.cellSize = 12; // 2x2 matrix cells
-        this.rows = Math.max(0, Math.floor((height - 12) / this.cellSize));
+        this.cellSize = height < 60 ? 6 : 12; // Use smaller cells for mini heights / 低いときはセルを小さくする
+        this.rows = Math.max(0, Math.floor((height - this.cellSize) / this.cellSize));
 
         // Horizontal placement (default to left)
         // 水平位置の初期設定（デフォルトは左端）
@@ -144,12 +144,12 @@ export default class TetrisBuilding extends AnimationBase {
                     // Flash line when clearing / 消去中の行は点滅
                     if (r === this.clearingLine && Math.floor(progress * 10000 / 100) % 2 === 0) continue;
 
-                    // Each block is 2x2 in the matrix
-                    // 1ブロックを2x2のドットで描画
-                    for (let dr = 0; dr < 2; dr++) {
-                        for (let dc = 0; dc < 2; dc++) {
-                            const mr = Math.floor((this.yOffset + r) * 2 + dr);
-                            const mc = Math.floor((this.xOffset + c) * 2 + dc);
+                    // Each block is drawn as matrix cells
+                    const cellDotSize = this.cellSize / 6;
+                    for (let dr = 0; dr < cellDotSize; dr++) {
+                        for (let dc = 0; dc < cellDotSize; dc++) {
+                            const mr = Math.floor((this.yOffset + r) * cellDotSize + dr);
+                            const mc = Math.floor((this.xOffset + c) * cellDotSize + dc);
                             if (matrix[mr] && mc < matrix[mr].length) {
                                 matrix[mr][mc] = 3;
                             }
@@ -167,10 +167,11 @@ export default class TetrisBuilding extends AnimationBase {
             const c = seed % this.cols;
             const targetR = this.findLandingRow(c);
             const r = Math.floor(fallP * targetR);
-            for (let dr = 0; dr < 2; dr++) {
-                for (let dc = 0; dc < 2; dc++) {
-                    const mr = Math.floor((this.yOffset + r) * 2 + dr);
-                    const mc = Math.floor((this.xOffset + c) * 2 + dc);
+            const cellDotSize = this.cellSize / 6;
+            for (let dr = 0; dr < cellDotSize; dr++) {
+                for (let dc = 0; dc < cellDotSize; dc++) {
+                    const mr = Math.floor((this.yOffset + r) * cellDotSize + dr);
+                    const mc = Math.floor((this.xOffset + c) * cellDotSize + dc);
                     if (matrix[mr] && mc < matrix[mr].length) {
                         matrix[mr][mc] = 2;
                     }

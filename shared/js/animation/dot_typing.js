@@ -55,7 +55,14 @@ export default class DotTyping extends AnimationBase {
      */
     draw(ctx, { elapsedMs = 0, progress = 0 } = {}) {
         const sprites = [];
-        const totalChars = this.rows * this.cols;
+        const height = this.height;
+
+        // Dynamically calculate row properties based on current height
+        // 現在の高さに基づいて行のプロパティを動的に計算
+        const startY = Math.max(15, height * 0.25);
+        const rowSpacing = Math.max(10, (height - startY - 10) / 4);
+        const dynamicRows = Math.max(1, Math.floor((height - startY) / rowSpacing));
+        const totalChars = dynamicRows * this.cols;
 
         // Calculate number of characters to show based on progress
         // 進捗に基づいて表示する文字数を計算
@@ -80,7 +87,7 @@ export default class DotTyping extends AnimationBase {
             const r = Math.floor(i / this.cols);
             const c = i % this.cols;
             const x = 20 + c * 15;
-            const y = 30 + r * 15;
+            const y = startY + r * rowSpacing;
 
             // Character represented by 2 dots
             // 文字を2つのドットで表現
@@ -95,7 +102,7 @@ export default class DotTyping extends AnimationBase {
             const r = Math.floor(lastIdx / this.cols);
             const c = lastIdx % this.cols;
             const x = 20 + c * 15;
-            const y = 30 + r * 15;
+            const y = startY + r * rowSpacing;
 
             // Cursor as a large dot
             // カーソルを大きなドットで表現

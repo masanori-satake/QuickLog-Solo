@@ -69,12 +69,13 @@ export default class Clock extends AnimationBase {
         // Smart placement logic: avoid UI text areas if they overlap with the center
         // 回避ロジック：中央がテキスト領域と重なる場合、四隅の空いている場所を探す
         if (exclusionAreas && exclusionAreas.length > 0) {
-            const margin = this.radius + 10;
+            const marginX = this.radius + 10;
+            const marginY = Math.min(this.radius + 10, height / 2);
             const spots = [
-                {x: margin, y: margin},
-                {x: width - margin, y: margin},
-                {x: margin, y: height - margin},
-                {x: width - margin, y: height - margin},
+                {x: marginX, y: marginY},
+                {x: width - marginX, y: marginY},
+                {x: marginX, y: height - marginY},
+                {x: width - marginX, y: height - marginY},
                 {x: width / 2, y: height / 2}
             ];
 
