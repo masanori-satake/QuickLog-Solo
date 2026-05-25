@@ -338,6 +338,7 @@ main {
     display: flex;
     align-items: center;
     gap: var(--md-sys-spacing-1);
+    flex-shrink: 0;
 }
 
 #elapsed-time {
@@ -360,10 +361,14 @@ body.timer-mini #current-task-name {
     margin-bottom: 0;
     flex: 1;
     text-align: left;
+    min-width: 0; /* Ensure flexbox allows shrinking for truncation */
 }
 
 body.timer-compact #current-task-name {
     font-size: 0.875rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 body.timer-mini #current-task-name {
