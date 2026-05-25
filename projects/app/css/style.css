@@ -1,6 +1,8 @@
 :root {
     --border-width: 1px;
     --font-family: 'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
+    --timer-height-factor: 1;
+    --timer-base-height: 80px;
 }
 
 * {
@@ -267,7 +269,7 @@ main {
 
 #current-task-display {
     position: relative;
-    height: 80px;
+    height: calc(var(--timer-base-height) * var(--timer-height-factor));
     border: none;
     background-color: var(--md-sys-color-surface-container-high);
     border-radius: var(--md-sys-shape-medium);
@@ -296,6 +298,35 @@ main {
     padding: var(--md-sys-spacing-1);
     pointer-events: none; /* Allow interaction with canvas behind */
     transition: background-color 0.3s;
+}
+
+body.timer-compact #current-task-display-base,
+body.timer-mini #current-task-display-base {
+    flex-direction: row;
+    gap: var(--md-sys-spacing-2);
+}
+
+body.timer-compact #current-task-name,
+body.timer-mini #current-task-name {
+    margin-bottom: 0;
+    flex: 1;
+    text-align: left;
+}
+
+body.timer-compact #current-task-name {
+    font-size: 0.875rem;
+}
+
+body.timer-compact #elapsed-time {
+    font-size: 1.25rem;
+}
+
+body.timer-mini #current-task-name {
+    display: none; /* Hide category name in mini mode to ensure timer legibility as per request */
+}
+
+body.timer-mini #elapsed-time {
+    font-size: 1.25rem;
 }
 
 #current-task-display-base > * {
@@ -380,7 +411,7 @@ main {
     top: 0;
     left: 0;
     width: 100%;
-    height: 80px; /* Match timer display height, avoiding buttons as requested in feedback */
+    height: 100%; /* Match timer display height */
     z-index: 0;
     pointer-events: auto;
     background-color: var(--md-sys-color-surface-container-high);

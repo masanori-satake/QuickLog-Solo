@@ -30,6 +30,7 @@ export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 export const SETTING_KEY_LANGUAGE = 'language';
 export const SETTING_KEY_REPORT_SETTINGS = 'reportSettings';
 export const SETTING_KEY_BUSINESS_DAYS = 'businessDays';
+export const SETTING_KEY_TIMER_HEIGHT = 'timerHeight';
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 export const SETTING_KEY_BACKUP_DIR_HANDLE = 'backupDirectoryHandle';
 
@@ -333,6 +334,7 @@ export async function getCurrentAppState() {
     const language = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
     const reportSettings = await dbGet(STORE_SETTINGS, SETTING_KEY_REPORT_SETTINGS);
     const businessDays = await dbGet(STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS);
+    const timerHeight = await dbGet(STORE_SETTINGS, SETTING_KEY_TIMER_HEIGHT);
     const categories = await dbGetAll(STORE_CATEGORIES);
     const alarms = await dbGetAll(STORE_ALARMS);
 
@@ -352,6 +354,7 @@ export async function getCurrentAppState() {
         language: language ? language.value : 'auto',
         reportSettings: reportSettings ? reportSettings.value : null,
         businessDays: businessDays ? businessDays.value : [1, 2, 3, 4, 5],
+        timerHeight: timerHeight ? timerHeight.value : 'normal',
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
         alarms: alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0)),
         activeTask

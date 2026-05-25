@@ -2,7 +2,8 @@ import {
     initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbAddMultiple, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME, SYNC_CHANNEL_NAME,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS
+    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
+    SETTING_KEY_TIMER_HEIGHT
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
@@ -40,6 +41,7 @@ const ID_THEME_SELECT = 'theme-select';
 const ID_FONT_SELECT = 'font-select';
 const ID_ANIMATION_SELECT = 'animation-select';
 const ID_LANGUAGE_SELECT = 'language-select';
+const ID_TIMER_HEIGHT_SELECT = 'timer-height-select';
 const ID_CATEGORY_LIST = 'category-list';
 const ID_CATEGORY_PAGINATION = 'category-pagination';
 const ID_LOG_LIST = 'log-list';
@@ -339,6 +341,27 @@ async function updateTimer() {
 }
 
 // --- UI Rendering ---
+
+function applyTimerHeight(height) {
+    const body = getBody();
+    body.classList.remove('timer-normal', 'timer-compact', 'timer-mini');
+    body.classList.add(`timer-${height}`);
+
+    let factor = 1;
+    if (height === 'compact') factor = 0.666;
+    if (height === 'mini') factor = 0.5;
+
+    document.documentElement.style.setProperty('--timer-height-factor', factor);
+
+    const select = getEl(ID_TIMER_HEIGHT_SELECT);
+    if (select) select.value = height;
+
+    // After height change, we need to update animation engine and exclusion areas
+    if (animationEngine) {
+        animationEngine.resize();
+        updateAnimationExclusionAreas();
+    }
+}
 
 function applyTheme(theme) {
     const body = getBody();
@@ -733,6 +756,7 @@ async function syncState() {
     applyLanguage();
 
     applyTheme(state.theme || THEME_SYSTEM);
+    applyTimerHeight(state.timerHeight || 'normal');
 
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
@@ -2394,6 +2418,13 @@ function setupEventListeners() {
             broadcastSync();
         });
     }
+
+    getEl(ID_TIMER_HEIGHT_SELECT)?.addEventListener('change', async (e) => {
+        const height = e.target.value;
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_TIMER_HEIGHT, value: height });
+        applyTimerHeight(height);
+        broadcastSync();
+    });
 
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
