@@ -28,6 +28,7 @@ export default {
     'tooltip-theme-select': 'Changer le mode clair/sombre',
     'tooltip-font-select': 'Choisir la police d\'affichage',
     'tooltip-animation-select': 'Choisir l\'animation de fond globale',
+    'tooltip-timer-height-select': 'Choisir la hauteur de la zone du minuteur',
     'tooltip-status-running': 'En cours',
     'tooltip-status-paused': 'En pause',
     'tooltip-status-stopped': 'Terminé',

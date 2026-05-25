@@ -300,34 +300,6 @@ main {
     transition: background-color 0.3s;
 }
 
-body.timer-compact #current-task-display-base,
-body.timer-mini #current-task-display-base {
-    flex-direction: row;
-    gap: var(--md-sys-spacing-2);
-}
-
-body.timer-compact #current-task-name,
-body.timer-mini #current-task-name {
-    margin-bottom: 0;
-    flex: 1;
-    text-align: left;
-}
-
-body.timer-compact #current-task-name {
-    font-size: 0.875rem;
-}
-
-body.timer-compact #elapsed-time {
-    font-size: 1.25rem;
-}
-
-body.timer-mini #current-task-name {
-    display: none; /* Hide category name in mini mode to ensure timer legibility as per request */
-}
-
-body.timer-mini #elapsed-time {
-    font-size: 1.25rem;
-}
 
 #current-task-display-base > * {
     pointer-events: auto; /* Re-enable for text selection and future tooltips */
@@ -375,6 +347,32 @@ body.timer-mini #elapsed-time {
     line-height: 1;
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface);
+}
+
+body.timer-compact #current-task-display-base,
+body.timer-mini #current-task-display-base {
+    flex-direction: row;
+    gap: var(--md-sys-spacing-2);
+}
+
+body.timer-compact #current-task-name,
+body.timer-mini #current-task-name {
+    margin-bottom: 0;
+    flex: 1;
+    text-align: left;
+}
+
+body.timer-compact #current-task-name {
+    font-size: 0.875rem;
+}
+
+body.timer-mini #current-task-name {
+    display: none; /* Hide category name in mini mode to ensure timer legibility as per request */
+}
+
+body.timer-compact #elapsed-time,
+body.timer-mini #elapsed-time {
+    font-size: 1.25rem;
 }
 
 #status-label.material-symbols-outlined {

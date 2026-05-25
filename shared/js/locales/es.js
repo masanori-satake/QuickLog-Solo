@@ -28,6 +28,7 @@ export default {
     'tooltip-theme-select': 'Cambiar modo claro/oscuro',
     'tooltip-font-select': 'Seleccionar fuente de visualización',
     'tooltip-animation-select': 'Seleccionar animación de fondo global',
+    'tooltip-timer-height-select': 'Seleccionar altura del área del temporizador',
     'tooltip-status-running': 'En ejecución',
     'tooltip-status-paused': 'En pausa',
     'tooltip-status-stopped': 'Finalizado',

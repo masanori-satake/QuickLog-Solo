@@ -28,6 +28,7 @@ export default {
     'tooltip-theme-select': '切换浅色/深色模式',
     'tooltip-font-select': '选择显示字体',
     'tooltip-animation-select': '选择全局背景动画',
+    'tooltip-timer-height-select': '选择计时器区域高度',
     'tooltip-status-running': '正在运行',
     'tooltip-status-paused': '已暂停',
     'tooltip-status-stopped': '已结束',

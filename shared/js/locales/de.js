@@ -28,6 +28,7 @@ export default {
     'tooltip-theme-select': 'Zwischen hellem und dunklem Modus wechseln',
     'tooltip-font-select': 'Anzeigeschriftart auswählen',
     'tooltip-animation-select': 'Globale Hintergrundanimation auswählen',
+    'tooltip-timer-height-select': 'Höhe des Timer-Bereichs auswählen',
     'tooltip-status-running': 'Laufend',
     'tooltip-status-paused': 'Pausiert',
     'tooltip-status-stopped': 'Beendet',

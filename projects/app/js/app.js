@@ -344,17 +344,22 @@ async function updateTimer() {
 
 function applyTimerHeight(height) {
     const body = getBody();
+    const select = getEl(ID_TIMER_HEIGHT_SELECT);
+    if (select) select.value = height;
+
+    if (body.classList.contains(`timer-${height}`)) return;
+
     body.classList.remove('timer-normal', 'timer-compact', 'timer-mini');
     body.classList.add(`timer-${height}`);
 
-    let factor = 1;
-    if (height === 'compact') factor = 0.666;
-    if (height === 'mini') factor = 0.5;
+    const factors = {
+        'normal': 1,
+        'compact': 2 / 3,
+        'mini': 0.5
+    };
+    const factor = factors[height] || 1;
 
     document.documentElement.style.setProperty('--timer-height-factor', factor);
-
-    const select = getEl(ID_TIMER_HEIGHT_SELECT);
-    if (select) select.value = height;
 
     // After height change, we need to update animation engine and exclusion areas
     if (animationEngine) {

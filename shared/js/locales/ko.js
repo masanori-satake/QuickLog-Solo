@@ -28,6 +28,7 @@ export default {
     'tooltip-theme-select': '라이트/다크 모드 전환',
     'tooltip-font-select': '표시 글꼴 선택',
     'tooltip-animation-select': '전체 배경 애니메이션 선택',
+    'tooltip-timer-height-select': '타이머 영역 높이 선택',
     'tooltip-status-running': '실행 중',
     'tooltip-status-paused': '일시 중지됨',
     'tooltip-status-stopped': '종료됨',
