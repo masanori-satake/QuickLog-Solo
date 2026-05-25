@@ -85,7 +85,7 @@ export default class HeartBeat extends AnimationBase {
             let yOffset = 0;
             if (!skip) {
                 // Scaling factor based on height
-                const hScale = Math.min(1.0, (this.height / 80) * 1.5);
+                const hScale = Math.min(1.0, this.height / 80);
 
                 // ECG Waveform components (P, QRS, T)
                 // 心電図の各成分（P波, QRS群, T波）をシミュレート

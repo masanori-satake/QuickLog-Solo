@@ -91,7 +91,7 @@ export default class Spectrum extends AnimationBase {
             if (this.bars[i] > this.peaks[i]) {
                 this.peaks[i] = this.bars[i];
             } else {
-                this.peaks[i] -= 0.5 * (height / 80); // Peaks fall slowly / ピークはゆっくり下降
+                this.peaks[i] -= 1.0 * (height / 80); // Peaks fall slowly / ピークはゆっくり下降
             }
 
             const x = i * barWidth + barWidth / 2;
