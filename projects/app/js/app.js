@@ -33,7 +33,7 @@ const ITEMS_PER_PAGE = 16;
 const EXCLUSION_PADDING_X = 4;
 const EXCLUSION_PADDING_Y = 2;
 
-const CSV_HEADER = "id,category,startTime,endTime\n";
+const CSV_HEADER = "id,category,startTime,endTime,tags\n";
 
 const ID_SETTINGS_POPUP = 'settings-popup';
 const ID_SETTINGS_TOGGLE = 'settings-toggle';
@@ -1965,14 +1965,6 @@ async function renderCategoryEditor() {
                     const updatedCat = { ...cat, name: newName };
                     await dbPut(STORE_CATEGORIES, updatedCat);
 
-                    const allLogs = await dbGetAll(STORE_LOGS);
-                    for (const log of allLogs) {
-                        if (log.category === oldName) {
-                            log.category = newName;
-                            await dbPut(STORE_LOGS, log);
-                        }
-                    }
-
                     // If the renamed category is the active task, update it immediately
                     if (activeTask && activeTask.category === oldName) {
                         activeTask.category = newName;
@@ -2685,7 +2677,7 @@ function setupEventListeners() {
         performMaintenanceAction(t('confirm-export-csv'), async () => {
             const logs = await dbGetAll(STORE_LOGS);
             let csv = CSV_HEADER;
-            logs.forEach(l => { csv += `${l.id},${escapeCsv(l.category)},${l.startTime},${l.endTime}\n`; });
+            logs.forEach(l => { csv += `${l.id},${escapeCsv(l.category)},${l.startTime},${l.endTime},${escapeCsv(l.tags || '')}\n`; });
             const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
             const a = createEl('a');
             a.href = url;
@@ -2740,7 +2732,7 @@ function setupEventListeners() {
                     errorCount++;
                     continue;
                 }
-                const [, category, startStr, endStr] = parts;
+                const [, category, startStr, endStr, tags] = parts;
                 const startTime = parseInt(startStr, 10);
                 const rawEndTime = endStr ? parseInt(endStr, 10) : null;
                 const endTime = isNaN(rawEndTime) ? null : rawEndTime;
@@ -2773,7 +2765,8 @@ function setupEventListeners() {
                 validRows.push({
                     category,
                     startTime,
-                    endTime: endTime
+                    endTime: endTime,
+                    tags: tags || ''
                 });
                 importedKeys.add(recordKey);
             }
@@ -2910,11 +2903,14 @@ async function handleTestParameters() {
         }
 
         // 指定された状態をDBに直接注入
+        const cat = await dbGetByName(STORE_CATEGORIES, testCat);
         const newLog = {
             category: testCat,
             startTime: startTime,
             endTime: null,
-            resumableCategory: resumable
+            resumableCategory: resumable,
+            color: cat ? (cat.color || 'primary') : 'primary',
+            tags: cat ? (cat.tags || '') : ''
         };
         const id = await dbAdd(STORE_LOGS, newLog);
         newLog.id = id;
