@@ -200,6 +200,10 @@ async function endTask() {
 async function openHistoryEditModal(log) {
     const modal = getEl('history-edit-modal');
     const timeInput = getEl('history-edit-time-input');
+    const categorySelect = getEl('history-edit-category-select');
+    const memoInput = getEl('history-edit-memo-input');
+    if (!categorySelect || !memoInput) return;
+
     const titleEl = getEl('history-edit-title');
     const labelEl = getEl('history-edit-time-label');
     const warningEl = getEl('history-edit-warning');
@@ -207,10 +211,14 @@ async function openHistoryEditModal(log) {
     const cancelBtn = getEl('history-edit-cancel-btn');
     const deleteBtn = getEl('history-edit-delete-btn');
 
+    const categoryItem = getEl('history-edit-category-item');
+    const memoItem = getEl('history-edit-memo-item');
+
     if (!modal || !timeInput) return;
 
     // Determine if it's a stop marker
     const isStopMarker = log.isManualStop;
+    const isTask = !isStopMarker && log.category !== SYSTEM_CATEGORY_IDLE;
     const titleKey = isStopMarker ? 'history-edit-stop-title' : 'history-edit-title';
     const labelKey = isStopMarker ? 'history-edit-end-time' : 'history-edit-start-time';
 
@@ -237,6 +245,38 @@ async function openHistoryEditModal(log) {
         deleteBtn.classList.add('hidden');
     } else {
         deleteBtn.classList.remove('hidden');
+    }
+
+    if (isTask) {
+        categoryItem?.classList.remove('hidden');
+        memoItem?.classList.remove('hidden');
+
+        // Populate category dropdown
+        const categories = await dbGetAll(STORE_CATEGORIES);
+        const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+        categorySelect.replaceChildren();
+
+        const currentCategoryExists = workCategories.some(c => c.name === log.category);
+        if (!currentCategoryExists) {
+            const opt = createEl('option');
+            opt.value = log.category;
+            opt.textContent = log.category;
+            opt.selected = true;
+            categorySelect.appendChild(opt);
+        }
+
+        workCategories.forEach(c => {
+            const opt = createEl('option');
+            opt.value = c.name;
+            opt.textContent = c.name;
+            if (c.name === log.category) opt.selected = true;
+            categorySelect.appendChild(opt);
+        });
+
+        memoInput.value = log.memo || '';
+    } else {
+        categoryItem?.classList.add('hidden');
+        memoItem?.classList.add('hidden');
     }
 
     const validate = () => {
@@ -283,6 +323,21 @@ async function openHistoryEditModal(log) {
         const newTime = new Date(log.startTime);
         newTime.setHours(h, m, 0, 0);
         const newTs = newTime.getTime();
+
+        if (isTask) {
+            const newCategoryName = categorySelect.value;
+            if (newCategoryName !== log.category) {
+                const cat = await dbGetByName(STORE_CATEGORIES, newCategoryName);
+                log.category = newCategoryName;
+                log.color = cat ? cat.color : log.color;
+                log.tags = cat ? (cat.tags || '') : log.tags;
+            }
+            log.memo = memoInput.value.trim() || undefined;
+            // Since we might have modified log object, we should save it.
+            // updateHistoryStartTime also saves it, but it might only update startTime.
+            // Let's ensure other fields are saved too.
+            await dbPut(STORE_LOGS, log);
+        }
 
         await updateHistoryStartTime(log.id, newTs);
 
@@ -610,6 +665,9 @@ function createLogElement(log, categoryMap) {
     } else {
         const color = log.color || (categoryMap.get(log.category) ? categoryMap.get(log.category).color : 'primary');
         colorClass = `dot-${color}`;
+        if (log.memo) {
+            displayName = log.memo;
+        }
     }
 
     const nameSpan = createEl('span');

@@ -144,7 +144,8 @@ function prepareReportItems(logs, options) {
     let displayLogs = filteredLogs.map(log => ({
         startTime: log.startTime,
         endTime: log.endTime,
-        category: log.category === '__IDLE__' ? (options.idleText || t('idle-category-log')) : log.category
+        category: log.category === SYSTEM_CATEGORY_IDLE ? (options.idleText || t('idle-category-log')) : log.category,
+        memo: log.memo
     }));
 
     if (adjustIntervalMs > 0) {
@@ -194,7 +195,7 @@ function prepareReportItems(logs, options) {
     }
 
     return displayLogs.map(log => {
-        let category = log.category;
+        let category = log.memo || log.category;
         if (emoji === 'remove') {
             category = stripEmojis(category);
         }
