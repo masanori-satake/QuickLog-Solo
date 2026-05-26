@@ -2698,6 +2698,9 @@ function setupEventListeners() {
         if (!file) return;
 
         try {
+            const categories = await dbGetAll(STORE_CATEGORIES);
+            const categoryMap = new Map(categories.map(c => [c.name, c]));
+
             // Security: Limit file size (e.g., 5MB for CSV history)
             if (file.size > 5 * 1024 * 1024) {
                 alert(t('alert-import-error') + '\n(File too large)');
@@ -2762,11 +2765,13 @@ function setupEventListeners() {
                     continue;
                 }
 
+                const cat = categoryMap ? categoryMap.get(category) : null;
                 validRows.push({
                     category,
                     startTime,
                     endTime: endTime,
-                    tags: tags || ''
+                    tags: tags || (cat ? (cat.tags || '') : ''),
+                    color: cat ? (cat.color || 'primary') : 'primary'
                 });
                 importedKeys.add(recordKey);
             }

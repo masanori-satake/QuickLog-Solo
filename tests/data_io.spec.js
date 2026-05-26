@@ -65,7 +65,7 @@ test.describe('Data Import and Export Consistency', () => {
         const csvContent = fs.readFileSync(downloadPath, 'utf8');
         const lines = csvContent.split('\n').filter(l => l.trim());
 
-        expect(lines[0]).toBe('id,category,startTime,endTime');
+        expect(lines[0]).toBe('id,category,startTime,endTime,tags');
         expect(lines.length).toBeGreaterThan(1);
         /* eslint-disable-next-line no-control-regex */
         expect(lines[1]).toContain(catName.replace(/[^\x00-\x7F]/g, ""));

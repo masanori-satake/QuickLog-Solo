@@ -514,6 +514,10 @@ async function setupInitialData(languageSetting) {
  * Populates missing tags and colors for existing logs based on current categories.
  */
 async function migrateLogsWithMissingData() {
+    const migrationKey = 'migration_tags_color_populated';
+    const alreadyMigrated = await dbGet(STORE_SETTINGS, migrationKey);
+    if (alreadyMigrated) return;
+
     const logs = await dbGetAll(STORE_LOGS);
     const categories = await dbGetAll(STORE_CATEGORIES);
     const categoryMap = new Map(categories.map(c => [c.name, c]));
@@ -552,6 +556,8 @@ async function migrateLogsWithMissingData() {
             }
         });
     }
+
+    await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
 }
 
 async function generateDummyHistory() {

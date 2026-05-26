@@ -1,13 +1,17 @@
-import { setDatabaseName, initDB, dbAdd, dbGetAll, dbClear, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, dbPut, dbGetByName } from '../shared/js/db.js';
+import { setDatabaseName, initDB, dbAdd, dbGetAll, dbClear, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, dbPut, dbGetByName, closeDatabase } from '../shared/js/db.js';
 import { startTaskLogic } from '../shared/js/logic.js';
-import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 
 describe('Tags Preservation and Migration', () => {
     beforeEach(async () => {
+        closeDatabase();
         setDatabaseName('TagsPreservationTestDB');
         await dbClear(STORE_LOGS);
         await dbClear(STORE_CATEGORIES);
         await dbClear(STORE_SETTINGS);
+    });
+
+    afterEach(() => {
+        closeDatabase();
     });
 
     test('migration populates missing tags and color', async () => {
