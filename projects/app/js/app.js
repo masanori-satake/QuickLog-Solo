@@ -202,6 +202,8 @@ async function openHistoryEditModal(log) {
     const timeInput = getEl('history-edit-time-input');
     const categorySelect = getEl('history-edit-category-select');
     const memoInput = getEl('history-edit-memo-input');
+    if (!categorySelect || !memoInput) return;
+
     const titleEl = getEl('history-edit-title');
     const labelEl = getEl('history-edit-time-label');
     const warningEl = getEl('history-edit-warning');

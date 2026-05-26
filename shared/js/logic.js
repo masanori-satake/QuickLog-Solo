@@ -144,7 +144,7 @@ function prepareReportItems(logs, options) {
     let displayLogs = filteredLogs.map(log => ({
         startTime: log.startTime,
         endTime: log.endTime,
-        category: log.category === '__IDLE__' ? (options.idleText || t('idle-category-log')) : log.category,
+        category: log.category === SYSTEM_CATEGORY_IDLE ? (options.idleText || t('idle-category-log')) : log.category,
         memo: log.memo
     }));
 
