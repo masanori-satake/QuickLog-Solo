@@ -23,7 +23,7 @@ test.describe('History CSV Import Robustness', () => {
         const now = Date.now();
         const futureStart = now + 1000000;
         const futureEnd = now + 2000000;
-        const csv = `id,category,startTime,endTime\n1,FutureTask,${futureStart},${futureEnd}`;
+        const csv = `id,category,startTime,endTime,tags\n1,FutureTask,${futureStart},${futureEnd},`;
         const filePath = await createTempCSV(csv);
 
         await page.click('#settings-toggle');
@@ -72,7 +72,7 @@ test.describe('History CSV Import Robustness', () => {
         }, {now, dbName});
         await page.reload();
 
-        const csv = `id,category,startTime,endTime\n2,Overlapping,${now - 5400000},${now - 1800000}`;
+        const csv = `id,category,startTime,endTime,tags\n2,Overlapping,${now - 5400000},${now - 1800000},`;
         const filePath = await createTempCSV(csv);
 
         await page.click('#settings-toggle');
@@ -115,7 +115,7 @@ test.describe('History CSV Import Robustness', () => {
         }, {startTime, dbName});
         await page.reload();
 
-        const csv = `id,category,startTime,endTime\n3,DuplicateMe,${startTime},${startTime + 100000}`;
+        const csv = `id,category,startTime,endTime,tags\n3,DuplicateMe,${startTime},${startTime + 100000},`;
         const filePath = await createTempCSV(csv);
 
         await page.click('#settings-toggle');
@@ -143,7 +143,7 @@ test.describe('History CSV Import Robustness', () => {
         await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
-        const csv = `id,category,startTime,endTime\nInvalid,Line,Here\n4,ValidTask,${Date.now() - 100000},${Date.now()}`;
+        const csv = `id,category,startTime,endTime,tags\nInvalid,Line,Here,tags\n4,ValidTask,${Date.now() - 100000},${Date.now()},`;
         const filePath = await createTempCSV(csv);
 
         await page.click('#settings-toggle');
@@ -170,7 +170,7 @@ test.describe('History CSV Import Robustness', () => {
         await page.waitForSelector('.category-btn');
 
         const now = Date.now();
-        const csv = `id,category,startTime,endTime\n5,ErrorTask,${now},${now - 1000}`;
+        const csv = `id,category,startTime,endTime,tags\n5,ErrorTask,${now},${now - 1000},`;
         const filePath = await createTempCSV(csv);
 
         await page.click('#settings-toggle');

@@ -505,7 +505,59 @@ async function setupInitialData(languageSetting) {
     // Generate dummy history if no logs exist
     if ((await dbGetAll(STORE_LOGS)).length === 0) {
         await generateDummyHistory();
+    } else {
+        await migrateLogsWithMissingData();
     }
+}
+
+/**
+ * Populates missing tags and colors for existing logs based on current categories.
+ */
+async function migrateLogsWithMissingData() {
+    const migrationKey = 'migration_tags_color_populated';
+    const alreadyMigrated = await dbGet(STORE_SETTINGS, migrationKey);
+    if (alreadyMigrated) return;
+
+    const logs = await dbGetAll(STORE_LOGS);
+    const categories = await dbGetAll(STORE_CATEGORIES);
+    const categoryMap = new Map(categories.map(c => [c.name, c]));
+
+    const logsToUpdate = [];
+    for (const log of logs) {
+        if (log.category === SYSTEM_CATEGORY_IDLE || log.isManualStop) continue;
+
+        let changed = false;
+        if (log.tags === undefined || log.tags === null) {
+            const cat = categoryMap.get(log.category);
+            log.tags = cat ? (cat.tags || '') : '';
+            changed = true;
+        }
+        if (!log.color) {
+            const cat = categoryMap.get(log.category);
+            log.color = cat ? (cat.color || 'primary') : 'primary';
+            changed = true;
+        }
+
+        if (changed) {
+            logsToUpdate.push(log);
+        }
+    }
+
+    if (logsToUpdate.length > 0) {
+        console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing tags or colors.`);
+        await new Promise((resolve, reject) => {
+            if (!db) { reject(new Error('DB not initialized')); return; }
+            const tx = db.transaction(STORE_LOGS, 'readwrite');
+            const store = tx.objectStore(STORE_LOGS);
+            tx.oncomplete = () => resolve();
+            tx.onerror = (e) => reject(e.target.error);
+            for (const log of logsToUpdate) {
+                store.put(log);
+            }
+        });
+    }
+
+    await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
 }
 
 async function generateDummyHistory() {
