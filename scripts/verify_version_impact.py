@@ -70,13 +70,24 @@ def get_version_at_commit(filepath, commit_hash):
 def determine_required_bump(commits):
     bump = None
     for body in commits:
-        if bump != "major":
-            if "BREAKING CHANGE" in body or re.search(r'^[a-zA-Z]+!:', body, re.MULTILINE):
-                bump = "major"
-            elif re.search(r'^feat(\(.*\))?:', body, re.MULTILINE) and bump != "major":
+        # Check for Major bump (Breaking Change)
+        if "BREAKING CHANGE" in body or re.search(r'^[a-zA-Z]+!:', body, re.MULTILINE):
+            return "major"
+
+        # Check for Minor bump (New Feature)
+        if re.search(r'^feat(\(.*\))?:', body, re.MULTILINE) or "新規機能" in body or "機能追加" in body:
+            if bump != "major":
                 bump = "minor"
-            elif re.search(r'^fix(\(.*\))?:', body, re.MULTILINE) and bump is None:
+
+        # Check for Patch bump (Fix or other changes that are not just metadata)
+        elif bump is None:
+            # Explicit fix
+            if re.search(r'^fix(\(.*\))?:', body, re.MULTILINE) or "修正" in body or "バグ" in body:
                 bump = "patch"
+            # If impactful files are touched and it's not a known non-bumping type, assume patch
+            elif not re.search(r'^(chore|test|docs|style|refactor|perf|ci)(\(.*\))?:', body, re.MULTILINE):
+                bump = "patch"
+
     return bump
 
 def check_impact():
