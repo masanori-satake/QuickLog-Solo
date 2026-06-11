@@ -1,6 +1,7 @@
 import {
     initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbAddMultiple, dbDelete, dbClear, dbImportCategories,
     setDatabaseName, DB_NAME, SYNC_CHANNEL_NAME,
+    SETTING_KEY_SESSION_SYNC,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
     SETTING_KEY_TIMER_HEIGHT
@@ -10,6 +11,7 @@ import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } fro
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } from '../shared/js/logic.js';
 import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
+import { isSessionSyncEnabled, pushToCloud, pullFromCloud } from '../shared/js/session_sync.js';
 import { animations } from '../shared/js/animation_registry.js';
 import {
     validateCategorySchema, SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0,
@@ -85,6 +87,8 @@ const ID_IMPORT_CATEGORIES_BTN = 'import-categories-btn';
 const ID_CLEAR_LOGS_BTN = 'clear-logs-btn';
 const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
 const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
+const ID_SESSION_SYNC_TOGGLE = 'session-sync-toggle';
+const ID_SYNC_STATUS_BADGE = 'sync-status-badge';
 
 const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor/';
 const ALARM_EDITOR_URL = 'https://quick-log-solo.vercel.app/alarm-editor/';
@@ -798,6 +802,12 @@ function broadcastSync(type = 'sync') {
             // Ignore errors if background script is not listening
         });
     }
+
+    if (type === 'sync' || type === 'alarms-updated') {
+        getCurrentAppState().then(state => {
+            pushToCloud(state).catch(err => console.error('pushToCloud failed', err));
+        });
+    }
 }
 
 async function syncState() {
@@ -806,6 +816,20 @@ async function syncState() {
 
     // Backup UI sync
     updateBackupUI();
+
+    // Session Sync UI sync
+    const syncBadge = getEl(ID_SYNC_STATUS_BADGE);
+    if (syncBadge) {
+        if (state.sessionSync) {
+            syncBadge.classList.remove('hidden');
+        } else {
+            syncBadge.classList.add('hidden');
+        }
+    }
+    const syncToggle = getEl(ID_SESSION_SYNC_TOGGLE);
+    if (syncToggle) {
+        syncToggle.checked = !!state.sessionSync;
+    }
 
     // Migration: Update 'matrix_code' to 'digital_rain' for existing users
     if (state.animation === 'matrix_code') {
@@ -824,6 +848,19 @@ async function syncState() {
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
 
+    // Apply report settings
+    if (state.reportSettings) {
+        reportSettings = state.reportSettings;
+        const fmtSelect = getEl(ID_REPORT_FORMAT_SELECT);
+        if (fmtSelect) {
+            fmtSelect.value = reportSettings.format;
+            updateDurationSelectOptions(reportSettings.format);
+        }
+        if (getEl(ID_REPORT_EMOJI_SELECT)) getEl(ID_REPORT_EMOJI_SELECT).value = reportSettings.emoji;
+        if (getEl(ID_REPORT_ENDTIME_SELECT)) getEl(ID_REPORT_ENDTIME_SELECT).value = reportSettings.endTime;
+        if (getEl(ID_REPORT_DURATION_SELECT)) getEl(ID_REPORT_DURATION_SELECT).value = reportSettings.duration;
+        if (getEl(ID_REPORT_ADJUST_SELECT)) getEl(ID_REPORT_ADJUST_SELECT).value = reportSettings.adjust || 'none';
+    }
 
     // Update Animation options
     currentAnimationType = state.animation || 'digital_rain';
@@ -2492,6 +2529,22 @@ function setupEventListeners() {
         });
     }
 
+    getEl(ID_SESSION_SYNC_TOGGLE)?.addEventListener('change', async (e) => {
+        const enabled = e.target.checked;
+        const confirmMsg = enabled ? t('confirm-enable-session-sync') : t('confirm-disable-session-sync');
+        if (await showConfirm(confirmMsg)) {
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_SESSION_SYNC, value: enabled });
+            if (enabled) {
+                const state = await getCurrentAppState();
+                await pushToCloud(state);
+            }
+            await syncState();
+            broadcastSync();
+        } else {
+            e.target.checked = !enabled;
+        }
+    });
+
     // Category additions
     getEl(ID_ADD_CATEGORY_BTN_SETTINGS)?.addEventListener('click', async () => {
         const input = getEl(ID_NEW_CATEGORY_NAME_SETTINGS);
@@ -2914,6 +2967,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         await initDB();
+
+        if (await isSessionSyncEnabled()) {
+            await pullFromCloud();
+        }
 
         initAnimationEngine();
         await backupManager.init();

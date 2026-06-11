@@ -6,6 +6,7 @@
 import { getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME, initDB, SYNC_CHANNEL_NAME } from '../shared/js/db.js';
 import { stopTaskLogic, pauseTaskLogic, startTaskLogic, calculateNextAlarmTime } from '../shared/js/logic.js';
 import { t, setLanguage } from '../shared/js/i18n.js';
+import { isSessionSyncEnabled, pullFromCloud } from '../shared/js/session_sync.js';
 
 /**
  * background.js
@@ -44,6 +45,7 @@ async function initializeBackground() {
         }
 
         setupBroadcastChannel();
+        setupCloudListener();
         await setupAlarms();
     } catch (error) {
         console.error('QuickLog-Solo: Initialization failed:', error);
@@ -160,6 +162,26 @@ async function executeAlarmAction(alarmData, activeTask) {
     }
     // Also notify via chrome.runtime for better reliability
     chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
+}
+
+function setupCloudListener() {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+        chrome.storage.onChanged.addListener(async (changes, area) => {
+            if (area === 'sync' && (await isSessionSyncEnabled())) {
+                console.log('QuickLog-Solo: Remote changes detected via session sync.');
+                try {
+                    await pullFromCloud();
+                    await setupAlarms();
+                    if (syncChannel) {
+                        syncChannel.postMessage({ type: 'sync' });
+                    }
+                    chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
+                } catch (err) {
+                    console.error('QuickLog-Solo: Failed to pull remote changes', err);
+                }
+            }
+        });
+    }
 }
 
 /**

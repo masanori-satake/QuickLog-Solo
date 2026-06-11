@@ -33,6 +33,8 @@ export const SETTING_KEY_BUSINESS_DAYS = 'businessDays';
 export const SETTING_KEY_TIMER_HEIGHT = 'timerHeight';
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 export const SETTING_KEY_BACKUP_DIR_HANDLE = 'backupDirectoryHandle';
+export const SETTING_KEY_SESSION_SYNC = 'sessionSync';
+export const SETTING_KEY_LAST_PULLED_SYNC_TIME = 'lastPulledSyncTime';
 
 export const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
@@ -355,6 +357,7 @@ export async function getCurrentAppState() {
         reportSettings: reportSettings ? reportSettings.value : null,
         businessDays: businessDays ? businessDays.value : [1, 2, 3, 4, 5],
         timerHeight: timerHeight ? timerHeight.value : 'normal',
+        sessionSync: (await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC))?.value || false,
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
         alarms: alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0)),
         activeTask
