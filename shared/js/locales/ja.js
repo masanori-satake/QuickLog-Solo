@@ -406,6 +406,7 @@ export default {
     'privacy-policy-local-only-short': 'ローカル完結',
     'setting-session-sync': 'セッション連携 (Sync)',
     'setting-session-sync-desc': 'ブラウザのセッション機能を利用して、設定・カテゴリ・直近の履歴をセキュアに同期します。複数端末で作業する場合に便利です。',
+    'setting-session-sync-note': '※ ChromeとEdgeの間など、異なるブラウザ間での同期はできません。',
     'confirm-enable-session-sync': 'セッション連携を有効にしますか？現在のデータがブラウザの同期ストレージにアップロードされます。',
     'confirm-disable-session-sync': 'セッション連携を無効にしますか？この端末での同期は停止しますが、クラウド上のデータは保持されます。',
     'session-sync-active': 'セッション連携中',

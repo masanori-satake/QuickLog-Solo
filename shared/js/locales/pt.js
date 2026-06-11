@@ -368,6 +368,7 @@ export default {
     'privacy-policy-local-only-short': 'Apenas local',
     'setting-session-sync': 'Sincronização de sessão (Sync)',
     'setting-session-sync-desc': 'Sincronize com segurança as configurações, categorias e o histórico recente através das sessões do navegador. Útil para trabalhar em vários dispositivos.',
+    'setting-session-sync-note': '* Nota: A sincronização entre navegadores diferentes (por exemplo, Chrome e Edge) não é suportada.',
     'confirm-enable-session-sync': 'Ativar a sincronização de sessão? Seus dados atuais serão enviados para o armazenamento em nuvem do seu navegador.',
     'confirm-disable-session-sync': 'Desativar a sincronização de sessão? Este dispositivo parará de sincronizar, mas os dados na nuvem serão mantidos.',
     'session-sync-active': 'Sincronização ativa',

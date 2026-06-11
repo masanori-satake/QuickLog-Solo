@@ -368,6 +368,7 @@ export default {
     'privacy-policy-local-only-short': 'Nur lokal',
     'setting-session-sync': 'Browser-Sitzungssynchronisation (Sync)',
     'setting-session-sync-desc': 'Synchronisieren Sie Einstellungen, Kategorien und den aktuellen Verlauf sicher über Browsersitzungen. Ideal für den Wechsel zwischen Geräten.',
+    'setting-session-sync-note': '* Hinweis: Die Synchronisierung zwischen verschiedenen Browsern (z. B. Chrome und Edge) wird nicht unterstützt.',
     'confirm-enable-session-sync': 'Sitzungssynchronisation aktivieren? Dadurch werden Ihre aktuellen Daten in den Cloud-Speicher Ihres Browsers hochgeladen.',
     'confirm-disable-session-sync': 'Sitzungssynchronisation deaktivieren? Dieses Gerät wird nicht mehr synchronisiert, aber die Cloud-Daten bleiben erhalten.',
     'session-sync-active': 'Sitzungssynchronisation aktiv',
