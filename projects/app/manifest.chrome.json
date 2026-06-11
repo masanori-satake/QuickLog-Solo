@@ -2,13 +2,14 @@
   "manifest_version": 3,
   "default_locale": "en",
   "name": "__MSG_extensionName__",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "__MSG_extensionDescription__",
   "permissions": [
     "sidePanel",
     "alarms",
     "notifications",
-    "clipboardRead"
+    "clipboardRead",
+    "storage"
   ],
   "content_security_policy": {
     "extension_pages": "default-src 'self'; connect-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://raw.githubusercontent.com;"

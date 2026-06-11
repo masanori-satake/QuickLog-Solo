@@ -1,11 +1,16 @@
 export const common = {
-    'lang-en-native': '🇺🇸 English',
+    'setting-session-sync': 'Browser Session Sync',
+    'setting-session-sync-desc': 'Securely synchronize settings, categories, and logs across browsers using your session. Ideal for switching devices during work.',
+    'confirm-enable-session-sync': 'Enable session synchronization? This will upload your current data to your browser\'s cloud storage.',
+    'confirm-disable-session-sync': 'Disable session synchronization? This device will stop syncing with others, but cloud data will remain.',
+    'session-sync-active': 'Session Sync Active',
+    'local-only-active': 'Local Only',
     'lang-ja-native': '🇯🇵 日本語',
+    'lang-en-native': '🇺🇸 English',
     'lang-de-native': '🇩🇪 Deutsch',
     'lang-es-native': '🇪🇸 Español',
     'lang-fr-native': '🇫🇷 Français',
-    'lang-pt-native': '🇧🇷 Português',
+    'lang-pt-native': '🇵🇹 Português',
     'lang-ko-native': '🇰🇷 한국어',
     'lang-zh-native': '🇨🇳 简体中文',
-    'glyph-language': 'translate'
 };

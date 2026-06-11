@@ -404,4 +404,10 @@ export default {
     'tooltip-replace-tags': 'Replace Tags',
     'privacy-policy-local-only': 'All processing is completed within the browser, and there is no coordination with external servers. Your information will never be leaked outside.',
     'privacy-policy-local-only-short': 'Local Only',
+    'setting-session-sync': 'Session Linkage (Sync)',
+    'setting-session-sync-desc': 'Securely synchronize settings, categories, and recent history using browser sessions. Useful for working on multiple devices.',
+    'confirm-enable-session-sync': 'Enable session linkage? Current data will be uploaded to browser sync storage.',
+    'confirm-disable-session-sync': 'Disable session linkage? Syncing on this device will stop, but cloud data will be kept.',
+    'session-sync-active': 'Session Linked',
+    'local-only-active': 'Local Only',
 };

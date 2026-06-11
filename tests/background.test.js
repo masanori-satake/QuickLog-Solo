@@ -39,10 +39,27 @@ global.BroadcastChannel = jest.fn().mockImplementation(() => ({
 jest.unstable_mockModule('../shared/js/db.js', () => ({
     getCurrentAppState: jest.fn().mockResolvedValue({ alarms: [], activeTask: null }),
     dbGetByName: jest.fn(),
+    dbGetAll: jest.fn(),
+    dbGet: jest.fn(),
+    dbPut: jest.fn(),
+    dbAddMultiple: jest.fn(),
+    openDatabase: jest.fn(),
     initDB: jest.fn().mockResolvedValue({ language: 'en' }),
     STORE_CATEGORIES: 'categories',
+    STORE_LOGS: 'logs',
+    STORE_SETTINGS: 'settings',
+    STORE_ALARMS: 'alarms',
     DB_NAME: 'QuickLogSoloDB',
-    SYNC_CHANNEL_NAME: 'quicklog_solo_sync'
+    SYNC_CHANNEL_NAME: 'quicklog_solo_sync',
+    SETTING_KEY_ANIMATION: 'animation',
+    SETTING_KEY_SESSION_SYNC: 'sessionSync',
+    SETTING_KEY_THEME: 'theme',
+    SETTING_KEY_FONT: 'font',
+    SETTING_KEY_LANGUAGE: 'language',
+    SETTING_KEY_REPORT_SETTINGS: 'reportSettings',
+    SETTING_KEY_BUSINESS_DAYS: 'businessDays',
+    SETTING_KEY_TIMER_HEIGHT: 'timerHeight',
+    SETTING_KEY_LAST_PULLED_SYNC_TIME: 'lastPulledSyncTime'
 }));
 
 jest.unstable_mockModule('../shared/js/logic.js', () => ({
@@ -55,6 +72,12 @@ jest.unstable_mockModule('../shared/js/logic.js', () => ({
 jest.unstable_mockModule('../shared/js/i18n.js', () => ({
     t: jest.fn(key => key),
     setLanguage: jest.fn()
+}));
+
+jest.unstable_mockModule('../shared/js/session_sync.js', () => ({
+    isSessionSyncEnabled: jest.fn().mockResolvedValue(false),
+    pullFromCloud: jest.fn().mockResolvedValue(),
+    pushToCloud: jest.fn().mockResolvedValue()
 }));
 
 const { getCurrentAppState, dbGetByName } = await import('../shared/js/db.js');
