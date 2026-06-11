@@ -38,13 +38,10 @@ export async function pushToCloud(state) {
     const allLogs = await dbGetAll(STORE_LOGS);
     const recentLogs = allLogs.sort((a, b) => b.startTime - a.startTime).slice(0, MAX_SYNC_LOGS);
 
+    const syncTime = Date.now();
     const syncData = {
         [SYNC_KEYS.CATEGORIES]: categories,
-        [SYNC_KEYS.ALARMS]: alarms.map(a => {
-            const copy = { ...a };
-            delete copy.id; // ID might differ between devices, we rely on order/content
-            return copy;
-        }),
+        [SYNC_KEYS.ALARMS]: alarms,
         [SYNC_KEYS.SETTINGS]: {
             theme: state.theme,
             font: state.font,
@@ -55,8 +52,11 @@ export async function pushToCloud(state) {
         },
         [SYNC_KEYS.BUSINESS_DAYS]: state.businessDays,
         [SYNC_KEYS.LOGS]: recentLogs,
-        [SYNC_KEYS.LAST_SYNC]: Date.now()
+        [SYNC_KEYS.LAST_SYNC]: syncTime
     };
+
+    // Update local last pulled time to prevent redundant pull from onChanged
+    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: syncTime });
 
     return new Promise((resolve, reject) => {
         chrome.storage.sync.set(syncData, () => {
@@ -71,6 +71,7 @@ export async function pushToCloud(state) {
  */
 export async function pullFromCloud() {
     if (!(await isSessionSyncEnabled())) return;
+    if (isInternalUpdate) return;
 
     isInternalUpdate = true;
     return new Promise((resolve, reject) => {

@@ -2535,6 +2535,8 @@ function setupEventListeners() {
         if (await showConfirm(confirmMsg)) {
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_SESSION_SYNC, value: enabled });
             if (enabled) {
+                // When enabling, pull first to adopt remote data if it exists, then push current state
+                await pullFromCloud().catch(err => console.error('Initial pull failed', err));
                 const state = await getCurrentAppState();
                 await pushToCloud(state);
             }
@@ -2969,7 +2971,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await initDB();
 
         if (await isSessionSyncEnabled()) {
-            await pullFromCloud();
+            await pullFromCloud().catch(err => console.error('Failed to pull from cloud during initialization:', err));
         }
 
         initAnimationEngine();
