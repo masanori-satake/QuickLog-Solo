@@ -69,9 +69,6 @@ export async function pushToCloud(state) {
         syncData[`${SYNC_KEYS.LOGS_PREFIX}${i}`] = chunk;
     }
 
-    // Update local last pulled time to prevent redundant pull from onChanged
-    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: syncTime });
-
     return new Promise((resolve, reject) => {
         chrome.storage.sync.set(syncData, () => {
             if (chrome.runtime.lastError) {
@@ -170,11 +167,7 @@ export async function pullFromCloud() {
                             const t = db.transaction(STORE_ALARMS, 'readwrite');
                             const s = t.objectStore(STORE_ALARMS);
                             s.clear();
-                            remoteAlarms.forEach(a => {
-                                const copy = { ...a };
-                                delete copy.id;
-                                s.add(copy);
-                            });
+                            remoteAlarms.forEach(a => s.add(a));
                             t.oncomplete = () => res();
                             t.onerror = () => rej(t.error);
                         });
@@ -199,9 +192,13 @@ export async function pullFromCloud() {
                 }
 
                 // 5. Pause State (Active Task)
-                if (data[SYNC_KEYS.PAUSE_STATE]) {
+                if (SYNC_KEYS.PAUSE_STATE in data) {
                     const remoteActiveTask = data[SYNC_KEYS.PAUSE_STATE];
-                    await syncActiveTask(remoteActiveTask);
+                    if (remoteActiveTask) {
+                        await syncActiveTask(remoteActiveTask);
+                    } else {
+                        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: null });
+                    }
                 }
 
                 await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
