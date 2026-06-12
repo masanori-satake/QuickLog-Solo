@@ -144,3 +144,15 @@ export function generateDuplicateName(baseName, existingNames) {
 
     return `${cleanBase} (${maxNum + 1})`;
 }
+
+/**
+ * Generates a UUID or a fallback unique string.
+ * crypto.randomUUID is only available in secure contexts.
+ * @returns {string}
+ */
+export function generateUUID() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return 'uuid-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
+}

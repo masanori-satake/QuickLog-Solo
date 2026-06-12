@@ -1,4 +1,4 @@
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, DEFAULT_ALARM_MESSAGE_STOP } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, DEFAULT_ALARM_MESSAGE_STOP, generateUUID } from './utils.js';
 import { t, setLanguage } from './i18n.js';
 import { validateCategorySchema, SCHEMA_TYPE_PAGE_BREAK } from './schema.js';
 
@@ -539,7 +539,7 @@ async function migrateLogsWithSyncId() {
 
     for (const log of logs) {
         if (!log.syncId) {
-            log.syncId = crypto.randomUUID();
+            log.syncId = generateUUID();
             logsToUpdate.push(log);
         }
     }
@@ -682,7 +682,7 @@ async function generateDummyHistory() {
                 lastCategoryName = cat.name;
 
                 allNewLogs.push({
-                    syncId: crypto.randomUUID(),
+                    syncId: generateUUID(),
                     category: cat.name,
                     startTime: Math.floor(current),
                     endTime: Math.floor(taskEnd),
@@ -698,7 +698,7 @@ async function generateDummyHistory() {
 
         // Lunch Break
         allNewLogs.push({
-            syncId: crypto.randomUUID(),
+            syncId: generateUUID(),
             category: SYSTEM_CATEGORY_IDLE,
             startTime: Math.floor(lunchStart),
             endTime: Math.floor(lunchEnd)
@@ -709,7 +709,7 @@ async function generateDummyHistory() {
 
         // Final Stop Marker
         allNewLogs.push({
-            syncId: crypto.randomUUID(),
+            syncId: generateUUID(),
             category: SYSTEM_CATEGORY_IDLE,
             startTime: Math.floor(endTime),
             endTime: Math.floor(endTime),

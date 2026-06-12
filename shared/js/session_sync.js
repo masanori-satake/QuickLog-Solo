@@ -259,8 +259,8 @@ export async function mergeLogs(remoteLogs) {
                 }
             }
 
-            // Also ensure syncId is back-populated if missing locally but present remotely
-            if (rl.syncId && !local.syncId) {
+            // Also ensure syncId is synchronized if missing locally or different from remote
+            if (rl.syncId && local.syncId !== rl.syncId) {
                 local.syncId = rl.syncId;
                 changed = true;
             }
