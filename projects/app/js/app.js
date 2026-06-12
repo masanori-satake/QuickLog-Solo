@@ -2993,9 +2993,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const delayedSync = () => {
         if (syncTimeout) clearTimeout(syncTimeout);
         // Delay sync slightly to allow local interactions (like clicks) to take precedence
-        syncTimeout = setTimeout(() => {
+        syncTimeout = setTimeout(async () => {
             if (document.visibilityState === 'visible') {
-                syncState();
+                let updated = false;
+                if (await isSessionSyncEnabled()) {
+                    updated = await pullFromCloud().catch(() => false);
+                }
+                if (updated || !isAppInitialized) {
+                    await syncState();
+                }
             }
         }, 100);
     };
