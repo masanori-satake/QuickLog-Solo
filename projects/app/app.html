@@ -19,7 +19,6 @@
         <header>
             <div id="sync-status-badge" class="privacy-badge hidden" data-i18n-title="setting-session-sync-desc">
                 <span class="material-symbols-outlined">sync</span>
-                <span class="privacy-text" data-i18n="session-sync-active">Session Linked</span>
             </div>
             <div id="header-btns">
                 <button id="copy-report-btn" data-i18n-title="tooltip-copy-report"><span class="material-symbols-outlined">content_paste</span></button>
@@ -293,7 +292,10 @@
                     </div>
                     <div class="setting-item">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label data-i18n="setting-session-sync">セッション連携 (Sync)</label>
+                            <label style="display: flex; align-items: center; gap: 6px;">
+                                <span data-i18n="setting-session-sync">セッション連携 (Sync)</span>
+                                <span class="beta-badge">β</span>
+                            </label>
                             <label class="switch">
                                 <input type="checkbox" id="session-sync-toggle">
                                 <span class="slider round"></span>

@@ -1,6 +1,6 @@
 export const common = {
-    'setting-session-sync': 'Browser Session Sync',
-    'setting-session-sync-desc': 'Securely synchronize settings, categories, and logs across browsers using your session. Ideal for switching devices during work.',
+    'setting-session-sync': 'Browser Session Sync (β)',
+    'setting-session-sync-desc': 'Securely synchronize settings, categories, and logs across browsers using your session.',
     'confirm-enable-session-sync': 'Enable session synchronization? This will upload your current data to your browser\'s cloud storage.',
     'confirm-disable-session-sync': 'Disable session synchronization? This device will stop syncing with others, but cloud data will remain.',
     'session-sync-active': 'Session Sync Active',

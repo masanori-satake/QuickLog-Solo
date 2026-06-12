@@ -1,5 +1,5 @@
 import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv, generateUUID } from './utils.js';
 import { t } from './i18n.js';
 
 export function formatDuration(ms) {
@@ -344,6 +344,7 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
     await stopTaskLogic(activeTask, false, now);
 
     const newLog = {
+        syncId: generateUUID(),
         category: categoryName,
         startTime: now,
         endTime: null,
@@ -416,6 +417,7 @@ export async function pauseTaskLogic(activeTask) {
     await stopTaskLogic(activeTask, false, now);
 
     const pauseState = {
+        syncId: generateUUID(),
         category: SYSTEM_CATEGORY_IDLE,
         startTime: now,
         resumableCategory: lastCategory,
