@@ -114,10 +114,14 @@ describe('Logic Module', () => {
             jest.clearAllMocks();
         });
 
-        test('startTaskLogic starts a new task', async () => {
+        test('startTaskLogic starts a new task and updates pauseState', async () => {
             const newTask = await startTaskLogic('Work', null);
             expect(newTask.category).toBe('Work');
             expect(dbAdd).toHaveBeenCalled();
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
+                key: SETTING_KEY_PAUSE_STATE,
+                value: expect.objectContaining({ category: 'Work', isPaused: false })
+            }));
         });
 
         test('startTaskLogic includes color and tags in log entry for historical preservation', async () => {
@@ -141,7 +145,7 @@ describe('Logic Module', () => {
             expect(dbAdd).not.toHaveBeenCalled();
         });
 
-        test('stopTaskLogic stops active task and adds stop marker if manual', async () => {
+        test('stopTaskLogic stops active task, adds stop marker if manual, and clears pauseState', async () => {
             const activeTask = { id: 1, category: 'Work', startTime: Date.now() };
             const result = await stopTaskLogic(activeTask, true);
             expect(result).toBeNull();
@@ -158,6 +162,7 @@ describe('Logic Module', () => {
                 endTime: expect.any(Number),
                 isManualStop: true
             }));
+            expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
 
         test('stopTaskLogic supports custom end time and manual stop marker', async () => {
@@ -633,6 +638,19 @@ describe('Logic Module', () => {
             }));
         });
 
+        test('updateHistoryStartTime syncs pauseState if active task is updated', async () => {
+            const log = { id: 1, startTime: 1000, endTime: null, category: 'Work' };
+            dbGetAll.mockResolvedValue([log]);
+            dbGet.mockResolvedValue({ key: SETTING_KEY_PAUSE_STATE, value: { id: 1, category: 'Work', isPaused: false } });
+
+            await updateHistoryStartTime(1, 1500);
+
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
+                key: SETTING_KEY_PAUSE_STATE,
+                value: expect.objectContaining({ id: 1, startTime: 1500, isPaused: false })
+            }));
+        });
+
         test('updateHistoryStartTime does not propagate if not contiguous (gap > tolerance)', async () => {
             const logs = [
                 { id: 1, startTime: 1000, endTime: 1500, category: 'Task 1' }, // Gap of 1500
@@ -772,12 +790,12 @@ describe('Logic Module', () => {
             expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
 
-        test('deleteHistoryItem updates pauseState if contiguous log was the paused task', async () => {
+        test('deleteHistoryItem updates pauseState if contiguous log was the active task', async () => {
             const log1 = { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' };
             const log2 = { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' };
             dbGetAll.mockResolvedValue([log1, log2]);
 
-            dbGet.mockResolvedValue({ key: SETTING_KEY_PAUSE_STATE, value: { id: 2 } });
+            dbGet.mockResolvedValue({ key: SETTING_KEY_PAUSE_STATE, value: { id: 2, category: 'Task 2' } });
 
             await deleteHistoryItem(1);
 
@@ -789,7 +807,7 @@ describe('Logic Module', () => {
             // pauseState should be updated as well
             expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
                 key: SETTING_KEY_PAUSE_STATE,
-                value: expect.objectContaining({ id: 2, startTime: 1000 })
+                value: expect.objectContaining({ id: 2, startTime: 1000, isPaused: false })
             }));
         });
     });

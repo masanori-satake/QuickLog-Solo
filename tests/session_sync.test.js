@@ -137,4 +137,27 @@ describe('Session Sync Logic', () => {
         expect(mockSyncData['sync_logs_v2_4']).toBeDefined();
         expect(mockSyncData['sync_logs_v2_0'].length).toBe(10);
     });
+
+    test('syncActiveTask should handle running vs paused tasks', async () => {
+        const { SYSTEM_CATEGORY_IDLE } = await import('../shared/js/utils.js');
+        const db = await import('../shared/js/db.js');
+
+        // Case 1: Running task
+        const runningTask = { category: 'Work', startTime: 5000, endTime: null };
+        await db.dbAdd(db.STORE_LOGS, runningTask);
+
+        await sessionSync.syncActiveTask(runningTask);
+        let pauseState = (await db.dbGet(db.STORE_SETTINGS, db.SETTING_KEY_PAUSE_STATE)).value;
+        expect(pauseState.category).toBe('Work');
+        expect(pauseState.isPaused).toBe(false);
+
+        // Case 2: Paused task
+        const pausedTask = { category: SYSTEM_CATEGORY_IDLE, startTime: 6000, endTime: null, resumableCategory: 'Work' };
+        await db.dbAdd(db.STORE_LOGS, pausedTask);
+
+        await sessionSync.syncActiveTask(pausedTask);
+        pauseState = (await db.dbGet(db.STORE_SETTINGS, db.SETTING_KEY_PAUSE_STATE)).value;
+        expect(pauseState.category).toBe(SYSTEM_CATEGORY_IDLE);
+        expect(pauseState.isPaused).toBe(true);
+    });
 });
