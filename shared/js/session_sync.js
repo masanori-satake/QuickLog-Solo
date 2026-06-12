@@ -1,5 +1,5 @@
 import {
-    dbGetAll, dbPut, dbAddMultiple, dbGet, openDatabase,
+    dbGetAll, dbPut, dbGet, openDatabase,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_SESSION_SYNC, SETTING_KEY_LAST_PULLED_SYNC_TIME,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION,
