@@ -368,6 +368,7 @@ export default {
     'privacy-policy-local-only-short': '로컬 완결',
     'setting-session-sync': '세션 연동 (Sync)',
     'setting-session-sync-desc': '브라우저 세션 기능을 이용하여 설정, 카테고리, 최근 이력을 안전하게 동기화합니다. 여러 단말기에서 작업할 때 유용합니다.',
+    'setting-session-sync-note': '※ Chrome과 Edge 등 서로 다른 브라우저 간의 동기화는 지원되지 않습니다.',
     'confirm-enable-session-sync': '세션 연동을 활성화하시겠습니까? 현재 데이터가 브라우저 동기화 저장소에 업로드됩니다.',
     'confirm-disable-session-sync': '세션 연동을 비활성화하시겠습니까? 이 단말기에서의 동기화는 중단되지만, 클라우드 데이터는 유지됩니다.',
     'session-sync-active': '세션 연동 중',

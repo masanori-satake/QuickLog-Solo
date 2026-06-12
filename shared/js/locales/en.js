@@ -406,6 +406,7 @@ export default {
     'privacy-policy-local-only-short': 'Local Only',
     'setting-session-sync': 'Session Linkage (Sync)',
     'setting-session-sync-desc': 'Securely synchronize settings, categories, and recent history using browser sessions. Useful for working on multiple devices.',
+    'setting-session-sync-note': '* Note: Sync between different browsers (e.g., Chrome and Edge) is not supported.',
     'confirm-enable-session-sync': 'Enable session linkage? Current data will be uploaded to browser sync storage.',
     'confirm-disable-session-sync': 'Disable session linkage? Syncing on this device will stop, but cloud data will be kept.',
     'session-sync-active': 'Session Linked',
