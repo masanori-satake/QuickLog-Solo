@@ -265,19 +265,7 @@ export async function performInitialSync(settingsMode, historyMode) {
         // 2. History
         if (historyMode === 'cloud-to-local') {
             const combinedLogs = extractLogsFromData(data);
-            const db = await openDatabase();
-            await new Promise((res, rej) => {
-                const t = db.transaction(STORE_LOGS, 'readwrite');
-                const s = t.objectStore(STORE_LOGS);
-                s.clear();
-                combinedLogs.forEach(l => {
-                    const copy = { ...l };
-                    delete copy.id;
-                    s.add(copy);
-                });
-                t.oncomplete = () => res();
-                t.onerror = () => rej(t.error);
-            });
+            await mergeLogs(combinedLogs, true);
         } else if (historyMode === 'merge') {
             const combinedLogs = extractLogsFromData(data);
             if (combinedLogs.length > 0) {
@@ -307,22 +295,45 @@ export async function performInitialSync(settingsMode, historyMode) {
 /**
  * Merges remote logs into local database using complex timeline logic.
  * @param {Array} remoteLogs
+ * @param {boolean} overwrite If true, ignores local logs and uses remote logs as basis for timeline.
  */
-export async function mergeLogs(remoteLogs) {
+export async function mergeLogs(remoteLogs, overwrite = false) {
     const localLogs = await dbGetAll(STORE_LOGS);
-    const combined = [...localLogs, ...remoteLogs];
+    const combined = overwrite ? remoteLogs : [...localLogs, ...remoteLogs];
     const reconstructed = reconstructTimeline(combined);
 
     const db = await openDatabase();
     await new Promise((res, rej) => {
         const t = db.transaction(STORE_LOGS, 'readwrite');
         const s = t.objectStore(STORE_LOGS);
-        s.clear();
+
+        const reconstructedIds = new Set();
+        const usedIdsInThisTransaction = new Set();
+
         reconstructed.forEach(l => {
             const copy = { ...l };
-            delete copy.id;
-            s.add(copy);
+            if (copy.id && !usedIdsInThisTransaction.has(copy.id)) {
+                usedIdsInThisTransaction.add(copy.id);
+                reconstructedIds.add(copy.id);
+                s.put(copy);
+            } else {
+                // If id is missing or already used (due to splits), let IndexedDB generate a new one
+                delete copy.id;
+                const req = s.add(copy);
+                req.onsuccess = (e) => {
+                    // Update the set so we don't accidentally delete this new log
+                    reconstructedIds.add(e.target.result);
+                };
+            }
         });
+
+        // Delete logs that are no longer in the reconstructed timeline
+        localLogs.forEach(local => {
+            if (local.id && !reconstructedIds.has(local.id)) {
+                s.delete(local.id);
+            }
+        });
+
         t.oncomplete = () => res();
         t.onerror = () => rej(t.error);
     });

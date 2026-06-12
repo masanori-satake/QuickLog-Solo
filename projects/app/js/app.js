@@ -2585,10 +2585,18 @@ function setupEventListeners() {
         if (enabled) {
             const result = await showSyncSetupModal();
             if (result) {
-                await dbPut(STORE_SETTINGS, { key: SETTING_KEY_SESSION_SYNC, value: true });
-                await performInitialSync(result.settingsMode, result.historyMode);
-                await syncState();
-                broadcastSync();
+                try {
+                    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_SESSION_SYNC, value: true });
+                    await performInitialSync(result.settingsMode, result.historyMode);
+                    await syncState();
+                    broadcastSync();
+                } catch (err) {
+                    console.error('Initial sync failed:', err);
+                    alert(t('alert-import-error') || 'Sync failed');
+                    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_SESSION_SYNC, value: false });
+                    e.target.checked = false;
+                    await syncState();
+                }
             } else {
                 e.target.checked = false;
             }
