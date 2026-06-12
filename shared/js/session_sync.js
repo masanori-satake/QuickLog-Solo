@@ -272,8 +272,9 @@ export async function mergeLogs(remoteLogs) {
  * Synchronizes the active task (pause state) from remote.
  * Finds or creates the corresponding local log entry.
  * @param {Object} remoteActiveTask
+ * Exported for testing purposes only.
  */
-async function syncActiveTask(remoteActiveTask) {
+export async function syncActiveTask(remoteActiveTask) {
     const localLogs = await dbGetAll(STORE_LOGS);
     // Find matching log in local DB (by startTime and category)
     const matchingLog = localLogs.find(l =>

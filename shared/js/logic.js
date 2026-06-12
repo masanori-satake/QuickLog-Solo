@@ -354,6 +354,7 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
 
     const id = await dbAdd(STORE_LOGS, newLog);
     newLog.id = id;
+    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...newLog, isPaused: categoryName === SYSTEM_CATEGORY_IDLE } });
     return newLog;
 }
 
@@ -376,13 +377,13 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
         } else {
             await dbAdd(STORE_LOGS, idleLog);
         }
-
-        await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
     } else {
         // 通常の作業中の場合は、その作業を正常終了させる
         const taskToSave = { ...activeTask, endTime: endTime, isManualStop: false };
         await dbPut(STORE_LOGS, taskToSave);
     }
+
+    await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
 
     if (isManualStop) {
         // 停止ボタンが押された場合は、追加で停止マーカーを記録する
@@ -447,6 +448,15 @@ export async function updateHistoryStartTime(logId, newTs) {
         currentLog.endTime = currentNewTs;
     }
     await dbPut(STORE_LOGS, currentLog);
+
+    // Sync with pauseState if the updated log is the currently active task
+    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    if (pauseStateSetting?.value?.id === currentLog.id) {
+        await dbPut(STORE_SETTINGS, {
+            key: SETTING_KEY_PAUSE_STATE,
+            value: { ...currentLog, isPaused: currentLog.category === SYSTEM_CATEGORY_IDLE }
+        });
+    }
 
     // Propagate changes to previous items as long as they are contiguous
     let prevIndex = index - 1;
@@ -616,9 +626,12 @@ export async function deleteHistoryItem(logId) {
 
         await dbPut(STORE_LOGS, nextLog);
 
-        // Sync with pauseState if the updated log is the paused task
+        // Sync with pauseState if the updated log is the active task
         if (pauseStateId === nextLog.id) {
-            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...nextLog, isPaused: true } });
+            await dbPut(STORE_SETTINGS, {
+                key: SETTING_KEY_PAUSE_STATE,
+                value: { ...nextLog, isPaused: nextLog.category === SYSTEM_CATEGORY_IDLE }
+            });
         }
 
         // Move to next item
