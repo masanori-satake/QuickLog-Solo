@@ -45,7 +45,6 @@ async function initializeBackground() {
         }
 
         setupBroadcastChannel();
-        setupCloudListener();
         await setupAlarms();
     } catch (error) {
         console.error('QuickLog-Solo: Initialization failed:', error);
@@ -91,6 +90,28 @@ chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
     }
     return false; // Synchronous listener
 });
+
+// Register cloud listener at top level for Manifest V3 robustness
+if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+    chrome.storage.onChanged.addListener(async (changes, area) => {
+        if (area === 'sync') {
+            try {
+                await guardedInitialize();
+                if (await isSessionSyncEnabled()) {
+                    console.log('QuickLog-Solo: Remote changes detected via session sync.');
+                    await pullFromCloud();
+                    await setupAlarms();
+                    if (syncChannel) {
+                        syncChannel.postMessage({ type: 'sync' });
+                    }
+                    chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
+                }
+            } catch (err) {
+                console.error('QuickLog-Solo: Failed to pull remote changes', err);
+            }
+        }
+    });
+}
 
 // Handler for extension icon click (fallback)
 if (typeof chrome !== 'undefined' && chrome.action) {
@@ -162,26 +183,6 @@ async function executeAlarmAction(alarmData, activeTask) {
     }
     // Also notify via chrome.runtime for better reliability
     chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
-}
-
-function setupCloudListener() {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
-        chrome.storage.onChanged.addListener(async (changes, area) => {
-            if (area === 'sync' && (await isSessionSyncEnabled())) {
-                console.log('QuickLog-Solo: Remote changes detected via session sync.');
-                try {
-                    await pullFromCloud();
-                    await setupAlarms();
-                    if (syncChannel) {
-                        syncChannel.postMessage({ type: 'sync' });
-                    }
-                    chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
-                } catch (err) {
-                    console.error('QuickLog-Solo: Failed to pull remote changes', err);
-                }
-            }
-        });
-    }
 }
 
 /**
