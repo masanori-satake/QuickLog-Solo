@@ -283,6 +283,7 @@ export async function performInitialSync(settingsMode, historyMode) {
         // We push regardless of choice to ensure the cloud metadata (sync time, client ID) is updated.
         const remoteSyncTime = data[SYNC_KEYS.LAST_SYNC] || 0;
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
+        isInternalUpdate = false;
 
         const { getCurrentAppState } = await import('./db.js');
         const updatedState = await getCurrentAppState();
