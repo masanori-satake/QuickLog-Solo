@@ -195,6 +195,7 @@ export default {
     'day-0': 'S', 'day-1': 'M', 'day-2': 'T', 'day-3': 'W', 'day-4': 'T', 'day-5': 'F', 'day-6': 'S',
     'idle-category': '(En attente)',
     'idle-category-log': '(En attente)',
+    'category-unknown': 'Inconnu',
     'status-stopped-name': '(Arrêté)',
     'font-system': 'Police système',
     'anim-default': 'Standard',
@@ -373,6 +374,15 @@ export default {
     'confirm-disable-session-sync': 'Désactiver la synchronisation de session ? Cet appareil ne sera plus synchronisé, mais les données cloud seront conservées.',
     'session-sync-active': 'Synchronisation active',
     'local-only-active': 'Local uniquement',
+
+    'sync-setup-title': 'Configuration de la synchronisation de session',
+    'sync-setup-desc': 'Pour démarrer la synchronisation, veuillez choisir la priorité entre les données existantes et les données de la session.',
+    'sync-setup-settings-title': 'Synchronisation des paramètres et catégories',
+    'sync-setup-history-title': 'Synchronisation de l\'historique',
+    'sync-setup-cloud-to-local': 'Écraser les données locales par les données de session',
+    'sync-setup-local-to-cloud': 'Écraser les données de session par les données locales',
+    'sync-setup-merge': 'Fusionner l\'historique local avec les données de session',
+
     'alarm-label-action-category': 'Catégorie à Démarrer',
     'alarm-label-days-of-week': 'Jours de la Semaine',
     'alarm-label-day-of-month': 'Jour du Mois',

@@ -3,6 +3,7 @@
  */
 
 export const SYSTEM_CATEGORY_IDLE = '__IDLE__';
+export const SYSTEM_CATEGORY_UNKNOWN = '__UNKNOWN__';
 export const SYSTEM_CATEGORY_PAGE_BREAK = '__PAGE_BREAK__';
 export const DEFAULT_ALARM_MESSAGE_STOP = 'Stop Task';
 export const CELL_SIZE = 6;
@@ -102,7 +103,7 @@ export function isValidCategoryName(name) {
     if (typeof name !== 'string') return false;
     const trimmed = name.trim();
     if (trimmed.length === 0 || trimmed.length > 50) return false;
-    if (trimmed === SYSTEM_CATEGORY_IDLE || trimmed.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return false;
+    if (trimmed === SYSTEM_CATEGORY_IDLE || trimmed === SYSTEM_CATEGORY_UNKNOWN || trimmed.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return false;
     return true;
 }
 

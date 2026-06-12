@@ -108,6 +108,50 @@
             </div>
         </div>
 
+        <div id="sync-setup-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 data-i18n="sync-setup-title">セッション連携の設定</h2>
+                <p class="setting-description" data-i18n="sync-setup-desc" style="margin-top: 8px;">連携を開始するにあたり、既存のデータとセッション上のデータの優先順位を選択してください。</p>
+
+                <div class="sync-setup-section">
+                    <h3 data-i18n="sync-setup-settings-title" class="sync-setup-section-title">設定・カテゴリの同期</h3>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="settings-sync-mode" value="cloud-to-local">
+                            <span data-i18n="sync-setup-cloud-to-local">セッション上の情報で上書きする</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="settings-sync-mode" value="local-to-cloud">
+                            <span data-i18n="sync-setup-local-to-cloud">この端末の情報でセッションを上書きする</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="sync-setup-section">
+                    <h3 data-i18n="sync-setup-history-title" class="sync-setup-section-title">履歴の同期</h3>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="history-sync-mode" value="cloud-to-local">
+                            <span data-i18n="sync-setup-cloud-to-local">セッション上の情報で上書きする</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="history-sync-mode" value="local-to-cloud">
+                            <span data-i18n="sync-setup-local-to-cloud">この端末の情報でセッションを上書きする</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="history-sync-mode" value="merge">
+                            <span data-i18n="sync-setup-merge">セッション上の情報にこの端末の履歴をマージする</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="confirm-btns">
+                    <button id="sync-setup-cancel-btn" data-i18n="confirm-cancel">キャンセル</button>
+                    <button id="sync-setup-ok-btn" class="primary-btn" disabled>OK</button>
+                </div>
+            </div>
+        </div>
+
         <div id="history-edit-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">

@@ -69,7 +69,8 @@ describe('Session Sync Logic', () => {
 
         // 4. Verify results
         const finalLogs = await dbGetAll(STORE_LOGS);
-        expect(finalLogs.length).toBe(2);
+        // result will have Unknown gap between 2000 and 3000
+        expect(finalLogs.length).toBe(3);
 
         const researchLog = finalLogs.find(l => l.category === 'Research');
         expect(researchLog).toBeDefined();

@@ -195,6 +195,7 @@ export default {
     'day-0': '일', 'day-1': '월', 'day-2': '화', 'day-3': '수', 'day-4': '목', 'day-5': '금', 'day-6': '토',
     'idle-category': '(대기)',
     'idle-category-log': '(대기)',
+    'category-unknown': '알 수 없음',
     'status-stopped-name': '(정지)',
     'font-system': '시스템 글꼴',
     'anim-default': '표준',
@@ -373,6 +374,15 @@ export default {
     'confirm-disable-session-sync': '세션 연동을 비활성화하시겠습니까? 이 단말기에서의 동기화는 중단되지만, 클라우드 데이터는 유지됩니다.',
     'session-sync-active': '세션 연동 중',
     'local-only-active': '로컬 완결',
+
+    'sync-setup-title': '세션 동기화 설정',
+    'sync-setup-desc': '동기화를 시작하려면 기존 데이터와 세션 데이터 사이의 우선순위를 선택하십시오.',
+    'sync-setup-settings-title': '설정 및 카테고리 동기화',
+    'sync-setup-history-title': '기록 동기화',
+    'sync-setup-cloud-to-local': '로컬 데이터를 세션 데이터로 덮어쓰기',
+    'sync-setup-local-to-cloud': '세션 데이터를 로컬 데이터로 덮어쓰기',
+    'sync-setup-merge': '로컬 기록을 세션 데이터에 병합',
+
     'alarm-label-action-category': '시작 카테고리',
     'alarm-label-days-of-week': '요일',
     'alarm-label-day-of-month': '날짜',
