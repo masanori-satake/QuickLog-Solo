@@ -187,9 +187,12 @@ async function executeAlarmAction(alarmData, activeTask) {
     chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
 
     // Push changes to cloud if session sync is enabled
-    getCurrentAppState().then(state => {
-        pushToCloud(state).catch(err => console.error('QuickLog-Solo: Alarm action pushToCloud failed', err));
-    });
+    try {
+        const state = await getCurrentAppState();
+        await pushToCloud(state);
+    } catch (err) {
+        console.error('QuickLog-Solo: Alarm action pushToCloud failed', err);
+    }
 }
 
 /**
