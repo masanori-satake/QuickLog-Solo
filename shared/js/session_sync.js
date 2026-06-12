@@ -211,8 +211,9 @@ export async function pullFromCloud() {
                     return;
                 }
 
-                // Clock skew protection: only pull if remote data is newer than what we last pulled
-                if (remoteSyncTime <= lastPulled) {
+                // Clock skew protection: only pull if remote data timestamp is different from what we last pulled.
+                // We skip only when timestamps are exactly equal, allowing synchronization even if device clocks are skewed.
+                if (remoteSyncTime === lastPulled) {
                     resolve(false);
                     return;
                 }
@@ -281,7 +282,7 @@ export async function performInitialSync(settingsMode, historyMode) {
         // 3. Establish this client as current and push updated local state to cloud.
         // We push regardless of choice to ensure the cloud metadata (sync time, client ID) is updated.
         const remoteSyncTime = data[SYNC_KEYS.LAST_SYNC] || 0;
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: Math.max(remoteSyncTime, Date.now()) });
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
 
         const { getCurrentAppState } = await import('./db.js');
         const updatedState = await getCurrentAppState();
