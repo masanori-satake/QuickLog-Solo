@@ -368,6 +368,7 @@ export default {
     'privacy-policy-local-only-short': '仅限本地',
     'setting-session-sync': '会话同步 (Sync)',
     'setting-session-sync-desc': '利用浏览器会话功能，安全地同步设置、分类和近期历史记录。方便在多台设备上切换使用。',
+    'setting-session-sync-note': '※ 不支持在不同浏览器（如 Chrome 和 Edge）之间进行同步。',
     'confirm-enable-session-sync': '是否启用会话同步？当前数据将被上传至浏览器的同步存储空间。',
     'confirm-disable-session-sync': '是否禁用会话同步？本设备将停止同步，但云端数据仍将保留。',
     'session-sync-active': '会话同步中',

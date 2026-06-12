@@ -35,6 +35,7 @@ export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 export const SETTING_KEY_BACKUP_DIR_HANDLE = 'backupDirectoryHandle';
 export const SETTING_KEY_SESSION_SYNC = 'sessionSync';
 export const SETTING_KEY_LAST_PULLED_SYNC_TIME = 'lastPulledSyncTime';
+export const SETTING_KEY_CLIENT_ID = 'clientId';
 
 export const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
@@ -316,6 +317,14 @@ export function closeDatabase() {
  */
 export async function initDB(isLite = false) {
     await openDatabase();
+
+    // Ensure Client ID exists
+    let clientIdSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID);
+    if (!clientIdSetting) {
+        const newId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_CLIENT_ID, value: newId });
+    }
+
     const languageSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
     const lang = languageSetting ? languageSetting.value : 'auto';
 
