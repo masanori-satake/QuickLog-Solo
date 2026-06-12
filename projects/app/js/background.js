@@ -98,13 +98,15 @@ if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged)
             try {
                 await guardedInitialize();
                 if (await isSessionSyncEnabled()) {
-                    console.log('QuickLog-Solo: Remote changes detected via session sync.');
-                    await pullFromCloud();
-                    await setupAlarms();
-                    if (syncChannel) {
-                        syncChannel.postMessage({ type: 'sync' });
+                    const updated = await pullFromCloud();
+                    if (updated) {
+                        console.log('QuickLog-Solo: Remote changes applied via session sync.');
+                        await setupAlarms();
+                        if (syncChannel) {
+                            syncChannel.postMessage({ type: 'sync' });
+                        }
+                        chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
                     }
-                    chrome.runtime.sendMessage({ type: 'sync' }).catch(() => {});
                 }
             } catch (err) {
                 console.error('QuickLog-Solo: Failed to pull remote changes', err);

@@ -24,6 +24,7 @@ const LOG_CHUNKS = 5;
 const CHUNK_SIZE = Math.ceil(MAX_SYNC_LOGS / LOG_CHUNKS);
 
 let isInternalUpdate = false;
+let activePullPromise = null;
 
 export async function isSessionSyncEnabled() {
     if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync) return false;
@@ -83,16 +84,18 @@ export async function pushToCloud(state) {
 
 /**
  * Pulls data from chrome.storage.sync and updates local database.
+ * @returns {Promise<boolean>} True if data was updated, false otherwise.
  */
 export async function pullFromCloud() {
-    if (!(await isSessionSyncEnabled())) return;
-    if (isInternalUpdate) return;
+    if (!(await isSessionSyncEnabled())) return false;
+    if (activePullPromise) return activePullPromise;
 
-    isInternalUpdate = true;
-    return new Promise((resolve, reject) => {
+    activePullPromise = new Promise((resolve, reject) => {
+        isInternalUpdate = true;
         chrome.storage.sync.get(null, async (data) => {
             if (chrome.runtime.lastError) {
                 isInternalUpdate = false;
+                activePullPromise = null;
                 reject(chrome.runtime.lastError);
                 return;
             }
@@ -105,14 +108,13 @@ export async function pullFromCloud() {
 
                 // Loop protection: skip if data was pushed by self
                 if (remoteClientId === localClientId && localClientId !== undefined) {
-                    resolve();
+                    resolve(false);
                     return;
                 }
 
                 // Clock skew protection: only pull if remote data is newer than what we last pulled
-                // We add a small buffer (1s) to avoid micro-loops if clocks are jittery
                 if (remoteSyncTime <= lastPulled) {
-                    resolve();
+                    resolve(false);
                     return;
                 }
 
@@ -202,15 +204,17 @@ export async function pullFromCloud() {
                 }
 
                 await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
-                resolve();
+                resolve(true);
             } catch (err) {
                 console.error('QuickLog-Solo: Sync pull failed', err);
                 reject(err);
             } finally {
                 isInternalUpdate = false;
+                activePullPromise = null;
             }
         });
     });
+    return activePullPromise;
 }
 
 /**
