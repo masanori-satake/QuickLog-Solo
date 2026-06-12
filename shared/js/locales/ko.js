@@ -391,9 +391,8 @@ export default {
     'privacy-policy-local-only':
         '모든 처리는 브라우저 내에서 완료되며 외부 서버와 연동되지 않습니다. 입력한 정보가 외부로 유출되지 않습니다.',
     'privacy-policy-local-only-short': '로컬 완결',
-    'setting-session-sync': 'セッション連携 (Sync) (β)',
-    'setting-session-sync-desc':
-        'ブラウザのセッション機能を利用して、設定・カテゴリ・直近の履歴をセキュアに同期します。',
+    'setting-session-sync': '세션 연결 (Sync) (β)',
+    'setting-session-sync-desc': '브라우저의 세션 기능을 이용해 설정·카테고리·최근 이력을 안전하게 동기화합니다.',
     'setting-session-sync-note': '※ Chrome과 Edge 간 등 다른 브라우저 간에서의 동기화는 할 수 없습니다.',
     'confirm-enable-session-sync':
         '세션 연결을 활성화하시겠습니까? 현재 데이터가 브라우저 동기화 저장소에 업로드됩니다.',
