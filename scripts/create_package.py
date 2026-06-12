@@ -28,6 +28,15 @@ def create_zip(zip_filepath, manifest_src, temp_dir, is_dev=False, version=""):
                             manifest_data = json.load(f)
                         original_name = manifest_data.get("name", "QuickLog-Solo")
                         manifest_data["name"] = f"{original_name} (Dev v{version})"
+                        # Fixed key for Dev builds to ensure consistent Extension ID across PCs for sync testing
+                        manifest_data["key"] = (
+                            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs4WPnsM/P1ruEw05T+sOitKm5s1rfBWi9"
+                            "prXJ00CLcGSAqlV7J6n6Z4DvkKODP540GisoRibJC5rLJlyih/92nTIwv0rQbP437gM6tXJpZ28Ul"
+                            "NeuC3i9FmafxpXTGDjPAz/8IsOwH/LrYq4fii6wdzwnwVtaAetNU/rDzI4VanLgtxBw7ZqoRXlFcy"
+                            "WlnNXaLf/KffHw41BLGG8mt5C4CyhvU4M+221Y0nzShp3u1izS2hRcPaF6fUO/ZZ19jOd2bmJVAtj"
+                            "m3/VA3QIit+5Z1HNPolNzz1VImozSICT5hxBcWSTzuYDQ15Av3AYLqyEVMV5x9KfRLssWGupCx7F"
+                            "VwIDAQAB"
+                        )
                         with open(manifest_dest, 'w', encoding='utf-8') as f:
                             json.dump(manifest_data, f, indent=2, ensure_ascii=False)
                         print(f"  Modified manifest name: {manifest_data['name']}")
