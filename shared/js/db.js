@@ -332,6 +332,7 @@ export async function initDB(isLite = false) {
         setLanguage(lang);
     } else {
         await setupInitialData(lang);
+        await migrateLogsWithSyncId();
         await cleanupOldLogs();
     }
 
@@ -525,6 +526,41 @@ async function setupInitialData(languageSetting) {
 /**
  * Populates missing tags and colors for existing logs based on current categories.
  */
+/**
+ * Ensures all logs have a stable syncId for robust cross-PC merging.
+ */
+async function migrateLogsWithSyncId() {
+    const migrationKey = 'migration_sync_id_populated';
+    const alreadyMigrated = await dbGet(STORE_SETTINGS, migrationKey);
+    if (alreadyMigrated) return;
+
+    const logs = await dbGetAll(STORE_LOGS);
+    const logsToUpdate = [];
+
+    for (const log of logs) {
+        if (!log.syncId) {
+            log.syncId = crypto.randomUUID();
+            logsToUpdate.push(log);
+        }
+    }
+
+    if (logsToUpdate.length > 0) {
+        console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing syncId.`);
+        await new Promise((resolve, reject) => {
+            if (!db) { reject(new Error('DB not initialized')); return; }
+            const tx = db.transaction(STORE_LOGS, 'readwrite');
+            const store = tx.objectStore(STORE_LOGS);
+            tx.oncomplete = () => resolve();
+            tx.onerror = (e) => reject(e.target.error);
+            for (const log of logsToUpdate) {
+                store.put(log);
+            }
+        });
+    }
+
+    await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
+}
+
 async function migrateLogsWithMissingData() {
     const migrationKey = 'migration_tags_color_populated';
     const alreadyMigrated = await dbGet(STORE_SETTINGS, migrationKey);
@@ -646,6 +682,7 @@ async function generateDummyHistory() {
                 lastCategoryName = cat.name;
 
                 allNewLogs.push({
+                    syncId: crypto.randomUUID(),
                     category: cat.name,
                     startTime: Math.floor(current),
                     endTime: Math.floor(taskEnd),
@@ -661,6 +698,7 @@ async function generateDummyHistory() {
 
         // Lunch Break
         allNewLogs.push({
+            syncId: crypto.randomUUID(),
             category: SYSTEM_CATEGORY_IDLE,
             startTime: Math.floor(lunchStart),
             endTime: Math.floor(lunchEnd)
@@ -671,6 +709,7 @@ async function generateDummyHistory() {
 
         // Final Stop Marker
         allNewLogs.push({
+            syncId: crypto.randomUUID(),
             category: SYSTEM_CATEGORY_IDLE,
             startTime: Math.floor(endTime),
             endTime: Math.floor(endTime),

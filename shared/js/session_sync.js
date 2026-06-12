@@ -223,14 +223,25 @@ export async function pullFromCloud() {
  */
 export async function mergeLogs(remoteLogs) {
     const localLogs = await dbGetAll(STORE_LOGS);
-    const localMap = new Map(localLogs.map(l => [`${l.startTime}|${l.category}`, l]));
+
+    // Primary map by syncId, secondary by legacy startTime|category key
+    const localIdMap = new Map();
+    const localLegacyMap = new Map();
+
+    localLogs.forEach(l => {
+        if (l.syncId) localIdMap.set(l.syncId, l);
+        localLegacyMap.set(`${l.startTime}|${l.category}`, l);
+    });
 
     const newLogs = [];
     const logsToUpdate = [];
 
     for (const rl of remoteLogs) {
-        const key = `${rl.startTime}|${rl.category}`;
-        const local = localMap.get(key);
+        // Try finding by syncId first, then by legacy key
+        let local = rl.syncId ? localIdMap.get(rl.syncId) : null;
+        if (!local) {
+            local = localLegacyMap.get(`${rl.startTime}|${rl.category}`);
+        }
 
         if (!local) {
             const logCopy = { ...rl };
@@ -238,14 +249,22 @@ export async function mergeLogs(remoteLogs) {
             newLogs.push(logCopy);
         } else {
             let changed = false;
-            if (rl.endTime && !local.endTime) {
-                local.endTime = rl.endTime;
+
+            // Propagate all synchronized fields
+            const fieldsToSync = ['startTime', 'endTime', 'category', 'memo', 'tags', 'color', 'isManualStop', 'resumableCategory'];
+            for (const field of fieldsToSync) {
+                if (rl[field] !== undefined && rl[field] !== local[field]) {
+                    local[field] = rl[field];
+                    changed = true;
+                }
+            }
+
+            // Also ensure syncId is back-populated if missing locally but present remotely
+            if (rl.syncId && !local.syncId) {
+                local.syncId = rl.syncId;
                 changed = true;
             }
-            if (rl.memo !== undefined && rl.memo !== local.memo) {
-                local.memo = rl.memo;
-                changed = true;
-            }
+
             if (changed) {
                 logsToUpdate.push(local);
             }
@@ -276,11 +295,11 @@ export async function mergeLogs(remoteLogs) {
  */
 export async function syncActiveTask(remoteActiveTask) {
     const localLogs = await dbGetAll(STORE_LOGS);
-    // Find matching log in local DB (by startTime and category)
-    const matchingLog = localLogs.find(l =>
-        l.startTime === remoteActiveTask.startTime &&
-        l.category === remoteActiveTask.category
-    );
+    // Find matching log in local DB (by syncId, or legacy startTime/category)
+    const matchingLog = localLogs.find(l => {
+        if (remoteActiveTask.syncId && l.syncId === remoteActiveTask.syncId) return true;
+        return l.startTime === remoteActiveTask.startTime && l.category === remoteActiveTask.category;
+    });
 
     if (matchingLog) {
         const pauseState = {

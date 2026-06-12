@@ -344,6 +344,7 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
     await stopTaskLogic(activeTask, false, now);
 
     const newLog = {
+        syncId: crypto.randomUUID(),
         category: categoryName,
         startTime: now,
         endTime: null,
@@ -416,6 +417,7 @@ export async function pauseTaskLogic(activeTask) {
     await stopTaskLogic(activeTask, false, now);
 
     const pauseState = {
+        syncId: crypto.randomUUID(),
         category: SYSTEM_CATEGORY_IDLE,
         startTime: now,
         resumableCategory: lastCategory,
