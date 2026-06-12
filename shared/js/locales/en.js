@@ -231,6 +231,7 @@ export default {
     'day-6': 'S',
     'idle-category': '(Idle)',
     'idle-category-log': '(Idle)',
+    'category-unknown': 'Unknown',
     'status-stopped-name': '(Stopped)',
     'font-system': 'System Default',
     'anim-default': 'Standard',
@@ -411,4 +412,12 @@ export default {
     'confirm-disable-session-sync': 'Disable session linkage? Syncing on this device will stop, but cloud data will be kept.',
     'session-sync-active': 'Session Linked',
     'local-only-active': 'Local Only',
+
+    'sync-setup-title': 'Session Sync Setup',
+    'sync-setup-desc': 'To start synchronization, please choose the priority between existing data and data on the session.',
+    'sync-setup-settings-title': 'Settings & Categories Sync',
+    'sync-setup-history-title': 'History Sync',
+    'sync-setup-cloud-to-local': 'Overwrite local with session data',
+    'sync-setup-local-to-cloud': 'Overwrite session with local data',
+    'sync-setup-merge': 'Merge local history into session data',
 };

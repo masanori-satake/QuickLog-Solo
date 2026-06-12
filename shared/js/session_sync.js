@@ -6,7 +6,7 @@ import {
     SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
     SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID
 } from './db.js';
-import { SYSTEM_CATEGORY_IDLE } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, generateUUID } from './utils.js';
 
 const SYNC_KEYS = {
     CATEGORIES: 'sync_categories',
@@ -86,6 +86,105 @@ export async function pushToCloud(state) {
  * Pulls data from chrome.storage.sync and updates local database.
  * @returns {Promise<boolean>} True if data was updated, false otherwise.
  */
+/**
+ * Applies settings and categories from the provided data object to the local database.
+ * @param {Object} data
+ */
+async function applyRemoteSettings(data) {
+    // 1. Settings
+    if (data[SYNC_KEYS.SETTINGS]) {
+        const settings = data[SYNC_KEYS.SETTINGS];
+        const keysMap = {
+            theme: SETTING_KEY_THEME,
+            font: SETTING_KEY_FONT,
+            animation: SETTING_KEY_ANIMATION,
+            language: SETTING_KEY_LANGUAGE,
+            reportSettings: SETTING_KEY_REPORT_SETTINGS,
+            timerHeight: SETTING_KEY_TIMER_HEIGHT
+        };
+        for (const [sKey, dbKey] of Object.entries(keysMap)) {
+            if (settings[sKey] !== undefined) {
+                await dbPut(STORE_SETTINGS, { key: dbKey, value: settings[sKey] });
+            }
+        }
+    }
+
+    if (data[SYNC_KEYS.BUSINESS_DAYS]) {
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: data[SYNC_KEYS.BUSINESS_DAYS] });
+    }
+
+    const db = await openDatabase();
+
+    // 2. Categories (Overwrite)
+    if (data[SYNC_KEYS.CATEGORIES]) {
+        const remoteCats = data[SYNC_KEYS.CATEGORIES];
+        if (Array.isArray(remoteCats)) {
+            await new Promise((res, rej) => {
+                const t = db.transaction(STORE_CATEGORIES, 'readwrite');
+                const s = t.objectStore(STORE_CATEGORIES);
+                s.clear();
+                remoteCats.forEach(c => {
+                    const copy = { ...c };
+                    delete copy.id;
+                    s.add(copy);
+                });
+                t.oncomplete = () => res();
+                t.onerror = () => rej(t.error);
+            });
+        }
+    }
+
+    // 3. Alarms (Overwrite)
+    if (data[SYNC_KEYS.ALARMS]) {
+        const remoteAlarms = data[SYNC_KEYS.ALARMS];
+        if (Array.isArray(remoteAlarms)) {
+            await new Promise((res, rej) => {
+                const t = db.transaction(STORE_ALARMS, 'readwrite');
+                const s = t.objectStore(STORE_ALARMS);
+                s.clear();
+                remoteAlarms.forEach(a => s.add(a));
+                t.oncomplete = () => res();
+                t.onerror = () => rej(t.error);
+            });
+        }
+    }
+}
+
+/**
+ * Applies the remote pause state to the local database.
+ * @param {Object} data
+ */
+async function applyRemotePauseState(data) {
+    if (SYNC_KEYS.PAUSE_STATE in data) {
+        const remoteActiveTask = data[SYNC_KEYS.PAUSE_STATE];
+        if (remoteActiveTask) {
+            await syncActiveTask(remoteActiveTask);
+        } else {
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: null });
+        }
+    }
+}
+
+/**
+ * Extracts and combines logs from the sync data object.
+ * @param {Object} data
+ * @returns {Array} Combined logs
+ */
+function extractLogsFromData(data) {
+    const combinedLogs = [];
+    for (let i = 0; i < LOG_CHUNKS; i++) {
+        const chunk = data[`${SYNC_KEYS.LOGS_PREFIX}${i}`];
+        if (Array.isArray(chunk)) {
+            combinedLogs.push(...chunk);
+        }
+    }
+    // Fallback to old key if new format is not present (migration)
+    if (combinedLogs.length === 0 && Array.isArray(data['sync_logs'])) {
+        combinedLogs.push(...data['sync_logs']);
+    }
+    return combinedLogs;
+}
+
 export async function pullFromCloud() {
     if (!(await isSessionSyncEnabled())) return false;
     if (activePullPromise) return activePullPromise;
@@ -118,90 +217,16 @@ export async function pullFromCloud() {
                     return;
                 }
 
-                // 1. Settings
-                if (data[SYNC_KEYS.SETTINGS]) {
-                    const settings = data[SYNC_KEYS.SETTINGS];
-                    const keysMap = {
-                        theme: SETTING_KEY_THEME,
-                        font: SETTING_KEY_FONT,
-                        animation: SETTING_KEY_ANIMATION,
-                        language: SETTING_KEY_LANGUAGE,
-                        reportSettings: SETTING_KEY_REPORT_SETTINGS,
-                        timerHeight: SETTING_KEY_TIMER_HEIGHT
-                    };
-                    for (const [sKey, dbKey] of Object.entries(keysMap)) {
-                        if (settings[sKey] !== undefined) {
-                            await dbPut(STORE_SETTINGS, { key: dbKey, value: settings[sKey] });
-                        }
-                    }
-                }
-
-                if (data[SYNC_KEYS.BUSINESS_DAYS]) {
-                    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: data[SYNC_KEYS.BUSINESS_DAYS] });
-                }
-
-                const db = await openDatabase();
-
-                // 2. Categories (Overwrite)
-                if (data[SYNC_KEYS.CATEGORIES]) {
-                    const remoteCats = data[SYNC_KEYS.CATEGORIES];
-                    if (Array.isArray(remoteCats)) {
-                        await new Promise((res, rej) => {
-                            const t = db.transaction(STORE_CATEGORIES, 'readwrite');
-                            const s = t.objectStore(STORE_CATEGORIES);
-                            s.clear();
-                            remoteCats.forEach(c => {
-                                const copy = { ...c };
-                                delete copy.id;
-                                s.add(copy);
-                            });
-                            t.oncomplete = () => res();
-                            t.onerror = () => rej(t.error);
-                        });
-                    }
-                }
-
-                // 3. Alarms (Overwrite)
-                if (data[SYNC_KEYS.ALARMS]) {
-                    const remoteAlarms = data[SYNC_KEYS.ALARMS];
-                    if (Array.isArray(remoteAlarms)) {
-                        await new Promise((res, rej) => {
-                            const t = db.transaction(STORE_ALARMS, 'readwrite');
-                            const s = t.objectStore(STORE_ALARMS);
-                            s.clear();
-                            remoteAlarms.forEach(a => s.add(a));
-                            t.oncomplete = () => res();
-                            t.onerror = () => rej(t.error);
-                        });
-                    }
-                }
+                await applyRemoteSettings(data);
 
                 // 4. Logs (Merge)
-                const combinedLogs = [];
-                for (let i = 0; i < LOG_CHUNKS; i++) {
-                    const chunk = data[`${SYNC_KEYS.LOGS_PREFIX}${i}`];
-                    if (Array.isArray(chunk)) {
-                        combinedLogs.push(...chunk);
-                    }
-                }
-                // Fallback to old key if new format is not present (migration)
-                if (combinedLogs.length === 0 && Array.isArray(data['sync_logs'])) {
-                    combinedLogs.push(...data['sync_logs']);
-                }
-
+                const combinedLogs = extractLogsFromData(data);
                 if (combinedLogs.length > 0) {
                     await mergeLogs(combinedLogs);
                 }
 
                 // 5. Pause State (Active Task)
-                if (SYNC_KEYS.PAUSE_STATE in data) {
-                    const remoteActiveTask = data[SYNC_KEYS.PAUSE_STATE];
-                    if (remoteActiveTask) {
-                        await syncActiveTask(remoteActiveTask);
-                    } else {
-                        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: null });
-                    }
-                }
+                await applyRemotePauseState(data);
 
                 await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
                 resolve(true);
@@ -218,73 +243,247 @@ export async function pullFromCloud() {
 }
 
 /**
- * Merges remote logs into local database.
+ * Performs initial synchronization based on user-selected modes.
+ * @param {string} settingsMode
+ * @param {string} historyMode
+ */
+export async function performInitialSync(settingsMode, historyMode) {
+    isInternalUpdate = true;
+    try {
+        const data = await new Promise((resolve, reject) => {
+            chrome.storage.sync.get(null, (res) => {
+                if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
+                else resolve(res);
+            });
+        });
+
+        // 1. Settings & Categories
+        if (settingsMode === 'cloud-to-local') {
+            await applyRemoteSettings(data);
+        }
+
+        // 2. History
+        if (historyMode === 'cloud-to-local') {
+            const combinedLogs = extractLogsFromData(data);
+            const db = await openDatabase();
+            await new Promise((res, rej) => {
+                const t = db.transaction(STORE_LOGS, 'readwrite');
+                const s = t.objectStore(STORE_LOGS);
+                s.clear();
+                combinedLogs.forEach(l => {
+                    const copy = { ...l };
+                    delete copy.id;
+                    s.add(copy);
+                });
+                t.oncomplete = () => res();
+                t.onerror = () => rej(t.error);
+            });
+        } else if (historyMode === 'merge') {
+            const combinedLogs = extractLogsFromData(data);
+            if (combinedLogs.length > 0) {
+                await mergeLogs(combinedLogs);
+            }
+        }
+
+        // Finalize pause state from cloud if cloud-to-local was chosen for either settings or history
+        if (settingsMode === 'cloud-to-local' || historyMode === 'cloud-to-local') {
+            await applyRemotePauseState(data);
+        }
+
+        // 3. Establish this client as current and push updated local state to cloud.
+        // We push regardless of choice to ensure the cloud metadata (sync time, client ID) is updated.
+        const remoteSyncTime = data[SYNC_KEYS.LAST_SYNC] || 0;
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: Math.max(remoteSyncTime, Date.now()) });
+
+        const { getCurrentAppState } = await import('./db.js');
+        const updatedState = await getCurrentAppState();
+        await pushToCloud(updatedState);
+
+    } finally {
+        isInternalUpdate = false;
+    }
+}
+
+/**
+ * Merges remote logs into local database using complex timeline logic.
  * @param {Array} remoteLogs
  */
 export async function mergeLogs(remoteLogs) {
     const localLogs = await dbGetAll(STORE_LOGS);
+    const combined = [...localLogs, ...remoteLogs];
+    const reconstructed = reconstructTimeline(combined);
 
-    // Primary map by syncId, secondary by legacy startTime|category key
-    const localIdMap = new Map();
-    const localLegacyMap = new Map();
+    const db = await openDatabase();
+    await new Promise((res, rej) => {
+        const t = db.transaction(STORE_LOGS, 'readwrite');
+        const s = t.objectStore(STORE_LOGS);
+        s.clear();
+        reconstructed.forEach(l => {
+            const copy = { ...l };
+            delete copy.id;
+            s.add(copy);
+        });
+        t.oncomplete = () => res();
+        t.onerror = () => rej(t.error);
+    });
+}
 
-    localLogs.forEach(l => {
-        if (l.syncId) localIdMap.set(l.syncId, l);
-        localLegacyMap.set(`${l.startTime}|${l.category}`, l);
+/**
+ * Reconstructs the timeline by filling gaps with Unknown and resolving overlaps.
+ * @param {Array} allLogs
+ * @returns {Array} New list of logs
+ * Exported for testing purposes only.
+ */
+export function reconstructTimeline(allLogs) {
+    if (allLogs.length === 0) return [];
+
+    // 1. Resolve conflicts and deduplicate
+    // Use syncId if available, otherwise fallback to legacy key (startTime + category)
+    const byId = new Map();
+    allLogs.forEach(l => {
+        const id = l.syncId || `legacy-${l.startTime}-${l.category}`;
+        const existing = byId.get(id);
+        // Prefer logs with endTime, or newer ones if both have/don't have it.
+        if (!existing || (l.endTime && !existing.endTime) || (l.endTime && existing.endTime && l.endTime > existing.endTime)) {
+            byId.set(id, l);
+        }
     });
 
-    const newLogs = [];
-    const logsToUpdate = [];
+    // Ensure every log has a syncId for the rest of the process
+    const uniqueLogs = Array.from(byId.values()).map(l => {
+        if (!l.syncId) l.syncId = generateUUID();
+        return l;
+    });
 
-    for (const rl of remoteLogs) {
-        // Try finding by syncId first, then by legacy key
-        let local = rl.syncId ? localIdMap.get(rl.syncId) : null;
-        if (!local) {
-            local = localLegacyMap.get(`${rl.startTime}|${rl.category}`);
-        }
+    // 2. Separate log types
+    // Solid logs: have duration and are not markers.
+    const solidLogs = uniqueLogs.filter(l => l.endTime && l.endTime > l.startTime && !l.isManualStop);
+    // Markers: manual stop or zero-duration logs.
+    const markers = uniqueLogs.filter(l => l.isManualStop || (l.endTime && l.endTime === l.startTime));
+    // Open tasks: no endTime.
+    const openTasks = uniqueLogs.filter(l => !l.endTime);
 
-        if (!local) {
-            const logCopy = { ...rl };
-            delete logCopy.id;
-            newLogs.push(logCopy);
+    if (solidLogs.length === 0) {
+        return [...markers, ...openTasks].sort((a, b) => a.startTime - b.startTime);
+    }
+
+    // 3. Collect and sort all relevant timestamps for segmenting
+    const tsSet = new Set();
+    solidLogs.forEach(l => {
+        tsSet.add(l.startTime);
+        tsSet.add(l.endTime);
+    });
+    // Markers also act as split points
+    markers.forEach(m => tsSet.add(m.startTime));
+    const sortedTs = Array.from(tsSet).sort((a, b) => a - b);
+
+    // 4. Create segments between consecutive timestamps
+    const segments = [];
+    for (let i = 0; i < sortedTs.length - 1; i++) {
+        const start = sortedTs[i];
+        const end = sortedTs[i + 1];
+        if (start === end) continue;
+
+        const covering = solidLogs.filter(l => l.startTime <= start && l.endTime >= end);
+
+        if (covering.length === 0) {
+            // Gap detected
+            segments.push({
+                category: SYSTEM_CATEGORY_UNKNOWN,
+                startTime: start,
+                endTime: end,
+                syncId: `unknown-${start}-${end}`
+            });
+        } else if (covering.length === 1) {
+            segments.push({ ...covering[0], startTime: start, endTime: end });
         } else {
-            let changed = false;
+            // Overlap detected. Prioritize contained side.
+            let best = null;
+            let conflict = false;
 
-            // Propagate all synchronized fields
-            const fieldsToSync = ['startTime', 'endTime', 'category', 'memo', 'tags', 'color', 'isManualStop', 'resumableCategory'];
-            for (const field of fieldsToSync) {
-                if (rl[field] !== undefined && rl[field] !== local[field]) {
-                    local[field] = rl[field];
-                    changed = true;
+            for (const l of covering) {
+                let isContainedByAllOthers = true;
+                for (const other of covering) {
+                    if (l === other) continue;
+                    // Does other contain l?
+                    const otherContainsL = (other.startTime <= l.startTime && other.endTime >= l.endTime);
+                    if (!otherContainsL) {
+                        isContainedByAllOthers = false;
+                        break;
+                    }
+                }
+                if (isContainedByAllOthers) {
+                    if (best) {
+                        // If multiple logs claim containment, pick the smallest range
+                        if (best.startTime === l.startTime && best.endTime === l.endTime) {
+                            if (best.category !== l.category) conflict = true;
+                        } else if ((l.endTime - l.startTime) < (best.endTime - best.startTime)) {
+                            best = l;
+                        }
+                    } else {
+                        best = l;
+                    }
                 }
             }
 
-            // Also ensure syncId is synchronized if missing locally or different from remote
-            if (rl.syncId && local.syncId !== rl.syncId) {
-                local.syncId = rl.syncId;
-                changed = true;
-            }
-
-            if (changed) {
-                logsToUpdate.push(local);
+            if (best && !conflict) {
+                segments.push({ ...best, startTime: start, endTime: end });
+            } else {
+                // Partial overlap or ambiguous containment -> Unknown
+                segments.push({
+                    category: SYSTEM_CATEGORY_UNKNOWN,
+                    startTime: start,
+                    endTime: end,
+                    syncId: `unknown-${start}-${end}`
+                });
             }
         }
     }
 
-    if (newLogs.length > 0) {
-        await dbAddMultiple(STORE_LOGS, newLogs);
+    // 5. Merge adjacent segments with identical metadata
+    const merged = [];
+    for (const seg of segments) {
+        const last = merged[merged.length - 1];
+        // Split at markers
+        const hasMarkerAtBoundary = markers.some(m => m.startTime === seg.startTime);
+
+        if (last && !hasMarkerAtBoundary &&
+            last.category === seg.category &&
+            last.memo === seg.memo &&
+            last.tags === seg.tags &&
+            last.color === seg.color &&
+            last.resumableCategory === seg.resumableCategory) {
+            last.endTime = seg.endTime;
+            // Stable ID for merged Unknown logs
+            if (last.category === SYSTEM_CATEGORY_UNKNOWN) {
+                last.syncId = `unknown-${last.startTime}-${last.endTime}`;
+            }
+        } else {
+            merged.push({ ...seg });
+        }
     }
 
-    if (logsToUpdate.length > 0) {
-        const db = await openDatabase();
-        await new Promise((res, rej) => {
-            const t = db.transaction(STORE_LOGS, 'readwrite');
-            const s = t.objectStore(STORE_LOGS);
-            logsToUpdate.forEach(l => s.put(l));
-            t.oncomplete = () => res();
-            t.onerror = () => rej(t.error);
-        });
-    }
+    // Ensure syncId uniqueness if a log was split
+    const syncIdCounts = new Map();
+    merged.forEach(l => {
+        const count = (syncIdCounts.get(l.syncId) || 0) + 1;
+        syncIdCounts.set(l.syncId, count);
+        if (count > 1) {
+            l.syncId = `${l.syncId}-${count}`;
+        }
+    });
+
+    return [...merged, ...markers, ...openTasks].sort((a, b) => {
+        if (a.startTime !== b.startTime) return a.startTime - b.startTime;
+        // At same timestamp, put markers after logs that end there, and before logs that start there.
+        // For merged segments: log1 ends at 2000, marker at 2000, log2 starts at 2000.
+        // We want log1, marker, log2.
+        if (a.isManualStop && b.endTime === a.startTime) return 1; // a (marker) after b
+        if (b.isManualStop && a.endTime === b.startTime) return -1; // a before b (marker)
+        if (a.endTime === b.startTime) return -1; // a before b
+        if (a.startTime === b.endTime) return 1; // a after b
+        return 0;
+    });
 }
 
 /**

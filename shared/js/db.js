@@ -1,4 +1,4 @@
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, DEFAULT_ALARM_MESSAGE_STOP, generateUUID } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, DEFAULT_ALARM_MESSAGE_STOP, generateUUID } from './utils.js';
 import { t, setLanguage } from './i18n.js';
 import { validateCategorySchema, SCHEMA_TYPE_PAGE_BREAK } from './schema.js';
 
@@ -572,7 +572,7 @@ async function migrateLogsWithMissingData() {
 
     const logsToUpdate = [];
     for (const log of logs) {
-        if (log.category === SYSTEM_CATEGORY_IDLE || log.isManualStop) continue;
+        if (log.category === SYSTEM_CATEGORY_IDLE || log.category === SYSTEM_CATEGORY_UNKNOWN || log.isManualStop) continue;
 
         let changed = false;
         if (log.tags === undefined || log.tags === null) {

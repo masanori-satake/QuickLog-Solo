@@ -9,9 +9,9 @@ import {
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } from '../shared/js/logic.js';
-import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
+import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
-import { isSessionSyncEnabled, pushToCloud, pullFromCloud } from '../shared/js/session_sync.js';
+import { isSessionSyncEnabled, pushToCloud, pullFromCloud, performInitialSync } from '../shared/js/session_sync.js';
 import { animations } from '../shared/js/animation_registry.js';
 import {
     validateCategorySchema, SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0,
@@ -222,7 +222,7 @@ async function openHistoryEditModal(log) {
 
     // Determine if it's a stop marker
     const isStopMarker = log.isManualStop;
-    const isTask = !isStopMarker && log.category !== SYSTEM_CATEGORY_IDLE;
+    const isTask = !isStopMarker && log.category !== SYSTEM_CATEGORY_IDLE && log.category !== SYSTEM_CATEGORY_UNKNOWN;
     const titleKey = isStopMarker ? 'history-edit-stop-title' : 'history-edit-title';
     const labelKey = isStopMarker ? 'history-edit-end-time' : 'history-edit-start-time';
 
@@ -666,6 +666,9 @@ function createLogElement(log, categoryMap) {
     } else if (log.category === SYSTEM_CATEGORY_IDLE) {
         colorClass = 'dot-neutral';
         displayName = t('idle-category-log');
+    } else if (log.category === SYSTEM_CATEGORY_UNKNOWN) {
+        colorClass = 'dot-outline';
+        displayName = t('category-unknown');
     } else {
         const color = log.color || (categoryMap.get(log.category) ? categoryMap.get(log.category).color : 'primary');
         colorClass = `dot-${color}`;
@@ -1469,6 +1472,53 @@ function showMultiChoice(message, choices) {
     });
 }
 
+/**
+ * Shows the sync setup modal and waits for user choice.
+ * @returns {Promise<{settingsMode: string, historyMode: string}|null>}
+ */
+function showSyncSetupModal() {
+    return new Promise((resolve) => {
+        const modal = getEl('sync-setup-modal');
+        const okBtn = getEl('sync-setup-ok-btn');
+        const cancelBtn = getEl('sync-setup-cancel-btn');
+        const settingsRadios = document.querySelectorAll('input[name="settings-sync-mode"]');
+        const historyRadios = document.querySelectorAll('input[name="history-sync-mode"]');
+
+        if (!modal || !okBtn || !cancelBtn) {
+            resolve(null);
+            return;
+        }
+
+        // Reset state
+        settingsRadios.forEach(r => r.checked = false);
+        historyRadios.forEach(r => r.checked = false);
+        okBtn.disabled = true;
+
+        const updateOkButton = () => {
+            const settingsSelected = [...settingsRadios].some(r => r.checked);
+            const historySelected = [...historyRadios].some(r => r.checked);
+            okBtn.disabled = !(settingsSelected && historySelected);
+        };
+
+        settingsRadios.forEach(r => r.onchange = updateOkButton);
+        historyRadios.forEach(r => r.onchange = updateOkButton);
+
+        okBtn.onclick = () => {
+            const settingsMode = [...settingsRadios].find(r => r.checked)?.value;
+            const historyMode = [...historyRadios].find(r => r.checked)?.value;
+            modal.classList.add('hidden');
+            resolve({ settingsMode, historyMode });
+        };
+
+        cancelBtn.onclick = () => {
+            modal.classList.add('hidden');
+            resolve(null);
+        };
+
+        modal.classList.remove('hidden');
+    });
+}
+
 // --- Alarms ---
 
 async function renderBusinessDays() {
@@ -2261,6 +2311,7 @@ function setupEventListeners() {
         report: getEl(ID_REPORT_MODAL),
         tagAggregation: getEl(ID_TAG_AGGREGATION_MODAL),
         multiChoice: getEl('multi-choice-modal'),
+        syncSetup: getEl('sync-setup-modal'),
         historyEdit: getEl('history-edit-modal')
     };
 
@@ -2531,19 +2582,24 @@ function setupEventListeners() {
 
     getEl(ID_SESSION_SYNC_TOGGLE)?.addEventListener('change', async (e) => {
         const enabled = e.target.checked;
-        const confirmMsg = enabled ? t('confirm-enable-session-sync') : t('confirm-disable-session-sync');
-        if (await showConfirm(confirmMsg)) {
-            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_SESSION_SYNC, value: enabled });
-            if (enabled) {
-                // When enabling, pull first to adopt remote data if it exists, then push current state
-                await pullFromCloud().catch(err => console.error('Initial pull failed', err));
-                const state = await getCurrentAppState();
-                await pushToCloud(state);
+        if (enabled) {
+            const result = await showSyncSetupModal();
+            if (result) {
+                await dbPut(STORE_SETTINGS, { key: SETTING_KEY_SESSION_SYNC, value: true });
+                await performInitialSync(result.settingsMode, result.historyMode);
+                await syncState();
+                broadcastSync();
+            } else {
+                e.target.checked = false;
             }
-            await syncState();
-            broadcastSync();
         } else {
-            e.target.checked = !enabled;
+            if (await showConfirm(t('confirm-disable-session-sync'))) {
+                await dbPut(STORE_SETTINGS, { key: SETTING_KEY_SESSION_SYNC, value: false });
+                await syncState();
+                broadcastSync();
+            } else {
+                e.target.checked = true;
+            }
         }
     });
 

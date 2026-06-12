@@ -195,6 +195,7 @@ export default {
     'day-0': '日', 'day-1': '一', 'day-2': '二', 'day-3': '三', 'day-4': '四', 'day-5': '五', 'day-6': '六',
     'idle-category': '(闲置)',
     'idle-category-log': '(闲置)',
+    'category-unknown': '未知',
     'status-stopped-name': '(已停止)',
     'font-system': '系统字体',
     'anim-default': '标准',
@@ -373,6 +374,15 @@ export default {
     'confirm-disable-session-sync': '是否禁用会话同步？本设备将停止同步，但云端数据仍将保留。',
     'session-sync-active': '会话同步中',
     'local-only-active': '仅限本地',
+
+    'sync-setup-title': '会话同步设置',
+    'sync-setup-desc': '在开始同步之前，请选择现有数据与会话数据之间的优先级。',
+    'sync-setup-settings-title': '设置与类别同步',
+    'sync-setup-history-title': '历史记录同步',
+    'sync-setup-cloud-to-local': '使用会话数据覆盖本地数据',
+    'sync-setup-local-to-cloud': '使用本地数据覆盖会话数据',
+    'sync-setup-merge': '将本地历史记录合并到会话数据中',
+
     'alarm-label-action-category': '启动分类',
     'alarm-label-days-of-week': '星期',
     'alarm-label-day-of-month': '日期',

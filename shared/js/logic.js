@@ -1,5 +1,5 @@
 import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv, generateUUID } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv, generateUUID } from './utils.js';
 import { t } from './i18n.js';
 
 export function formatDuration(ms) {
@@ -44,7 +44,7 @@ export function calculateTagAggregation(logs) {
 
     logs.forEach(l => {
         const category = l.category || '';
-        if (l.isManualStop || category === SYSTEM_CATEGORY_IDLE || category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) || !l.endTime) return;
+        if (l.isManualStop || category === SYSTEM_CATEGORY_IDLE || category === SYSTEM_CATEGORY_UNKNOWN || category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) || !l.endTime) return;
         const dur = l.endTime - l.startTime;
         if (dur <= 0) return;
 
@@ -144,7 +144,8 @@ function prepareReportItems(logs, options) {
     let displayLogs = filteredLogs.map(log => ({
         startTime: log.startTime,
         endTime: log.endTime,
-        category: log.category === SYSTEM_CATEGORY_IDLE ? (options.idleText || t('idle-category-log')) : log.category,
+        category: log.category === SYSTEM_CATEGORY_IDLE ? (options.idleText || t('idle-category-log')) :
+                  log.category === SYSTEM_CATEGORY_UNKNOWN ? t('category-unknown') : log.category,
         memo: log.memo
     }));
 

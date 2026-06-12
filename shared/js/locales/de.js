@@ -195,6 +195,7 @@ export default {
     'day-0': 'S', 'day-1': 'M', 'day-2': 'T', 'day-3': 'W', 'day-4': 'T', 'day-5': 'F', 'day-6': 'S',
     'idle-category': '(Leerlauf)',
     'idle-category-log': '(Leerlauf)',
+    'category-unknown': 'Unbekannt',
     'status-stopped-name': '(Gestoppt)',
     'font-system': 'System-Schriftart',
     'anim-default': 'Standard',
@@ -373,6 +374,15 @@ export default {
     'confirm-disable-session-sync': 'Sitzungssynchronisation deaktivieren? Dieses Gerät wird nicht mehr synchronisiert, aber die Cloud-Daten bleiben erhalten.',
     'session-sync-active': 'Sitzungssynchronisation aktiv',
     'local-only-active': 'Nur lokal',
+
+    'sync-setup-title': 'Sitzungssynchronisation-Einrichtung',
+    'sync-setup-desc': 'Um die Synchronisation zu starten, wählen Sie bitte die Priorität zwischen vorhandenen Daten und Daten in der Sitzung.',
+    'sync-setup-settings-title': 'Einstellungen & Kategorien-Synchronisation',
+    'sync-setup-history-title': 'Verlaufs-Synchronisation',
+    'sync-setup-cloud-to-local': 'Lokale Daten mit Sitzungsdaten überschreiben',
+    'sync-setup-local-to-cloud': 'Sitzungsdaten mit lokalen Daten überschreiben',
+    'sync-setup-merge': 'Lokalen Verlauf in Sitzungsdaten zusammenführen',
+
     'alarm-label-action-category': 'Kategorie zum Starten',
     'alarm-label-days-of-week': 'Wochentage',
     'alarm-label-day-of-month': 'Tag des Monats',
