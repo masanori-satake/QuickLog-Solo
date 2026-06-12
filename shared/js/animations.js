@@ -3,9 +3,6 @@
  */
 
 import { CELL_SIZE } from './utils.js';
-import { AnimationBase } from './animation_base.js';
-
-export { AnimationBase };
 
 export class AnimationEngine {
     constructor(canvas) {

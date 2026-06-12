@@ -277,6 +277,27 @@ describe('DB Module', () => {
         expect(count).toBe(0);
     });
 
+    test('migrateLogsWithSyncId populates missing syncId', async () => {
+        // Manually add a log without syncId (bypass dbAdd which might add it)
+        const db = await openDatabase();
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_LOGS, 'readwrite');
+            const store = tx.objectStore(STORE_LOGS);
+            store.add({ category: 'Legacy', startTime: Date.now() });
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
+
+        // Initialize DB to trigger migration
+        await initDB();
+
+        const logs = await dbGetAll(STORE_LOGS);
+        const legacyLog = logs.find(l => l.category === 'Legacy');
+        expect(legacyLog).toBeDefined();
+        expect(legacyLog.syncId).toBeDefined();
+        expect(legacyLog.syncId).toMatch(/^[0-9a-f-]{36}$|^uuid-/);
+    });
+
     describe('dbImportCategories', () => {
         test('imports categories in append mode', async () => {
             await openDatabase();

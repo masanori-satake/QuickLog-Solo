@@ -220,6 +220,7 @@ export async function pullFromCloud() {
 /**
  * Merges remote logs into local database.
  * @param {Array} remoteLogs
+ * Exported for testing purposes only.
  */
 export async function mergeLogs(remoteLogs) {
     const localLogs = await dbGetAll(STORE_LOGS);

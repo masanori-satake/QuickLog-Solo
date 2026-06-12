@@ -1,5 +1,5 @@
 import {
-    escapeHtml, escapeCsv, escapeTsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName
+    escapeHtml, escapeCsv, escapeTsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName, generateUUID
 } from '../shared/js/utils.js';
 
 describe('Utils Module', () => {
@@ -83,6 +83,20 @@ describe('Utils Module', () => {
             expect(isValidColor('primary')).toBe(true);
             expect(isValidColor('teal')).toBe(true);
             expect(isValidColor('not-a-color')).toBe(false);
+        });
+    });
+
+    describe('generateUUID', () => {
+        test('returns a string', () => {
+            const uuid = generateUUID();
+            expect(typeof uuid).toBe('string');
+            expect(uuid.length).toBeGreaterThan(0);
+        });
+
+        test('returns reasonably unique values', () => {
+            const uuid1 = generateUUID();
+            const uuid2 = generateUUID();
+            expect(uuid1).not.toBe(uuid2);
         });
     });
 

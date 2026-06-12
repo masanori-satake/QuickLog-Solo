@@ -69,7 +69,6 @@ export function t(key, params = {}) {
 
 /**
  * Updates all elements with data-i18n and data-i18n-title attributes.
- * Exported for testing purposes only.
  */
 export function applyLanguage() {
     if (typeof document === 'undefined') return;
