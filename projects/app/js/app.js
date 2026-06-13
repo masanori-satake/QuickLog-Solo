@@ -1,6 +1,6 @@
 import {
     initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbAddMultiple, dbDelete, dbClear, dbImportCategories,
-    setDatabaseName, DB_NAME, SYNC_CHANNEL_NAME,
+    setDatabaseName,
     SETTING_KEY_SESSION_SYNC,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
@@ -11,7 +11,7 @@ import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } fro
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } from '../shared/js/logic.js';
 import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
-import { isSessionSyncEnabled, pushToCloud, pullFromCloud, performInitialSync, clearCloudHistory, broadcastSync, setupBroadcastChannel } from '../shared/js/session_sync.js';
+import { isSessionSyncEnabled, pullFromCloud, performInitialSync, clearCloudHistory, broadcastSync, setupBroadcastChannel } from '../shared/js/session_sync.js';
 import { animations } from '../shared/js/animation_registry.js';
 import {
     validateCategorySchema, SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0,
