@@ -355,10 +355,10 @@ export function reconstructTimeline(allLogs) {
     if (allLogs.length === 0) return [];
 
     // 1. Resolve conflicts and deduplicate
-    // Use (syncId + startTime) as a unique key to prevent dropping split logs
+    // Use syncId if available, otherwise fallback to legacy key (startTime + category)
     const byId = new Map();
     allLogs.forEach(l => {
-        const id = l.syncId ? `${l.syncId}-${l.startTime}` : `legacy-${l.startTime}-${l.category}`;
+        const id = l.syncId || `legacy-${l.startTime}-${l.category}`;
         const existing = byId.get(id);
         // Prefer logs with endTime, or newer ones if both have/don't have it.
         if (!existing || (l.endTime && !existing.endTime) || (l.endTime && existing.endTime && l.endTime > existing.endTime)) {
