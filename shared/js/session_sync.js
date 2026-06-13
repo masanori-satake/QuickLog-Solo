@@ -55,7 +55,7 @@ export async function broadcastSync(type = 'sync') {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
         try {
             await chrome.runtime.sendMessage({ type });
-        } catch (err) {
+        } catch {
             // Ignore errors if background script is not listening
         }
     }
