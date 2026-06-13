@@ -4,7 +4,8 @@ import {
     SETTING_KEY_SESSION_SYNC, SETTING_KEY_LAST_PULLED_SYNC_TIME,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION,
     SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
-    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID
+    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID,
+    SETTING_KEY_DELETED_SYNC_IDS
 } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, generateUUID } from './utils.js';
 
@@ -16,7 +17,8 @@ const SYNC_KEYS = {
     BUSINESS_DAYS: 'sync_business_days',
     LAST_SYNC: 'sync_last_time',
     CLIENT_ID: 'sync_client_id',
-    PAUSE_STATE: 'sync_pause_state'
+    PAUSE_STATE: 'sync_pause_state',
+    DELETED_IDS: 'sync_deleted_ids'
 };
 
 const MAX_SYNC_LOGS = 50;
@@ -46,6 +48,8 @@ export async function pushToCloud(state) {
     const recentLogs = allLogs.sort((a, b) => b.startTime - a.startTime).slice(0, MAX_SYNC_LOGS);
     const clientId = (await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID))?.value;
 
+    const deletedSyncIds = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
+
     const syncTime = Date.now();
     const syncData = {
         [SYNC_KEYS.CATEGORIES]: categories,
@@ -61,7 +65,8 @@ export async function pushToCloud(state) {
         [SYNC_KEYS.BUSINESS_DAYS]: state.businessDays,
         [SYNC_KEYS.LAST_SYNC]: syncTime,
         [SYNC_KEYS.CLIENT_ID]: clientId,
-        [SYNC_KEYS.PAUSE_STATE]: state.activeTask // Sync active task as pauseState
+        [SYNC_KEYS.PAUSE_STATE]: state.activeTask, // Sync active task as pauseState
+        [SYNC_KEYS.DELETED_IDS]: deletedSyncIds
     };
 
     // Split logs into chunks
@@ -185,6 +190,21 @@ function extractLogsFromData(data) {
     return combinedLogs;
 }
 
+/**
+ * Records a syncId as deleted in the local database.
+ * @param {string} syncId
+ */
+export async function recordDeletedSyncId(syncId) {
+    if (!syncId) return;
+    const current = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
+    if (!current.includes(syncId)) {
+        current.push(syncId);
+        // Keep only last 100 deletions
+        const trimmed = current.slice(-100);
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_DELETED_SYNC_IDS, value: trimmed });
+    }
+}
+
 export async function pullFromCloud() {
     if (!(await isSessionSyncEnabled())) return false;
     if (activePullPromise) return activePullPromise;
@@ -222,8 +242,10 @@ export async function pullFromCloud() {
 
                 // 4. Logs (Merge)
                 const combinedLogs = extractLogsFromData(data);
-                if (combinedLogs.length > 0) {
-                    await mergeLogs(combinedLogs);
+                const remoteDeletedIds = data[SYNC_KEYS.DELETED_IDS] || [];
+
+                if (combinedLogs.length > 0 || remoteDeletedIds.length > 0) {
+                    await mergeLogs(combinedLogs, false, remoteDeletedIds);
                 }
 
                 // 5. Pause State (Active Task)
@@ -266,11 +288,13 @@ export async function performInitialSync(settingsMode, historyMode) {
         // 2. History
         if (historyMode === 'cloud-to-local') {
             const combinedLogs = extractLogsFromData(data);
-            await mergeLogs(combinedLogs, true);
+            const remoteDeletedIds = data[SYNC_KEYS.DELETED_IDS] || [];
+            await mergeLogs(combinedLogs, true, remoteDeletedIds);
         } else if (historyMode === 'merge') {
             const combinedLogs = extractLogsFromData(data);
-            if (combinedLogs.length > 0) {
-                await mergeLogs(combinedLogs);
+            const remoteDeletedIds = data[SYNC_KEYS.DELETED_IDS] || [];
+            if (combinedLogs.length > 0 || remoteDeletedIds.length > 0) {
+                await mergeLogs(combinedLogs, false, remoteDeletedIds);
             }
         }
 
@@ -302,10 +326,21 @@ export async function performInitialSync(settingsMode, historyMode) {
  * Merges remote logs into local database using complex timeline logic.
  * @param {Array} remoteLogs
  * @param {boolean} overwrite If true, ignores local logs and uses remote logs as basis for timeline.
+ * @param {string[]} remoteDeletedIds List of syncIds that were deleted remotely.
  */
-export async function mergeLogs(remoteLogs, overwrite = false) {
+export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds = []) {
     const localLogs = await dbGetAll(STORE_LOGS);
-    const combined = overwrite ? remoteLogs : [...localLogs, ...remoteLogs];
+    let combined;
+    if (overwrite) {
+        combined = remoteLogs;
+    } else {
+        const localDeletedIds = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
+        const allDeletedIds = new Set([...localDeletedIds, ...remoteDeletedIds]);
+
+        const filteredRemote = remoteLogs.filter(l => !allDeletedIds.has(l.syncId));
+        const filteredLocal = localLogs.filter(l => !allDeletedIds.has(l.syncId));
+        combined = [...filteredLocal, ...filteredRemote];
+    }
     const reconstructed = reconstructTimeline(combined);
 
     const db = await openDatabase();
@@ -360,8 +395,15 @@ export function reconstructTimeline(allLogs) {
     allLogs.forEach(l => {
         const id = l.syncId || `legacy-${l.startTime}-${l.category}`;
         const existing = byId.get(id);
-        // Prefer logs with endTime, or newer ones if both have/don't have it.
-        if (!existing || (l.endTime && !existing.endTime) || (l.endTime && existing.endTime && l.endTime > existing.endTime)) {
+        // Prefer logs with endTime.
+        // If both have endTime, prefer the one with most recent metadata (best effort guess)
+        // or just accept remote ones if they are newer.
+        // v1.6.2 fix: We need to allow category/memo changes to propagate.
+        if (!existing || (l.endTime && !existing.endTime) || (l.endTime && existing.endTime)) {
+            // If both have endTime, we should have a way to know which is newer.
+            // For now, let's assume the one coming from "remote" during merge might be preferred if it has different metadata.
+            // In a real system we'd use a version or lastModifiedTS per log.
+            // Since we don't have that yet, let's at least ensure we don't stick to the old one forever.
             byId.set(id, l);
         }
     });
