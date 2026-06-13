@@ -4,7 +4,7 @@ import {
     SETTING_KEY_SESSION_SYNC,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
-    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE
+    SETTING_KEY_TIMER_HEIGHT
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
