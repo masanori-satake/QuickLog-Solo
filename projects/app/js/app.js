@@ -11,7 +11,7 @@ import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } fro
 import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } from '../shared/js/logic.js';
 import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
-import { isSessionSyncEnabled, pushToCloud, pullFromCloud, performInitialSync } from '../shared/js/session_sync.js';
+import { isSessionSyncEnabled, pushToCloud, pullFromCloud, performInitialSync, clearCloudHistory, broadcastSync, setupBroadcastChannel } from '../shared/js/session_sync.js';
 import { animations } from '../shared/js/animation_registry.js';
 import {
     validateCategorySchema, SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0,
@@ -119,8 +119,6 @@ const ID_TAG_AGGREGATION_CALENDAR_CONTAINER = 'tag-aggregation-calendar-containe
 let activeTask = null;
 /** @type {number|null} ID of the main timer interval. */
 let timerInterval = null;
-/** @type {BroadcastChannel|null} Channel for cross-tab state sync. */
-let syncChannel = null;
 /** @type {number|null} Timeout ID for delayed sync execution. */
 let syncTimeout = null;
 /** @type {number} Current page index in the category list. */
@@ -748,6 +746,23 @@ function updateAnimationExclusionAreas() {
     animationEngine.setExclusionAreas(exclusionAreas);
 }
 
+function handleSyncMessage(data) {
+    if (data.type === 'reload') {
+        location.reload();
+    } else if (data.type === 'alarms-updated') {
+        // Background script handles alarm scheduling, but we might want to refresh UI if open
+        const alarmsTab = getEl('alarms-tab');
+        if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
+            renderAlarmList();
+        }
+    } else if (data.type === 'sync') {
+        // Only sync if visible to reduce CPU load as requested
+        if (document.visibilityState === 'visible') {
+            syncState();
+        }
+    }
+}
+
 function initAnimationEngine() {
     const canvas = getEl('animation-canvas');
     if (canvas) {
@@ -776,43 +791,6 @@ function initAnimationEngine() {
     }
 }
 
-function setupBroadcastChannel() {
-    syncChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
-    syncChannel.onmessage = (event) => {
-        if (event.data.type === 'reload') {
-            location.reload();
-        } else if (event.data.type === 'alarms-updated') {
-            // Background script handles alarm scheduling, but we might want to refresh UI if open
-            const alarmsTab = getEl('alarms-tab');
-            if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
-                renderAlarmList();
-            }
-        } else if (event.data.type === 'sync') {
-            // Only sync if visible to reduce CPU load as requested
-            if (document.visibilityState === 'visible') {
-                syncState();
-            }
-        }
-    };
-}
-
-function broadcastSync(type = 'sync') {
-    if (syncChannel) {
-        syncChannel.postMessage({ type });
-    }
-    // Also notify background script via chrome.runtime for better reliability
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-        chrome.runtime.sendMessage({ type }).catch(() => {
-            // Ignore errors if background script is not listening
-        });
-    }
-
-    if (type === 'sync' || type === 'alarms-updated') {
-        getCurrentAppState().then(state => {
-            pushToCloud(state).catch(err => console.error('pushToCloud failed', err));
-        });
-    }
-}
 
 async function syncState() {
     if (!isAppInitialized) return;
@@ -822,9 +800,10 @@ async function syncState() {
     updateBackupUI();
 
     // Session Sync UI sync
+    const syncEnabled = !!state.sessionSync;
     const syncBadge = getEl(ID_SYNC_STATUS_BADGE);
     if (syncBadge) {
-        if (state.sessionSync) {
+        if (syncEnabled) {
             syncBadge.classList.remove('hidden');
         } else {
             syncBadge.classList.add('hidden');
@@ -832,8 +811,13 @@ async function syncState() {
     }
     const syncToggle = getEl(ID_SESSION_SYNC_TOGGLE);
     if (syncToggle) {
-        syncToggle.checked = !!state.sessionSync;
+        syncToggle.checked = syncEnabled;
     }
+
+    // Toggle Maintenance sections based on Sync state
+    getEl('maintenance-clear-logs-section')?.classList.toggle('hidden', syncEnabled);
+    getEl('maintenance-sync-pull-section')?.classList.toggle('hidden', !syncEnabled);
+    getEl('maintenance-sync-clear-cloud-section')?.classList.toggle('hidden', !syncEnabled);
 
     // Migration: Update 'matrix_code' to 'digital_rain' for existing users
     if (state.animation === 'matrix_code') {
@@ -3011,6 +2995,24 @@ function setupEventListeners() {
             location.reload();
         });
     });
+
+    getEl('sync-pull-btn')?.addEventListener('click', () => {
+        performMaintenanceAction(t('confirm-sync-pull'), async () => {
+            await performInitialSync('none', 'cloud-to-local');
+            broadcastSync('reload');
+            location.reload();
+        });
+    });
+
+    getEl('sync-clear-cloud-btn')?.addEventListener('click', () => {
+        performMaintenanceAction(t('confirm-sync-clear-cloud'), async () => {
+            await clearCloudHistory();
+            await dbClear(STORE_LOGS);
+            await updateUI();
+            broadcastSync('reload');
+            showToast(t('toast-deleted'));
+        });
+    });
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -3041,7 +3043,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         initAnimationEngine();
         await backupManager.init();
-        setupBroadcastChannel();
+        setupBroadcastChannel(handleSyncMessage);
         setupEventListeners();
         await handleTestParameters();
 

@@ -65,7 +65,7 @@
 
             <section id="log-section">
                 <ul id="log-list">
-                    <!-- ログアイテムがここに動的に追加される -->
+                    <!-- 作業履歴アイテムがここに動的に追加される -->
                 </ul>
             </section>
         </main>
@@ -471,7 +471,7 @@
                     </div>
                     <div class="setting-item stats-row-compact">
                         <div class="stats-col">
-                            <label data-i18n="about-stats-logs">ログ件数</label>
+                            <label data-i18n="about-stats-logs">作業履歴件数</label>
                             <p id="stats-log-count">-</p>
                         </div>
                         <div class="stats-col">
@@ -542,21 +542,33 @@
                 </div>
 
                 <div id="maintenance-tab" class="tab-content hidden">
-                    <div class="setting-item">
-                        <label data-i18n="maintenance-clear-logs">ログの削除</label>
-                        <button id="clear-logs-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-clear-logs">ログをすべて削除</button>
+                    <!-- Standard clear history (visible when sync is OFF) -->
+                    <div id="maintenance-clear-logs-section" class="setting-item">
+                        <label data-i18n="maintenance-clear-logs">作業履歴の削除</label>
+                        <button id="clear-logs-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-clear-logs">作業履歴をすべて削除</button>
                     </div>
+
+                    <!-- Sync maintenance (visible when sync is ON) -->
+                    <div id="maintenance-sync-pull-section" class="setting-item hidden">
+                        <label data-i18n="maintenance-sync-pull">セッション情報からの作業履歴の再取得</label>
+                        <button id="sync-pull-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-pull">セッション情報で初期化</button>
+                    </div>
+                    <div id="maintenance-sync-clear-cloud-section" class="setting-item hidden">
+                        <label data-i18n="maintenance-sync-clear-cloud">セッション情報の作業履歴を削除</label>
+                        <button id="sync-clear-cloud-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-clear-cloud">セッション情報のすべて作業履歴を削除</button>
+                    </div>
+
                     <div class="setting-item">
                         <label data-i18n="maintenance-reset-all">設定とカテゴリの初期化</label>
                         <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);" data-i18n="maintenance-reset-all-desc">
-                            ログは維持されます。
+                            作業履歴は維持されます。
                         </p>
                         <button id="reset-cat-settings-btn" style="width: 100%;" data-i18n="btn-reset-all">カテゴリ・設定を初期化</button>
                     </div>
                     <div class="setting-item">
                         <label data-i18n="maintenance-reset-settings">設定のみの初期化</label>
                         <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);" data-i18n="maintenance-reset-settings-desc">
-                            ログとカテゴリは維持されます。
+                            作業履歴とカテゴリは維持されます。
                         </p>
                         <button id="reset-settings-btn" style="width: 100%;" data-i18n="btn-reset-settings">設定のみを初期化</button>
                     </div>
