@@ -279,15 +279,19 @@ export async function performInitialSync(settingsMode, historyMode) {
             await applyRemotePauseState(data);
         }
 
-        // 3. Establish this client as current and push updated local state to cloud.
-        // We push regardless of choice to ensure the cloud metadata (sync time, client ID) is updated.
+        // 3. Establish this client as current and update last pulled time.
         const remoteSyncTime = data[SYNC_KEYS.LAST_SYNC] || 0;
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
-        isInternalUpdate = false;
 
-        const { getCurrentAppState } = await import('./db.js');
-        const updatedState = await getCurrentAppState();
-        await pushToCloud(updatedState);
+        // settingsMode または historyMode が 'cloud-to-local' 以外（'local-to-cloud' や 'merge'）の場合、
+        // ローカルの変更をクラウドに即座に反映させる必要があります。
+        if (settingsMode !== 'cloud-to-local' || historyMode !== 'cloud-to-local') {
+            isInternalUpdate = false;
+            const { getCurrentAppState } = await import('./db.js');
+            const updatedState = await getCurrentAppState();
+            await pushToCloud(updatedState);
+            isInternalUpdate = true;
+        }
 
     } finally {
         isInternalUpdate = false;
@@ -364,8 +368,9 @@ export function reconstructTimeline(allLogs) {
 
     // Ensure every log has a syncId for the rest of the process
     const uniqueLogs = Array.from(byId.values()).map(l => {
-        if (!l.syncId) l.syncId = generateUUID();
-        return l;
+        const copy = { ...l };
+        if (!copy.syncId) copy.syncId = generateUUID();
+        return copy;
     });
 
     // 2. Separate log types
