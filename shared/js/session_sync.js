@@ -628,6 +628,9 @@ export async function clearCloudHistory() {
         keysToRemove.push(`${SYNC_KEYS.LOGS_PREFIX}${i}`);
     }
     keysToRemove.push('sync_logs'); // Old format key
+    keysToRemove.push(SYNC_KEYS.PAUSE_STATE);
+    keysToRemove.push(SYNC_KEYS.DELETED_IDS);
+    keysToRemove.push(SYNC_KEYS.LAST_SYNC);
 
     return new Promise((resolve, reject) => {
         chrome.storage.sync.remove(keysToRemove, () => {

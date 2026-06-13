@@ -2998,6 +2998,8 @@ function setupEventListeners() {
 
     getEl('sync-pull-btn')?.addEventListener('click', () => {
         performMaintenanceAction(t('confirm-sync-pull'), async () => {
+            // Add a slight delay to avoid race conditions with async stopTask push
+            await new Promise(resolve => setTimeout(resolve, 200));
             await performInitialSync('none', 'cloud-to-local');
             broadcastSync('reload');
             location.reload();
@@ -3006,6 +3008,8 @@ function setupEventListeners() {
 
     getEl('sync-clear-cloud-btn')?.addEventListener('click', () => {
         performMaintenanceAction(t('confirm-sync-clear-cloud'), async () => {
+            // Add a slight delay to avoid race conditions with async stopTask push
+            await new Promise(resolve => setTimeout(resolve, 200));
             await clearCloudHistory();
             await dbClear(STORE_LOGS);
             await updateUI();
