@@ -279,15 +279,14 @@ export async function performInitialSync(settingsMode, historyMode) {
             await applyRemotePauseState(data);
         }
 
-        // 3. Establish this client as current and push updated local state to cloud.
-        // We push regardless of choice to ensure the cloud metadata (sync time, client ID) is updated.
+        // 3. Establish this client as current and update last pulled time.
         const remoteSyncTime = data[SYNC_KEYS.LAST_SYNC] || 0;
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
-        isInternalUpdate = false;
 
-        const { getCurrentAppState } = await import('./db.js');
-        const updatedState = await getCurrentAppState();
-        await pushToCloud(updatedState);
+        // Note: We used to pushToCloud here, but it's risky if the local state
+        // hasn't fully settled or if we want to avoid overwriting cloud with empty local data
+        // in case of an incomplete initial pull.
+        // We rely on subsequent pushToCloud calls from regular app operations.
 
     } finally {
         isInternalUpdate = false;
@@ -351,10 +350,10 @@ export function reconstructTimeline(allLogs) {
     if (allLogs.length === 0) return [];
 
     // 1. Resolve conflicts and deduplicate
-    // Use syncId if available, otherwise fallback to legacy key (startTime + category)
+    // Use (syncId + startTime) as a unique key to prevent dropping split logs
     const byId = new Map();
     allLogs.forEach(l => {
-        const id = l.syncId || `legacy-${l.startTime}-${l.category}`;
+        const id = l.syncId ? `${l.syncId}-${l.startTime}` : `legacy-${l.startTime}-${l.category}`;
         const existing = byId.get(id);
         // Prefer logs with endTime, or newer ones if both have/don't have it.
         if (!existing || (l.endTime && !existing.endTime) || (l.endTime && existing.endTime && l.endTime > existing.endTime)) {
@@ -364,8 +363,9 @@ export function reconstructTimeline(allLogs) {
 
     // Ensure every log has a syncId for the rest of the process
     const uniqueLogs = Array.from(byId.values()).map(l => {
-        if (!l.syncId) l.syncId = generateUUID();
-        return l;
+        const copy = { ...l };
+        if (!copy.syncId) copy.syncId = generateUUID();
+        return copy;
     });
 
     // 2. Separate log types
