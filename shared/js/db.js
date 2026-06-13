@@ -334,6 +334,7 @@ export async function initDB(isLite = false) {
     } else {
         await setupInitialData(lang);
         await migrateLogsWithSyncId();
+        await migrateLogsWithUpdatedAt();
         await cleanupOldLogs();
     }
 
@@ -547,6 +548,42 @@ async function migrateLogsWithSyncId() {
 
     if (logsToUpdate.length > 0) {
         console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing syncId.`);
+        await new Promise((resolve, reject) => {
+            if (!db) { reject(new Error('DB not initialized')); return; }
+            const tx = db.transaction(STORE_LOGS, 'readwrite');
+            const store = tx.objectStore(STORE_LOGS);
+            tx.oncomplete = () => resolve();
+            tx.onerror = (e) => reject(e.target.error);
+            for (const log of logsToUpdate) {
+                store.put(log);
+            }
+        });
+    }
+
+    await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
+}
+
+/**
+ * Ensures all logs have an updatedAt timestamp for conflict resolution.
+ */
+async function migrateLogsWithUpdatedAt() {
+    const migrationKey = 'migration_updated_at_populated';
+    const alreadyMigrated = await dbGet(STORE_SETTINGS, migrationKey);
+    if (alreadyMigrated) return;
+
+    const logs = await dbGetAll(STORE_LOGS);
+    const logsToUpdate = [];
+
+    for (const log of logs) {
+        if (log.updatedAt === undefined) {
+            // Use endTime if available, otherwise startTime
+            log.updatedAt = log.endTime || log.startTime || Date.now();
+            logsToUpdate.push(log);
+        }
+    }
+
+    if (logsToUpdate.length > 0) {
+        console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing updatedAt.`);
         await new Promise((resolve, reject) => {
             if (!db) { reject(new Error('DB not initialized')); return; }
             const tx = db.transaction(STORE_LOGS, 'readwrite');
