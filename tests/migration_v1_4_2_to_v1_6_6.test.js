@@ -1,7 +1,7 @@
 import {
-    initDB, dbGetAll, dbAdd, dbPut, dbDelete, closeDatabase, setDatabaseName, DB_NAME,
+    initDB, dbGetAll, closeDatabase, setDatabaseName,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
-    SETTING_KEY_PAUSE_STATE, SETTING_KEY_LANGUAGE, openDatabase
+    SETTING_KEY_LANGUAGE, openDatabase
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 
@@ -22,7 +22,7 @@ describe('Migration Verification: v1.4.2 to v1.6.6', () => {
         closeDatabase();
     });
 
-    async function setupV142State(dbName = TEST_DB_NAME) {
+    async function setupV142State() {
         const db = await openDatabase();
         const tx = db.transaction([STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS], 'readwrite');
 
