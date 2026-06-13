@@ -196,7 +196,8 @@ function extractLogsFromData(data) {
  */
 export async function recordDeletedSyncId(syncId) {
     if (!syncId) return;
-    const current = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
+    const rawValue = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value;
+    const current = Array.isArray(rawValue) ? rawValue : [];
     if (!current.includes(syncId)) {
         current.push(syncId);
         // Keep only last 100 deletions
@@ -342,8 +343,10 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
     if (overwrite) {
         combined = sanitizedRemoteLogs;
     } else {
-        const localDeletedIds = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
-        const allDeletedIds = new Set([...localDeletedIds, ...remoteDeletedIds]);
+        const localDeletedIds = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value;
+        const safeLocalDeleted = Array.isArray(localDeletedIds) ? localDeletedIds : [];
+        const safeRemoteDeleted = Array.isArray(remoteDeletedIds) ? remoteDeletedIds : [];
+        const allDeletedIds = new Set([...safeLocalDeleted, ...safeRemoteDeleted]);
 
         const filteredRemote = sanitizedRemoteLogs.filter(l => !allDeletedIds.has(l.syncId));
         const filteredLocal = localLogs.filter(l => !allDeletedIds.has(l.syncId));
