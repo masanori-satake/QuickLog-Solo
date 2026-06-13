@@ -37,6 +37,7 @@ export const SETTING_KEY_SESSION_SYNC = 'sessionSync';
 export const SETTING_KEY_LAST_PULLED_SYNC_TIME = 'lastPulledSyncTime';
 export const SETTING_KEY_CLIENT_ID = 'clientId';
 export const SETTING_KEY_DELETED_SYNC_IDS = 'deletedSyncIds';
+export const SETTING_KEY_GLOBAL_CLEAR_TIME = 'globalClearTime';
 
 export const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;

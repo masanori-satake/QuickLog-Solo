@@ -3015,11 +3015,22 @@ function setupEventListeners() {
     getEl('sync-clear-cloud-btn')?.addEventListener('click', () => {
         performMaintenanceAction(t('confirm-sync-clear-cloud'), async () => {
             try {
+                // Stop the active task first to ensure consistency across devices
+                if (activeTask) {
+                    await stopTask();
+                }
                 // Add a slight delay to avoid race conditions with async stopTask push
                 await new Promise(resolve => setTimeout(resolve, 200));
                 await clearCloudHistory();
                 await dbClear(STORE_LOGS);
+                // Force idle state in settings
+                await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+                activeTask = null;
+
                 await updateUI();
+                // Ensure animations and timer UI are reset
+                if (animationEngine) animationEngine.stop();
+
                 await broadcastSync('reload');
                 showToast(t('toast-deleted'));
             } catch (error) {

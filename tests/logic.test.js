@@ -28,7 +28,8 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     SETTING_KEY_SESSION_SYNC: 'sessionSync',
     SETTING_KEY_LAST_PULLED_SYNC_TIME: 'lastPulledSyncTime',
     SETTING_KEY_CLIENT_ID: 'clientId',
-    SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds'
+    SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds',
+    SETTING_KEY_GLOBAL_CLEAR_TIME: 'globalClearTime'
 }));
 
 const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } = await import('../shared/js/logic.js');
