@@ -77,6 +77,70 @@ describe('Session Sync Logic', () => {
         expect(researchLog.startTime).toBe(3000);
     });
 
+    test('mergeLogs should prefer newer updatedAt', async () => {
+        const syncId = 'test-sync-id';
+        // 1. Setup local log (Old)
+        await dbAdd(STORE_LOGS, {
+            syncId,
+            category: 'Category A',
+            startTime: 1000,
+            endTime: 2000,
+            updatedAt: 100
+        });
+
+        // 2. Define remote log (Newer)
+        const remoteLogs = [
+            { syncId, category: 'Category B', startTime: 1000, endTime: 2000, updatedAt: 200 }
+        ];
+
+        await sessionSync.mergeLogs(remoteLogs);
+
+        const finalLogs = await dbGetAll(STORE_LOGS);
+        const log = finalLogs.find(l => l.syncId === syncId);
+        expect(log.category).toBe('Category B');
+    });
+
+    test('mergeLogs should NOT overwrite with older updatedAt', async () => {
+        const syncId = 'test-sync-id';
+        // 1. Setup local log (Newer)
+        await dbAdd(STORE_LOGS, {
+            syncId,
+            category: 'Category B',
+            startTime: 1000,
+            endTime: 2000,
+            updatedAt: 200
+        });
+
+        // 2. Define remote log (Old)
+        const remoteLogs = [
+            { syncId, category: 'Category A', startTime: 1000, endTime: 2000, updatedAt: 100 }
+        ];
+
+        await sessionSync.mergeLogs(remoteLogs);
+
+        const finalLogs = await dbGetAll(STORE_LOGS);
+        const log = finalLogs.find(l => l.syncId === syncId);
+        expect(log.category).toBe('Category B');
+    });
+
+    test('mergeLogs should sanitize remote IDs', async () => {
+        // Local has ID 1
+        await dbAdd(STORE_LOGS, { category: 'Local', startTime: 1000, endTime: 2000, syncId: 'sid1' });
+
+        // Remote also has ID 1 but different syncId
+        const remoteLogs = [
+            { id: 1, category: 'Remote', startTime: 3000, endTime: 4000, syncId: 'sid2' }
+        ];
+
+        await sessionSync.mergeLogs(remoteLogs);
+
+        const logs = await dbGetAll(STORE_LOGS);
+        const local = logs.find(l => l.syncId === 'sid1');
+        const remote = logs.find(l => l.syncId === 'sid2');
+        expect(local.id).not.toBe(remote.id);
+        expect(remote.id).toBeDefined();
+    });
+
     test('mergeLogs should update existing logs with endTime', async () => {
         // 1. Setup local log without endTime
         const localLog = {
