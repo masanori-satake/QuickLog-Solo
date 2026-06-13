@@ -352,7 +352,8 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
         const filteredLocal = localLogs.filter(l => !allDeletedIds.has(l.syncId));
         combined = [...filteredLocal, ...filteredRemote];
     }
-    const reconstructed = reconstructTimeline(combined);
+    // Fill gaps only when merging, not when overwriting from cloud
+    const reconstructed = reconstructTimeline(combined, !overwrite);
 
     const db = await openDatabase();
     await new Promise((res, rej) => {
@@ -394,10 +395,11 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
 /**
  * Reconstructs the timeline by filling gaps with Unknown and resolving overlaps.
  * @param {Array} allLogs
+ * @param {boolean} fillGaps If true, gaps between logs are filled with "Unknown" tasks.
  * @returns {Array} New list of logs
  * Exported for testing purposes only.
  */
-export function reconstructTimeline(allLogs) {
+export function reconstructTimeline(allLogs, fillGaps = true) {
     if (allLogs.length === 0) return [];
 
     // 1. Resolve conflicts and deduplicate
@@ -462,12 +464,30 @@ export function reconstructTimeline(allLogs) {
 
         if (covering.length === 0) {
             // Gap detected
-            segments.push({
-                category: SYSTEM_CATEGORY_UNKNOWN,
-                startTime: start,
-                endTime: end,
-                syncId: `unknown-${start}-${end}`
-            });
+            if (fillGaps) {
+                // Point 2: Do not insert Unknown if the gap starts after a manual stop marker.
+                // To avoid O(N^3) complexity, we find the latest manual stop before 'start'
+                // and check if any solid (actual work) logs exist between it and 'start'.
+                const latestManualStop = markers.reduce((latest, m) => {
+                    if (m.isManualStop && m.startTime <= start) {
+                        if (!latest || m.startTime > latest.startTime) {
+                            return m;
+                        }
+                    }
+                    return latest;
+                }, null);
+                const isAfterManualStop = !!latestManualStop && !solidLogs.some(l =>
+                    l.startTime >= latestManualStop.startTime && l.endTime <= start
+                );
+                if (!isAfterManualStop) {
+                    segments.push({
+                        category: SYSTEM_CATEGORY_UNKNOWN,
+                        startTime: start,
+                        endTime: end,
+                        syncId: `unknown-${start}-${end}`
+                    });
+                }
+            }
         } else if (covering.length === 1) {
             segments.push({ ...covering[0], startTime: start, endTime: end });
         } else {
@@ -502,7 +522,7 @@ export function reconstructTimeline(allLogs) {
 
             if (best && !conflict) {
                 segments.push({ ...best, startTime: start, endTime: end });
-            } else {
+            } else if (fillGaps) {
                 // Partial overlap or ambiguous containment -> Unknown
                 segments.push({
                     category: SYSTEM_CATEGORY_UNKNOWN,
