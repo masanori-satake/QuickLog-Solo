@@ -1,12 +1,12 @@
 import {
-    dbGetAll, dbPut, dbGet, openDatabase, getCurrentAppState,
+    dbGetAll, dbPut, dbGet, dbDelete, dbClear, openDatabase, getCurrentAppState,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     DB_NAME, SYNC_CHANNEL_NAME,
     SETTING_KEY_SESSION_SYNC, SETTING_KEY_LAST_PULLED_SYNC_TIME,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION,
     SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
     SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID,
-    SETTING_KEY_DELETED_SYNC_IDS
+    SETTING_KEY_DELETED_SYNC_IDS, SETTING_KEY_GLOBAL_CLEAR_TIME
 } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, generateUUID } from './utils.js';
 
@@ -19,7 +19,8 @@ const SYNC_KEYS = {
     LAST_SYNC: 'sync_last_time',
     CLIENT_ID: 'sync_client_id',
     PAUSE_STATE: 'sync_pause_state',
-    DELETED_IDS: 'sync_deleted_ids'
+    DELETED_IDS: 'sync_deleted_ids',
+    GLOBAL_CLEAR_TIME: 'sync_global_clear_time'
 };
 
 const MAX_SYNC_LOGS = 50;
@@ -87,7 +88,11 @@ export async function pushToCloud(state) {
     const categories = state.categories || await dbGetAll(STORE_CATEGORIES);
     const alarms = state.alarms || await dbGetAll(STORE_ALARMS);
     const allLogs = await dbGetAll(STORE_LOGS);
-    const recentLogs = allLogs.sort((a, b) => b.startTime - a.startTime).slice(0, MAX_SYNC_LOGS);
+    const globalClearTime = (await dbGet(STORE_SETTINGS, SETTING_KEY_GLOBAL_CLEAR_TIME))?.value || 0;
+    const recentLogs = allLogs
+        .filter(l => (l.updatedAt || l.endTime || l.startTime) > globalClearTime)
+        .sort((a, b) => b.startTime - a.startTime)
+        .slice(0, MAX_SYNC_LOGS);
     const clientId = (await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID))?.value;
 
     const deletedSyncIds = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
@@ -108,7 +113,8 @@ export async function pushToCloud(state) {
         [SYNC_KEYS.LAST_SYNC]: syncTime,
         [SYNC_KEYS.CLIENT_ID]: clientId,
         [SYNC_KEYS.PAUSE_STATE]: state.activeTask, // Sync active task as pauseState
-        [SYNC_KEYS.DELETED_IDS]: deletedSyncIds
+        [SYNC_KEYS.DELETED_IDS]: deletedSyncIds,
+        [SYNC_KEYS.GLOBAL_CLEAR_TIME]: globalClearTime
     };
 
     // Split logs into chunks
@@ -283,6 +289,17 @@ export async function pullFromCloud() {
 
                 await applyRemoteSettings(data);
 
+                // Check for Global Clear Time
+                const remoteGlobalClearTime = data[SYNC_KEYS.GLOBAL_CLEAR_TIME] || 0;
+                const localGlobalClearTime = (await dbGet(STORE_SETTINGS, SETTING_KEY_GLOBAL_CLEAR_TIME))?.value || 0;
+
+                if (remoteGlobalClearTime > localGlobalClearTime) {
+                    // Global wipe detected from another PC
+                    await dbClear(STORE_LOGS);
+                    await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+                    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_GLOBAL_CLEAR_TIME, value: remoteGlobalClearTime });
+                }
+
                 // 4. Logs (Merge)
                 const combinedLogs = extractLogsFromData(data);
                 const remoteDeletedIds = data[SYNC_KEYS.DELETED_IDS] || [];
@@ -292,6 +309,8 @@ export async function pullFromCloud() {
                 }
 
                 // 5. Pause State (Active Task)
+                // applyRemotePauseState handles data[SYNC_KEYS.PAUSE_STATE] appropriately,
+                // even if it was just wiped or replaced by a remote sync.
                 await applyRemotePauseState(data);
 
                 await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
@@ -329,6 +348,16 @@ export async function performInitialSync(settingsMode, historyMode) {
         }
 
         // 2. History
+        // Check for Global Clear Time (even during initial sync)
+        const remoteGlobalClearTime = data[SYNC_KEYS.GLOBAL_CLEAR_TIME] || 0;
+        const localGlobalClearTime = (await dbGet(STORE_SETTINGS, SETTING_KEY_GLOBAL_CLEAR_TIME))?.value || 0;
+
+        if (remoteGlobalClearTime > localGlobalClearTime) {
+            await dbClear(STORE_LOGS);
+            await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_GLOBAL_CLEAR_TIME, value: remoteGlobalClearTime });
+        }
+
         if (historyMode === 'cloud-to-local') {
             const combinedLogs = extractLogsFromData(data);
             const remoteDeletedIds = data[SYNC_KEYS.DELETED_IDS] || [];
@@ -373,13 +402,16 @@ export async function performInitialSync(settingsMode, historyMode) {
  */
 export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds = []) {
     const localLogs = await dbGetAll(STORE_LOGS);
+    const globalClearTime = (await dbGet(STORE_SETTINGS, SETTING_KEY_GLOBAL_CLEAR_TIME))?.value || 0;
 
-    // Remove remote local IDs to prevent collision
-    const sanitizedRemoteLogs = remoteLogs.map(l => {
-        const copy = { ...l };
-        delete copy.id;
-        return copy;
-    });
+    // Remove remote local IDs to prevent collision and filter by globalClearTime
+    const sanitizedRemoteLogs = remoteLogs
+        .filter(l => (l.updatedAt || l.endTime || l.startTime) > globalClearTime)
+        .map(l => {
+            const copy = { ...l };
+            delete copy.id;
+            return copy;
+        });
 
     let combined;
     if (overwrite) {
@@ -623,10 +655,13 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
 }
 
 /**
- * Clears work history from chrome.storage.sync.
+ * Clears work history from chrome.storage.sync and sets a global clear timestamp.
  */
 export async function clearCloudHistory() {
     if (!(await isSessionSyncEnabled())) return;
+
+    const clearTime = Date.now();
+    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_GLOBAL_CLEAR_TIME, value: clearTime });
 
     const keysToRemove = [];
     for (let i = 0; i < LOG_CHUNKS; i++) {
@@ -637,8 +672,20 @@ export async function clearCloudHistory() {
     keysToRemove.push(SYNC_KEYS.DELETED_IDS);
     keysToRemove.push(SYNC_KEYS.LAST_SYNC);
 
+    const updateData = {
+        [SYNC_KEYS.GLOBAL_CLEAR_TIME]: clearTime,
+        [SYNC_KEYS.LAST_SYNC]: clearTime,
+        [SYNC_KEYS.CLIENT_ID]: (await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID))?.value
+    };
+
     try {
         await chrome.storage.sync.remove(keysToRemove);
+        await new Promise((resolve, reject) => {
+            chrome.storage.sync.set(updateData, () => {
+                if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
+                else resolve();
+            });
+        });
     } catch (err) {
         console.error('QuickLog-Solo: Cloud history clear failed', err);
         throw err;
