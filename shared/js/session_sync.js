@@ -283,10 +283,15 @@ export async function performInitialSync(settingsMode, historyMode) {
         const remoteSyncTime = data[SYNC_KEYS.LAST_SYNC] || 0;
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
 
-        // Note: We used to pushToCloud here, but it's risky if the local state
-        // hasn't fully settled or if we want to avoid overwriting cloud with empty local data
-        // in case of an incomplete initial pull.
-        // We rely on subsequent pushToCloud calls from regular app operations.
+        // settingsMode または historyMode が 'cloud-to-local' 以外（'local-to-cloud' や 'merge'）の場合、
+        // ローカルの変更をクラウドに即座に反映させる必要があります。
+        if (settingsMode !== 'cloud-to-local' || historyMode !== 'cloud-to-local') {
+            isInternalUpdate = false;
+            const { getCurrentAppState } = await import('./db.js');
+            const updatedState = await getCurrentAppState();
+            await pushToCloud(updatedState);
+            isInternalUpdate = true;
+        }
 
     } finally {
         isInternalUpdate = false;
