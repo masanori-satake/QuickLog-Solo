@@ -1,42 +1,8 @@
 
-import { setDatabaseName } from '../shared/js/db.js';
+import * as sessionSync from '../shared/js/session_sync.js';
 import { SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 
-// Mock chrome API
-let mockSyncData = {};
-global.chrome = {
-    storage: {
-        sync: {
-            get: (keys, cb) => {
-                if (keys === null) cb(mockSyncData);
-                else {
-                    const result = {};
-                    if (Array.isArray(keys)) {
-                        keys.forEach(k => result[k] = mockSyncData[k]);
-                    } else if (typeof keys === 'string') {
-                        result[keys] = mockSyncData[keys];
-                    }
-                    cb(result);
-                }
-            },
-            set: (data, cb) => {
-                Object.assign(mockSyncData, data);
-                cb();
-            }
-        }
-    },
-    runtime: {
-        lastError: null
-    }
-};
-
 describe('reconstructTimeline Gap Filling', () => {
-    let sessionSync;
-
-    beforeAll(async () => {
-        setDatabaseName('QuickLogSoloDB_Test_GapFilling');
-        sessionSync = await import('../shared/js/session_sync.js');
-    });
 
     test('should NOT fill gaps when fillGaps is false', () => {
         const logs = [
@@ -103,5 +69,21 @@ describe('reconstructTimeline Gap Filling', () => {
         expect(unknowns.length).toBe(0);
         // Segment 2000-3000 should just be skipped if fillGaps is false
         expect(result.length).toBe(2); // Only solid segments 1000-2000 and 3000-4000
+    });
+
+    test('should NOT fill gaps if split by other markers after a manual stop', () => {
+        const logs = [
+            { syncId: '1', category: 'Task A', startTime: 1000, endTime: 2000 },
+            { syncId: 'stop', category: SYSTEM_CATEGORY_IDLE, startTime: 2000, endTime: 2000, isManualStop: true },
+            // Gap 2000-2500
+            { syncId: 'marker', category: SYSTEM_CATEGORY_IDLE, startTime: 2500, endTime: 2500, isManualStop: false },
+            // Gap 2500-3000
+            { syncId: '2', category: 'Task B', startTime: 3000, endTime: 4000 }
+        ];
+        const result = sessionSync.reconstructTimeline(logs, true);
+        const unknowns = result.filter(l => l.category === SYSTEM_CATEGORY_UNKNOWN);
+        expect(unknowns.length).toBe(0);
+        // Should contain Task A, Stop, Marker, Task B
+        expect(result.length).toBe(4);
     });
 });

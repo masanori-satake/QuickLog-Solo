@@ -465,8 +465,14 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
         if (covering.length === 0) {
             // Gap detected
             if (fillGaps) {
-                // Point 2: Do not insert Unknown if the gap starts after a manual stop marker
-                const isAfterManualStop = markers.some(m => m.isManualStop && m.startTime === start);
+                // Point 2: Do not insert Unknown if the gap starts after a manual stop marker.
+                // We check if a manual stop exists at or before the current gap start,
+                // and ensure no solid (actual work) logs exist between that manual stop and the current gap.
+                const isAfterManualStop = markers.some(m =>
+                    m.isManualStop &&
+                    m.startTime <= start &&
+                    !solidLogs.some(l => l.startTime >= m.startTime && l.endTime <= start)
+                );
                 if (!isAfterManualStop) {
                     segments.push({
                         category: SYSTEM_CATEGORY_UNKNOWN,
