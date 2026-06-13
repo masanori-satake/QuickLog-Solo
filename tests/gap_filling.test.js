@@ -1,5 +1,5 @@
 
-import { setDatabaseName, dbAdd, STORE_LOGS, dbGetAll, dbClear } from '../shared/js/db.js';
+import { setDatabaseName } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 
 // Mock chrome API
