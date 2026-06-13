@@ -3023,8 +3023,8 @@ function setupEventListeners() {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 await clearCloudHistory();
                 await dbClear(STORE_LOGS);
-                // Force idle state in settings
-                await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+                // Force idle state in settings (using literal to avoid import issues in CI/extension context)
+                await dbDelete(STORE_SETTINGS, 'pauseState');
                 activeTask = null;
 
                 await updateUI();
