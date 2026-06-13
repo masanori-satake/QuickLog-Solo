@@ -147,7 +147,7 @@ export default {
     'maintenance-sync-pull': 'セッション情報からの作業履歴の再取得',
     'btn-sync-pull': 'セッション情報で初期化',
     'maintenance-sync-clear-cloud': 'セッション情報の作業履歴を削除',
-    'btn-sync-clear-cloud': 'セッション情報のすべて作業履歴を削除',
+    'btn-sync-clear-cloud': 'セッション情報の作業履歴をすべて削除',
     'maintenance-reset-all': '設定とカテゴリの初期化',
     'maintenance-reset-all-desc': '作業履歴は維持されます。',
     'btn-reset-all': '全てリセット',

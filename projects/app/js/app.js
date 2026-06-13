@@ -747,6 +747,7 @@ function updateAnimationExclusionAreas() {
 }
 
 function handleSyncMessage(data) {
+    if (!data) return;
     if (data.type === 'reload') {
         location.reload();
     } else if (data.type === 'alarms-updated') {
@@ -2998,23 +2999,33 @@ function setupEventListeners() {
 
     getEl('sync-pull-btn')?.addEventListener('click', () => {
         performMaintenanceAction(t('confirm-sync-pull'), async () => {
-            // Add a slight delay to avoid race conditions with async stopTask push
-            await new Promise(resolve => setTimeout(resolve, 200));
-            await performInitialSync('none', 'cloud-to-local');
-            broadcastSync('reload');
-            location.reload();
+            try {
+                // Add a slight delay to avoid race conditions with async stopTask push
+                await new Promise(resolve => setTimeout(resolve, 200));
+                await performInitialSync('none', 'cloud-to-local');
+                await broadcastSync('reload');
+                location.reload();
+            } catch (error) {
+                console.error('Failed to pull sync data:', error);
+                showToast(t('error-sync-pull') || 'Failed to sync');
+            }
         });
     });
 
     getEl('sync-clear-cloud-btn')?.addEventListener('click', () => {
         performMaintenanceAction(t('confirm-sync-clear-cloud'), async () => {
-            // Add a slight delay to avoid race conditions with async stopTask push
-            await new Promise(resolve => setTimeout(resolve, 200));
-            await clearCloudHistory();
-            await dbClear(STORE_LOGS);
-            await updateUI();
-            broadcastSync('reload');
-            showToast(t('toast-deleted'));
+            try {
+                // Add a slight delay to avoid race conditions with async stopTask push
+                await new Promise(resolve => setTimeout(resolve, 200));
+                await clearCloudHistory();
+                await dbClear(STORE_LOGS);
+                await updateUI();
+                await broadcastSync('reload');
+                showToast(t('toast-deleted'));
+            } catch (error) {
+                console.error('Failed to clear cloud history:', error);
+                showToast(t('error-clear-cloud') || 'Failed to clear cloud history');
+            }
         });
     });
 }

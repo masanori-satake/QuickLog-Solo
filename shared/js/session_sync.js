@@ -47,21 +47,26 @@ export function setupBroadcastChannel(onMessage) {
  * Broadcasts a synchronization message to other tabs and pushes to cloud if needed.
  * @param {string} type 'sync', 'reload', or 'alarms-updated'
  */
-export function broadcastSync(type = 'sync') {
+export async function broadcastSync(type = 'sync') {
     if (syncChannel) {
         syncChannel.postMessage({ type });
     }
     // Also notify background script via chrome.runtime for better reliability
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-        chrome.runtime.sendMessage({ type }).catch(() => {
+        try {
+            await chrome.runtime.sendMessage({ type });
+        } catch (err) {
             // Ignore errors if background script is not listening
-        });
+        }
     }
 
     if (type === 'sync' || type === 'alarms-updated') {
-        getCurrentAppState().then(state => {
-            pushToCloud(state).catch(err => console.error('QuickLog-Solo: pushToCloud failed', err));
-        });
+        try {
+            const state = await getCurrentAppState();
+            await pushToCloud(state);
+        } catch (err) {
+            console.error('QuickLog-Solo: pushToCloud failed', err);
+        }
     }
 }
 
@@ -632,16 +637,12 @@ export async function clearCloudHistory() {
     keysToRemove.push(SYNC_KEYS.DELETED_IDS);
     keysToRemove.push(SYNC_KEYS.LAST_SYNC);
 
-    return new Promise((resolve, reject) => {
-        chrome.storage.sync.remove(keysToRemove, () => {
-            if (chrome.runtime.lastError) {
-                console.error('QuickLog-Solo: Cloud history clear failed', chrome.runtime.lastError);
-                reject(chrome.runtime.lastError);
-            } else {
-                resolve();
-            }
-        });
-    });
+    try {
+        await chrome.storage.sync.remove(keysToRemove);
+    } catch (err) {
+        console.error('QuickLog-Solo: Cloud history clear failed', err);
+        throw err;
+    }
 }
 
 /**
