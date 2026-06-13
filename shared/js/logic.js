@@ -352,7 +352,8 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
         endTime: null,
         resumableCategory: resumableCategory,
         color: color,
-        tags: tags
+        tags: tags,
+        updatedAt: now
     };
 
     const id = await dbAdd(STORE_LOGS, newLog);
@@ -371,7 +372,8 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
             ...activeTask,
             category: SYSTEM_CATEGORY_IDLE,
             endTime: endTime,
-            isManualStop: false
+            isManualStop: false,
+            updatedAt: Date.now()
         };
         delete idleLog.isPaused;
 
@@ -382,7 +384,7 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
         }
     } else {
         // 通常の作業中の場合は、その作業を正常終了させる
-        const taskToSave = { ...activeTask, endTime: endTime, isManualStop: false };
+        const taskToSave = { ...activeTask, endTime: endTime, isManualStop: false, updatedAt: Date.now() };
         await dbPut(STORE_LOGS, taskToSave);
     }
 
@@ -405,7 +407,8 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
                 category: SYSTEM_CATEGORY_IDLE,
                 startTime: endTime,
                 endTime: endTime,
-                isManualStop: true
+                isManualStop: true,
+                updatedAt: Date.now()
             };
             await dbAdd(STORE_LOGS, stopLog);
         }
@@ -424,7 +427,8 @@ export async function pauseTaskLogic(activeTask) {
         category: SYSTEM_CATEGORY_IDLE,
         startTime: now,
         resumableCategory: lastCategory,
-        isPaused: true
+        isPaused: true,
+        updatedAt: now
     };
     const id = await dbAdd(STORE_LOGS, pauseState);
     pauseState.id = id;
@@ -452,6 +456,7 @@ export async function updateHistoryStartTime(logId, newTs) {
     if (currentLog.isManualStop) {
         currentLog.endTime = currentNewTs;
     }
+    currentLog.updatedAt = Date.now();
     await dbPut(STORE_LOGS, currentLog);
 
     // Sync with pauseState if the updated log is the currently active task
@@ -478,6 +483,7 @@ export async function updateHistoryStartTime(logId, newTs) {
         if (prevLog.isManualStop) {
             prevLog.startTime = prevLog.endTime;
         }
+        prevLog.updatedAt = Date.now();
 
         await dbPut(STORE_LOGS, prevLog);
 
@@ -632,6 +638,7 @@ export async function deleteHistoryItem(logId) {
         if (nextLog.isManualStop) {
             nextLog.endTime = lastNewStartTs;
         }
+        nextLog.updatedAt = Date.now();
 
         await dbPut(STORE_LOGS, nextLog);
 

@@ -337,6 +337,7 @@ async function openHistoryEditModal(log) {
                 log.tags = cat ? (cat.tags || '') : log.tags;
             }
             log.memo = memoInput.value.trim() || undefined;
+            log.updatedAt = Date.now();
             // Since we might have modified log object, we should save it.
             // updateHistoryStartTime also saves it, but it might only update startTime.
             // Let's ensure other fields are saved too.

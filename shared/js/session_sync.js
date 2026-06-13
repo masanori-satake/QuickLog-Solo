@@ -330,14 +330,22 @@ export async function performInitialSync(settingsMode, historyMode) {
  */
 export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds = []) {
     const localLogs = await dbGetAll(STORE_LOGS);
+
+    // Remove remote local IDs to prevent collision
+    const sanitizedRemoteLogs = remoteLogs.map(l => {
+        const copy = { ...l };
+        delete copy.id;
+        return copy;
+    });
+
     let combined;
     if (overwrite) {
-        combined = remoteLogs;
+        combined = sanitizedRemoteLogs;
     } else {
         const localDeletedIds = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
         const allDeletedIds = new Set([...localDeletedIds, ...remoteDeletedIds]);
 
-        const filteredRemote = remoteLogs.filter(l => !allDeletedIds.has(l.syncId));
+        const filteredRemote = sanitizedRemoteLogs.filter(l => !allDeletedIds.has(l.syncId));
         const filteredLocal = localLogs.filter(l => !allDeletedIds.has(l.syncId));
         combined = [...filteredLocal, ...filteredRemote];
     }
@@ -396,15 +404,18 @@ export function reconstructTimeline(allLogs) {
         const id = l.syncId || `legacy-${l.startTime}-${l.category}`;
         const existing = byId.get(id);
         // Prefer logs with endTime.
-        // If both have endTime, prefer the one with most recent metadata (best effort guess)
-        // or just accept remote ones if they are newer.
-        // v1.6.2 fix: We need to allow category/memo changes to propagate.
-        if (!existing || (l.endTime && !existing.endTime) || (l.endTime && existing.endTime)) {
-            // If both have endTime, we should have a way to know which is newer.
-            // For now, let's assume the one coming from "remote" during merge might be preferred if it has different metadata.
-            // In a real system we'd use a version or lastModifiedTS per log.
-            // Since we don't have that yet, let's at least ensure we don't stick to the old one forever.
+        // If both have/don't have endTime, prefer the one with the latest updatedAt timestamp.
+        const lHasEndTime = !!l.endTime;
+        const eHasEndTime = existing ? !!existing.endTime : false;
+
+        if (!existing || (lHasEndTime && !eHasEndTime)) {
             byId.set(id, l);
+        } else if (lHasEndTime === eHasEndTime) {
+            const lUpdated = l.updatedAt || 0;
+            const eUpdated = existing.updatedAt || 0;
+            if (lUpdated >= eUpdated) {
+                byId.set(id, l);
+            }
         }
     });
 
