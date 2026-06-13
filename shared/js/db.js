@@ -575,7 +575,7 @@ async function migrateLogsWithUpdatedAt() {
     const logsToUpdate = [];
 
     for (const log of logs) {
-        if (log.updatedAt === undefined) {
+        if (log.updatedAt == null) {
             // Use endTime if available, otherwise startTime
             log.updatedAt = log.endTime || log.startTime || Date.now();
             logsToUpdate.push(log);

@@ -57,7 +57,7 @@ describe('Migration Verification: v1.4.2 to v1.6.6', () => {
         await setupV142State();
 
         // Run current initDB() which should perform migrations
-        await initDB();
+        const state = await initDB();
 
         // Verify Logs
         const logs = await dbGetAll(STORE_LOGS);
@@ -78,7 +78,6 @@ describe('Migration Verification: v1.4.2 to v1.6.6', () => {
         expect(morningAlarm).toBeDefined();
         expect(morningAlarm.type).toBe('daily_business');
 
-        const state = await initDB();
         const pauseStateSetting = state.activeTask;
         expect(pauseStateSetting).toBeDefined();
         expect(pauseStateSetting.category).toBe('Work');
@@ -86,15 +85,6 @@ describe('Migration Verification: v1.4.2 to v1.6.6', () => {
     });
 
     test('migrates multiple active tasks correctly', async () => {
-        const dbName = TEST_DB_NAME + '_2';
-        closeDatabase();
-        setDatabaseName(dbName);
-        await new Promise((resolve, reject) => {
-            const req = indexedDB.deleteDatabase(dbName);
-            req.onsuccess = resolve;
-            req.onerror = reject;
-        });
-
         const db = await openDatabase();
         const tx = db.transaction([STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS], 'readwrite');
         const store = tx.objectStore(STORE_LOGS);
