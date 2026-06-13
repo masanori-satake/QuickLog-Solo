@@ -122,9 +122,15 @@ npm test
 
 ### E2Eテスト (Playwright)
 ※事前にローカルサーバー（Vite 等）を起動しておく必要があります（デフォルト: 8080ポート）。
+
+#### M3 トグルの操作
+Material 3 スタイルのトグル（`input[type="checkbox"]`）は不透明度が 0 に設定されている場合があるため、Playwright で操作する際は `force: true` を指定するか、隣接する `.slider` 要素をクリックしてください。
 `npm run test:e2e` コマンドは、実行前に `scripts/generate_animation_registry.py` を呼び出し、アニメーションレジストリが最新の状態であることを保証します。
 
 Playwright テストは `playwright.config.js` で `baseURL` が `http://localhost:8080/projects/app/app.html` に設定されています。そのため、テストケース内では `page.goto('')` や `page.goto('?param=value')` のように相対パスでナビゲーションを行ってください。これにより、リポジトリルートに `index.html` が存在しない問題に起因するテスト失敗を防ぎます。
+
+#### Playwright セレクタ標準
+多言語対応を伴う UI 要素のテストでは、表示テキストに依存せず、`data-i18n` 属性をターゲットにしたロケータ（例: `page.locator('span[data-i18n="..."]')`）を使用してください。これにより、テスト実行時の言語設定に関わらず堅牢な検証が可能になります。
 
 ```bash
 npm run test:e2e
