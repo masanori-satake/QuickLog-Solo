@@ -1,6 +1,7 @@
 import {
-    dbGetAll, dbPut, dbGet, openDatabase,
+    dbGetAll, dbPut, dbGet, openDatabase, getCurrentAppState,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
+    DB_NAME, SYNC_CHANNEL_NAME,
     SETTING_KEY_SESSION_SYNC, SETTING_KEY_LAST_PULLED_SYNC_TIME,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION,
     SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
@@ -27,6 +28,47 @@ const CHUNK_SIZE = Math.ceil(MAX_SYNC_LOGS / LOG_CHUNKS);
 
 let isInternalUpdate = false;
 let activePullPromise = null;
+/** @type {BroadcastChannel|null} */
+let syncChannel = null;
+
+/**
+ * Initializes the BroadcastChannel for cross-tab state synchronization.
+ * @param {Function} onMessage Callback for incoming messages
+ */
+export function setupBroadcastChannel(onMessage) {
+    if (syncChannel) syncChannel.close();
+    syncChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
+    syncChannel.onmessage = (event) => {
+        onMessage(event.data);
+    };
+}
+
+/**
+ * Broadcasts a synchronization message to other tabs and pushes to cloud if needed.
+ * @param {string} type 'sync', 'reload', or 'alarms-updated'
+ */
+export async function broadcastSync(type = 'sync') {
+    if (syncChannel) {
+        syncChannel.postMessage({ type });
+    }
+    // Also notify background script via chrome.runtime for better reliability
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        try {
+            await chrome.runtime.sendMessage({ type });
+        } catch {
+            // Ignore errors if background script is not listening
+        }
+    }
+
+    if (type === 'sync' || type === 'alarms-updated') {
+        try {
+            const state = await getCurrentAppState();
+            await pushToCloud(state);
+        } catch (err) {
+            console.error('QuickLog-Solo: pushToCloud failed', err);
+        }
+    }
+}
 
 export async function isSessionSyncEnabled() {
     if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync) return false;
@@ -578,6 +620,29 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
         if (a.startTime === b.endTime) return 1; // a after b
         return 0;
     });
+}
+
+/**
+ * Clears work history from chrome.storage.sync.
+ */
+export async function clearCloudHistory() {
+    if (!(await isSessionSyncEnabled())) return;
+
+    const keysToRemove = [];
+    for (let i = 0; i < LOG_CHUNKS; i++) {
+        keysToRemove.push(`${SYNC_KEYS.LOGS_PREFIX}${i}`);
+    }
+    keysToRemove.push('sync_logs'); // Old format key
+    keysToRemove.push(SYNC_KEYS.PAUSE_STATE);
+    keysToRemove.push(SYNC_KEYS.DELETED_IDS);
+    keysToRemove.push(SYNC_KEYS.LAST_SYNC);
+
+    try {
+        await chrome.storage.sync.remove(keysToRemove);
+    } catch (err) {
+        console.error('QuickLog-Solo: Cloud history clear failed', err);
+        throw err;
+    }
 }
 
 /**
