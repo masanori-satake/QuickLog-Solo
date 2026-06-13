@@ -9,13 +9,23 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     dbDelete: jest.fn(),
     dbClear: jest.fn(),
     initDB: jest.fn(),
+    openDatabase: jest.fn(),
     STORE_LOGS: 'logs',
     STORE_CATEGORIES: 'categories',
     STORE_SETTINGS: 'settings',
+    STORE_ALARMS: 'alarms',
     SETTING_KEY_THEME: 'theme',
     SETTING_KEY_FONT: 'font',
     SETTING_KEY_ANIMATION: 'animation',
-    SETTING_KEY_PAUSE_STATE: 'pauseState'
+    SETTING_KEY_PAUSE_STATE: 'pauseState',
+    SETTING_KEY_LANGUAGE: 'language',
+    SETTING_KEY_REPORT_SETTINGS: 'reportSettings',
+    SETTING_KEY_BUSINESS_DAYS: 'businessDays',
+    SETTING_KEY_TIMER_HEIGHT: 'timerHeight',
+    SETTING_KEY_SESSION_SYNC: 'sessionSync',
+    SETTING_KEY_LAST_PULLED_SYNC_TIME: 'lastPulledSyncTime',
+    SETTING_KEY_CLIENT_ID: 'clientId',
+    SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds'
 }));
 
 const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } = await import('../shared/js/logic.js');
