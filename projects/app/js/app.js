@@ -3105,6 +3105,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     window.addEventListener('focus', delayedSync);
+    window.addEventListener('online', delayedSync);
+
+    // Deep Sleep / Wake detection: Monitor for significant time jumps
+    let lastTick = Date.now();
+    setInterval(() => {
+        const now = Date.now();
+        if (now - lastTick > 10000) { // Jump > 10s detected (e.g. PC wake)
+            console.log('QuickLog-Solo: Wake detected, triggering sync.');
+            delayedSync();
+        }
+        lastTick = now;
+    }, 2000);
+
+    // Direct cloud change detection in side panel
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+        chrome.storage.onChanged.addListener((changes, area) => {
+            if (area === 'sync') {
+                delayedSync();
+            }
+        });
+    }
+
+    // Direct background message detection
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+        chrome.runtime.onMessage.addListener((message) => {
+            if (message.type === 'sync' || message.type === 'alarms-updated') {
+                delayedSync();
+            }
+        });
+    }
 });
 
 async function handleTestParameters() {
