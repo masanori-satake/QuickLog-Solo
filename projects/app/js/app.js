@@ -3088,13 +3088,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Delay sync slightly to allow local interactions (like clicks) to take precedence
         syncTimeout = setTimeout(async () => {
             if (document.visibilityState === 'visible') {
-                let updated = false;
-                if (await isSessionSyncEnabled()) {
-                    updated = await pullFromCloud().catch(() => false);
+                // Concurrency control: Wait for ongoing sync to complete to prevent race conditions
+                if (delayedSync.activePromise) {
+                    await delayedSync.activePromise.catch(() => {});
                 }
-                if (updated || !isAppInitialized) {
-                    await syncState();
-                }
+                delayedSync.activePromise = (async () => {
+                    try {
+                        if (await isSessionSyncEnabled()) {
+                            await pullFromCloud().catch(() => false);
+                        }
+                        // Always sync UI state to pick up changes that might have been applied by the background script
+                        await syncState();
+                    } finally {
+                        delayedSync.activePromise = null;
+                    }
+                })();
+                await delayedSync.activePromise.catch(err => {
+                    console.error('QuickLog-Solo: Sync failed', err);
+                });
             }
         }, 100);
     };
