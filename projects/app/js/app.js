@@ -3118,15 +3118,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         lastTick = now;
     }, 2000);
 
-    // Direct cloud change detection in side panel
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
-        chrome.storage.onChanged.addListener((changes, area) => {
-            if (area === 'sync') {
-                delayedSync();
-            }
-        });
-    }
-
     // Direct background message detection
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
         chrome.runtime.onMessage.addListener((message) => {
