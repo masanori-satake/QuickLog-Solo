@@ -14,6 +14,8 @@ const animationFiles = fs.readdirSync(animationDir).filter(f => {
 const animationIds = animationFiles.map(f => f.replace('.js', ''));
 
 test.describe('Animation Quality Evaluation', () => {
+    test.describe.configure({ mode: 'parallel' });
+
     for (const id of animationIds) {
         test(`Evaluating animation: ${id}`, async ({ page }) => {
             // Navigate to the app with test parameters to start a task immediately
