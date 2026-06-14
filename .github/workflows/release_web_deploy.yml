@@ -14,19 +14,6 @@ on:
       - 'package-lock.json'
       - 'vercel.json'
       - '.github/workflows/release_web_deploy.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'projects/**'
-      - 'shared/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'releases/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vercel.json'
-      - '.github/workflows/release_web_deploy.yml'
   workflow_dispatch:
 
 env:

@@ -1,20 +1,6 @@
 name: "更新: ガイド用スクリーンショット (Update: Guide Screenshots)"
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'projects/**'
-      - 'scripts/**'
-      - 'projects/web/guide.html'
-      - 'package.json'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'projects/**'
-      - 'scripts/**'
-      - 'projects/web/guide.html'
-      - 'package.json'
   workflow_dispatch:
 
 env:
@@ -75,7 +61,7 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: "chore: ガイド用スクリーンショットの更新"
+        commit_message: "chore: ガイド用スクリーンショットの更新 [skip ci]"
         file_pattern: 'shared/assets/guide/*.png'
         branch: ${{ github.head_ref }}
 
@@ -83,8 +69,8 @@ jobs:
       if: github.event_name != 'pull_request'
       uses: peter-evans/create-pull-request@v7.0.5
       with:
-        commit-message: "chore: ガイド用スクリーンショットの更新"
+        commit-message: "chore: ガイド用スクリーンショットの更新 [skip ci]"
         add-paths: 'shared/assets/guide/*.png'
         branch: "chore/update-guide-screenshots"
-        title: "chore: ガイド用スクリーンショットの更新"
+        title: "chore: ガイド用スクリーンショットの更新 [skip ci]"
         body: "自動生成されたガイド用スクリーンショットの更新です。"
