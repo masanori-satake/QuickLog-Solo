@@ -3121,7 +3121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Direct background message detection
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
         chrome.runtime.onMessage.addListener((message) => {
-            if (message.type === 'sync' || message.type === 'alarms-updated') {
+            if (message?.type === 'sync' || message?.type === 'alarms-updated') {
                 delayedSync();
             }
         });
