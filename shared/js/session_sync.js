@@ -276,6 +276,7 @@ export async function pullFromCloud() {
 
                 // Loop protection: skip if data was pushed by self
                 if (remoteClientId === localClientId && localClientId !== undefined) {
+                    console.log('QuickLog-Solo: Sync pull skipped (Self-pushed data).');
                     resolve(false);
                     return;
                 }
@@ -283,6 +284,7 @@ export async function pullFromCloud() {
                 // Clock skew protection: only pull if remote data timestamp is different from what we last pulled.
                 // We skip only when timestamps are exactly equal, allowing synchronization even if device clocks are skewed.
                 if (remoteSyncTime === lastPulled) {
+                    console.log(`QuickLog-Solo: Sync pull skipped (Timestamp matched: ${remoteSyncTime}).`);
                     resolve(false);
                     return;
                 }
