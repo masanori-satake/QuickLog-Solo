@@ -24,7 +24,6 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 | Update | **更新: ガイド用スクリーンショット** | `update_guide_screenshots.yml` | クイックスタートガイド用画像のリポジトリ自動反映 | `main`へのPush/PR (*1), 手動 |
 
 - (*1) `main`へのPush時は `paths` フィルタに関わらず常に実行されます（ブランチ保護ルールとの兼ね合い）。
-- (*2) PR時は `shared/js/animation/**` に変更がある場合のみ実行されます。
 
 ## ワークフロー設計指針
 
@@ -147,18 +146,16 @@ Node.js **v24** 環境で動作します。本番用の Release ZIP と検証用
 
 ```mermaid
 flowchart LR
-    Dev[開発者] -- PR作成 --> Audit[監査: 透明性とセキュリティ]
-    Dev -- PR作成 --> Test[テスト: 品質テスト/E2E]
+    Dev[開発者] -- PR作成 --> CI[継続的インテグレーション]
 
-    Audit & Test -- Merge --> Main[mainブランチ]
+    CI -- Merge --> Main[mainブランチ]
     Main -- Push --> Deploy[リリース: Webデプロイ]
 
     Main -- Tag v* --> Rel[リリース: 拡張機能パッケージ作成]
 
-    subgraph "Validation Phase (監査 / テスト)"
-    Audit
-    Test
-    OSS
+    subgraph "Validation Phase (監査 / テスト / CI)"
+    CI
+    OSS[脆弱性検査]
     end
 
     subgraph "Delivery Phase (リリース)"
