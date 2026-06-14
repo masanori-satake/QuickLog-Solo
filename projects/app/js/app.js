@@ -3090,7 +3090,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (document.visibilityState === 'visible') {
                 // Concurrency control: Wait for ongoing sync to complete to prevent race conditions
                 if (delayedSync.activePromise) {
-                    await delayedSync.activePromise;
+                    await delayedSync.activePromise.catch(() => {});
                 }
                 delayedSync.activePromise = (async () => {
                     try {
@@ -3103,7 +3103,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         delayedSync.activePromise = null;
                     }
                 })();
-                await delayedSync.activePromise;
+                await delayedSync.activePromise.catch(err => {
+                    console.error('QuickLog-Solo: Sync failed', err);
+                });
             }
         }, 100);
     };
