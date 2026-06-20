@@ -15,11 +15,12 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     SETTING_KEY_THEME: 'theme',
     SETTING_KEY_FONT: 'font',
     SETTING_KEY_ANIMATION: 'animation',
-    SETTING_KEY_PAUSE_STATE: 'pauseState'
+    SETTING_KEY_PAUSE_STATE: 'pauseState',
+    SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds'
 }));
 
 const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } = await import('../shared/js/logic.js');
-const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
+const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE, SETTING_KEY_DELETED_SYNC_IDS } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
 
 describe('Logic Module', () => {

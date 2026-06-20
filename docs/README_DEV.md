@@ -624,6 +624,9 @@ engine.worker.postMessage({ type: 'init', payload: { modulePath: blobUrl } });
 ### バージョン管理
 `npm run version:bump` コマンドにより、`projects/app/version.json`, `package.json`, `projects/app/manifest.*.json` を一括更新します。
 
+### セッション同期と Extension ID
+セッション同期（`chrome.storage.sync`）は Extension ID に依存します。開発環境（パッケージ化されていない拡張機能）において複数端末間で ID を一致させるため、`scripts/create_package.py` は「Dev版」ビルド時に固定の RSA 公開鍵を `manifest.json` に注入します。
+
 ### ブランチ同期とマージ
 `main` ブランチからのプルやマージを行う際、意図せずマージされた場合や同期が必要な場合は、自作ロジックを優先してコンフリクトを解消します。特に Python スクリプト等でマージマーカーによる構文エラーが発生していないか、提出前に手動で確認してください。
 

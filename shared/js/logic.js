@@ -1,4 +1,4 @@
-import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
+import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE, SETTING_KEY_DELETED_SYNC_IDS } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv, generateUUID } from './utils.js';
 import { t } from './i18n.js';
 
@@ -400,6 +400,7 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
 
         if (!isDuplicate) {
             const stopLog = {
+                syncId: generateUUID(),
                 category: SYSTEM_CATEGORY_IDLE,
                 startTime: endTime,
                 endTime: endTime,
@@ -600,6 +601,18 @@ export async function deleteHistoryItem(logId) {
     const log = sortedLogs[index];
     const oldStartTs = log.startTime;
     const oldEndTs = log.endTime;
+
+    // Record tombstone for sync
+    if (log.syncId) {
+        const deletedIdsSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS);
+        const deletedIds = deletedIdsSetting ? deletedIdsSetting.value : [];
+        if (!deletedIds.includes(log.syncId)) {
+            deletedIds.push(log.syncId);
+            // Limit tombstone list size to prevent storage overflow
+            if (deletedIds.length > 100) deletedIds.shift();
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_DELETED_SYNC_IDS, value: deletedIds });
+        }
+    }
 
     await dbDelete(STORE_LOGS, logId);
 

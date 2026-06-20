@@ -4,7 +4,8 @@ import {
     SETTING_KEY_SESSION_SYNC, SETTING_KEY_LAST_PULLED_SYNC_TIME,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION,
     SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
-    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID
+    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID,
+    SETTING_KEY_DELETED_SYNC_IDS
 } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, generateUUID } from './utils.js';
 
@@ -16,7 +17,8 @@ const SYNC_KEYS = {
     BUSINESS_DAYS: 'sync_business_days',
     LAST_SYNC: 'sync_last_time',
     CLIENT_ID: 'sync_client_id',
-    PAUSE_STATE: 'sync_pause_state'
+    PAUSE_STATE: 'sync_pause_state',
+    DELETED_IDS: 'sync_deleted_ids'
 };
 
 const MAX_SYNC_LOGS = 50;
@@ -46,6 +48,8 @@ export async function pushToCloud(state) {
     const recentLogs = allLogs.sort((a, b) => b.startTime - a.startTime).slice(0, MAX_SYNC_LOGS);
     const clientId = (await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID))?.value;
 
+    const deletedIds = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
+
     const syncTime = Date.now();
     const syncData = {
         [SYNC_KEYS.CATEGORIES]: categories,
@@ -61,7 +65,8 @@ export async function pushToCloud(state) {
         [SYNC_KEYS.BUSINESS_DAYS]: state.businessDays,
         [SYNC_KEYS.LAST_SYNC]: syncTime,
         [SYNC_KEYS.CLIENT_ID]: clientId,
-        [SYNC_KEYS.PAUSE_STATE]: state.activeTask // Sync active task as pauseState
+        [SYNC_KEYS.PAUSE_STATE]: state.activeTask, // Sync active task as pauseState
+        [SYNC_KEYS.DELETED_IDS]: deletedIds
     };
 
     // Split logs into chunks
@@ -220,13 +225,25 @@ export async function pullFromCloud() {
 
                 await applyRemoteSettings(data);
 
-                // 4. Logs (Merge)
-                const combinedLogs = extractLogsFromData(data);
-                if (combinedLogs.length > 0) {
-                    await mergeLogs(combinedLogs);
+                // 4. Tombstones (Merge)
+                if (data[SYNC_KEYS.DELETED_IDS]) {
+                    const remoteDeleted = data[SYNC_KEYS.DELETED_IDS];
+                    const localDeletedSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS);
+                    let localDeleted = localDeletedSetting ? localDeletedSetting.value : [];
+                    const mergedDeleted = [...new Set([...localDeleted, ...remoteDeleted])].slice(-100);
+                    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_DELETED_SYNC_IDS, value: mergedDeleted });
                 }
 
-                // 5. Pause State (Active Task)
+                // 5. Logs (Merge)
+                const combinedLogs = extractLogsFromData(data);
+                const currentDeleted = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
+                const filteredLogs = combinedLogs.filter(l => !currentDeleted.includes(l.syncId));
+
+                if (filteredLogs.length > 0) {
+                    await mergeLogs(filteredLogs);
+                }
+
+                // 6. Pause State (Active Task)
                 await applyRemotePauseState(data);
 
                 await dbPut(STORE_SETTINGS, { key: SETTING_KEY_LAST_PULLED_SYNC_TIME, value: remoteSyncTime });
@@ -263,7 +280,16 @@ export async function performInitialSync(settingsMode, historyMode) {
             await applyRemoteSettings(data);
         }
 
-        // 2. History
+        // 2. Tombstones
+        if (data[SYNC_KEYS.DELETED_IDS]) {
+            const remoteDeleted = data[SYNC_KEYS.DELETED_IDS];
+            const localDeletedSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS);
+            let localDeleted = localDeletedSetting ? localDeletedSetting.value : [];
+            const mergedDeleted = [...new Set([...localDeleted, ...remoteDeleted])].slice(-100);
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_DELETED_SYNC_IDS, value: mergedDeleted });
+        }
+
+        // 3. History
         if (historyMode === 'cloud-to-local') {
             const combinedLogs = extractLogsFromData(data);
             await mergeLogs(combinedLogs, true);
@@ -305,7 +331,14 @@ export async function performInitialSync(settingsMode, historyMode) {
  */
 export async function mergeLogs(remoteLogs, overwrite = false) {
     const localLogs = await dbGetAll(STORE_LOGS);
-    const combined = overwrite ? remoteLogs : [...localLogs, ...remoteLogs];
+
+    // Filter against tombstones
+    const localDeletedIds = (await dbGet(STORE_SETTINGS, SETTING_KEY_DELETED_SYNC_IDS))?.value || [];
+    // Note: We might also want to get remote tombstones here if they were provided in data
+    // For simplicity in this call, we assume remoteLogs is already somewhat clean or we filter by local tombstones.
+    const filteredRemote = remoteLogs.filter(l => !localDeletedIds.includes(l.syncId));
+
+    const combined = overwrite ? filteredRemote : [...localLogs, ...filteredRemote];
     const reconstructed = reconstructTimeline(combined);
 
     const db = await openDatabase();
@@ -361,7 +394,7 @@ export function reconstructTimeline(allLogs) {
         const id = l.syncId || `legacy-${l.startTime}-${l.category}`;
         const existing = byId.get(id);
         // Prefer logs with endTime, or newer ones if both have/don't have it.
-        if (!existing || (l.endTime && !existing.endTime) || (l.endTime && existing.endTime && l.endTime > existing.endTime)) {
+        if (!existing || (l.endTime && !existing.endTime) || (l.endTime && existing.endTime && l.endTime >= existing.endTime)) {
             byId.set(id, l);
         }
     });
