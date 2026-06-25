@@ -286,7 +286,7 @@ export async function dbGetActiveTask() {
             const cursor = event.target.result;
             if (cursor) {
                 const log = cursor.value;
-                if (!log.endTime && !(log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+                if (!log.endTime && log.category && !log.category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
                     resolve(log);
                 } else {
                     // This is an optimization: usually the active task is among the most recent.
