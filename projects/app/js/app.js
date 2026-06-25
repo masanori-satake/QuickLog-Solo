@@ -1946,7 +1946,7 @@ async function renderCategoryEditor() {
 
     categories.forEach((cat, idx) => {
         const item = createEl('div');
-        const isPageBreak = (cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        const isPageBreak = cat.name && cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
         item.className = 'category-editor-item' + (isPageBreak ? ' page-break-item' : '');
         item.draggable = true;
         item.dataset.name = cat.name;
