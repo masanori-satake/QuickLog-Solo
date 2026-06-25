@@ -255,7 +255,7 @@ async function openHistoryEditModal(log) {
 
         // Populate category dropdown
         const categories = await dbGetAll(STORE_CATEGORIES);
-        const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+        const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
         categorySelect.replaceChildren();
 
         const currentCategoryExists = workCategories.some(c => c.name === log.category);
@@ -598,7 +598,10 @@ async function renderLogs() {
         return;
     }
     const categoryMap = new Map(categories.map(c => [c.name, c]));
-    const visibleLogs = allLogs.sort((a, b) => b.startTime - a.startTime).slice(0, MAX_LOGS_DISPLAY);
+    const visibleLogs = allLogs
+        .filter(l => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
+        .sort((a, b) => b.startTime - a.startTime)
+        .slice(0, MAX_LOGS_DISPLAY);
 
     const logList = getEl(ID_LOG_LIST);
     if (!logList) return;
@@ -900,7 +903,7 @@ async function updateAboutStats() {
         const logCount = await dbCount(STORE_LOGS);
         const categories = await dbGetAll(STORE_CATEGORIES);
         // Exclude system categories and page breaks from count
-        const categoryCount = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).length;
+        const categoryCount = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).length;
 
         const logCountEl = getEl(ID_STATS_LOG_COUNT);
         if (logCountEl) logCountEl.textContent = logCount.toLocaleString();
@@ -1566,7 +1569,7 @@ async function renderAlarmList() {
     }
 
     const categories = await dbGetAll(STORE_CATEGORIES);
-    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
     const alarms = await dbGetAll(STORE_ALARMS);
     alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
 
@@ -1943,7 +1946,7 @@ async function renderCategoryEditor() {
 
     categories.forEach((cat, idx) => {
         const item = createEl('div');
-        const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        const isPageBreak = (cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
         item.className = 'category-editor-item' + (isPageBreak ? ' page-break-item' : '');
         item.draggable = true;
         item.dataset.name = cat.name;
@@ -2698,7 +2701,7 @@ function setupEventListeners() {
 
         // Convert to NDJSON according to schema
         const ndjson = exportData.map(c => {
-            const isPageBreak = c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+            const isPageBreak = (c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
             const entry = {
                 kind: SCHEMA_KIND_CATEGORY,
                 version: SCHEMA_VERSION_1_0,
