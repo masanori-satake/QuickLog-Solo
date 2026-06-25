@@ -136,7 +136,7 @@ export function generateReport(logs, options) {
  */
 function prepareReportItems(logs, options) {
     const { emoji, adjust } = options;
-    const filteredLogs = logs.filter(log => !log.isManualStop);
+    const filteredLogs = logs.filter(log => !log.isManualStop && !(log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
     if (filteredLogs.length === 0) return [];
 
     const adjustMinutes = parseInt(adjust);

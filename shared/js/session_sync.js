@@ -8,7 +8,7 @@ import {
     SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID,
     SETTING_KEY_DELETED_SYNC_IDS, SETTING_KEY_GLOBAL_CLEAR_TIME
 } from './db.js';
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, generateUUID } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, generateUUID } from './utils.js';
 
 const SYNC_KEYS = {
     CATEGORIES: 'sync_categories',
@@ -501,7 +501,7 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
     });
 
     // Ensure every log has a syncId for the rest of the process
-    const uniqueLogs = Array.from(byId.values()).map(l => {
+    const uniqueLogs = Array.from(byId.values()).filter(l => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).map(l => {
         const copy = { ...l };
         if (!copy.syncId) copy.syncId = generateUUID();
         return copy;

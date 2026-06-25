@@ -29,6 +29,7 @@ ALLOWED_ROOT_ITEMS = {
     "releases",
     ".vercelignore",
     "node_modules",
+    ".pr_agent.toml",
 }
 
 def check_root_directory():
