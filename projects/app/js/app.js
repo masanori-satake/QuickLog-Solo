@@ -903,7 +903,7 @@ async function updateAboutStats() {
         const logCount = await dbCount(STORE_LOGS);
         const categories = await dbGetAll(STORE_CATEGORIES);
         // Exclude system categories and page breaks from count
-        const categoryCount = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).length;
+        const categoryCount = categories.filter(c => c.name && c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).length;
 
         const logCountEl = getEl(ID_STATS_LOG_COUNT);
         if (logCountEl) logCountEl.textContent = logCount.toLocaleString();
