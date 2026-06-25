@@ -611,7 +611,9 @@ async function migrateLogsWithMissingData() {
 
     const logsToUpdate = [];
     for (const log of logs) {
-        if (log.category === SYSTEM_CATEGORY_IDLE || log.category === SYSTEM_CATEGORY_UNKNOWN || log.isManualStop || (log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) continue;
+        const isSystemCategory = log.category === SYSTEM_CATEGORY_IDLE || log.category === SYSTEM_CATEGORY_UNKNOWN;
+        const isPageBreak = (log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        if (isSystemCategory || log.isManualStop || isPageBreak) continue;
 
         let changed = false;
         if (log.tags === undefined || log.tags === null) {
