@@ -255,7 +255,7 @@ async function openHistoryEditModal(log) {
 
         // Populate category dropdown
         const categories = await dbGetAll(STORE_CATEGORIES);
-        const workCategories = categories.filter(c => c.name && c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+        const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
         categorySelect.replaceChildren();
 
         const currentCategoryExists = workCategories.some(c => c.name === log.category);
@@ -599,7 +599,7 @@ async function renderLogs() {
     }
     const categoryMap = new Map(categories.map(c => [c.name, c]));
     const visibleLogs = allLogs
-        .filter(l => l.category && !l.category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
+        .filter(l => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
         .sort((a, b) => b.startTime - a.startTime)
         .slice(0, MAX_LOGS_DISPLAY);
 
@@ -903,7 +903,7 @@ async function updateAboutStats() {
         const logCount = await dbCount(STORE_LOGS);
         const categories = await dbGetAll(STORE_CATEGORIES);
         // Exclude system categories and page breaks from count
-        const categoryCount = categories.filter(c => c.name && c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).length;
+        const categoryCount = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).length;
 
         const logCountEl = getEl(ID_STATS_LOG_COUNT);
         if (logCountEl) logCountEl.textContent = logCount.toLocaleString();
@@ -1569,7 +1569,7 @@ async function renderAlarmList() {
     }
 
     const categories = await dbGetAll(STORE_CATEGORIES);
-    const workCategories = categories.filter(c => c.name && c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
     const alarms = await dbGetAll(STORE_ALARMS);
     alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
 
