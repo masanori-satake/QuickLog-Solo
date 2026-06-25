@@ -286,7 +286,7 @@ export async function dbGetActiveTask() {
             const cursor = event.target.result;
             if (cursor) {
                 const log = cursor.value;
-                if (!log.endTime && log.category && !log.category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+                if (!log.endTime && !(log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
                     resolve(log);
                 } else {
                     // This is an optimization: usually the active task is among the most recent.
@@ -611,9 +611,7 @@ async function migrateLogsWithMissingData() {
 
     const logsToUpdate = [];
     for (const log of logs) {
-        const isSystemCategory = log.category === SYSTEM_CATEGORY_IDLE || log.category === SYSTEM_CATEGORY_UNKNOWN;
-        const isPageBreak = (log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
-        if (isSystemCategory || log.isManualStop || isPageBreak) continue;
+        if (log.category === SYSTEM_CATEGORY_IDLE || log.category === SYSTEM_CATEGORY_UNKNOWN || log.isManualStop || (log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) continue;
 
         let changed = false;
         if (log.tags === undefined || log.tags === null) {
@@ -672,7 +670,7 @@ async function generateDummyHistory() {
     };
 
     const categories = await dbGetAll(STORE_CATEGORIES);
-    const workCategories = categories.filter(c => c.name && c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
 
     if (workCategories.length === 0) return;
 

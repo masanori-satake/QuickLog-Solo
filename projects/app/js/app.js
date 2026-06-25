@@ -1946,7 +1946,7 @@ async function renderCategoryEditor() {
 
     categories.forEach((cat, idx) => {
         const item = createEl('div');
-        const isPageBreak = cat.name && cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+        const isPageBreak = (cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
         item.className = 'category-editor-item' + (isPageBreak ? ' page-break-item' : '');
         item.draggable = true;
         item.dataset.name = cat.name;
@@ -2701,7 +2701,7 @@ function setupEventListeners() {
 
         // Convert to NDJSON according to schema
         const ndjson = exportData.map(c => {
-            const isPageBreak = c.name && c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+            const isPageBreak = (c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
             const entry = {
                 kind: SCHEMA_KIND_CATEGORY,
                 version: SCHEMA_VERSION_1_0,

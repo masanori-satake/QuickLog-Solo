@@ -501,7 +501,7 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
     });
 
     // Ensure every log has a syncId for the rest of the process
-    const uniqueLogs = Array.from(byId.values()).filter(l => l.category && !l.category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).map(l => {
+    const uniqueLogs = Array.from(byId.values()).filter(l => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).map(l => {
         const copy = { ...l };
         if (!copy.syncId) copy.syncId = generateUUID();
         return copy;
