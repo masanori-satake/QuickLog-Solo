@@ -672,7 +672,7 @@ async function generateDummyHistory() {
     };
 
     const categories = await dbGetAll(STORE_CATEGORIES);
-    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+    const workCategories = categories.filter(c => c.name && c.name !== SYSTEM_CATEGORY_IDLE && !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
 
     if (workCategories.length === 0) return;
 
