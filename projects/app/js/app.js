@@ -599,7 +599,7 @@ async function renderLogs() {
     }
     const categoryMap = new Map(categories.map(c => [c.name, c]));
     const visibleLogs = allLogs
-        .filter(l => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
+        .filter(l => l.category && !l.category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
         .sort((a, b) => b.startTime - a.startTime)
         .slice(0, MAX_LOGS_DISPLAY);
 
