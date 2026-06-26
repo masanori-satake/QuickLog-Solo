@@ -1,5 +1,5 @@
 import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv, generateUUID } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv, generateUUID, floorToMinute } from './utils.js';
 import { recordDeletedSyncId } from './session_sync.js';
 import { t } from './i18n.js';
 
@@ -342,7 +342,7 @@ function formatAsText(items, options, isTable) {
 export async function startTaskLogic(categoryName, activeTask, resumableCategory = null, color = null, tags = '') {
     if (activeTask && activeTask.category === categoryName && !activeTask.isPaused) return activeTask;
 
-    const now = Date.now();
+    const now = floorToMinute(Date.now());
     await stopTaskLogic(activeTask, false, now);
 
     const newLog = {
@@ -353,7 +353,7 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
         resumableCategory: resumableCategory,
         color: color,
         tags: tags,
-        updatedAt: now
+        updatedAt: Date.now()
     };
 
     const id = await dbAdd(STORE_LOGS, newLog);
@@ -365,7 +365,7 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
 export async function stopTaskLogic(activeTask, isManualStop = false, customEndTime = null) {
     if (!activeTask) return null;
 
-    const endTime = customEndTime || Date.now();
+    const endTime = customEndTime || floorToMinute(Date.now());
 
     if (activeTask.isPaused) {
         const idleLog = {
@@ -377,15 +377,32 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
         };
         delete idleLog.isPaused;
 
-        if (idleLog.id) {
-            await dbPut(STORE_LOGS, idleLog);
+        // Cleanup: If duration is 0, delete it instead of saving
+        if (idleLog.endTime <= idleLog.startTime) {
+            if (idleLog.id) {
+                await dbDelete(STORE_LOGS, idleLog.id);
+                if (idleLog.syncId) await recordDeletedSyncId(idleLog.syncId);
+            }
         } else {
-            await dbAdd(STORE_LOGS, idleLog);
+            if (idleLog.id) {
+                await dbPut(STORE_LOGS, idleLog);
+            } else {
+                await dbAdd(STORE_LOGS, idleLog);
+            }
         }
     } else {
         // 通常の作業中の場合は、その作業を正常終了させる
         const taskToSave = { ...activeTask, endTime: endTime, isManualStop: false, updatedAt: Date.now() };
-        await dbPut(STORE_LOGS, taskToSave);
+
+        // Cleanup: If duration is 0, delete it instead of saving
+        if (taskToSave.endTime <= taskToSave.startTime) {
+            if (taskToSave.id) {
+                await dbDelete(STORE_LOGS, taskToSave.id);
+                if (taskToSave.syncId) await recordDeletedSyncId(taskToSave.syncId);
+            }
+        } else {
+            await dbPut(STORE_LOGS, taskToSave);
+        }
     }
 
     await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
@@ -419,7 +436,7 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
 export async function pauseTaskLogic(activeTask) {
     if (!activeTask || activeTask.category === SYSTEM_CATEGORY_IDLE || activeTask.isPaused) return activeTask;
     const lastCategory = activeTask.category;
-    const now = Date.now();
+    const now = floorToMinute(Date.now());
     await stopTaskLogic(activeTask, false, now);
 
     const pauseState = {
@@ -428,7 +445,7 @@ export async function pauseTaskLogic(activeTask) {
         startTime: now,
         resumableCategory: lastCategory,
         isPaused: true,
-        updatedAt: now
+        updatedAt: Date.now()
     };
     const id = await dbAdd(STORE_LOGS, pauseState);
     pauseState.id = id;

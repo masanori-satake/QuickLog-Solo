@@ -157,3 +157,12 @@ export function generateUUID() {
     }
     return 'uuid-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
 }
+
+/**
+ * Floors a timestamp to the nearest minute (00 seconds).
+ * @param {number} ms
+ * @returns {number}
+ */
+export function floorToMinute(ms) {
+    return Math.floor(ms / 60000) * 60000;
+}

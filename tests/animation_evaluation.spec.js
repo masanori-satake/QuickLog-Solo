@@ -29,7 +29,9 @@ test.describe('Animation Quality Evaluation', () => {
             // Open settings and select the animation
             await page.click('#settings-toggle');
             // Ensure the settings modal is visible before interacting
-            await expect(page.locator('#animation-select')).toBeVisible();
+            // Adding a small delay to handle modal animation stability
+            await page.waitForTimeout(1000);
+            await expect(page.locator('#animation-select')).toBeVisible({ timeout: 10000 });
             await page.selectOption('#animation-select', id);
             await page.click('.close-btn');
 

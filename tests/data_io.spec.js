@@ -47,10 +47,37 @@ test.describe('Data Import and Export Consistency', () => {
         await page.click('.close-btn');
 
         const firstCat = page.locator('.category-btn').first();
-        const catName = await firstCat.textContent();
-        await firstCat.click();
-        await page.click('#end-btn');
-        await page.click('#confirm-ok-btn');
+        const catName = (await firstCat.textContent()).trim();
+
+        // Manually insert a 5-minute task log because v1.7.0 logic deletes 0-minute tasks.
+        // Starting and ending a task immediately via UI would result in deletion.
+        await page.evaluate(async (name) => {
+            const dbName = new URLSearchParams(window.location.search).get('db') || 'QuickLogSoloDB';
+            const request = indexedDB.open(dbName);
+            return new Promise((resolve, reject) => {
+                request.onsuccess = (event) => {
+                    const db = event.target.result;
+                    const transaction = db.transaction(['logs'], 'readwrite');
+                    const store = transaction.objectStore('logs');
+                    const now = Math.floor(Date.now() / 60000) * 60000;
+                    store.add({
+                        syncId: 'test-data-io-uuid',
+                        category: name,
+                        startTime: now - 300000, // 5 minutes ago
+                        endTime: now,
+                        tags: '',
+                        updatedAt: Date.now()
+                    });
+                    transaction.oncomplete = () => resolve();
+                    transaction.onerror = () => reject(new Error("Failed to insert test log"));
+                };
+                request.onerror = () => reject(new Error("Failed to open DB"));
+            });
+        }, catName);
+
+        // Refresh UI to show the new log
+        await page.reload();
+        await page.waitForSelector('.log-item');
 
         await page.click('#settings-toggle');
         await page.click('button[data-tab="general"]');

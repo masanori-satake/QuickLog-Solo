@@ -160,7 +160,8 @@ describe('Logic Module', () => {
         });
 
         test('stopTaskLogic stops active task, adds stop marker if manual, and clears pauseState', async () => {
-            const activeTask = { id: 1, category: 'Work', startTime: Date.now() };
+            const now = Date.now();
+            const activeTask = { id: 1, category: 'Work', startTime: now - 60000 };
             const result = await stopTaskLogic(activeTask, true);
             expect(result).toBeNull();
             // Original task should be completed with isManualStop: false
@@ -242,7 +243,8 @@ describe('Logic Module', () => {
         });
 
         test('stopTaskLogic handles pause state with id', async () => {
-            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
+            const now = Date.now();
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: now - 60000, resumableCategory: 'Work', isPaused: true };
             const result = await stopTaskLogic(pauseState);
             expect(result).toBeNull();
             expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
@@ -255,7 +257,8 @@ describe('Logic Module', () => {
         });
 
         test('stopTaskLogic handles manual stop during pause state by adding separate marker', async () => {
-            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
+            const now = Date.now();
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: now - 60000, resumableCategory: 'Work', isPaused: true };
             const result = await stopTaskLogic(pauseState, true);
             expect(result).toBeNull();
             // The idle log should be completed normally
@@ -274,7 +277,8 @@ describe('Logic Module', () => {
         });
 
         test('pauseTaskLogic transitions to pause state and adds to logs', async () => {
-            const activeTask = { id: 1, category: 'Work', startTime: Date.now() };
+            const now = Date.now();
+            const activeTask = { id: 1, category: 'Work', startTime: now - 60000 };
             const newTask = await pauseTaskLogic(activeTask);
             expect(newTask.category).toBe(SYSTEM_CATEGORY_IDLE);
             expect(newTask.resumableCategory).toBe('Work');
@@ -285,7 +289,8 @@ describe('Logic Module', () => {
         });
 
         test('startTaskLogic stops pause state and updates log entry before starting new task', async () => {
-            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), resumableCategory: 'Work', isPaused: true };
+            const now = Date.now();
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: now - 60000, resumableCategory: 'Work', isPaused: true };
             const newTask = await startTaskLogic('Meeting', pauseState);
             expect(newTask.category).toBe('Meeting');
             expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, category: SYSTEM_CATEGORY_IDLE, endTime: expect.any(Number) }));
@@ -294,13 +299,24 @@ describe('Logic Module', () => {
         });
 
         test('stopTaskLogic handles case where idleLog has no ID (branch coverage)', async () => {
-            const activeNoId = { category: SYSTEM_CATEGORY_IDLE, startTime: Date.now(), isPaused: true };
+            const now = Date.now();
+            const activeNoId = { category: SYSTEM_CATEGORY_IDLE, startTime: now - 60000, isPaused: true };
             dbAdd.mockResolvedValue(123);
             await stopTaskLogic(activeNoId);
             // Hits line 372: } else { await dbAdd(STORE_LOGS, idleLog); }
             expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
                 category: SYSTEM_CATEGORY_IDLE
             }));
+        });
+
+        test('stopTaskLogic deletes task if duration is 0 (handles manual stop cleanup)', async () => {
+            const now = Date.now();
+            const activeTask = { id: 1, category: 'Work', startTime: now };
+            dbDelete.mockResolvedValue(true);
+
+            await stopTaskLogic(activeTask, false, now);
+
+            expect(dbDelete).toHaveBeenCalledWith(STORE_LOGS, 1);
         });
     });
 
