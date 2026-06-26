@@ -824,5 +824,36 @@ describe('Logic Module', () => {
                 value: expect.objectContaining({ id: 2, startTime: 1000, isPaused: false })
             }));
         });
+
+        test('deleteHistoryItem shifts subsequent Task and Stop Marker correctly when sharing a boundary', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 2000, category: 'A' },
+                { id: 2, startTime: 2000, endTime: 3000, category: 'B' },
+                { id: 3, startTime: 3000, endTime: 4000, category: 'C' },
+                { id: 4, startTime: 3000, endTime: 3000, category: '__IDLE__', isManualStop: true }
+            ];
+            dbGetAll.mockResolvedValue(logs);
+
+            await deleteHistoryItem(2); // Delete B
+
+            // C and S should both move to 2000
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 3, startTime: 2000 }));
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 4, startTime: 2000, endTime: 2000 }));
+        });
+
+        test('updateHistoryStartTime shifts previous Task and Stop Marker correctly when sharing a boundary (Backward)', async () => {
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 1000, category: '__IDLE__', isManualStop: true },
+                { id: 2, startTime: 1000, endTime: 2000, category: 'A' },
+                { id: 3, startTime: 2000, endTime: 3000, category: 'B' }
+            ];
+            dbGetAll.mockResolvedValue(logs);
+
+            await updateHistoryStartTime(3, 2500); // Shift B's start to 2500
+
+            // A and S should both end at 2500
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, endTime: 2500 }));
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 1, startTime: 2500, endTime: 2500 }));
+        });
     });
 });

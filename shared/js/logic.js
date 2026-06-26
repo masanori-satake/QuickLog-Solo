@@ -474,27 +474,47 @@ export async function updateHistoryStartTime(logId, newTs) {
     let lastNewStartTs = currentNewTs;
 
     while (prevIndex >= 0) {
-        const prevLog = sortedLogs[prevIndex];
-        if (Math.abs(prevLog.endTime - lastOldStartTs) > CONTIGUITY_TOLERANCE_MS) break;
+        // Collect all logs at the SAME boundary (those ending at roughly lastOldStartTs)
+        const currentBoundaryTs = sortedLogs[prevIndex].endTime;
+        if (Math.abs(currentBoundaryTs - lastOldStartTs) > CONTIGUITY_TOLERANCE_MS) break;
 
-        const oldPrevStartTs = prevLog.startTime;
-        prevLog.endTime = lastNewStartTs;
-
-        if (prevLog.isManualStop) {
-            prevLog.startTime = prevLog.endTime;
+        const logsAtThisBoundary = [];
+        while (prevIndex >= 0 && Math.abs(sortedLogs[prevIndex].endTime - currentBoundaryTs) <= CONTIGUITY_TOLERANCE_MS) {
+            logsAtThisBoundary.push(sortedLogs[prevIndex]);
+            prevIndex--;
         }
-        prevLog.updatedAt = Date.now();
 
-        await dbPut(STORE_LOGS, prevLog);
+        let foundTaskAtThisBoundary = false;
+        let minOldStartTsAtThisBoundary = lastOldStartTs;
+        let latestNewStartTsAtThisBoundary = lastNewStartTs;
 
-        // Move to next (previous) item
-        lastOldStartTs = oldPrevStartTs;
-        lastNewStartTs = prevLog.startTime;
-        prevIndex--;
+        for (const prevLog of logsAtThisBoundary) {
+            const oldPrevStartTs = prevLog.startTime;
 
-        // If the item we just updated was NOT a stop marker,
-        // its start time didn't change, so propagation stops here.
-        if (!prevLog.isManualStop) break;
+            prevLog.endTime = lastNewStartTs;
+            if (prevLog.isManualStop) {
+                prevLog.startTime = prevLog.endTime;
+            }
+            prevLog.updatedAt = Date.now();
+            await dbPut(STORE_LOGS, prevLog);
+
+            if (!prevLog.isManualStop) {
+                foundTaskAtThisBoundary = true;
+                minOldStartTsAtThisBoundary = Math.min(minOldStartTsAtThisBoundary, oldPrevStartTs);
+                latestNewStartTsAtThisBoundary = prevLog.startTime;
+            } else if (!foundTaskAtThisBoundary) {
+                latestNewStartTsAtThisBoundary = prevLog.startTime;
+            }
+        }
+
+        // Update propagation state for the NEXT boundary
+        if (foundTaskAtThisBoundary) {
+            lastOldStartTs = minOldStartTsAtThisBoundary;
+            lastNewStartTs = latestNewStartTsAtThisBoundary;
+            break;
+        } else {
+            lastNewStartTs = latestNewStartTsAtThisBoundary;
+        }
     }
 }
 
@@ -630,33 +650,55 @@ export async function deleteHistoryItem(logId) {
     let lastNewStartTs = oldStartTs;
 
     while (nextIndex < sortedLogs.length) {
-        const nextLog = sortedLogs[nextIndex];
-        if (Math.abs(nextLog.startTime - lastOldEndTs) > CONTIGUITY_TOLERANCE_MS) break;
+        // Collect all logs at the SAME boundary (those starting at roughly lastOldEndTs)
+        const currentBoundaryTs = sortedLogs[nextIndex].startTime;
+        if (Math.abs(currentBoundaryTs - lastOldEndTs) > CONTIGUITY_TOLERANCE_MS) break;
 
-        const oldNextEndTs = nextLog.endTime;
-        nextLog.startTime = lastNewStartTs;
-        if (nextLog.isManualStop) {
-            nextLog.endTime = lastNewStartTs;
-        }
-        nextLog.updatedAt = Date.now();
-
-        await dbPut(STORE_LOGS, nextLog);
-
-        // Sync with pauseState if the updated log is the active task
-        if (pauseStateId === nextLog.id) {
-            await dbPut(STORE_SETTINGS, {
-                key: SETTING_KEY_PAUSE_STATE,
-                value: { ...nextLog, isPaused: nextLog.category === SYSTEM_CATEGORY_IDLE }
-            });
+        const logsAtThisBoundary = [];
+        while (nextIndex < sortedLogs.length && Math.abs(sortedLogs[nextIndex].startTime - currentBoundaryTs) <= CONTIGUITY_TOLERANCE_MS) {
+            logsAtThisBoundary.push(sortedLogs[nextIndex]);
+            nextIndex++;
         }
 
-        // Move to next item
-        lastOldEndTs = oldNextEndTs;
-        lastNewStartTs = nextLog.endTime;
-        nextIndex++;
+        let foundTaskAtThisBoundary = false;
+        let maxOldEndTsAtThisBoundary = lastOldEndTs;
+        let latestNewStartTsAtThisBoundary = lastNewStartTs;
 
-        // If the item we just updated was NOT a stop marker,
-        // its end time didn't change, so propagation stops here.
-        if (!nextLog.isManualStop) break;
+        for (const nextLog of logsAtThisBoundary) {
+            const oldNextEndTs = nextLog.endTime;
+
+            nextLog.startTime = lastNewStartTs;
+            if (nextLog.isManualStop) {
+                nextLog.endTime = lastNewStartTs;
+            }
+            nextLog.updatedAt = Date.now();
+
+            await dbPut(STORE_LOGS, nextLog);
+
+            // Sync with pauseState if the updated log is the active task
+            if (pauseStateId === nextLog.id) {
+                await dbPut(STORE_SETTINGS, {
+                    key: SETTING_KEY_PAUSE_STATE,
+                    value: { ...nextLog, isPaused: nextLog.category === SYSTEM_CATEGORY_IDLE }
+                });
+            }
+
+            if (!nextLog.isManualStop) {
+                foundTaskAtThisBoundary = true;
+                maxOldEndTsAtThisBoundary = Math.max(maxOldEndTsAtThisBoundary, oldNextEndTs);
+                latestNewStartTsAtThisBoundary = nextLog.endTime;
+            } else if (!foundTaskAtThisBoundary) {
+                latestNewStartTsAtThisBoundary = nextLog.endTime;
+            }
+        }
+
+        // Update propagation state for the NEXT boundary
+        if (foundTaskAtThisBoundary) {
+            lastOldEndTs = maxOldEndTsAtThisBoundary;
+            lastNewStartTs = latestNewStartTsAtThisBoundary;
+            break;
+        } else {
+            lastNewStartTs = latestNewStartTsAtThisBoundary;
+        }
     }
 }
