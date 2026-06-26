@@ -1354,8 +1354,9 @@ async function updateTagAggregationUI() {
 
         const durCell = createEl('td');
         durCell.className = 'tag-duration-cell';
-        const h = Math.floor(ms / 3600000);
-        const m = Math.floor((ms % 3600000) / 60000);
+        const totalMinutes = Math.round(ms / 60000);
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
         durCell.textContent = `${h}:${String(m).padStart(2, '0')}`;
         row.appendChild(durCell);
 
