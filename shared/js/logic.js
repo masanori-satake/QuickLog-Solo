@@ -378,7 +378,7 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
         delete idleLog.isPaused;
 
         // Cleanup: If duration is 0, delete it instead of saving
-        if (idleLog.endTime <= idleLog.startTime && !isManualStop) {
+        if (idleLog.endTime <= idleLog.startTime) {
             if (idleLog.id) {
                 await dbDelete(STORE_LOGS, idleLog.id);
                 if (idleLog.syncId) await recordDeletedSyncId(idleLog.syncId);
@@ -395,7 +395,7 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
         const taskToSave = { ...activeTask, endTime: endTime, isManualStop: false, updatedAt: Date.now() };
 
         // Cleanup: If duration is 0, delete it instead of saving
-        if (taskToSave.endTime <= taskToSave.startTime && !isManualStop) {
+        if (taskToSave.endTime <= taskToSave.startTime) {
             if (taskToSave.id) {
                 await dbDelete(STORE_LOGS, taskToSave.id);
                 if (taskToSave.syncId) await recordDeletedSyncId(taskToSave.syncId);

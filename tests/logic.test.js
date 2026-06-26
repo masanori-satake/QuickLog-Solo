@@ -160,7 +160,8 @@ describe('Logic Module', () => {
         });
 
         test('stopTaskLogic stops active task, adds stop marker if manual, and clears pauseState', async () => {
-            const activeTask = { id: 1, category: 'Work', startTime: Date.now() };
+            const now = Date.now();
+            const activeTask = { id: 1, category: 'Work', startTime: now - 60000 };
             const result = await stopTaskLogic(activeTask, true);
             expect(result).toBeNull();
             // Original task should be completed with isManualStop: false
@@ -306,6 +307,16 @@ describe('Logic Module', () => {
             expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
                 category: SYSTEM_CATEGORY_IDLE
             }));
+        });
+
+        test('stopTaskLogic deletes task if duration is 0 (handles manual stop cleanup)', async () => {
+            const now = Date.now();
+            const activeTask = { id: 1, category: 'Work', startTime: now };
+            dbDelete.mockResolvedValue(true);
+
+            await stopTaskLogic(activeTask, false, now);
+
+            expect(dbDelete).toHaveBeenCalledWith(STORE_LOGS, 1);
         });
     });
 
