@@ -53,12 +53,15 @@ test.describe('Multi-tab Synchronization', () => {
     const dummyCount = await page1.locator('.log-item').count();
 
     // Add a log entry (by starting and ending a task)
+    // Note: Due to minute-level flooring (v1.7.0), a task started and ended immediately
+    // results in 0 duration and is automatically cleaned up.
+    // Only the Manual Stop marker will remain.
     await page1.locator('.category-btn').first().click();
     await page1.click('#end-btn');
     await page1.click('#confirm-ok-btn');
 
-    // Verify log exists on both
-    const countBefore = dummyCount + 2;
+    // Verify log exists on both (Only the stop marker is added)
+    const countBefore = dummyCount + 1;
     await expect(page1.locator('.log-item')).toHaveCount(countBefore);
     await page2.bringToFront();
     await expect(page2.locator('.log-item')).toHaveCount(countBefore);
