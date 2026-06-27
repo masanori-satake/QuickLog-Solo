@@ -622,7 +622,7 @@ body.timer-mini #elapsed-time {
     flex-direction: column;
 }
 
-.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-edit-close-btn {
+.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-edit-close-btn, .history-action-close-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.75rem;
@@ -691,7 +691,8 @@ body.timer-mini #elapsed-time {
     gap: 8px;
 }
 
-.modal-header-btns .history-edit-close-btn {
+.modal-header-btns .history-edit-close-btn,
+.modal-header-btns .history-action-close-btn {
     position: static;
     font-size: 1.5rem;
     line-height: 1;
@@ -703,7 +704,8 @@ body.timer-mini #elapsed-time {
     border-radius: 50%;
 }
 
-.modal-header-btns .history-edit-close-btn:hover {
+.modal-header-btns .history-edit-close-btn:hover,
+.modal-header-btns .history-action-close-btn:hover {
     background-color: var(--md-sys-color-surface-container-highest);
 }
 
@@ -1128,7 +1130,13 @@ body.timer-mini #elapsed-time {
 }
 
 .confirm-btns button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 var(--md-sys-spacing-2);
     border-radius: var(--md-sys-shape-full);
+    font-weight: bold;
 }
 
 body.theme-dark {
