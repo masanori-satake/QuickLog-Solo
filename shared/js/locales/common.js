@@ -1,10 +1,4 @@
 export const common = {
-    'setting-session-sync': 'Device Sync (Sync) (β)',
-    'setting-session-sync-desc': 'Synchronize settings, categories, and work history across devices.',
-    'confirm-enable-session-sync': 'Enable device sync? This will upload your current data to your browser\'s sync storage.',
-    'confirm-disable-session-sync': 'Disable device sync? This device will stop syncing, but shared data will remain.',
-    'session-sync-active': 'Sync Active',
-    'local-only-active': 'Local Only',
     'lang-ja-native': '🇯🇵 日本語',
     'lang-en-native': '🇺🇸 English',
     'lang-de-native': '🇩🇪 Deutsch',
