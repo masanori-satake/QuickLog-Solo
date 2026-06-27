@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    registries:
+      - npm-registry
+    
+registries:
+  npm-registry:
+    type: npm-registry
+    url: https://npm.pkg.github.com
+    username: @masanori-satake
+    password: ${{ secrets.GITHUB_TOKEN }}
