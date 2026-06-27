@@ -222,18 +222,30 @@ async function openHistoryActionModal(log) {
     };
 
     splitBtn.onclick = async () => {
-        await splitHistoryItem(log.id);
-        modal.classList.add('hidden');
-        await updateUI();
-        broadcastSync();
+        try {
+            await splitHistoryItem(log.id);
+        } catch (err) {
+            console.error('Failed to split history item:', err);
+            alert(t('alert-error') || 'Operation failed');
+        } finally {
+            modal.classList.add('hidden');
+            await updateUI();
+            broadcastSync();
+        }
     };
 
     deleteBtn.onclick = async () => {
         if (await showConfirm(t('confirm-delete-history'))) {
-            await deleteHistoryItem(log.id);
-            modal.classList.add('hidden');
-            await updateUI();
-            broadcastSync();
+            try {
+                await deleteHistoryItem(log.id);
+            } catch (err) {
+                console.error('Failed to delete history item:', err);
+                alert(t('alert-error') || 'Operation failed');
+            } finally {
+                modal.classList.add('hidden');
+                await updateUI();
+                broadcastSync();
+            }
         }
     };
 
