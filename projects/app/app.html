@@ -110,19 +110,19 @@
 
         <div id="sync-setup-modal" class="modal hidden">
             <div class="modal-content">
-                <h2 data-i18n="sync-setup-title">セッション連携の設定</h2>
-                <p class="setting-description" data-i18n="sync-setup-desc" style="margin-top: 8px;">連携を開始するにあたり、既存のデータとセッション上のデータの優先順位を選択してください。</p>
+                <h2 data-i18n="sync-setup-title">端末間同期の設定</h2>
+                <p class="setting-description" data-i18n="sync-setup-desc" style="margin-top: 8px;">同期を開始するにあたり、既存のデータと他端末のデータの優先順位を選択してください。</p>
 
                 <div class="sync-setup-section">
                     <h3 data-i18n="sync-setup-settings-title" class="sync-setup-section-title">設定・カテゴリの同期</h3>
                     <div class="radio-group">
                         <label class="radio-label">
                             <input type="radio" name="settings-sync-mode" value="cloud-to-local">
-                            <span data-i18n="sync-setup-cloud-to-local">セッション上の情報で上書きする</span>
+                            <span data-i18n="sync-setup-cloud-to-local">他端末のデータで上書きする</span>
                         </label>
                         <label class="radio-label">
                             <input type="radio" name="settings-sync-mode" value="local-to-cloud">
-                            <span data-i18n="sync-setup-local-to-cloud">この端末の情報でセッションを上書きする</span>
+                            <span data-i18n="sync-setup-local-to-cloud">この端末のデータで他端末を上書きする</span>
                         </label>
                     </div>
                 </div>
@@ -132,15 +132,15 @@
                     <div class="radio-group">
                         <label class="radio-label">
                             <input type="radio" name="history-sync-mode" value="cloud-to-local">
-                            <span data-i18n="sync-setup-cloud-to-local">セッション上の情報で上書きする</span>
+                            <span data-i18n="sync-setup-cloud-to-local">他端末のデータで上書きする</span>
                         </label>
                         <label class="radio-label">
                             <input type="radio" name="history-sync-mode" value="local-to-cloud">
-                            <span data-i18n="sync-setup-local-to-cloud">この端末の情報でセッションを上書きする</span>
+                            <span data-i18n="sync-setup-local-to-cloud">この端末のデータで他端末を上書きする</span>
                         </label>
                         <label class="radio-label">
                             <input type="radio" name="history-sync-mode" value="merge">
-                            <span data-i18n="sync-setup-merge">セッション上の情報にこの端末の履歴をマージする</span>
+                            <span data-i18n="sync-setup-merge">他端末のデータとこの端末の履歴をマージする</span>
                         </label>
                     </div>
                 </div>
@@ -363,7 +363,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <label style="display: flex; align-items: center; gap: 6px;">
                                 <!-- Beta status is indicated via textual suffix (β) in localization strings -->
-                                <span data-i18n="setting-session-sync">セッション連携 (Sync)</span>
+                                <span data-i18n="setting-session-sync">端末間同期 (Sync)</span>
                             </label>
                             <label class="switch">
                                 <input type="checkbox" id="session-sync-toggle">
@@ -371,7 +371,7 @@
                             </label>
                         </div>
                         <p class="setting-description" data-i18n="setting-session-sync-desc" style="margin-top: 4px;">
-                            ブラウザのセッション機能を利用して、設定・カテゴリ・直近の履歴をセキュアに同期します。
+                            ブラウザの同期機能を利用して、設定・カテゴリ・直近の履歴を他端末と共有します。
                         </p>
                         <p class="setting-description note" data-i18n="setting-session-sync-note" style="margin-top: 2px; font-size: 0.75rem;">
                             ※ ChromeとEdgeの間など、異なるブラウザ間での同期はできません。
@@ -575,12 +575,12 @@
 
                     <!-- Sync maintenance (visible when sync is ON) -->
                     <div id="maintenance-sync-pull-section" class="setting-item hidden">
-                        <label data-i18n="maintenance-sync-pull">セッション情報からの作業履歴の再取得</label>
-                        <button id="sync-pull-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-pull">セッション情報で初期化</button>
+                        <label data-i18n="maintenance-sync-pull">同期履歴の再取得</label>
+                        <button id="sync-pull-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-pull">同期履歴の再取得</button>
                     </div>
                     <div id="maintenance-sync-clear-cloud-section" class="setting-item hidden">
-                        <label data-i18n="maintenance-sync-clear-cloud">セッション情報の作業履歴を削除</label>
-                        <button id="sync-clear-cloud-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-clear-cloud">セッション情報の作業履歴をすべて削除</button>
+                        <label data-i18n="maintenance-sync-clear-cloud">全同期デバイスから履歴をすべて削除</label>
+                        <button id="sync-clear-cloud-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-clear-cloud">全同期デバイスから履歴をすべて削除</button>
                     </div>
 
                     <div class="setting-item">
