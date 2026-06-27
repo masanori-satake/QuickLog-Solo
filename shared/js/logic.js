@@ -345,6 +345,16 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
     const now = floorToMinute(Date.now());
     await stopTaskLogic(activeTask, false, now);
 
+    // 同一時刻の「終了」マーカー（手動停止）があれば削除する
+    const allLogs = await dbGetAll(STORE_LOGS);
+    const stopMarkers = allLogs.filter(l => l.isManualStop && l.startTime === now);
+    for (const marker of stopMarkers) {
+        if (marker.id) {
+            await dbDelete(STORE_LOGS, marker.id);
+            if (marker.syncId) await recordDeletedSyncId(marker.syncId);
+        }
+    }
+
     const newLog = {
         syncId: generateUUID(),
         category: categoryName,
