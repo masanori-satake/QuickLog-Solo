@@ -65,7 +65,7 @@ test.describe('Robustness and Persistence', () => {
     }, longName);
 
     // Wait for the new category to appear in the list (main panel)
-    await page.click('.close-btn');
+    await page.click('.settings-close-btn');
 
     // The category might be on the second page if many exist. fresh DB starts with ~24 default cats.
     const longCatBtn = page.locator('.category-btn').filter({ hasText: longName });

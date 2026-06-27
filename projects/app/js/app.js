@@ -8,7 +8,10 @@ import {
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
-import { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } from '../shared/js/logic.js';
+import {
+    formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem,
+    splitHistoryItem
+} from '../shared/js/logic.js';
 import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { isSessionSyncEnabled, pullFromCloud, performInitialSync, clearCloudHistory, broadcastSync, setupBroadcastChannel } from '../shared/js/session_sync.js';
@@ -199,6 +202,48 @@ async function endTask() {
 
 // --- History Editing ---
 
+async function openHistoryActionModal(log) {
+    const modal = getEl('history-action-modal');
+    const editBtn = getEl('history-action-edit-btn');
+    const splitBtn = getEl('history-action-split-btn');
+    const deleteBtn = getEl('history-action-delete-btn');
+    const cancelBtn = getEl('history-action-cancel-btn');
+
+    if (!modal) return;
+
+    const durationMs = log.endTime - log.startTime;
+    const canSplit = !log.isManualStop && durationMs >= 120000; // 2 minutes
+
+    splitBtn.disabled = !canSplit;
+
+    editBtn.onclick = () => {
+        modal.classList.add('hidden');
+        openHistoryEditModal(log);
+    };
+
+    splitBtn.onclick = async () => {
+        await splitHistoryItem(log.id);
+        modal.classList.add('hidden');
+        await updateUI();
+        broadcastSync();
+    };
+
+    deleteBtn.onclick = async () => {
+        if (await showConfirm(t('confirm-delete-history'))) {
+            await deleteHistoryItem(log.id);
+            modal.classList.add('hidden');
+            await updateUI();
+            broadcastSync();
+        }
+    };
+
+    cancelBtn.onclick = () => {
+        modal.classList.add('hidden');
+    };
+
+    modal.classList.remove('hidden');
+}
+
 async function openHistoryEditModal(log) {
     const modal = getEl('history-edit-modal');
     const timeInput = getEl('history-edit-time-input');
@@ -211,7 +256,6 @@ async function openHistoryEditModal(log) {
     const warningEl = getEl('history-edit-warning');
     const applyBtn = getEl('history-edit-apply-btn');
     const cancelBtn = getEl('history-edit-cancel-btn');
-    const deleteBtn = getEl('history-edit-delete-btn');
 
     const categoryItem = getEl('history-edit-category-item');
     const memoItem = getEl('history-edit-memo-item');
@@ -243,11 +287,6 @@ async function openHistoryEditModal(log) {
     timeInput.value = `${String(initialTime.getHours()).padStart(2, '0')}:${String(initialTime.getMinutes()).padStart(2, '0')}`;
 
     warningEl.classList.add('hidden');
-    if (isStopMarker) {
-        deleteBtn.classList.add('hidden');
-    } else {
-        deleteBtn.classList.remove('hidden');
-    }
 
     if (isTask) {
         categoryItem?.classList.remove('hidden');
@@ -351,16 +390,6 @@ async function openHistoryEditModal(log) {
 
     cancelBtn.onclick = () => {
         modal.classList.add('hidden');
-    };
-
-    deleteBtn.onclick = async () => {
-        if (await showConfirm(t('confirm-delete-history'))) {
-            await deleteHistoryItem(log.id);
-
-            modal.classList.add('hidden');
-            await updateUI();
-            broadcastSync();
-        }
     };
 
     modal.classList.remove('hidden');
@@ -625,7 +654,7 @@ async function renderLogs() {
         const li = createLogElement(log, categoryMap);
     if (log.endTime) {
         li.style.cursor = 'pointer';
-        li.onclick = () => openHistoryEditModal(log);
+        li.onclick = () => openHistoryActionModal(log);
     }
         logList.appendChild(li);
     });
@@ -2302,12 +2331,13 @@ function setupEventListeners() {
         tagAggregation: getEl(ID_TAG_AGGREGATION_MODAL),
         multiChoice: getEl('multi-choice-modal'),
         syncSetup: getEl('sync-setup-modal'),
+        historyAction: getEl('history-action-modal'),
         historyEdit: getEl('history-edit-modal')
     };
 
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
 
-    queryAll('.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-edit-close-btn').forEach(btn => {
+    queryAll('.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn').forEach(btn => {
         btn.onclick = (e) => {
             e.stopPropagation(); // Avoid triggering window.onclick
             Object.values(popups).forEach(p => p?.classList.add('hidden'));

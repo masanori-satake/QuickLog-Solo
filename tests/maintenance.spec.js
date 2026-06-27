@@ -21,7 +21,7 @@ test.describe('Maintenance and Initialization', () => {
         await page.click('#confirm-ok-btn');
 
         // 3. Verify logs are gone
-        await page.click('.close-btn');
+        await page.click('.settings-close-btn');
         await expect(page.locator('.log-item')).toHaveCount(0);
     });
 

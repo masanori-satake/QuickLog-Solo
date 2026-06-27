@@ -516,6 +516,53 @@ export async function updateHistoryStartTime(logId, newTs) {
 }
 
 /**
+ * 履歴を分割します。(Splits a history log item into two: one for the first minute and another for the remaining time.)
+ * @param {number} logId
+ * @returns {Promise<boolean>} Success status
+ */
+export async function splitHistoryItem(logId) {
+    const log = await dbGet(STORE_LOGS, logId);
+    if (!log || log.isManualStop || !log.endTime) return false;
+
+    const durationMs = log.endTime - log.startTime;
+    const splitIntervalMs = 60000; // 1 minute
+
+    if (durationMs < splitIntervalMs * 2) return false;
+
+    const splitTs = log.startTime + splitIntervalMs;
+
+    const newLog = {
+        ...log,
+        id: undefined, // Let DB generate new ID
+        syncId: generateUUID(),
+        startTime: splitTs,
+        updatedAt: Date.now()
+    };
+
+    log.endTime = splitTs;
+    log.updatedAt = Date.now();
+
+    await dbPut(STORE_LOGS, log);
+    const newId = await dbAdd(STORE_LOGS, newLog);
+    newLog.id = newId;
+
+    // If the splitted log was the active task (unlikely as we usually split confirmed logs,
+    // but confirmed logs can be active task if it's paused/running), we might need to update pauseState.
+    const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
+    if (pauseStateSetting?.value?.id === log.id) {
+        // The original task is now shorter. The rest is in the new log.
+        // Usually, splitting a confirmed history implies it's in the past,
+        // but if it's the active one, the new part becomes the active one.
+        await dbPut(STORE_SETTINGS, {
+            key: SETTING_KEY_PAUSE_STATE,
+            value: { ...newLog, isPaused: newLog.category === SYSTEM_CATEGORY_IDLE }
+        });
+    }
+
+    return true;
+}
+
+/**
  * Calculates the next execution time for an alarm.
  * @param {Object} alarm
  * @param {number[]} businessDays - [0, 1, ..., 6]

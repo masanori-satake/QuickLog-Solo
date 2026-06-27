@@ -22,7 +22,7 @@ test.describe('Verification Pattern (TestPattern) Rendering', () => {
         await expect(animSelect).toBeVisible();
         await page.selectOption('#animation-select', 'test_pattern');
 
-        await page.click('#settings-popup .close-btn');
+        await page.click('.settings-close-btn');
 
         // Start a task (second category usually has a color) to trigger animation
         const categoryBtn = page.locator('.category-btn:nth-child(2)');

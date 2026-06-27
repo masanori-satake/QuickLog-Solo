@@ -152,14 +152,37 @@
             </div>
         </div>
 
+        <div id="history-action-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 data-i18n="history-action-title">履歴の操作</h2>
+                    <span class="history-action-close-btn history-close-btn">&times;</span>
+                </div>
+                <div class="action-list">
+                    <button id="history-action-edit-btn" class="action-btn">
+                        <span class="material-symbols-outlined">edit</span>
+                        <span data-i18n="btn-edit">編集</span>
+                    </button>
+                    <button id="history-action-split-btn" class="action-btn">
+                        <span class="material-symbols-outlined">call_split</span>
+                        <span data-i18n="btn-split">分割</span>
+                    </button>
+                    <button id="history-action-delete-btn" class="action-btn danger-text">
+                        <span class="material-symbols-outlined">delete</span>
+                        <span data-i18n="btn-delete">削除</span>
+                    </button>
+                </div>
+                <div class="confirm-btns">
+                    <button id="history-action-cancel-btn" data-i18n="confirm-cancel" style="grid-column: span 2;">キャンセル</button>
+                </div>
+            </div>
+        </div>
+
         <div id="history-edit-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 id="history-edit-title" data-i18n="history-edit-title">履歴の編集</h2>
                     <div class="modal-header-btns">
-                        <button id="history-edit-delete-btn" class="icon-btn delete-btn" data-i18n-title="tooltip-delete-history">
-                            <span class="material-symbols-outlined">delete</span>
-                        </button>
                         <span class="history-edit-close-btn">&times;</span>
                     </div>
                 </div>
@@ -277,7 +300,7 @@
         <!-- Settings Popup -->
         <div id="settings-popup" class="modal hidden">
             <div class="modal-content">
-                <span class="close-btn">&times;</span>
+                <span class="close-btn settings-close-btn">&times;</span>
                 <h2 data-i18n="settings">設定</h2>
 
                 <div class="tabs">
