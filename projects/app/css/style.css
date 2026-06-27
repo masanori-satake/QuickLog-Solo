@@ -622,7 +622,7 @@ body.timer-mini #elapsed-time {
     flex-direction: column;
 }
 
-.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-edit-close-btn, .history-action-close-btn {
+.close-btn, .report-close-btn, .tag-aggregation-close-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.75rem;
@@ -693,6 +693,8 @@ body.timer-mini #elapsed-time {
 
 .modal-header-btns .history-edit-close-btn,
 .modal-header-btns .history-action-close-btn {
+    cursor: pointer;
+    font-weight: bold;
     position: static;
     font-size: 1.5rem;
     line-height: 1;
