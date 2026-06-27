@@ -6,7 +6,7 @@ updates:
       interval: "weekly"
     registries:
       - npm-registry
-    
+
 registries:
   npm-registry:
     type: npm-registry
