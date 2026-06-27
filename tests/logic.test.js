@@ -32,7 +32,10 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     SETTING_KEY_GLOBAL_CLEAR_TIME: 'globalClearTime'
 }));
 
-const { formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem } = await import('../shared/js/logic.js');
+const {
+    formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem,
+    splitHistoryItem
+} = await import('../shared/js/logic.js');
 const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
 
@@ -838,6 +841,81 @@ describe('Logic Module', () => {
             expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
                 key: SETTING_KEY_PAUSE_STATE,
                 value: expect.objectContaining({ id: 2, startTime: 1000, isPaused: false })
+            }));
+        });
+    });
+
+    describe('splitHistoryItem', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        test('splits a log into 1 minute and the rest', async () => {
+            const startTs = 1700000000000;
+            const originalLog = {
+                id: 1,
+                startTime: startTs,
+                endTime: startTs + 300000, // 5 minutes
+                category: 'Work',
+                tags: 'tag1'
+            };
+            dbGet.mockResolvedValue(originalLog);
+
+            const result = await splitHistoryItem(1);
+
+            expect(result).toBe(true);
+            // Original log updated
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                endTime: startTs + 60000 // Original + 1 minute
+            }));
+            // New log added
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                startTime: startTs + 60000,
+                endTime: startTs + 300000,
+                category: 'Work',
+                tags: 'tag1'
+            }));
+        });
+
+        test('fails if log has no endTime', async () => {
+            const activeTask = { id: 1, startTime: 1700000000000, endTime: null };
+            dbGet.mockResolvedValue(activeTask);
+            const result = await splitHistoryItem(1);
+            expect(result).toBe(false);
+        });
+
+        test('fails if duration is less than 2 minutes', async () => {
+            const startTs = 1700000000000;
+            const shortLog = { id: 1, startTime: startTs, endTime: startTs + 90000 }; // 90 seconds
+            dbGet.mockResolvedValue(shortLog);
+            const result = await splitHistoryItem(1);
+            expect(result).toBe(false);
+        });
+
+        test('updates pauseState if the split log was active', async () => {
+            const startTs = 1700000000000;
+            const log = { id: 1, startTime: startTs, endTime: startTs + 300000, category: 'Work' };
+            dbGet.mockImplementation((store, id) => {
+                if (id === 1) return Promise.resolve(log);
+                return Promise.resolve(null);
+            });
+            // Mocking the pauseState setting
+            dbGet.mockImplementation((store, key) => {
+                if (key === SETTING_KEY_PAUSE_STATE) return Promise.resolve({ value: { id: 1 } });
+                if (store === STORE_LOGS && typeof key === 'number') return Promise.resolve(log);
+                return Promise.resolve(null);
+            });
+
+            await splitHistoryItem(1);
+
+            // pauseState should point to the NEW log (the remainder)
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
+                key: SETTING_KEY_PAUSE_STATE,
+                value: expect.objectContaining({
+                    startTime: startTs + 60000,
+                    category: 'Work'
+                })
             }));
         });
     });
