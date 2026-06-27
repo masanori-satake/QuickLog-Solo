@@ -6,6 +6,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     dbPut: jest.fn().mockResolvedValue(true),
     dbGet: jest.fn(),
     dbGetAll: jest.fn().mockResolvedValue([]),
+    dbGetManualStopsAt: jest.fn().mockResolvedValue([]),
     dbDelete: jest.fn(),
     dbClear: jest.fn(),
     initDB: jest.fn(),
@@ -233,7 +234,8 @@ describe('Logic Module', () => {
                 endTime: customEnd,
                 isManualStop: true
             };
-            dbGetAll.mockResolvedValue([existingStopMarker]);
+            const { dbGetManualStopsAt } = await import('../shared/js/db.js');
+            dbGetManualStopsAt.mockResolvedValue([existingStopMarker]);
 
             const activeTask = { id: 1, category: 'Work', startTime: 1000 };
             await stopTaskLogic(activeTask, true, customEnd);
@@ -262,6 +264,10 @@ describe('Logic Module', () => {
         test('stopTaskLogic handles manual stop during pause state by adding separate marker', async () => {
             const now = Date.now();
             const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: now - 60000, resumableCategory: 'Work', isPaused: true };
+
+            const { dbGetManualStopsAt } = await import('../shared/js/db.js');
+            dbGetManualStopsAt.mockResolvedValue([]);
+
             const result = await stopTaskLogic(pauseState, true);
             expect(result).toBeNull();
             // The idle log should be completed normally

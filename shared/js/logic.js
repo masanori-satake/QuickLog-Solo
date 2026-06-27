@@ -1,4 +1,4 @@
-import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
+import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, dbGetManualStopsAt, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv, generateUUID, floorToMinute } from './utils.js';
 import { recordDeletedSyncId } from './session_sync.js';
 import { t } from './i18n.js';
@@ -345,6 +345,16 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
     const now = floorToMinute(Date.now());
     await stopTaskLogic(activeTask, false, now);
 
+    // 同一時刻の「終了」マーカー（手動停止）があれば削除する
+    // 性能最適化：全件取得(dbGetAll)を避け、Cursorを使用して直近のマーカーのみを検索
+    const stopMarkers = await dbGetManualStopsAt(now);
+    for (const marker of stopMarkers) {
+        if (marker.id) {
+            await dbDelete(STORE_LOGS, marker.id);
+            if (marker.syncId) await recordDeletedSyncId(marker.syncId);
+        }
+    }
+
     const newLog = {
         syncId: generateUUID(),
         category: categoryName,
@@ -410,13 +420,9 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
     if (isManualStop) {
         // 停止ボタンが押された場合は、追加で停止マーカーを記録する
         // 重複（同じ時刻のマーカー）を避けるためのチェック
-        const allLogs = await dbGetAll(STORE_LOGS);
-        const isDuplicate = allLogs.some(l =>
-            l.isManualStop &&
-            l.category === SYSTEM_CATEGORY_IDLE &&
-            l.startTime === endTime &&
-            l.endTime === endTime
-        );
+        // 性能最適化：全件取得(dbGetAll)を避け、Cursorを使用して直近のマーカーのみを検索
+        const stopMarkers = await dbGetManualStopsAt(endTime);
+        const isDuplicate = stopMarkers.length > 0;
 
         if (!isDuplicate) {
             const stopLog = {

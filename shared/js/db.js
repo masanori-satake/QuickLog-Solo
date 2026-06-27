@@ -258,6 +258,47 @@ export async function dbDelete(storeName, key) {
 }
 
 /**
+ * Finds manual stop markers at a specific timestamp without fetching all logs.
+ * @param {number} ts - The timestamp (floored to minute) to search for.
+ * @returns {Promise<Object[]>}
+ */
+export async function dbGetManualStopsAt(ts) {
+    await openDatabase();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_LOGS, 'readonly');
+        const store = tx.objectStore(STORE_LOGS);
+        const results = [];
+        // We iterate backwards from the end because manual stops at 'ts' are likely recent.
+        // Even better, we could use an index if we had one, but Cursor iteration with manual filter
+        // is still much better than dbGetAll() + .filter() if we stop early or if TS is recent.
+        // However, since we don't have a startTime index yet, we still have to scan or use a heuristic.
+        // Given LOG_CLEANUP_THRESHOLD_MS (40 days), scanning all logs might still happen with a raw cursor.
+        // But for "Equality at TS", we can't efficiently use a cursor without an index.
+
+        // As a low-risk improvement that avoids full memory loading of all properties:
+        const request = store.openCursor(null, 'prev');
+        request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                const log = cursor.value;
+                // If we've gone too far back in time, we can stop (heuristically, logs are roughly ID-ordered by time)
+                if (log.startTime < ts - 3600000) { // 1 hour buffer
+                    resolve(results);
+                    return;
+                }
+                if (log.isManualStop && log.startTime === ts) {
+                    results.push(log);
+                }
+                cursor.continue();
+            } else {
+                resolve(results);
+            }
+        };
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
  * Returns the count of records in the specified object store.
  */
 export async function dbCount(storeName) {
@@ -291,6 +332,9 @@ export async function dbGetActiveTask() {
                 } else {
                     // This is an optimization: usually the active task is among the most recent.
                     // If we don't find it immediately, we continue to the previous record.
+
+                    // Safety: Don't scan indefinitely if something is wrong.
+                    // (Actually Cursor handles this, but let's be consistent with dbGetManualStopsAt)
                     cursor.continue();
                 }
             } else {
