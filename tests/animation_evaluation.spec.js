@@ -33,7 +33,7 @@ test.describe('Animation Quality Evaluation', () => {
             await page.waitForTimeout(1000);
             await expect(page.locator('#animation-select')).toBeVisible({ timeout: 10000 });
             await page.selectOption('#animation-select', id);
-            await page.click('.close-btn');
+            await page.click('.settings-close-btn');
 
             // Evaluation Loop
             const stats = {

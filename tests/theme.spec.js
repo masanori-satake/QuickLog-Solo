@@ -25,7 +25,7 @@ test.describe('Theme switching', () => {
     await page.selectOption('#theme-select', 'dark');
 
     // Close settings
-    await page.click('.close-btn');
+    await page.click('.settings-close-btn');
 
     const body = page.locator('body');
     await expect(body).toHaveClass(/theme-dark/);
@@ -64,7 +64,7 @@ test.describe('Theme switching', () => {
   test('should have readable category buttons in dark mode', async ({ page }) => {
     await page.click('#settings-toggle');
     await page.selectOption('#theme-select', 'dark');
-    await page.click('.close-btn');
+    await page.click('.settings-close-btn');
 
     const primaryBtn = page.locator('.category-btn.cat-primary').first();
     // --custom-cat-primary-container (dark): #0d47a1 -> rgb(13, 71, 161)

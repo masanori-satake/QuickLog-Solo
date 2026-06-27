@@ -44,7 +44,7 @@ test.describe('Data Import and Export Consistency', () => {
         await page.click('button[data-tab="maintenance"]');
         await page.click('#clear-logs-btn');
         await page.click('#confirm-ok-btn');
-        await page.click('.close-btn');
+        await page.click('.settings-close-btn');
 
         const firstCat = page.locator('.category-btn').first();
         const catName = (await firstCat.textContent()).trim();
@@ -115,7 +115,7 @@ test.describe('Data Import and Export Consistency', () => {
         await page.click('#import-categories-btn');
         await page.click('#confirm-ok-btn');
 
-        await page.click('.close-btn');
+        await page.click('.settings-close-btn');
 
         const catBtn = page.locator('.category-btn').first();
         await expect(catBtn).toHaveText('ImportedTestCat');
@@ -141,7 +141,7 @@ test.describe('Data Import and Export Consistency', () => {
         await expect(confirmMsg).toContainText(/1 out of 2 rows are corrupted/);
         await page.click('#confirm-ok-btn');
 
-        await page.click('.close-btn');
+        await page.click('.settings-close-btn');
         const validItem = page.locator('.category-btn').filter({ hasText: 'ValidItem' });
 
         const dots = page.locator('.pagination-dot');

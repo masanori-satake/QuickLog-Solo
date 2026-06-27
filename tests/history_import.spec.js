@@ -42,7 +42,7 @@ test.describe('History CSV Import Robustness', () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(filePath);
 
-        await page.click('.close-btn');
+        await page.click('.settings-close-btn');
         await expect(page.locator('.log-item:has-text("FutureTask")')).not.toBeVisible();
     });
 
@@ -83,7 +83,7 @@ test.describe('History CSV Import Robustness', () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(filePath);
 
-        await page.click('.close-btn');
+        await page.click('.settings-close-btn');
         await expect(page.locator('.log-item:has-text("Overlapping")')).toBeVisible({ timeout: 10000 });
         await expect(page.locator('.log-item:has-text("Existing")')).toBeVisible();
     });
@@ -133,7 +133,7 @@ test.describe('History CSV Import Robustness', () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(filePath);
 
-        await page.click('.close-btn');
+        await page.click('.settings-close-btn');
         await expect(page.locator('.log-item:has-text("DuplicateMe")')).toHaveCount(1);
     });
 
@@ -159,7 +159,7 @@ test.describe('History CSV Import Robustness', () => {
         await expect(confirmMsg).toContainText(/1 out of 2 rows are corrupted/);
         await page.click('#confirm-ok-btn');
 
-        await page.click('.close-btn');
+        await page.click('.settings-close-btn');
         await expect(page.locator('.log-item:has-text("ValidTask")')).toBeVisible({ timeout: 10000 });
     });
 
@@ -187,7 +187,7 @@ test.describe('History CSV Import Robustness', () => {
 
         await fileChooser.setFiles(filePath);
 
-        await page.click('.close-btn');
+        await page.click('.settings-close-btn');
         await expect(page.locator('.log-item:has-text("ErrorTask")')).not.toBeVisible();
     });
 });
