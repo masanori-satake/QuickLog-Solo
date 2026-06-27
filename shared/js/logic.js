@@ -531,13 +531,11 @@ export async function splitHistoryItem(logId) {
 
     const splitTs = log.startTime + splitIntervalMs;
 
-    const newLog = {
-        ...log,
-        id: undefined, // Let DB generate new ID
-        syncId: generateUUID(),
-        startTime: splitTs,
-        updatedAt: Date.now()
-    };
+    const newLog = JSON.parse(JSON.stringify(log));
+    delete newLog.id;
+    newLog.syncId = generateUUID();
+    newLog.startTime = splitTs;
+    newLog.updatedAt = Date.now();
 
     log.endTime = splitTs;
     log.updatedAt = Date.now();

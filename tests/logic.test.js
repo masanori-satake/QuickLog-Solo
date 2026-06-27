@@ -876,6 +876,13 @@ describe('Logic Module', () => {
                 category: 'Work',
                 tags: 'tag1'
             }));
+            // New log added
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                startTime: startTs + 60000,
+                endTime: startTs + 300000,
+                category: 'Work',
+                tags: 'tag1'
+            }));
         });
 
         test('fails if log has no endTime', async () => {
