@@ -913,6 +913,7 @@ describe('Logic Module', () => {
             expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
                 key: SETTING_KEY_PAUSE_STATE,
                 value: expect.objectContaining({
+                    id: 123,
                     startTime: startTs + 60000,
                     category: 'Work'
                 })

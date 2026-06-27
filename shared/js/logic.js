@@ -516,7 +516,7 @@ export async function updateHistoryStartTime(logId, newTs) {
 }
 
 /**
- * Splits a history log item into two: one for the first minute and another for the remaining time.
+ * 履歴を分割します。(Splits a history log item into two: one for the first minute and another for the remaining time.)
  * @param {number} logId
  * @returns {Promise<boolean>} Success status
  */
@@ -543,7 +543,8 @@ export async function splitHistoryItem(logId) {
     log.updatedAt = Date.now();
 
     await dbPut(STORE_LOGS, log);
-    await dbAdd(STORE_LOGS, newLog);
+    const newId = await dbAdd(STORE_LOGS, newLog);
+    newLog.id = newId;
 
     // If the splitted log was the active task (unlikely as we usually split confirmed logs,
     // but confirmed logs can be active task if it's paused/running), we might need to update pauseState.
