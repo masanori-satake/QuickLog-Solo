@@ -212,7 +212,8 @@ async function openHistoryActionModal(log) {
     if (!modal) return;
 
     const durationMs = log.endTime - log.startTime;
-    const canSplit = !log.isManualStop && durationMs >= 120000; // 2 minutes
+    const isSpecialCategory = log.category === SYSTEM_CATEGORY_IDLE || log.category === SYSTEM_CATEGORY_UNKNOWN;
+    const canSplit = !log.isManualStop && !isSpecialCategory && durationMs >= 120000; // 2 minutes
 
     splitBtn.disabled = !canSplit;
 
