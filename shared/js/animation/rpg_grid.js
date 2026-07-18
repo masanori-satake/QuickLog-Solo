@@ -52,7 +52,7 @@ export default class RpgGrid extends AnimationBase {
     }
 
     draw(ctx, { elapsedMs = 0 } = {}) {
-        const cellSize = CELL_SIZE; // Perfect alignment with CELL_SIZE (6)
+        const cellSize = CELL_SIZE || 6; // Perfect alignment with CELL_SIZE (6)
         const cols = Math.ceil(this.width / cellSize) || 12;
         const rows = Math.ceil(this.height / cellSize) || 8;
 
