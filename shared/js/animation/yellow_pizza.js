@@ -51,7 +51,7 @@ export default class YellowPizza extends AnimationBase {
         this.dots = [];
         const spacing = 40;
         for (let dX = spacing; dX < width; dX += spacing) {
-            this.dots.push({ x: dX, eaten: false });
+            this.dots.push({ x: dX });
         }
     }
 
@@ -68,18 +68,11 @@ export default class YellowPizza extends AnimationBase {
         // Handle mouth opening/closing state every 200ms
         const mouthOpen = (Math.floor(elapsedMs / 200) % 2) === 0;
 
-        // Reset dots if wrapped around
-        if (this.x < 0 && this.dots.length > 0 && this.dots[this.dots.length - 1].eaten) {
-            this.dots.forEach(d => d.eaten = false);
-        }
-
         ctx.fillStyle = '#fff';
-        // Draw dots that aren't eaten
+        // Draw dots that aren't eaten (stateless check: character's position is to the left of the dot)
         this.dots.forEach(dot => {
-            if (this.x > dot.x - 5) {
-                dot.eaten = true;
-            }
-            if (!dot.eaten) {
+            const eaten = this.x > dot.x - 5;
+            if (!eaten) {
                 ctx.fillRect(dot.x - 2, centerY - 2, 4, 4);
             }
         });

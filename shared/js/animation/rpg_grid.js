@@ -40,11 +40,13 @@ export default class RpgGrid extends AnimationBase {
         super();
         this.width = 0;
         this.height = 0;
+        this.spiralCoords = null;
     }
 
     setup(width, height) {
         this.width = width;
         this.height = height;
+        this.spiralCoords = null; // リサイズ時にキャッシュをクリア
     }
 
     draw(ctx, { elapsedMs = 0 } = {}) {
@@ -82,8 +84,11 @@ export default class RpgGrid extends AnimationBase {
             const totalCells = rows * cols;
             const cellsToFill = Math.floor(fillProgress * totalCells);
 
-            // Compute spiral coordinates
-            const spiralCoords = this.getSpiralCoordinates(rows, cols);
+            // キャッシュされた螺旋座標を使用（未生成の場合は生成）
+            if (!this.spiralCoords) {
+                this.spiralCoords = this.getSpiralCoordinates(rows, cols);
+            }
+            const spiralCoords = this.spiralCoords;
 
             for (let i = 0; i < Math.min(cellsToFill, spiralCoords.length); i++) {
                 const { r, c } = spiralCoords[i];

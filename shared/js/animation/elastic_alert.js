@@ -63,11 +63,11 @@ export default class ElasticAlert extends AnimationBase {
         const popDuration = 400; // ms
 
         if (t < popDuration) {
-            // Spring-like elastic scaling up: 0 -> 1.2 -> 1.0
+            // Spring-like elastic scaling up: 0 -> overshoot -> 1.0
             // x = t / popDuration (0 to 1)
             const x = t / popDuration;
             // formula for elastic overshoot: 1 - cos(x * PI * 2.5) * (1 - x)
-            scale = 1.2 - 1.2 * Math.cos(x * Math.PI * 2.5) * (1 - x);
+            scale = 1.0 - 1.0 * Math.cos(x * Math.PI * 2.5) * (1 - x);
             scale = Math.max(0, scale);
         } else {
             // Gentle float bobbing (sine wave)

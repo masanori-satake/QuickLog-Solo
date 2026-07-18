@@ -114,22 +114,19 @@ export default class RedCapJumper extends AnimationBase {
             armUp = false;
         }
 
-        // Reset particle trigger flag when not near landing
-        if (t < jumpEnd || t > jumpEnd + 100) {
-            this.particles = [];
-        }
-
         // Draw ground line
         ctx.fillStyle = '#555';
         ctx.fillRect(0, groundY, width, 2);
 
-        // Draw dust particles
+        // Draw and update dust particles
         ctx.fillStyle = '#fff';
         this.particles.forEach(p => {
             p.x += p.vx;
+            p.life -= 16.67; // 寿命を減算
             // Draw a tiny 2px dust particle
             ctx.fillRect(p.x - 1, groundY - 2, 2, 2);
         });
+        this.particles = this.particles.filter(p => p.life > 0);
 
         // Draw character in the center
         const charX = width / 2;
