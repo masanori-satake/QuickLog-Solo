@@ -100,7 +100,7 @@
   - **多重プラズマ・グロウ**：
     `#animation-canvas` に重層的なドロップシャドウを適用し、ネオン放電の強力な発光感を再現。
     ```css
-    filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px #ff5500) drop-shadow(0 0 12px #ff2a00);
+    filter: drop-shadow(0 0 8px #ff5500);
     ```
   - **ガラスバルブ反射**：
     ガラス管を模した極薄の円弧状グラデーションハイライトを疑似要素で重ねる。
