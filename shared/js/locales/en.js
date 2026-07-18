@@ -429,4 +429,7 @@ export default {
     'sync-setup-cloud-to-local': 'Overwrite with data from other devices',
     'sync-setup-local-to-cloud': 'Overwrite other devices with local data',
     'sync-setup-merge': 'Merge local history with other devices',
+    'display-mode-retro-lcd': 'Retro LCD',
+    'display-mode-retro-crt': 'CRT Monitor',
+    'display-mode-retro-nixie': 'Nixie Tube',
 };

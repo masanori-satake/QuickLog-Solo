@@ -1827,3 +1827,162 @@ body.theme-dark button:active {
 .filter-chip.active:hover {
     filter: brightness(0.9);
 }
+
+/* ==========================================================================
+   Ultimate Realism Retro Display Modes CSS
+   ========================================================================== */
+
+/* 1. Retro Game LCD Mode */
+#current-task-display.retro-lcd {
+    background-color: #9bbc0f !important;
+    filter: contrast(0.92) saturate(1.1);
+}
+#current-task-display.retro-lcd::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    /* Ultra-fine pixel grid bounds */
+    background: linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+    background-size: 6px 6px; /* Sync with CELL_SIZE = 6 */
+}
+#current-task-display.retro-lcd #current-task-name,
+#current-task-display.retro-lcd #elapsed-time,
+#current-task-display.retro-lcd #status-label {
+    color: #0f380f !important;
+    text-shadow: 0 0 2px rgba(155, 188, 15, 0.5) !important;
+}
+
+/* 2. CRT Monitor Mode */
+#current-task-display.retro-crt {
+    background-color: #030c04 !important;
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.92), var(--md-sys-elevation-1);
+    animation: crt-jitter-flicker 0.15s infinite;
+}
+#current-task-display.retro-crt::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    /* Horizontal scanlines & vertical aperture grille slits */
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 100% 4px, 3px 100%;
+}
+#current-task-display.retro-crt #animation-canvas {
+    filter: drop-shadow(0 0 4px rgba(51, 255, 51, 0.85)) !important;
+}
+#current-task-display.retro-crt #current-task-name,
+#current-task-display.retro-crt #elapsed-time,
+#current-task-display.retro-crt #status-label {
+    color: #33ff33 !important;
+    text-shadow: 0 0 4px rgba(51, 255, 51, 0.75) !important;
+}
+@keyframes crt-jitter-flicker {
+    0%, 100% { opacity: 0.992; }
+    50% { opacity: 1.0; }
+}
+
+/* 3. Nixie Tube Mode */
+#current-task-display.retro-nixie {
+    background-color: #0c0603 !important;
+    box-shadow: inset 0 0 32px rgba(0,0,0,0.95);
+    position: relative;
+    animation: nixie-flicker 0.2s infinite;
+}
+#current-task-display.retro-nixie::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    /* Honeycomb grid / anode mesh pattern */
+    background-image: radial-gradient(rgba(255, 85, 0, 0.055) 1.2px, transparent 1.2px);
+    background-size: 5px 5px;
+}
+#current-task-display.retro-nixie::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 11;
+    /* Glass bulb glare highlight */
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 40%, transparent 100%);
+    border-radius: inherit;
+}
+#current-task-display.retro-nixie #animation-canvas {
+    filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px #ff5500) drop-shadow(0 0 12px #ff2a00) !important;
+}
+#current-task-display.retro-nixie #current-task-name,
+#current-task-display.retro-nixie #elapsed-time,
+#current-task-display.retro-nixie #status-label {
+    color: #ff5500 !important;
+    text-shadow: 0 0 2px #fff, 0 0 6px #ff5500, 0 0 12px #ff2a00 !important;
+}
+@keyframes nixie-flicker {
+    0%, 100% { opacity: 0.99; filter: url(#nixie-heat-shimmer) brightness(1.0); }
+    30% { opacity: 0.985; }
+    50% { opacity: 1.0; filter: url(#nixie-heat-shimmer) brightness(1.03); }
+    75% { opacity: 0.993; }
+}
+
+/* Custom Color Indicators for Settings Categories Tab */
+.color-dropdown-trigger[data-color="retro-lcd"],
+.color-dropdown-item[data-color="retro-lcd"] {
+    background-color: #9bbc0f !important;
+    border-color: #0f380f !important;
+    position: relative;
+}
+.color-dropdown-trigger[data-color="retro-lcd"]::after,
+.color-dropdown-item[data-color="retro-lcd"]::after {
+    content: "L";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f380f;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.color-dropdown-trigger[data-color="retro-crt"],
+.color-dropdown-item[data-color="retro-crt"] {
+    background-color: #33ff33 !important;
+    border-color: #030c04 !important;
+    position: relative;
+}
+.color-dropdown-trigger[data-color="retro-crt"]::after,
+.color-dropdown-item[data-color="retro-crt"]::after {
+    content: "C";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #030c04;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.color-dropdown-trigger[data-color="retro-nixie"],
+.color-dropdown-item[data-color="retro-nixie"] {
+    background-color: #ff5500 !important;
+    border-color: #0c0603 !important;
+    position: relative;
+}
+.color-dropdown-trigger[data-color="retro-nixie"]::after,
+.color-dropdown-item[data-color="retro-nixie"]::after {
+    content: "N";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0c0603;
+    font-weight: bold;
+    font-size: 11px;
+}

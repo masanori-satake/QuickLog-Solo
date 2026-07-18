@@ -429,4 +429,7 @@ export default {
     'sync-setup-cloud-to-local': '他端末のデータで上書きする',
     'sync-setup-local-to-cloud': 'この端末のデータで他端末を上書きする',
     'sync-setup-merge': '他端末のデータとこの端末の履歴をマージする',
+    'display-mode-retro-lcd': 'レトロ液晶',
+    'display-mode-retro-crt': 'ブラウン管',
+    'display-mode-retro-nixie': 'ニキシー管',
 };

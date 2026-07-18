@@ -531,6 +531,11 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
             animationEngine.start(activeAnimation, activeTask.startTime, colorCode);
         }
         display?.classList.add('anim-active');
+        display?.classList.remove('retro-lcd', 'retro-crt', 'retro-nixie');
+        if (color === 'retro-lcd') display?.classList.add('retro-lcd');
+        else if (color === 'retro-crt') display?.classList.add('retro-crt');
+        else if (color === 'retro-nixie') display?.classList.add('retro-nixie');
+
         const base = getEl('current-task-display-base');
         base?.classList.add('anim-active');
         base?.classList.add(`cat-${color}`);
@@ -542,7 +547,7 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
             animationEngine?.stop();
             currentActiveAnimation = null;
         }
-        display?.classList.remove('anim-active');
+        display?.classList.remove('anim-active', 'retro-lcd', 'retro-crt', 'retro-nixie');
         const base = getEl('current-task-display-base');
         base?.classList.remove('anim-active');
         const colorClasses = Array.from(base?.classList || []).filter(c => c.startsWith('cat-'));
@@ -1943,7 +1948,10 @@ function getColorCode(color) {
         pink: '#d81b60',
         indigo: '#5e35b1',
         brown: '#6d4c41',
-        cyan: '#039be5'
+        cyan: '#039be5',
+        'retro-lcd': '#9bbc0f',
+        'retro-crt': '#33ff33',
+        'retro-nixie': '#ff5500'
     };
     return codes[color] || '#1976d2';
 }
@@ -1999,7 +2007,8 @@ async function renderCategoryEditor() {
 
     const colors = [
         'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
-        'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
+        'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan',
+        'retro-lcd', 'retro-crt', 'retro-nixie'
     ];
 
     const lang = getLanguage();

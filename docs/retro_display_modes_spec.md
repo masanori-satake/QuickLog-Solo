@@ -100,7 +100,7 @@
   - **多重プラズマ・グロウ**：
     `#animation-canvas` に重層的なドロップシャドウを適用し、ネオン放電の強力な発光感を再現。
     ```css
-    filter: drop-shadow(0 0 8px #ff5500);
+    filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px #ff5500) drop-shadow(0 0 12px #ff2a00);
     ```
   - **ガラスバルブ反射**：
     ガラス管を模した極薄の円弧状グラデーションハイライトを疑似要素で重ねる。
@@ -173,9 +173,9 @@
 
             if (mode === 'retro-lcd') {
                 // 4階調マッピング
-                if (dot.size >= 3) this.ctx.fillStyle = '#0f380f'; // 最暗 (サイズ3/4)
-                else if (dot.size === 2) this.ctx.fillStyle = '#306230'; // 暗い中間 (サイズ2)
-                else this.ctx.fillStyle = '#8bac0f'; // 明るい中間 (サイズ1)
+                if (dot.size === 4) this.ctx.fillStyle = '#0f380f'; // 最暗
+                else if (dot.size === 3) this.ctx.fillStyle = '#306230'; // 暗い中間
+                else this.ctx.fillStyle = '#8bac0f'; // 明るい中間
             } else if (mode === 'retro-crt') {
                 this.ctx.fillStyle = '#33ff33'; // リン光グリーン
             } else if (mode === 'retro-nixie') {

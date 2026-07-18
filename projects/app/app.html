@@ -614,6 +614,18 @@
         <div id="toast" class="hidden" data-i18n="toast-copied">コピーしました！</div>
     </div>
 
+    <!-- Inline SVG filters for Retro Display Modes -->
+    <svg style="display: none;">
+        <defs>
+            <filter id="nixie-heat-shimmer">
+                <feTurbulence type="fractalNoise" baseFrequency="0.04 0.09" numOctaves="2" result="noise">
+                    <animate attributeName="baseFrequency" values="0.04 0.09; 0.04 0.15; 0.04 0.09" dur="4s" repeatCount="indefinite" />
+                </feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

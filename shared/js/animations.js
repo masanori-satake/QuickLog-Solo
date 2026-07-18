@@ -186,13 +186,72 @@ export class AnimationEngine {
 
     _renderDots(dots) {
         if (!dots) return;
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = this.color;
+        const mode = (this.color === 'retro-lcd' || this.color === '#9bbc0f') ? 'retro-lcd' :
+                     (this.color === 'retro-crt' || this.color === '#33ff33') ? 'retro-crt' :
+                     (this.color === 'retro-nixie' || this.color === '#ff5500') ? 'retro-nixie' :
+                     (this.displayMode || 'normal');
+
+        // 1. Clear background/fill with retro color
+        if (mode === 'retro-lcd') {
+            this.ctx.fillStyle = '#9bbc0f'; // LCD backplate base
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        } else if (mode === 'retro-crt') {
+            this.ctx.fillStyle = '#030c04'; // CRT dark green
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        } else if (mode === 'retro-nixie') {
+            this.ctx.fillStyle = '#0c0603'; // Nixie dark rusty metal
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        } else {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.lastDots = null;
+        }
+
+        // 2. Render STN LCD Ghosting (Slow latency simulation)
+        if (mode === 'retro-lcd' && this.lastDots) {
+            this.ctx.fillStyle = 'rgba(48, 98, 48, 0.25)'; // Legacy persistent shade
+            this.lastDots.forEach(dot => {
+                const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
+                const dotY = dot.y + (CELL_SIZE - dot.size) / 2;
+                this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
+            });
+        }
+
+        // 3. Render STN LCD 3D Shadow projection
+        if (mode === 'retro-lcd') {
+            this.ctx.fillStyle = 'rgba(15, 56, 15, 0.22)'; // Offset shadow under dots
+            dots.forEach(dot => {
+                const dotX = dot.x + (CELL_SIZE - dot.size) / 2 + 1;
+                const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + 1;
+                this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
+            });
+        }
+
+        // 4. Render Main dots
         dots.forEach(dot => {
             const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
             const dotY = dot.y + (CELL_SIZE - dot.size) / 2;
+
+            if (mode === 'retro-lcd') {
+                if (dot.size === 4) this.ctx.fillStyle = '#0f380f'; // Darkest
+                else if (dot.size === 3) this.ctx.fillStyle = '#306230'; // Dark mid
+                else this.ctx.fillStyle = '#8bac0f'; // Light mid
+            } else if (mode === 'retro-crt') {
+                this.ctx.fillStyle = '#33ff33'; // Neon phosphor green
+            } else if (mode === 'retro-nixie') {
+                this.ctx.fillStyle = '#ff5500'; // Discharge neon orange
+            } else {
+                this.ctx.fillStyle = this.color;
+            }
+
             this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
         });
+
+        // 5. Save current dots as buffer for next frame's ghosting
+        if (mode === 'retro-lcd') {
+            this.lastDots = dots;
+        } else {
+            this.lastDots = null;
+        }
     }
 
     stop() {

@@ -406,6 +406,8 @@ function resetStudioUI(full = true) {
     elements.previewContainer.style.height = '150px';
     elements.rawCanvasContainer.style.height = '150px';
 
+    elements.previewContainer.classList.remove('retro-lcd', 'retro-crt', 'retro-nixie');
+
     elements.exclusionSim.style.top = '40px';
     elements.exclusionSim.style.left = '40px';
     elements.exclusionSim.style.width = '120px';

@@ -404,4 +404,7 @@ export default {
     'alarm-section-basic': 'Grundeinstellungen',
     'alarm-section-action': 'Aktions-Einstellungen',
     'alarm-section-schedule': 'Zeitplan-Einstellungen',
+    'display-mode-retro-lcd': 'Retro-LCD',
+    'display-mode-retro-crt': 'Röhrenmonitor',
+    'display-mode-retro-nixie': 'Nixie-Röhre',
 };
