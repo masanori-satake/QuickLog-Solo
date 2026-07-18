@@ -40,13 +40,11 @@ export default class MagicRibbons extends AnimationBase {
         super();
         this.width = 0;
         this.height = 0;
-        this.particles = [];
     }
 
     setup(width, height) {
         this.width = width;
         this.height = height;
-        this.particles = [];
     }
 
     draw(ctx, { elapsedMs = 0 } = {}) {
@@ -58,27 +56,6 @@ export default class MagicRibbons extends AnimationBase {
         const charH = Math.max(30, height * 0.45);
         const headRadius = Math.max(3, charH * 0.16);
         const charY = (height / 2) + (charH / 2);
-
-        // Draw Central Silhouette (behind ribbons)
-        ctx.fillStyle = '#263238'; // Very dark slate grey
-        ctx.save();
-        ctx.translate(centerX, charY);
-
-        // Head
-        ctx.beginPath();
-        ctx.arc(0, -charH - headRadius, headRadius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Elegant standing posture
-        ctx.fillRect(-3, -charH, 6, charH - 12);
-        // Legs
-        ctx.fillRect(-3, -12, 2, 12);
-        ctx.fillRect(1, -12, 2, 12);
-        // Arms slightly outward
-        ctx.fillRect(-6, -charH + 2, 3, charH * 0.4);
-        ctx.fillRect(3, -charH + 2, 3, charH * 0.4);
-
-        ctx.restore();
 
         // Ribbon 1 (Pink/Rose) and Ribbon 2 (Cyan)
         const ribbon1Color = '#f06292';
@@ -145,34 +122,20 @@ export default class MagicRibbons extends AnimationBase {
             }
         }
 
-        // Particle blast at the top
-        // Triggered periodically every 2 seconds
+        // Particle blast at the top (Stateless & deterministic)
+        // Triggered periodically every 2 seconds, lasting for 400ms
         const blastPeriod = 2000;
         const blastTime = elapsedMs % blastPeriod;
-        if (blastTime < 30 && this.particles.length === 0) {
+        if (blastTime < 400) {
+            const pProgress = blastTime / 400;
+            const distance = 36 * pProgress;
+            ctx.fillStyle = '#fff9c4'; // Spark yellow-white
             for (let i = 0; i < 8; i++) {
                 const angle = (i / 8) * Math.PI * 2;
-                this.particles.push({
-                    x: centerX,
-                    y: 15,
-                    vx: Math.cos(angle) * 1.5,
-                    vy: Math.sin(angle) * 1.5,
-                    life: 400
-                });
+                const px = centerX + Math.cos(angle) * distance;
+                const py = 15 + Math.sin(angle) * distance;
+                ctx.fillRect(px - 1, py - 1, 2, 2);
             }
         }
-
-        // Update and draw particles
-        this.particles.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life -= 16.67;
-        });
-        this.particles = this.particles.filter(p => p.life > 0);
-
-        ctx.fillStyle = '#fff9c4'; // Spark yellow-white
-        this.particles.forEach(p => {
-            ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
-        });
     }
 }

@@ -39,7 +39,6 @@ export default class RedCapJumper extends AnimationBase {
         super();
         this.width = 0;
         this.height = 0;
-        this.particles = [];
         this.groundY = 0;
     }
 
@@ -47,7 +46,6 @@ export default class RedCapJumper extends AnimationBase {
         this.width = width;
         this.height = height;
         this.groundY = height - Math.max(12, height * 0.2);
-        this.particles = [];
     }
 
     draw(ctx, { elapsedMs = 0 } = {}) {
@@ -100,13 +98,6 @@ export default class RedCapJumper extends AnimationBase {
             const progress = (t - jumpEnd) / 150; // 0 to 1
             scaleY = 1.0 - (1 - progress) * 0.25;
             scaleX = 1.0 + (1 - progress) * 0.15;
-
-            // Trigger dust particles exactly at landing (exactly at jumpEnd)
-            // We can check if particles are empty or trigger based on timestamp window
-            if (this.particles.length === 0 && t < jumpEnd + 30) {
-                this.particles.push({ x: width / 2, vx: -2, life: 150 });
-                this.particles.push({ x: width / 2, vx: 2, life: 150 });
-            }
         } else {
             // IDLE / Standing
             scaleX = 1.0;
@@ -118,15 +109,16 @@ export default class RedCapJumper extends AnimationBase {
         ctx.fillStyle = '#555';
         ctx.fillRect(0, groundY, width, 2);
 
-        // Draw and update dust particles
-        ctx.fillStyle = '#fff';
-        this.particles.forEach(p => {
-            p.x += p.vx;
-            p.life -= 16.67; // 寿命を減算
-            // Draw a tiny 2px dust particle
-            ctx.fillRect(p.x - 1, groundY - 2, 2, 2);
-        });
-        this.particles = this.particles.filter(p => p.life > 0);
+        // Draw stateless dust particles during landing squash phase (1100ms to 1250ms)
+        if (t >= jumpEnd && t < jumpEnd + 150) {
+            const dustProgress = (t - jumpEnd) / 150;
+            const displacement = 18 * dustProgress;
+            ctx.fillStyle = '#fff';
+            // Left dust particle
+            ctx.fillRect(width / 2 - displacement - 1, groundY - 2, 2, 2);
+            // Right dust particle
+            ctx.fillRect(width / 2 + displacement - 1, groundY - 2, 2, 2);
+        }
 
         // Draw character in the center
         const charX = width / 2;

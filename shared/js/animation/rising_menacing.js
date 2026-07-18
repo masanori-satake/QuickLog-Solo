@@ -65,6 +65,12 @@ export default class RisingMenacing extends AnimationBase {
         const width = this.width;
         const height = this.height;
 
+        // Handle time rewinding or jumping
+        if (elapsedMs < this.lastSpawnTime) {
+            this.lastSpawnTime = elapsedMs;
+            this.characters = [];
+        }
+
         // Spawn a new character every 1200ms
         if (elapsedMs - this.lastSpawnTime > 1200) {
             this.lastSpawnTime = elapsedMs;
@@ -95,6 +101,11 @@ export default class RisingMenacing extends AnimationBase {
 
         // Draw character symbols "ゴ"
         ctx.fillStyle = '#b388ff'; // Lavender / purple
+        const pSize = 2; // Pixel scale
+
+        const drawP = (px, py) => {
+            ctx.fillRect(px * pSize, py * pSize, pSize, pSize);
+        };
 
         this.characters.forEach(char => {
             ctx.save();
@@ -102,12 +113,6 @@ export default class RisingMenacing extends AnimationBase {
             ctx.scale(char.scale, char.scale);
 
             ctx.fillStyle = `rgba(179, 136, 255, ${char.opacity})`;
-
-            // Draw "ゴ" (11x11 pixel grid definition)
-            const pSize = 2; // Pixel scale
-            const drawP = (px, py) => {
-                ctx.fillRect(px * pSize, py * pSize, pSize, pSize);
-            };
 
             // "ゴ" Grid Layout:
             // Top Bar

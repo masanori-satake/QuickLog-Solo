@@ -56,6 +56,12 @@ export default class AuraCharge extends AnimationBase {
         const centerX = width / 2;
         const centerY = height / 2;
 
+        // Handle time rewinding or jumping
+        if (elapsedMs < this.lastSparkTime) {
+            this.lastSparkTime = elapsedMs;
+            this.sparks = [];
+        }
+
         // 100ms interval for spawning new sparks
         if (elapsedMs - this.lastSparkTime > 100) {
             this.lastSparkTime = elapsedMs;
