@@ -18,6 +18,7 @@ export function initIO(state, elements) {
     function buildModuleCode() {
         const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
         const animationBaseUrl = `${baseUrl}/shared/js/animation_base.js`;
+        const utilsUrl = `${baseUrl}/shared/js/utils.js`;
 
         const escapeJSString = (str) => {
             return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
@@ -30,7 +31,11 @@ export function initIO(state, elements) {
 
         if (state.saveCurrentMetaData) state.saveCurrentMetaData();
 
-        return `import { AnimationBase } from '${animationBaseUrl}';
+        const hasCellSize = [inputVars.value, inputSetup.value, inputDraw.value, inputInteraction.value]
+            .some(val => val && val.includes('CELL_SIZE'));
+        const utilsImport = hasCellSize ? `\nimport { CELL_SIZE } from '${utilsUrl}';` : '';
+
+        return `import { AnimationBase } from '${animationBaseUrl}';${utilsImport}
 
 export default class CustomAnimation extends AnimationBase {
     static metadata = {
@@ -59,6 +64,7 @@ export default class CustomAnimation extends AnimationBase {
     function downloadAnimation() {
         let code = buildModuleCode();
         code = code.replace(/import\s*{\s*AnimationBase\s*}\s*from\s*['"].*\/js\/animation_base\.js['"]/, "import { AnimationBase } from '../animation_base.js'");
+        code = code.replace(/import\s*{\s*CELL_SIZE\s*}\s*from\s*['"].*\/js\/utils\.js['"]/, "import { CELL_SIZE } from '../utils.js'");
         const blob = new Blob([code], { type: 'application/javascript' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
