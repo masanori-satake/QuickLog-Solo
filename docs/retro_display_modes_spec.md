@@ -173,9 +173,9 @@
 
             if (mode === 'retro-lcd') {
                 // 4階調マッピング
-                if (dot.size === 4) this.ctx.fillStyle = '#0f380f'; // 最暗
-                else if (dot.size === 3) this.ctx.fillStyle = '#306230'; // 暗い中間
-                else this.ctx.fillStyle = '#8bac0f'; // 明るい中間
+                if (dot.size >= 3) this.ctx.fillStyle = '#0f380f'; // 最暗 (サイズ3/4)
+                else if (dot.size === 2) this.ctx.fillStyle = '#306230'; // 暗い中間 (サイズ2)
+                else this.ctx.fillStyle = '#8bac0f'; // 明るい中間 (サイズ1)
             } else if (mode === 'retro-crt') {
                 this.ctx.fillStyle = '#33ff33'; // リン光グリーン
             } else if (mode === 'retro-nixie') {
