@@ -884,8 +884,8 @@ describe('Logic Module', () => {
             }));
         });
 
-        test('fails if log has no endTime', async () => {
-            const activeTask = { id: 1, startTime: 1700000000000, endTime: null };
+        test('fails if log has no endTime and duration is less than 1 minute', async () => {
+            const activeTask = { id: 1, startTime: Date.now() - 30000, endTime: null };
             dbGet.mockResolvedValue(activeTask);
             const result = await splitHistoryItem(1);
             expect(result).toBe(false);
@@ -924,6 +924,57 @@ describe('Logic Module', () => {
                     category: 'Work'
                 })
             }));
+        });
+
+        test('splits an ongoing task if elapsed time is >= 1 minute', async () => {
+            const startTs = Date.now() - 90000; // 90 seconds ago (>= 1 minute)
+            const ongoingLog = {
+                id: 1,
+                startTime: startTs,
+                endTime: null,
+                category: 'Work',
+                tags: 'tag1'
+            };
+            dbGet.mockImplementation((store, key) => {
+                if (store === STORE_LOGS && key === 1) return Promise.resolve(ongoingLog);
+                return Promise.resolve(null);
+            });
+
+            const result = await splitHistoryItem(1);
+
+            expect(result).toBe(true);
+            // Original log updated with endTime
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                endTime: startTs + 60000
+            }));
+            // New log added with no endTime
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                startTime: startTs + 60000,
+                endTime: null,
+                category: 'Work',
+                tags: 'tag1'
+            }));
+        });
+
+        test('fails to split ongoing task if elapsed time is < 1 minute', async () => {
+            const startTs = Date.now() - 30000; // 30 seconds ago (< 1 minute)
+            const ongoingLog = {
+                id: 2,
+                startTime: startTs,
+                endTime: null,
+                category: 'Work',
+                tags: 'tag1'
+            };
+            dbGet.mockImplementation((store, key) => {
+                if (store === STORE_LOGS && key === 2) return Promise.resolve(ongoingLog);
+                return Promise.resolve(null);
+            });
+
+            const result = await splitHistoryItem(2);
+            expect(result).toBe(false);
+            expect(dbPut).not.toHaveBeenCalled();
+            expect(dbAdd).not.toHaveBeenCalled();
         });
     });
 });

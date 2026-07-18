@@ -25,6 +25,7 @@ test.describe('Animation Quality Evaluation', () => {
 
             // Wait for the app to initialize
             await page.waitForSelector('#animation-canvas');
+            await page.waitForSelector('.category-btn');
 
             // Open settings and select the animation
             await page.click('#settings-toggle');
