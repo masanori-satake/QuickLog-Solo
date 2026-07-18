@@ -31,8 +31,11 @@ export function initIO(state, elements) {
 
         if (state.saveCurrentMetaData) state.saveCurrentMetaData();
 
-        return `import { AnimationBase } from '${animationBaseUrl}';
-import { CELL_SIZE } from '${utilsUrl}';
+        const hasCellSize = [inputVars.value, inputSetup.value, inputDraw.value, inputInteraction.value]
+            .some(val => val && val.includes('CELL_SIZE'));
+        const utilsImport = hasCellSize ? `\nimport { CELL_SIZE } from '${utilsUrl}';` : '';
+
+        return `import { AnimationBase } from '${animationBaseUrl}';${utilsImport}
 
 export default class CustomAnimation extends AnimationBase {
     static metadata = {
