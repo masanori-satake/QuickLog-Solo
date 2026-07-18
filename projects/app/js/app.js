@@ -344,8 +344,8 @@ async function openHistoryEditModal(log) {
         if (log.endTime == null) {
             let minTs = currentDayStart;
             if (prevLog) {
-            const isContiguous = Math.abs(prevLog.endTime - log.startTime) <= 1000;
-            minTs = (isContiguous && !prevLog.isManualStop) ? (prevLog.startTime + 60000) : prevLog.endTime;
+                const isContiguous = Math.abs(prevLog.endTime - log.startTime) <= 1000;
+                minTs = isContiguous ? (prevLog.startTime + 60000) : prevLog.endTime;
             }
             const maxTs = Date.now() + 59999;
             if (newTs < minTs || newTs > maxTs) {
@@ -391,52 +391,28 @@ async function openHistoryEditModal(log) {
         newTime.setHours(h, m, 0, 0);
         const newTs = newTime.getTime();
 
-        if (log.endTime == null) {
-            if (isTask) {
-                const newCategoryName = categorySelect.value;
-                if (newCategoryName !== log.category) {
-                    const cat = await dbGetByName(STORE_CATEGORIES, newCategoryName);
-                    log.category = newCategoryName;
-                    log.color = cat ? cat.color : log.color;
-                    log.tags = cat ? (cat.tags || '') : log.tags;
-                }
-                log.memo = memoInput.value.trim() || undefined;
+        if (isTask) {
+            const newCategoryName = categorySelect.value;
+            if (newCategoryName !== log.category) {
+                const cat = await dbGetByName(STORE_CATEGORIES, newCategoryName);
+                log.category = newCategoryName;
+                log.color = cat ? cat.color : log.color;
+                log.tags = cat ? (cat.tags || '') : log.tags;
             }
-            const oldStartTs = log.startTime;
-            log.startTime = newTs;
+            log.memo = memoInput.value.trim() || undefined;
             log.updatedAt = Date.now();
             await dbPut(STORE_LOGS, log);
+        }
 
-            if (prevLog && Math.abs(prevLog.endTime - oldStartTs) <= 1000) {
-                prevLog.endTime = newTs;
-                if (prevLog.isManualStop) {
-                    prevLog.startTime = newTs;
-                }
-                prevLog.updatedAt = Date.now();
-                await dbPut(STORE_LOGS, prevLog);
-            }
+        await updateHistoryStartTime(log.id, newTs);
 
+        if (log.endTime == null) {
+            log.startTime = newTs;
             await dbPut(STORE_SETTINGS, {
                 key: SETTING_KEY_PAUSE_STATE,
                 value: { ...log, isPaused: log.category === SYSTEM_CATEGORY_IDLE }
             });
-
             activeTask = log;
-        } else {
-            if (isTask) {
-                const newCategoryName = categorySelect.value;
-                if (newCategoryName !== log.category) {
-                    const cat = await dbGetByName(STORE_CATEGORIES, newCategoryName);
-                    log.category = newCategoryName;
-                    log.color = cat ? cat.color : log.color;
-                    log.tags = cat ? (cat.tags || '') : log.tags;
-                }
-                log.memo = memoInput.value.trim() || undefined;
-                log.updatedAt = Date.now();
-                await dbPut(STORE_LOGS, log);
-            }
-
-            await updateHistoryStartTime(log.id, newTs);
         }
 
         modal.classList.add('hidden');
