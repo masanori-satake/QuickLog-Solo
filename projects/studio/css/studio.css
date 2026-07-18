@@ -1269,6 +1269,7 @@ body.theme-dark .tape-btn.primary {
     background-color: #9bbc0f !important;
     filter: contrast(0.92) saturate(1.1);
 }
+
 #preview-container.retro-lcd::after {
     content: "";
     position: absolute;
@@ -1286,6 +1287,7 @@ body.theme-dark .tape-btn.primary {
     box-shadow: inset 0 0 24px rgba(0,0,0,0.92);
     animation: crt-jitter-flicker 0.15s infinite;
 }
+
 #preview-container.retro-crt::before {
     content: "";
     position: absolute;
@@ -1296,6 +1298,7 @@ body.theme-dark .tape-btn.primary {
                 linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
     background-size: 100% 4px, 3px 100%;
 }
+
 #preview-container.retro-crt canvas {
     filter: drop-shadow(0 0 4px rgba(51, 255, 51, 0.85)) !important;
 }
@@ -1307,6 +1310,7 @@ body.theme-dark .tape-btn.primary {
     position: relative;
     animation: nixie-flicker 0.2s infinite;
 }
+
 #preview-container.retro-nixie::before {
     content: "";
     position: absolute;
@@ -1316,6 +1320,7 @@ body.theme-dark .tape-btn.primary {
     background-image: radial-gradient(rgba(255, 85, 0, 0.055) 1.2px, transparent 1.2px);
     background-size: 5px 5px;
 }
+
 #preview-container.retro-nixie::after {
     content: "";
     position: absolute;
@@ -1325,8 +1330,9 @@ body.theme-dark .tape-btn.primary {
     background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 40%, transparent 100%);
     border-radius: inherit;
 }
+
 #preview-container.retro-nixie canvas {
-    filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px #ff5500) drop-shadow(0 0 12px #ff2a00) !important;
+    filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px #f50) drop-shadow(0 0 12px #ff2a00) !important;
 }
 
 /* Color Presets Custom Indicators */
@@ -1335,6 +1341,7 @@ body.theme-dark .tape-btn.primary {
     border-color: #0f380f !important;
     position: relative;
 }
+
 .color-preset[data-color="retro-lcd"]::after {
     content: "L";
     position: absolute;
@@ -1348,10 +1355,11 @@ body.theme-dark .tape-btn.primary {
 }
 
 .color-preset[data-color="retro-crt"] {
-    background-color: #33ff33 !important;
+    background-color: #3f3 !important;
     border-color: #030c04 !important;
     position: relative;
 }
+
 .color-preset[data-color="retro-crt"]::after {
     content: "C";
     position: absolute;
@@ -1365,10 +1373,11 @@ body.theme-dark .tape-btn.primary {
 }
 
 .color-preset[data-color="retro-nixie"] {
-    background-color: #ff5500 !important;
+    background-color: #f50 !important;
     border-color: #0c0603 !important;
     position: relative;
 }
+
 .color-preset[data-color="retro-nixie"]::after {
     content: "N";
     position: absolute;
