@@ -15,7 +15,7 @@ export default class DotTyping extends AnimationBase {
             es: "Mecanografía de puntos",
             fr: "Saisie de points",
             pt: "Digitação de pontos",
-            ko: "도트 타이ピング",
+            ko: "도트 타이핑",
             zh: "点打字"
         },
         description: {
@@ -25,7 +25,7 @@ export default class DotTyping extends AnimationBase {
             es: "Animación retro estilo terminal con caracteres que se escriben y ocasionalmente se borran.",
             fr: "Animation de style terminal rétro avec des caractères saisis et parfois effacés.",
             pt: "Animação retrô estilo terminal com caracteres sendo digitados e ocasionalmente apagados.",
-            ko: "복고풍 터미널 스타일의 애니메이션으로, 문자가 입력되고 때때로 백ス페이스로 지워집니다。",
+            ko: "복고풍 터미널 스타일의 애니메이션으로, 문자가 입력되고 때때로 백스페이스로 지워집니다.",
             zh: "复古终端风格动画，字符被输入，偶尔会被退格删除。"
         },
         author: "QuickLog-Solo",
@@ -105,7 +105,7 @@ export default class DotTyping extends AnimationBase {
             const y = startY + r * rowSpacing;
 
             // Cursor as a large dot
-            // カーソルを大きなドットで表現
+            // 커서를 큰 도트로 표현
             sprites.push({ x, y: y - 5, size: 3 });
         }
 

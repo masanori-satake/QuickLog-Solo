@@ -64,8 +64,8 @@ export default class HexagonalHud extends AnimationBase {
         // Rhythmic hexagons: 3 nested hexagons expanding
         const maxRadius = Math.max(width, height) * 0.8;
 
-        ctx.strokeStyle = '#4caf50'; // Neon green
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#c6ff00'; // Bright Lime Neon Green (High Red: 198)
+        ctx.lineWidth = 3; // Thicker lines for dot matrix binning visibility
 
         // Draw expanding hexagons
         for (let i = 0; i < 3; i++) {
@@ -75,19 +75,21 @@ export default class HexagonalHud extends AnimationBase {
 
             // Fade out at margins
             const opacity = Math.max(0, 1.0 - phase);
-            ctx.strokeStyle = `rgba(76, 175, 80, ${opacity})`;
+            ctx.strokeStyle = `rgba(198, 255, 0, ${opacity})`;
 
             this.drawHexagon(ctx, centerX, centerY, radius);
         }
 
         // Draw "ACTIVE" text pixelated style at the core
         if (isFlashOn) {
-            ctx.fillStyle = '#ff9800'; // Neon orange flashing at center
+            ctx.fillStyle = '#ff9800'; // Neon orange flashing at center (Red: 255)
 
             // Text grid for 'ACTIVE'
             ctx.save();
-            ctx.translate(centerX - 18, centerY - 3);
-            const pSize = 1;
+
+            // Dynamic bold sizing for dot matrix visibility
+            const pSize = height >= 60 ? 3 : 2;
+            ctx.translate(centerX - (15.5 * pSize), centerY - (3 * pSize));
 
             const drawActiveText = () => {
                 // A, C, T, I, V, E in pixel block style

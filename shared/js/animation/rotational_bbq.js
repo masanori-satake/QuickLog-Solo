@@ -62,75 +62,76 @@ export default class RotationalBbq extends AnimationBase {
         // Squash/stretch to simulate 3D spin: scaleY behaves as cos(angle)
         const scaleY = Math.abs(Math.cos(rotationAngle));
 
-        // Step-wise color state
+        // Step-wise color state (All with strong Red channels)
         // 0.0 - 0.35: Raw Red
         // 0.35 - 0.70: Cooking Brown
         // 0.70 - 0.90: Golden Perfect
         // 0.90 - 1.00: Perfect State + Flash trigger
-        let meatColor = '#ef5350'; // Raw Red
+        let meatColor = '#ef5350'; // Raw Red (Red: 239)
         let isFlash = false;
 
         if (progress >= 0.35 && progress < 0.70) {
-            meatColor = '#8d6e63'; // Cooking Brown
+            meatColor = '#d7ccc8'; // Light warm brown/cream for visible cooking shade (Red: 215)
         } else if (progress >= 0.70 && progress < 0.90) {
-            meatColor = '#ffb300'; // Glistening Golden Amber
+            meatColor = '#ffb300'; // Glistening Golden Amber (Red: 255)
         } else if (progress >= 0.90) {
-            meatColor = '#ffd54f'; // Bright Golden
+            meatColor = '#ffd54f'; // Bright Golden (Red: 255)
             // Flash on the final 10% of the loop
             if (progress >= 0.92 && progress <= 0.98) {
                 isFlash = true;
             }
         }
 
-        // Draw Skewer Spit Bar
-        ctx.fillStyle = '#757575';
+        // Draw Skewer Spit Bar (Thicker and brighter, Red: 207)
+        ctx.fillStyle = '#cfd8dc';
         const barWidth = Math.max(100, width * 0.7);
-        const barHeight = 4;
+        const barHeight = 8; // Thicker bar
         ctx.fillRect(centerX - barWidth / 2, centerY - barHeight / 2, barWidth, barHeight);
 
-        // Draw Spit Stand Ends
-        ctx.fillRect(centerX - barWidth / 2 - 4, centerY - 15, 4, 30);
-        ctx.fillRect(centerX + barWidth / 2, centerY - 15, 4, 30);
+        // Draw Spit Stand Ends (Thicker, 6px wide)
+        ctx.fillRect(centerX - barWidth / 2 - 6, centerY - 15, 6, 30);
+        ctx.fillRect(centerX + barWidth / 2, centerY - 15, 6, 30);
 
         // Draw Oval Lump (Meat) in the center
         ctx.save();
         ctx.translate(centerX, centerY);
-        ctx.scale(1.0, Math.max(0.08, scaleY)); // Avoid absolute zero height scale
+        // Avoid absolute zero height scale, keep minimum height solid (0.3)
+        ctx.scale(1.0, Math.max(0.3, scaleY));
 
-        const ovalW = Math.max(40, width * 0.22);
-        const ovalH = Math.max(25, height * 0.35);
+        const ovalW = Math.max(50, width * 0.28); // Larger meat oval width
+        const ovalH = Math.max(32, height * 0.45); // Larger meat oval height
 
         // Flash Effect
         if (isFlash) {
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#ffffff';
         } else {
             ctx.fillStyle = meatColor;
         }
 
-        // Draw pixelated oval using rounded corners or custom rect layers
+        // Draw pixelated oval using custom rect layers
         ctx.fillRect(-ovalW / 2, -ovalH / 2, ovalW, ovalH);
 
-        // Bone or Bone Handle Ends sticking out slightly
-        ctx.fillStyle = '#e0e0e0';
-        ctx.fillRect(-ovalW / 2 - 8, -4, 8, 8);
-        ctx.fillRect(ovalW / 2, -4, 8, 8);
+        // Bone or Bone Handle Ends sticking out slightly (larger 12x12 bone, pure white)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-ovalW / 2 - 12, -6, 12, 12);
+        ctx.fillRect(ovalW / 2, -6, 12, 12);
 
         ctx.restore();
 
         // Screen flash ring / sparkle when cooked successfully
         if (isFlash) {
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3; // Thicker stroke
             ctx.beginPath();
-            ctx.arc(centerX, centerY, ovalW * 0.7, 0, Math.PI * 2);
+            ctx.arc(centerX, centerY, ovalW * 0.75, 0, Math.PI * 2);
             ctx.stroke();
 
             // Sparkle stars
             ctx.fillStyle = '#ffd54f';
-            ctx.fillRect(centerX - ovalW, centerY - ovalH, 4, 4);
-            ctx.fillRect(centerX + ovalW, centerY - ovalH, 4, 4);
-            ctx.fillRect(centerX - ovalW, centerY + ovalH, 4, 4);
-            ctx.fillRect(centerX + ovalW, centerY + ovalH, 4, 4);
+            ctx.fillRect(centerX - ovalW - 4, centerY - ovalH - 4, 6, 6);
+            ctx.fillRect(centerX + ovalW + 2, centerY - ovalH - 4, 6, 6);
+            ctx.fillRect(centerX - ovalW - 4, centerY + ovalH + 2, 6, 6);
+            ctx.fillRect(centerX + ovalW + 2, centerY + ovalH + 2, 6, 6);
         }
     }
 }

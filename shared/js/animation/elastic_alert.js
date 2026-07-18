@@ -83,13 +83,13 @@ export default class ElasticAlert extends AnimationBase {
         ctx.translate(centerX, centerY + hoverY);
         ctx.scale(scale, scale);
 
-        ctx.fillStyle = '#ff1744'; // Bright red exclamation color
+        ctx.fillStyle = '#ff1744'; // Bright red exclamation color (Red: 255)
 
-        // Exclamation vertical height: 18px total
-        // Top block (bar)
-        ctx.fillRect(-2, -12, 4, 10);
-        // Bottom dot
-        ctx.fillRect(-2, 1, 4, 3);
+        // Bolder, thicker Exclamation mark layout
+        // Top bar (thicker: 8px wide, 20px tall)
+        ctx.fillRect(-4, -24, 8, 20);
+        // Bottom dot (thicker: 8x8px)
+        ctx.fillRect(-4, 2, 8, 8);
 
         ctx.restore();
     }

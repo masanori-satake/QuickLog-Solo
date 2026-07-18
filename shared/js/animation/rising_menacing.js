@@ -49,12 +49,12 @@ export default class RisingMenacing extends AnimationBase {
         this.characters = [];
         this.lastSpawnTime = 0;
 
-        // Initialize with a few starting characters in transit
+        // Initialize with a few starting characters in transit (Larger starting scale)
         for (let i = 0; i < 3; i++) {
             this.characters.push({
                 x: 20 + Math.random() * (width - 40),
                 y: height * 0.3 + Math.random() * (height * 0.6),
-                scale: 0.5 + Math.random() * 0.5,
+                scale: 0.9 + Math.random() * 0.6,
                 opacity: 1.0,
                 speedY: 0.5 + Math.random() * 0.8
             });
@@ -76,8 +76,8 @@ export default class RisingMenacing extends AnimationBase {
             this.lastSpawnTime = elapsedMs;
             this.characters.push({
                 x: 15 + Math.random() * (width - 35),
-                y: height + 10,
-                scale: 0.4,
+                y: height + 15,
+                scale: 0.8, // Larger starting scale
                 opacity: 1.0,
                 speedY: 0.4 + Math.random() * 0.6
             });
@@ -86,22 +86,22 @@ export default class RisingMenacing extends AnimationBase {
         // Update characters
         this.characters.forEach(char => {
             char.y -= char.speedY;
-            // Float upward -> scale up slightly
-            char.scale = Math.min(1.5, char.scale + 0.003);
+            // Float upward -> scale up slightly faster
+            char.scale = Math.min(2.2, char.scale + 0.005);
 
             // Fade out smoothly as it approaches the top
             const progressToTop = char.y / height; // 1 at bottom, 0 at top
-            if (progressToTop < 0.3) {
-                char.opacity = Math.max(0, progressToTop / 0.3);
+            if (progressToTop < 0.35) {
+                char.opacity = Math.max(0, progressToTop / 0.35);
             }
         });
 
         // Clean up out of bounds or invisible characters
-        this.characters = this.characters.filter(char => char.y > -20 && char.opacity > 0);
+        this.characters = this.characters.filter(char => char.y > -30 && char.opacity > 0);
 
-        // Draw character symbols "ゴ"
-        ctx.fillStyle = '#b388ff'; // Lavender / purple
-        const pSize = 2; // Pixel scale
+        // Draw character symbols "ゴ" using high-Red magenta color
+        ctx.fillStyle = '#ff00ff'; // Vibrant Magenta (Red: 255)
+        const pSize = 3; // Thicker pixel scale for dot matrix binning visibility
 
         const drawP = (px, py) => {
             ctx.fillRect(px * pSize, py * pSize, pSize, pSize);
@@ -112,7 +112,7 @@ export default class RisingMenacing extends AnimationBase {
             ctx.translate(char.x, char.y);
             ctx.scale(char.scale, char.scale);
 
-            ctx.fillStyle = `rgba(179, 136, 255, ${char.opacity})`;
+            ctx.fillStyle = `rgba(255, 0, 255, ${char.opacity})`;
 
             // "ゴ" Grid Layout:
             // Top Bar

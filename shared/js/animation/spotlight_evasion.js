@@ -72,17 +72,17 @@ export default class SpotlightEvasion extends AnimationBase {
         // Check overlap (horizontal distance between lightX and humanX)
         const isOverlap = Math.abs(lightX - humanX) < lightRadius;
 
-        // Human vertical size
-        const humanHeight = Math.max(12, height * 0.2);
-        const currentHeight = isOverlap ? (humanHeight * 0.5) : humanHeight;
+        // Human vertical size (Significantly larger for crisp dot representation)
+        const humanHeight = Math.max(24, height * 0.45);
+        const currentHeight = isOverlap ? (humanHeight * 0.55) : humanHeight;
 
-        // Render Ground Line
-        ctx.fillStyle = '#444';
-        ctx.fillRect(0, groundY, width, 1);
+        // Render Ground Line (bolder and brighter)
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(0, groundY, width, 2);
 
-        // Draw Translucent Spotlight Cone
+        // Draw Translucent Spotlight Cone (Higher opacity so the dots register clearly)
         ctx.save();
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'; // High-visibility opacity
         ctx.beginPath();
         ctx.moveTo(lightX, 0); // Top origin
         ctx.lineTo(lightX - lightRadius, groundY);
@@ -92,40 +92,40 @@ export default class SpotlightEvasion extends AnimationBase {
 
         // Draw Spotlight beam ellipse on the ground
         ctx.beginPath();
-        ctx.ellipse(lightX, groundY, lightRadius, Math.max(4, height * 0.05), 0, 0, Math.PI * 2);
+        ctx.ellipse(lightX, groundY, lightRadius, Math.max(6, height * 0.08), 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
-        // Draw Human Silhouette
+        // Draw Human Silhouette (White, Red: 255)
         ctx.save();
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = '#ffffff';
         ctx.translate(humanX, humanY);
 
         // Drawing a pixel-style figure
         const neckY = -currentHeight;
-        const headRadius = Math.max(2, currentHeight * 0.2);
+        const headRadius = Math.max(4, currentHeight * 0.2);
 
-        // Head
+        // Head (larger and bolder)
         ctx.beginPath();
-        ctx.arc(0, neckY - headRadius, headRadius, 0, Math.PI * 2);
+        ctx.arc(0, neckY - headRadius, headRadius + 1, 0, Math.PI * 2);
         ctx.fill();
 
-        // Body / Legs
+        // Body / Legs (Much thicker, 3px lines / bold boxes)
         if (isOverlap) {
             // Crouching stance: wider body, squashed height
-            ctx.fillRect(-4, -currentHeight, 8, currentHeight);
+            ctx.fillRect(-6, -currentHeight, 12, currentHeight);
             // Arms defensively on ground
-            ctx.fillRect(-6, -currentHeight + 2, 2, currentHeight - 2);
-            ctx.fillRect(4, -currentHeight + 2, 2, currentHeight - 2);
+            ctx.fillRect(-9, -currentHeight + 3, 3, currentHeight - 3);
+            ctx.fillRect(6, -currentHeight + 3, 3, currentHeight - 3);
         } else {
-            // Standing stance
-            ctx.fillRect(-2, -currentHeight, 4, currentHeight - 3);
-            // Legs
-            ctx.fillRect(-3, -3, 2, 3);
-            ctx.fillRect(1, -3, 2, 3);
-            // Arms
-            ctx.fillRect(-4, -currentHeight + 2, 2, currentHeight * 0.4);
-            ctx.fillRect(2, -currentHeight + 2, 2, currentHeight * 0.4);
+            // Standing stance (thicker torso)
+            ctx.fillRect(-3, -currentHeight, 6, currentHeight - 5);
+            // Legs (Thicker)
+            ctx.fillRect(-4, -5, 3, 5);
+            ctx.fillRect(1, -5, 3, 5);
+            // Arms (Thicker)
+            ctx.fillRect(-6, -currentHeight + 3, 3, currentHeight * 0.45);
+            ctx.fillRect(3, -currentHeight + 3, 3, currentHeight * 0.45);
         }
 
         ctx.restore();
