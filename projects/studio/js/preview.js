@@ -32,10 +32,10 @@ export function initPreview(state, elements) {
                 document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
                 div.classList.add('active');
 
-                // Toggle retro display classes on studio's previewContainer
-                previewContainer.classList.toggle('retro-lcd', color === 'retro-lcd');
-                previewContainer.classList.toggle('retro-crt', color === 'retro-crt');
-                previewContainer.classList.toggle('retro-nixie', color === 'retro-nixie');
+                // Toggle retro display classes on studio's elements.previewContainer
+                elements.previewContainer.classList.toggle('retro-lcd', color === 'retro-lcd');
+                elements.previewContainer.classList.toggle('retro-crt', color === 'retro-crt');
+                elements.previewContainer.classList.toggle('retro-nixie', color === 'retro-nixie');
 
                 if (state.currentState !== 'STOPPED' && state.engine) {
                     state.engine.color = color;

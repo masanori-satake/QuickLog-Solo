@@ -1899,6 +1899,7 @@ body.theme-dark button:active {
     background-color: #0c0603 !important;
     box-shadow: inset 0 0 32px rgba(0,0,0,0.95);
     position: relative;
+    filter: url("#nixie-heat-shimmer");
     animation: nixie-flicker 0.2s infinite;
 }
 
@@ -1941,7 +1942,7 @@ body.theme-dark button:active {
     0%,
     100% {
         opacity: 0.99;
-        filter: url("#nixie-heat-shimmer") brightness(1.0);
+        filter: brightness(1);
     }
 
     30% {
@@ -1949,8 +1950,8 @@ body.theme-dark button:active {
     }
 
     50% {
-        opacity: 1.0;
-        filter: url("#nixie-heat-shimmer") brightness(1.03);
+        opacity: 1;
+        filter: brightness(1.03);
     }
 
     75% {

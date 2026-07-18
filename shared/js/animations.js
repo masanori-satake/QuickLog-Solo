@@ -186,9 +186,10 @@ export class AnimationEngine {
 
     _renderDots(dots) {
         if (!dots) return;
-        const mode = (this.color === 'retro-lcd' || this.color === '#9bbc0f') ? 'retro-lcd' :
-                     (this.color === 'retro-crt' || this.color === '#33ff33') ? 'retro-crt' :
-                     (this.color === 'retro-nixie' || this.color === '#ff5500') ? 'retro-nixie' :
+        const colLower = this.color?.toLowerCase();
+        const mode = (colLower === 'retro-lcd' || colLower === '#9bbc0f') ? 'retro-lcd' :
+                     (colLower === 'retro-crt' || colLower === '#33ff33') ? 'retro-crt' :
+                     (colLower === 'retro-nixie' || colLower === '#ff5500') ? 'retro-nixie' :
                      (this.displayMode || 'normal');
 
         // 1. Clear background/fill with retro color

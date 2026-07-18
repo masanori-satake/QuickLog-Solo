@@ -1308,6 +1308,7 @@ body.theme-dark .tape-btn.primary {
     background-color: #0c0603 !important;
     box-shadow: inset 0 0 32px rgba(0,0,0,0.95);
     position: relative;
+    filter: url("#nixie-heat-shimmer");
     animation: nixie-flicker 0.2s infinite;
 }
 
@@ -1352,6 +1353,38 @@ body.theme-dark .tape-btn.primary {
     color: #0f380f;
     font-weight: bold;
     font-size: 11px;
+}
+
+@keyframes nixie-flicker {
+    0%,
+    100% {
+        opacity: 0.99;
+        filter: brightness(1);
+    }
+
+    30% {
+        opacity: 0.985;
+    }
+
+    50% {
+        opacity: 1;
+        filter: brightness(1.03);
+    }
+
+    75% {
+        opacity: 0.993;
+    }
+}
+
+@keyframes crt-jitter-flicker {
+    0%,
+    100% {
+        opacity: 0.992;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 .color-preset[data-color="retro-crt"] {
