@@ -69,7 +69,7 @@ export default class DotTyping extends AnimationBase {
         const targetChars = Math.floor(progress * totalChars);
 
         // Build a buffer representing typed characters (with occasional backspacing)
-        // タイピングされた文字 of 버퍼를 작성（時々バックスペースを入れる演出）
+        // タイピングされた文字のバッファを作成（時々バックスペースを入れる演出）
         const buffer = [];
         for (let i = 0; i < targetChars; i++) {
             if (i % 15 === 14) {
