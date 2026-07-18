@@ -31,6 +31,7 @@ describe('Animation Module Robustness', () => {
                 moveTo: () => {},
                 lineTo: () => {},
                 arc: () => {},
+                ellipse: () => {},
                 fill: () => {},
                 stroke: () => {},
                 clearRect: () => {},
