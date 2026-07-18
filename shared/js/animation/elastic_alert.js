@@ -51,7 +51,9 @@ export default class ElasticAlert extends AnimationBase {
         const width = this.width;
         const height = this.height;
         const centerX = width / 2;
-        const centerY = height / 2;
+        // Position centerY in the upper portion of the panel to ensure full visibility
+        // above the centered category text and timer band
+        const centerY = Math.max(16, height * 0.25);
 
         // 3.5s total loop cycle
         const loopMs = 3500;
