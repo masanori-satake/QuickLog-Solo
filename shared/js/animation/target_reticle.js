@@ -103,13 +103,13 @@ export default class TargetReticle extends AnimationBase {
 
         if (showEyes) {
             ctx.fillStyle = '#ffffff'; // Sharp white eyes (Red: 255)
-            const eyeY = -shadowH * 0.73;
+            const eyeY = Math.round(-shadowH * 0.73);
             // Bold, larger eyes
-            const eyeW = Math.max(5, shadowW * 0.08);
+            const eyeW = Math.round(Math.max(5, shadowW * 0.08));
             // Left eye
-            ctx.fillRect(-headRadius * 0.45 - (eyeW / 2), eyeY, eyeW, Math.max(2, eyeHeight * 1.5));
+            ctx.fillRect(Math.round(-headRadius * 0.45 - (eyeW / 2)), eyeY, eyeW, Math.round(Math.max(2, eyeHeight * 1.5)));
             // Right eye
-            ctx.fillRect(headRadius * 0.45 - (eyeW / 2), eyeY, eyeW, Math.max(2, eyeHeight * 1.5));
+            ctx.fillRect(Math.round(headRadius * 0.45 - (eyeW / 2)), eyeY, eyeW, Math.round(Math.max(2, eyeHeight * 1.5)));
         }
 
         ctx.restore();
@@ -140,7 +140,7 @@ export default class TargetReticle extends AnimationBase {
 
         // Center dot
         ctx.fillStyle = '#ef5350';
-        ctx.fillRect(-1.5, -1.5, 3, 3); // Thicker center dot
+        ctx.fillRect(-1, -1, 3, 3); // Thicker center dot
 
         // Crosshairs tick marks (top, bottom, left, right)
         ctx.beginPath();

@@ -90,7 +90,7 @@ export default class HexagonalHud extends AnimationBase {
 
             // Dynamic bold sizing for dot matrix visibility (bounded by width to prevent overflow)
             const pSize = (height >= 60 && width >= 96) ? 3 : 2;
-            ctx.translate(centerX - (15.5 * pSize), centerY - (3 * pSize));
+            ctx.translate(Math.round(centerX - (15.5 * pSize)), Math.round(centerY - (3 * pSize)));
 
             const drawActiveText = () => {
                 // A, C, T, I, V, E in pixel block style

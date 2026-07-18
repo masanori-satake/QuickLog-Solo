@@ -92,7 +92,7 @@ export default class AuraCharge extends AnimationBase {
         this.sparks.forEach(s => {
             const opacity = Math.max(0, s.life / 300);
             ctx.fillStyle = `rgba(255, 235, 59, ${opacity})`; // Vibrant Yellow
-            ctx.fillRect(s.x - 2.5, s.y - 2.5, 5, 5); // Thicker 5x5 sparks
+            ctx.fillRect(Math.round(s.x) - 2, Math.round(s.y) - 2, 5, 5); // Thicker 5x5 sparks
         });
 
         // Pulsing orb in character's hands (vibrant orange/red, Red: 255)

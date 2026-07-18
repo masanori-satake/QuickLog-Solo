@@ -134,7 +134,7 @@ export default class MagicRibbons extends AnimationBase {
                 const angle = (i / 8) * Math.PI * 2;
                 const px = centerX + Math.cos(angle) * distance;
                 const py = 15 + Math.sin(angle) * distance;
-                ctx.fillRect(px - 1.5, py - 1.5, 3, 3); // Thicker sparks
+                ctx.fillRect(Math.round(px) - 1, Math.round(py) - 1, 3, 3); // Thicker sparks
             }
         }
     }

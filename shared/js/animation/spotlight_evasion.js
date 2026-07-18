@@ -75,7 +75,7 @@ export default class SpotlightEvasion extends AnimationBase {
 
         // Human vertical size (Significantly larger for crisp dot representation, but responsive)
         const humanHeight = Math.max(12, Math.min(24, height * 0.45));
-        const currentHeight = isOverlap ? (humanHeight * 0.55) : humanHeight;
+        const currentHeight = Math.round(isOverlap ? (humanHeight * 0.55) : humanHeight);
 
         // Render Ground Line (bolder and brighter)
         ctx.fillStyle = '#888888';
