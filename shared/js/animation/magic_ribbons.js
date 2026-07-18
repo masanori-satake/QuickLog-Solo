@@ -80,43 +80,9 @@ export default class MagicRibbons extends AnimationBase {
 
         ctx.restore();
 
-        // Spiral ribbons math parameters
-        // Rising speed
-        const speed = 0.15; // pixels/ms
-        const ribbonLength = height;
-
         // Ribbon 1 (Pink/Rose) and Ribbon 2 (Cyan)
         const ribbon1Color = '#f06292';
         const ribbon2Color = '#26c6da';
-
-        // We plot multiple points along the ribbon height
-        // To make it look "behind" or "in front" of the silhouette, we check the sine wave phase.
-        // If sin > 0, it is IN FRONT (rendered after).
-        // If sin < 0, it is BEHIND (rendered before).
-
-        const drawRibbonPoint = (y, color, isFrontPass) => {
-            // Spiral horizontal offset
-            // Sine wave based on Y coordinate + time
-            // frequency: 1 full cycle every 50 pixels
-            const phase = (elapsedMs * 0.005) - (y * 0.05);
-            const xOffset = Math.sin(phase);
-            const swingRadius = Math.max(12, width * 0.08);
-
-            // Phase checking for front/back layering
-            const isFront = xOffset >= 0;
-
-            if (isFront === isFrontPass) {
-                ctx.fillStyle = color;
-                ctx.fillRect(centerX + xOffset * swingRadius - 2, y - 2, 4, 4);
-            }
-        };
-
-        // Draw BEHIND layers first
-        for (let y = height; y >= 0; y -= 4) {
-            drawRibbonPoint(y, ribbon1Color, false);
-            // Ribbon 2 is shifted by half cycle
-            drawRibbonPoint(y, ribbon2Color, true); // Ribbon 2 phase is inverted
-        }
 
         // Draw the central character silhouette again (already drawn behind, so we only redraw to sandwich correctly)
         // Wait, sandwich is done by:

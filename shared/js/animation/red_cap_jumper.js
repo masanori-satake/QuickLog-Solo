@@ -60,8 +60,8 @@ export default class RedCapJumper extends AnimationBase {
         const t = elapsedMs % cycleMs;
 
         let charY = groundY;
-        let scaleX = 1.0;
-        let scaleY = 1.0;
+        let scaleX;
+        let scaleY;
         let armUp = false;
 
         // States within 1.5s:
