@@ -4,7 +4,7 @@ import {
     SETTING_KEY_SESSION_SYNC,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
-    SETTING_KEY_TIMER_HEIGHT
+    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
@@ -211,11 +211,12 @@ async function openHistoryActionModal(log) {
 
     if (!modal) return;
 
-    const durationMs = log.endTime - log.startTime;
+    const durationMs = log.endTime ? (log.endTime - log.startTime) : (Date.now() - log.startTime);
     const isSpecialCategory = log.category === SYSTEM_CATEGORY_IDLE || log.category === SYSTEM_CATEGORY_UNKNOWN;
-    const canSplit = !log.isManualStop && !isSpecialCategory && durationMs >= 120000; // 2 minutes
+    const canSplit = !log.isManualStop && !isSpecialCategory && (log.endTime ? durationMs >= 120000 : durationMs >= 60000);
 
     splitBtn.disabled = !canSplit;
+    deleteBtn.disabled = !log.endTime;
 
     editBtn.onclick = () => {
         modal.classList.add('hidden');
@@ -230,7 +231,7 @@ async function openHistoryActionModal(log) {
             alert(t('alert-error') || 'Operation failed');
         } finally {
             modal.classList.add('hidden');
-            await updateUI();
+            await syncState();
             broadcastSync();
         }
     };
@@ -244,7 +245,7 @@ async function openHistoryActionModal(log) {
                 alert(t('alert-error') || 'Operation failed');
             } finally {
                 modal.classList.add('hidden');
-                await updateUI();
+                await syncState();
                 broadcastSync();
             }
         }
@@ -277,7 +278,7 @@ async function openHistoryEditModal(log) {
 
     // Determine if it's a stop marker
     const isStopMarker = log.isManualStop;
-    const isTask = !isStopMarker && log.category !== SYSTEM_CATEGORY_IDLE && log.category !== SYSTEM_CATEGORY_UNKNOWN;
+    const isTask = log.endTime == null || (!isStopMarker && log.category !== SYSTEM_CATEGORY_IDLE && log.category !== SYSTEM_CATEGORY_UNKNOWN);
     const titleKey = isStopMarker ? 'history-edit-stop-title' : 'history-edit-title';
     const labelKey = isStopMarker ? 'history-edit-end-time' : 'history-edit-start-time';
 
@@ -314,7 +315,7 @@ async function openHistoryEditModal(log) {
         if (!currentCategoryExists) {
             const opt = createEl('option');
             opt.value = log.category;
-            opt.textContent = log.category;
+            opt.textContent = log.category === SYSTEM_CATEGORY_IDLE ? t('idle-category') : log.category;
             opt.selected = true;
             categorySelect.appendChild(opt);
         }
@@ -340,22 +341,30 @@ async function openHistoryEditModal(log) {
         const newTs = newTime.getTime();
 
         let isValid = true;
-        // Range validation
-        // 1. Must be within the same day
-        if (newTs < currentDayStart || newTs > currentDayEnd) {
-            isValid = false;
-        }
-        // 2. Must be after previous start (if exists)
-        if (prevLog && newTs < prevLog.startTime) {
-            isValid = false;
-        }
-        // 3. Must be before current end (if not stop marker)
-        if (!isStopMarker && newTs > log.endTime) {
-            isValid = false;
-        }
-        // Special case for stop marker: must not exceed previous start if contiguous
-        if (isStopMarker && prevLog && prevLog.endTime === log.startTime && newTs < prevLog.startTime) {
-            isValid = false;
+        if (log.endTime == null) {
+            const minTs = prevLog ? (prevLog.startTime + 60000) : currentDayStart;
+            const maxTs = Date.now() + 59999;
+            if (newTs < minTs || newTs > maxTs) {
+                isValid = false;
+            }
+        } else {
+            // Range validation
+            // 1. Must be within the same day
+            if (newTs < currentDayStart || newTs > currentDayEnd) {
+                isValid = false;
+            }
+            // 2. Must be after previous start (if exists)
+            if (prevLog && newTs < prevLog.startTime) {
+                isValid = false;
+            }
+            // 3. Must be before current end (if not stop marker)
+            if (!isStopMarker && newTs > log.endTime) {
+                isValid = false;
+            }
+            // Special case for stop marker: must not exceed previous start if contiguous
+            if (isStopMarker && prevLog && prevLog.endTime === log.startTime && newTs < prevLog.startTime) {
+                isValid = false;
+            }
         }
 
         if (isValid) {
@@ -378,23 +387,49 @@ async function openHistoryEditModal(log) {
         newTime.setHours(h, m, 0, 0);
         const newTs = newTime.getTime();
 
-        if (isTask) {
-            const newCategoryName = categorySelect.value;
-            if (newCategoryName !== log.category) {
-                const cat = await dbGetByName(STORE_CATEGORIES, newCategoryName);
-                log.category = newCategoryName;
-                log.color = cat ? cat.color : log.color;
-                log.tags = cat ? (cat.tags || '') : log.tags;
+        if (log.endTime == null) {
+            if (isTask) {
+                const newCategoryName = categorySelect.value;
+                if (newCategoryName !== log.category) {
+                    const cat = await dbGetByName(STORE_CATEGORIES, newCategoryName);
+                    log.category = newCategoryName;
+                    log.color = cat ? cat.color : log.color;
+                    log.tags = cat ? (cat.tags || '') : log.tags;
+                }
+                log.memo = memoInput.value.trim() || undefined;
             }
-            log.memo = memoInput.value.trim() || undefined;
+            log.startTime = newTs;
             log.updatedAt = Date.now();
-            // Since we might have modified log object, we should save it.
-            // updateHistoryStartTime also saves it, but it might only update startTime.
-            // Let's ensure other fields are saved too.
             await dbPut(STORE_LOGS, log);
-        }
 
-        await updateHistoryStartTime(log.id, newTs);
+            if (prevLog) {
+                prevLog.endTime = newTs;
+                prevLog.updatedAt = Date.now();
+                await dbPut(STORE_LOGS, prevLog);
+            }
+
+            await dbPut(STORE_SETTINGS, {
+                key: SETTING_KEY_PAUSE_STATE,
+                value: { ...log, isPaused: log.category === SYSTEM_CATEGORY_IDLE }
+            });
+
+            activeTask = log;
+        } else {
+            if (isTask) {
+                const newCategoryName = categorySelect.value;
+                if (newCategoryName !== log.category) {
+                    const cat = await dbGetByName(STORE_CATEGORIES, newCategoryName);
+                    log.category = newCategoryName;
+                    log.color = cat ? cat.color : log.color;
+                    log.tags = cat ? (cat.tags || '') : log.tags;
+                }
+                log.memo = memoInput.value.trim() || undefined;
+                log.updatedAt = Date.now();
+                await dbPut(STORE_LOGS, log);
+            }
+
+            await updateHistoryStartTime(log.id, newTs);
+        }
 
         modal.classList.add('hidden');
         await updateUI();
@@ -665,10 +700,8 @@ async function renderLogs() {
         }
 
         const li = createLogElement(log, categoryMap);
-    if (log.endTime) {
         li.style.cursor = 'pointer';
         li.onclick = () => openHistoryActionModal(log);
-    }
         logList.appendChild(li);
     });
 }
