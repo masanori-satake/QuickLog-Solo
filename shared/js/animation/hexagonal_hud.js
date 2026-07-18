@@ -88,8 +88,8 @@ export default class HexagonalHud extends AnimationBase {
             // Text grid for 'ACTIVE'
             ctx.save();
 
-            // Dynamic bold sizing for dot matrix visibility
-            const pSize = height >= 60 ? 3 : 2;
+            // Dynamic bold sizing for dot matrix visibility (bounded by width to prevent overflow)
+            const pSize = (height >= 60 && width >= 96) ? 3 : 2;
             ctx.translate(centerX - (15.5 * pSize), centerY - (3 * pSize));
 
             const drawActiveText = () => {

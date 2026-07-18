@@ -73,8 +73,8 @@ export default class SpotlightEvasion extends AnimationBase {
         // Check overlap (horizontal distance between lightX and humanX)
         const isOverlap = Math.abs(lightX - humanX) < lightRadius;
 
-        // Human vertical size (Significantly larger for crisp dot representation)
-        const humanHeight = Math.max(24, height * 0.45);
+        // Human vertical size (Significantly larger for crisp dot representation, but responsive)
+        const humanHeight = Math.max(12, Math.min(24, height * 0.45));
         const currentHeight = isOverlap ? (humanHeight * 0.55) : humanHeight;
 
         // Render Ground Line (bolder and brighter)

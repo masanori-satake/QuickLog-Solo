@@ -87,8 +87,8 @@ export default class RisingMenacing extends AnimationBase {
         // Update characters
         this.characters.forEach(char => {
             char.y -= char.speedY;
-            // Float upward -> scale up slightly faster
-            char.scale = Math.min(2.2, char.scale + 0.005);
+            // Float upward -> scale up slightly faster but keep max scale reasonable
+            char.scale = Math.min(1.6, char.scale + 0.005);
 
             // Fade out smoothly as it approaches the top
             const progressToTop = char.y / height; // 1 at bottom, 0 at top

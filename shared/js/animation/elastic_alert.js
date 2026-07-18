@@ -87,10 +87,13 @@ export default class ElasticAlert extends AnimationBase {
         ctx.fillStyle = '#ff1744'; // Bright red exclamation color (Red: 255)
 
         // Bolder, thicker Exclamation mark layout
-        // Top bar (thicker: 8px wide, 20px tall)
-        ctx.fillRect(-4, -24, 8, 20);
-        // Bottom dot (thicker: 8x8px)
-        ctx.fillRect(-4, 2, 8, 8);
+        // Top bar (thicker: 8px wide, responsive height)
+        const barH = height >= 80 ? 20 : 12;
+        const barY = height >= 80 ? -24 : -14;
+        ctx.fillRect(-4, barY, 8, barH);
+        // Bottom dot (thicker: responsive size)
+        const dotSize = height >= 80 ? 8 : 5;
+        ctx.fillRect(-4, 2, dotSize, dotSize);
 
         ctx.restore();
     }

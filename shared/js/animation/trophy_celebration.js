@@ -65,9 +65,9 @@ export default class TrophyCelebration extends AnimationBase {
         ctx.fillStyle = '#888888';
         ctx.fillRect(0, groundY, width, 2);
 
-        // Draw character (static standing, holding arms up) - much larger and bolder
-        const charH = Math.max(24, height * 0.38);
-        const headRadius = Math.max(5, charH * 0.2);
+        // Draw character (static standing, holding arms up) - responsive sizing to prevent clipping
+        const charH = Math.max(12, Math.min(24, height * 0.38));
+        const headRadius = Math.max(3, Math.min(5, charH * 0.2));
         const charY = groundY;
 
         ctx.save();
@@ -92,36 +92,50 @@ export default class TrophyCelebration extends AnimationBase {
 
         ctx.restore();
 
-        // Draw Held Checkbox Document Icon (Centered high above head) - larger size 18x18
-        const iconY = groundY - charH - headRadius - 18;
-        const iconW = 18;
-        const iconH = 18;
+        // Draw Held Checkbox Document Icon (Centered high above head) - responsive sizing to prevent clipping
+        const iconOffset = height >= 60 ? 18 : 12;
+        const iconY = groundY - charH - headRadius - iconOffset;
+        const iconW = height >= 60 ? 18 : 12;
+        const iconH = height >= 60 ? 18 : 12;
 
         ctx.fillStyle = '#ffeb3b'; // Vibrant gold document border (Red: 255)
         ctx.fillRect(centerX - iconW / 2, iconY - iconH / 2, iconW, iconH);
 
         // Document inner details (white surface with checkmark)
+        const innerBorder = height >= 60 ? 3 : 2;
         ctx.fillStyle = '#000000';
-        ctx.fillRect(centerX - iconW / 2 + 3, iconY - iconH / 2 + 3, iconW - 6, iconH - 6);
+        ctx.fillRect(centerX - iconW / 2 + innerBorder, iconY - iconH / 2 + innerBorder, iconW - (innerBorder * 2), iconH - (innerBorder * 2));
 
-        // Lime Green Checkmark inside (High-Red component, thick 2x2 block style)
+        // Lime Green Checkmark inside (High-Red component, thick 2x2 block style, responsive)
         ctx.fillStyle = '#c6ff00'; // Lime Green (Red: 198)
-        ctx.fillRect(centerX - 4, iconY + 1, 2, 2);
-        ctx.fillRect(centerX - 2, iconY + 3, 2, 2);
-        ctx.fillRect(centerX, iconY + 1, 2, 2);
-        ctx.fillRect(centerX + 2, iconY - 1, 2, 2);
-        ctx.fillRect(centerX + 4, iconY - 3, 2, 2);
+        if (height >= 60) {
+            ctx.fillRect(centerX - 4, iconY + 1, 2, 2);
+            ctx.fillRect(centerX - 2, iconY + 3, 2, 2);
+            ctx.fillRect(centerX, iconY + 1, 2, 2);
+            ctx.fillRect(centerX + 2, iconY - 1, 2, 2);
+            ctx.fillRect(centerX + 4, iconY - 3, 2, 2);
+        } else {
+            // Smaller checkmark for smaller icon
+            ctx.fillRect(centerX - 2, iconY + 1, 1, 1);
+            ctx.fillRect(centerX - 1, iconY + 2, 1, 1);
+            ctx.fillRect(centerX, iconY + 1, 1, 1);
+            ctx.fillRect(centerX + 1, iconY, 1, 1);
+            ctx.fillRect(centerX + 2, iconY - 1, 1, 1);
+            ctx.fillRect(centerX + 3, iconY - 2, 1, 1);
+        }
 
-        // Alternating sparkles (Diagonal 4-pixel sparkles, much larger)
+        // Alternating sparkles (Diagonal sparkles, responsive)
+        const sparkleSize = height >= 60 ? 4 : 2;
+        const sparkleOffset = height >= 60 ? 6 : 4;
         ctx.fillStyle = '#ffffff';
         if (!frameToggle) {
             // Sparkle set 1
-            ctx.fillRect(centerX - iconW / 2 - 6, iconY - iconH / 2 - 6, 4, 4); // Top-left
-            ctx.fillRect(centerX + iconW / 2 + 2, iconY + iconH / 2 + 2, 4, 4); // Bottom-right
+            ctx.fillRect(centerX - iconW / 2 - sparkleOffset, iconY - iconH / 2 - sparkleOffset, sparkleSize, sparkleSize); // Bottom-left or top-left
+            ctx.fillRect(centerX + iconW / 2 + (sparkleOffset - sparkleSize), iconY + iconH / 2 + (sparkleOffset - sparkleSize), sparkleSize, sparkleSize); // Bottom-right
         } else {
             // Sparkle set 2
-            ctx.fillRect(centerX + iconW / 2 + 2, iconY - iconH / 2 - 6, 4, 4); // Top-right
-            ctx.fillRect(centerX - iconW / 2 - 6, iconY + iconH / 2 + 2, 4, 4); // Bottom-left
+            ctx.fillRect(centerX + iconW / 2 + (sparkleOffset - sparkleSize), iconY - iconH / 2 - sparkleOffset, sparkleSize, sparkleSize); // Top-right
+            ctx.fillRect(centerX - iconW / 2 - sparkleOffset, iconY + iconH / 2 + (sparkleOffset - sparkleSize), sparkleSize, sparkleSize); // Bottom-left
         }
     }
 }
