@@ -554,7 +554,7 @@ export async function splitHistoryItem(logId) {
     // If the splitted log was the active task (unlikely as we usually split confirmed logs,
     // but confirmed logs can be active task if it's paused/running), we might need to update pauseState.
     const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-    if (pauseStateSetting?.value?.id === log.id || (log.endTime == null && pauseStateSetting?.value?.startTime === log.startTime)) {
+    if (pauseStateSetting?.value?.id === log.id || (newLog.endTime == null && pauseStateSetting?.value?.startTime === log.startTime)) {
         // The original task is now shorter. The rest is in the new log.
         // Usually, splitting a confirmed history implies it's in the past,
         // but if it's the active one, the new part becomes the active one.

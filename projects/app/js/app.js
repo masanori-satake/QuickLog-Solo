@@ -342,7 +342,11 @@ async function openHistoryEditModal(log) {
 
         let isValid = true;
         if (log.endTime == null) {
-            const minTs = prevLog ? (prevLog.startTime + 60000) : currentDayStart;
+            let minTs = currentDayStart;
+            if (prevLog) {
+                const isContiguous = Math.abs(prevLog.endTime - log.startTime) <= 1000;
+                minTs = isContiguous ? (prevLog.startTime + 60000) : prevLog.endTime;
+            }
             const maxTs = Date.now() + 59999;
             if (newTs < minTs || newTs > maxTs) {
                 isValid = false;
@@ -398,12 +402,16 @@ async function openHistoryEditModal(log) {
                 }
                 log.memo = memoInput.value.trim() || undefined;
             }
+            const oldStartTs = log.startTime;
             log.startTime = newTs;
             log.updatedAt = Date.now();
             await dbPut(STORE_LOGS, log);
 
-            if (prevLog) {
+            if (prevLog && Math.abs(prevLog.endTime - oldStartTs) <= 1000) {
                 prevLog.endTime = newTs;
+                if (prevLog.isManualStop) {
+                    prevLog.startTime = newTs;
+                }
                 prevLog.updatedAt = Date.now();
                 await dbPut(STORE_LOGS, prevLog);
             }
