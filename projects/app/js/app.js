@@ -345,7 +345,7 @@ async function openHistoryEditModal(log) {
             let minTs = currentDayStart;
             if (prevLog) {
                 const isContiguous = Math.abs(prevLog.endTime - log.startTime) <= 1000;
-                minTs = isContiguous ? (prevLog.startTime + 60000) : prevLog.endTime;
+                minTs = (isContiguous && !prevLog.isManualStop) ? (prevLog.startTime + 60000) : prevLog.endTime;
             }
             const maxTs = Date.now() + 59999;
             if (newTs < minTs || newTs > maxTs) {
