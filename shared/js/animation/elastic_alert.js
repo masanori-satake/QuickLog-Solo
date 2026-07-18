@@ -31,6 +31,7 @@ export default class ElasticAlert extends AnimationBase {
             zh: "一个红色的像素感叹号“！”伴随着弹簧般的阻尼运动弹出，并在空中轻轻漂浮。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 
@@ -83,13 +84,16 @@ export default class ElasticAlert extends AnimationBase {
         ctx.translate(centerX, centerY + hoverY);
         ctx.scale(scale, scale);
 
-        ctx.fillStyle = '#ff1744'; // Bright red exclamation color
+        ctx.fillStyle = '#ff1744'; // Bright red exclamation color (Red: 255)
 
-        // Exclamation vertical height: 18px total
-        // Top block (bar)
-        ctx.fillRect(-2, -12, 4, 10);
-        // Bottom dot
-        ctx.fillRect(-2, 1, 4, 3);
+        // Bolder, thicker Exclamation mark layout
+        // Top bar (thicker: 8px wide, responsive height)
+        const barH = height >= 80 ? 20 : 12;
+        const barY = height >= 80 ? -24 : -14;
+        ctx.fillRect(-4, barY, 8, barH);
+        // Bottom dot (thicker: responsive size)
+        const dotSize = height >= 80 ? 8 : 5;
+        ctx.fillRect(-4, 2, dotSize, dotSize);
 
         ctx.restore();
     }

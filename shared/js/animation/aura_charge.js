@@ -30,6 +30,7 @@ export default class AuraCharge extends AnimationBase {
             zh: "一个黑暗的剪影在中心充电。一个青色的像素球体脉动，同时火花向对角线发射并淡出。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 
@@ -87,47 +88,52 @@ export default class AuraCharge extends AnimationBase {
             s.life -= 16.67; // approx frame time
         });
 
-        // Draw Sparks (cyan/blue pixels)
-        ctx.fillStyle = '#4fc3f7';
+        // Draw Sparks (yellow pixels with high Red channel)
         this.sparks.forEach(s => {
             const opacity = Math.max(0, s.life / 300);
-            ctx.fillStyle = `rgba(79, 195, 247, ${opacity})`;
-            ctx.fillRect(s.x - 2, s.y - 2, 4, 4);
+            ctx.fillStyle = `rgba(255, 235, 59, ${opacity})`; // Vibrant Yellow
+            ctx.fillRect(Math.round(s.x) - 2, Math.round(s.y) - 2, 5, 5); // Thicker 5x5 sparks
         });
 
-        // Pulsing orb in character's hands
+        // Pulsing orb in character's hands (vibrant orange/red, Red: 255)
         const pulse = 1.0 + 0.25 * Math.sin((elapsedMs / 150) * Math.PI * 2);
-        const orbRadius = Math.max(4, height * 0.05) * pulse;
+        const orbRadius = Math.max(6, height * 0.08) * pulse; // Larger orb
 
-        ctx.fillStyle = '#00e5ff';
+        ctx.fillStyle = '#ff3d00'; // High Red vibrant orange-red
         ctx.beginPath();
         ctx.arc(centerX, centerY + 5, orbRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw Powering-up Crouching Silhouette
-        ctx.fillStyle = '#37474f'; // Dark steel grey
+        // Inner core of the orb (pure white)
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY + 5, orbRadius * 0.5, 0, Math.PI * 2);
+        ctx.fill();
 
-        const charH = Math.max(20, height * 0.3);
-        const headRadius = Math.max(3, charH * 0.2);
+        // Draw Powering-up Crouching Silhouette (White, Red: 255)
+        ctx.fillStyle = '#ffffff';
+
+        const charH = Math.max(24, height * 0.35); // Taller silhouette
+        const headRadius = Math.max(4, charH * 0.2);
 
         ctx.save();
         ctx.translate(centerX, centerY + 15);
 
         // Head (crouched forward slightly)
         ctx.beginPath();
-        ctx.arc(-2, -charH - headRadius, headRadius, 0, Math.PI * 2);
+        ctx.arc(-2, -charH - headRadius, headRadius + 1, 0, Math.PI * 2);
         ctx.fill();
 
-        // Crouched Torso
-        ctx.fillRect(-5, -charH, 8, charH - 6);
+        // Crouched Torso (Thicker)
+        ctx.fillRect(-6, -charH, 12, charH - 6);
 
-        // Knees bent (legs)
-        ctx.fillRect(-9, -6, 4, 6);
-        ctx.fillRect(5, -6, 4, 6);
+        // Knees bent (legs) (Thicker)
+        ctx.fillRect(-11, -6, 5, 6);
+        ctx.fillRect(6, -6, 5, 6);
 
-        // Arms clutching toward center hands (core)
-        ctx.fillRect(-8, -charH + 4, 3, 5);
-        ctx.fillRect(5, -charH + 4, 3, 5);
+        // Arms clutching toward center hands (core) (Thicker)
+        ctx.fillRect(-10, -charH + 4, 4, 6);
+        ctx.fillRect(6, -charH + 4, 4, 6);
 
         ctx.restore();
     }

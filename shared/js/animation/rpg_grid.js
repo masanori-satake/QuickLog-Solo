@@ -1,4 +1,5 @@
 import { AnimationBase } from '../animation_base.js';
+import { CELL_SIZE } from '../utils.js';
 
 /**
  * Retro RPG Grid Transition
@@ -26,11 +27,12 @@ export default class RpgGrid extends AnimationBase {
             de: "Der Bildschirm blinkt zweimal und füllt sich dann von den Rändern zur Mitte mit dunklen Spiralblöcken. Nach Fertigstellung wird er sofort gelöscht.",
             es: "La pantalla parpadea dos veces y luego se llena de bloques en espiral oscuros desde los bordes hacia el centro. Al completarse, se limpia instantáneamente.",
             fr: "L'écran clignote deux fois, puis se remplit de blocs de spirales sombres des bords vers le centre. Une fois terminé, il s'efface instantanément.",
-            pt: "A tela pisca duas vezes e, em seguida, enche-se de blocos de espirais escuras das bordas para o centro. Ao terminar, limpa-se instantaneamente.",
+            pt: "Tela pisca duas vezes e, em seguida, enche-se de blocos de espirais escuras das bordas para o centro. Ao terminar, limpa-se instantaneamente.",
             ko: "화면이 두 번 깜박인 다음, 가장자리부터 중앙까지 어두운 나선형 블록으로 채워집니다. 완료되면 즉시 지워집니다.",
             zh: "屏幕闪烁两次，然后从边缘到中心填充深色螺旋块。完成后，立即清除。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 
@@ -50,7 +52,7 @@ export default class RpgGrid extends AnimationBase {
     }
 
     draw(ctx, { elapsedMs = 0 } = {}) {
-        const cellSize = 10; // Match CELL_SIZE or standard grid block size (e.g. 10px cells)
+        const cellSize = CELL_SIZE; // Perfect alignment with CELL_SIZE (6)
         const cols = Math.ceil(this.width / cellSize) || 12;
         const rows = Math.ceil(this.height / cellSize) || 8;
 

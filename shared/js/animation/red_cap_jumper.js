@@ -30,6 +30,7 @@ export default class RedCapJumper extends AnimationBase {
             zh: "一个复古像素英雄每1.5秒以抛物线弧度跃起，在落地时发射微小的尘埃粒子。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

@@ -30,6 +30,7 @@ export default class CrabAlien extends AnimationBase {
             zh: "一个8位蟹状剪影左右摆动，每400毫秒切换一次肢体，就像一个有节奏的钟摆。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 
@@ -68,10 +69,10 @@ export default class CrabAlien extends AnimationBase {
         ctx.translate(alienX, alienY);
 
         // Render Crab-like Alien (approx. 11x8 grid pixels)
-        // Set pixel block size based on screen scale
-        const pSize = Math.max(2, Math.floor(height * 0.03)) || 2;
+        // Set pixel block size based on screen scale (much bolder and larger)
+        const pSize = height >= 80 ? 4 : (height >= 50 ? 3 : 2);
 
-        ctx.fillStyle = '#81c784'; // Green invader look
+        ctx.fillStyle = '#c6ff00'; // Lime green invader look (High Red: 198)
 
         // Invader 11x8 layout helper
         // Offsets relative to center of alien

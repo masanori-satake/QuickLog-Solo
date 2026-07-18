@@ -27,10 +27,11 @@ export default class MagicRibbons extends AnimationBase {
             es: "Cintas de píxeles de colores giran estereoscópicamente alrededor de una silueta estática central, culminando en un estallido de partículas en la parte superior.",
             fr: "Des rubans de pixels colorés spiralent de manière stéréoscopique autour d'une silhouette statique centrale, culminant par une explosion de particules au sommet.",
             pt: "Fitas de pixels coloridos espiralam estereoscopicamente em torno de uma silhueta estática central, culminando em uma explosão de partículas no topo.",
-            ko: "색상 픽셀 리본이 중앙의 실루エット을 따라 입체적으로 회전하며 상승하고, 맨 위에서 스파크 입자를 발산합니다.",
+            ko: "색상 픽셀 리본이 중앙의 실루엣을 따라 입체적으로 회전하며 상승하고, 맨 위에서 스파크 입자를 발산합니다.",
             zh: "彩色像素带围绕中央静态剪影呈立体螺旋状上升，在顶部达到粒子爆发的高潮。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 
@@ -57,16 +58,15 @@ export default class MagicRibbons extends AnimationBase {
         const headRadius = Math.max(3, charH * 0.16);
         const charY = (height / 2) + (charH / 2);
 
-        // Ribbon 1 (Pink/Rose) and Ribbon 2 (Cyan)
-        const ribbon1Color = '#f06292';
-        const ribbon2Color = '#26c6da';
+        // Ribbon 1 (Pink/Rose) and Ribbon 2 (Golden Yellow) (Both have Red: 255)
+        const ribbon1Color = '#ff4081';
+        const ribbon2Color = '#ffd600';
 
         // Draw the central character silhouette again (already drawn behind, so we only redraw to sandwich correctly)
-        // Wait, sandwich is done by:
+        // Sandwich is done by:
         // 1. Draw Behind Ribbon points (sin < 0)
         // 2. Draw Central Silhouette
         // 3. Draw Front Ribbon points (sin >= 0)
-        // This is perfectly stereoscopic! Let's implement it exactly:
         ctx.clearRect(0, 0, width, height); // Clear first to allow clean sandwich layers
 
         // 1. Draw BEHIND points
@@ -81,16 +81,16 @@ export default class MagicRibbons extends AnimationBase {
 
             if (xOff1 < 0) {
                 ctx.fillStyle = ribbon1Color;
-                ctx.fillRect(centerX + xOff1 * swingRadius - 2, y - 2, 4, 4);
+                ctx.fillRect(centerX + xOff1 * swingRadius - 3, y - 3, 6, 6); // Thicker 6x6 points
             }
             if (xOff2 < 0) {
                 ctx.fillStyle = ribbon2Color;
-                ctx.fillRect(centerX + xOff2 * swingRadius - 2, y - 2, 4, 4);
+                ctx.fillRect(centerX + xOff2 * swingRadius - 3, y - 3, 6, 6);
             }
         }
 
-        // 2. Draw Central Silhouette
-        ctx.fillStyle = '#263238';
+        // 2. Draw Central Silhouette (White for maximum contrast under dot matrix)
+        ctx.fillStyle = '#ffffff';
         ctx.save();
         ctx.translate(centerX, charY);
         ctx.beginPath();
@@ -114,11 +114,11 @@ export default class MagicRibbons extends AnimationBase {
 
             if (xOff1 >= 0) {
                 ctx.fillStyle = ribbon1Color;
-                ctx.fillRect(centerX + xOff1 * swingRadius - 2, y - 2, 4, 4);
+                ctx.fillRect(centerX + xOff1 * swingRadius - 3, y - 3, 6, 6); // Thicker 6x6 points
             }
             if (xOff2 >= 0) {
                 ctx.fillStyle = ribbon2Color;
-                ctx.fillRect(centerX + xOff2 * swingRadius - 2, y - 2, 4, 4);
+                ctx.fillRect(centerX + xOff2 * swingRadius - 3, y - 3, 6, 6);
             }
         }
 
@@ -134,7 +134,7 @@ export default class MagicRibbons extends AnimationBase {
                 const angle = (i / 8) * Math.PI * 2;
                 const px = centerX + Math.cos(angle) * distance;
                 const py = 15 + Math.sin(angle) * distance;
-                ctx.fillRect(px - 1, py - 1, 2, 2);
+                ctx.fillRect(Math.round(px) - 1, Math.round(py) - 1, 3, 3); // Thicker sparks
             }
         }
     }

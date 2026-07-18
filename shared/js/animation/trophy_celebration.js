@@ -32,6 +32,7 @@ export default class TrophyCelebration extends AnimationBase {
             zh: "一个像素字符高举复选框图标。对角线方向交替闪烁1像素小火花，渲染庆祝氛围。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 
@@ -60,70 +61,82 @@ export default class TrophyCelebration extends AnimationBase {
         // Toggle sparkles frame every 150ms
         const frameToggle = (Math.floor(elapsedMs / 150) % 2) === 1;
 
-        // Render Ground
-        ctx.fillStyle = '#444';
-        ctx.fillRect(0, groundY, width, 1);
+        // Render Ground (brighter grey)
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(0, groundY, width, 2);
 
-        // Draw character (static standing, holding arms up)
-        const charH = Math.max(12, height * 0.22);
-        const headRadius = Math.max(3, charH * 0.2);
+        // Draw character (static standing, holding arms up) - responsive sizing to prevent clipping
+        const charH = Math.round(Math.max(12, Math.min(24, height * 0.38)));
+        const headRadius = Math.round(Math.max(3, Math.min(5, charH * 0.2)));
         const charY = groundY;
+        const roundedCenterX = Math.round(centerX);
 
         ctx.save();
-        ctx.translate(centerX, charY);
+        ctx.translate(roundedCenterX, Math.round(charY));
 
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = '#ffffff'; // Pure white (Red: 255)
         // Head
         ctx.beginPath();
-        ctx.arc(0, -charH - headRadius, headRadius, 0, Math.PI * 2);
+        ctx.arc(0, -charH - headRadius, headRadius + 1, 0, Math.PI * 2);
         ctx.fill();
 
-        // Body
-        ctx.fillRect(-2, -charH, 4, charH - 2);
+        // Body (Thicker torso, 6px wide)
+        ctx.fillRect(-3, -charH, 6, charH - 4);
 
-        // Legs (Standing straight)
-        ctx.fillRect(-2, -2, 1, 2);
-        ctx.fillRect(1, -2, 1, 2);
+        // Legs (Standing straight, 3px wide)
+        ctx.fillRect(-3, -4, 2, 4);
+        ctx.fillRect(1, -4, 2, 4);
 
-        // Arms raised straight up
-        ctx.fillRect(-5, -charH - 4, 2, charH * 0.5 + 4);
-        ctx.fillRect(3, -charH - 4, 2, charH * 0.5 + 4);
+        // Arms raised straight up (Thicker arms, 3px wide)
+        ctx.fillRect(-7, -charH - 6, 3, charH * 0.5 + 6);
+        ctx.fillRect(4, -charH - 6, 3, charH * 0.5 + 6);
 
         ctx.restore();
 
-        // Draw Held Checkbox Document Icon (Centered high above head)
-        const iconY = groundY - charH - headRadius - 14;
-        const iconW = 12;
-        const iconH = 12;
+        // Draw Held Checkbox Document Icon (Centered high above head) - responsive sizing to prevent clipping
+        const iconOffset = height >= 60 ? 18 : 12;
+        const iconY = Math.round(groundY - charH - headRadius - iconOffset);
+        const iconW = height >= 60 ? 18 : 12;
+        const iconH = height >= 60 ? 18 : 12;
 
-        ctx.fillStyle = '#ffeb3b'; // Vibrant gold document border
-        ctx.fillRect(centerX - iconW / 2, iconY - iconH / 2, iconW, iconH);
+        ctx.fillStyle = '#ffeb3b'; // Vibrant gold document border (Red: 255)
+        ctx.fillRect(roundedCenterX - iconW / 2, iconY - iconH / 2, iconW, iconH);
 
         // Document inner details (white surface with checkmark)
-        ctx.fillStyle = '#000';
-        ctx.fillRect(centerX - iconW / 2 + 2, iconY - iconH / 2 + 2, iconW - 4, iconH - 4);
+        const innerBorder = height >= 60 ? 3 : 2;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(roundedCenterX - iconW / 2 + innerBorder, iconY - iconH / 2 + innerBorder, iconW - (innerBorder * 2), iconH - (innerBorder * 2));
 
-        // Green Checkmark inside
-        ctx.fillStyle = '#00e676';
-        ctx.fillRect(centerX - 2, iconY + 1, 1, 1);
-        ctx.fillRect(centerX - 1, iconY + 2, 1, 1);
-        ctx.fillRect(centerX, iconY + 1, 1, 1);
-        ctx.fillRect(centerX + 1, iconY, 1, 1);
-        ctx.fillRect(centerX + 2, iconY - 1, 1, 1);
-        ctx.fillRect(centerX + 3, iconY - 2, 1, 1);
+        // Lime Green Checkmark inside (High-Red component, thick 2x2 block style, responsive)
+        ctx.fillStyle = '#c6ff00'; // Lime Green (Red: 198)
+        if (height >= 60) {
+            ctx.fillRect(roundedCenterX - 4, iconY + 1, 2, 2);
+            ctx.fillRect(roundedCenterX - 2, iconY + 3, 2, 2);
+            ctx.fillRect(roundedCenterX, iconY + 1, 2, 2);
+            ctx.fillRect(roundedCenterX + 2, iconY - 1, 2, 2);
+            ctx.fillRect(roundedCenterX + 4, iconY - 3, 2, 2);
+        } else {
+            // Smaller checkmark for smaller icon
+            ctx.fillRect(roundedCenterX - 2, iconY + 1, 1, 1);
+            ctx.fillRect(roundedCenterX - 1, iconY + 2, 1, 1);
+            ctx.fillRect(roundedCenterX, iconY + 1, 1, 1);
+            ctx.fillRect(roundedCenterX + 1, iconY, 1, 1);
+            ctx.fillRect(roundedCenterX + 2, iconY - 1, 1, 1);
+            ctx.fillRect(roundedCenterX + 3, iconY - 2, 1, 1);
+        }
 
-        // Alternating sparkles (Diagonal 1-pixel sparkles)
-        // Shimmer frame 1: top-left & bottom-right
-        // Shimmer frame 2: top-right & bottom-left
-        ctx.fillStyle = '#fff';
+        // Alternating sparkles (Diagonal sparkles, responsive)
+        const sparkleSize = height >= 60 ? 4 : 2;
+        const sparkleOffset = height >= 60 ? 6 : 4;
+        ctx.fillStyle = '#ffffff';
         if (!frameToggle) {
             // Sparkle set 1
-            ctx.fillRect(centerX - iconW / 2 - 4, iconY - iconH / 2 - 4, 2, 2); // Top-left
-            ctx.fillRect(centerX + iconW / 2 + 2, iconY + iconH / 2 + 2, 2, 2); // Bottom-right
+            ctx.fillRect(roundedCenterX - iconW / 2 - sparkleOffset, iconY - iconH / 2 - sparkleOffset, sparkleSize, sparkleSize); // Bottom-left or top-left
+            ctx.fillRect(roundedCenterX + iconW / 2 + (sparkleOffset - sparkleSize), iconY + iconH / 2 + (sparkleOffset - sparkleSize), sparkleSize, sparkleSize); // Bottom-right
         } else {
             // Sparkle set 2
-            ctx.fillRect(centerX + iconW / 2 + 2, iconY - iconH / 2 - 4, 2, 2); // Top-right
-            ctx.fillRect(centerX - iconW / 2 - 4, iconY + iconH / 2 + 2, 2, 2); // Bottom-left
+            ctx.fillRect(roundedCenterX + iconW / 2 + (sparkleOffset - sparkleSize), iconY - iconH / 2 - sparkleOffset, sparkleSize, sparkleSize); // Top-right
+            ctx.fillRect(roundedCenterX - iconW / 2 - sparkleOffset, iconY + iconH / 2 + (sparkleOffset - sparkleSize), sparkleSize, sparkleSize); // Bottom-left
         }
     }
 }

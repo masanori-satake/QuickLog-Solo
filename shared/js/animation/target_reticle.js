@@ -31,6 +31,7 @@ export default class TargetReticle extends AnimationBase {
             zh: "一个圆形的像素十字准星在8字形循环中平滑漂移，而背景中黑影剪影的敏锐眼睛每2秒闪烁一次。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 
@@ -54,7 +55,8 @@ export default class TargetReticle extends AnimationBase {
         const centerY = height / 2;
 
         // --- Layer 1: Background shadow silhouette ---
-        ctx.fillStyle = '#1c1c1c'; // Black Shadow Man
+        // Change body color to lighter grey (#616161, Red: 97) for dot matrix representation
+        ctx.fillStyle = '#616161';
         const shadowW = Math.max(50, width * 0.3);
         const shadowH = Math.max(60, height * 0.7);
 
@@ -86,10 +88,10 @@ export default class TargetReticle extends AnimationBase {
         let showEyes = true;
 
         if (blinkTime >= 0 && blinkTime < 250) {
-            // Blink opening: sharp pixels (3px height)
+            // Blink opening: sharp pixels
             eyeHeight = 3;
         } else if (blinkTime >= 250 && blinkTime < 500) {
-            // Narrowing down (1px height)
+            // Narrowing down
             eyeHeight = 1;
         } else if (blinkTime >= 500 && blinkTime < 700) {
             // Completely closed
@@ -100,12 +102,14 @@ export default class TargetReticle extends AnimationBase {
         }
 
         if (showEyes) {
-            ctx.fillStyle = '#ffffff'; // Sharp white eyes
-            const eyeY = -shadowH * 0.73;
+            ctx.fillStyle = '#ffffff'; // Sharp white eyes (Red: 255)
+            const eyeY = Math.round(-shadowH * 0.73);
+            // Bold, larger eyes
+            const eyeW = Math.round(Math.max(5, shadowW * 0.08));
             // Left eye
-            ctx.fillRect(-headRadius * 0.45, eyeY, 4, eyeHeight);
+            ctx.fillRect(Math.round(-headRadius * 0.45 - (eyeW / 2)), eyeY, eyeW, Math.round(Math.max(2, eyeHeight * 1.5)));
             // Right eye
-            ctx.fillRect(headRadius * 0.45 - 4, eyeY, 4, eyeHeight);
+            ctx.fillRect(Math.round(headRadius * 0.45 - (eyeW / 2)), eyeY, eyeW, Math.round(Math.max(2, eyeHeight * 1.5)));
         }
 
         ctx.restore();
@@ -122,9 +126,9 @@ export default class TargetReticle extends AnimationBase {
 
         const rSize = Math.max(12, height * 0.15);
 
-        // Draw reticle
-        ctx.strokeStyle = '#ef5350'; // Warning red reticle
-        ctx.lineWidth = 1;
+        // Draw reticle with thicker strokes for crisp dot representation
+        ctx.strokeStyle = '#ef5350'; // Warning red reticle (Red: 239)
+        ctx.lineWidth = 3; // Thicker lines for visibility
 
         ctx.save();
         ctx.translate(reticleX, reticleY);
@@ -136,18 +140,18 @@ export default class TargetReticle extends AnimationBase {
 
         // Center dot
         ctx.fillStyle = '#ef5350';
-        ctx.fillRect(-1, -1, 2, 2);
+        ctx.fillRect(-1, -1, 3, 3); // Thicker center dot
 
         // Crosshairs tick marks (top, bottom, left, right)
         ctx.beginPath();
         // Top
-        ctx.moveTo(0, -rSize); ctx.lineTo(0, -rSize - 5);
+        ctx.moveTo(0, -rSize); ctx.lineTo(0, -rSize - 6);
         // Bottom
-        ctx.moveTo(0, rSize); ctx.lineTo(0, rSize + 5);
+        ctx.moveTo(0, rSize); ctx.lineTo(0, rSize + 6);
         // Left
-        ctx.moveTo(-rSize, 0); ctx.lineTo(-rSize - 5, 0);
+        ctx.moveTo(-rSize, 0); ctx.lineTo(-rSize - 6, 0);
         // Right
-        ctx.moveTo(rSize, 0); ctx.lineTo(rSize + 5, 0);
+        ctx.moveTo(rSize, 0); ctx.lineTo(rSize + 6, 0);
         ctx.stroke();
 
         ctx.restore();
