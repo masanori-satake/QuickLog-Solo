@@ -31,6 +31,7 @@ export default class MagicRibbons extends AnimationBase {
             zh: "彩色像素带围绕中央静态剪影呈立体螺旋状上升，在顶部达到粒子爆发的高潮。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

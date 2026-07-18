@@ -30,6 +30,7 @@ export default class CrabAlien extends AnimationBase {
             zh: "一个8位蟹状剪影左右摆动，每400毫秒切换一次肢体，就像一个有节奏的钟摆。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

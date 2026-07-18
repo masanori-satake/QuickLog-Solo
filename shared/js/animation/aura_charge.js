@@ -30,6 +30,7 @@ export default class AuraCharge extends AnimationBase {
             zh: "一个黑暗的剪影在中心充电。一个青色的像素球体脉动，同时火花向对角线发射并淡出。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

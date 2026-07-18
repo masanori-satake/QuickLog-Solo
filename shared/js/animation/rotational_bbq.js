@@ -31,6 +31,7 @@ export default class RotationalBbq extends AnimationBase {
             zh: "一个带有椭圆形肉块的水平烤串不断旋转，并在5秒内慢慢从生红过渡到熟金。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

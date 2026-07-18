@@ -31,6 +31,7 @@ export default class TargetReticle extends AnimationBase {
             zh: "一个圆形的像素十字准星在8字形循环中平滑漂移，而背景中黑影剪影的敏锐眼睛每2秒闪烁一次。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

@@ -31,6 +31,7 @@ export default class SpotlightEvasion extends AnimationBase {
             zh: "一个半透明的白色探照灯左右摇摆。每当光线经过时，中央的剪影就会蹲下。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

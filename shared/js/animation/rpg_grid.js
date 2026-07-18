@@ -32,6 +32,7 @@ export default class RpgGrid extends AnimationBase {
             zh: "屏幕闪烁两次，然后从边缘到中心填充深色螺旋块。完成后，立即清除。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

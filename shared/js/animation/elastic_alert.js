@@ -31,6 +31,7 @@ export default class ElasticAlert extends AnimationBase {
             zh: "一个红色的像素感叹号“！”伴随着弹簧般的阻尼运动弹出，并在空中轻轻漂浮。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

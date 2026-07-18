@@ -31,6 +31,7 @@ export default class HexagonalHud extends AnimationBase {
             zh: "同心清晰的六角形以低帧率节奏脉冲向外扩张，同时'ACTIVE'在核心处闪烁。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

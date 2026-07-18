@@ -69,7 +69,7 @@ export default class DotTyping extends AnimationBase {
         const targetChars = Math.floor(progress * totalChars);
 
         // Build a buffer representing typed characters (with occasional backspacing)
-        // タイピングされた文字のバッファを作成（時々バックスペースを入れる演出）
+        // タイピングされた文字 of 버퍼를 작성（時々バックスペースを入れる演出）
         const buffer = [];
         for (let i = 0; i < targetChars; i++) {
             if (i % 15 === 14) {
@@ -105,7 +105,7 @@ export default class DotTyping extends AnimationBase {
             const y = startY + r * rowSpacing;
 
             // Cursor as a large dot
-            // 커서를 큰 도트로 표현
+            // カーソルを大きなドットで表現
             sprites.push({ x, y: y - 5, size: 3 });
         }
 

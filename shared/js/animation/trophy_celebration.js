@@ -32,6 +32,7 @@ export default class TrophyCelebration extends AnimationBase {
             zh: "一个像素字符高举复选框图标。对角线方向交替闪烁1像素小火花，渲染庆祝氛围。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 

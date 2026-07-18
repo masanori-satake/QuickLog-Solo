@@ -30,6 +30,7 @@ export default class RisingMenacing extends AnimationBase {
             zh: "像素化的日文字符符号（'ゴ'）在底部产生，向上漂浮并放大，同时逐渐淡出。"
         },
         author: "QuickLog-Solo",
+        devOnly: true,
         rewindable: true
     };
 
