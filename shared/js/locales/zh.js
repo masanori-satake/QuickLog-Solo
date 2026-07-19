@@ -404,4 +404,7 @@ export default {
     'alarm-section-basic': '基本设置',
     'alarm-section-action': '操作设置',
     'alarm-section-schedule': '计划设置',
+    'display-mode-retro-lcd': '复古液晶',
+    'display-mode-retro-crt': '显像管显示器',
+    'display-mode-retro-nixie': '辉光管',
 };

@@ -404,4 +404,7 @@ export default {
     'alarm-section-basic': 'Paramètres de Base',
     'alarm-section-action': 'Paramètres d\'Action',
     'alarm-section-schedule': 'Paramètres de Calendrier',
+    'display-mode-retro-lcd': 'LCD rétro',
+    'display-mode-retro-crt': 'Moniteur CRT',
+    'display-mode-retro-nixie': 'Tube Nixie',
 };

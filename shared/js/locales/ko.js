@@ -404,4 +404,7 @@ export default {
     'alarm-section-basic': '기본 설정',
     'alarm-section-action': '동작 설정',
     'alarm-section-schedule': '스케줄 설정',
+    'display-mode-retro-lcd': '레트로 LCD',
+    'display-mode-retro-crt': 'CRT 모니터',
+    'display-mode-retro-nixie': '닉시관',
 };

@@ -15,18 +15,28 @@ export function initPreview(state, elements) {
         const colors = [
             '#0056d2', '#1976d2', '#039be5', '#0097a7', '#00796b', '#388e3c',
             '#7cb342', '#fbc02d', '#ffa000', '#f57c00', '#d32f2f', '#c2185b',
-            '#8e24aa', '#5e35b1', '#303f9f'
+            '#8e24aa', '#5e35b1', '#303f9f',
+            'retro-lcd', 'retro-crt', 'retro-nixie'
         ];
 
         colors.forEach(color => {
             const div = document.createElement('div');
             div.className = 'color-preset';
+            div.dataset.color = color;
             if (color === state.currentPreviewColor) div.classList.add('active');
-            div.style.backgroundColor = color;
+            if (color.startsWith('#')) {
+                div.style.backgroundColor = color;
+            }
             div.addEventListener('click', () => {
                 state.currentPreviewColor = color;
                 document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
                 div.classList.add('active');
+
+                // Toggle retro display classes on studio's elements.previewContainer
+                elements.previewContainer.classList.toggle('retro-lcd', color === 'retro-lcd');
+                elements.previewContainer.classList.toggle('retro-crt', color === 'retro-crt');
+                elements.previewContainer.classList.toggle('retro-nixie', color === 'retro-nixie');
+
                 if (state.currentState !== 'STOPPED' && state.engine) {
                     state.engine.color = color;
                 }
