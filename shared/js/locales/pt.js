@@ -15,6 +15,7 @@ export default {
     // Auto Stop & Page Break
     'page-break': 'Quebra de página',
     'btn-add-page-break': 'Adicionar quebra de página',
+    'btn-add-category': 'Adicionar categoria',
     'confirm-delete-page-break': 'Deseja excluir esta quebra de página?',
 
     // Tooltips
