@@ -1264,6 +1264,12 @@ body.theme-dark .tape-btn.primary {
    Ultimate Realism Retro Display Modes CSS for Studio
    ========================================================================== */
 
+#preview-container.retro-lcd canvas,
+#preview-container.retro-crt canvas,
+#preview-container.retro-nixie canvas {
+    background-color: transparent !important;
+}
+
 /* 1. Retro Game LCD Mode */
 #preview-container.retro-lcd {
     background-color: #9bbc0f !important;

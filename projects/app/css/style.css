@@ -1,6 +1,6 @@
 :root {
     --border-width: 1px;
-    --font-family: 'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
+    --font-family: 'Roboto', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
     --timer-height-factor: 1;
     --timer-base-height: 80px;
 }
@@ -286,6 +286,11 @@ main {
     box-shadow: none;
 }
 
+#current-task-display.anim-active #animation-canvas {
+    background-color: transparent !important;
+    box-shadow: none;
+}
+
 #current-task-display-base {
     position: absolute;
     inset: 0;
@@ -321,6 +326,7 @@ main {
 
 #current-task-name {
     font-size: var(--md-sys-typescale-title-medium-size);
+    font-family: var(--custom-display-font, var(--font-family));
     font-weight: var(--font-weight-custom, var(--md-sys-typescale-title-large-weight));
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
     line-height: 1.2;
@@ -343,8 +349,8 @@ main {
 
 #elapsed-time {
     font-size: var(--md-sys-typescale-headline-medium-size);
+    font-family: var(--custom-display-font, 'Roboto Mono', 'Courier New', monospace);
     font-weight: var(--font-weight-custom, var(--md-sys-typescale-headline-large-weight));
-    font-family: 'Roboto Mono', 'Courier New', monospace;
     line-height: 1;
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface);

@@ -43,7 +43,7 @@
   --app-color-on-weekday-active: var(--md-sys-color-on-tertiary);
 
   /* --- Fonts --- */
-  --font-family: 'Roboto', 'Inter', 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
+  --font-family: 'Roboto', 'Inter', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', 'Noto Color Emoji', sans-serif;
 
   /* --- Spacing --- */
   --md-sys-spacing-0: 0px;

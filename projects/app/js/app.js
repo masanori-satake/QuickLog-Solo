@@ -505,7 +505,7 @@ function applyTheme(theme) {
 
 
 function applyFont(fontValue) {
-    getBody().style.setProperty('--font-family', fontValue);
+    getBody().style.setProperty('--custom-display-font', fontValue);
     const select = getEl(ID_FONT_SELECT);
     if (select) select.value = fontValue;
 }
@@ -1066,7 +1066,7 @@ function updateFontSelect() {
             if (filteredFonts.length > 0) {
                 fontSelect.value = filteredFonts[0].value;
                 // We should also update the style since the value changed
-                getBody().style.setProperty('--font-family', filteredFonts[0].value);
+                getBody().style.setProperty('--custom-display-font', filteredFonts[0].value);
             }
         } else {
             fontSelect.value = currentFont;
