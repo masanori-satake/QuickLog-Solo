@@ -85,7 +85,8 @@ jobs:
         run: |
           ls -R dist_web/releases/
           [ -f dist_web/shared/assets/icon128.png ] || (echo "Icons missing" && exit 1)
-          [ -f dist_web/releases/QuickLog-Solo-Chrome-Dev.zip ] || (echo "Dev ZIP missing" && exit 1)
+          VERSION=$(jq -r .version projects/app/version.json)
+          [ -f "dist_web/releases/QuickLog-Solo-Dev-v${VERSION}.zip" ] || (echo "Dev ZIP missing" && exit 1)
           [ -f dist_web/projects/web/index.html ] || (echo "Landing page missing" && exit 1)
 
       - name: Deploy to Vercel

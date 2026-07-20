@@ -49,20 +49,10 @@
 
                     <button class="btn-primary" onclick="openPreview()" data-i18n="cta-test">ブラウザで試す</button>
 
-                    <div class="download-dropdown" id="download-dropdown">
-                        <button class="btn-secondary" onclick="toggleDownloadDropdown(event)"><span data-i18n="cta-download">Zipをダウンロード</span> <span class="material-symbols-outlined">expand_more</span></button>
-                        <div class="dropdown-content">
-                            <div class="dropdown-group-label" data-i18n="dl-release-group">リリース版</div>
-                            <a href="../../releases/QuickLog-Solo-Chrome.zip"><span data-i18n="dl-chrome">Chrome / Edge 用</span> (.zip)</a>
-
-                            <div class="dropdown-group-label" data-i18n="dl-dev-group" style="border-top: 1px solid var(--md-sys-color-outline-variant); margin-top: 4px; padding-top: 8px;">開発版</div>
-                            <a href="../../releases/QuickLog-Solo-Chrome-Dev.zip"><span data-i18n="dl-chrome-dev">Chrome / Edge 用 (Dev)</span> (.zip)</a>
-
-                            <div style="font-size: 0.7rem; color: var(--md-sys-color-on-surface-variant); padding: 8px 16px; border-top: 1px solid var(--md-sys-color-outline-variant); margin: 0;">
-                                <a href="https://github.com/masanori-satake/QuickLog-Solo/releases" style="text-decoration: underline; color: inherit; display: block; padding: 0;" data-i18n="dl-note">※過去のバージョンはGitHubリリースページから入手可能です。</a>
-                            </div>
-                        </div>
-                    </div>
+                    <a href="https://github.com/masanori-satake/QuickLog-Solo/releases" class="btn-secondary" target="_blank" rel="noopener noreferrer" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                        <span data-i18n="cta-download">Zipをダウンロード</span>
+                        <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">open_in_new</span>
+                    </a>
                 </div>
             </section>
 
@@ -1114,21 +1104,10 @@
             document.body.style.overflow = '';
         }
 
-        function toggleDownloadDropdown(event) {
-            event.stopPropagation();
-            const dropdown = document.getElementById('download-dropdown');
-            dropdown.classList.toggle('show');
-        }
-
         window.onclick = function(event) {
             const modal = document.getElementById('preview-modal');
             if (event.target == modal) {
                 closePreview();
-            }
-
-            const dropdown = document.getElementById('download-dropdown');
-            if (dropdown && !dropdown.contains(event.target)) {
-                dropdown.classList.remove('show');
             }
         }
     </script>

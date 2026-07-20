@@ -126,7 +126,7 @@ def main():
         else:
             print(f"Warning: {filepath} not found.")
 
-    # 3. Special handling for README.md version badge
+    # 3. Special handling for README.md version badge and ZIP filenames
     readme_path = 'README.md'
     if os.path.exists(readme_path):
         with open(readme_path, 'r', encoding='utf-8') as f:
@@ -138,10 +138,22 @@ def main():
             content
         )
 
+        new_content = re.sub(
+            r'QuickLog-Solo-v[0-9.]+\.zip',
+            f'QuickLog-Solo-v{new_version}.zip',
+            new_content
+        )
+
+        new_content = re.sub(
+            r'QuickLog-Solo-Dev-v[0-9.]+\.zip',
+            f'QuickLog-Solo-Dev-v{new_version}.zip',
+            new_content
+        )
+
         if content != new_content:
             with open(readme_path, 'w', encoding='utf-8') as f:
                 f.write(new_content)
-            print(f"Updated version badge in {readme_path}")
+            print(f"Updated version and ZIP filename in {readme_path}")
 
 if __name__ == "__main__":
     main()
