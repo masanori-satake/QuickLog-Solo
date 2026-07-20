@@ -105,14 +105,14 @@ def create_packages():
     print("Generating production registry...")
     subprocess.run(["python3", "scripts/generate_animation_registry.py", "--exclude-dev"], check=True)
 
-    chrome_zip = os.path.join(dist_dir, f"{package_name}-Chrome.zip")
+    chrome_zip = os.path.join(dist_dir, f"{package_name}-v{version}.zip")
     success_chrome = create_zip(chrome_zip, "manifest.chrome.json", "temp_package_release_chrome")
 
     # --- Dev Build Pipeline ---
     print("Generating development registry...")
     subprocess.run(["python3", "scripts/generate_animation_registry.py"], check=True)
 
-    chrome_dev_zip = os.path.join(dist_dir, f"{package_name}-Chrome-Dev.zip")
+    chrome_dev_zip = os.path.join(dist_dir, f"{package_name}-Dev-v{version}.zip")
     success_chrome_dev = create_zip(chrome_dev_zip, "manifest.chrome.json", "temp_package_dev_chrome", is_dev=True, version=version)
 
     # Restoration
