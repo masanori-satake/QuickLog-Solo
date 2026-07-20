@@ -548,10 +548,6 @@ input[type="text"]:disabled, select:disabled {
     background-color: transparent !important;
 }
 
-#preview-container.anim-active #animation-canvas {
-    background-color: transparent !important;
-}
-
 #preview-overlay-base.anim-active {
     background-color: transparent !important;
     backdrop-filter: none;
@@ -567,6 +563,12 @@ input[type="text"]:disabled, select:disabled {
     pointer-events: auto;
     background-color: var(--md-sys-color-surface-container-high);
     border-radius: var(--md-sys-shape-medium);
+}
+
+.preview-container.retro-lcd #animation-canvas,
+.preview-container.retro-crt #animation-canvas,
+.preview-container.retro-nixie #animation-canvas {
+    background-color: transparent !important;
 }
 
 .preview-overlay-base {
@@ -1092,12 +1094,6 @@ body.theme-light .secondary-btn:hover {
    Ultimate Realism Retro Display Modes CSS for Preview
    ========================================================================== */
 
-.preview-container.retro-lcd #animation-canvas,
-.preview-container.retro-crt #animation-canvas,
-.preview-container.retro-nixie #animation-canvas {
-    background-color: transparent !important;
-}
-
 /* 1. Retro Game LCD Mode */
 .preview-container.retro-lcd {
     background-color: #9bbc0f !important;
@@ -1223,4 +1219,8 @@ body.theme-light .secondary-btn:hover {
     75% {
         opacity: 0.993;
     }
+}
+
+#preview-container.anim-active #animation-canvas {
+    background-color: transparent !important;
 }

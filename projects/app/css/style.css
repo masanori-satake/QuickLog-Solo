@@ -286,11 +286,6 @@ main {
     box-shadow: none;
 }
 
-#current-task-display.anim-active #animation-canvas {
-    background-color: transparent !important;
-    box-shadow: none;
-}
-
 #current-task-display-base {
     position: absolute;
     inset: 0;
@@ -426,6 +421,11 @@ body.timer-mini #elapsed-time {
     background-color: var(--md-sys-color-surface-container-high);
     border-radius: var(--md-sys-shape-medium);
     box-shadow: var(--md-sys-elevation-1);
+}
+
+#current-task-display.anim-active #animation-canvas {
+    background-color: transparent !important;
+    box-shadow: none;
 }
 
 #timer-container {
