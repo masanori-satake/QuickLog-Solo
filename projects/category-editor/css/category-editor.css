@@ -960,3 +960,257 @@ body.theme-light .secondary-btn:hover {
 .after-input-wrapper .icon-btn:hover {
     color: var(--md-sys-color-error);
 }
+
+/* ==========================================================================
+   Retro Display Mode Color Options in Palette (L, C, N indicators)
+   ========================================================================== */
+.color-option[data-color="retro-lcd"] {
+    background-color: #9bbc0f !important;
+    border-color: #0f380f !important;
+    position: relative;
+}
+
+.color-option[data-color="retro-lcd"]::after {
+    content: "L";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f380f;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.color-option[data-color="retro-crt"] {
+    background-color: #3f3 !important;
+    border-color: #030c04 !important;
+    position: relative;
+}
+
+.color-option[data-color="retro-crt"]::after {
+    content: "C";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #030c04;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.color-option[data-color="retro-nixie"] {
+    background-color: #f50 !important;
+    border-color: #0c0603 !important;
+    position: relative;
+}
+
+.color-option[data-color="retro-nixie"]::after {
+    content: "N";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0c0603;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Hide the letter when selected so only checkmark displays */
+.color-option.selected[data-color="retro-lcd"]::after,
+.color-option.selected[data-color="retro-crt"]::after,
+.color-option.selected[data-color="retro-nixie"]::after {
+    display: none;
+}
+
+
+/* ==========================================================================
+   Retro Category List Dot Indicators (L, C, N)
+   ========================================================================== */
+.category-item .cat-dot[data-color="retro-lcd"] {
+    background-color: #9bbc0f !important;
+    position: relative;
+}
+
+.category-item .cat-dot[data-color="retro-lcd"]::after {
+    content: "L";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f380f;
+    font-weight: bold;
+    font-size: 8px;
+    line-height: 1;
+}
+
+.category-item .cat-dot[data-color="retro-crt"] {
+    background-color: #3f3 !important;
+    position: relative;
+}
+
+.category-item .cat-dot[data-color="retro-crt"]::after {
+    content: "C";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #030c04;
+    font-weight: bold;
+    font-size: 8px;
+    line-height: 1;
+}
+
+.category-item .cat-dot[data-color="retro-nixie"] {
+    background-color: #f50 !important;
+    position: relative;
+}
+
+.category-item .cat-dot[data-color="retro-nixie"]::after {
+    content: "N";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0c0603;
+    font-weight: bold;
+    font-size: 8px;
+    line-height: 1;
+}
+
+
+/* ==========================================================================
+   Ultimate Realism Retro Display Modes CSS for Preview
+   ========================================================================== */
+
+/* 1. Retro Game LCD Mode */
+.preview-container.retro-lcd {
+    background-color: #9bbc0f !important;
+    filter: contrast(0.92) saturate(1.1);
+}
+
+.preview-container.retro-lcd::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+
+    /* Ultra-fine pixel grid bounds */
+    background: linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+    background-size: 6px 6px; /* Sync with CELL_SIZE = 6 */
+}
+
+.preview-container.retro-lcd #preview-name,
+.preview-container.retro-lcd #preview-elapsed,
+.preview-container.retro-lcd #preview-status-label {
+    color: #0f380f !important;
+    text-shadow: 0 0 2px rgba(155, 188, 15, 0.5) !important;
+}
+
+/* 2. CRT Monitor Mode */
+.preview-container.retro-crt {
+    background-color: #030c04 !important;
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.92), var(--md-sys-elevation-1);
+    animation: crt-jitter-flicker-editor 0.15s infinite;
+}
+
+.preview-container.retro-crt::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+
+    /* Horizontal scanlines & vertical aperture grille slits */
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 100% 4px, 3px 100%;
+}
+
+.preview-container.retro-crt #animation-canvas {
+    filter: drop-shadow(0 0 4px rgba(51, 255, 51, 0.85)) !important;
+}
+
+.preview-container.retro-crt #preview-name,
+.preview-container.retro-crt #preview-elapsed,
+.preview-container.retro-crt #preview-status-label {
+    color: #3f3 !important;
+    text-shadow: 0 0 4px rgba(51, 255, 51, 0.75) !important;
+}
+
+@keyframes crt-jitter-flicker-editor {
+    0%, 100% { opacity: 0.992; }
+    50% { opacity: 1.0; }
+}
+
+/* 3. Nixie Tube Mode */
+.preview-container.retro-nixie {
+    background-color: #0c0603 !important;
+    box-shadow: inset 0 0 32px rgba(0,0,0,0.95);
+    position: relative;
+    filter: url("#nixie-heat-shimmer");
+    animation: nixie-flicker-editor 0.2s infinite;
+}
+
+.preview-container.retro-nixie::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+
+    /* Honeycomb grid / anode mesh pattern */
+    background-image: radial-gradient(rgba(255, 85, 0, 0.055) 1.2px, transparent 1.2px);
+    background-size: 5px 5px;
+}
+
+.preview-container.retro-nixie::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 11;
+
+    /* Glass bulb glare highlight */
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 40%, transparent 100%);
+    border-radius: inherit;
+}
+
+.preview-container.retro-nixie #animation-canvas {
+    filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px #f50) drop-shadow(0 0 12px #ff2a00) !important;
+}
+
+.preview-container.retro-nixie #preview-name,
+.preview-container.retro-nixie #preview-elapsed,
+.preview-container.retro-nixie #preview-status-label {
+    color: #f50 !important;
+    text-shadow: 0 0 2px #fff, 0 0 6px #f50, 0 0 12px #ff2a00 !important;
+}
+
+@keyframes nixie-flicker-editor {
+    0%,
+    100% {
+        opacity: 0.99;
+        filter: brightness(1);
+    }
+
+    30% {
+        opacity: 0.985;
+    }
+
+    50% {
+        opacity: 1;
+        filter: brightness(1.03);
+    }
+
+    75% {
+        opacity: 0.993;
+    }
+}

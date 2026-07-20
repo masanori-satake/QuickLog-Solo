@@ -1165,6 +1165,9 @@ body.theme-dark button:active {
 
 .dot-brown { background-color: var(--custom-cat-brown); }
 .dot-cyan { background-color: var(--custom-cat-cyan); }
+.dot-retro-lcd { background-color: #9bbc0f; }
+.dot-retro-crt { background-color: #3f3; }
+.dot-retro-nixie { background-color: #f50; }
 
 .hidden {
     display: none !important;

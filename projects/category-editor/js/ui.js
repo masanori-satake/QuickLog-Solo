@@ -18,7 +18,8 @@ export function initUI(state, elements) {
 
     const COLORS = [
         'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
-        'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
+        'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan',
+        'retro-lcd', 'retro-crt', 'retro-nixie'
     ];
 
     const COLOR_CODES = {
@@ -35,7 +36,10 @@ export function initUI(state, elements) {
         pink: '#d81b60',
         indigo: '#5e35b1',
         brown: '#6d4c41',
-        cyan: '#039be5'
+        cyan: '#039be5',
+        'retro-lcd': '#9bbc0f',
+        'retro-crt': '#33ff33',
+        'retro-nixie': '#ff5500'
     };
 
     function t(key, params) {
@@ -69,6 +73,7 @@ export function initUI(state, elements) {
             } else {
                 const dot = document.createElement('span');
                 dot.className = 'cat-dot';
+                dot.dataset.color = cat.color || 'primary';
                 dot.style.backgroundColor = COLOR_CODES[cat.color || 'primary'];
                 item.appendChild(dot);
 
@@ -254,6 +259,7 @@ export function initUI(state, elements) {
 
             clearCategoryClasses(previewOverlay);
             clearCategoryClasses(previewContainer);
+            previewContainer.classList.remove('retro-lcd', 'retro-crt', 'retro-nixie');
 
             const labelTags = document.querySelector('label[for="tag-input"]');
             const labelTheme = document.querySelector('label[data-i18n="setting-theme"]');
@@ -325,6 +331,9 @@ export function initUI(state, elements) {
                         previewOverlay.classList.add('anim-active');
                         previewOverlay.classList.add(`cat-${color}`);
                         previewContainer.classList.add('anim-active');
+                        if (color === 'retro-lcd') previewContainer.classList.add('retro-lcd');
+                        else if (color === 'retro-crt') previewContainer.classList.add('retro-crt');
+                        else if (color === 'retro-nixie') previewContainer.classList.add('retro-nixie');
                     } else {
                         previewOverlay.classList.remove('anim-active');
                         previewContainer.classList.remove('anim-active');
@@ -390,6 +399,9 @@ export function initUI(state, elements) {
                 previewOverlay.classList.add('anim-active');
                 previewOverlay.classList.add(`cat-${color}`);
                 previewContainer.classList.add('anim-active');
+                if (color === 'retro-lcd') previewContainer.classList.add('retro-lcd');
+                else if (color === 'retro-crt') previewContainer.classList.add('retro-crt');
+                else if (color === 'retro-nixie') previewContainer.classList.add('retro-nixie');
             } else {
                 previewOverlay.classList.remove('anim-active');
                 previewContainer.classList.remove('anim-active');

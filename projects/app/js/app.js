@@ -2102,6 +2102,7 @@ async function renderCategoryEditor() {
             const colorTrigger = createEl('div');
             colorTrigger.className = 'color-dropdown-trigger';
             colorTrigger.style.backgroundColor = getColorCode(cat.color);
+            colorTrigger.dataset.color = cat.color;
             const colorMenu = createEl('div');
             colorMenu.className = 'color-dropdown-menu hidden';
             colors.forEach(color => {
