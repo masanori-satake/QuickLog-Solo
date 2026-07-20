@@ -24,7 +24,6 @@ export class AnimationEngine {
         this.setupDone = false;
         this.requestRawBitmap = false;
         this.lastRenderStartTime = 0;
-        this.lastDots = null;
         this.onRawBitmapDraw = null;
         this.onStop = null;
 

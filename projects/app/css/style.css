@@ -1,6 +1,7 @@
 :root {
     --border-width: 1px;
     --font-family: 'Roboto', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
+    --standard-ui-font: 'Roboto', 'Inter', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
     --timer-height-factor: 1;
     --timer-base-height: 80px;
 }
@@ -19,7 +20,7 @@ body {
     color-scheme: light;
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-family: var(--font-family), sans-serif;
+    font-family: var(--standard-ui-font), sans-serif;
     line-height: 1.5;
     display: flex;
     justify-content: center;
@@ -321,7 +322,7 @@ main {
 
 #current-task-name {
     font-size: var(--md-sys-typescale-title-medium-size);
-    font-family: var(--custom-display-font, var(--font-family));
+    font-family: var(--font-family);
     font-weight: var(--font-weight-custom, var(--md-sys-typescale-title-large-weight));
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
     line-height: 1.2;
@@ -344,7 +345,7 @@ main {
 
 #elapsed-time {
     font-size: var(--md-sys-typescale-headline-medium-size);
-    font-family: var(--custom-display-font, 'Roboto Mono', 'Courier New', monospace);
+    font-family: var(--font-family);
     font-weight: var(--font-weight-custom, var(--md-sys-typescale-headline-large-weight));
     line-height: 1;
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
@@ -562,6 +563,7 @@ body.timer-mini #elapsed-time {
 
 .category-btn {
     padding: 0 8px;
+    font-family: var(--standard-ui-font);
     font-size: 0.75rem;
     font-weight: var(--md-sys-typescale-label-large-weight);
     height: 30px;
