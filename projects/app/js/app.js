@@ -3,7 +3,7 @@ import {
     setDatabaseName,
     SETTING_KEY_SESSION_SYNC,
     STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
+    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_FONT_WEIGHT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
     SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
@@ -44,6 +44,7 @@ const ID_SETTINGS_POPUP = 'settings-popup';
 const ID_SETTINGS_TOGGLE = 'settings-toggle';
 const ID_THEME_SELECT = 'theme-select';
 const ID_FONT_SELECT = 'font-select';
+const ID_FONT_WEIGHT_SELECT = 'font-weight-select';
 const ID_ANIMATION_SELECT = 'animation-select';
 const ID_LANGUAGE_SELECT = 'language-select';
 const ID_TIMER_HEIGHT_SELECT = 'timer-height-select';
@@ -158,6 +159,8 @@ const createEl = (tag) => document.createElement(tag);
 
 const FONTS = [
     { name: 'Roboto / Noto Sans JP', value: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt'] },
+    { name: 'Dela Gothic One', value: "'Dela Gothic One', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja'] },
+    { name: 'Yusei Magic', value: "'Yusei Magic', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja'] },
     { name: 'Roboto / Noto Sans KR', value: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ko'] },
     { name: 'Roboto / Noto Sans SC', value: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['zh'] },
     { name: 'Inter', value: "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] },
@@ -505,6 +508,23 @@ function applyFont(fontValue) {
     getBody().style.setProperty('--font-family', fontValue);
     const select = getEl(ID_FONT_SELECT);
     if (select) select.value = fontValue;
+}
+
+function applyFontWeight(weightValue) {
+    const weights = {
+        'normal': '',
+        'medium': '500',
+        'bold': '700',
+        'heavy': '900'
+    };
+    const val = weights[weightValue] || '';
+    if (val) {
+        getBody().style.setProperty('--font-weight-custom', val);
+    } else {
+        getBody().style.removeProperty('--font-weight-custom');
+    }
+    const select = getEl(ID_FONT_WEIGHT_SELECT);
+    if (select) select.value = weightValue;
 }
 
 function applyAnimation(animationType, categoryAnimation = 'default', color = 'primary') {
@@ -900,6 +920,7 @@ async function syncState() {
 
     applyTheme(state.theme || THEME_SYSTEM);
     applyTimerHeight(state.timerHeight || 'normal');
+    applyFontWeight(state.fontWeight || 'normal');
 
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
@@ -2617,6 +2638,17 @@ function setupEventListeners() {
             const fontValue = e.target.value;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_FONT, value: fontValue });
             applyFont(fontValue);
+            await updateUI();
+            broadcastSync();
+        });
+    }
+
+    const fontWeightSelect = getEl(ID_FONT_WEIGHT_SELECT);
+    if (fontWeightSelect) {
+        fontWeightSelect.addEventListener('change', async (e) => {
+            const weightValue = e.target.value;
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_FONT_WEIGHT, value: weightValue });
+            applyFontWeight(weightValue);
             await updateUI();
             broadcastSync();
         });

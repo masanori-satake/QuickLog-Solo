@@ -25,6 +25,7 @@ export const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
 
 export const SETTING_KEY_THEME = 'theme';
 export const SETTING_KEY_FONT = 'font';
+export const SETTING_KEY_FONT_WEIGHT = 'fontWeight';
 export const SETTING_KEY_ANIMATION = 'animation';
 export const SETTING_KEY_PAUSE_STATE = 'pauseState';
 export const SETTING_KEY_LANGUAGE = 'language';
@@ -389,6 +390,7 @@ export async function initDB(isLite = false) {
 export async function getCurrentAppState() {
     const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
+    const fontWeight = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT_WEIGHT);
     const animation = await dbGet(STORE_SETTINGS, SETTING_KEY_ANIMATION);
     const language = await dbGet(STORE_SETTINGS, SETTING_KEY_LANGUAGE);
     const reportSettings = await dbGet(STORE_SETTINGS, SETTING_KEY_REPORT_SETTINGS);
@@ -409,6 +411,7 @@ export async function getCurrentAppState() {
     return {
         theme: theme ? theme.value : null,
         font: font ? font.value : null,
+        fontWeight: fontWeight ? fontWeight.value : 'normal',
         animation: animation ? animation.value : 'digital_rain',
         language: language ? language.value : 'auto',
         reportSettings: reportSettings ? reportSettings.value : null,
