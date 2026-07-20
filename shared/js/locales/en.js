@@ -122,6 +122,7 @@ export default {
     // Auto Stop & Page Break
     'page-break': 'Page Break',
     'btn-add-page-break': 'Add Page Break',
+    'btn-add-category': 'Add Category',
     'confirm-delete-page-break': 'Do you want to delete this page break?',
 
     // Tooltips

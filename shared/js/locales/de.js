@@ -15,6 +15,7 @@ export default {
     // Auto Stop & Page Break
     'page-break': 'Seitenumbruch',
     'btn-add-page-break': 'Seitenumbruch hinzufügen',
+    'btn-add-category': 'Kategorie hinzufügen',
     'confirm-delete-page-break': 'Möchten Sie diesen Seitenumbruch löschen?',
 
     // Tooltips

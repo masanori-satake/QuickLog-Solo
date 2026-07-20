@@ -15,6 +15,7 @@ export default {
     // Auto Stop & Page Break
     'page-break': '페이지 나누기',
     'btn-add-page-break': '페이지 나누기 추가',
+    'btn-add-category': '카테고리 추가',
     'confirm-delete-page-break': '이 페이지 나누기를 삭제하시겠습니까?',
 
     // Tooltips

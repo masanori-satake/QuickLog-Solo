@@ -67,6 +67,19 @@ def get_version_at_commit(filepath, commit_hash):
     except:
         return None
 
+def has_staged_impactful_changes():
+    # Check if any impactful files are staged (excluding shared/js/locales/)
+    try:
+        cmd = ["git", "diff", "--cached", "--name-only"]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        files = result.stdout.splitlines()
+        for f in files:
+            if (f.startswith("projects/app/") or f.startswith("shared/")) and not f.startswith("shared/js/locales/"):
+                return True
+    except Exception:
+        pass
+    return False
+
 def determine_required_bump(commits):
     bump = None
     for body in commits:
@@ -101,6 +114,10 @@ def check_impact():
     commits = get_commits_since(base_commit, impactful_paths)
     required_bump = determine_required_bump(commits)
 
+    # If there are staged impactful changes, we default the required_bump to "patch" if it's not already set
+    if has_staged_impactful_changes() and not required_bump:
+        required_bump = "patch"
+
     if not required_bump:
         print("No feature or fix commits detected. Version bump may not be required.")
         return True
@@ -119,23 +136,34 @@ def check_impact():
     b_major, b_minor, b_patch = map(int, base_version.split('.'))
     c_major, c_minor, c_patch = map(int, current_version.split('.'))
 
+    is_bumped = False
     if required_bump == "major":
-        if c_major > b_major:
-            return True
-        else:
-            print("Error: A BREAKING CHANGE was detected, but the Major version was not bumped.")
-            return False
+        is_bumped = (c_major > b_major)
     elif required_bump == "minor":
-        if c_major > b_major or (c_major == b_major and c_minor > b_minor):
-            return True
-        else:
-            print("Error: A new feature (feat) was detected, but the Minor version was not bumped.")
-            return False
+        is_bumped = (c_major > b_major or (c_major == b_major and c_minor > b_minor))
     elif required_bump == "patch":
-        if c_major > b_major or (c_major == b_major and c_minor > b_minor) or (c_major == b_major and c_minor == b_minor and c_patch > b_patch):
-            return True
+        is_bumped = (c_major > b_major or (c_major == b_major and c_minor > b_minor) or (c_major == b_major and c_minor == b_minor and c_patch > b_patch))
+
+    if not is_bumped:
+        is_ci = os.getenv('GITHUB_ACTIONS') == 'true' or os.getenv('CI') == 'true'
+        if not is_ci:
+            print(f"Version bump required ({required_bump}). Automatically running bump_version.py...")
+            try:
+                cmd = [sys.executable, "scripts/bump_version.py", "--type", required_bump]
+                subprocess.run(cmd, check=True)
+                new_version = get_version_from_file('projects/app/version.json')
+                print(f"\n[SUCCESS] Version has been automatically bumped from {current_version} to {new_version} ({required_bump}).")
+                print("Please stage the modified files (git add) and commit again.")
+            except Exception as e:
+                print(f"Error automatically bumping version: {e}")
+            sys.exit(1)
         else:
-            print("Error: A fix was detected, but the version was not bumped.")
+            if required_bump == "major":
+                print("Error: A BREAKING CHANGE was detected, but the Major version was not bumped.")
+            elif required_bump == "minor":
+                print("Error: A new feature (feat) was detected, but the Minor version was not bumped.")
+            elif required_bump == "patch":
+                print("Error: A fix was detected, but the version was not bumped.")
             return False
 
     return True

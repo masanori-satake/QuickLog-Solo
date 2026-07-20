@@ -15,6 +15,7 @@ export default {
     // Auto Stop & Page Break
     'page-break': 'Saut de page',
     'btn-add-page-break': 'Ajouter un saut de page',
+    'btn-add-category': 'Ajouter une catégorie',
     'confirm-delete-page-break': 'Voulez-vous supprimer ce saut de page ?',
 
     // Tooltips
