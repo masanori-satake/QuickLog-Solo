@@ -66,14 +66,14 @@ jobs:
         run: |
           TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name }}"
 
-          # 1. Ensure the release exists (create if missing)
+          # 1. Ensure the release exists (create as a draft if missing)
           if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            echo "Release $TAG_NAME does not exist. Creating new release..."
+            echo "Release $TAG_NAME does not exist. Creating new draft release..."
             MAX_RETRIES=5
             RETRY_COUNT=0
             SUCCESS=false
             while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-              if gh release create "$TAG_NAME" --generate-notes; then
+              if gh release create "$TAG_NAME" --draft --generate-notes; then
                 SUCCESS=true
                 break
               else
@@ -87,7 +87,8 @@ jobs:
               exit 1
             fi
           else
-            echo "Release $TAG_NAME already exists."
+            echo "Release $TAG_NAME already exists. Editing to ensure it is in draft status before asset uploads..."
+            gh release edit "$TAG_NAME" --draft
           fi
 
           # 2. Upload assets sequentially with pre-upload cleanup and retries to avoid race conditions
@@ -126,3 +127,24 @@ jobs:
             sleep 3  # Brief delay between assets to avoid concurrent write rate limits
           done
           echo "All assets uploaded successfully!"
+
+          # 3. Publish the release by removing draft status
+          echo "Publishing release $TAG_NAME..."
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+          SUCCESS=false
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if gh release edit "$TAG_NAME" --draft=false; then
+              SUCCESS=true
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT+1))
+              echo "gh release edit --draft=false failed. Retrying in 10 seconds ($RETRY_COUNT/$MAX_RETRIES)..."
+              sleep 10
+            fi
+          done
+          if [ "$SUCCESS" = false ]; then
+            echo "Failed to publish release $TAG_NAME after $MAX_RETRIES attempts."
+            exit 1
+          fi
+          echo "Successfully published release $TAG_NAME!"
