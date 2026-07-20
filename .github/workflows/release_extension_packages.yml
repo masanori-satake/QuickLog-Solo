@@ -90,23 +90,39 @@ jobs:
             echo "Release $TAG_NAME already exists."
           fi
 
-          # 2. Upload assets with retries and --clobber
+          # 2. Upload assets sequentially with pre-upload cleanup and retries to avoid race conditions
           echo "Uploading assets to release $TAG_NAME..."
-          MAX_RETRIES=5
-          RETRY_COUNT=0
-          SUCCESS=false
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            if gh release upload "$TAG_NAME" releases/*.zip --clobber; then
-              SUCCESS=true
-              break
-            else
-              RETRY_COUNT=$((RETRY_COUNT+1))
-              echo "gh release upload failed. Retrying in 10 seconds ($RETRY_COUNT/$MAX_RETRIES)..."
-              sleep 10
+          for filepath in releases/*.zip; do
+            filename=$(basename "$filepath")
+            echo "Processing asset: $filename..."
+
+            MAX_RETRIES=5
+            RETRY_COUNT=0
+            SUCCESS=false
+
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              # Ensure no pre-existing or partially uploaded asset of the same name exists
+              # This prevents "ReleaseAsset.name already exists" and "Error creating policy" errors on retry
+              echo "Ensuring no pre-existing asset named $filename exists..."
+              gh release delete-asset "$TAG_NAME" "$filename" -y >/dev/null 2>&1 || true
+              sleep 3
+
+              echo "Uploading $filename (Attempt $((RETRY_COUNT+1))/$MAX_RETRIES)..."
+              if gh release upload "$TAG_NAME" "$filepath"; then
+                SUCCESS=true
+                break
+              else
+                RETRY_COUNT=$((RETRY_COUNT+1))
+                echo "Upload of $filename failed. Retrying in 15 seconds ($RETRY_COUNT/$MAX_RETRIES)..."
+                sleep 15
+              fi
+            done
+
+            if [ "$SUCCESS" = false ]; then
+              echo "Failed to upload $filename after $MAX_RETRIES attempts."
+              exit 1
             fi
+            echo "Successfully uploaded $filename!"
+            sleep 3  # Brief delay between assets to avoid concurrent write rate limits
           done
-          if [ "$SUCCESS" = false ]; then
-            echo "Failed to upload assets after $MAX_RETRIES attempts."
-            exit 1
-          fi
-          echo "Assets uploaded successfully!"
+          echo "All assets uploaded successfully!"
