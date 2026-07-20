@@ -512,7 +512,7 @@ function applyFont(fontValue) {
 
 function applyFontWeight(weightValue) {
     const weights = {
-        'normal': '',
+        'normal': '400',
         'medium': '500',
         'bold': '700',
         'heavy': '900'
