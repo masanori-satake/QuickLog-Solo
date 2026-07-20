@@ -420,7 +420,7 @@ export default {
     'sync-setup-cloud-to-local': '다른 단말기의 데이터로 덮어쓰기',
     'sync-setup-local-to-cloud': '이 단말기의 데이터로 다른 단말기 덮어쓰기',
     'sync-setup-merge': '단말기 데이터와 이 단말기의 기록을 병합',
-    'display-mode-retro-lcd': 'レトロ液晶',
-    'display-mode-retro-crt': 'ブラウン管',
-    'display-mode-retro-nixie': 'ニキシー管',
+    'display-mode-retro-lcd': '레트로 액정',
+    'display-mode-retro-crt': '브라운관',
+    'display-mode-retro-nixie': '닉시관',
 };
