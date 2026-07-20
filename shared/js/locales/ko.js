@@ -118,6 +118,7 @@ export default {
     // Auto Stop & Page Break
     'page-break': '페이지 나누기',
     'btn-add-page-break': '페이지 나누기 추가',
+    'btn-add-category': 'カテゴリを追加',
     'confirm-delete-page-break': '이 페이지 나누기를 삭제하시겠습니까?',
     // Tooltips
     'tooltip-copy-report': '일일 보고서를 클립보드에 복사',
