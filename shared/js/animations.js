@@ -23,6 +23,7 @@ export class AnimationEngine {
         this.initialized = false;
         this.setupDone = false;
         this.requestRawBitmap = false;
+        this.lastRenderStartTime = 0;
         this.onRawBitmapDraw = null;
         this.onStop = null;
 
@@ -194,6 +195,10 @@ export class AnimationEngine {
 
         // 1. Clear background (transparent canvas for CSS-level backgrounds and drop-shadows)
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        if (this.lastRenderStartTime !== this.startTime) {
+            this.lastDots = null;
+            this.lastRenderStartTime = this.startTime;
+        }
         if (mode !== 'retro-lcd') {
             this.lastDots = null;
         }
