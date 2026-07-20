@@ -65,10 +65,48 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name }}"
-          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            echo "Release $TAG_NAME already exists. Uploading assets..."
-            gh release upload "$TAG_NAME" releases/*.zip --clobber
+
+          # 1. Ensure the release exists (create if missing)
+          if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Release $TAG_NAME does not exist. Creating new release..."
+            MAX_RETRIES=5
+            RETRY_COUNT=0
+            SUCCESS=false
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              if gh release create "$TAG_NAME" --generate-notes; then
+                SUCCESS=true
+                break
+              else
+                RETRY_COUNT=$((RETRY_COUNT+1))
+                echo "gh release create failed. Retrying in 10 seconds ($RETRY_COUNT/$MAX_RETRIES)..."
+                sleep 10
+              fi
+            done
+            if [ "$SUCCESS" = false ]; then
+              echo "Failed to create release after $MAX_RETRIES attempts."
+              exit 1
+            fi
           else
-            echo "Creating new release $TAG_NAME and uploading assets..."
-            gh release create "$TAG_NAME" releases/*.zip --generate-notes
+            echo "Release $TAG_NAME already exists."
           fi
+
+          # 2. Upload assets with retries and --clobber
+          echo "Uploading assets to release $TAG_NAME..."
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+          SUCCESS=false
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if gh release upload "$TAG_NAME" releases/*.zip --clobber; then
+              SUCCESS=true
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT+1))
+              echo "gh release upload failed. Retrying in 10 seconds ($RETRY_COUNT/$MAX_RETRIES)..."
+              sleep 10
+            fi
+          done
+          if [ "$SUCCESS" = false ]; then
+            echo "Failed to upload assets after $MAX_RETRIES attempts."
+            exit 1
+          fi
+          echo "Assets uploaded successfully!"
