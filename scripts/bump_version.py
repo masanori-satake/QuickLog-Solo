@@ -144,6 +144,12 @@ def main():
             new_content
         )
 
+        new_content = re.sub(
+            r'QuickLog-Solo-Dev-v[0-9.]+\.zip',
+            f'QuickLog-Solo-Dev-v{new_version}.zip',
+            new_content
+        )
+
         if content != new_content:
             with open(readme_path, 'w', encoding='utf-8') as f:
                 f.write(new_content)
