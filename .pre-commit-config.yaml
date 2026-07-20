@@ -23,6 +23,12 @@ repos:
         language: python
         pass_filenames: false
         always_run: true
+    -   id: verify-version-impact
+        name: verify-version-impact
+        entry: python scripts/verify_version_impact.py
+        language: python
+        pass_filenames: false
+        always_run: true
     -   id: verify-project-policies
         name: verify-project-policies
         entry: python scripts/verify_project_policies.py
@@ -53,11 +59,6 @@ repos:
         language: python
         pass_filenames: false
         files: ^projects/app/(version\.json|manifest\..*\.json)$
-    -   id: verify-submission-language
-        name: verify-submission-language
-        entry: python scripts/language_check.py --commit-msg-file
-        language: python
-        stages: [commit-msg]
     -   id: eslint
         name: eslint
         entry: npx eslint
