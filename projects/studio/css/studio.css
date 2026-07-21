@@ -719,12 +719,12 @@ body.theme-light .hl-bracket { color: #af00db; }
     color: #fff;
 }
 
-.color-preset .material-symbols-outlined {
+.color-preset-check {
     font-size: 16px;
     opacity: 0;
 }
 
-.color-preset.active .material-symbols-outlined {
+.color-preset.active .color-preset-check {
     opacity: 1;
 }
 
