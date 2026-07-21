@@ -565,6 +565,12 @@ input[type="text"]:disabled, select:disabled {
     border-radius: var(--md-sys-shape-medium);
 }
 
+.preview-container.retro-lcd #animation-canvas,
+.preview-container.retro-crt #animation-canvas,
+.preview-container.retro-nixie #animation-canvas {
+    background-color: transparent !important;
+}
+
 .preview-overlay-base {
     position: absolute;
     inset: 0;
@@ -1213,4 +1219,8 @@ body.theme-light .secondary-btn:hover {
     75% {
         opacity: 0.993;
     }
+}
+
+#preview-container.anim-active #animation-canvas {
+    background-color: transparent !important;
 }

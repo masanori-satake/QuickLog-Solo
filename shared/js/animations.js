@@ -23,6 +23,8 @@ export class AnimationEngine {
         this.initialized = false;
         this.setupDone = false;
         this.requestRawBitmap = false;
+        this.lastRenderStartTime = 0;
+        this.lastDots = null;
         this.onRawBitmapDraw = null;
         this.onStop = null;
 
@@ -192,19 +194,11 @@ export class AnimationEngine {
                      (colLower === 'retro-nixie' || colLower === '#ff5500') ? 'retro-nixie' :
                      (this.displayMode || 'normal');
 
-        // 1. Clear background/fill with retro color
-        if (mode === 'retro-lcd') {
-            this.ctx.fillStyle = '#9bbc0f'; // LCD backplate base
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        } else if (mode === 'retro-crt') {
-            this.ctx.fillStyle = '#030c04'; // CRT dark green
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        } else if (mode === 'retro-nixie') {
-            this.ctx.fillStyle = '#0c0603'; // Nixie dark rusty metal
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        } else {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // 1. Clear background (transparent canvas for CSS-level backgrounds and drop-shadows)
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        if (this.lastRenderStartTime !== this.startTime) {
             this.lastDots = null;
+            this.lastRenderStartTime = this.startTime;
         }
 
         // 2. Render STN LCD Ghosting (Slow latency simulation)
