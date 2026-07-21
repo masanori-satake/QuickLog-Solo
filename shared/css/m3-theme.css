@@ -244,6 +244,30 @@ body.theme-dark {
     color: var(--current-cat-on-container) !important;
 }
 
+.cat-retro-lcd {
+    --current-cat-container: #9bbc0f;
+    --current-cat-on-container: #0f380f;
+
+    background-color: var(--current-cat-container) !important;
+    color: var(--current-cat-on-container) !important;
+}
+
+.cat-retro-crt {
+    --current-cat-container: #030c04;
+    --current-cat-on-container: #3f3;
+
+    background-color: var(--current-cat-container) !important;
+    color: var(--current-cat-on-container) !important;
+}
+
+.cat-retro-nixie {
+    --current-cat-container: #0c0603;
+    --current-cat-on-container: #f50;
+
+    background-color: var(--current-cat-container) !important;
+    color: var(--current-cat-on-container) !important;
+}
+
 .cat-secondary {
     --current-cat-container: var(--custom-cat-secondary-container);
     --current-cat-on-container: var(--custom-cat-on-secondary-container);
