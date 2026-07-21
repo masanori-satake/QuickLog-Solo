@@ -28,6 +28,9 @@ let offscreenCanvas = null;
 let offscreenCtx = null;
 import { CELL_SIZE } from './utils.js';
 
+let initPromise = null;
+let speedFactor = 1.0;
+
 const DOT_SIZE_LARGE = 4;
 const DOT_SIZE_MID = 3;
 const DOT_SIZE_SMALL = 2;
