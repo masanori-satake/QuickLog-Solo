@@ -24,6 +24,7 @@ export class AnimationEngine {
         this.setupDone = false;
         this.requestRawBitmap = false;
         this.lastRenderStartTime = 0;
+        this.lastDots = null;
         this.onRawBitmapDraw = null;
         this.onStop = null;
 
@@ -198,9 +199,6 @@ export class AnimationEngine {
         if (this.lastRenderStartTime !== this.startTime) {
             this.lastDots = null;
             this.lastRenderStartTime = this.startTime;
-        }
-        if (mode !== 'retro-lcd') {
-            this.lastDots = null;
         }
 
         // 2. Render STN LCD Ghosting (Slow latency simulation)

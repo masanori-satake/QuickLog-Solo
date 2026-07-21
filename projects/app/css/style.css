@@ -1,7 +1,5 @@
 :root {
     --border-width: 1px;
-    --font-family: 'Roboto', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
-    --standard-ui-font: 'Roboto', 'Inter', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
     --timer-height-factor: 1;
     --timer-base-height: 80px;
 }
