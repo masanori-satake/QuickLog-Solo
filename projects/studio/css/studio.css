@@ -1303,7 +1303,6 @@ body.theme-dark .tape-btn.primary {
 /* 2. CRT Monitor Mode */
 #preview-container.retro-crt {
     background-color: #030c04 !important;
-    box-shadow: inset 0 0 24px rgba(0,0,0,0.92);
     animation: crt-jitter-flicker 0.15s infinite;
 }
 
@@ -1326,7 +1325,6 @@ body.theme-dark .tape-btn.primary {
 /* 3. Nixie Tube Mode */
 #preview-container.retro-nixie {
     background-color: #0c0603 !important;
-    box-shadow: inset 0 0 32px rgba(0,0,0,0.95);
     position: relative;
     filter: url("#nixie-heat-shimmer");
     animation: nixie-flicker 0.2s infinite;

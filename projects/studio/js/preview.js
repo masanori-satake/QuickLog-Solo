@@ -29,8 +29,7 @@ export function initPreview(state, elements) {
             }
 
             const check = document.createElement('span');
-            check.className = 'material-symbols-outlined';
-            check.setAttribute('aria-hidden', 'true');
+            check.className = 'material-symbols-outlined color-preset-check';
             check.textContent = 'check';
             div.appendChild(check);
 

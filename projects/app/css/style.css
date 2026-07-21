@@ -1880,7 +1880,7 @@ body.theme-dark button:active {
 /* 2. CRT Monitor Mode */
 #current-task-display.retro-crt {
     background-color: #030c04 !important;
-    box-shadow: inset 0 0 24px rgba(0,0,0,0.92), var(--md-sys-elevation-1);
+    box-shadow: var(--md-sys-elevation-1);
     animation: crt-jitter-flicker 0.15s infinite;
 }
 
@@ -1917,7 +1917,6 @@ body.theme-dark button:active {
 /* 3. Nixie Tube Mode */
 #current-task-display.retro-nixie {
     background-color: #0c0603 !important;
-    box-shadow: inset 0 0 32px rgba(0,0,0,0.95);
     position: relative;
     filter: url("#nixie-heat-shimmer");
     animation: nixie-flicker 0.2s infinite;
