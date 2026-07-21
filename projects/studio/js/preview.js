@@ -27,6 +27,12 @@ export function initPreview(state, elements) {
             if (color.startsWith('#')) {
                 div.style.backgroundColor = color;
             }
+
+            const check = document.createElement('span');
+            check.className = 'material-symbols-outlined';
+            check.textContent = 'check';
+            div.appendChild(check);
+
             div.addEventListener('click', () => {
                 state.currentPreviewColor = color;
                 document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));

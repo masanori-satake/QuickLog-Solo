@@ -1138,6 +1138,7 @@ body.theme-light .secondary-btn:hover {
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
     background-size: 100% 4px, 3px 100%;
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.92);
 }
 
 .preview-container.retro-crt #animation-canvas {
@@ -1187,6 +1188,7 @@ body.theme-light .secondary-btn:hover {
     /* Glass bulb glare highlight */
     background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 40%, transparent 100%);
     border-radius: inherit;
+    box-shadow: inset 0 0 32px rgba(0,0,0,0.95);
 }
 
 .preview-container.retro-nixie #animation-canvas {
