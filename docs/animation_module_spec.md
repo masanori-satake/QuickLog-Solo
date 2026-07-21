@@ -258,7 +258,7 @@ return [
 
 #### 6.2.2. `'matrix'` モード
 
-`(number \| Object)` の二次元配列にて、数値（従来互換）のほか、オブジェクト `{ size: number, color?: string, alpha?: number }` を直接渡せます。
+`(number | Object)` の二次元配列にて、数値（従来互換）のほか、オブジェクト `{ size: number, color?: string, alpha?: number }` を直接渡せます。
 
 ```javascript
 // 返り値の例
