@@ -28,12 +28,6 @@ let offscreenCanvas = null;
 let offscreenCtx = null;
 import { CELL_SIZE } from './utils.js';
 
-let speedFactor = 1.0;
-let initPromise = null;
-
-const BRIGHTNESS_HIGH = 120;
-const BRIGHTNESS_MID = 60;
-const BRIGHTNESS_LOW = 10;
 const DOT_SIZE_LARGE = 4;
 const DOT_SIZE_MID = 3;
 const DOT_SIZE_SMALL = 2;
@@ -130,7 +124,7 @@ function _isInExclusion(x, y, exclusionAreas) {
 }
 
 function performDraw(params) {
-    const { width, height, canvasWidth, exclusionAreas = [], realExclusionAreas, elapsedMs, requestRawBitmap } = params;
+    const { width, height, canvasWidth, exclusionAreas = [], realExclusionAreas, elapsedMs } = params;
 
     // Apply speed factor to elapsed time
     const modifiedElapsedMs = elapsedMs * speedFactor;

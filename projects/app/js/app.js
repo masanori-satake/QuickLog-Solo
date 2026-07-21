@@ -848,11 +848,6 @@ function updateAnimationExclusionAreas() {
     }
 }
 
-function forceExclusionUpdate() {
-    exclusionAreasNeedUpdate = true;
-    animationEngine.setExclusionAreas(exclusionAreas);
-}
-
 function handleSyncMessage(data) {
     if (!data) return;
     if (data.type === 'reload') {
