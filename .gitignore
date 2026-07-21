@@ -10,3 +10,6 @@ __pycache__/
 reproduce_*.py
 verify_*.py
 !scripts/verify_*.py
+
+# Built extension packages
+releases/*.zip

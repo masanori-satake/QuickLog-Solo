@@ -58,7 +58,9 @@ jobs:
         run: python3 -m playwright install chromium --with-deps
 
       - name: Build packages
-        run: npm run build
+        run: |
+          rm -rf releases/*.zip
+          npm run build
 
       - name: Create GitHub Release and Upload Assets
         env:
