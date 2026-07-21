@@ -151,6 +151,11 @@ let reportSettings = {
     duration: 'none',
     adjust: 'none'
 };
+/** @type {Map<string, {text: string, hidden: boolean}>} */
+let lastExclusionState = new Map();
+/** @type {boolean} */
+let exclusionAreasNeedUpdate = true;
+
 
 const getEl = (id) => document.getElementById(id);
 const queryAll = (selector) => document.querySelectorAll(selector);
@@ -193,6 +198,7 @@ async function stopTask(customEndTime = null) {
     if (syncTimeout) clearTimeout(syncTimeout);
     activeTask = await stopTaskLogic(activeTask, true, customEndTime);
     broadcastSync();
+    exclusionAreasNeedUpdate = true;
 }
 
 async function endTask() {
@@ -200,6 +206,7 @@ async function endTask() {
     if (await showConfirm(t('confirm-end-task'))) {
         await stopTask();
         updateUI();
+        exclusionAreasNeedUpdate = true;
     }
 }
 
@@ -487,6 +494,7 @@ function applyTimerHeight(height) {
     if (animationEngine) {
         animationEngine.resize();
         updateAnimationExclusionAreas();
+        exclusionAreasNeedUpdate = true;
     }
 }
 
@@ -562,6 +570,7 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
         getEl(ID_PAUSE_BTN)?.classList.add('anim-active');
         getEl(ID_END_BTN)?.classList.add('anim-active');
         updateAnimationExclusionAreas();
+        exclusionAreasNeedUpdate = true;
     } else {
         if (currentActiveAnimation !== null) {
             animationEngine?.stop();
@@ -782,54 +791,65 @@ function createLogElement(log, categoryMap) {
 }
 
 function updateAnimationExclusionAreas() {
-    if (!animationEngine) return;
+    if (!animationEngine || !exclusionAreasNeedUpdate) return;
+
     const canvas = getEl('animation-canvas');
     if (!canvas) return;
     const canvasRect = canvas.getBoundingClientRect();
 
-    // Grouping related elements into separate logical areas for cleaner exclusion
-    const taskNameText = getEl('current-task-name-text');
-    const statusLabel = getEl(ID_STATUS_LABEL);
-    const elapsedTime = getEl(ID_ELAPSED_TIME);
+    const elementsToExclude = [
+        { id: 'current-task-name-text', el: getEl('current-task-name-text') },
+        { id: 'status-label', el: getEl(ID_STATUS_LABEL) },
+        { id: 'elapsed-time', el: getEl(ID_ELAPSED_TIME) }
+    ];
 
     const exclusionAreas = [];
+    let hasStateChanged = false;
 
-    if (taskNameText && taskNameText.textContent !== '-') {
-        const rect = taskNameText.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0) {
-            exclusionAreas.push({
-                x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
-                y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
-                width: rect.width + (EXCLUSION_PADDING_X * 2),
-                height: rect.height + (EXCLUSION_PADDING_Y * 2)
-            });
+    for (const { id, el } of elementsToExclude) {
+        if (!el) continue;
+
+        const text = el.textContent || '';
+        const isHidden = el.classList.contains('hidden') || el.textContent === '-';
+        const lastState = lastExclusionState.get(id);
+
+        if (!lastState || lastState.text !== text || lastState.hidden !== isHidden) {
+            hasStateChanged = true;
+            break;
         }
     }
 
-    if (statusLabel) {
-        const rect = statusLabel.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0) {
-            exclusionAreas.push({
-                x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
-                y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
-                width: rect.width + (EXCLUSION_PADDING_X * 2),
-                height: rect.height + (EXCLUSION_PADDING_Y * 2)
-            });
-        }
-    }
+    // Only recalculate if state has changed or forced update
+    if (hasStateChanged || exclusionAreasNeedUpdate) {
+        lastExclusionState.clear();
 
-    if (elapsedTime && !elapsedTime.classList.contains('hidden')) {
-        const rect = elapsedTime.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0) {
-            exclusionAreas.push({
-                x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
-                y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
-                width: rect.width + (EXCLUSION_PADDING_X * 2),
-                height: rect.height + (EXCLUSION_PADDING_Y * 2)
-            });
-        }
-    }
+        for (const { id, el } of elementsToExclude) {
+            if (!el) continue;
 
+            const text = el.textContent || '';
+            const isHidden = el.classList.contains('hidden') || el.textContent === '-';
+            lastExclusionState.set(id, { text, hidden: isHidden });
+
+            if (!isHidden) {
+                const rect = el.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                    exclusionAreas.push({
+                        x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
+                        y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
+                        width: rect.width + (EXCLUSION_PADDING_X * 2),
+                        height: rect.height + (EXCLUSION_PADDING_Y * 2)
+                    });
+                }
+            }
+        }
+
+        animationEngine.setExclusionAreas(exclusionAreas);
+        exclusionAreasNeedUpdate = false;
+    }
+}
+
+function forceExclusionUpdate() {
+    exclusionAreasNeedUpdate = true;
     animationEngine.setExclusionAreas(exclusionAreas);
 }
 
@@ -866,12 +886,14 @@ function initAnimationEngine() {
         window.addEventListener('resize', () => {
             animationEngine.resize();
             updateAnimationExclusionAreas();
+            exclusionAreasNeedUpdate = true;
         });
 
         // Robustness: Handle transition-based side panel opening
         const observer = new ResizeObserver(() => {
             if (animationEngine && document.visibilityState === 'visible') {
                 animationEngine.resize();
+                exclusionAreasNeedUpdate = true;
                 updateAnimationExclusionAreas();
             }
         });
@@ -981,6 +1003,7 @@ async function syncState() {
             await updateAboutStats();
         }
     }
+    exclusionAreasNeedUpdate = true;
 }
 
 async function updateAboutStats() {
@@ -1129,6 +1152,7 @@ async function updateUI() {
         if (nameEl) nameEl.textContent = displayCategoryName;
 
         if (elements.pauseBtn) {
+            const wasDisabled = elements.pauseBtn.disabled;
             elements.pauseBtn.replaceChildren();
             const icon = createEl('span');
             icon.className = 'material-symbols-outlined btn-icon';
@@ -1144,6 +1168,8 @@ async function updateUI() {
                 text.textContent = t('pause');
                 elements.pauseBtn.disabled = false;
             }
+            // Force exclusion update if button state changes, affecting layout
+            if (wasDisabled !== elements.pauseBtn.disabled) exclusionAreasNeedUpdate = true;
             elements.pauseBtn.appendChild(icon);
             elements.pauseBtn.appendChild(text);
         }
@@ -1168,6 +1194,7 @@ async function updateUI() {
         }
         const nameEl = getEl('current-task-name-text');
         if (nameEl) nameEl.textContent = t('status-stopped-name');
+        exclusionAreasNeedUpdate = true;
 
         if (elements.pauseBtn) {
             elements.pauseBtn.disabled = true;
@@ -1194,6 +1221,7 @@ async function updateUI() {
         elements.elapsedTime.classList.remove('hidden');
         elements.elapsedTime.style.visibility = 'visible';
     }
+    updateAnimationExclusionAreas();
 }
 
 // --- Action Logic ---
@@ -2658,6 +2686,7 @@ function setupEventListeners() {
         const height = e.target.value;
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_TIMER_HEIGHT, value: height });
         applyTimerHeight(height);
+        exclusionAreasNeedUpdate = true;
         broadcastSync();
     });
 

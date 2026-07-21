@@ -5,6 +5,14 @@
 import { CELL_SIZE } from './utils.js';
 import { AnimationBase } from './animation_base.js';
 
+const BRIGHTNESS_HIGH = 120;
+const BRIGHTNESS_MID = 60;
+const BRIGHTNESS_LOW = 10;
+
+const DOT_SIZE_LARGE = 4;
+const DOT_SIZE_MID = 3;
+const DOT_SIZE_SMALL = 2;
+
 export { AnimationBase };
 
 export class AnimationEngine {
@@ -21,6 +29,10 @@ export class AnimationEngine {
         this.activeAnimationId = null;
         this.config = { exclusionStrategy: 'mask' };
         this.initialized = false;
+        // For canvas mode, we need a temporary canvas to analyze pixels on the main thread
+        this.analysisCanvas = null;
+        this.analysisCtx = null;
+
         this.setupDone = false;
         this.requestRawBitmap = false;
         this.lastRenderStartTime = 0;
@@ -173,10 +185,15 @@ export class AnimationEngine {
                 this.perfViolations = Math.max(0, this.perfViolations - 1);
             }
 
-            if (payload.rawBitmap && typeof this.onRawBitmapDraw === 'function') {
-                this.onRawBitmapDraw(payload.rawBitmap);
+            if (payload.rawBitmap) {
+                if (this.config.mode === 'canvas') {
+                    this._processAndRenderBitmap(payload.rawBitmap);
+                } else if (typeof this.onRawBitmapDraw === 'function') {
+                    this.onRawBitmapDraw(payload.rawBitmap);
+                }
+            } else {
+                this._renderDots(payload.dots);
             }
-            this._renderDots(payload.dots);
         } else if (type === 'error') {
             console.error('Animation Worker Error:', payload);
             this.stop();
@@ -188,6 +205,15 @@ export class AnimationEngine {
 
     _renderDots(dots) {
         if (!dots) return;
+        const ghostPath = new Path2D();
+        const shadowPath = new Path2D();
+        const mainPaths = {
+            darkest: new Path2D(),
+            dark_mid: new Path2D(),
+            light_mid: new Path2D(),
+            default: new Path2D()
+        };
+
         const colLower = this.color?.toLowerCase();
         const mode = (colLower === 'retro-lcd' || colLower === '#9bbc0f') ? 'retro-lcd' :
                      (colLower === 'retro-crt' || colLower === '#33ff33') ? 'retro-crt' :
@@ -203,43 +229,56 @@ export class AnimationEngine {
 
         // 2. Render STN LCD Ghosting (Slow latency simulation)
         if (mode === 'retro-lcd' && this.lastDots) {
-            this.ctx.fillStyle = 'rgba(48, 98, 48, 0.25)'; // Legacy persistent shade
             this.lastDots.forEach(dot => {
                 const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
                 const dotY = dot.y + (CELL_SIZE - dot.size) / 2;
-                this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
+                ghostPath.rect(dotX, dotY, dot.size, dot.size);
             });
+            this.ctx.fillStyle = 'rgba(48, 98, 48, 0.25)';
+            this.ctx.fill(ghostPath);
         }
 
         // 3. Render STN LCD 3D Shadow projection
         if (mode === 'retro-lcd') {
-            this.ctx.fillStyle = 'rgba(15, 56, 15, 0.22)'; // Offset shadow under dots
             dots.forEach(dot => {
                 const dotX = dot.x + (CELL_SIZE - dot.size) / 2 + 1;
                 const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + 1;
-                this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
+                shadowPath.rect(dotX, dotY, dot.size, dot.size);
             });
+            this.ctx.fillStyle = 'rgba(15, 56, 15, 0.22)';
+            this.ctx.fill(shadowPath);
         }
 
         // 4. Render Main dots
         dots.forEach(dot => {
             const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
             const dotY = dot.y + (CELL_SIZE - dot.size) / 2;
-
             if (mode === 'retro-lcd') {
                 if (dot.size === 4) this.ctx.fillStyle = '#0f380f'; // Darkest
                 else if (dot.size === 3) this.ctx.fillStyle = '#306230'; // Dark mid
                 else this.ctx.fillStyle = '#8bac0f'; // Light mid
+                mainPaths.default.rect(dotX, dotY, dot.size, dot.size);
             } else if (mode === 'retro-crt') {
-                this.ctx.fillStyle = '#33ff33'; // Neon phosphor green
+                mainPaths.default.rect(dotX, dotY, dot.size, dot.size);
             } else if (mode === 'retro-nixie') {
-                this.ctx.fillStyle = '#ff5500'; // Discharge neon orange
+                mainPaths.default.rect(dotX, dotY, dot.size, dot.size);
             } else {
-                this.ctx.fillStyle = this.color;
+                mainPaths.default.rect(dotX, dotY, dot.size, dot.size);
             }
-
-            this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
         });
+
+        if (mode === 'retro-lcd') {
+            this.ctx.fill(mainPaths.default);
+        } else if (mode === 'retro-crt') {
+            this.ctx.fillStyle = '#33ff33';
+            this.ctx.fill(mainPaths.default);
+        } else if (mode === 'retro-nixie') {
+            this.ctx.fillStyle = '#ff5500';
+            this.ctx.fill(mainPaths.default);
+        } else {
+            this.ctx.fillStyle = this.color;
+            this.ctx.fill(mainPaths.default);
+        }
 
         // 5. Save current dots as buffer for next frame's ghosting
         if (mode === 'retro-lcd') {
@@ -247,6 +286,62 @@ export class AnimationEngine {
         } else {
             this.lastDots = null;
         }
+    }
+
+    _processAndRenderBitmap(bitmap) {
+        if (!this.analysisCanvas || this.analysisCanvas.width !== bitmap.width || this.analysisCanvas.height !== bitmap.height) {
+            this.analysisCanvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+            this.analysisCtx = this.analysisCanvas.getContext('2d', { willReadFrequently: true });
+        }
+
+        this.analysisCtx.drawImage(bitmap, 0, 0);
+        const imgData = this.analysisCtx.getImageData(0, 0, bitmap.width, bitmap.height).data;
+
+        const dots = [];
+        const rows = Math.ceil(this.canvas.height / CELL_SIZE);
+        const cols = Math.ceil(this.canvas.width / CELL_SIZE);
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const cellX = c * CELL_SIZE;
+                const cellY = r * CELL_SIZE;
+
+                if (this.config.exclusionStrategy !== 'freedom' && this._isInExclusion(cellX, cellY, this.exclusionAreas)) continue;
+
+                let vCellX = cellX;
+                if (this.config.exclusionStrategy === 'jump') {
+                    const info = this._getPseudoInfo();
+                    if (cellX < info.left) vCellX = cellX;
+                    else if (cellX < info.left + info.width) continue;
+                    else vCellX = cellX - info.width;
+                }
+
+                let totalBrightness = 0;
+                let count = 0;
+                for (let dy = 0; dy < CELL_SIZE; dy++) {
+                    for (let dx = 0; dx < CELL_SIZE; dx++) {
+                        const x = vCellX + dx;
+                        const y = cellY + dy;
+                        if (x >= 0 && x < bitmap.width && y >= 0 && y < bitmap.height) {
+                            const idx = (y * bitmap.width + x) * 4;
+                            totalBrightness += imgData[idx]; // Red channel is enough for brightness
+                            count++;
+                        }
+                    }
+                }
+                const brightness = count > 0 ? totalBrightness / count : 0;
+
+                let dotSize = 0;
+                if (brightness > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;
+                else if (brightness > BRIGHTNESS_MID) dotSize = DOT_SIZE_MID;
+                else if (brightness > BRIGHTNESS_LOW) dotSize = DOT_SIZE_SMALL;
+
+                if (dotSize > 0) dots.push({ x: cellX, y: cellY, size: dotSize });
+            }
+        }
+
+        this._renderDots(dots);
+        bitmap.close();
     }
 
     stop() {
@@ -314,6 +409,13 @@ export class AnimationEngine {
         this.lastDrawRequestTime = performance.now();
         this.isDrawPending = true;
         this.worker.postMessage({ type: 'draw', payload: params });
+    }
+
+    _isInExclusion(x, y, exclusionAreas) {
+        return exclusionAreas.some(area =>
+            x < area.x + area.width && x + CELL_SIZE > area.x &&
+            y < area.y + area.height && y + CELL_SIZE > area.y
+        );
     }
 
     setExclusionAreas(areas) {

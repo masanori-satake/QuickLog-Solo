@@ -116,10 +116,9 @@ function _getPseudoInfo(exclusionAreas, canvasWidth) {
     return { left, width, totalWidth: canvasWidth - width };
 }
 
-function _mapToRealX(virtualX, strategy, exclusionAreas, canvasWidth) {
+function _mapToRealX(virtualX, strategy, info) {
     if (strategy !== 'jump') return virtualX;
-    const info = _getPseudoInfo(exclusionAreas, canvasWidth);
-    if (virtualX < info.left) return virtualX;
+    if (!info || virtualX < info.left) return virtualX;
     return virtualX + info.width;
 }
 
@@ -154,6 +153,9 @@ function performDraw(params) {
     // Use raw exclusion areas for physical masking to prevent drawing over UI
     const physicalMask = realExclusionAreas || exclusionAreas;
 
+    // Hoist jump info calculation out of the loop for performance.
+    const jumpInfo = (strategy === 'jump') ? _getPseudoInfo(physicalMask, canvasWidth) : null;
+
     let dots = [];
     let rawBitmap = null;
 
@@ -174,11 +176,10 @@ function performDraw(params) {
 
                 let virtualC = c;
                 if (strategy === 'jump') {
-                    const info = _getPseudoInfo(physicalMask, canvasWidth);
                     const realX = cellX;
-                    if (realX < info.left) virtualC = Math.floor(realX / CELL_SIZE);
-                    else if (realX < info.left + info.width) continue;
-                    else virtualC = Math.floor((realX - info.width) / CELL_SIZE);
+                    if (realX < jumpInfo.left) virtualC = Math.floor(realX / CELL_SIZE);
+                    else if (realX < jumpInfo.left + jumpInfo.width) continue;
+                    else virtualC = Math.floor((realX - jumpInfo.width) / CELL_SIZE);
                 }
 
                 if (matrix[r][virtualC] !== undefined) {
@@ -199,7 +200,7 @@ function performDraw(params) {
         if (!sprites || !Array.isArray(sprites)) return { dots: [], rawBitmap: null };
 
         sprites.forEach(sprite => {
-            const realX = _mapToRealX(sprite.x, strategy, physicalMask, canvasWidth);
+            const realX = _mapToRealX(sprite.x, strategy, jumpInfo);
             const realY = sprite.y;
             const cellX = Math.floor(realX / CELL_SIZE) * CELL_SIZE;
             const cellY = Math.floor(realY / CELL_SIZE) * CELL_SIZE;
@@ -225,60 +226,10 @@ function performDraw(params) {
         offscreenCtx.clearRect(0, 0, width, height);
         animation.draw(offscreenCtx, animationParams);
 
-        const imgData = offscreenCtx.getImageData(0, 0, width, height).data;
-        const rows = Math.ceil(height / CELL_SIZE);
-        const cols = Math.ceil(canvasWidth / CELL_SIZE);
-
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                const cellX = c * CELL_SIZE;
-                const cellY = r * CELL_SIZE;
-
-                // 1. Physical Masking: Prevent drawing over UI text/buttons (except for 'freedom' strategy)
-                if (strategy !== 'freedom' && _isInExclusion(cellX, cellY, physicalMask)) continue;
-
-                let vCellX = cellX;
-                if (strategy === 'jump') {
-                    const info = _getPseudoInfo(physicalMask, canvasWidth);
-                    if (cellX < info.left) {
-                        vCellX = cellX;
-                    } else if (cellX < info.left + info.width) {
-                        // Gap handling is already covered by physical masking above
-                        continue;
-                    } else {
-                        vCellX = cellX - info.width;
-                    }
-                }
-
-                let totalBrightness = 0;
-                let count = 0;
-                for (let dy = 0; dy < CELL_SIZE; dy++) {
-                    for (let dx = 0; dx < CELL_SIZE; dx++) {
-                        const x = vCellX + dx;
-                        const y = cellY + dy;
-                        if (x >= 0 && x < width && y >= 0 && y < height) {
-                            const idx = (y * width + x) * 4;
-                            totalBrightness += imgData[idx];
-                            count++;
-                        }
-                    }
-                }
-                const brightness = count > 0 ? totalBrightness / count : 0;
-
-                let dotSize = 0;
-                if (brightness > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;
-                else if (brightness > BRIGHTNESS_MID) dotSize = DOT_SIZE_MID;
-                else if (brightness > BRIGHTNESS_LOW) dotSize = DOT_SIZE_SMALL;
-
-                if (dotSize > 0) {
-                    dots.push({ x: cellX, y: cellY, size: dotSize });
-                }
-            }
-        }
-
-        if (requestRawBitmap) {
-            rawBitmap = offscreenCanvas.transferToImageBitmap();
-        }
+        // Transfer the canvas content as an ImageBitmap to the main thread.
+        // This avoids the costly getImageData() call in the worker.
+        // The main thread will be responsible for processing the bitmap.
+        rawBitmap = offscreenCanvas.transferToImageBitmap();
     }
     return { dots, rawBitmap };
 }
