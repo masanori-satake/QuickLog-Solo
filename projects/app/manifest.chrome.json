@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "default_locale": "en",
   "name": "__MSG_extensionName__",
-  "version": "1.14.2",
+  "version": "1.15.0",
   "description": "__MSG_extensionDescription__",
   "permissions": [
     "sidePanel",
@@ -30,7 +30,9 @@
         "shared/js/animation_base.js",
         "shared/js/utils.js"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "action": {
