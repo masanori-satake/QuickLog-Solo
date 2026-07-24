@@ -108,14 +108,32 @@ export class AnimationEngine {
         this.registry.set(name, { class: animationClass, id: id });
     }
 
-    start(name, startTime, color) {
+    async start(name, startTime, color) {
         this.stop();
         const entry = this.registry.get(name);
-        if (!entry) {
-            console.warn(`Animation "${name}" not found in registry.`);
+        if (entry) {
+            this._startStandard(entry, startTime, color);
             return;
         }
 
+        // Try custom animations
+        let metadata = null;
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            const res = await chrome.storage.local.get('custom_animation_metadata');
+            metadata = res.custom_animation_metadata;
+        } else {
+            const raw = localStorage.getItem('custom_animation_metadata');
+            if (raw) metadata = JSON.parse(raw);
+        }
+
+        if (metadata && metadata.id === name) {
+            await this._startCustom(metadata, startTime, color);
+        } else {
+            console.warn(`Animation "${name}" not found in registry or custom animations.`);
+        }
+    }
+
+    _startStandard(entry, startTime, color) {
         this.activeAnimationId = entry.id;
         this.startTime = startTime;
         this.color = color;
@@ -137,6 +155,113 @@ export class AnimationEngine {
         // Use absolute URL for module loading to be more robust across different loading contexts
         const moduleUrl = new URL(`./animation/${this.activeAnimationId}.js`, import.meta.url).href;
         this.worker.postMessage({ type: 'init', payload: { modulePath: moduleUrl } });
+    }
+
+    async _startCustom(metadata, startTime, color) {
+        this.activeAnimationId = metadata.id;
+        this.startTime = startTime;
+        this.color = color;
+        this.initialized = false;
+        this.setupDone = false;
+        this.perfViolations = 0;
+        this.warmupFrames = 0;
+
+        this.resize();
+        this.isDrawPending = false;
+
+        this.config = metadata.config || { mode: 'canvas', exclusionStrategy: 'mask' };
+
+        if (metadata.type === 'js-module') {
+            let code = '';
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                const res = await chrome.storage.local.get(`custom_animation_code_${metadata.id}`);
+                code = res[`custom_animation_code_${metadata.id}`] || '';
+            } else {
+                code = localStorage.getItem(`custom_animation_code_${metadata.id}`) || '';
+            }
+
+            if (!code) {
+                console.error('Custom animation code not found');
+                return;
+            }
+
+            if (!this.sandboxIframe) {
+                this.sandboxIframe = document.createElement('iframe');
+                this.sandboxIframe.id = 'ql-animation-sandbox';
+                this.sandboxIframe.style.display = 'none';
+                const url = typeof chrome !== 'undefined' && chrome.runtime ? chrome.runtime.getURL('sandbox.html') : 'sandbox.html';
+                this.sandboxIframe.src = url;
+                document.body.appendChild(this.sandboxIframe);
+
+                window.addEventListener('message', (e) => {
+                    if (this.sandboxIframe && e.source === this.sandboxIframe.contentWindow) {
+                        const { type: msgType, dots } = e.data;
+                        if (msgType === 'drawResponse') {
+                            this._renderDots(dots);
+                        } else if (msgType === 'error') {
+                            console.error('Sandbox error:', e.data.payload);
+                            this.stop();
+                        }
+                    }
+                });
+            }
+
+            const postStart = () => {
+                let drawWidth = this.canvas.width;
+                if (this.config.exclusionStrategy === 'jump') {
+                    drawWidth = this._getPseudoInfo().totalWidth;
+                }
+
+                const payload = {
+                    code,
+                    width: drawWidth,
+                    height: this.canvas.height,
+                    canvasWidth: this.canvas.width,
+                    startTime: this.startTime,
+                    color: this.color,
+                    animationBaseUrl: typeof chrome !== 'undefined' && chrome.runtime ? chrome.runtime.getURL('shared/js/animation_base.js') : new URL('./animation_base.js', import.meta.url).href,
+                    utilsUrl: typeof chrome !== 'undefined' && chrome.runtime ? chrome.runtime.getURL('shared/js/utils.js') : new URL('./utils.js', import.meta.url).href,
+                    speed: 1.0
+                };
+                this.sandboxIframe.contentWindow.postMessage({ type: 'start', payload }, '*');
+                this.initialized = true;
+                this.setupDone = true;
+            };
+
+            if (this.sandboxIframe.dataset.loaded === 'true') {
+                postStart();
+            } else {
+                this.sandboxIframe.onload = () => {
+                    this.sandboxIframe.dataset.loaded = 'true';
+                    postStart();
+                };
+            }
+
+        } else if (metadata.type === 'gif-sprite') {
+            const { default: GenericGifAnimation } = await import('./GenericGifAnimation.js');
+            const { getAnimationBlob } = await import('./idb_storage.js');
+            const blob = await getAnimationBlob(metadata.id);
+
+            if (!blob) {
+                console.error('GIF sprite blob not found in IndexedDB');
+                return;
+            }
+
+            this.customBlobUrl = URL.createObjectURL(blob);
+            const renderSpec = metadata.config.renderSpec || {};
+            this.localAnimation = new GenericGifAnimation(this.customBlobUrl, renderSpec);
+
+            let drawWidth = this.canvas.width;
+            if (this.config.exclusionStrategy === 'jump') {
+                drawWidth = this._getPseudoInfo().totalWidth;
+            }
+            this.localAnimation.setup(drawWidth, this.canvas.height);
+
+            this.initialized = true;
+            this.setupDone = true;
+
+            this.animate();
+        }
     }
 
     _handleWorkerMessage(e) {
@@ -259,6 +384,16 @@ export class AnimationEngine {
             this.worker.terminate();
             this.worker = null;
         }
+        if (this.sandboxIframe) {
+            this.sandboxIframe.contentWindow.postMessage({ type: 'stop' }, '*');
+        }
+        if (this.localAnimation) {
+            this.localAnimation = null;
+        }
+        if (this.customBlobUrl) {
+            URL.revokeObjectURL(this.customBlobUrl);
+            this.customBlobUrl = null;
+        }
         this.activeAnimationId = null;
         this.initialized = false;
         this.setupDone = false;
@@ -268,9 +403,117 @@ export class AnimationEngine {
     }
 
     animate() {
+        if (this.localAnimation) {
+            this.drawLocal();
+            this.requestId = requestAnimationFrame(() => this.animate());
+            return;
+        }
         if (!this.worker || !this.initialized) return;
         this.draw();
         this.requestId = requestAnimationFrame(() => this.animate());
+    }
+
+    drawLocal() {
+        if (!this.localAnimation || !this.initialized) return;
+
+        let drawWidth = this.canvas.width;
+        if (this.config.exclusionStrategy === 'jump') {
+            drawWidth = this._getPseudoInfo().totalWidth;
+        }
+
+        if (!this.localOffscreenCanvas || this.localOffscreenCanvas.width !== drawWidth || this.localOffscreenCanvas.height !== this.canvas.height) {
+            this.localOffscreenCanvas = new OffscreenCanvas(drawWidth, this.canvas.height);
+            this.localOffscreenCtx = this.localOffscreenCanvas.getContext('2d', { willReadFrequently: true });
+        }
+
+        const now = Date.now();
+        const elapsed = now - this.startTime;
+        const progress = (elapsed % this.cycleMs) / this.cycleMs;
+
+        const params = {
+            elapsedMs: elapsed,
+            progress,
+            step: Math.floor(progress * 240),
+            speed: 1.0,
+            exclusionAreas: []
+        };
+
+        this.localOffscreenCtx.clearRect(0, 0, drawWidth, this.canvas.height);
+        this.localAnimation.draw(this.localOffscreenCtx, params);
+
+        const imgData = this.localOffscreenCtx.getImageData(0, 0, drawWidth, this.canvas.height).data;
+        const rows = Math.ceil(this.canvas.height / CELL_SIZE);
+        const cols = Math.ceil(this.canvas.width / CELL_SIZE);
+        const dots = [];
+
+        const BRIGHTNESS_HIGH = 120;
+        const BRIGHTNESS_MID = 60;
+        const BRIGHTNESS_LOW = 10;
+        const DOT_SIZE_LARGE = 4;
+        const DOT_SIZE_MID = 3;
+        const DOT_SIZE_SMALL = 2;
+
+        const physicalMask = this.exclusionAreas;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const cellX = c * CELL_SIZE;
+                const cellY = r * CELL_SIZE;
+
+                if (this.config.exclusionStrategy !== 'freedom' && this._isInExclusionLocal(cellX, cellY, physicalMask)) {
+                    continue;
+                }
+
+                let vCellX = cellX;
+                if (this.config.exclusionStrategy === 'jump') {
+                    const info = this._getPseudoInfo();
+                    if (cellX < info.left) {
+                        vCellX = cellX;
+                    } else if (cellX < info.left + info.width) {
+                        continue;
+                    } else {
+                        vCellX = cellX - info.width;
+                    }
+                }
+
+                let totalBrightness = 0;
+                let count = 0;
+                for (let dy = 0; dy < CELL_SIZE; dy++) {
+                    for (let dx = 0; dx < CELL_SIZE; dx++) {
+                        const x = vCellX + dx;
+                        const y = cellY + dy;
+                        if (x >= 0 && x < drawWidth && y >= 0 && y < this.canvas.height) {
+                            const idx = (y * drawWidth + x) * 4;
+                            const R = imgData[idx];
+                            const G = imgData[idx+1];
+                            const B = imgData[idx+2];
+                            const A = imgData[idx+3]/255;
+                            totalBrightness += (0.299 * R + 0.587 * G + 0.114 * B) * A;
+                            count++;
+                        }
+                    }
+                }
+                const brightness = count > 0 ? totalBrightness / count : 0;
+
+                let dotSize = 0;
+                if (brightness > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;
+                else if (brightness > BRIGHTNESS_MID) dotSize = DOT_SIZE_MID;
+                else if (brightness > BRIGHTNESS_LOW) dotSize = DOT_SIZE_SMALL;
+
+                if (dotSize > 0) {
+                    dots.push({ x: cellX, y: cellY, size: dotSize });
+                }
+            }
+        }
+
+        this._renderDots(dots);
+    }
+
+    _isInExclusionLocal(x, y, exclusionAreas) {
+        return exclusionAreas.some(area =>
+            x < area.x + area.width && x + CELL_SIZE > area.x &&
+            y < area.y + area.height && y + CELL_SIZE > area.y
+        );
     }
 
     draw() {

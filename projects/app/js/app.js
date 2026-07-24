@@ -941,7 +941,7 @@ async function syncState() {
 
     // Update Animation options
     currentAnimationType = state.animation || 'digital_rain';
-    updateAnimationSelect();
+    await updateAnimationSelect();
 
     // Update Font options first. This filters the available fonts based on language.
     updateFontSelect();
@@ -1017,7 +1017,7 @@ function getAnimationTooltip(metadata, lang) {
     return '';
 }
 
-function updateAnimationSelect() {
+async function updateAnimationSelect() {
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
         const currentLang = getLanguage();
@@ -1040,6 +1040,28 @@ function updateAnimationSelect() {
             opt.title = getAnimationTooltip(anim.metadata, currentLang);
             animSelect.appendChild(opt);
         });
+
+        // Load custom animation if present
+        let customMetadata = null;
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            const res = await chrome.storage.local.get('custom_animation_metadata');
+            customMetadata = res.custom_animation_metadata;
+        } else {
+            const raw = localStorage.getItem('custom_animation_metadata');
+            if (raw) customMetadata = JSON.parse(raw);
+        }
+
+        if (customMetadata) {
+            const opt = createEl('option');
+            opt.value = customMetadata.id;
+            const customName = typeof customMetadata.metadata.name === 'object'
+                ? (customMetadata.metadata.name[currentLang] || customMetadata.metadata.name['en'] || customMetadata.id)
+                : customMetadata.metadata.name;
+            opt.textContent = `⭐ ${customName}`;
+            opt.title = getAnimationTooltip(customMetadata.metadata, currentLang);
+            animSelect.appendChild(opt);
+        }
+
         animSelect.value = currentAnimationType;
     }
 }
@@ -2613,7 +2635,7 @@ function setupEventListeners() {
         applyLanguage();
 
         // Update selectors based on the new language
-        updateAnimationSelect();
+        await updateAnimationSelect();
         updateFontSelect();
         // Save the font change if updateFontSelect had to fallback
         const newFontValue = getEl(ID_FONT_SELECT).value;
@@ -3179,6 +3201,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupEventListeners();
         await handleTestParameters();
 
+        // Real-time custom animation change/delete listener
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+            chrome.storage.onChanged.addListener(async (changes, areaName) => {
+                if (areaName === 'local' && changes.custom_animation_metadata) {
+                    const oldValue = changes.custom_animation_metadata.oldValue;
+                    const newValue = changes.custom_animation_metadata.newValue;
+
+                    if (oldValue && !newValue) {
+                        // Deletion occurred! Fallback safely to standard default ('digital_rain')
+                        const state = await getCurrentAppState();
+                        if (state.animation === oldValue.id) {
+                            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ANIMATION, value: 'digital_rain' });
+                        }
+                        if (currentAnimationType === oldValue.id) {
+                            currentAnimationType = 'digital_rain';
+                        }
+                        await syncState();
+                    } else if (newValue) {
+                        // Import occurred! Trigger a UI sync
+                        await syncState();
+                    }
+                }
+            });
+        }
+
         isAppInitialized = true;
         await syncState();
     } catch (e) {
@@ -3256,7 +3303,7 @@ async function handleTestParameters() {
         const resumable = urlParams.get(URL_PARAM_TEST_RESUMABLE);
         const startTime = Date.now() - elapsed;
 
-        // 既存のタスクを強制終了
+        // 既存 of タスクを強制終了
         if (activeTask) {
             await stopTaskLogic(activeTask);
         }

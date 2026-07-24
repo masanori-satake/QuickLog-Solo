@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>QuickLog-Solo Custom Animation Sandbox</title>
+</head>
+<body>
+    <script type="module">
+        let animation = null;
+        let animationFrameId = null;
+        let offscreenCanvas = null;
+        let offscreenCtx = null;
+        let speedFactor = 1.0;
+        let activeStartTime = 0;
+        let activeColor = '#1976d2';
+
+        const CELL_SIZE = 6;
+        const BRIGHTNESS_HIGH = 120;
+        const BRIGHTNESS_MID = 60;
+        const BRIGHTNESS_LOW = 10;
+        const DOT_SIZE_LARGE = 4;
+        const DOT_SIZE_MID = 3;
+        const DOT_SIZE_SMALL = 2;
+
+        window.addEventListener('message', async (e) => {
+            const { type, payload } = e.data;
+
+            if (type === 'start') {
+                stopAnimation();
+
+                const {
+                    code, width, height, canvasWidth, startTime, color,
+                    animationBaseUrl, utilsUrl, speed
+                } = payload;
+
+                activeStartTime = startTime || Date.now();
+                activeColor = color || '#1976d2';
+                speedFactor = speed || 1.0;
+
+                if (e.data.canvas) {
+                    offscreenCanvas = e.data.canvas;
+                } else if (!offscreenCanvas || offscreenCanvas.width !== width || offscreenCanvas.height !== height) {
+                    offscreenCanvas = new OffscreenCanvas(width, height);
+                }
+                offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+
+                try {
+                    let processedCode = code;
+                    if (animationBaseUrl) {
+                        processedCode = processedCode.replace(/import\s*{\s*AnimationBase\s*}\s*from\s*['"].*animation_base\.js['"]/g, `import { AnimationBase } from "${animationBaseUrl}"`);
+                    }
+                    if (utilsUrl) {
+                        processedCode = processedCode.replace(/import\s*{\s*CELL_SIZE\s*}\s*from\s*['"].*utils\.js['"]/g, `import { CELL_SIZE } from "${utilsUrl}"`);
+                    }
+
+                    const blob = new Blob([processedCode], { type: 'application/javascript' });
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    const module = await import(blobUrl);
+                    const AnimClass = module.default;
+                    animation = new AnimClass();
+
+                    if (typeof animation.setup === 'function') {
+                        animation.setup(width, height);
+                    }
+
+                    URL.revokeObjectURL(blobUrl);
+                    startLoop(width, height, canvasWidth);
+                } catch (err) {
+                    window.parent.postMessage({ type: 'error', payload: err.message }, '*');
+                }
+            } else if (type === 'stop') {
+                stopAnimation();
+            } else if (type === 'setSpeed') {
+                speedFactor = payload;
+            }
+        });
+
+        function stopAnimation() {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            animation = null;
+        }
+
+        function startLoop(width, height, canvasWidth) {
+            const config = animation.config || { mode: 'canvas' };
+            const colorMode = config.colorMode || 'mono';
+            const cycleMs = 120000; // 2 minutes cycle
+
+            const loop = () => {
+                if (!animation) return;
+
+                const elapsedMs = (Date.now() - activeStartTime) * speedFactor;
+                const progress = (elapsedMs % cycleMs) / cycleMs;
+
+                const params = {
+                    elapsedMs,
+                    progress,
+                    step: Math.floor(progress * 240),
+                    speed: speedFactor,
+                    exclusionAreas: []
+                };
+
+                let dots = [];
+
+                if (config.mode === 'matrix') {
+                    const matrix = animation.draw(null, params);
+                    if (matrix && Array.isArray(matrix)) {
+                        const rows = Math.ceil(height / CELL_SIZE);
+                        const cols = Math.ceil(canvasWidth / CELL_SIZE);
+                        for (let r = 0; r < Math.min(matrix.length, rows); r++) {
+                            if (!matrix[r]) continue;
+                            for (let c = 0; c < cols; c++) {
+                                if (matrix[r][c] !== undefined) {
+                                    const val = matrix[r][c];
+                                    let dotSize = 0;
+                                    let customColor = null;
+                                    let customAlpha = 1;
+
+                                    if (typeof val === 'object' && val !== null) {
+                                        const size = val.size;
+                                        if (size === 3) dotSize = DOT_SIZE_LARGE;
+                                        else if (size === 2) dotSize = DOT_SIZE_MID;
+                                        else if (size === 1) dotSize = DOT_SIZE_SMALL;
+                                        customColor = val.color;
+                                        customAlpha = val.alpha !== undefined ? val.alpha : 1;
+                                    } else {
+                                        if (val === 3) dotSize = DOT_SIZE_LARGE;
+                                        else if (val === 2) dotSize = DOT_SIZE_MID;
+                                        else if (val === 1) dotSize = DOT_SIZE_SMALL;
+                                    }
+
+                                    if (dotSize > 0) {
+                                        const d = { x: c * CELL_SIZE, y: r * CELL_SIZE, size: dotSize };
+                                        if (customColor) d.color = customColor;
+                                        if (customAlpha !== 1) d.alpha = customAlpha;
+                                        dots.push(d);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (config.mode === 'sprite') {
+                    const sprites = animation.draw(null, params);
+                    if (sprites && Array.isArray(sprites)) {
+                        sprites.forEach(sprite => {
+                            const cellX = Math.floor(sprite.x / CELL_SIZE) * CELL_SIZE;
+                            const cellY = Math.floor(sprite.y / CELL_SIZE) * CELL_SIZE;
+                            let dotSize = 0;
+                            if (sprite.size === 3) dotSize = DOT_SIZE_LARGE;
+                            else if (sprite.size === 2) dotSize = DOT_SIZE_MID;
+                            else if (sprite.size === 1) dotSize = DOT_SIZE_SMALL;
+
+                            if (dotSize > 0) {
+                                const d = { x: cellX, y: cellY, size: dotSize };
+                                if (sprite.color) d.color = sprite.color;
+                                if (sprite.alpha !== undefined) d.alpha = sprite.alpha;
+                                dots.push(d);
+                            }
+                        });
+                    }
+                } else {
+                    offscreenCtx.clearRect(0, 0, width, height);
+                    animation.draw(offscreenCtx, params);
+
+                    const imgData = offscreenCtx.getImageData(0, 0, width, height).data;
+                    const rows = Math.ceil(height / CELL_SIZE);
+                    const cols = Math.ceil(canvasWidth / CELL_SIZE);
+
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            const cellX = c * CELL_SIZE;
+                            const cellY = r * CELL_SIZE;
+
+                            let totalR = 0, totalG = 0, totalB = 0, totalA = 0;
+                            let totalLuminance = 0;
+                            let nonTransparentCount = 0;
+                            let count = 0;
+
+                            for (let dy = 0; dy < CELL_SIZE; dy++) {
+                                for (let dx = 0; dx < CELL_SIZE; dx++) {
+                                    const x = cellX + dx;
+                                    const y = cellY + dy;
+                                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                                        const idx = (y * width + x) * 4;
+                                        const R = imgData[idx];
+                                        const G = imgData[idx + 1];
+                                        const B = imgData[idx + 2];
+                                        const A = imgData[idx + 3] / 255;
+
+                                        const luminance = (0.299 * R + 0.587 * G + 0.114 * B) * A;
+                                        totalLuminance += luminance;
+                                        count++;
+
+                                        if (A > 0) {
+                                            totalR += R;
+                                            totalG += G;
+                                            totalB += B;
+                                            totalA += A;
+                                            nonTransparentCount++;
+                                        }
+                                    }
+                                }
+                            }
+
+                            const avgLuminance = count > 0 ? totalLuminance / count : 0;
+                            let dotSize = 0;
+                            if (avgLuminance > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;
+                            else if (avgLuminance > BRIGHTNESS_MID) dotSize = DOT_SIZE_MID;
+                            else if (avgLuminance > BRIGHTNESS_LOW) dotSize = DOT_SIZE_SMALL;
+
+                            if (dotSize > 0) {
+                                const d = { x: cellX, y: cellY, size: dotSize };
+                                if (colorMode === 'multi' && nonTransparentCount > 0) {
+                                    const avgR = Math.round(totalR / nonTransparentCount);
+                                    const avgG = Math.round(totalG / nonTransparentCount);
+                                    const avgB = Math.round(totalB / nonTransparentCount);
+                                    const avgA = +(totalA / nonTransparentCount).toFixed(2);
+                                    d.color = `rgba(${avgR},${avgG},${avgB},${avgA})`;
+                                }
+                                dots.push(d);
+                            }
+                        }
+                    }
+                }
+
+                window.parent.postMessage({ type: 'drawResponse', dots, elapsedMs }, '*');
+                animationFrameId = requestAnimationFrame(loop);
+            };
+
+            animationFrameId = requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>

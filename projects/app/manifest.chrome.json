@@ -9,11 +9,30 @@
     "alarms",
     "notifications",
     "clipboardRead",
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
   "content_security_policy": {
     "extension_pages": "default-src 'self'; connect-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://raw.githubusercontent.com;"
   },
+  "sandbox": {
+    "pages": [
+      "sandbox.html"
+    ]
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "shared/js/animation_base.js",
+        "shared/js/utils.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "action": {
     "default_title": "__MSG_actionTitle__",
     "default_icon": {
