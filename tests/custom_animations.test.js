@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals';
-import { validateCategorySchema } from '../shared/js/schema.js';
 
 // Setup mock chrome storage APIs
 global.chrome = {
