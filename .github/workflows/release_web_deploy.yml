@@ -75,6 +75,7 @@ jobs:
           cp -r projects/category-editor dist_web/projects/
           cp -r projects/alarm-editor dist_web/projects/
           cp -r projects/studio dist_web/projects/
+          cp -r projects/animation-maker dist_web/projects/
           cp -r shared dist_web/
           cp -r releases dist_web/
 
