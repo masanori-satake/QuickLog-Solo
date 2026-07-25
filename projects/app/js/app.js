@@ -2855,6 +2855,12 @@ function setupEventListeners() {
         window.open(url.toString(), '_blank', 'noopener');
     });
 
+    getEl('launch-maker-btn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const lang = getLanguage();
+        window.open(`../animation-maker/index.html?lang=${encodeURIComponent(lang)}`, '_blank', 'noopener');
+    });
+
     getEl('alarm-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
         const lang = getLanguage();

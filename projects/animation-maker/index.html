@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QL-Animation Maker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Fira+Code:wght@400;500&family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="shared/css/m3-theme.css">
+    <link rel="stylesheet" href="css/maker.css">
+    <link rel="icon" href="shared/assets/icon.svg" type="image/svg+xml">
+</head>
+<body class="theme-dark">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('maker-theme') || localStorage.getItem('studio-theme');
+            if (savedTheme === 'light') document.body.classList.replace('theme-dark', 'theme-light');
+            else if (!savedTheme && window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.classList.replace('theme-dark', 'theme-light');
+        })();
+    </script>
+    <div id="maker-app">
+        <header class="maker-header">
+            <div class="header-left">
+                <a href="../web/index.html" class="back-link" data-i18n-title="back-to-landing">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <h1 id="maker-title-heading">
+                    <span class="material-symbols-outlined film-icon">palette</span>
+                    <span data-i18n="maker-title">QL-Animation Maker</span>
+                </h1>
+                <div class="privacy-badge" data-i18n-title="privacy-policy-local-only">
+                    <span class="material-symbols-outlined">verified_user</span>
+                    <span class="privacy-text" data-i18n="privacy-policy-local-only-short">Local Only</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="theme-switch-wrapper">
+                    <span class="material-symbols-outlined">light_mode</span>
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider round"></div>
+                    </label>
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </div>
+                <div class="lang-switcher">
+                    <select id="lang-select-maker" class="lang-select">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="pt">🇧🇷 Português</option>
+                        <option value="ko">🇰🇷 한국어</option>
+                        <option value="zh">🇨🇳 简体中文</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <main class="maker-main">
+            <!-- Left Side: Control Panel & Settings -->
+            <div class="control-pane">
+                <!-- Metadata Section -->
+                <section class="metadata-section card">
+                    <h2 class="section-title">
+                        <span class="material-symbols-outlined">info</span>
+                        <span data-i18n="section-metadata">Metadata</span>
+                    </h2>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label data-i18n="label-name">Name</label>
+                            <input type="text" id="meta-name" placeholder="My Animation" max="50">
+                        </div>
+                        <div class="input-group">
+                            <label data-i18n="label-author">Author</label>
+                            <input type="text" id="meta-author" placeholder="Your Name" max="50">
+                        </div>
+                        <div class="input-group full-width">
+                            <label data-i18n="label-description">Description</label>
+                            <input type="text" id="meta-desc" placeholder="Brief explanation of your animation" max="200">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Configuration & Rendering Specs -->
+                <section class="config-section card">
+                    <h2 class="section-title">
+                        <span class="material-symbols-outlined">settings</span>
+                        <span data-i18n="section-config">Configuration</span>
+                    </h2>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label data-i18n="label-exclusion-strategy">Exclusion Strategy</label>
+                            <select id="config-exclusion-strategy">
+                                <option value="mask">Mask (Standard)</option>
+                                <option value="jump">Pseudo Space (Jump UI)</option>
+                                <option value="freedom">Ignore (Draw All)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label data-i18n="maker-overflow-behavior">Overflow Behavior</label>
+                            <select id="config-overflow">
+                                <option value="repeat">Repeat (Tile)</option>
+                                <option value="categoryColor">Category Color Fill</option>
+                            </select>
+                        </div>
+                        <div class="input-grid full-width" style="margin-top: 8px;">
+                            <div class="input-group">
+                                <label data-i18n="maker-max-width">Max Width (maxWidth)</label>
+                                <input type="number" id="config-max-width" min="10" max="1000" value="200">
+                            </div>
+                            <div class="input-group checkbox-container-maker">
+                                <label class="checkbox-inline-maker">
+                                    <input type="checkbox" id="config-scale-height" checked>
+                                    <span data-i18n="maker-scale-with-height">Scale with Height</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- File Import & Control Section -->
+                <section class="import-section card">
+                    <h2 class="section-title">
+                        <span class="material-symbols-outlined">upload_file</span>
+                        <span data-i18n="maker-gif-import">GIF Image Import</span>
+                    </h2>
+                    <div id="drop-zone" class="drop-zone">
+                        <span class="material-symbols-outlined cloud-icon">cloud_upload</span>
+                        <p data-i18n="maker-drop-hint">Drag & Drop GIF file here, or click to select</p>
+                        <input type="file" id="gif-file-input" accept="image/gif" style="display:none">
+                    </div>
+                    <div id="gif-info-box" class="gif-info-box hidden">
+                        <p><strong data-i18n="maker-file-name">File:</strong> <span id="gif-file-name">-</span></p>
+                        <p><strong data-i18n="maker-dimensions">Dimensions:</strong> <span id="gif-dimensions">-</span></p>
+                        <p><strong data-i18n="maker-frames-count">Frames:</strong> <span id="gif-frames">-</span></p>
+                    </div>
+                </section>
+
+                <!-- Interactive Parameters Monitor -->
+                <section class="params-section card">
+                    <h2 class="section-title">
+                        <span class="material-symbols-outlined">monitoring</span>
+                        <span data-i18n="maker-spec-monitor">Live Specification Specs</span>
+                    </h2>
+                    <div class="monitor-grid">
+                        <div class="monitor-item">
+                            <span class="monitor-label">focusX</span>
+                            <span id="mon-focus-x" class="monitor-value">0</span>
+                        </div>
+                        <div class="monitor-item">
+                            <span class="monitor-label">focusY</span>
+                            <span id="mon-focus-y" class="monitor-value">0</span>
+                        </div>
+                        <div class="monitor-item">
+                            <span class="monitor-label" data-i18n="maker-current-scale">Current Scale</span>
+                            <span id="mon-scale" class="monitor-value">1.0</span>
+                        </div>
+                        <div class="monitor-item">
+                            <span class="monitor-label" data-i18n="maker-target-height">targetHeight</span>
+                            <span id="mon-target-height" class="monitor-value">100</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Side: Preview & Controls -->
+            <div class="preview-pane">
+                <section class="preview-section card">
+                    <div class="preview-header">
+                        <h2 class="section-title">
+                            <span class="material-symbols-outlined">visibility</span>
+                            <span data-i18n="section-preview">Preview</span>
+                        </h2>
+                    </div>
+
+                    <!-- Aux Boundary Height Selector -->
+                    <div class="boundary-controls">
+                        <label data-i18n="maker-boundary-height">Boundary Line Height (Guide)</label>
+                        <div class="boundary-selector">
+                            <label class="radio-label">
+                                <input type="radio" name="boundary-height" value="100" checked>
+                                <span data-i18n="timer-height-normal">Normal (100px)</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="boundary-height" value="66">
+                                <span data-i18n="timer-height-compact">Compact (66px)</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="boundary-height" value="50">
+                                <span data-i18n="timer-height-mini">Mini (50px)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="preview-container-wrapper">
+                        <div id="preview-container" class="preview-container">
+                            <canvas id="animation-canvas"></canvas>
+                            <!-- Boundary Line Helpers overlaying the canvas -->
+                            <div class="boundary-line boundary-top"></div>
+                            <div class="boundary-line boundary-bottom"></div>
+                            <div class="drag-instruction-overlay">
+                                <span class="material-symbols-outlined">drag_pan</span>
+                                <span data-i18n="maker-drag-instruction">Drag image to adjust focus point</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scale Adjustment Buttons -->
+                    <div class="scale-buttons-container">
+                        <button id="btn-scale-down" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-out">
+                            <span class="material-symbols-outlined">zoom_out</span>
+                        </button>
+                        <button id="btn-scale-up" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-in">
+                            <span class="material-symbols-outlined">zoom_in</span>
+                        </button>
+                        <button id="btn-scale-reset" class="secondary-btn" data-i18n="btn-reset">
+                            <span class="material-symbols-outlined">restart_alt</span>
+                            <span data-i18n="btn-reset">Reset</span>
+                        </button>
+                    </div>
+
+                    <!-- Playback controls -->
+                    <div class="playback-controls">
+                        <button id="btn-play" class="primary-btn playback-btn" data-i18n-title="tooltip-play">
+                            <span class="material-symbols-outlined">play_arrow</span>
+                        </button>
+                        <button id="btn-pause" class="secondary-btn playback-btn" data-i18n-title="tooltip-pause">
+                            <span class="material-symbols-outlined">pause</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Actions / Clipboard section -->
+                <section class="action-section card">
+                    <h2 class="section-title">
+                        <span class="material-symbols-outlined">share</span>
+                        <span data-i18n="maker-data-transfer">Data Transfer</span>
+                    </h2>
+                    <div class="action-grid">
+                        <button id="btn-download-qlanim" class="primary-btn">
+                            <span class="material-symbols-outlined">download</span>
+                            <span data-i18n="btn-download">Download</span>
+                        </button>
+                        <button id="btn-upload-qlanim" class="secondary-btn">
+                            <span class="material-symbols-outlined">upload</span>
+                            <span data-i18n="btn-upload">Upload</span>
+                        </button>
+                        <input type="file" id="qlanim-file-input" accept=".qlanim" style="display:none">
+                    </div>
+                    <div class="clipboard-grid" style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <button id="btn-copy-clipboard" class="secondary-btn">
+                            <span class="material-symbols-outlined">content_copy</span>
+                            <span data-i18n="btn-copy">Copy</span>
+                        </button>
+                        <button id="btn-paste-clipboard" class="secondary-btn">
+                            <span class="material-symbols-outlined">content_paste</span>
+                            <span data-i18n="btn-import-json">Paste</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Error/Warning Modal -->
+    <div id="alert-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="section-title" style="color: var(--md-sys-color-error);">
+                    <span class="material-symbols-outlined">warning</span>
+                    <span data-i18n="maker-warning-title">Warning</span>
+                </h3>
+            </div>
+            <div class="modal-body" style="margin: 16px 0; line-height: 1.5;">
+                <p id="alert-modal-text">Error message goes here.</p>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+                <button id="alert-modal-close-btn" class="primary-btn" data-i18n="btn-close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+
+    <script type="module" src="js/maker.js"></script>
+</body>
+</html>

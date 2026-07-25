@@ -30,6 +30,7 @@ ALLOWED_ROOT_ITEMS = {
     ".vercelignore",
     "node_modules",
     ".pr_agent.toml",
+    ".qodo_merge.toml",
 }
 
 def check_root_directory():
