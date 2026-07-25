@@ -2551,6 +2551,9 @@ async function deleteCustomAnimation(id) {
     broadcastSync();
 }
 
+/**
+ * Registers event handlers for task controls, modals, tabs, settings, imports and exports, backups, synchronization, and maintenance actions.
+ */
 function setupEventListeners() {
     getEl(ID_PAUSE_BTN)?.addEventListener('click', () => {
         if (!activeTask) return;
