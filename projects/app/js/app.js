@@ -12,8 +12,9 @@ import {
     formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem,
     splitHistoryItem
 } from '../shared/js/logic.js';
-import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
+import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, generateUUID } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
+import { saveAnimationBlob, getAnimationBlob, deleteAnimationBlob } from '../shared/js/idb_storage.js';
 import { isSessionSyncEnabled, pullFromCloud, performInitialSync, clearCloudHistory, broadcastSync, setupBroadcastChannel } from '../shared/js/session_sync.js';
 import { animations } from '../shared/js/animation_registry.js';
 import {
@@ -941,7 +942,7 @@ async function syncState() {
 
     // Update Animation options
     currentAnimationType = state.animation || 'digital_rain';
-    updateAnimationSelect();
+    await updateAnimationSelect();
 
     // Update Font options first. This filters the available fonts based on language.
     updateFontSelect();
@@ -975,6 +976,10 @@ async function syncState() {
         const categoriesTab = getEl('categories-tab');
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
             await renderCategoryEditor();
+        }
+        const customAnimTab = getEl('custom-anim-tab');
+        if (customAnimTab && !customAnimTab.classList.contains('hidden')) {
+            await renderCustomAnimationsTab();
         }
         const aboutTab = getEl('about-tab');
         if (aboutTab && !aboutTab.classList.contains('hidden')) {
@@ -1017,7 +1022,7 @@ function getAnimationTooltip(metadata, lang) {
     return '';
 }
 
-function updateAnimationSelect() {
+async function updateAnimationSelect() {
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
         const currentLang = getLanguage();
@@ -1040,6 +1045,19 @@ function updateAnimationSelect() {
             opt.title = getAnimationTooltip(anim.metadata, currentLang);
             animSelect.appendChild(opt);
         });
+
+        // Append custom animations if available
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            const result = await chrome.storage.local.get('custom_animation_metadata_map');
+            const customAnims = result.custom_animation_metadata_map || {};
+            Object.keys(customAnims).forEach(id => {
+                const opt = createEl('option');
+                opt.value = id;
+                opt.textContent = customAnims[id].name;
+                animSelect.appendChild(opt);
+            });
+        }
+
         animSelect.value = currentAnimationType;
     }
 }
@@ -2034,6 +2052,13 @@ async function renderCategoryEditor() {
 
     const lang = getLanguage();
 
+    // Load custom animations
+    let customAnims = {};
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        const result = await chrome.storage.local.get('custom_animation_metadata_map');
+        customAnims = result.custom_animation_metadata_map || {};
+    }
+
     categories.forEach((cat, idx) => {
         const item = createEl('div');
         const isPageBreak = (cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
@@ -2088,6 +2113,13 @@ async function renderCategoryEditor() {
                         value: anim.id,
                         label: getAnimLabel(anim),
                         tooltip: getAnimationTooltip(anim.metadata, lang)
+                    };
+                }),
+                ...Object.keys(customAnims).map(id => {
+                    return {
+                        value: id,
+                        label: customAnims[id].name,
+                        tooltip: customAnims[id].description || ''
                     };
                 })
             ];
@@ -2349,6 +2381,175 @@ async function loadVersion() {
     }
 }
 
+async function renderCustomAnimationsTab() {
+    const select = getEl('custom-anim-select');
+    if (!select) return;
+
+    let customAnims = {};
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        const result = await chrome.storage.local.get('custom_animation_metadata_map');
+        customAnims = result.custom_animation_metadata_map || {};
+    }
+
+    select.replaceChildren();
+
+    const keys = Object.keys(customAnims);
+    if (keys.length === 0) {
+        const opt = createEl('option');
+        opt.value = '';
+        opt.textContent = t('anim-none');
+        select.appendChild(opt);
+        getEl('custom-anim-name').textContent = '-';
+        getEl('custom-anim-desc').textContent = '-';
+        return;
+    }
+
+    keys.forEach(id => {
+        const opt = createEl('option');
+        opt.value = id;
+        opt.textContent = customAnims[id].name;
+        select.appendChild(opt);
+    });
+
+    const selectedId = select.value;
+    if (selectedId && customAnims[selectedId]) {
+        getEl('custom-anim-name').textContent = customAnims[selectedId].name;
+        getEl('custom-anim-desc').textContent = customAnims[selectedId].description || '-';
+    } else {
+        getEl('custom-anim-name').textContent = '-';
+        getEl('custom-anim-desc').textContent = '-';
+    }
+}
+
+async function importCustomAnimation(text) {
+    let data;
+    try {
+        data = JSON.parse(text);
+    } catch (err) {
+        throw new Error('Invalid JSON', { cause: err });
+    }
+
+    if (data.format !== 'quicklog-animation-package') {
+        throw new Error('Invalid format');
+    }
+
+    const { id, metadata, config, payload } = data;
+    if (!metadata || !metadata.name || !payload || !payload.imageData || !payload.renderSpec) {
+        throw new Error('Missing fields');
+    }
+
+    let custom_animation_metadata_map = {};
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        const storageResult = await chrome.storage.local.get('custom_animation_metadata_map');
+        custom_animation_metadata_map = storageResult.custom_animation_metadata_map || {};
+    }
+
+    const finalId = (!id || custom_animation_metadata_map[id]) ? generateUUID() : id;
+
+    const byteString = atob(payload.imageData.split(',')[1]);
+    const mimeString = payload.imageData.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: mimeString });
+
+    await saveAnimationBlob(finalId, blob, payload.renderSpec);
+
+    custom_animation_metadata_map[finalId] = {
+        name: metadata.name,
+        description: metadata.description || '',
+        config: config || { exclusionStrategy: 'freedom' },
+        payload: {
+            renderSpec: payload.renderSpec
+        }
+    };
+
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        await chrome.storage.local.set({ custom_animation_metadata_map });
+    }
+
+    showToast(t('toast-custom-anim-imported') || 'Imported!');
+
+    await renderCustomAnimationsTab();
+    await updateAnimationSelect();
+    await renderCategoryEditor();
+    await updateUI();
+    broadcastSync();
+}
+window.importCustomAnimation = importCustomAnimation;
+
+async function exportCustomAnimation(id) {
+    let customAnims = {};
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        const result = await chrome.storage.local.get('custom_animation_metadata_map');
+        customAnims = result.custom_animation_metadata_map || {};
+    }
+
+    const meta = customAnims[id];
+    if (!meta) throw new Error('Metadata not found');
+
+    const blob = await getAnimationBlob(id);
+    if (!blob) throw new Error('Blob not found');
+
+    const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+
+    const exportData = {
+        format: 'quicklog-animation-package',
+        formatVersion: '1.0',
+        id: id,
+        metadata: {
+            name: meta.name,
+            description: meta.description || ''
+        },
+        config: meta.config || { exclusionStrategy: 'freedom' },
+        payload: {
+            imageData: base64,
+            renderSpec: meta.payload.renderSpec
+        }
+    };
+
+    return JSON.stringify(exportData, null, 2);
+}
+
+async function deleteCustomAnimation(id) {
+    let custom_animation_metadata_map = {};
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        const result = await chrome.storage.local.get('custom_animation_metadata_map');
+        custom_animation_metadata_map = result.custom_animation_metadata_map || {};
+    }
+
+    delete custom_animation_metadata_map[id];
+
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        await chrome.storage.local.set({ custom_animation_metadata_map });
+    }
+
+    await deleteAnimationBlob(id);
+
+    const categories = await dbGetAll(STORE_CATEGORIES);
+    for (const cat of categories) {
+        if (cat.animation === id) {
+            cat.animation = 'none';
+            await dbPut(STORE_CATEGORIES, cat);
+        }
+    }
+
+    showToast(t('toast-deleted') || 'Deleted!');
+
+    await renderCustomAnimationsTab();
+    await updateAnimationSelect();
+    await renderCategoryEditor();
+    await updateUI();
+    broadcastSync();
+}
+
 function setupEventListeners() {
     getEl(ID_PAUSE_BTN)?.addEventListener('click', () => {
         if (!activeTask) return;
@@ -2505,17 +2706,130 @@ function setupEventListeners() {
         btn.onclick = () => {
             queryAll('.tab-btn').forEach(b => b.classList.remove('active'));
             queryAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            btn.classList.add('active');
-            const target = getEl(`${btn.dataset.tab}-tab`);
+
+            let tabName = btn.dataset.tab;
+            if (tabName === 'maintenance') {
+                tabName = 'about';
+                const aboutBtn = document.querySelector('button[data-tab="about"]');
+                if (aboutBtn) aboutBtn.classList.add('active');
+            } else {
+                btn.classList.add('active');
+            }
+
+            const target = getEl(`${tabName}-tab`);
             if (target) target.classList.remove('hidden');
-            if (btn.dataset.tab === 'alarms') {
+            if (tabName === 'alarms') {
                 renderBusinessDays();
                 renderAlarmList();
             }
-            if (btn.dataset.tab === 'categories') renderCategoryEditor();
-            if (btn.dataset.tab === 'backup') updateBackupUI();
-            if (btn.dataset.tab === 'about') updateAboutStats();
+            if (tabName === 'categories') renderCategoryEditor();
+            if (tabName === 'custom-anim') renderCustomAnimationsTab();
+            if (tabName === 'backup') updateBackupUI();
+            if (tabName === 'about') {
+                updateAboutStats();
+            }
         };
+    });
+
+    // Custom Animation Tab events
+    getEl('custom-anim-select')?.addEventListener('change', async (e) => {
+        let customAnims = {};
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            const result = await chrome.storage.local.get('custom_animation_metadata_map');
+            customAnims = result.custom_animation_metadata_map || {};
+        }
+        const selectedId = e.target.value;
+        if (selectedId && customAnims[selectedId]) {
+            getEl('custom-anim-name').textContent = customAnims[selectedId].name;
+            getEl('custom-anim-desc').textContent = customAnims[selectedId].description || '-';
+        } else {
+            getEl('custom-anim-name').textContent = '-';
+            getEl('custom-anim-desc').textContent = '-';
+        }
+    });
+
+    const customAnimFileInput = getEl('custom-anim-file-input');
+    getEl('custom-anim-import-file-btn')?.addEventListener('click', () => {
+        customAnimFileInput?.click();
+    });
+
+    customAnimFileInput?.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            const text = await file.text();
+            await importCustomAnimation(text);
+        } catch (err) {
+            console.error(err);
+            alert(t('alert-invalid-qlanim') || 'Import failed');
+        } finally {
+            e.target.value = '';
+        }
+    });
+
+    getEl('custom-anim-import-clipboard-btn')?.addEventListener('click', async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+                await importCustomAnimation(text);
+            }
+        } catch (err) {
+            console.error(err);
+            alert(t('alert-invalid-qlanim') || 'Import failed');
+        }
+    });
+
+    getEl('custom-anim-export-file-btn')?.addEventListener('click', async () => {
+        const selectedId = getEl('custom-anim-select')?.value;
+        if (!selectedId) return;
+        try {
+            const jsonText = await exportCustomAnimation(selectedId);
+            const blob = new Blob([jsonText], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = createEl('a');
+
+            let customAnims = {};
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                const result = await chrome.storage.local.get('custom_animation_metadata_map');
+                customAnims = result.custom_animation_metadata_map || {};
+            }
+            const meta = customAnims[selectedId];
+            a.href = url;
+            a.download = `${meta.name.toLowerCase().replace(/\s+/g, '_') || 'animation'}.qlanim`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    getEl('custom-anim-export-clipboard-btn')?.addEventListener('click', async () => {
+        const selectedId = getEl('custom-anim-select')?.value;
+        if (!selectedId) return;
+        try {
+            const jsonText = await exportCustomAnimation(selectedId);
+            await navigator.clipboard.writeText(jsonText);
+            showToast(t('toast-custom-anim-exported') || 'Copied!');
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    getEl('custom-anim-delete-btn')?.addEventListener('click', async () => {
+        const selectedId = getEl('custom-anim-select')?.value;
+        if (!selectedId) return;
+
+        let customAnims = {};
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            const result = await chrome.storage.local.get('custom_animation_metadata_map');
+            customAnims = result.custom_animation_metadata_map || {};
+        }
+        const meta = customAnims[selectedId];
+        if (!meta) return;
+
+        if (await showConfirm(t('confirm-delete-custom-anim', { name: meta.name }) || 'Delete?')) {
+            await deleteCustomAnimation(selectedId);
+        }
     });
 
     // Backup tab listeners
@@ -2613,7 +2927,7 @@ function setupEventListeners() {
         applyLanguage();
 
         // Update selectors based on the new language
-        updateAnimationSelect();
+        await updateAnimationSelect();
         updateFontSelect();
         // Save the font change if updateFontSelect had to fallback
         const newFontValue = getEl(ID_FONT_SELECT).value;

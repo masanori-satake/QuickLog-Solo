@@ -4,6 +4,7 @@
 
 import { CELL_SIZE } from './utils.js';
 import { AnimationBase } from './animation_base.js';
+import GenericGifAnimation from './animation/generic_gif_animation.js';
 
 export { AnimationBase };
 
@@ -19,6 +20,7 @@ export class AnimationEngine {
         this.cycleMs = 120000; // 2 minutes cycle
         this.exclusionAreas = [];
         this.activeAnimationId = null;
+        this.customAnimationId = null;
         this.config = { exclusionStrategy: 'mask' };
         this.initialized = false;
         this.setupDone = false;
@@ -110,13 +112,16 @@ export class AnimationEngine {
 
     start(name, startTime, color) {
         this.stop();
-        const entry = this.registry.get(name);
+        let entry = this.registry.get(name);
+        let customAnimationId = null;
         if (!entry) {
-            console.warn(`Animation "${name}" not found in registry.`);
-            return;
+            // Unregistered/custom UUID animations map to GenericGifAnimation
+            entry = { class: GenericGifAnimation, id: 'generic_gif_animation' };
+            customAnimationId = name;
         }
 
         this.activeAnimationId = entry.id;
+        this.customAnimationId = customAnimationId;
         this.startTime = startTime;
         this.color = color;
         this.initialized = false;
@@ -308,7 +313,9 @@ export class AnimationEngine {
             step: Math.floor(progress * 240),
             exclusionAreas: this.config.exclusionStrategy === 'jump' ? [] : this._getVirtualExclusionAreas(),
             realExclusionAreas: this.exclusionAreas,
-            requestRawBitmap: this.requestRawBitmap
+            requestRawBitmap: this.requestRawBitmap,
+            customAnimationId: this.customAnimationId,
+            color: this.color
         };
 
         this.lastDrawRequestTime = performance.now();

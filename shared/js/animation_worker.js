@@ -148,7 +148,9 @@ function performDraw(params) {
         progress: progress,
         step: Math.floor(progress * 240),
         exclusionAreas: strategy === 'jump' ? [] : exclusionAreas,
-        speed: speedFactor
+        speed: speedFactor,
+        customAnimationId: params.customAnimationId,
+        color: params.color
     };
 
     // Use raw exclusion areas for physical masking to prevent drawing over UI

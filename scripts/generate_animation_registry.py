@@ -12,7 +12,7 @@ def generate_registry(exclude_dev=False):
         print(f"Directory {animation_dir} not found.")
         return
 
-    files = [f for f in os.listdir(animation_dir) if f.endswith('.js')]
+    files = [f for f in os.listdir(animation_dir) if f.endswith('.js') and f != 'generic_gif_animation.js']
     files.sort()
 
     imports = []
