@@ -18,6 +18,7 @@ test.describe('Launch QL-Animation Maker from Settings', () => {
     // Open settings and set theme to dark
     await page.click('#settings-toggle');
     await page.selectOption('#theme-select', 'dark');
+    await expect(page.locator('body')).toHaveClass(/theme-dark/);
 
     // Switch to Custom Animations tab
     await page.click('.tab-btn[data-tab="custom-anim"]');
@@ -39,8 +40,9 @@ test.describe('Launch QL-Animation Maker from Settings', () => {
 
     // Verify URL contains correct theme and language query parameters
     expect(url).toContain('animation-maker/index.html');
-    expect(url).toContain('theme=dark');
-    expect(url).toContain('lang=');
+    const urlObj = new URL(url);
+    expect(urlObj.searchParams.get('theme')).toBe('dark');
+    expect(urlObj.searchParams.get('lang')).toBeTruthy();
 
     // Verify popup body actually has theme-dark class
     const bodyClass = await popup.locator('body').getAttribute('class');
