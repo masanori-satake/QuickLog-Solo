@@ -31,8 +31,8 @@ jobs:
       - name: Get PR diff
         id: diff
         run: |
-          # 自動生成ファイルやビルド成果物を除外してDiffを取得
-          git diff origin/${{ github.base_ref }}...HEAD \
+          # SHAを明示的に指定してDiffを確実に取得
+          git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} \
             '--' \
             ':!.github/**' \
             ':!*.lock' \
@@ -80,8 +80,9 @@ jobs:
             contents: [{ parts: [{ text: $prompt }] }]
           }')
 
-          RESPONSE=$(curl -s -X POST \
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
+          # 429対策として curl にリトライオプションを付与 (--retry 3 --retry-delay 35)
+          RESPONSE=$(curl -s --retry 3 --retry-delay 35 -X POST \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
 
@@ -90,14 +91,21 @@ jobs:
           if [ -z "$SUMMARY" ]; then
             echo "API Response error:"
             echo "$RESPONSE"
-            SUMMARY="⚠️ Gemini APIからのサマリレスポンス取得に失敗しました。"
+            SUMMARY="⚠️ Gemini APIからのサマリレスポンス取得に失敗しました。(Rate Limit等の可能性があります)"
           fi
 
           echo "## 🤖 AI Code Review Summary (Gemini)" > summary_body.txt
           echo "" >> summary_body.txt
           echo "$SUMMARY" >> summary_body.txt
 
-          gh pr comment ${{ github.event.pull_request.number }} --body-file summary_body.txt
+          gh pr comment ${{ github.event.pull_request.number }} --body-file summary_body.txt || true
+
+      # -------------------------------------------------------------
+      # 無料枠のレートリミット(RPM)回避のためのインターバル
+      # -------------------------------------------------------------
+      - name: Rate Limit Wait
+        if: steps.diff.outputs.has_diff == 'true'
+        run: sleep 35
 
       # -------------------------------------------------------------
       # 2. インライン指摘の生成 & reviewdogでの投稿
@@ -140,8 +148,9 @@ jobs:
             contents: [{ parts: [{ text: $prompt }] }]
           }')
 
-          RESPONSE=$(curl -s -X POST \
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
+          # 429対策として curl にリトライオプションを付与
+          RESPONSE=$(curl -s --retry 3 --retry-delay 35 -X POST \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
 
@@ -152,7 +161,7 @@ jobs:
           echo "$RAW_REVIEW"
           echo "========================="
 
-          # クリーニング処理（コードブロックや空行を除去し、形式に合う行のみを抽出）
+          # クリーニング処理（フォーマットに適合する行のみ抽出）
           CLEAN_REVIEW=$(echo "$RAW_REVIEW" | grep -E '^[^:]+:[0-9]+:' || true)
 
           if [ -n "$CLEAN_REVIEW" ]; then

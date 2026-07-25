@@ -97,10 +97,24 @@ export default class GenericGifAnimation extends AnimationBase {
                 const response = record.blob;
                 const buffer = await response.arrayBuffer();
                 const decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
-                await decoder.ready;
+
+                if (!decoder.tracks) {
+                    throw new Error('ImageDecoder tracks list is undefined.');
+                }
+
+                // Correctly wait for the tracks to populate
+                await decoder.tracks.ready;
 
                 const track = decoder.tracks.selectedTrack;
+                if (!track) {
+                    throw new Error('ImageDecoder selectedTrack is null or undefined.');
+                }
+
                 const frameCount = track.frameCount;
+                if (typeof frameCount !== 'number' || frameCount <= 0) {
+                    throw new Error(`Invalid frameCount: ${frameCount}`);
+                }
+
                 let accumulatedDuration = 0;
 
                 for (let i = 0; i < frameCount; i++) {
