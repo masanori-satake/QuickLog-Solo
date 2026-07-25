@@ -31,7 +31,7 @@ jobs:
       - name: Get PR diff
         id: diff
         run: |
-          # 不要なファイルを除外してDiffを取得
+          # 自動生成ファイルやビルド成果物を除外してDiffを取得
           git diff origin/${{ github.base_ref }}...HEAD \
             '--' \
             ':!.github/**' \
@@ -80,7 +80,6 @@ jobs:
             contents: [{ parts: [{ text: $prompt }] }]
           }')
 
-          # API呼び出し（エラー検知のためhttp_codeもチェック）
           RESPONSE=$(curl -s -X POST \
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
             -H "Content-Type: application/json" \
@@ -91,15 +90,13 @@ jobs:
           if [ -z "$SUMMARY" ]; then
             echo "API Response error:"
             echo "$RESPONSE"
-            SUMMARY="⚠️ Gemini APIからのサマリレスポンス取得に失敗しました。ログを確認してください。"
+            SUMMARY="⚠️ Gemini APIからのサマリレスポンス取得に失敗しました。"
           fi
 
-          # マークダウン形式でファイルに保存
           echo "## 🤖 AI Code Review Summary (Gemini)" > summary_body.txt
           echo "" >> summary_body.txt
           echo "$SUMMARY" >> summary_body.txt
 
-          # gh CLI を使用してPRに安全にコメント投稿
           gh pr comment ${{ github.event.pull_request.number }} --body-file summary_body.txt
 
       # -------------------------------------------------------------
@@ -149,13 +146,26 @@ jobs:
             -d "$PAYLOAD")
 
           RAW_REVIEW=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // ""')
-          CLEAN_REVIEW=$(echo "$RAW_REVIEW" | sed '/^```/d' | grep -v '^$')
+
+          # デバッグ用に生のAPIレスポンスを出力
+          echo "=== Raw Review Output ==="
+          echo "$RAW_REVIEW"
+          echo "========================="
+
+          # クリーニング処理（コードブロックや空行を除去し、形式に合う行のみを抽出）
+          CLEAN_REVIEW=$(echo "$RAW_REVIEW" | grep -E '^[^:]+:[0-9]+:' || true)
 
           if [ -n "$CLEAN_REVIEW" ]; then
+            echo "=== Validated Review Lines ==="
+            echo "$CLEAN_REVIEW"
+            echo "=============================="
+            
             echo "$CLEAN_REVIEW" | reviewdog \
               -f=efm="%f:%l:%m" \
               -name="Gemini Inline Review" \
               -reporter=github-pr-review \
               -filter-mode=added \
-              -fail-on-error=false
+              -fail-on-error=false || true
+          else
+            echo "No inline comments generated."
           fi
