@@ -97,6 +97,7 @@ const ID_SYNC_STATUS_BADGE = 'sync-status-badge';
 
 const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor/';
 const ALARM_EDITOR_URL = 'https://quick-log-solo.vercel.app/alarm-editor/';
+const ANIMATION_MAKER_URL = 'https://quick-log-solo.vercel.app/animation-maker/';
 
 const ID_REPORT_MODAL = 'report-modal';
 const ID_REPORT_PREVIEW = 'report-preview';
@@ -2855,10 +2856,25 @@ function setupEventListeners() {
         window.open(url.toString(), '_blank', 'noopener');
     });
 
-    getEl('launch-maker-btn')?.addEventListener('click', (e) => {
+    getEl('launch-maker-btn')?.addEventListener('click', async (e) => {
         e.preventDefault();
         const lang = getLanguage();
-        window.open(`../animation-maker/index.html?lang=${encodeURIComponent(lang)}`, '_blank', 'noopener');
+        const state = await getCurrentAppState();
+        let resolvedTheme = state.theme;
+        if (!resolvedTheme || resolvedTheme === 'system') {
+            resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        let url;
+        if (window.location.protocol === 'chrome-extension:') {
+            const urlObj = new URL(ANIMATION_MAKER_URL);
+            urlObj.searchParams.set('lang', lang);
+            urlObj.searchParams.set('theme', resolvedTheme);
+            url = urlObj.toString();
+        } else {
+            url = `../animation-maker/index.html?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(resolvedTheme)}`;
+        }
+        window.open(url, '_blank', 'noopener');
     });
 
     getEl('alarm-editor-link')?.addEventListener('click', (e) => {
