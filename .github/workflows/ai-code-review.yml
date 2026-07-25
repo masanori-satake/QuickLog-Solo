@@ -31,7 +31,7 @@ jobs:
       - name: Get PR diff
         id: diff
         run: |
-          # SHAを明示的に指定して、自動生成ファイルやビルド成果物を除外してDiffを確実に取得
+          # SHAを明示的に指定して、自動生成ファイルやビルド成果物を除外してDiffを確実に取得 (頑健な設計)
           git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} \
             '--' \
             ':!.github/**' \
@@ -81,7 +81,7 @@ jobs:
           }')
 
           RESPONSE=$(curl -s -X POST \
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
 
@@ -97,6 +97,7 @@ jobs:
           echo "" >> summary_body.txt
           echo "$SUMMARY" >> summary_body.txt
 
+          # APIキーエラーや権限不足時にもジョブ自体を落とさないよう || true でフェイルセーフ化
           gh pr comment ${{ github.event.pull_request.number }} --body-file summary_body.txt || true
 
       # -------------------------------------------------------------
@@ -141,7 +142,7 @@ jobs:
           }')
 
           RESPONSE=$(curl -s -X POST \
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
 
