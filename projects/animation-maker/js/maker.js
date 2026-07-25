@@ -82,7 +82,9 @@ const elements = {
     alertModalCloseBtn: document.getElementById('alert-modal-close-btn')
 };
 
-// Initializer
+/**
+ * Initializes the language, theme, event listeners, animation loop, and boundary display.
+ */
 function init() {
     setupLanguage();
     setupTheme();
@@ -91,6 +93,9 @@ function init() {
     updateBoundaryLines();
 }
 
+/**
+ * Initializes the application theme from the URL, saved preferences, or system settings.
+ */
 function setupTheme() {
     const urlParams = new URLSearchParams(window.location.search);
     const themeParam = urlParams.get('theme');
