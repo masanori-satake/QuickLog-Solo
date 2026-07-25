@@ -7,6 +7,7 @@ import { EVAL_CONFIG } from './animation_eval_config.js';
 const animationDir = path.join(process.cwd(), 'shared/js/animation');
 const animationFiles = fs.readdirSync(animationDir).filter(f => {
     if (!f.endsWith('.js')) return false;
+    if (f === 'generic_gif_animation.js') return false; // Exclude generic playback module
     const content = fs.readFileSync(path.join(animationDir, f), 'utf-8');
     // 正規表現を使い、より堅牢な方法で開発専用モジュールをスキップします
     return !/devOnly:\s*true/.test(content);
