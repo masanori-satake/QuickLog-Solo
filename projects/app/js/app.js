@@ -1022,6 +1022,33 @@ function getAnimationTooltip(metadata, lang) {
     return '';
 }
 
+async function getCustomAnimationMetadataMap() {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        const result = await chrome.storage.local.get('custom_animation_metadata_map');
+        return result.custom_animation_metadata_map || {};
+    } else {
+        try {
+            const stored = localStorage.getItem('custom_animation_metadata_map');
+            return stored ? JSON.parse(stored) : {};
+        } catch (e) {
+            console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
+            return {};
+        }
+    }
+}
+
+async function setCustomAnimationMetadataMap(map) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        await chrome.storage.local.set({ custom_animation_metadata_map: map });
+    } else {
+        try {
+            localStorage.setItem('custom_animation_metadata_map', JSON.stringify(map));
+        } catch (e) {
+            console.error('Failed to save custom_animation_metadata_map to localStorage:', e);
+        }
+    }
+}
+
 async function updateAnimationSelect() {
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
@@ -1047,16 +1074,13 @@ async function updateAnimationSelect() {
         });
 
         // Append custom animations if available
-        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-            const result = await chrome.storage.local.get('custom_animation_metadata_map');
-            const customAnims = result.custom_animation_metadata_map || {};
-            Object.keys(customAnims).forEach(id => {
-                const opt = createEl('option');
-                opt.value = id;
-                opt.textContent = customAnims[id].name;
-                animSelect.appendChild(opt);
-            });
-        }
+        const customAnims = await getCustomAnimationMetadataMap();
+        Object.keys(customAnims).forEach(id => {
+            const opt = createEl('option');
+            opt.value = id;
+            opt.textContent = customAnims[id].name;
+            animSelect.appendChild(opt);
+        });
 
         animSelect.value = currentAnimationType;
     }
@@ -2053,11 +2077,7 @@ async function renderCategoryEditor() {
     const lang = getLanguage();
 
     // Load custom animations
-    let customAnims = {};
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        const result = await chrome.storage.local.get('custom_animation_metadata_map');
-        customAnims = result.custom_animation_metadata_map || {};
-    }
+    const customAnims = await getCustomAnimationMetadataMap();
 
     categories.forEach((cat, idx) => {
         const item = createEl('div');
@@ -2385,11 +2405,7 @@ async function renderCustomAnimationsTab() {
     const select = getEl('custom-anim-select');
     if (!select) return;
 
-    let customAnims = {};
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        const result = await chrome.storage.local.get('custom_animation_metadata_map');
-        customAnims = result.custom_animation_metadata_map || {};
-    }
+    const customAnims = await getCustomAnimationMetadataMap();
 
     select.replaceChildren();
 
@@ -2438,11 +2454,7 @@ async function importCustomAnimation(text) {
         throw new Error('Missing fields');
     }
 
-    let custom_animation_metadata_map = {};
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        const storageResult = await chrome.storage.local.get('custom_animation_metadata_map');
-        custom_animation_metadata_map = storageResult.custom_animation_metadata_map || {};
-    }
+    const custom_animation_metadata_map = await getCustomAnimationMetadataMap();
 
     const finalId = (!id || custom_animation_metadata_map[id]) ? generateUUID() : id;
 
@@ -2466,9 +2478,7 @@ async function importCustomAnimation(text) {
         }
     };
 
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        await chrome.storage.local.set({ custom_animation_metadata_map });
-    }
+    await setCustomAnimationMetadataMap(custom_animation_metadata_map);
 
     showToast(t('toast-custom-anim-imported') || 'Imported!');
 
@@ -2481,11 +2491,7 @@ async function importCustomAnimation(text) {
 window.importCustomAnimation = importCustomAnimation;
 
 async function exportCustomAnimation(id) {
-    let customAnims = {};
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        const result = await chrome.storage.local.get('custom_animation_metadata_map');
-        customAnims = result.custom_animation_metadata_map || {};
-    }
+    const customAnims = await getCustomAnimationMetadataMap();
 
     const meta = customAnims[id];
     if (!meta) throw new Error('Metadata not found');
@@ -2519,17 +2525,11 @@ async function exportCustomAnimation(id) {
 }
 
 async function deleteCustomAnimation(id) {
-    let custom_animation_metadata_map = {};
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        const result = await chrome.storage.local.get('custom_animation_metadata_map');
-        custom_animation_metadata_map = result.custom_animation_metadata_map || {};
-    }
+    const custom_animation_metadata_map = await getCustomAnimationMetadataMap();
 
     delete custom_animation_metadata_map[id];
 
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        await chrome.storage.local.set({ custom_animation_metadata_map });
-    }
+    await setCustomAnimationMetadataMap(custom_animation_metadata_map);
 
     await deleteAnimationBlob(id);
 
@@ -2733,11 +2733,7 @@ function setupEventListeners() {
 
     // Custom Animation Tab events
     getEl('custom-anim-select')?.addEventListener('change', async (e) => {
-        let customAnims = {};
-        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-            const result = await chrome.storage.local.get('custom_animation_metadata_map');
-            customAnims = result.custom_animation_metadata_map || {};
-        }
+        const customAnims = await getCustomAnimationMetadataMap();
         const selectedId = e.target.value;
         if (selectedId && customAnims[selectedId]) {
             getEl('custom-anim-name').textContent = customAnims[selectedId].name;
@@ -2788,11 +2784,7 @@ function setupEventListeners() {
             const url = URL.createObjectURL(blob);
             const a = createEl('a');
 
-            let customAnims = {};
-            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-                const result = await chrome.storage.local.get('custom_animation_metadata_map');
-                customAnims = result.custom_animation_metadata_map || {};
-            }
+            const customAnims = await getCustomAnimationMetadataMap();
             const meta = customAnims[selectedId];
             a.href = url;
             a.download = `${meta.name.toLowerCase().replace(/\s+/g, '_') || 'animation'}.qlanim`;
@@ -2819,11 +2811,7 @@ function setupEventListeners() {
         const selectedId = getEl('custom-anim-select')?.value;
         if (!selectedId) return;
 
-        let customAnims = {};
-        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-            const result = await chrome.storage.local.get('custom_animation_metadata_map');
-            customAnims = result.custom_animation_metadata_map || {};
-        }
+        const customAnims = await getCustomAnimationMetadataMap();
         const meta = customAnims[selectedId];
         if (!meta) return;
 
