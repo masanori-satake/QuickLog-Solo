@@ -2,7 +2,7 @@
  * QL-Animation Maker Logic
  */
 
-import { messages } from '../../shared/js/messages.js';
+import { messages } from '../shared/js/messages.js';
 
 // App State
 const state = {
@@ -92,6 +92,12 @@ function init() {
 }
 
 function setupTheme() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const themeParam = urlParams.get('theme');
+    if (themeParam && (themeParam === 'light' || themeParam === 'dark')) {
+        localStorage.setItem('maker-theme', themeParam);
+    }
+
     const savedTheme = localStorage.getItem('maker-theme') || localStorage.getItem('studio-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     state.currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
