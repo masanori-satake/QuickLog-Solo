@@ -122,10 +122,10 @@ describe('Custom Animations Storage & Rendering fallback', () => {
         }
 
         global.ImageDecoder = class MockImageDecoder {
-            constructor(options) {
+            constructor() {
                 this.tracks = new MockImageTrackList();
             }
-            async decode(options) {
+            async decode() {
                 return {
                     image: {
                         duration: 150000, // 150ms in microseconds
@@ -135,7 +135,7 @@ describe('Custom Animations Storage & Rendering fallback', () => {
             }
         };
 
-        global.createImageBitmap = jest.fn().mockImplementation(async (videoFrame) => {
+        global.createImageBitmap = jest.fn().mockImplementation(async () => {
             return { width: 100, height: 100, close: jest.fn() };
         });
 
