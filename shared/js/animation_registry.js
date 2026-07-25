@@ -13,7 +13,6 @@ import DotTyping from './animation/dot_typing.js';
 import DuneFormation from './animation/dune_formation.js';
 import ElasticAlert from './animation/elastic_alert.js';
 import ForestFire from './animation/forest_fire.js';
-import GenericGifAnimation from './animation/generic_gif_animation.js';
 import HeartBeat from './animation/heart_beat.js';
 import HeroPot from './animation/hero_pot.js';
 import HexagonalHud from './animation/hexagonal_hud.js';
@@ -58,7 +57,6 @@ export const animations = [
     { id: 'dune_formation', class: DuneFormation, metadata: DuneFormation.metadata, devOnly: true },
     { id: 'elastic_alert', class: ElasticAlert, metadata: ElasticAlert.metadata, devOnly: true },
     { id: 'forest_fire', class: ForestFire, metadata: ForestFire.metadata, devOnly: true },
-    { id: 'generic_gif_animation', class: GenericGifAnimation, metadata: GenericGifAnimation.metadata },
     { id: 'heart_beat', class: HeartBeat, metadata: HeartBeat.metadata },
     { id: 'hero_pot', class: HeroPot, metadata: HeroPot.metadata },
     { id: 'hexagonal_hud', class: HexagonalHud, metadata: HexagonalHud.metadata, devOnly: true },

@@ -2478,6 +2478,7 @@ async function importCustomAnimation(text) {
     await updateUI();
     broadcastSync();
 }
+window.importCustomAnimation = importCustomAnimation;
 
 async function exportCustomAnimation(id) {
     let customAnims = {};
@@ -2705,17 +2706,28 @@ function setupEventListeners() {
         btn.onclick = () => {
             queryAll('.tab-btn').forEach(b => b.classList.remove('active'));
             queryAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            btn.classList.add('active');
-            const target = getEl(`${btn.dataset.tab}-tab`);
+
+            let tabName = btn.dataset.tab;
+            if (tabName === 'maintenance') {
+                tabName = 'about';
+                const aboutBtn = document.querySelector('button[data-tab="about"]');
+                if (aboutBtn) aboutBtn.classList.add('active');
+            } else {
+                btn.classList.add('active');
+            }
+
+            const target = getEl(`${tabName}-tab`);
             if (target) target.classList.remove('hidden');
-            if (btn.dataset.tab === 'alarms') {
+            if (tabName === 'alarms') {
                 renderBusinessDays();
                 renderAlarmList();
             }
-            if (btn.dataset.tab === 'categories') renderCategoryEditor();
-            if (btn.dataset.tab === 'custom-anim') renderCustomAnimationsTab();
-            if (btn.dataset.tab === 'backup') updateBackupUI();
-            if (btn.dataset.tab === 'about') updateAboutStats();
+            if (tabName === 'categories') renderCategoryEditor();
+            if (tabName === 'custom-anim') renderCustomAnimationsTab();
+            if (tabName === 'backup') updateBackupUI();
+            if (tabName === 'about') {
+                updateAboutStats();
+            }
         };
     });
 

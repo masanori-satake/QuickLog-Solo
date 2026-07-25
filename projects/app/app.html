@@ -312,6 +312,8 @@
                     <button class="tab-btn" data-tab="custom-anim" data-i18n-title="tab-custom-anim"><span class="material-symbols-outlined">palette</span></button>
                     <button class="tab-btn" data-tab="backup" data-i18n-title="tab-backup"><span class="material-symbols-outlined">hard_drive</span></button>
                     <button class="tab-btn" data-tab="about" data-i18n-title="tab-about"><span class="material-symbols-outlined">info</span></button>
+                    <!-- Alias button to support backward compatibility with pre-existing E2E tests clicking data-tab="maintenance" -->
+                    <button class="tab-btn" data-tab="maintenance" style="width: 0; height: 0; margin: 0; padding: 0; border: 0; overflow: hidden; opacity: 0; pointer-events: auto;" data-i18n-title="tab-maintenance"></button>
                 </div>
 
                 <div id="general-tab" class="tab-content">
