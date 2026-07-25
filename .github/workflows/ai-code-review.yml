@@ -159,7 +159,7 @@ jobs:
             echo "=== Validated Review Lines ==="
             echo "$CLEAN_REVIEW"
             echo "=============================="
-            
+
             echo "$CLEAN_REVIEW" | reviewdog \
               -f=efm="%f:%l:%m" \
               -name="Gemini Inline Review" \
