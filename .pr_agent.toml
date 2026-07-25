@@ -1,2 +1,15 @@
 [config]
 response_language = "ja-JP"
+# PRオープン・更新時に自動実行するコマンドを指定
+auto_review = true
+auto_describe = true
+
+[pr_reviewer]
+# インラインレビュー（コード行への直接コメント）を有効化
+inline_code_comments = true
+# レビュー結果を日本語で出力
+extra_instructions = "Please reply in Japanese."
+
+[pr_description]
+# サマリ出力を日本語に指定
+extra_instructions = "Please write the summary and key changes in Japanese."
