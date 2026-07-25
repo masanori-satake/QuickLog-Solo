@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
   review:
@@ -30,7 +31,7 @@ jobs:
       - name: Get PR diff
         id: diff
         run: |
-          # 自動生成ファイルやビルド成果物を除外してDiffを取得
+          # 不要なファイルを除外してDiffを取得
           git diff origin/${{ github.base_ref }}...HEAD \
             '--' \
             ':!.github/**' \
@@ -53,9 +54,9 @@ jobs:
       # -------------------------------------------------------------
       - name: Generate & Post PR Summary
         if: steps.diff.outputs.has_diff == 'true'
-        id: summary
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DIFF_CONTENT=$(jq -sR . < filtered_diff.txt)
 
@@ -79,32 +80,27 @@ jobs:
             contents: [{ parts: [{ text: $prompt }] }]
           }')
 
+          # API呼び出し（エラー検知のためhttp_codeもチェック）
           RESPONSE=$(curl -s -X POST \
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
 
-          SUMMARY=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // "サマリの生成に失敗しました。"')
+          SUMMARY=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // empty')
 
-          {
-            echo "summary<<EOF"
-            echo "$SUMMARY"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+          if [ -z "$SUMMARY" ]; then
+            echo "API Response error:"
+            echo "$RESPONSE"
+            SUMMARY="⚠️ Gemini APIからのサマリレスポンス取得に失敗しました。ログを確認してください。"
+          fi
 
-      - name: Post Summary Comment to PR
-        if: steps.diff.outputs.has_diff == 'true'
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const summary = `${{ steps.summary.outputs.summary }}`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🤖 AI Code Review Summary (Gemini)\n\n${summary}`
-            });
+          # マークダウン形式でファイルに保存
+          echo "## 🤖 AI Code Review Summary (Gemini)" > summary_body.txt
+          echo "" >> summary_body.txt
+          echo "$SUMMARY" >> summary_body.txt
+
+          # gh CLI を使用してPRに安全にコメント投稿
+          gh pr comment ${{ github.event.pull_request.number }} --body-file summary_body.txt
 
       # -------------------------------------------------------------
       # 2. インライン指摘の生成 & reviewdogでの投稿
