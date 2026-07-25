@@ -1,0 +1,165 @@
+name: Gemini Full Code Review (Summary + Inline)
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - name: Get PR diff
+        id: diff
+        run: |
+          # 自動生成ファイルやビルド成果物を除外してDiffを取得
+          git diff origin/${{ github.base_ref }}...HEAD \
+            '--' \
+            ':!.github/**' \
+            ':!*.lock' \
+            ':!package-lock.json' \
+            ':!dist/**' \
+            ':!build/**' \
+            ':!*.svg' \
+            ':!*.png' > pr_diff.txt
+
+          if [ ! -s pr_diff.txt ]; then
+            echo "has_diff=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_diff=true" >> $GITHUB_OUTPUT
+            head -c 30000 pr_diff.txt > filtered_diff.txt
+          fi
+
+      # -------------------------------------------------------------
+      # 1. PR全体の概要サマリの生成 & コメント投稿
+      # -------------------------------------------------------------
+      - name: Generate & Post PR Summary
+        if: steps.diff.outputs.has_diff == 'true'
+        id: summary
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          DIFF_CONTENT=$(jq -sR . < filtered_diff.txt)
+
+          PROMPT="あなたは優秀なコードレビュアーです。以下のGit Diff（差分）を読み、PRの概要と主要な変更点を日本語で分かりやすく箇条書きでまとめてください。
+
+          【出力フォーマット】
+          ### 📊 変更の概要
+          （2〜3行で簡潔に説明）
+
+          ### 🔑 主な変更点
+          - （変更点1）
+          - （変更点2）
+
+          ### 💡 全体的な所感・注意点
+          （アーキテクチャや全体的な影響範囲に関するコメントがあれば）
+
+          差分:
+          $DIFF_CONTENT"
+
+          PAYLOAD=$(jq -n --arg prompt "$PROMPT" '{
+            contents: [{ parts: [{ text: $prompt }] }]
+          }')
+
+          RESPONSE=$(curl -s -X POST \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          SUMMARY=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // "サマリの生成に失敗しました。"')
+
+          {
+            echo "summary<<EOF"
+            echo "$SUMMARY"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Post Summary Comment to PR
+        if: steps.diff.outputs.has_diff == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const summary = `${{ steps.summary.outputs.summary }}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🤖 AI Code Review Summary (Gemini)\n\n${summary}`
+            });
+
+      # -------------------------------------------------------------
+      # 2. インライン指摘の生成 & reviewdogでの投稿
+      # -------------------------------------------------------------
+      - name: Run Gemini Inline Review
+        if: steps.diff.outputs.has_diff == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DIFF_CONTENT=$(jq -sR . < filtered_diff.txt)
+
+          PROMPT="あなたは優秀なコードレビュアーです。以下のGit Diff（差分）を分析し、具体的に修正・改善すべき行があれば指摘してください。
+
+          【レビュー指摘の分類とメンション付与ルール】
+          指摘内容の性質に応じて、メッセージの先頭に付与するメンションを以下のように厳格に指定してください。
+
+          1. 内部実装の改善（仕様・動作が変わらない確実な指摘）
+             - 対象: 可読性向上、リファクタリング、純粋なバグ修正、パフォーマンス改善、型定義追加など。
+             - メンション: メッセージの先頭に「@jules」を付けてください。
+             - 例: path/file.js:20:@jules [Refactor] 関数の処理を分割して可読性を向上できます。
+
+          2. 外部仕様の変更・人間による判断が必要な指摘
+             - 対象: UI/UXの変更、API挙動の変更、仕様上の不整合、人間が確認・意思決定すべきトレードオフの発生など。
+             - メンション: メッセージの先頭に「@masanori-satake」を付けてください。
+             - 例: path/file.js:45:@masanori-satake [Spec] このエラーハンドリングの変更は、画面上のエラー表示仕様に影響します。確認が必要です。
+
+          【最重要判断ルール】
+          - 内部実装の改善か外部仕様の変更か判断に迷うグレーゾーンの指摘に関しては、安全側とし「@masanori-satake」を付与して人間に回してください。
+
+          【出力フォーマット】
+          - 出力はプレーンテキストのみとし、コードブロック（\`\`\`）やMarkdown装飾は一切含めないでください。
+          - 1行につき1つの指摘とし、形式は厳密に「ファイルパス:行番号:メッセージ」としてください。
+          - 指摘がない場合や大きな問題がない場合は、絶対に何も出力しないでください。
+
+          差分:
+          $DIFF_CONTENT"
+
+          PAYLOAD=$(jq -n --arg prompt "$PROMPT" '{
+            contents: [{ parts: [{ text: $prompt }] }]
+          }')
+
+          RESPONSE=$(curl -s -X POST \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          RAW_REVIEW=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // ""')
+          CLEAN_REVIEW=$(echo "$RAW_REVIEW" | sed '/^```/d' | grep -v '^$')
+
+          if [ -n "$CLEAN_REVIEW" ]; then
+            echo "$CLEAN_REVIEW" | reviewdog \
+              -f=efm="%f:%l:%m" \
+              -name="Gemini Inline Review" \
+              -reporter=github-pr-review \
+              -filter-mode=added \
+              -fail-on-error=false
+          fi
