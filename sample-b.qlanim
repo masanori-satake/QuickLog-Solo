@@ -1,0 +1,23 @@
+{
+  "format": "quicklog-animation-package",
+  "formatVersion": "1.0",
+  "id": "custom_uuid_002",
+  "metadata": {
+    "name": "ペンギン走る",
+    "description": "ペンギンがトコトコ走るカスタムアニメーション"
+  },
+  "config": {
+    "exclusionStrategy": "jump"
+  },
+  "payload": {
+    "imageData": "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+    "renderSpec": {
+      "focusX": 5,
+      "focusY": 5,
+      "targetHeight": 80,
+      "maxWidth": 150,
+      "scaleWithHeight": false,
+      "overflowBehavior": "categoryColor"
+    }
+  }
+}

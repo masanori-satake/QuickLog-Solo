@@ -1,0 +1,23 @@
+{
+  "format": "quicklog-animation-package",
+  "formatVersion": "1.0",
+  "id": "custom_uuid_001",
+  "metadata": {
+    "name": "ねこぽん",
+    "description": "ねこがぽんぽん跳ねるカスタムアニメーション"
+  },
+  "config": {
+    "exclusionStrategy": "freedom"
+  },
+  "payload": {
+    "imageData": "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+    "renderSpec": {
+      "focusX": 0,
+      "focusY": 0,
+      "targetHeight": 100,
+      "maxWidth": 200,
+      "scaleWithHeight": true,
+      "overflowBehavior": "repeat"
+    }
+  }
+}

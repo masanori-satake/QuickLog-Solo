@@ -309,8 +309,8 @@
                     <button class="tab-btn active" data-tab="general" data-i18n-title="tab-general"><span class="material-symbols-outlined">settings</span></button>
                     <button class="tab-btn" data-tab="categories" data-i18n-title="tab-categories"><span class="material-symbols-outlined">category</span></button>
                     <button class="tab-btn" data-tab="alarms" data-i18n-title="tab-alarms"><span class="material-symbols-outlined">notifications</span></button>
+                    <button class="tab-btn" data-tab="custom-anim" data-i18n-title="tab-custom-anim"><span class="material-symbols-outlined">palette</span></button>
                     <button class="tab-btn" data-tab="backup" data-i18n-title="tab-backup"><span class="material-symbols-outlined">hard_drive</span></button>
-                    <button class="tab-btn" data-tab="maintenance" data-i18n-title="tab-maintenance"><span class="material-symbols-outlined">build</span></button>
                     <button class="tab-btn" data-tab="about" data-i18n-title="tab-about"><span class="material-symbols-outlined">info</span></button>
                 </div>
 
@@ -531,6 +531,42 @@
                             【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。
                         </p>
                     </div>
+
+                    <div style="border-top: 1px solid var(--md-sys-color-outline-variant); margin: 24px 0 16px 0; padding-top: 16px;">
+                        <h3 style="font-size: 1rem; font-weight: 500; margin-bottom: 12px; color: var(--md-sys-color-primary);" data-i18n="tab-maintenance">メンテナンス</h3>
+                    </div>
+
+                    <!-- Relocated Maintenance elements -->
+                    <!-- Standard clear history (visible when sync is OFF) -->
+                    <div id="maintenance-clear-logs-section" class="setting-item">
+                        <label data-i18n="maintenance-clear-logs">作業履歴の削除</label>
+                        <button id="clear-logs-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-clear-logs">作業履歴をすべて削除</button>
+                    </div>
+
+                    <!-- Sync maintenance (visible when sync is ON) -->
+                    <div id="maintenance-sync-pull-section" class="setting-item hidden">
+                        <label data-i18n="maintenance-sync-pull">同期履歴の再取得</label>
+                        <button id="sync-pull-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-pull">同期履歴の再取得</button>
+                    </div>
+                    <div id="maintenance-sync-clear-cloud-section" class="setting-item hidden">
+                        <label data-i18n="maintenance-sync-clear-cloud">全同期デバイスから履歴をすべて削除</label>
+                        <button id="sync-clear-cloud-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-clear-cloud">全同期デバイスから履歴をすべて削除</button>
+                    </div>
+
+                    <div class="setting-item">
+                        <label data-i18n="maintenance-reset-all">設定とカテゴリの初期化</label>
+                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);" data-i18n="maintenance-reset-all-desc">
+                            作業履歴は維持されます。
+                        </p>
+                        <button id="reset-cat-settings-btn" style="width: 100%;" data-i18n="btn-reset-all">カテゴリ・設定を初期化</button>
+                    </div>
+                    <div class="setting-item">
+                        <label data-i18n="maintenance-reset-settings">設定のみの初期化</label>
+                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);" data-i18n="maintenance-reset-settings-desc">
+                            作業履歴とカテゴリは維持されます。
+                        </p>
+                        <button id="reset-settings-btn" style="width: 100%;" data-i18n="btn-reset-settings">設定のみを初期化</button>
+                    </div>
                 </div>
 
                 <div id="backup-tab" class="tab-content hidden">
@@ -577,36 +613,49 @@
                     </p>
                 </div>
 
-                <div id="maintenance-tab" class="tab-content hidden">
-                    <!-- Standard clear history (visible when sync is OFF) -->
-                    <div id="maintenance-clear-logs-section" class="setting-item">
-                        <label data-i18n="maintenance-clear-logs">作業履歴の削除</label>
-                        <button id="clear-logs-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-clear-logs">作業履歴をすべて削除</button>
+                <div id="custom-anim-tab" class="tab-content hidden">
+                    <div class="setting-item">
+                        <label id="custom-anim-select-label" data-i18n="custom-anim-select-label">登録済みカスタムアニメーション</label>
+                        <select id="custom-anim-select"></select>
                     </div>
 
-                    <!-- Sync maintenance (visible when sync is ON) -->
-                    <div id="maintenance-sync-pull-section" class="setting-item hidden">
-                        <label data-i18n="maintenance-sync-pull">同期履歴の再取得</label>
-                        <button id="sync-pull-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-pull">同期履歴の再取得</button>
-                    </div>
-                    <div id="maintenance-sync-clear-cloud-section" class="setting-item hidden">
-                        <label data-i18n="maintenance-sync-clear-cloud">全同期デバイスから履歴をすべて削除</label>
-                        <button id="sync-clear-cloud-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-clear-cloud">全同期デバイスから履歴をすべて削除</button>
+                    <div id="custom-anim-info-box" class="setting-item" style="background-color: var(--md-sys-color-surface-variant); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                        <h4 id="custom-anim-name" style="font-weight: 700; margin: 0 0 4px 0; color: var(--md-sys-color-on-surface-variant);">-</h4>
+                        <p id="custom-anim-desc" style="font-size: 0.8rem; margin: 0; color: var(--md-sys-color-on-surface-variant); opacity: 0.85;">-</p>
                     </div>
 
                     <div class="setting-item">
-                        <label data-i18n="maintenance-reset-all">設定とカテゴリの初期化</label>
-                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);" data-i18n="maintenance-reset-all-desc">
-                            作業履歴は維持されます。
-                        </p>
-                        <button id="reset-cat-settings-btn" style="width: 100%;" data-i18n="btn-reset-all">カテゴリ・設定を初期化</button>
+                        <label data-i18n="custom-anim-import">インポート (追加)</label>
+                        <div class="maintenance-btns">
+                            <button id="custom-anim-import-file-btn" class="secondary-btn">
+                                <span class="material-symbols-outlined">upload_file</span>
+                                <span data-i18n="btn-add-from-file">ファイルから追加</span>
+                            </button>
+                            <button id="custom-anim-import-clipboard-btn" class="secondary-btn">
+                                <span class="material-symbols-outlined">content_paste</span>
+                                <span data-i18n="btn-add-from-clipboard">クリップボードから追加</span>
+                            </button>
+                        </div>
+                        <input type="file" id="custom-anim-file-input" style="display:none" accept=".qlanim">
                     </div>
+
                     <div class="setting-item">
-                        <label data-i18n="maintenance-reset-settings">設定のみの初期化</label>
-                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);" data-i18n="maintenance-reset-settings-desc">
-                            作業履歴とカテゴリは維持されます。
-                        </p>
-                        <button id="reset-settings-btn" style="width: 100%;" data-i18n="btn-reset-settings">設定のみを初期化</button>
+                        <label data-i18n="custom-anim-export">エクスポート</label>
+                        <div class="maintenance-btns">
+                            <button id="custom-anim-export-file-btn" class="secondary-btn">
+                                <span class="material-symbols-outlined">save</span>
+                                <span data-i18n="btn-save-to-file">ファイルに保存</span>
+                            </button>
+                            <button id="custom-anim-export-clipboard-btn" class="secondary-btn">
+                                <span class="material-symbols-outlined">content_copy</span>
+                                <span data-i18n="btn-copy-to-clipboard">クリップボードにコピー</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <label data-i18n="custom-anim-delete-label">消去</label>
+                        <button id="custom-anim-delete-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-delete-selected-anim">選択したアニメーションを消去</button>
                     </div>
                 </div>
             </div>
