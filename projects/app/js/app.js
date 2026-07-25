@@ -2425,8 +2425,8 @@ async function importCustomAnimation(text) {
     let data;
     try {
         data = JSON.parse(text);
-    } catch (e) {
-        throw new Error('Invalid JSON');
+    } catch (err) {
+        throw new Error('Invalid JSON', { cause: err });
     }
 
     if (data.format !== 'quicklog-animation-package') {
