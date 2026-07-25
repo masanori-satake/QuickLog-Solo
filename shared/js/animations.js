@@ -147,6 +147,11 @@ export class AnimationEngine {
     _handleWorkerMessage(e) {
         const { type, payload } = e.data;
 
+        if (type === 'log') {
+            console.log(`[Worker ${e.data.level || 'info'}]`, payload);
+            return;
+        }
+
         if (type === 'initialized') {
             this.initialized = true;
             this.resize();
