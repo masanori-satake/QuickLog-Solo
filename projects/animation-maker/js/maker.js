@@ -24,6 +24,10 @@ const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
 const DB_NAME = 'QuickLogSoloDB';
 const broadcastChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
 
+/**
+ * Notify other contexts of an animation data change.
+ * @param {string} type - The synchronization event type.
+ */
 function broadcastSync(type = 'sync') {
     broadcastChannel.postMessage({ type });
 }
@@ -157,7 +161,10 @@ const elements = {
 let offscreenCanvas = null;
 let offscreenCtx = null;
 
-// Storage Tiering Helpers
+/**
+ * Load custom animation metadata from available persistent storage.
+ * @return {Promise<Object>} The stored metadata map, or an empty object when no metadata is available or parsing fails.
+ */
 async function getCustomAnimationMetadataMap() {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         const result = await chrome.storage.local.get('custom_animation_metadata_map');
@@ -173,6 +180,10 @@ async function getCustomAnimationMetadataMap() {
     }
 }
 
+/**
+ * Persists the custom animation metadata map using available local storage.
+ * @param {Object} map - The custom animation metadata keyed by animation ID.
+ */
 async function setCustomAnimationMetadataMap(map) {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         await chrome.storage.local.set({ custom_animation_metadata_map: map });
@@ -185,7 +196,10 @@ async function setCustomAnimationMetadataMap(map) {
     }
 }
 
-// Initializer
+/**
+ * Initialize storage, UI settings, event handlers, animation data, and rendering.
+ * @return {Promise<void>}
+ */
 async function init() {
     await initDB();
     setupLanguage();
@@ -278,6 +292,9 @@ function getSelectedBoundaryHeight() {
     return selected ? parseInt(selected.value) : 100;
 }
 
+/**
+ * Updates the preview boundary indicators to match the selected height.
+ */
 function updateBoundaryLines() {
     const H = getSelectedBoundaryHeight();
     const topY = (150 - H) / 2;
@@ -292,6 +309,10 @@ function updateBoundaryLines() {
     triggerRedraw();
 }
 
+/**
+ * Calculates the current rendering scale.
+ * @returns {number} The scale adjusted for the selected boundary height when height-based scaling is enabled.
+ */
 function getScaleFactor() {
     if (state.scaleWithHeight) {
         const H = getSelectedBoundaryHeight();
@@ -300,6 +321,12 @@ function getScaleFactor() {
     return state.currentScale;
 }
 
+/**
+ * Generates a unique animation name from a proposed name and existing names.
+ * @param {string} name - The proposed animation name.
+ * @param {Iterable<string>} existingNames - Names that must remain unique.
+ * @return {string} The proposed name or a suffixed fallback name when it already exists.
+ */
 function resolveDeduplicatedName(name, existingNames) {
     let finalName = name || state.getMsg('placeholder-meta-name') || 'Unassigned';
     const namesSet = new Set(existingNames);
@@ -315,7 +342,12 @@ function resolveDeduplicatedName(name, existingNames) {
     return finalName;
 }
 
-// Custom Animations List Operations
+/**
+ * Loads custom animations, populates the animation list, and selects the active animation.
+ *
+ * Creates a default animation when none exist and restores the current selection when possible.
+ * @return {Promise<void>}
+ */
 async function loadAnimationsList() {
     state.customAnimations = await getCustomAnimationMetadataMap();
 
@@ -389,6 +421,11 @@ async function loadAnimationsList() {
     }
 }
 
+/**
+ * Display actions for a custom animation.
+ * @param {Event} e - The event from the menu trigger.
+ * @param {string} id - The custom animation identifier.
+ */
 function showItemMenu(e, id) {
     const existing = document.querySelector('.category-menu');
     if (existing) existing.remove();
@@ -442,7 +479,10 @@ function showItemMenu(e, id) {
     menu.style.left = `${rect.right - menu.offsetWidth + window.scrollX}px`;
 }
 
-// Add New Custom Animation Item
+/**
+ * Creates and selects a new custom animation with default metadata and rendering settings.
+ * Persists the animation metadata and an initially empty animation blob, then refreshes the animation list.
+ */
 async function addNewAnimation() {
     const map = await getCustomAnimationMetadataMap();
     const newId = crypto.randomUUID();
@@ -480,7 +520,10 @@ async function addNewAnimation() {
     broadcastSync('reload');
 }
 
-// Duplicate
+/**
+ * Creates a copy of an existing custom animation with a unique name.
+ * @param {string} id - The identifier of the animation to duplicate.
+ */
 async function duplicateAnimation(id) {
     const map = await getCustomAnimationMetadataMap();
     if (!map[id]) return;
@@ -507,7 +550,10 @@ async function duplicateAnimation(id) {
     broadcastSync('reload');
 }
 
-// Cascading Deletion
+/**
+ * Deletes a custom animation and clears category references to it.
+ * @param {string} id - The identifier of the animation to delete.
+ */
 async function deleteAnimation(id) {
     const map = await getCustomAnimationMetadataMap();
     delete map[id];
@@ -572,7 +618,11 @@ elements.animationList.ondrop = async (e) => {
     broadcastSync('reload');
 };
 
-// Workspace selection
+/**
+ * Select an animation and load its metadata, render settings, and stored GIF for editing.
+ * @param {string} id - The identifier of the animation to select.
+ * @return {Promise<void>} Resolves after the animation data has been loaded and the workspace updated.
+ */
 async function selectAnimation(id) {
     state.selectedId = id;
     const meta = state.customAnimations[id];
@@ -640,7 +690,9 @@ async function selectAnimation(id) {
     triggerRedraw();
 }
 
-// Colors presets palette rendering
+/**
+ * Render the available preview color options and highlight the selected color.
+ */
 function renderColorPalette() {
     elements.previewColorPalette.replaceChildren();
     COLORS.forEach(color => {
@@ -665,7 +717,9 @@ function renderColorPalette() {
     });
 }
 
-// Save all changes immediately
+/**
+ * Saves the selected animation's metadata, rendering settings, and GIF blob.
+ */
 async function saveCurrentChanges() {
     if (!state.selectedId) return;
     const map = await getCustomAnimationMetadataMap();
@@ -714,7 +768,10 @@ async function saveCurrentChanges() {
     broadcastSync('reload');
 }
 
-// Parse GIF frames using Native ImageDecoder
+/**
+ * Decodes a GIF into renderable frames and updates the animation preview.
+ * @param {Blob} blob - The GIF data to decode.
+ */
 async function parseGif(blob) {
     try {
         if (typeof ImageDecoder === 'undefined') {
@@ -777,6 +834,9 @@ async function parseGif(blob) {
     }
 }
 
+/**
+ * Updates the monitor display with the current focus position, scale, and target height.
+ */
 function updateMonitor() {
     elements.monFocusX.textContent = Math.round(state.focusX);
     elements.monFocusY.textContent = Math.round(state.focusY);
@@ -784,10 +844,16 @@ function updateMonitor() {
     elements.monTargetHeight.textContent = Math.round(state.targetHeight);
 }
 
-// Canvas Drawing Loop
+/**
+ * Starts the animation rendering loop for the selected GIF or an empty preview.
+ */
 function setupAnimationLoop() {
     state.lastFrameTime = performance.now();
 
+    /**
+     * Advances the animation preview and renders the current canvas state.
+     * @param {number} now - The current animation timestamp.
+     */
     function tick(now) {
         requestAnimationFrame(tick);
 
@@ -805,12 +871,18 @@ function setupAnimationLoop() {
     requestAnimationFrame(tick);
 }
 
+/**
+ * Redraws the loaded animation when playback is paused.
+ */
 function triggerRedraw() {
     if (!state.isPlaying && state.selectedId && state.gifFrames.length > 0) {
         drawFrames();
     }
 }
 
+/**
+ * Clears the preview canvases and fills them with their default backgrounds.
+ */
 function drawEmptyCanvas() {
     // Preview Canvas: Standard themes or simple background
     const ctx = elements.canvas.getContext('2d');
@@ -829,6 +901,9 @@ function drawEmptyCanvas() {
     rawCtx.fillRect(0, 0, rW, rH);
 }
 
+/**
+ * Renders the active GIF frame on the raw and downsampled dot preview canvases.
+ */
 function drawFrames() {
     const W = elements.previewContainer.clientWidth;
     const H = elements.previewContainer.clientHeight; // 150
@@ -1015,6 +1090,10 @@ function drawFrames() {
     ctx.restore();
 }
 
+/**
+ * Selects the animation frame corresponding to the current playback position.
+ * @return {Object|null} The active frame, or `null` when no frames are loaded.
+ */
 function getActiveFrame() {
     if (state.gifFrames.length === 0) return null;
     const currentMs = state.virtualElapsedMs % state.totalDuration;
@@ -1038,6 +1117,10 @@ function handleMouseDown(e) {
     state.dragStartFocusY = state.focusY;
 }
 
+/**
+ * Updates the GIF focus position while the preview is being dragged.
+ * @param {MouseEvent} e - The pointer movement event containing the current cursor position.
+ */
 function handleMouseMove(e) {
     if (!state.isDragging) return;
     const dx = e.clientX - state.dragStartX;
@@ -1056,6 +1139,9 @@ function handleMouseMove(e) {
     triggerRedraw();
 }
 
+/**
+ * Ends the active preview drag and saves the updated animation settings.
+ */
 async function handleMouseUp() {
     if (state.isDragging) {
         state.isDragging = false;
@@ -1063,7 +1149,9 @@ async function handleMouseUp() {
     }
 }
 
-// Event Listeners setup
+/**
+ * Registers event handlers for language, theme, animation editing, GIF import, preview interaction, playback, configuration, alerts, and `.qlanim` transfer controls.
+ */
 function setupEventListeners() {
     elements.langSelect.addEventListener('change', (e) => {
         state.currentLang = e.target.value;

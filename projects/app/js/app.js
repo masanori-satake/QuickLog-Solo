@@ -882,6 +882,10 @@ function initAnimationEngine() {
 }
 
 
+/**
+ * Synchronizes persisted application state with the active UI.
+ * @returns {Promise<void>}
+ */
 async function syncState() {
     if (!isAppInitialized) return;
     const state = await getCurrentAppState();
@@ -2016,6 +2020,9 @@ function getColorCode(color) {
     return codes[color] || '#1976d2';
 }
 
+/**
+ * Updates the backup controls and status displays using the current backup configuration.
+ */
 async function updateBackupUI() {
     const config = backupManager.config;
     const hasHandle = !!backupManager.directoryHandle;
@@ -2058,6 +2065,9 @@ async function updateBackupUI() {
     });
 }
 
+/**
+ * Renders the category editor and configures category editing, deletion, animation, tagging, and drag-and-drop ordering.
+ */
 async function renderCategoryEditor() {
     const makerExtensionNotice = getEl('maker-extension-notice');
     const launchMakerBtn = getEl('launch-maker-btn');
@@ -2580,6 +2590,9 @@ async function deleteCustomAnimation(id) {
     broadcastSync();
 }
 
+/**
+ * Registers event handlers for task controls, modals, reports, settings, maintenance actions, and synchronization.
+ */
 function setupEventListeners() {
     getEl(ID_PAUSE_BTN)?.addEventListener('click', () => {
         if (!activeTask) return;
