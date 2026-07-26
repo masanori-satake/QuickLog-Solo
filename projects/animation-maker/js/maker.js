@@ -4,8 +4,8 @@
 
 import { messages } from '../shared/js/messages.js';
 import {
-    initDB, dbGetAll, dbPut, dbDelete,
-    STORE_CATEGORIES, STORE_SETTINGS
+    initDB, dbGetAll, dbPut,
+    STORE_CATEGORIES
 } from '../shared/js/db.js';
 import {
     saveAnimationBlob, getAnimationBlob, deleteAnimationBlob

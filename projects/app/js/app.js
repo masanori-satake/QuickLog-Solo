@@ -14,7 +14,7 @@ import {
 } from '../shared/js/logic.js';
 import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, generateUUID } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
-import { saveAnimationBlob, getAnimationBlob, deleteAnimationBlob } from '../shared/js/idb_storage.js';
+import { saveAnimationBlob } from '../shared/js/idb_storage.js';
 import { isSessionSyncEnabled, pullFromCloud, performInitialSync, clearCloudHistory, broadcastSync, setupBroadcastChannel } from '../shared/js/session_sync.js';
 import { animations } from '../shared/js/animation_registry.js';
 import {
@@ -2519,66 +2519,6 @@ async function importCustomAnimation(text) {
     broadcastSync();
 }
 window.importCustomAnimation = importCustomAnimation;
-
-async function exportCustomAnimation(id) {
-    const customAnims = await getCustomAnimationMetadataMap();
-
-    const meta = customAnims[id];
-    if (!meta) throw new Error('Metadata not found');
-
-    const blob = await getAnimationBlob(id);
-    if (!blob) throw new Error('Blob not found');
-
-    const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-
-    const exportData = {
-        format: 'quicklog-animation-package',
-        formatVersion: '1.0',
-        id: id,
-        metadata: {
-            name: meta.name,
-            description: meta.description || ''
-        },
-        config: meta.config || { exclusionStrategy: 'freedom' },
-        payload: {
-            imageData: base64,
-            renderSpec: meta.payload.renderSpec
-        }
-    };
-
-    return JSON.stringify(exportData, null, 2);
-}
-
-async function deleteCustomAnimation(id) {
-    const custom_animation_metadata_map = await getCustomAnimationMetadataMap();
-
-    delete custom_animation_metadata_map[id];
-
-    await setCustomAnimationMetadataMap(custom_animation_metadata_map);
-
-    await deleteAnimationBlob(id);
-
-    const categories = await dbGetAll(STORE_CATEGORIES);
-    for (const cat of categories) {
-        if (cat.animation === id) {
-            cat.animation = 'none';
-            await dbPut(STORE_CATEGORIES, cat);
-        }
-    }
-
-    showToast(t('toast-deleted') || 'Deleted!');
-
-    await renderCustomAnimationsTab();
-    await updateAnimationSelect();
-    await renderCategoryEditor();
-    await updateUI();
-    broadcastSync();
-}
 
 function setupEventListeners() {
     getEl(ID_PAUSE_BTN)?.addEventListener('click', () => {
