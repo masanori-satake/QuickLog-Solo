@@ -78,15 +78,15 @@
                     <div class="input-grid">
                         <div class="input-group">
                             <label data-i18n="label-name">Name</label>
-                            <input type="text" id="meta-name" placeholder="My Animation" max="50">
+                                <input type="text" id="meta-name" placeholder="My Animation" max="50" data-i18n-placeholder="placeholder-meta-name">
                         </div>
                         <div class="input-group">
                             <label data-i18n="label-author">Author</label>
-                            <input type="text" id="meta-author" placeholder="Your Name" max="50">
+                                <input type="text" id="meta-author" placeholder="Your Name" max="50" data-i18n-placeholder="placeholder-meta-author">
                         </div>
                         <div class="input-group full-width">
                             <label data-i18n="label-description">Description</label>
-                            <input type="text" id="meta-desc" placeholder="Brief explanation of your animation" max="200">
+                                <input type="text" id="meta-desc" placeholder="Brief explanation of your animation" max="200" data-i18n-placeholder="placeholder-meta-desc">
                         </div>
                     </div>
                 </section>
@@ -231,10 +231,7 @@
 
                     <!-- Playback controls -->
                     <div class="playback-controls">
-                        <button id="btn-play" class="primary-btn playback-btn" data-i18n-title="tooltip-play">
-                            <span class="material-symbols-outlined">play_arrow</span>
-                        </button>
-                        <button id="btn-pause" class="secondary-btn playback-btn" data-i18n-title="tooltip-pause">
+                        <button id="btn-play-pause" class="primary-btn playback-btn" data-i18n-title="tooltip-pause">
                             <span class="material-symbols-outlined">pause</span>
                         </button>
                     </div>

@@ -43,18 +43,19 @@ export function initAnimationDB() {
 }
 
 /**
- * Saves a raw Blob and renderSpec for a given custom animation ID.
+ * Saves a raw Blob, renderSpec, and optional config for a given custom animation ID.
  * @param {string} id - The custom animation ID.
  * @param {Blob} blob - The raw binary data / GIF Blob.
  * @param {Object} renderSpec - The rendering configuration.
+ * @param {Object} [config] - The optional animation configuration (e.g. exclusionStrategy).
  * @returns {Promise<void>}
  */
-export async function saveAnimationBlob(id, blob, renderSpec) {
+export async function saveAnimationBlob(id, blob, renderSpec, config) {
     const db = await initAnimationDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
-        const request = store.put({ id, blob, renderSpec });
+        const request = store.put({ id, blob, renderSpec, config });
 
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);

@@ -383,8 +383,10 @@ input:checked + .slider::before {
 
 #preview-container-wrapper {
     display: flex;
-    justify-content: center;
-    background-color: #000;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    background-color: var(--md-sys-color-surface-container-lowest);
     border-radius: var(--md-sys-shape-medium);
     padding: 16px;
     border: 1px solid var(--md-sys-color-outline-variant);
@@ -397,15 +399,35 @@ input:checked + .slider::before {
     height: 150px;
     background-color: #000;
     overflow: hidden;
-    cursor: grab;
     user-select: none;
-}
-
-.preview-container:active {
-    cursor: grabbing;
+    border-radius: var(--md-sys-shape-medium);
+    border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 #animation-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.raw-canvas-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 150px;
+    background-color: #000;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    border-radius: var(--md-sys-shape-medium);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.raw-canvas-container:active {
+    cursor: grabbing;
+}
+
+#raw-canvas {
     width: 100%;
     height: 100%;
     display: block;
@@ -416,8 +438,8 @@ input:checked + .slider::before {
     position: absolute;
     left: 0;
     width: 100%;
-    height: 1px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.45);
+    height: 3px;
+    border-top: 3px dashed #39ff14; /* Highly visible M3-themed fluorescent neon green */
     z-index: 5;
     pointer-events: none;
     transition: top 0.2s ease-out;

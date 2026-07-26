@@ -43,6 +43,10 @@ export default class GenericGifAnimation extends AnimationBase {
         this.renderSpec = null;
         this.currentId = null;
         this.isLoading = false;
+        this.config = {
+            mode: 'canvas',
+            exclusionStrategy: 'mask'
+        };
     }
 
     /**
@@ -90,6 +94,10 @@ export default class GenericGifAnimation extends AnimationBase {
                 maxWidth: 200,
                 scaleWithHeight: false,
                 overflowBehavior: 'categoryColor'
+            };
+            this.config = {
+                mode: 'canvas',
+                exclusionStrategy: (record.config && record.config.exclusionStrategy) || 'mask'
             };
 
             // Parse GIF using browser native ImageDecoder if available
@@ -228,7 +236,7 @@ export default class GenericGifAnimation extends AnimationBase {
         }
 
         // 3. Draw image with repeat or single tile
-        if (this.renderSpec.overflowBehavior === 'repeat') {
+        if (this.renderSpec.overflowBehavior === 'repeat' && scaledW > 0) {
             // Draw original centered tile first
             ctx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
 
