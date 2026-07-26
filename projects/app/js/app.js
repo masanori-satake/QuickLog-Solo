@@ -978,10 +978,6 @@ async function syncState() {
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
             await renderCategoryEditor();
         }
-        const customAnimTab = getEl('custom-anim-tab');
-        if (customAnimTab && !customAnimTab.classList.contains('hidden')) {
-            await renderCustomAnimationsTab();
-        }
         const aboutTab = getEl('about-tab');
         if (aboutTab && !aboutTab.classList.contains('hidden')) {
             await updateAboutStats();
@@ -2063,6 +2059,26 @@ async function updateBackupUI() {
 }
 
 async function renderCategoryEditor() {
+    const makerExtensionNotice = getEl('maker-extension-notice');
+    const launchMakerBtn = getEl('launch-maker-btn');
+    if (makerExtensionNotice) {
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+            makerExtensionNotice.classList.add('hidden');
+            if (launchMakerBtn) {
+                launchMakerBtn.disabled = false;
+                launchMakerBtn.style.opacity = '1';
+                launchMakerBtn.style.pointerEvents = 'auto';
+            }
+        } else {
+            makerExtensionNotice.classList.remove('hidden');
+            if (launchMakerBtn) {
+                launchMakerBtn.disabled = true;
+                launchMakerBtn.style.opacity = '0.5';
+                launchMakerBtn.style.pointerEvents = 'none';
+            }
+        }
+    }
+
     const list = getEl(ID_CATEGORY_EDITOR_LIST);
     if (!list) return;
     let categories = await dbGetAll(STORE_CATEGORIES);
@@ -2722,13 +2738,7 @@ function setupEventListeners() {
             queryAll('.tab-content').forEach(c => c.classList.add('hidden'));
 
             let tabName = btn.dataset.tab;
-            if (tabName === 'maintenance') {
-                tabName = 'about';
-                const aboutBtn = document.querySelector('button[data-tab="about"]');
-                if (aboutBtn) aboutBtn.classList.add('active');
-            } else {
-                btn.classList.add('active');
-            }
+            btn.classList.add('active');
 
             const target = getEl(`${tabName}-tab`);
             if (target) target.classList.remove('hidden');
@@ -2737,101 +2747,11 @@ function setupEventListeners() {
                 renderAlarmList();
             }
             if (tabName === 'categories') renderCategoryEditor();
-            if (tabName === 'custom-anim') renderCustomAnimationsTab();
             if (tabName === 'backup') updateBackupUI();
             if (tabName === 'about') {
                 updateAboutStats();
             }
         };
-    });
-
-    // Custom Animation Tab events
-    getEl('custom-anim-select')?.addEventListener('change', async (e) => {
-        const customAnims = await getCustomAnimationMetadataMap();
-        const selectedId = e.target.value;
-        if (selectedId && customAnims[selectedId]) {
-            getEl('custom-anim-name').textContent = customAnims[selectedId].name;
-            getEl('custom-anim-desc').textContent = customAnims[selectedId].description || '-';
-        } else {
-            getEl('custom-anim-name').textContent = '-';
-            getEl('custom-anim-desc').textContent = '-';
-        }
-    });
-
-    const customAnimFileInput = getEl('custom-anim-file-input');
-    getEl('custom-anim-import-file-btn')?.addEventListener('click', () => {
-        customAnimFileInput?.click();
-    });
-
-    customAnimFileInput?.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        try {
-            const text = await file.text();
-            await importCustomAnimation(text);
-        } catch (err) {
-            console.error(err);
-            alert(t('alert-invalid-qlanim') || 'Import failed');
-        } finally {
-            e.target.value = '';
-        }
-    });
-
-    getEl('custom-anim-import-clipboard-btn')?.addEventListener('click', async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            if (text) {
-                await importCustomAnimation(text);
-            }
-        } catch (err) {
-            console.error(err);
-            alert(t('alert-invalid-qlanim') || 'Import failed');
-        }
-    });
-
-    getEl('custom-anim-export-file-btn')?.addEventListener('click', async () => {
-        const selectedId = getEl('custom-anim-select')?.value;
-        if (!selectedId) return;
-        try {
-            const jsonText = await exportCustomAnimation(selectedId);
-            const blob = new Blob([jsonText], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = createEl('a');
-
-            const customAnims = await getCustomAnimationMetadataMap();
-            const meta = customAnims[selectedId];
-            a.href = url;
-            a.download = `${meta.name.toLowerCase().replace(/\s+/g, '_') || 'animation'}.qlanim`;
-            a.click();
-            URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error(err);
-        }
-    });
-
-    getEl('custom-anim-export-clipboard-btn')?.addEventListener('click', async () => {
-        const selectedId = getEl('custom-anim-select')?.value;
-        if (!selectedId) return;
-        try {
-            const jsonText = await exportCustomAnimation(selectedId);
-            await navigator.clipboard.writeText(jsonText);
-            showToast(t('toast-custom-anim-exported') || 'Copied!');
-        } catch (err) {
-            console.error(err);
-        }
-    });
-
-    getEl('custom-anim-delete-btn')?.addEventListener('click', async () => {
-        const selectedId = getEl('custom-anim-select')?.value;
-        if (!selectedId) return;
-
-        const customAnims = await getCustomAnimationMetadataMap();
-        const meta = customAnims[selectedId];
-        if (!meta) return;
-
-        if (await showConfirm(t('confirm-delete-custom-anim', { name: meta.name }) || 'Delete?')) {
-            await deleteCustomAnimation(selectedId);
-        }
     });
 
     // Backup tab listeners
@@ -2871,6 +2791,9 @@ function setupEventListeners() {
 
     getEl('launch-maker-btn')?.addEventListener('click', async (e) => {
         e.preventDefault();
+        if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.id) {
+            return;
+        }
         const lang = getLanguage();
         const state = await getCurrentAppState();
         let resolvedTheme = state.theme;

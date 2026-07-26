@@ -76,9 +76,8 @@ test.describe('QL-Animation Maker Improvements', () => {
       await okBtn.click();
     }
 
-    // Go to Custom Animations tab
+    // Go to General settings tab (open by default)
     await page.click('#settings-toggle');
-    await page.click('.tab-btn[data-tab="custom-anim"]');
 
     // We will simulate calling importCustomAnimation twice with the same name
     const samplePackage = JSON.stringify({
@@ -117,7 +116,7 @@ test.describe('QL-Animation Maker Improvements', () => {
     }, samplePackage);
 
     // Verify option elements in select dropdown
-    const selectOptions = await page.locator('#custom-anim-select option').allTextContents();
+    const selectOptions = await page.locator('#animation-select option').allTextContents();
     console.log('Select options:', selectOptions);
 
     // One should be "My Animation" and the other should be "My Animation (1)"

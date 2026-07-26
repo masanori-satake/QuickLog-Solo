@@ -5,6 +5,13 @@ test.describe('Launch QL-Animation Maker from Settings', () => {
     const pageErrors = [];
     page.on('pageerror', err => pageErrors.push(err));
 
+    // Mock chrome extension environment for testing launch capability
+    await page.addInitScript(() => {
+      window.chrome = window.chrome || {};
+      window.chrome.runtime = window.chrome.runtime || {};
+      window.chrome.runtime.id = 'mock-extension-id';
+    });
+
     const dbName = `LaunchMakerTestDB_${Math.random().toString(36).substring(7)}`;
     await page.goto(`?db=${dbName}`);
     await page.waitForSelector('#app');
@@ -20,8 +27,8 @@ test.describe('Launch QL-Animation Maker from Settings', () => {
     await page.selectOption('#theme-select', 'dark');
     await expect(page.locator('body')).toHaveClass(/theme-dark/);
 
-    // Switch to Custom Animations tab
-    await page.click('.tab-btn[data-tab="custom-anim"]');
+    // Switch to Categories tab (where the launch button was relocated)
+    await page.click('.tab-btn[data-tab="categories"]');
     await page.waitForSelector('#launch-maker-btn');
 
     console.log('Clicking launch-maker-btn...');

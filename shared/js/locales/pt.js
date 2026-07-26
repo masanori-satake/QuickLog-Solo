@@ -451,4 +451,5 @@ export default {
     'maker-zoom-out': 'Reduzir',
     'maker-data-transfer': 'Transferência de dados',
     'maker-warning-title': 'Aviso',
+    'maker-note-extension-only': '* O QL-Animation Maker só está disponível quando instalado como uma extensão do navegador. Não pode ser iniciado na versão de visualização.',
 };

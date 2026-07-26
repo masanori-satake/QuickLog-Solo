@@ -476,4 +476,5 @@ export default {
     'maker-zoom-out': 'Zoom Out',
     'maker-data-transfer': 'Data Transfer',
     'maker-warning-title': 'Warning',
+    'maker-note-extension-only': '* QL-Animation Maker is only available when installed as a browser extension. It cannot be launched in the preview version.',
 };

@@ -309,11 +309,9 @@
                     <button class="tab-btn active" data-tab="general" data-i18n-title="tab-general"><span class="material-symbols-outlined">settings</span></button>
                     <button class="tab-btn" data-tab="categories" data-i18n-title="tab-categories"><span class="material-symbols-outlined">category</span></button>
                     <button class="tab-btn" data-tab="alarms" data-i18n-title="tab-alarms"><span class="material-symbols-outlined">notifications</span></button>
-                    <button class="tab-btn" data-tab="custom-anim" data-i18n-title="tab-custom-anim"><span class="material-symbols-outlined">palette</span></button>
+                    <button class="tab-btn" data-tab="maintenance" data-i18n-title="tab-maintenance"><span class="material-symbols-outlined">build</span></button>
                     <button class="tab-btn" data-tab="backup" data-i18n-title="tab-backup"><span class="material-symbols-outlined">hard_drive</span></button>
                     <button class="tab-btn" data-tab="about" data-i18n-title="tab-about"><span class="material-symbols-outlined">info</span></button>
-                    <!-- Alias button to support backward compatibility with pre-existing E2E tests clicking data-tab="maintenance" -->
-                    <button class="tab-btn" data-tab="maintenance" style="position: absolute; bottom: 0; right: 0; width: 1px; height: 1px; margin: 0; padding: 0; border: 0; overflow: hidden; opacity: 0.01; pointer-events: auto; z-index: -1;" data-i18n-title="tab-maintenance"></button>
                 </div>
 
                 <div id="general-tab" class="tab-content">
@@ -498,6 +496,18 @@
                                 <span class="material-symbols-outlined">edit_note</span>
                                 <span data-i18n="category-editor-title">業務カテゴリ・エディタ</span>
                             </button>
+                            <div style="border-top: 1px solid var(--md-sys-color-outline-variant); margin: 16px 0; padding-top: 16px; width: 100%;"></div>
+
+                            <div id="maker-extension-notice" class="setting-item hidden" style="background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); padding: 12px; border-radius: 8px; margin-bottom: 16px; width: 100%;">
+                                <p class="note" data-i18n="maker-note-extension-only" style="font-weight: 500; margin: 0; font-size: 0.75rem;">
+                                    ※ QL-Animation Makerはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。
+                                </p>
+                            </div>
+
+                            <button id="launch-maker-btn" class="primary-btn" style="width: 100%;">
+                                <span class="material-symbols-outlined">palette</span>
+                                <span data-i18n="btn-launch-maker">QL-Animation Maker を起動</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -533,12 +543,9 @@
                             【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。
                         </p>
                     </div>
+                </div>
 
-                    <div style="border-top: 1px solid var(--md-sys-color-outline-variant); margin: 24px 0 16px 0; padding-top: 16px;">
-                        <h3 style="font-size: 1rem; font-weight: 500; margin-bottom: 12px; color: var(--md-sys-color-primary);" data-i18n="tab-maintenance">メンテナンス</h3>
-                    </div>
-
-                    <!-- Relocated Maintenance elements -->
+                <div id="maintenance-tab" class="tab-content hidden">
                     <!-- Standard clear history (visible when sync is OFF) -->
                     <div id="maintenance-clear-logs-section" class="setting-item">
                         <label data-i18n="maintenance-clear-logs">作業履歴の削除</label>
@@ -615,60 +622,6 @@
                     </p>
                 </div>
 
-                <div id="custom-anim-tab" class="tab-content hidden">
-                    <div class="setting-item">
-                        <label id="custom-anim-select-label" data-i18n="custom-anim-select-label">登録済みカスタムアニメーション</label>
-                        <select id="custom-anim-select"></select>
-                    </div>
-
-                    <div id="custom-anim-info-box" class="setting-item" style="background-color: var(--md-sys-color-surface-variant); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                        <h4 id="custom-anim-name" style="font-weight: 700; margin: 0 0 4px 0; color: var(--md-sys-color-on-surface-variant);">-</h4>
-                        <p id="custom-anim-desc" style="font-size: 0.8rem; margin: 0; color: var(--md-sys-color-on-surface-variant); opacity: 0.85;">-</p>
-                    </div>
-
-                    <div class="setting-item">
-                        <label data-i18n="custom-anim-import">インポート (追加)</label>
-                        <div class="maintenance-btns">
-                            <button id="custom-anim-import-file-btn" class="secondary-btn">
-                                <span class="material-symbols-outlined">upload_file</span>
-                                <span data-i18n="btn-add-from-file">ファイルから追加</span>
-                            </button>
-                            <button id="custom-anim-import-clipboard-btn" class="secondary-btn">
-                                <span class="material-symbols-outlined">content_paste</span>
-                                <span data-i18n="btn-add-from-clipboard">クリップボードから追加</span>
-                            </button>
-                        </div>
-                        <input type="file" id="custom-anim-file-input" style="display:none" accept=".qlanim">
-                    </div>
-
-                    <div class="setting-item">
-                        <label data-i18n="custom-anim-export">エクスポート</label>
-                        <div class="maintenance-btns">
-                            <button id="custom-anim-export-file-btn" class="secondary-btn">
-                                <span class="material-symbols-outlined">save</span>
-                                <span data-i18n="btn-save-to-file">ファイルに保存</span>
-                            </button>
-                            <button id="custom-anim-export-clipboard-btn" class="secondary-btn">
-                                <span class="material-symbols-outlined">content_copy</span>
-                                <span data-i18n="btn-copy-to-clipboard">クリップボードにコピー</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="setting-item">
-                        <label data-i18n="custom-anim-delete-label">消去</label>
-                        <button id="custom-anim-delete-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-delete-selected-anim">選択したアニメーションを消去</button>
-                    </div>
-
-                    <div style="border-top: 1px solid var(--md-sys-color-outline-variant); margin: 24px 0 16px 0; padding-top: 16px;"></div>
-
-                    <div class="setting-item">
-                        <button id="launch-maker-btn" class="primary-btn" style="width: 100%;">
-                            <span class="material-symbols-outlined">palette</span>
-                            <span data-i18n="btn-launch-maker">QL-Animation Maker を起動</span>
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
