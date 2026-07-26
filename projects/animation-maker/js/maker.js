@@ -1,36 +1,92 @@
 /**
- * QL-Animation Maker Logic
+ * QL-Animation Maker Integrated Logic
  */
 
 import { messages } from '../shared/js/messages.js';
+import {
+    initDB, dbGetAll, dbPut,
+    STORE_CATEGORIES, DB_NAME, SYNC_CHANNEL_NAME
+} from '../shared/js/db.js';
+import {
+    saveAnimationBlob, getAnimationBlob, deleteAnimationBlob
+} from '../shared/js/idb_storage.js';
 
-// App State
+// Configuration constants matching the main app
+const CELL_SIZE = 6;
+const BRIGHTNESS_HIGH = 120;
+const BRIGHTNESS_MID = 60;
+const BRIGHTNESS_LOW = 10;
+const DOT_SIZE_LARGE = 4;
+const DOT_SIZE_MID = 3;
+const DOT_SIZE_SMALL = 2;
+
+const broadcastChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
+
+function broadcastSync(type = 'sync') {
+    broadcastChannel.postMessage({ type });
+}
+
+// Color Codes (same as Category Editor)
+const COLOR_CODES = {
+    primary: '#1976d2',
+    secondary: '#7cb342',
+    tertiary: '#8e24aa',
+    error: '#d32f2f',
+    neutral: '#546e7a',
+    outline: '#9e9e9e',
+    teal: '#0097a7',
+    green: '#388e3c',
+    yellow: '#fbc02d',
+    orange: '#ffa000',
+    pink: '#d81b60',
+    indigo: '#5e35b1',
+    brown: '#6d4c41',
+    cyan: '#039be5',
+    'retro-lcd': '#9bbc0f',
+    'retro-crt': '#33ff33',
+    'retro-nixie': '#ff5500'
+};
+
+const COLORS = Object.keys(COLOR_CODES);
+
+// State
 const state = {
     currentLang: 'en',
     currentTheme: 'dark',
+    customAnimations: {}, // ID -> metadata
+    selectedId: null,
+
+    // Loaded GIF Frame Data
     gifFrames: [], // Array of { bitmap, duration }
     totalDuration: 0,
     isPlaying: true,
     virtualElapsedMs: 0,
     lastFrameTime: 0,
-    gifBase64: null, // Keeps original base64 for export
-    gifFileName: null,
     gifWidth: 0,
     gifHeight: 0,
+    gifBlob: null,
+    gifFileName: null,
 
-    // renderSpec state
+    // Active edit properties
     focusX: 0,
     focusY: 0,
     targetHeight: 100,
-    currentScale: 1.0, // directly used if scaleWithHeight is false
-    currentId: null,
+    currentScale: 1.0,
+    maxWidth: 200,
+    scaleWithHeight: true,
+    exclusionStrategy: 'freedom',
+    overflowBehavior: 'repeat',
+    previewColor: 'primary',
 
-    // Interaction state
+    // Interaction dragging state
     isDragging: false,
     dragStartX: 0,
     dragStartY: 0,
     dragStartFocusX: 0,
     dragStartFocusY: 0,
+
+    // Drag-to-reorder list index
+    draggedIndex: null,
 
     getMsg: (key) => (messages[state.currentLang] && messages[state.currentLang][key]) || messages.en[key] || key
 };
@@ -39,14 +95,34 @@ const state = {
 const elements = {
     themeToggle: document.getElementById('theme-toggle'),
     langSelect: document.getElementById('lang-select-maker'),
+    animationList: document.getElementById('animation-list'),
+    addAnimBtn: document.getElementById('add-anim-btn'),
+
+    // Workspace & Placeholders
+    noSelectionCard: document.getElementById('no-selection-card'),
+    editorWorkspace: document.getElementById('editor-workspace'),
+
+    // Metadata
     metaName: document.getElementById('meta-name'),
     metaAuthor: document.getElementById('meta-author'),
     metaDesc: document.getElementById('meta-desc'),
-    configExclusionStrategy: document.getElementById('config-exclusion-strategy'),
-    configOverflow: document.getElementById('config-overflow'),
-    configMaxWidth: document.getElementById('config-max-width'),
-    configScaleHeight: document.getElementById('config-scale-height'),
 
+    // Preview
+    canvas: document.getElementById('animation-canvas'),
+    previewContainer: document.getElementById('preview-container'),
+    boundaryTop: document.querySelector('.boundary-top'),
+    boundaryBottom: document.querySelector('.boundary-bottom'),
+    btnScaleDown: document.getElementById('btn-scale-down'),
+    btnScaleUp: document.getElementById('btn-scale-up'),
+    btnScaleReset: document.getElementById('btn-scale-reset'),
+    btnPlayPause: document.getElementById('btn-play-pause'),
+    previewColorPalette: document.getElementById('preview-color-palette'),
+
+    // Settings
+    rawCanvas: document.getElementById('raw-canvas'),
+    rawPreviewContainer: document.getElementById('raw-preview-container'),
+    rawBoundaryTop: document.querySelector('.raw-boundary-top'),
+    rawBoundaryBottom: document.querySelector('.raw-boundary-bottom'),
     dropZone: document.getElementById('drop-zone'),
     gifFileInput: document.getElementById('gif-file-input'),
     gifInfoBox: document.getElementById('gif-info-box'),
@@ -54,38 +130,69 @@ const elements = {
     gifDimensionsSpan: document.getElementById('gif-dimensions'),
     gifFramesSpan: document.getElementById('gif-frames'),
 
+    configExclusionStrategy: document.getElementById('config-exclusion-strategy'),
+    configOverflow: document.getElementById('config-overflow'),
+    configMaxWidth: document.getElementById('config-max-width'),
+    configScaleHeight: document.getElementById('config-scale-height'),
+
+    // Monitor Specs
     monFocusX: document.getElementById('mon-focus-x'),
     monFocusY: document.getElementById('mon-focus-y'),
     monScale: document.getElementById('mon-scale'),
     monTargetHeight: document.getElementById('mon-target-height'),
 
-    canvas: document.getElementById('animation-canvas'),
-    previewContainer: document.getElementById('preview-container'),
-    boundaryTop: document.querySelector('.boundary-top'),
-    boundaryBottom: document.querySelector('.boundary-bottom'),
-
-    btnScaleDown: document.getElementById('btn-scale-down'),
-    btnScaleUp: document.getElementById('btn-scale-up'),
-    btnScaleReset: document.getElementById('btn-scale-reset'),
-
-    btnPlayPause: document.getElementById('btn-play-pause'),
-
+    // Data Transfer
     btnDownload: document.getElementById('btn-download-qlanim'),
     btnUpload: document.getElementById('btn-upload-qlanim'),
     qlanimFileInput: document.getElementById('qlanim-file-input'),
-    btnCopyClipboard: document.getElementById('btn-copy-clipboard'),
-    btnPasteClipboard: document.getElementById('btn-paste-clipboard'),
 
     alertModal: document.getElementById('alert-modal'),
     alertModalText: document.getElementById('alert-modal-text'),
     alertModalCloseBtn: document.getElementById('alert-modal-close-btn')
 };
 
+// Internal Temporary Offscreen Canvas for Downsampling
+let offscreenCanvas = null;
+let offscreenCtx = null;
+
+// Debounce timer for input-driven saves
+let saveDebounceTimer = null;
+
+// Storage Tiering Helpers
+async function getCustomAnimationMetadataMap() {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        const result = await chrome.storage.local.get('custom_animation_metadata_map');
+        return result.custom_animation_metadata_map || {};
+    } else {
+        try {
+            const stored = localStorage.getItem('custom_animation_metadata_map');
+            return stored ? JSON.parse(stored) : {};
+        } catch (e) {
+            console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
+            return {};
+        }
+    }
+}
+
+async function setCustomAnimationMetadataMap(map) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        await chrome.storage.local.set({ custom_animation_metadata_map: map });
+    } else {
+        try {
+            localStorage.setItem('custom_animation_metadata_map', JSON.stringify(map));
+        } catch (e) {
+            console.error('Failed to save custom_animation_metadata_map to localStorage:', e);
+        }
+    }
+}
+
 // Initializer
-function init() {
+async function init() {
+    await initDB();
     setupLanguage();
     setupTheme();
     setupEventListeners();
+    await loadAnimationsList();
     setupAnimationLoop();
     updateBoundaryLines();
 }
@@ -174,23 +281,337 @@ function getSelectedBoundaryHeight() {
 
 function updateBoundaryLines() {
     const H = getSelectedBoundaryHeight();
-    // Container height is exactly 150px
     const topY = (150 - H) / 2;
+    const bottomY = topY + H;
+
     elements.boundaryTop.style.top = `${topY}px`;
-    elements.boundaryBottom.style.top = `${topY + H}px`;
+    elements.boundaryBottom.style.top = `${bottomY}px`;
+
+    elements.rawBoundaryTop.style.top = `${topY}px`;
+    elements.rawBoundaryBottom.style.top = `${bottomY}px`;
+
     triggerRedraw();
 }
 
 function getScaleFactor() {
-    if (elements.configScaleHeight.checked) {
+    if (state.scaleWithHeight) {
         const H = getSelectedBoundaryHeight();
         return state.currentScale * (H / 100);
     }
     return state.currentScale;
 }
 
-// Reset state
-function resetState() {
+function resolveDeduplicatedName(name, existingNames) {
+    let finalName = name || state.getMsg('placeholder-meta-name') || 'Unassigned';
+    const namesSet = new Set(existingNames);
+    if (namesSet.has(finalName)) {
+        let suffix = 1;
+        let candidateName = `${finalName} (${suffix})`;
+        while (namesSet.has(candidateName)) {
+            suffix++;
+            candidateName = `${finalName} (${suffix})`;
+        }
+        finalName = candidateName;
+    }
+    return finalName;
+}
+
+// Custom Animations List Operations
+async function loadAnimationsList() {
+    state.customAnimations = await getCustomAnimationMetadataMap();
+
+    // Sort custom animations by sequence order
+    let sortedKeys = Object.keys(state.customAnimations).sort((a, b) => {
+        const orderA = state.customAnimations[a].order ?? 0;
+        const orderB = state.customAnimations[b].order ?? 0;
+        return orderA - orderB;
+    });
+
+    if (sortedKeys.length === 0) {
+        // Automatically create a default custom animation so the user starts with one immediately!
+        await addNewAnimation();
+        return;
+    }
+
+    elements.animationList.replaceChildren();
+
+    sortedKeys.forEach((id, idx) => {
+        const meta = state.customAnimations[id];
+        const item = document.createElement('div');
+        item.className = 'category-item' + (id === state.selectedId ? ' active' : '');
+        item.draggable = true;
+        item.dataset.id = id;
+        item.dataset.index = idx;
+
+        const dragHandle = document.createElement('span');
+        dragHandle.className = 'material-symbols-outlined drag-handle';
+        dragHandle.textContent = 'drag_indicator';
+        item.appendChild(dragHandle);
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'cat-name';
+        nameSpan.textContent = meta.name || state.getMsg('placeholder-meta-name');
+        nameSpan.title = meta.name;
+        item.appendChild(nameSpan);
+
+        // Delete/Actions Button
+        const moreBtn = document.createElement('button');
+        moreBtn.className = 'icon-btn more-item-btn';
+        const moreIcon = document.createElement('span');
+        moreIcon.className = 'material-symbols-outlined';
+        moreIcon.textContent = 'more_vert';
+        moreBtn.appendChild(moreIcon);
+        moreBtn.onclick = (e) => {
+            e.stopPropagation();
+            showItemMenu(e, id);
+        };
+        item.appendChild(moreBtn);
+
+        item.onclick = () => selectAnimation(id);
+
+        // Drag events
+        item.ondragstart = () => {
+            item.classList.add('dragging');
+            state.draggedIndex = idx;
+        };
+        item.ondragend = () => {
+            item.classList.remove('dragging');
+            state.draggedIndex = null;
+        };
+
+        elements.animationList.appendChild(item);
+    });
+
+    if (!state.selectedId && sortedKeys.length > 0) {
+        await selectAnimation(sortedKeys[0]);
+    } else if (state.selectedId) {
+        // Just refresh workspace UI with current selected
+        await selectAnimation(state.selectedId);
+    }
+}
+
+function showItemMenu(e, id) {
+    const existing = document.querySelector('.category-menu');
+    if (existing) existing.remove();
+
+    const menu = document.createElement('div');
+    menu.className = 'category-menu';
+    // Style matches the category editor floating menu
+    Object.assign(menu.style, {
+        position: 'absolute',
+        backgroundColor: 'var(--md-sys-color-surface-container-high)',
+        boxShadow: 'var(--md-sys-elevation-2)',
+        borderRadius: '8px',
+        padding: '8px 0',
+        zIndex: '1000',
+        display: 'flex',
+        flexDirection: 'column'
+    });
+
+    const dupBtn = document.createElement('button');
+    dupBtn.className = 'menu-action-btn';
+    dupBtn.style.padding = '8px 16px';
+    dupBtn.style.backgroundColor = 'transparent';
+    dupBtn.style.color = 'var(--md-sys-color-on-surface)';
+    dupBtn.appendChild(document.createTextNode(state.getMsg('duplicate')));
+    dupBtn.onclick = async (event) => {
+        event.stopPropagation();
+        menu.remove();
+        await duplicateAnimation(id);
+    };
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'menu-action-btn delete';
+    delBtn.style.padding = '8px 16px';
+    delBtn.style.backgroundColor = 'transparent';
+    delBtn.style.color = 'var(--md-sys-color-error)';
+    delBtn.appendChild(document.createTextNode(state.getMsg('delete')));
+    delBtn.onclick = async (event) => {
+        event.stopPropagation();
+        menu.remove();
+        if (confirm(state.getMsg('confirm-delete-custom-anim').replace('{name}', state.customAnimations[id].name))) {
+            await deleteAnimation(id);
+        }
+    };
+
+    menu.appendChild(dupBtn);
+    menu.appendChild(delBtn);
+
+    document.body.appendChild(menu);
+    const rect = e.currentTarget.getBoundingClientRect();
+    menu.style.top = `${rect.bottom + window.scrollY}px`;
+    menu.style.left = `${rect.right - menu.offsetWidth + window.scrollX}px`;
+}
+
+// Add New Custom Animation Item
+async function addNewAnimation() {
+    const map = await getCustomAnimationMetadataMap();
+    const newId = crypto.randomUUID();
+
+    const existingNames = Object.values(map).map(m => m.name);
+    const finalName = resolveDeduplicatedName(state.getMsg('placeholder-meta-name'), existingNames);
+
+    map[newId] = {
+        name: finalName,
+        description: '',
+        author: state.getMsg('anim-unknown-author'),
+        order: Object.keys(map).length,
+        config: {
+            exclusionStrategy: 'freedom'
+        },
+        payload: {
+            renderSpec: {
+                focusX: 0,
+                focusY: 0,
+                targetHeight: 100,
+                maxWidth: 200,
+                scaleWithHeight: true,
+                overflowBehavior: 'repeat',
+                previewColor: 'primary'
+            }
+        }
+    };
+
+    await setCustomAnimationMetadataMap(map);
+    // Keep raw binary empty initially
+    await saveAnimationBlob(newId, null, map[newId].payload.renderSpec, map[newId].config);
+
+    state.selectedId = newId;
+    await loadAnimationsList();
+    broadcastSync('reload');
+}
+
+// Duplicate
+async function duplicateAnimation(id) {
+    const map = await getCustomAnimationMetadataMap();
+    if (!map[id]) return;
+
+    const source = map[id];
+    const newId = crypto.randomUUID();
+
+    const existingNames = Object.values(map).map(m => m.name);
+    const finalName = resolveDeduplicatedName(source.name, existingNames);
+
+    map[newId] = {
+        ...JSON.parse(JSON.stringify(source)),
+        name: finalName,
+        order: Object.keys(map).length
+    };
+
+    await setCustomAnimationMetadataMap(map);
+
+    const sourceBlob = await getAnimationBlob(id);
+    await saveAnimationBlob(newId, sourceBlob, map[newId].payload.renderSpec, map[newId].config);
+
+    state.selectedId = newId;
+    await loadAnimationsList();
+    broadcastSync('reload');
+}
+
+// Cascading Deletion
+async function deleteAnimation(id) {
+    const map = await getCustomAnimationMetadataMap();
+    delete map[id];
+
+    // Reorder indices
+    Object.keys(map).sort((a,b) => (map[a].order ?? 0) - (map[b].order ?? 0)).forEach((k, idx) => {
+        map[k].order = idx;
+    });
+
+    await setCustomAnimationMetadataMap(map);
+    await deleteAnimationBlob(id);
+
+    // Cascading Category Scan
+    const categories = await dbGetAll(STORE_CATEGORIES);
+    let categoriesChanged = false;
+    for (const cat of categories) {
+        if (cat.animation === id) {
+            cat.animation = 'none';
+            await dbPut(STORE_CATEGORIES, cat);
+            categoriesChanged = true;
+        }
+    }
+
+    if (state.selectedId === id) {
+        state.selectedId = null;
+    }
+
+    await loadAnimationsList();
+    broadcastSync('reload');
+    if (categoriesChanged) {
+        broadcastSync('sync');
+    }
+}
+
+// List Drag & Drop Sort
+elements.animationList.ondragover = (e) => {
+    e.preventDefault();
+    const draggingItem = elements.animationList.querySelector('.category-item.dragging');
+    if (!draggingItem) return;
+
+    const siblings = [...elements.animationList.querySelectorAll('.category-item:not(.dragging)')];
+    let nextSibling = siblings.find(sibling => {
+        return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
+    });
+    elements.animationList.insertBefore(draggingItem, nextSibling);
+};
+
+elements.animationList.ondrop = async (e) => {
+    e.preventDefault();
+    const items = [...elements.animationList.querySelectorAll('.category-item')];
+    const map = await getCustomAnimationMetadataMap();
+
+    items.forEach((item, idx) => {
+        const id = item.dataset.id;
+        if (map[id]) {
+            map[id].order = idx;
+        }
+    });
+
+    await setCustomAnimationMetadataMap(map);
+    await loadAnimationsList();
+    broadcastSync('reload');
+};
+
+// Workspace selection
+async function selectAnimation(id) {
+    state.selectedId = id;
+    const meta = state.customAnimations[id];
+    if (!meta) return;
+
+    elements.noSelectionCard.classList.add('hidden');
+    elements.editorWorkspace.classList.remove('hidden');
+
+    // Remove active style on all and add to current
+    elements.animationList.querySelectorAll('.category-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.id === id);
+    });
+
+    // Populate Fields
+    elements.metaName.value = meta.name || '';
+    elements.metaAuthor.value = meta.author || '';
+    elements.metaDesc.value = meta.description || '';
+
+    const spec = meta.payload?.renderSpec || {};
+    state.focusX = spec.focusX !== undefined ? spec.focusX : 0;
+    state.focusY = spec.focusY !== undefined ? spec.focusY : 0;
+    state.targetHeight = spec.targetHeight || 100;
+    state.currentScale = 100 / state.targetHeight;
+    state.maxWidth = spec.maxWidth || 200;
+    state.scaleWithHeight = spec.scaleWithHeight !== undefined ? spec.scaleWithHeight : true;
+    state.overflowBehavior = spec.overflowBehavior || 'repeat';
+    state.exclusionStrategy = meta.config?.exclusionStrategy || 'freedom';
+    state.previewColor = spec.previewColor || 'primary';
+
+    // Populate Inputs
+    elements.configExclusionStrategy.value = state.exclusionStrategy;
+    elements.configOverflow.value = state.overflowBehavior;
+    elements.configMaxWidth.value = state.maxWidth;
+    elements.configScaleHeight.checked = state.scaleWithHeight;
+
+    renderColorPalette();
+
+    // Reset frame lists & fetch from IndexedDB
     state.gifFrames.forEach(f => {
         if (f.bitmap && typeof f.bitmap.close === 'function') {
             f.bitmap.close();
@@ -198,51 +619,132 @@ function resetState() {
     });
     state.gifFrames = [];
     state.totalDuration = 0;
-    state.gifBase64 = null;
     state.gifFileName = null;
     state.gifWidth = 0;
     state.gifHeight = 0;
-    state.focusX = 0;
-    state.focusY = 0;
-    state.targetHeight = 100;
-    state.currentScale = 1.0;
-    state.currentId = null;
 
-    elements.gifInfoBox.classList.add('hidden');
+    const blob = await getAnimationBlob(id);
+    if (blob) {
+        state.gifBlob = blob;
+        state.gifFileName = meta.name ? `${meta.name}.gif` : 'animation.gif';
+        elements.dropZone.style.opacity = '0';
+        elements.dropZone.style.pointerEvents = 'none';
+        await parseGif(blob);
+    } else {
+        state.gifBlob = null;
+        elements.dropZone.style.opacity = '1';
+        elements.dropZone.style.pointerEvents = 'auto';
+        elements.gifInfoBox.classList.add('hidden');
+    }
+
+    updateMonitor();
     triggerRedraw();
 }
 
-// Parse GIF frames using Native ImageDecoder
-async function parseGif(file) {
-    resetState();
-    state.gifFileName = file.name;
+// Colors presets palette rendering
+function renderColorPalette() {
+    elements.previewColorPalette.replaceChildren();
+    COLORS.forEach(color => {
+        const opt = document.createElement('div');
+        opt.className = 'color-option' + (color === state.previewColor ? ' selected' : '');
+        opt.style.backgroundColor = COLOR_CODES[color];
+        opt.dataset.color = color;
 
+        const check = document.createElement('span');
+        check.className = 'material-symbols-outlined';
+        check.textContent = 'check';
+        opt.appendChild(check);
+
+        opt.onclick = async () => {
+            state.previewColor = color;
+            renderColorPalette();
+            await saveCurrentChanges();
+            triggerRedraw();
+        };
+
+        elements.previewColorPalette.appendChild(opt);
+    });
+}
+
+// Save all changes immediately
+async function saveCurrentChanges() {
+    if (!state.selectedId) return;
+    const map = await getCustomAnimationMetadataMap();
+    if (!map[state.selectedId]) return;
+
+    // Map Metadata updates
+    map[state.selectedId].name = elements.metaName.value.trim() || state.getMsg('placeholder-meta-name');
+    map[state.selectedId].author = elements.metaAuthor.value.trim() || state.getMsg('anim-unknown-author');
+    map[state.selectedId].description = elements.metaDesc.value.trim();
+
+    state.exclusionStrategy = elements.configExclusionStrategy.value;
+    map[state.selectedId].config = {
+        exclusionStrategy: state.exclusionStrategy
+    };
+
+    state.maxWidth = parseInt(elements.configMaxWidth.value) || 200;
+    state.scaleWithHeight = elements.configScaleHeight.checked;
+    state.overflowBehavior = elements.configOverflow.value;
+
+    map[state.selectedId].payload = {
+        renderSpec: {
+            focusX: Math.round(state.focusX),
+            focusY: Math.round(state.focusY),
+            targetHeight: Math.round(state.targetHeight),
+            maxWidth: state.maxWidth,
+            scaleWithHeight: state.scaleWithHeight,
+            overflowBehavior: state.overflowBehavior,
+            previewColor: state.previewColor
+        }
+    };
+
+    await setCustomAnimationMetadataMap(map);
+
+    // Save Blob and configs to IndexedDB
+    await saveAnimationBlob(state.selectedId, state.gifBlob, map[state.selectedId].payload.renderSpec, map[state.selectedId].config);
+
+    // Refresh only the labels in list view without resetting workspace selection
+    const listItems = elements.animationList.querySelectorAll('.category-item');
+    listItems.forEach(item => {
+        if (item.dataset.id === state.selectedId) {
+            const nameSpan = item.querySelector('.cat-name');
+            if (nameSpan) nameSpan.textContent = map[state.selectedId].name;
+        }
+    });
+
+    broadcastSync('reload');
+}
+
+// Debounced version for text input handlers
+function debouncedSaveCurrentChanges() {
+    if (saveDebounceTimer) {
+        clearTimeout(saveDebounceTimer);
+    }
+    saveDebounceTimer = setTimeout(() => {
+        saveCurrentChanges();
+    }, 400);
+}
+
+// Parse GIF frames using Native ImageDecoder
+async function parseGif(blob) {
     try {
         if (typeof ImageDecoder === 'undefined') {
-            // Native ImageDecoder is unsupported in this browser
-            showAlert(state.getMsg('alert-invalid-qlanim') + ' (ImageDecoder API is not supported in this browser. Please use Chrome/Edge/Opera or compatible modern browsers.)');
+            showAlert(state.getMsg('alert-invalid-qlanim') + ' (ImageDecoder API is not supported.)');
             return;
         }
 
-        const buffer = await file.arrayBuffer();
+        const buffer = await blob.arrayBuffer();
         const decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
-
-        if (!decoder.tracks) {
-            throw new Error('ImageDecoder tracks list is undefined.');
-        }
 
         await decoder.tracks.ready;
         const track = decoder.tracks.selectedTrack;
-        if (!track) {
-            throw new Error('ImageDecoder selectedTrack is null.');
-        }
+        if (!track) throw new Error('Selected track is null.');
 
         const frameCount = track.frameCount;
-        if (frameCount <= 0) {
-            throw new Error('Invalid frame count.');
-        }
+        if (frameCount <= 0) throw new Error('Invalid frame count.');
 
         let accumulatedDuration = 0;
+        const parsedFrames = [];
 
         for (let i = 0; i < frameCount; i++) {
             const result = await decoder.decode({ frameIndex: i });
@@ -252,38 +754,30 @@ async function parseGif(file) {
             if (i === 0) {
                 state.gifWidth = videoFrame.codedWidth;
                 state.gifHeight = videoFrame.codedHeight;
-                // Default focus point to center
-                state.focusX = state.gifWidth / 2;
-                state.focusY = state.gifHeight / 2;
+                // If focusX and focusY are zero, default to center of the GIF
+                if (state.focusX === 0 && state.focusY === 0) {
+                    state.focusX = state.gifWidth / 2;
+                    state.focusY = state.gifHeight / 2;
+                }
             }
 
-            videoFrame.close(); // Clean memory leak
+            videoFrame.close();
 
             let duration = (videoFrame.duration || 100000) / 1000;
             if (duration <= 0) duration = 100;
 
-            state.gifFrames.push({ bitmap, duration });
+            parsedFrames.push({ bitmap, duration });
             accumulatedDuration += duration;
         }
 
+        state.gifFrames = parsedFrames;
         state.totalDuration = accumulatedDuration;
 
-        // Convert file to Base64 for exporting later
-        state.gifBase64 = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(file);
-        });
-
         // Update info UI
-        elements.gifFileNameSpan.textContent = state.gifFileName;
+        elements.gifFileNameSpan.textContent = state.gifFileName || 'animation.gif';
         elements.gifDimensionsSpan.textContent = `${state.gifWidth} x ${state.gifHeight} px`;
         elements.gifFramesSpan.textContent = `${state.gifFrames.length} frames`;
         elements.gifInfoBox.classList.remove('hidden');
-
-        // Hide overlay once loaded
-        const dragOverlay = document.querySelector('.drag-instruction-overlay');
-        if (dragOverlay) dragOverlay.style.opacity = '0';
 
         updateMonitor();
         triggerRedraw();
@@ -291,7 +785,6 @@ async function parseGif(file) {
     } catch (err) {
         console.error('GIF Parsing failed:', err);
         showAlert(state.getMsg('alert-invalid-qlanim') + ' (' + err.message + ')');
-        resetState();
     }
 }
 
@@ -302,91 +795,6 @@ function updateMonitor() {
     elements.monTargetHeight.textContent = Math.round(state.targetHeight);
 }
 
-// Generate exported JSON
-function generateQlanimJSON() {
-    if (!state.gifBase64) {
-        return null;
-    }
-
-    return {
-        format: "quicklog-animation-package",
-        formatVersion: "1.0",
-        id: state.currentId || crypto.randomUUID(),
-        metadata: {
-            name: elements.metaName.value.trim() || "My Animation",
-            description: elements.metaDesc.value.trim() || "",
-            author: elements.metaAuthor.value.trim() || "User"
-        },
-        config: {
-            exclusionStrategy: elements.configExclusionStrategy.value
-        },
-        payload: {
-            imageData: state.gifBase64,
-            renderSpec: {
-                focusX: Math.round(state.focusX),
-                focusY: Math.round(state.focusY),
-                targetHeight: Math.round(100 / state.currentScale),
-                maxWidth: parseInt(elements.configMaxWidth.value) || 200,
-                scaleWithHeight: elements.configScaleHeight.checked,
-                overflowBehavior: elements.configOverflow.value
-            }
-        }
-    };
-}
-
-// Load qlanim data
-async function loadQlanimData(data) {
-    if (!data || data.format !== 'quicklog-animation-package') {
-        showAlert(state.getMsg('alert-invalid-qlanim'));
-        return;
-    }
-
-    try {
-        elements.metaName.value = data.metadata?.name || '';
-        elements.metaDesc.value = data.metadata?.description || '';
-        elements.metaAuthor.value = data.metadata?.author || '';
-        elements.configExclusionStrategy.value = data.config?.exclusionStrategy || 'freedom';
-        elements.configOverflow.value = data.payload?.renderSpec?.overflowBehavior || 'repeat';
-        elements.configMaxWidth.value = data.payload?.renderSpec?.maxWidth || 200;
-        elements.configScaleHeight.checked = !!data.payload?.renderSpec?.scaleWithHeight;
-
-        state.currentId = data.id || crypto.randomUUID();
-
-        const renderSpec = data.payload?.renderSpec || {};
-        state.focusX = renderSpec.focusX || 0;
-        state.focusY = renderSpec.focusY || 0;
-        state.targetHeight = renderSpec.targetHeight || 100;
-        state.currentScale = 1.0; // default back to 1.0
-
-        // Parse base64 GIF back to file blob
-        const base64 = data.payload.imageData;
-        const byteString = atob(base64.split(',')[1]);
-        const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-        for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-        }
-        const blob = new Blob([ab], { type: mimeString });
-        const file = new File([blob], (data.metadata?.name || 'animation') + '.gif', { type: mimeString });
-
-        await parseGif(file);
-
-        // Override focus / heights loaded from qlanim
-        state.focusX = renderSpec.focusX !== undefined ? renderSpec.focusX : state.focusX;
-        state.focusY = renderSpec.focusY !== undefined ? renderSpec.focusY : state.focusY;
-        state.targetHeight = renderSpec.targetHeight !== undefined ? renderSpec.targetHeight : 100;
-
-        updateMonitor();
-        triggerRedraw();
-        showToast(state.getMsg('toast-loaded-json') || 'Loaded successfully!');
-
-    } catch (err) {
-        console.error('Qlanim Import failed:', err);
-        showAlert(state.getMsg('alert-invalid-qlanim') + ' (' + err.message + ')');
-    }
-}
-
 // Canvas Drawing Loop
 function setupAnimationLoop() {
     state.lastFrameTime = performance.now();
@@ -394,144 +802,241 @@ function setupAnimationLoop() {
     function tick(now) {
         requestAnimationFrame(tick);
 
-        if (state.gifFrames.length === 0) {
+        if (state.selectedId && state.gifFrames.length > 0) {
+            if (state.isPlaying) {
+                const delta = now - state.lastFrameTime;
+                state.virtualElapsedMs += delta;
+            }
+            state.lastFrameTime = now;
+            drawFrames();
+        } else {
             drawEmptyCanvas();
-            return;
         }
-
-        if (state.isPlaying) {
-            const delta = now - state.lastFrameTime;
-            state.virtualElapsedMs += delta;
-        }
-        state.lastFrameTime = now;
-
-        drawCanvasFrame();
     }
     requestAnimationFrame(tick);
 }
 
 function triggerRedraw() {
-    if (!state.isPlaying) {
-        drawCanvasFrame();
+    if (!state.isPlaying && state.selectedId && state.gifFrames.length > 0) {
+        drawFrames();
     }
 }
 
 function drawEmptyCanvas() {
+    // Preview Canvas: Standard themes or simple background
     const ctx = elements.canvas.getContext('2d');
     const W = elements.canvas.width = elements.previewContainer.clientWidth;
     const H = elements.canvas.height = elements.previewContainer.clientHeight;
 
-    ctx.fillStyle = '#111';
+    const bg = COLOR_CODES[state.previewColor] || '#000000';
+    ctx.fillStyle = (state.previewColor === 'retro-crt' || state.previewColor === 'retro-nixie') ? '#000000' : bg;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('No GIF loaded', W / 2, H / 2);
+    // Settings Canvas: Standard black background
+    const rawCtx = elements.rawCanvas.getContext('2d');
+    const rW = elements.rawCanvas.width = elements.rawPreviewContainer.clientWidth;
+    const rH = elements.rawCanvas.height = elements.rawPreviewContainer.clientHeight;
+    rawCtx.fillStyle = '#111111';
+    rawCtx.fillRect(0, 0, rW, rH);
 }
 
-function drawCanvasFrame() {
+function drawFrames() {
+    const W = elements.previewContainer.clientWidth;
+    const H = elements.previewContainer.clientHeight; // 150
+
+    elements.canvas.width = W;
+    elements.canvas.height = H;
+    elements.rawCanvas.width = W;
+    elements.rawCanvas.height = H;
+
     const ctx = elements.canvas.getContext('2d');
-    const W = elements.canvas.width = elements.previewContainer.clientWidth;
-    const H = elements.canvas.height = elements.previewContainer.clientHeight; // 150
+    const rawCtx = elements.rawCanvas.getContext('2d');
 
-    if (state.gifFrames.length === 0) return;
+    const frame = getActiveFrame();
+    if (!frame || !frame.bitmap) return;
 
-    // Active boundary height H
+    const S = getScaleFactor();
+    const scaledW = frame.bitmap.width * S;
+    const scaledH = frame.bitmap.height * S;
+
+    const destX = (W / 2) - (state.focusX * S);
+    const destY = (H / 2) - (state.focusY * S);
+
+    const scaledMaxW = state.maxWidth * S;
+    const clipLeft = (W / 2) - (scaledMaxW / 2);
+
+    // ==========================================
+    // 1. Draw Raw Canvas (ドット等の加工なし)
+    // ==========================================
+    rawCtx.fillStyle = '#111111';
+    rawCtx.fillRect(0, 0, W, H);
+
+    rawCtx.save();
+    // Fill Overflow color
+    if (state.overflowBehavior === 'categoryColor') {
+        rawCtx.fillStyle = COLOR_CODES[state.previewColor] || '#1976d2';
+        rawCtx.fillRect(clipLeft, 0, scaledMaxW, H);
+    }
+
+    if (state.overflowBehavior === 'repeat' && scaledW > 0) {
+        rawCtx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
+        let rightX = destX + scaledW;
+        while (rightX < clipLeft + scaledMaxW) {
+            rawCtx.drawImage(frame.bitmap, rightX, destY, scaledW, scaledH);
+            rightX += scaledW;
+        }
+        let leftX = destX - scaledW;
+        while (leftX + scaledW > clipLeft) {
+            rawCtx.drawImage(frame.bitmap, leftX, destY, scaledW, scaledH);
+            leftX -= scaledW;
+        }
+    } else {
+        rawCtx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
+    }
+    rawCtx.restore();
+
+    // Render dimmed transparent overlays for outer inactive zones
+    rawCtx.fillStyle = 'rgba(0, 0, 0, 0.65)';
     const activeHeight = getSelectedBoundaryHeight();
     const topY = (H - activeHeight) / 2;
+    rawCtx.fillRect(0, 0, W, topY);
+    rawCtx.fillRect(0, topY + activeHeight, W, H - (topY + activeHeight));
+    rawCtx.fillRect(0, topY, clipLeft, activeHeight);
+    rawCtx.fillRect(clipLeft + scaledMaxW, topY, W - (clipLeft + scaledMaxW), activeHeight);
 
-    // Get current frame
+    // Draw active width borders
+    rawCtx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    rawCtx.lineWidth = 1;
+    rawCtx.strokeRect(clipLeft, topY, scaledMaxW, activeHeight);
+
+
+    // ==========================================
+    // 2. Draw Downsampled Preview Canvas (ドット加工)
+    // ==========================================
+    // To perform downsampling, we draw the high-resolution frame onto our offscreen canvas first
+    if (!offscreenCanvas || offscreenCanvas.width !== W || offscreenCanvas.height !== H) {
+        offscreenCanvas = document.createElement('canvas');
+        offscreenCanvas.width = W;
+        offscreenCanvas.height = H;
+        offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+    }
+    offscreenCtx.fillStyle = '#000000';
+    offscreenCtx.fillRect(0, 0, W, H);
+
+    offscreenCtx.save();
+    if (state.overflowBehavior === 'categoryColor') {
+        // High intensity red representation for visibility on downsampling
+        offscreenCtx.fillStyle = '#ffffff';
+        offscreenCtx.fillRect(clipLeft, 0, scaledMaxW, H);
+    }
+
+    if (state.overflowBehavior === 'repeat' && scaledW > 0) {
+        offscreenCtx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
+        let rightX = destX + scaledW;
+        while (rightX < clipLeft + scaledMaxW) {
+            offscreenCtx.drawImage(frame.bitmap, rightX, destY, scaledW, scaledH);
+            rightX += scaledW;
+        }
+        let leftX = destX - scaledW;
+        while (leftX + scaledW > clipLeft) {
+            offscreenCtx.drawImage(frame.bitmap, leftX, destY, scaledW, scaledH);
+            leftX -= scaledW;
+        }
+    } else {
+        offscreenCtx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
+    }
+    offscreenCtx.restore();
+
+    // Now downsample the offscreen canvas to dots
+    const imgData = offscreenCtx.getImageData(0, 0, W, H).data;
+    const rows = Math.ceil(H / CELL_SIZE);
+    const cols = Math.ceil(W / CELL_SIZE);
+    const dots = [];
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            const cellX = c * CELL_SIZE;
+            const cellY = r * CELL_SIZE;
+
+            let totalBrightness = 0;
+            let count = 0;
+            for (let dy = 0; dy < CELL_SIZE; dy++) {
+                for (let dx = 0; dx < CELL_SIZE; dx++) {
+                    const x = cellX + dx;
+                    const y = cellY + dy;
+                    if (x >= 0 && x < W && y >= 0 && y < H) {
+                        const idx = (y * W + x) * 4;
+                        totalBrightness += imgData[idx]; // Red channel
+                        count++;
+                    }
+                }
+            }
+            const brightness = count > 0 ? totalBrightness / count : 0;
+
+            let dotSize = 0;
+            if (brightness > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;
+            else if (brightness > BRIGHTNESS_MID) dotSize = DOT_SIZE_MID;
+            else if (brightness > BRIGHTNESS_LOW) dotSize = DOT_SIZE_SMALL;
+
+            if (dotSize > 0) {
+                dots.push({ x: cellX, y: cellY, size: dotSize });
+            }
+        }
+    }
+
+    // Render the dots to Preview Canvas
+    ctx.clearRect(0, 0, W, H);
+
+    // Apply STN LCD projection shadows if needed
+    if (state.previewColor === 'retro-lcd') {
+        ctx.fillStyle = 'rgba(15, 56, 15, 0.22)';
+        dots.forEach(dot => {
+            const dotX = dot.x + (CELL_SIZE - dot.size) / 2 + 1;
+            const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + 1;
+            ctx.fillRect(dotX, dotY, dot.size, dot.size);
+        });
+    }
+
+    dots.forEach(dot => {
+        const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
+        const dotY = dot.y + (CELL_SIZE - dot.size) / 2;
+
+        if (state.previewColor === 'retro-lcd') {
+            if (dot.size === 4) ctx.fillStyle = '#0f380f';
+            else if (dot.size === 3) ctx.fillStyle = '#306230';
+            else ctx.fillStyle = '#8bac0f';
+        } else if (state.previewColor === 'retro-crt') {
+            ctx.fillStyle = '#33ff33';
+        } else if (state.previewColor === 'retro-nixie') {
+            ctx.fillStyle = '#ff5500';
+        } else {
+            ctx.fillStyle = COLOR_CODES[state.previewColor] || '#1976d2';
+        }
+
+        ctx.fillRect(dotX, dotY, dot.size, dot.size);
+    });
+
+    // Dim the outer boundary of preview canvas as well (transparency or overlays)
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+    ctx.fillRect(0, 0, W, topY);
+    ctx.fillRect(0, topY + activeHeight, W, H - (topY + activeHeight));
+    ctx.fillRect(0, topY, clipLeft, activeHeight);
+    ctx.fillRect(clipLeft + scaledMaxW, topY, W - (clipLeft + scaledMaxW), activeHeight);
+    ctx.restore();
+}
+
+function getActiveFrame() {
+    if (state.gifFrames.length === 0) return null;
     const currentMs = state.virtualElapsedMs % state.totalDuration;
-    let frameIndex = 0;
     let runningSum = 0;
     for (let i = 0; i < state.gifFrames.length; i++) {
         runningSum += state.gifFrames[i].duration;
         if (currentMs < runningSum) {
-            frameIndex = i;
-            break;
+            return state.gifFrames[i];
         }
     }
-
-    const frame = state.gifFrames[frameIndex];
-    if (!frame || !frame.bitmap) return;
-
-    const imgWidth = frame.bitmap.width;
-    const imgHeight = frame.bitmap.height;
-
-    // Calculate scale factor
-    const S = getScaleFactor();
-
-    const scaledW = imgWidth * S;
-    const scaledH = imgHeight * S;
-
-    // Focus aligns centered on active display height area
-    const destX = (W / 2) - (state.focusX * S);
-    const destY = (H / 2) - (state.focusY * S);
-
-    // Max Width clip boundaries
-    const maxW = parseInt(elements.configMaxWidth.value) || 200;
-    const scaledMaxW = maxW * S;
-    const clipLeft = (W / 2) - (scaledMaxW / 2);
-
-    // Save and apply clipping to active region
-    ctx.save();
-
-    // Fill background of preview canvas
-    ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, W, H);
-
-    // Draw active clipping path - REMOVED AS REQUESTED TO PERMIT OUT-OF-BOUNDS VISIBILITY!
-    // ctx.beginPath();
-    // ctx.rect(clipLeft, topY, scaledMaxW, activeHeight);
-    // ctx.clip();
-
-    // Draw overflow background color
-    if (elements.configOverflow.value === 'categoryColor') {
-        ctx.fillStyle = '#0056d2'; // Standard mock Category Color
-        ctx.fillRect(clipLeft, topY, scaledMaxW, activeHeight);
-    }
-
-    // Draw actual frames
-    if (elements.configOverflow.value === 'repeat' && scaledW > 0) {
-        ctx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
-
-        // Tile to the right
-        let rightX = destX + scaledW;
-        while (rightX < clipLeft + scaledMaxW) {
-            ctx.drawImage(frame.bitmap, rightX, destY, scaledW, scaledH);
-            rightX += scaledW;
-        }
-
-        // Tile to the left
-        let leftX = destX - scaledW;
-        while (leftX + scaledW > clipLeft) {
-            ctx.drawImage(frame.bitmap, leftX, destY, scaledW, scaledH);
-            leftX -= scaledW;
-        }
-    } else {
-        ctx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
-    }
-
-    ctx.restore();
-
-    // Render transparent dimmed overlays for outer "inactive" zones
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-
-    // Above active boundary
-    ctx.fillRect(0, 0, W, topY);
-    // Below active boundary
-    ctx.fillRect(0, topY + activeHeight, W, H - (topY + activeHeight));
-    // Left of active width boundary
-    ctx.fillRect(0, topY, clipLeft, activeHeight);
-    // Right of active width boundary
-    ctx.fillRect(clipLeft + scaledMaxW, topY, W - (clipLeft + scaledMaxW), activeHeight);
-
-    // Draw boundary borders
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(clipLeft, topY, scaledMaxW, activeHeight);
+    return state.gifFrames[0];
 }
 
 // Mouse dragging directly on Canvas to adjust focus
@@ -550,8 +1055,7 @@ function handleMouseMove(e) {
     const dy = e.clientY - state.dragStartY;
     const S = getScaleFactor();
 
-    // Scale back movement delta so it corresponds to original image coordinates
-    // Dragging right -> moves image right -> focus goes left (subtraction)
+    // Update focus coordinates
     state.focusX = state.dragStartFocusX - (dx / S);
     state.focusY = state.dragStartFocusY - (dy / S);
 
@@ -563,11 +1067,14 @@ function handleMouseMove(e) {
     triggerRedraw();
 }
 
-function handleMouseUp() {
-    state.isDragging = false;
+async function handleMouseUp() {
+    if (state.isDragging) {
+        state.isDragging = false;
+        await saveCurrentChanges();
+    }
 }
 
-// Setup Interactive Event Listeners
+// Event Listeners setup
 function setupEventListeners() {
     elements.langSelect.addEventListener('change', (e) => {
         state.currentLang = e.target.value;
@@ -584,11 +1091,24 @@ function setupEventListeners() {
         applyTheme();
     });
 
-    // GIF dragging & dropping / upload
-    elements.dropZone.addEventListener('click', () => elements.gifFileInput.click());
-    elements.gifFileInput.addEventListener('change', (e) => {
+    elements.addAnimBtn.addEventListener('click', addNewAnimation);
+
+    // Dropzone actions inside rawPreviewContainer
+    elements.dropZone.addEventListener('click', (e) => {
+        e.stopPropagation();
+        elements.gifFileInput.click();
+    });
+
+    elements.gifFileInput.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
-        if (file) parseGif(file);
+        if (file) {
+            state.gifFileName = file.name;
+            state.gifBlob = file;
+            elements.dropZone.style.opacity = '0';
+            elements.dropZone.style.pointerEvents = 'none';
+            await parseGif(file);
+            await saveCurrentChanges();
+        }
     });
 
     elements.dropZone.addEventListener('dragover', (e) => {
@@ -600,24 +1120,29 @@ function setupEventListeners() {
         elements.dropZone.classList.remove('dragover');
     });
 
-    elements.dropZone.addEventListener('drop', (e) => {
+    elements.dropZone.addEventListener('drop', async (e) => {
         e.preventDefault();
         elements.dropZone.classList.remove('dragover');
         const file = e.dataTransfer.files?.[0];
         if (file && file.type === 'image/gif') {
-            parseGif(file);
+            state.gifFileName = file.name;
+            state.gifBlob = file;
+            elements.dropZone.style.opacity = '0';
+            elements.dropZone.style.pointerEvents = 'none';
+            await parseGif(file);
+            await saveCurrentChanges();
         } else {
             showAlert('Please drop a valid .gif image file!');
         }
     });
 
-    // Canvas translation drag handlers
-    elements.previewContainer.addEventListener('mousedown', handleMouseDown);
+    // Translation drag handlers on rawPreviewContainer
+    elements.rawPreviewContainer.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
 
-    // Handle touch translation drag support
-    elements.previewContainer.addEventListener('touchstart', (e) => {
+    // Touch translation drag support
+    elements.rawPreviewContainer.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
             const mockEvent = {
                 clientX: e.touches[0].clientX,
@@ -645,51 +1170,44 @@ function setupEventListeners() {
         });
     });
 
-    // Rendering Config Listeners (update monitor immediately)
-    elements.configScaleHeight.addEventListener('change', () => {
-        updateMonitor();
-        triggerRedraw();
-    });
-    elements.configOverflow.addEventListener('change', () => {
-        triggerRedraw();
-    });
-    elements.configMaxWidth.addEventListener('input', () => {
-        triggerRedraw();
-    });
-
     // Zoom scale adjustment buttons
-    elements.btnScaleUp.addEventListener('click', () => {
-        if (elements.configScaleHeight.checked) {
-            // Zooming in with height linkage decreases targetHeight
+    elements.btnScaleUp.addEventListener('click', async () => {
+        if (state.scaleWithHeight) {
             state.targetHeight = Math.max(10, state.targetHeight - 10);
+            state.currentScale = 100 / state.targetHeight;
         } else {
             state.currentScale += 0.1;
+            state.targetHeight = 100 / state.currentScale;
         }
         updateMonitor();
+        await saveCurrentChanges();
         triggerRedraw();
     });
 
-    elements.btnScaleDown.addEventListener('click', () => {
-        if (elements.configScaleHeight.checked) {
-            // Zooming out with height linkage increases targetHeight
+    elements.btnScaleDown.addEventListener('click', async () => {
+        if (state.scaleWithHeight) {
             state.targetHeight = Math.min(1000, state.targetHeight + 10);
+            state.currentScale = 100 / state.targetHeight;
         } else {
             state.currentScale = Math.max(0.1, state.currentScale - 0.1);
+            state.targetHeight = 100 / state.currentScale;
         }
         updateMonitor();
+        await saveCurrentChanges();
         triggerRedraw();
     });
 
-    elements.btnScaleReset.addEventListener('click', () => {
+    elements.btnScaleReset.addEventListener('click', async () => {
         state.focusX = state.gifWidth / 2;
         state.focusY = state.gifHeight / 2;
         state.targetHeight = 100;
         state.currentScale = 1.0;
         updateMonitor();
+        await saveCurrentChanges();
         triggerRedraw();
     });
 
-    // Playback control events
+    // Playback control
     elements.btnPlayPause.addEventListener('click', () => {
         state.isPlaying = !state.isPlaying;
         const icon = elements.btnPlayPause.querySelector('.material-symbols-outlined');
@@ -705,30 +1223,75 @@ function setupEventListeners() {
         }
     });
 
-    // Alert Modal close handler
+    // Inputs listeners (debounced for text inputs, immediate for selects/checkboxes)
+    elements.metaName.addEventListener('input', debouncedSaveCurrentChanges);
+    elements.metaAuthor.addEventListener('input', debouncedSaveCurrentChanges);
+    elements.metaDesc.addEventListener('input', debouncedSaveCurrentChanges);
+    elements.configExclusionStrategy.addEventListener('change', saveCurrentChanges);
+    elements.configOverflow.addEventListener('change', saveCurrentChanges);
+    elements.configMaxWidth.addEventListener('input', debouncedSaveCurrentChanges);
+    elements.configScaleHeight.addEventListener('change', saveCurrentChanges);
+
+    // Alert Modal close
     elements.alertModalCloseBtn.addEventListener('click', () => {
         elements.alertModal.classList.add('hidden');
     });
 
-    // Export .qlanim download
-    elements.btnDownload.addEventListener('click', () => {
-        const json = generateQlanimJSON();
-        if (!json) {
+    // Data Transfer (Relocated side-by-side buttons)
+    elements.btnDownload.addEventListener('click', async () => {
+        if (!state.selectedId) {
+            showAlert('Please select a custom animation first before downloading!');
+            return;
+        }
+        const map = await getCustomAnimationMetadataMap();
+        const meta = map[state.selectedId];
+        if (!meta) return;
+
+        const blob = await getAnimationBlob(state.selectedId);
+        if (!blob) {
             showAlert('Please import a GIF file first before downloading!');
             return;
         }
-        const text = JSON.stringify(json, null, 2);
-        const blob = new Blob([text], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const defaultName = elements.metaName.value.trim().toLowerCase().replace(/\s+/g, '_') || 'custom_animation';
-        a.download = `${defaultName}.qlanim`;
-        a.click();
-        URL.revokeObjectURL(url);
+
+        try {
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.onabort = () => reject(new Error('FileReader aborted'));
+                reader.readAsDataURL(blob);
+            });
+
+            const qlanim = {
+                format: 'quicklog-animation-package',
+                formatVersion: '1.0',
+                id: state.selectedId,
+                metadata: {
+                    name: meta.name,
+                    description: meta.description || '',
+                    author: meta.author || 'User'
+                },
+                config: meta.config || { exclusionStrategy: 'freedom' },
+                payload: {
+                    imageData: base64,
+                    renderSpec: meta.payload.renderSpec
+                }
+            };
+
+            const text = JSON.stringify(qlanim, null, 2);
+            const downloadBlob = new Blob([text], { type: 'application/json' });
+            const url = URL.createObjectURL(downloadBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            const defaultName = (meta.name || 'custom_animation').toLowerCase().replace(/\s+/g, '_');
+            a.download = `${defaultName}.qlanim`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            showAlert('Failed to read the animation file: ' + err.message);
+        }
     });
 
-    // Import .qlanim upload trigger
     elements.btnUpload.addEventListener('click', () => elements.qlanimFileInput.click());
     elements.qlanimFileInput.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
@@ -736,47 +1299,66 @@ function setupEventListeners() {
         try {
             const text = await file.text();
             const data = JSON.parse(text);
-            await loadQlanimData(data);
+
+            if (data.format !== 'quicklog-animation-package') {
+                throw new Error('Invalid format');
+            }
+
+            const map = await getCustomAnimationMetadataMap();
+            const existingNames = Object.values(map).map(m => m.name);
+            const finalName = resolveDeduplicatedName(data.metadata?.name || 'Imported Anim', existingNames);
+
+            const newId = crypto.randomUUID();
+
+            map[newId] = {
+                name: finalName,
+                description: data.metadata?.description || '',
+                author: data.metadata?.author || 'User',
+                order: Object.keys(map).length,
+                config: data.config || { exclusionStrategy: 'freedom' },
+                payload: {
+                    renderSpec: data.payload?.renderSpec || {
+                        focusX: 0,
+                        focusY: 0,
+                        targetHeight: 100,
+                        maxWidth: 200,
+                        scaleWithHeight: true,
+                        overflowBehavior: 'repeat',
+                        previewColor: 'primary'
+                    }
+                }
+            };
+
+            await setCustomAnimationMetadataMap(map);
+
+            // Decode base64 GIF back to file blob
+            const base64 = data.payload.imageData;
+            const byteString = atob(base64.split(',')[1]);
+            const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([ab], { type: mimeString });
+
+            await saveAnimationBlob(newId, blob, map[newId].payload.renderSpec, map[newId].config);
+
+            state.selectedId = newId;
+            await loadAnimationsList();
+            broadcastSync('reload');
+            showToast(state.getMsg('toast-loaded-json') || 'Loaded successfully!');
+
         } catch (err) {
             showAlert('Failed to parse the file: ' + err.message);
         } finally {
             e.target.value = '';
         }
     });
-
-    // Copy to clipboard
-    elements.btnCopyClipboard.addEventListener('click', async () => {
-        const json = generateQlanimJSON();
-        if (!json) {
-            showAlert('Please import a GIF file first before copying!');
-            return;
-        }
-        try {
-            await navigator.clipboard.writeText(JSON.stringify(json, null, 2));
-            showToast(state.getMsg('toast-custom-anim-exported') || 'Copied to clipboard successfully!');
-        } catch (err) {
-            showAlert('Clipboard write failed: ' + err.message);
-        }
-    });
-
-    // Paste from clipboard
-    elements.btnPasteClipboard.addEventListener('click', async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            if (!text || !text.trim()) {
-                showAlert('Clipboard is empty!');
-                return;
-            }
-            const data = JSON.parse(text);
-            await loadQlanimData(data);
-        } catch (err) {
-            showAlert('Clipboard paste or parse failed: ' + err.message);
-        }
-    });
 }
 
 init();
 
-// Expose internal state and helpers for testing purposes
+// Expose internals for testing
 window.getScaleFactor = getScaleFactor;
 window.state = state;

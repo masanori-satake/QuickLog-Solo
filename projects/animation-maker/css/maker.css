@@ -1,7 +1,7 @@
 /* QL-Animation Maker Styles */
 
 :root {
-    --control-pane-width: 480px;
+    --list-width: 320px;
     --md-sys-spacing-2: 16px;
     --md-sys-spacing-1-5: 12px;
 }
@@ -180,51 +180,34 @@ input:checked + .slider::before {
     overflow: hidden;
 }
 
-.control-pane {
-    width: var(--control-pane-width);
-    overflow-y: auto;
-    padding: var(--md-sys-spacing-2);
+.list-pane {
+    width: var(--list-width);
+    border-right: 1px solid var(--md-sys-color-outline-variant);
     display: flex;
     flex-direction: column;
-    gap: var(--md-sys-spacing-2);
-    border-right: 1px solid var(--md-sys-color-outline-variant);
-    background-color: var(--md-sys-color-surface-container-lowest);
+    background-color: var(--md-sys-color-surface-container-low);
+    overflow: hidden;
 }
 
-.preview-pane {
+.edit-pane {
     flex: 1;
     overflow-y: auto;
     padding: var(--md-sys-spacing-2);
     display: flex;
     flex-direction: column;
     gap: var(--md-sys-spacing-2);
+    background-color: var(--md-sys-color-surface);
 }
 
 /* Cards */
 .card {
-    background-color: var(--md-sys-color-surface-container);
+    background-color: var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface);
-    border-radius: var(--md-sys-shape-medium);
+    border-radius: 16px;
     padding: var(--md-sys-spacing-2);
     border: 1px solid var(--md-sys-color-outline-variant);
-    border-left: 4px solid var(--md-sys-color-primary);
+    box-shadow: var(--md-sys-elevation-1);
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-}
-
-.config-section.card {
-    border-left-color: var(--md-sys-color-tertiary);
-}
-
-.import-section.card {
-    border-left-color: var(--md-sys-color-error);
-}
-
-.params-section.card {
-    border-left-color: var(--md-sys-color-outline);
-}
-
-.preview-section.card {
-    border-left-color: var(--md-sys-color-secondary);
 }
 
 .section-title {
@@ -239,6 +222,100 @@ input:checked + .slider::before {
 
 .section-title .material-symbols-outlined {
     font-size: 1.2rem;
+}
+
+/* Custom Animation List Specifics */
+.category-list-section {
+    flex: 1;
+    margin: var(--md-sys-spacing-2);
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--md-sys-spacing-1-5);
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.category-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background-color: var(--md-sys-color-surface-container-highest);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    gap: 12px;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.category-item:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.delete-item-btn,
+.more-item-btn {
+    opacity: 0;
+    position: absolute;
+    right: 8px;
+    transition: opacity 0.2s;
+}
+
+.category-item:hover .delete-item-btn,
+.category-item:hover .more-item-btn,
+.category-item:focus-within .delete-item-btn,
+.category-item:focus-within .more-item-btn {
+    opacity: 1;
+}
+
+.category-item.active {
+    border-color: var(--md-sys-color-primary);
+    background-color: var(--md-sys-color-secondary-container);
+}
+
+.category-item.dragging {
+    opacity: 0.4;
+    background-color: var(--md-sys-color-surface-variant);
+    border: 2px dashed var(--md-sys-color-outline);
+}
+
+.drop-indicator {
+    height: 4px;
+    background-color: var(--md-sys-color-primary);
+    border-radius: 2px;
+    margin: -2px 0;
+    pointer-events: none;
+    z-index: 10;
+    transition: transform 0.1s ease;
+}
+
+.category-item .drag-handle {
+    cursor: grab;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.list-footer-actions {
+    margin: var(--md-sys-spacing-2);
+    margin-top: 0;
+    padding: 12px;
 }
 
 /* Inputs */
@@ -404,30 +481,7 @@ input:checked + .slider::before {
     border: 1px solid var(--md-sys-color-outline-variant);
 }
 
-#animation-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.raw-canvas-container {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    height: 150px;
-    background-color: #000;
-    overflow: hidden;
-    cursor: grab;
-    user-select: none;
-    border-radius: var(--md-sys-shape-medium);
-    border: 1px solid var(--md-sys-color-outline-variant);
-}
-
-.raw-canvas-container:active {
-    cursor: grabbing;
-}
-
-#raw-canvas {
+#animation-canvas, #raw-canvas {
     width: 100%;
     height: 100%;
     display: block;
@@ -439,18 +493,18 @@ input:checked + .slider::before {
     left: 0;
     width: 100%;
     height: 3px;
-    border-top: 3px dashed #39ff14; /* Highly visible M3-themed fluorescent neon green */
+    border-top: 3px dashed #39ff14; /* Highly visible fluorescent green */
     z-index: 5;
     pointer-events: none;
     transition: top 0.2s ease-out;
 }
 
 /* Standard height helper line defaults (100px) */
-.boundary-top {
+.boundary-top, .raw-boundary-top {
     top: 25px; /* (150 - 100) / 2 */
 }
 
-.boundary-bottom {
+.boundary-bottom, .raw-boundary-bottom {
     top: 125px; /* 150 - 25 */
 }
 
@@ -509,11 +563,103 @@ input:checked + .slider::before {
     height: 40px;
 }
 
-/* Actions */
-.action-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+/* Color Palette Selector */
+.color-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.color-option {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.color-option .material-symbols-outlined {
+    font-size: 16px;
+    opacity: 0;
+}
+
+.color-option.selected .material-symbols-outlined {
+    opacity: 1;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border-color: var(--md-sys-color-on-surface);
+}
+
+/* Retro Display Mode Color Options in Palette (L, C, N indicators) */
+.color-option[data-color="retro-lcd"] {
+    background-color: #9bbc0f !important;
+    border-color: #0f380f !important;
+    position: relative;
+}
+
+.color-option[data-color="retro-lcd"]::after {
+    content: "L";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f380f;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.color-option[data-color="retro-crt"] {
+    background-color: #3f3 !important;
+    border-color: #030c04 !important;
+    position: relative;
+}
+
+.color-option[data-color="retro-crt"]::after {
+    content: "C";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #030c04;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.color-option[data-color="retro-nixie"] {
+    background-color: #f50 !important;
+    border-color: #0c0603 !important;
+    position: relative;
+}
+
+.color-option[data-color="retro-nixie"]::after {
+    content: "N";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0c0603;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Hide the letter when selected so only checkmark displays */
+.color-option.selected[data-color="retro-lcd"]::after,
+.color-option.selected[data-color="retro-crt"]::after,
+.color-option.selected[data-color="retro-nixie"]::after {
+    display: none;
 }
 
 /* Modal and Toast styling matching Studio exactly */
@@ -607,6 +753,30 @@ button {
     transform: translateY(0);
 }
 
+/* Icon Buttons */
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.icon-btn:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+}
+
+.icon-btn:disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* Classes to assist visibility */
+.hidden {
+    display: none !important;
+}
+
 /* Responsive options */
 @media (width <= 900px) {
     .maker-main {
@@ -614,7 +784,7 @@ button {
         overflow-y: auto;
     }
 
-    .control-pane {
+    .list-pane {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--md-sys-color-outline-variant);
