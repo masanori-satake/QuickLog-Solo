@@ -437,6 +437,7 @@ export default {
     'maker-overflow-behavior': '溢出行为',
     'maker-max-width': '最大宽度 (maxWidth)',
     'maker-scale-with-height': '按高度缩放',
+    'maker-brightness': '亮度',
     'maker-gif-import': '导入 GIF 图片',
     'maker-drop-hint': '将 GIF 文件拖放到此处，或点击选择',
     'maker-file-name': '文件:',

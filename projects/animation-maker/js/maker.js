@@ -77,6 +77,7 @@ const state = {
     exclusionStrategy: 'freedom',
     overflowBehavior: 'repeat',
     previewColor: 'primary',
+    brightness: 1.0,
 
     // Interaction dragging state
     isDragging: false,
@@ -134,6 +135,8 @@ const elements = {
     configOverflow: document.getElementById('config-overflow'),
     configMaxWidth: document.getElementById('config-max-width'),
     configScaleHeight: document.getElementById('config-scale-height'),
+    configBrightness: document.getElementById('config-brightness'),
+    configBrightnessValue: document.getElementById('config-brightness-value'),
 
     // Monitor Specs
     monFocusX: document.getElementById('mon-focus-x'),
@@ -602,14 +605,18 @@ async function selectAnimation(id) {
     state.overflowBehavior = spec.overflowBehavior || 'repeat';
     state.exclusionStrategy = meta.config?.exclusionStrategy || 'freedom';
     state.previewColor = spec.previewColor || 'primary';
+    state.brightness = spec.brightness !== undefined ? spec.brightness : 1.0;
 
     // Populate Inputs
     elements.configExclusionStrategy.value = state.exclusionStrategy;
     elements.configOverflow.value = state.overflowBehavior;
     elements.configMaxWidth.value = state.maxWidth;
     elements.configScaleHeight.checked = state.scaleWithHeight;
+    elements.configBrightness.value = state.brightness;
+    elements.configBrightnessValue.textContent = state.brightness.toFixed(1);
 
     renderColorPalette();
+    updatePreviewModeStyles();
 
     // Reset frame lists & fetch from IndexedDB
     state.gifFrames.forEach(f => {
@@ -685,6 +692,7 @@ async function saveCurrentChanges() {
     state.maxWidth = parseInt(elements.configMaxWidth.value) || 200;
     state.scaleWithHeight = elements.configScaleHeight.checked;
     state.overflowBehavior = elements.configOverflow.value;
+    state.brightness = parseFloat(elements.configBrightness.value) || 1.0;
 
     map[state.selectedId].payload = {
         renderSpec: {
@@ -694,7 +702,8 @@ async function saveCurrentChanges() {
             maxWidth: state.maxWidth,
             scaleWithHeight: state.scaleWithHeight,
             overflowBehavior: state.overflowBehavior,
-            previewColor: state.previewColor
+            previewColor: state.previewColor,
+            brightness: state.brightness
         }
     };
 
@@ -702,6 +711,7 @@ async function saveCurrentChanges() {
 
     // Save Blob and configs to IndexedDB
     await saveAnimationBlob(state.selectedId, state.gifBlob, map[state.selectedId].payload.renderSpec, map[state.selectedId].config);
+    triggerRedraw();
 
     // Refresh only the labels in list view without resetting workspace selection
     const listItems = elements.animationList.querySelectorAll('.category-item');
@@ -822,6 +832,13 @@ function triggerRedraw() {
     }
 }
 
+function handleBrightnessChange(value) {
+    state.brightness = parseFloat(value) || 1.0;
+    elements.configBrightnessValue.textContent = state.brightness.toFixed(1);
+    triggerRedraw();
+    debouncedSaveCurrentChanges();
+}
+
 function drawEmptyCanvas() {
     // Preview Canvas: Standard themes or simple background
     const ctx = elements.canvas.getContext('2d');
@@ -840,6 +857,39 @@ function drawEmptyCanvas() {
     rawCtx.fillRect(0, 0, rW, rH);
 }
 
+function updatePreviewModeStyles() {
+    const container = elements.previewContainer;
+    const overlay = document.getElementById('preview-overlay-base');
+    if (!container) return;
+
+    // Remove all classes first
+    container.classList.remove('retro-lcd', 'retro-crt', 'retro-nixie', 'anim-active');
+    if (overlay) {
+        overlay.classList.remove('retro-lcd', 'retro-crt', 'retro-nixie', 'anim-active');
+        overlay.removeAttribute('style');
+    }
+
+    const col = state.previewColor;
+    if (col === 'retro-lcd') {
+        container.classList.add('retro-lcd', 'anim-active');
+        if (overlay) overlay.classList.add('retro-lcd', 'anim-active');
+    } else if (col === 'retro-crt') {
+        container.classList.add('retro-crt', 'anim-active');
+        if (overlay) overlay.classList.add('retro-crt', 'anim-active');
+    } else if (col === 'retro-nixie') {
+        container.classList.add('retro-nixie', 'anim-active');
+        if (overlay) overlay.classList.add('retro-nixie', 'anim-active');
+    } else {
+        container.classList.add('anim-active');
+        if (overlay) {
+            overlay.classList.add('anim-active');
+            const hexColor = COLOR_CODES[col] || '#1976d2';
+            overlay.style.backgroundColor = `color-mix(in srgb, ${hexColor}, transparent 95%)`;
+            overlay.style.color = hexColor;
+        }
+    }
+}
+
 function drawFrames() {
     const W = elements.previewContainer.clientWidth;
     const H = elements.previewContainer.clientHeight; // 150
@@ -848,6 +898,8 @@ function drawFrames() {
     elements.canvas.height = H;
     elements.rawCanvas.width = W;
     elements.rawCanvas.height = H;
+
+    updatePreviewModeStyles();
 
     const ctx = elements.canvas.getContext('2d');
     const rawCtx = elements.rawCanvas.getContext('2d');
@@ -872,6 +924,16 @@ function drawFrames() {
     rawCtx.fillRect(0, 0, W, H);
 
     rawCtx.save();
+    // Apply brightness adjustment to raw preview
+    if (state.brightness !== undefined && state.brightness !== 1.0) {
+        rawCtx.filter = `brightness(${state.brightness})`;
+    }
+
+    // Horizontally clip raw preview to maxWidth matching GenericGifAnimation!
+    rawCtx.beginPath();
+    rawCtx.rect(clipLeft, 0, scaledMaxW, H);
+    rawCtx.clip();
+
     // Fill Overflow color
     if (state.overflowBehavior === 'categoryColor') {
         rawCtx.fillStyle = COLOR_CODES[state.previewColor] || '#1976d2';
@@ -924,6 +986,16 @@ function drawFrames() {
     offscreenCtx.fillRect(0, 0, W, H);
 
     offscreenCtx.save();
+    // Apply brightness adjustment to offscreen canvas
+    if (state.brightness !== undefined && state.brightness !== 1.0) {
+        offscreenCtx.filter = `brightness(${state.brightness})`;
+    }
+
+    // Horizontally clip offscreen canvas to maxWidth matching GenericGifAnimation!
+    offscreenCtx.beginPath();
+    offscreenCtx.rect(clipLeft, 0, scaledMaxW, H);
+    offscreenCtx.clip();
+
     if (state.overflowBehavior === 'categoryColor') {
         // High intensity red representation for visibility on downsampling
         offscreenCtx.fillStyle = '#ffffff';
@@ -1231,6 +1303,9 @@ function setupEventListeners() {
     elements.configOverflow.addEventListener('change', saveCurrentChanges);
     elements.configMaxWidth.addEventListener('input', debouncedSaveCurrentChanges);
     elements.configScaleHeight.addEventListener('change', saveCurrentChanges);
+    elements.configBrightness.addEventListener('input', (e) => {
+        handleBrightnessChange(e.target.value);
+    });
 
     // Alert Modal close
     elements.alertModalCloseBtn.addEventListener('click', () => {

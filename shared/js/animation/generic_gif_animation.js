@@ -2,7 +2,7 @@ import { AnimationBase } from '../animation_base.js';
 
 export default class GenericGifAnimation extends AnimationBase {
     static metadata = {
-        specVersion: '1.0',
+        specVersion: '1.1',
         name: {
             ja: 'カスタムGIF',
             en: 'Custom GIF'
@@ -223,6 +223,11 @@ export default class GenericGifAnimation extends AnimationBase {
 
         // Save context state for clipping and color fills
         ctx.save();
+
+        // Apply brightness adjustment if configured
+        if (this.renderSpec.brightness !== undefined && this.renderSpec.brightness !== 1.0) {
+            ctx.filter = `brightness(${this.renderSpec.brightness})`;
+        }
 
         // 1. Clip horizontal area according to maxWidth
         ctx.beginPath();

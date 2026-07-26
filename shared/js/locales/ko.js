@@ -437,6 +437,7 @@ export default {
     'maker-overflow-behavior': '오버플로우 동작',
     'maker-max-width': '최대 너비 (maxWidth)',
     'maker-scale-with-height': '높이에 맞게 조정',
+    'maker-brightness': '밝기',
     'maker-gif-import': 'GIF 이미지 가져오기',
     'maker-drop-hint': 'GIF 파일을 여기에 드래그 앤 드롭하거나 클릭하여 선택하세요',
     'maker-file-name': '파일:',
