@@ -325,7 +325,7 @@ function generateQlanimJSON() {
             renderSpec: {
                 focusX: Math.round(state.focusX),
                 focusY: Math.round(state.focusY),
-                targetHeight: Math.round(100 / state.currentScale),
+                targetHeight: Math.round(state.targetHeight),
                 maxWidth: parseInt(elements.configMaxWidth.value) || 200,
                 scaleWithHeight: elements.configScaleHeight.checked,
                 overflowBehavior: elements.configOverflow.value
