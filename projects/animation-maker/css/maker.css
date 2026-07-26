@@ -280,7 +280,9 @@ input:checked + .slider::before {
 }
 
 .category-item:hover .delete-item-btn,
-.category-item:hover .more-item-btn {
+.category-item:hover .more-item-btn,
+.category-item:focus-within .delete-item-btn,
+.category-item:focus-within .more-item-btn {
     opacity: 1;
 }
 

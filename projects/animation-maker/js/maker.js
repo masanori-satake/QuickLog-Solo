@@ -5,7 +5,7 @@
 import { messages } from '../shared/js/messages.js';
 import {
     initDB, dbGetAll, dbPut,
-    STORE_CATEGORIES
+    STORE_CATEGORIES, DB_NAME, SYNC_CHANNEL_NAME
 } from '../shared/js/db.js';
 import {
     saveAnimationBlob, getAnimationBlob, deleteAnimationBlob
@@ -20,8 +20,6 @@ const DOT_SIZE_LARGE = 4;
 const DOT_SIZE_MID = 3;
 const DOT_SIZE_SMALL = 2;
 
-const SYNC_CHANNEL_NAME = 'quicklog_solo_sync';
-const DB_NAME = 'QuickLogSoloDB';
 const broadcastChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
 
 function broadcastSync(type = 'sync') {
@@ -156,6 +154,9 @@ const elements = {
 // Internal Temporary Offscreen Canvas for Downsampling
 let offscreenCanvas = null;
 let offscreenCtx = null;
+
+// Debounce timer for input-driven saves
+let saveDebounceTimer = null;
 
 // Storage Tiering Helpers
 async function getCustomAnimationMetadataMap() {
@@ -448,12 +449,12 @@ async function addNewAnimation() {
     const newId = crypto.randomUUID();
 
     const existingNames = Object.values(map).map(m => m.name);
-    const finalName = resolveDeduplicatedName(state.getMsg('placeholder-meta-name') || '名称未設定', existingNames);
+    const finalName = resolveDeduplicatedName(state.getMsg('placeholder-meta-name'), existingNames);
 
     map[newId] = {
         name: finalName,
         description: '',
-        author: state.getMsg('anim-unknown-author') || '未指定',
+        author: state.getMsg('anim-unknown-author'),
         order: Object.keys(map).length,
         config: {
             exclusionStrategy: 'freedom'
@@ -712,6 +713,16 @@ async function saveCurrentChanges() {
     });
 
     broadcastSync('reload');
+}
+
+// Debounced version for text input handlers
+function debouncedSaveCurrentChanges() {
+    if (saveDebounceTimer) {
+        clearTimeout(saveDebounceTimer);
+    }
+    saveDebounceTimer = setTimeout(() => {
+        saveCurrentChanges();
+    }, 400);
 }
 
 // Parse GIF frames using Native ImageDecoder
@@ -1212,13 +1223,13 @@ function setupEventListeners() {
         }
     });
 
-    // Inputs listeners
-    elements.metaName.addEventListener('input', saveCurrentChanges);
-    elements.metaAuthor.addEventListener('input', saveCurrentChanges);
-    elements.metaDesc.addEventListener('input', saveCurrentChanges);
+    // Inputs listeners (debounced for text inputs, immediate for selects/checkboxes)
+    elements.metaName.addEventListener('input', debouncedSaveCurrentChanges);
+    elements.metaAuthor.addEventListener('input', debouncedSaveCurrentChanges);
+    elements.metaDesc.addEventListener('input', debouncedSaveCurrentChanges);
     elements.configExclusionStrategy.addEventListener('change', saveCurrentChanges);
     elements.configOverflow.addEventListener('change', saveCurrentChanges);
-    elements.configMaxWidth.addEventListener('input', saveCurrentChanges);
+    elements.configMaxWidth.addEventListener('input', debouncedSaveCurrentChanges);
     elements.configScaleHeight.addEventListener('change', saveCurrentChanges);
 
     // Alert Modal close
@@ -1242,37 +1253,43 @@ function setupEventListeners() {
             return;
         }
 
-        const base64 = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-        });
+        try {
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.onabort = () => reject(new Error('FileReader aborted'));
+                reader.readAsDataURL(blob);
+            });
 
-        const qlanim = {
-            format: 'quicklog-animation-package',
-            formatVersion: '1.0',
-            id: state.selectedId,
-            metadata: {
-                name: meta.name,
-                description: meta.description || '',
-                author: meta.author || 'User'
-            },
-            config: meta.config || { exclusionStrategy: 'freedom' },
-            payload: {
-                imageData: base64,
-                renderSpec: meta.payload.renderSpec
-            }
-        };
+            const qlanim = {
+                format: 'quicklog-animation-package',
+                formatVersion: '1.0',
+                id: state.selectedId,
+                metadata: {
+                    name: meta.name,
+                    description: meta.description || '',
+                    author: meta.author || 'User'
+                },
+                config: meta.config || { exclusionStrategy: 'freedom' },
+                payload: {
+                    imageData: base64,
+                    renderSpec: meta.payload.renderSpec
+                }
+            };
 
-        const text = JSON.stringify(qlanim, null, 2);
-        const downloadBlob = new Blob([text], { type: 'application/json' });
-        const url = URL.createObjectURL(downloadBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        const defaultName = (meta.name || 'custom_animation').toLowerCase().replace(/\s+/g, '_');
-        a.download = `${defaultName}.qlanim`;
-        a.click();
-        URL.revokeObjectURL(url);
+            const text = JSON.stringify(qlanim, null, 2);
+            const downloadBlob = new Blob([text], { type: 'application/json' });
+            const url = URL.createObjectURL(downloadBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            const defaultName = (meta.name || 'custom_animation').toLowerCase().replace(/\s+/g, '_');
+            a.download = `${defaultName}.qlanim`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            showAlert('Failed to read the animation file: ' + err.message);
+        }
     });
 
     elements.btnUpload.addEventListener('click', () => elements.qlanimFileInput.click());
