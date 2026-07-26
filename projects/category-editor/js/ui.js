@@ -42,6 +42,23 @@ export function initUI(state, elements) {
         'retro-nixie': '#ff5500'
     };
 
+    let customAnims = {};
+
+    async function getCustomAnimationMetadataMap() {
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            const result = await chrome.storage.local.get('custom_animation_metadata_map');
+            return result.custom_animation_metadata_map || {};
+        } else {
+            try {
+                const stored = localStorage.getItem('custom_animation_metadata_map');
+                return stored ? JSON.parse(stored) : {};
+            } catch (e) {
+                console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
+                return {};
+            }
+        }
+    }
+
     function t(key, params) {
         if (state.t) return state.t(key, params);
         return key;
@@ -434,6 +451,11 @@ export function initUI(state, elements) {
 
             const author = anim.metadata.author || t('anim-unknown-author');
             animAuthorEl.textContent = `${t('anim-author-label')}: ${author}`;
+        } else if (customAnims && customAnims[effectiveId]) {
+            const cAnim = customAnims[effectiveId];
+            animDescEl.textContent = cAnim.description || '';
+            const author = cAnim.author || t('anim-unknown-author');
+            animAuthorEl.textContent = `${t('anim-author-label')}: ${author}`;
         } else {
             animDescEl.textContent = '';
             animAuthorEl.textContent = '\u00A0';
@@ -760,7 +782,7 @@ export function initUI(state, elements) {
         }
     }
 
-    function populateAnimationOptions() {
+    async function populateAnimationOptions() {
         const currentVal = editAnimationSelect.value;
         editAnimationSelect.replaceChildren();
 
@@ -781,6 +803,18 @@ export function initUI(state, elements) {
             opt.textContent = (typeof anim.metadata.name === 'object' ? (anim.metadata.name[state.currentLang] || anim.metadata.name['en']) : anim.metadata.name) || anim.id;
             editAnimationSelect.appendChild(opt);
         });
+
+        try {
+            customAnims = await getCustomAnimationMetadataMap();
+            Object.keys(customAnims).forEach(id => {
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = customAnims[id].name || id;
+                editAnimationSelect.appendChild(opt);
+            });
+        } catch (e) {
+            console.error('Error populating custom animation options:', e);
+        }
 
         if (currentVal) editAnimationSelect.value = currentVal;
     }

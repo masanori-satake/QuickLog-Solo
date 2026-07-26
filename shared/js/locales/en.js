@@ -462,6 +462,7 @@ export default {
     'maker-overflow-behavior': 'Overflow Behavior',
     'maker-max-width': 'Max Width (maxWidth)',
     'maker-scale-with-height': 'Scale with Height',
+    'maker-brightness': 'Brightness',
     'maker-gif-import': 'GIF Image Import',
     'maker-drop-hint': 'Drag & Drop GIF file here, or click to select',
     'maker-file-name': 'File:',

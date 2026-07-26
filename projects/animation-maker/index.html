@@ -166,28 +166,16 @@
                                 <!-- Boundary Line Helpers overlaying the canvas -->
                                 <div class="boundary-line boundary-top"></div>
                                 <div class="boundary-line boundary-bottom"></div>
+
+                                <!-- Dummy overlay base matching Category Editor exactly -->
+                                <div id="preview-overlay-base" class="preview-overlay-base">
+                                    <h2 id="preview-name-heading"><span id="preview-name">Designing</span></h2>
+                                    <div id="preview-timer-box-base" class="preview-timer-box">
+                                        <span id="preview-status-label" class="material-symbols-outlined">play_arrow</span>
+                                        <div id="preview-elapsed" class="preview-elapsed">12:34:56</div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Scale Adjustment Buttons -->
-                        <div class="scale-buttons-container">
-                            <button id="btn-scale-down" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-out">
-                                <span class="material-symbols-outlined">zoom_out</span>
-                            </button>
-                            <button id="btn-scale-up" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-in">
-                                <span class="material-symbols-outlined">zoom_in</span>
-                            </button>
-                            <button id="btn-scale-reset" class="secondary-btn">
-                                <span class="material-symbols-outlined">restart_alt</span>
-                                <span data-i18n="btn-reset">Reset</span>
-                            </button>
-                        </div>
-
-                        <!-- Playback controls -->
-                        <div class="playback-controls">
-                            <button id="btn-play-pause" class="primary-btn playback-btn" data-i18n-title="tooltip-pause">
-                                <span class="material-symbols-outlined">pause</span>
-                            </button>
                         </div>
 
                         <!-- Color Preset Picker (17 M3 Colors + Retro Modes) -->
@@ -228,11 +216,30 @@
                             </div>
                         </div>
 
-                        <!-- File Info Block underneath simulated area -->
-                        <div id="gif-info-box" class="gif-info-box hidden" style="margin-bottom: 16px;">
-                            <p><strong data-i18n="maker-file-name">File:</strong> <span id="gif-file-name">-</span></p>
-                            <p><strong data-i18n="maker-dimensions">Dimensions:</strong> <span id="gif-dimensions">-</span></p>
-                            <p><strong data-i18n="maker-frames-count">Frames:</strong> <span id="gif-frames">-</span></p>
+                        <!-- Left side Buttons and Right side File Info Block Row -->
+                        <div class="control-and-info-row" style="margin-bottom: 24px;">
+                            <!-- Left: Buttons Group -->
+                            <div class="control-buttons-group">
+                                <button id="btn-play-pause" class="primary-btn playback-btn icon-btn-large" data-i18n-title="tooltip-pause" style="background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);">
+                                    <span class="material-symbols-outlined">pause</span>
+                                </button>
+                                <button id="btn-scale-up" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-in">
+                                    <span class="material-symbols-outlined">zoom_in</span>
+                                </button>
+                                <button id="btn-scale-down" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-out">
+                                    <span class="material-symbols-outlined">zoom_out</span>
+                                </button>
+                                <button id="btn-scale-reset" class="secondary-btn icon-btn-large" data-i18n-title="btn-reset">
+                                    <span class="material-symbols-outlined">restart_alt</span>
+                                </button>
+                            </div>
+
+                            <!-- Right: File Info Block -->
+                            <div id="gif-info-box" class="gif-info-box hidden">
+                                <p><strong data-i18n="maker-file-name">File:</strong> <span id="gif-file-name">-</span></p>
+                                <p><strong data-i18n="maker-dimensions">Dimensions:</strong> <span id="gif-dimensions">-</span></p>
+                                <p><strong data-i18n="maker-frames-count">Frames:</strong> <span id="gif-frames">-</span></p>
+                            </div>
                         </div>
 
                         <!-- Config Parameters Grid -->
@@ -256,7 +263,12 @@
                                 <label data-i18n="maker-max-width">Max Width (maxWidth)</label>
                                 <input type="number" id="config-max-width" min="10" max="1000" value="200">
                             </div>
-                            <div class="input-group checkbox-container-maker" style="justify-content: flex-start; margin-top: 16px;">
+                            <div class="input-group">
+                                <label data-i18n="maker-brightness">Brightness</label>
+                                <input type="range" id="config-brightness" min="0.1" max="3.0" step="0.1" value="1.0">
+                                <span id="config-brightness-value" style="font-size:0.8rem; margin-top:4px;">1.0</span>
+                            </div>
+                            <div class="input-group checkbox-container-maker full-width" style="justify-content: flex-start; margin-top: 16px;">
                                 <label class="checkbox-inline-maker">
                                     <input type="checkbox" id="config-scale-height" checked>
                                     <span data-i18n="maker-scale-with-height">Scale with Height</span>

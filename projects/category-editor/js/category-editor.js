@@ -77,7 +77,7 @@ const elements = {
 
 let historyMod, uiMod;
 
-function init() {
+async function init() {
     const urlParams = new URLSearchParams(window.location.search);
     setupLanguage(urlParams);
     setupAppMode(urlParams);
@@ -114,7 +114,7 @@ function init() {
     setupEventListeners();
 
     uiMod.renderColorPalette();
-    uiMod.populateAnimationOptions();
+    await uiMod.populateAnimationOptions();
     loadDefaultCategories();
     uiMod.renderGlobalTagBox();
     state.clearHistory();
@@ -197,7 +197,7 @@ function setupAnimationEngine() {
 }
 
 function setupEventListeners() {
-    elements.langSelect.addEventListener('change', (e) => {
+    elements.langSelect.addEventListener('change', async (e) => {
         state.currentLang = e.target.value;
 
         const url = new URL(window.location);
@@ -207,7 +207,7 @@ function setupEventListeners() {
         updateTranslations();
         updateBackLink();
         state.renderCategoryList();
-        state.populateAnimationOptions();
+        await state.populateAnimationOptions();
         state.renderDetail();
     });
 
