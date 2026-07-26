@@ -457,6 +457,7 @@ export default {
     'maker-overflow-behavior': 'はみ出し時の挙動',
     'maker-max-width': '最大幅 (maxWidth)',
     'maker-scale-with-height': '高さに連動して拡大縮小',
+    'maker-brightness': '明るさ',
     'maker-gif-import': 'GIF画像の取り込み',
     'maker-drop-hint': 'ここにGIFファイルをドラッグ＆ドロップするか、クリックして選択してください',
     'maker-file-name': 'ファイル名:',
