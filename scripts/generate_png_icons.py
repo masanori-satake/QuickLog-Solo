@@ -34,27 +34,15 @@ def generate_icons(output_dir=None, bg_color=None):
         print("Vercel environment detected. Skipping PNG icon generation for extension.")
         return True
 
-    # Check if all required icon files already exist
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    required_sizes = [16, 32, 48, 128]
-    all_icons_exist = all(
-        os.path.exists(os.path.join(output_dir, f"icon{size}.png"))
-        for size in required_sizes
-    )
-
-    # If all icons exist and no color change is requested, skip regeneration
-    if all_icons_exist and not bg_color:
-        print(f"All required icon files already exist in {output_dir}. Skipping regeneration.")
-        return True
-
     try:
         from playwright.sync_api import sync_playwright
         print("Playwright found. Generating icons...")
     except ImportError:
         print("Error: No module named 'playwright'. Please install it to generate extension icons.")
         return False
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     with sync_playwright() as p:
         try:

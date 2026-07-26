@@ -402,11 +402,6 @@ input:checked + .slider::before {
     user-select: none;
     border-radius: var(--md-sys-shape-medium);
     border: 1px solid var(--md-sys-color-outline-variant);
-    cursor: grab;
-}
-
-.preview-container:active {
-    cursor: grabbing;
 }
 
 #animation-canvas {
@@ -422,9 +417,14 @@ input:checked + .slider::before {
     height: 150px;
     background-color: #000;
     overflow: hidden;
+    cursor: grab;
     user-select: none;
     border-radius: var(--md-sys-shape-medium);
     border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.raw-canvas-container:active {
+    cursor: grabbing;
 }
 
 #raw-canvas {
