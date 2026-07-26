@@ -2468,10 +2468,23 @@ async function importCustomAnimation(text) {
     }
     const blob = new Blob([ab], { type: mimeString });
 
-    await saveAnimationBlob(finalId, blob, payload.renderSpec);
+    await saveAnimationBlob(finalId, blob, payload.renderSpec, config || { exclusionStrategy: 'freedom' });
+
+    // Resolve name duplicate by appending sequence numbering (1), (2), etc.
+    let finalName = metadata.name || 'My Animation';
+    const existingNames = new Set(Object.values(custom_animation_metadata_map).map(item => item.name));
+    if (existingNames.has(finalName)) {
+        let suffix = 1;
+        let candidateName = `${finalName} (${suffix})`;
+        while (existingNames.has(candidateName)) {
+            suffix++;
+            candidateName = `${finalName} (${suffix})`;
+        }
+        finalName = candidateName;
+    }
 
     custom_animation_metadata_map[finalId] = {
-        name: metadata.name,
+        name: finalName,
         description: metadata.description || '',
         config: config || { exclusionStrategy: 'freedom' },
         payload: {

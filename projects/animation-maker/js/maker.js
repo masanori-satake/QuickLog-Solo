@@ -68,8 +68,7 @@ const elements = {
     btnScaleUp: document.getElementById('btn-scale-up'),
     btnScaleReset: document.getElementById('btn-scale-reset'),
 
-    btnPlay: document.getElementById('btn-play'),
-    btnPause: document.getElementById('btn-pause'),
+    btnPlayPause: document.getElementById('btn-play-pause'),
 
     btnDownload: document.getElementById('btn-download-qlanim'),
     btnUpload: document.getElementById('btn-upload-qlanim'),
@@ -148,6 +147,12 @@ function updateTranslations() {
         const key = el.getAttribute('data-i18n-placeholder');
         el.placeholder = state.getMsg(key);
     });
+
+    if (elements.btnPlayPause) {
+        const titleKey = state.isPlaying ? 'tooltip-pause' : 'tooltip-play';
+        elements.btnPlayPause.setAttribute('data-i18n-title', titleKey);
+        elements.btnPlayPause.title = state.getMsg(titleKey);
+    }
 }
 
 function showToast(msg) {
@@ -179,7 +184,7 @@ function updateBoundaryLines() {
 function getScaleFactor() {
     if (elements.configScaleHeight.checked) {
         const H = getSelectedBoundaryHeight();
-        return H / state.targetHeight;
+        return state.currentScale * (H / 100);
     }
     return state.currentScale;
 }
@@ -320,7 +325,7 @@ function generateQlanimJSON() {
             renderSpec: {
                 focusX: Math.round(state.focusX),
                 focusY: Math.round(state.focusY),
-                targetHeight: Math.round(state.targetHeight),
+                targetHeight: Math.round(100 / state.currentScale),
                 maxWidth: parseInt(elements.configMaxWidth.value) || 200,
                 scaleWithHeight: elements.configScaleHeight.checked,
                 overflowBehavior: elements.configOverflow.value
@@ -477,10 +482,10 @@ function drawCanvasFrame() {
     ctx.fillStyle = '#111';
     ctx.fillRect(0, 0, W, H);
 
-    // Draw active clipping path
-    ctx.beginPath();
-    ctx.rect(clipLeft, topY, scaledMaxW, activeHeight);
-    ctx.clip();
+    // Draw active clipping path - REMOVED AS REQUESTED TO PERMIT OUT-OF-BOUNDS VISIBILITY!
+    // ctx.beginPath();
+    // ctx.rect(clipLeft, topY, scaledMaxW, activeHeight);
+    // ctx.clip();
 
     // Draw overflow background color
     if (elements.configOverflow.value === 'categoryColor') {
@@ -489,7 +494,7 @@ function drawCanvasFrame() {
     }
 
     // Draw actual frames
-    if (elements.configOverflow.value === 'repeat') {
+    if (elements.configOverflow.value === 'repeat' && scaledW > 0) {
         ctx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
 
         // Tile to the right
@@ -685,20 +690,18 @@ function setupEventListeners() {
     });
 
     // Playback control events
-    elements.btnPlay.addEventListener('click', () => {
-        if (!state.isPlaying) {
-            state.isPlaying = true;
-            state.lastFrameTime = performance.now();
-            elements.btnPlay.classList.add('active');
-            elements.btnPause.classList.remove('active');
-        }
-    });
-
-    elements.btnPause.addEventListener('click', () => {
+    elements.btnPlayPause.addEventListener('click', () => {
+        state.isPlaying = !state.isPlaying;
+        const icon = elements.btnPlayPause.querySelector('.material-symbols-outlined');
         if (state.isPlaying) {
-            state.isPlaying = false;
-            elements.btnPause.classList.add('active');
-            elements.btnPlay.classList.remove('active');
+            state.lastFrameTime = performance.now();
+            icon.textContent = 'pause';
+            elements.btnPlayPause.setAttribute('data-i18n-title', 'tooltip-pause');
+            elements.btnPlayPause.title = state.getMsg('tooltip-pause');
+        } else {
+            icon.textContent = 'play_arrow';
+            elements.btnPlayPause.setAttribute('data-i18n-title', 'tooltip-play');
+            elements.btnPlayPause.title = state.getMsg('tooltip-play');
         }
     });
 
@@ -773,3 +776,7 @@ function setupEventListeners() {
 }
 
 init();
+
+// Expose internal state and helpers for testing purposes
+window.getScaleFactor = getScaleFactor;
+window.state = state;
