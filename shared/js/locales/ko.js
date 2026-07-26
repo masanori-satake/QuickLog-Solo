@@ -467,4 +467,6 @@ export default {
     'maker-zoom-out': '축소',
     'maker-data-transfer': '데이터 입출력',
     'maker-warning-title': '경고',
+    'maker-note-extension-only':
+        '※ QL-Animation Makerはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
 };
