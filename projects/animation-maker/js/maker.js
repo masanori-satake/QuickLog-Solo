@@ -832,6 +832,13 @@ function triggerRedraw() {
     }
 }
 
+function handleBrightnessChange(value) {
+    state.brightness = parseFloat(value) || 1.0;
+    elements.configBrightnessValue.textContent = state.brightness.toFixed(1);
+    triggerRedraw();
+    debouncedSaveCurrentChanges();
+}
+
 function drawEmptyCanvas() {
     // Preview Canvas: Standard themes or simple background
     const ctx = elements.canvas.getContext('2d');
@@ -1297,10 +1304,7 @@ function setupEventListeners() {
     elements.configMaxWidth.addEventListener('input', debouncedSaveCurrentChanges);
     elements.configScaleHeight.addEventListener('change', saveCurrentChanges);
     elements.configBrightness.addEventListener('input', (e) => {
-        state.brightness = parseFloat(e.target.value) || 1.0;
-        elements.configBrightnessValue.textContent = state.brightness.toFixed(1);
-        triggerRedraw();
-        debouncedSaveCurrentChanges();
+        handleBrightnessChange(e.target.value);
     });
 
     // Alert Modal close

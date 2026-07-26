@@ -43,6 +43,7 @@ export function initUI(state, elements) {
     };
 
     let customAnims = {};
+    let populateAnimationOptionsGeneration = 0;
 
     async function getCustomAnimationMetadataMap() {
         if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
@@ -784,6 +785,7 @@ export function initUI(state, elements) {
 
     async function populateAnimationOptions() {
         const currentVal = editAnimationSelect.value;
+        const thisGeneration = ++populateAnimationOptionsGeneration;
         editAnimationSelect.replaceChildren();
 
         const noneOpt = document.createElement('option');
@@ -806,6 +808,10 @@ export function initUI(state, elements) {
 
         try {
             customAnims = await getCustomAnimationMetadataMap();
+            // Check if this call is still the latest generation
+            if (thisGeneration !== populateAnimationOptionsGeneration) {
+                return; // Abort if a newer call has started
+            }
             Object.keys(customAnims).forEach(id => {
                 const opt = document.createElement('option');
                 opt.value = id;

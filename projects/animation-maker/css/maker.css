@@ -993,12 +993,12 @@ button {
 @keyframes nixie-flicker-editor {
     0%, 100% {
         opacity: 0.99;
-        filter: brightness(1);
+        filter: url("#nixie-heat-shimmer") brightness(1);
     }
 
     50% {
         opacity: 1.0;
-        filter: brightness(1.05);
+        filter: url("#nixie-heat-shimmer") brightness(1.05);
     }
 }
 
