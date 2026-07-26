@@ -776,7 +776,7 @@ button {
 }
 
 /* Responsive options */
-@media (max-width: 900px) {
+@media (width <= 900px) {
     .maker-main {
         flex-direction: column;
         overflow-y: auto;
