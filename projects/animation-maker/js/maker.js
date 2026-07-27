@@ -182,7 +182,9 @@ async function setCustomAnimationMetadataMap(map) {
     }
 }
 
-// Initializer
+/**
+ * Initialize the animation maker application.
+ */
 async function init() {
     await initDB();
     setupLanguage();
@@ -387,6 +389,11 @@ async function loadAnimationsList() {
     }
 }
 
+/**
+ * Display the action menu for a custom animation.
+ * @param {Event} e - The event from the menu trigger.
+ * @param {string} id - The identifier of the animation to duplicate or delete.
+ */
 function showItemMenu(e, id) {
     const existing = document.querySelector('.category-menu');
     if (existing) existing.remove();
@@ -561,7 +568,10 @@ elements.animationList.ondrop = async (e) => {
     broadcastSync('reload');
 };
 
-// Workspace selection
+/**
+ * Selects an animation and loads its metadata, render configuration, and stored GIF for editing.
+ * @param {string} id - The identifier of the animation to select.
+ */
 async function selectAnimation(id) {
     if (state.selectedId === id && !elements.editorWorkspace.classList.contains('hidden')) {
         // If clicking the currently active/selected animation and the workspace is already visible, do nothing and keep unsaved changes!
@@ -674,7 +684,9 @@ function renderColorPalette() {
     });
 }
 
-// Save all changes immediately
+/**
+ * Saves the selected animation's metadata, render configuration, and GIF data.
+ */
 async function saveCurrentChanges() {
     if (!state.selectedId) return;
     const map = await getCustomAnimationMetadataMap();
@@ -801,6 +813,9 @@ async function parseGif(blob) {
     }
 }
 
+/**
+ * Updates the monitor display with the current focus, scale, and target height values.
+ */
 function updateMonitor() {
     elements.monFocusX.textContent = Math.round(state.focusX);
     elements.monFocusY.textContent = Math.round(state.focusY);
@@ -808,6 +823,9 @@ function updateMonitor() {
     elements.monTargetHeight.textContent = Math.round(state.targetHeight);
 }
 
+/**
+ * Initializes the downsampled animation preview and keeps it synchronized with viewport changes.
+ */
 function setupAnimationEngine() {
     const canvas = document.getElementById('animation-canvas');
     if (canvas) {
@@ -822,6 +840,9 @@ function setupAnimationEngine() {
     }
 }
 
+/**
+ * Updates the animation preview's excluded regions to protect visible overlay elements.
+ */
 function updatePreviewExclusionAreas() {
     if (!state.animationEngine) return;
     const canvas = document.getElementById('animation-canvas');
@@ -852,6 +873,9 @@ function updatePreviewExclusionAreas() {
     state.animationEngine.setExclusionAreas(exclusionAreas);
 }
 
+/**
+ * Updates the downsampled animation preview according to the current playback state.
+ */
 function updateDownsampledPreview() {
     if (!state.animationEngine || !state.selectedId) return;
 
@@ -866,10 +890,16 @@ function updateDownsampledPreview() {
     }
 }
 
-// Canvas Drawing Loop
+/**
+ * Start the animation preview rendering loop.
+ */
 function setupAnimationLoop() {
     state.lastFrameTime = performance.now();
 
+    /**
+     * Updates the animation preview for the next animation frame.
+     * @param {number} now - The current animation timestamp.
+     */
     function tick(now) {
         requestAnimationFrame(tick);
 
@@ -887,6 +917,9 @@ function setupAnimationLoop() {
     requestAnimationFrame(tick);
 }
 
+/**
+ * Refreshes the raw and downsampled animation previews.
+ */
 function triggerRedraw() {
     if (state.selectedId && state.gifFrames.length > 0) {
         drawRawFrames();
@@ -894,6 +927,10 @@ function triggerRedraw() {
     updateDownsampledPreview();
 }
 
+/**
+ * Updates the preview brightness and schedules the current animation changes for saving.
+ * @param {string|number} value - The brightness value to apply.
+ */
 function handleBrightnessChange(value) {
     state.brightness = parseFloat(value) || 1.0;
     elements.configBrightnessValue.textContent = state.brightness.toFixed(1);
@@ -901,6 +938,9 @@ function handleBrightnessChange(value) {
     debouncedSaveCurrentChanges();
 }
 
+/**
+ * Clears the raw preview canvas and stops the downsampled preview.
+ */
 function drawEmptyCanvas() {
     if (state.animationEngine) {
         state.animationEngine.stop();
@@ -913,6 +953,9 @@ function drawEmptyCanvas() {
     rawCtx.fillRect(0, 0, rW, rH);
 }
 
+/**
+ * Applies the selected preview color mode to the preview container and overlay.
+ */
 function updatePreviewModeStyles() {
     const container = elements.previewContainer;
     const overlay = document.getElementById('preview-overlay-base');
@@ -946,6 +989,11 @@ function updatePreviewModeStyles() {
     }
 }
 
+/**
+ * Renders the active animation frame in the raw preview canvas.
+ *
+ * Applies the current scale, focus, brightness, inversion, overflow behavior, boundary masking, and width constraints.
+ */
 function drawRawFrames() {
     const W = elements.previewContainer.clientWidth;
     const H = elements.previewContainer.clientHeight; // 150
@@ -1032,6 +1080,10 @@ function drawRawFrames() {
     rawCtx.strokeRect(clipLeft, topY, scaledMaxW, activeHeight);
 }
 
+/**
+ * Selects the GIF frame corresponding to the current playback position.
+ * @returns {{bitmap: ImageBitmap, duration: number}|null} The active frame, or `null` when no frames are available.
+ */
 function getActiveFrame() {
     if (state.gifFrames.length === 0) return null;
     const currentMs = state.virtualElapsedMs % state.totalDuration;
@@ -1080,7 +1132,9 @@ async function handleMouseUp() {
     }
 }
 
-// Event Listeners setup
+/**
+ * Registers event handlers for animation editing, preview interaction, playback, configuration updates, and animation package import/export.
+ */
 function setupEventListeners() {
     window.addEventListener('click', (e) => {
         const menu = document.querySelector('.category-menu');

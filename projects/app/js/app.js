@@ -881,6 +881,10 @@ function initAnimationEngine() {
 }
 
 
+/**
+ * Synchronizes application state and refreshes settings, task, appearance, and UI displays.
+ * @returns {Promise<void>} Resolves when application state synchronization and UI updates are complete.
+ */
 async function syncState() {
     if (!isAppInitialized) return;
     const state = await getCurrentAppState();
@@ -2528,6 +2532,9 @@ async function importCustomAnimation(text) {
 }
 window.importCustomAnimation = importCustomAnimation;
 
+/**
+ * Registers event listeners for task controls, modals, reports, settings, imports, exports, backups, synchronization, and maintenance actions.
+ */
 function setupEventListeners() {
     getEl(ID_PAUSE_BTN)?.addEventListener('click', () => {
         if (!activeTask) return;
