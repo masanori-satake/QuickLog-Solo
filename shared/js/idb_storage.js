@@ -141,7 +141,7 @@ export async function getAnimationDraftBlob(id) {
 /**
  * Retrieves a draft animation record by its identifier.
  * @param {string} id - The record identifier.
- * @return {Object|null} The matching draft record, or `null` if no record exists.
+ * @return {Promise<Object|null>} The matching draft record, or `null` if no record exists.
  */
 export async function getAnimationDraftRecord(id) {
     const db = await initAnimationDraftDB();
