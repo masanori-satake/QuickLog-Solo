@@ -515,6 +515,7 @@ async function addNewAnimation() {
         description: '',
         author: state.getMsg('anim-unknown-author'),
         order: Object.keys(map).length,
+        revision: 1,
         config: {
             exclusionStrategy: 'freedom'
         },
@@ -554,7 +555,8 @@ async function duplicateAnimation(id) {
     map[newId] = {
         ...JSON.parse(JSON.stringify(source)),
         name: finalName,
-        order: Object.keys(map).length
+        order: Object.keys(map).length,
+        revision: 1
     };
 
     await setCustomAnimationMetadataMap(map);
@@ -718,12 +720,14 @@ async function selectAnimation(id) {
         state.gifFileName = meta.name ? `${meta.name}.gif` : 'animation.gif';
         elements.dropZone.style.opacity = '0';
         elements.dropZone.style.pointerEvents = 'none';
+        elements.rawPreviewContainer.setAttribute('tabindex', '0');
         await parseGif(blob);
         if (state.selectionToken !== currentToken) return;
     } else {
         state.gifBlob = null;
         elements.dropZone.style.opacity = '1';
         elements.dropZone.style.pointerEvents = 'auto';
+        elements.rawPreviewContainer.removeAttribute('tabindex');
         elements.gifInfoBox.classList.add('hidden');
     }
 
@@ -765,9 +769,9 @@ function renderColorPalette() {
 
 // Save all changes immediately
 async function saveCurrentChanges(isApply = false) {
-    if (!state.selectedId) return;
+    if (!state.selectedId) return false;
     const map = await getCustomAnimationMetadataMap();
-    if (!map[state.selectedId]) return;
+    if (!map[state.selectedId]) return false;
 
     // Map Metadata updates
     map[state.selectedId].name = elements.metaName.value.trim() || state.getMsg('placeholder-meta-name');
@@ -799,6 +803,9 @@ async function saveCurrentChanges(isApply = false) {
         }
     };
 
+    // Increment revision to track changes
+    map[state.selectedId].revision = (map[state.selectedId].revision || 0) + 1;
+
     await setCustomAnimationMetadataMap(map);
 
     // Save Blob and configs to IndexedDB
@@ -824,6 +831,7 @@ async function saveCurrentChanges(isApply = false) {
     if (isApply) {
         broadcastSync('sync');
     }
+    return true;
 }
 
 // Debounced version for text input handlers
@@ -1252,6 +1260,14 @@ function setupEventListeners() {
         }
     });
 
+    // Keyboard accessibility for rawPreviewContainer when GIF is loaded
+    elements.rawPreviewContainer.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && state.gifBlob) {
+            e.preventDefault();
+            elements.gifFileInput.click();
+        }
+    });
+
     elements.dropZone.addEventListener('click', (e) => {
         e.stopPropagation();
         elements.gifFileInput.click();
@@ -1264,6 +1280,7 @@ function setupEventListeners() {
             state.gifBlob = file;
             elements.dropZone.style.opacity = '0';
             elements.dropZone.style.pointerEvents = 'none';
+            elements.rawPreviewContainer.setAttribute('tabindex', '0');
             resetAnimationSettings();
             await parseGif(file);
             await saveCurrentChanges();
@@ -1299,6 +1316,7 @@ function setupEventListeners() {
         if (file && file.type === 'image/gif') {
             state.gifFileName = file.name;
             state.gifBlob = file;
+            elements.rawPreviewContainer.setAttribute('tabindex', '0');
             resetAnimationSettings();
             await parseGif(file);
             await saveCurrentChanges();
@@ -1506,6 +1524,7 @@ function setupEventListeners() {
                 description: data.metadata?.description || '',
                 author: data.metadata?.author || 'User',
                 order: Object.keys(map).length,
+                revision: 1,
                 config: data.config || { exclusionStrategy: 'freedom' },
                 payload: {
                     renderSpec: data.payload?.renderSpec || {
@@ -1539,8 +1558,10 @@ function setupEventListeners() {
     const applyBtn = document.getElementById('apply-btn');
     if (applyBtn) {
         applyBtn.addEventListener('click', async () => {
-            await saveCurrentChanges(true);
-            showToast(state.getMsg('toast-done') || 'Applied successfully!');
+            const saved = await saveCurrentChanges(true);
+            if (saved) {
+                showToast(state.getMsg('toast-done') || 'Applied successfully!');
+            }
         });
     }
 }

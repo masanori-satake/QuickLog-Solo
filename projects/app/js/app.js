@@ -695,15 +695,18 @@ async function renderLogs() {
         .slice(0, MAX_LOGS_DISPLAY);
 
     // Change detection for logs rendering to avoid flickering
-    const currentLogsData = JSON.stringify(visibleLogs.map(l => ({
-        id: l.id,
-        category: l.category,
-        startTime: l.startTime,
-        endTime: l.endTime,
-        isManualStop: l.isManualStop,
-        memo: l.memo,
-        color: l.color
-    })));
+    const currentLogsData = JSON.stringify({
+        lang: getLanguage(),
+        logs: visibleLogs.map(l => ({
+            id: l.id,
+            category: l.category,
+            startTime: l.startTime,
+            endTime: l.endTime,
+            isManualStop: l.isManualStop,
+            memo: l.memo,
+            color: l.color
+        }))
+    });
 
     if (lastLogsRenderData === currentLogsData) {
         return;
@@ -988,7 +991,8 @@ async function syncState() {
             if (customAnims[animId]) {
                 const spec = customAnims[animId].payload?.renderSpec || {};
                 const conf = customAnims[animId].config || {};
-                customAnimSpecHash = JSON.stringify({ spec, conf });
+                const rev = customAnims[animId].revision || 0;
+                customAnimSpecHash = JSON.stringify({ spec, conf, rev });
             }
         }
     }
