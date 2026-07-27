@@ -124,6 +124,7 @@ export default {
     'page-break': 'Seitenumbruch',
     'btn-add-page-break': 'Seitenumbruch hinzufügen',
     'btn-add-category': 'カテゴリを追加',
+    'btn-add-custom-anim': 'カスタムアニメーションを追加',
     'confirm-delete-page-break': 'Möchten Sie diesen Seitenumbruch löschen?',
     // Tooltips
     'tooltip-copy-report': 'Tagesbericht in die Zwischenablage kopieren',
@@ -474,4 +475,6 @@ export default {
     'maker-warning-title': '警告',
     'maker-note-extension-only':
         '※ QL-Animation Makerはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
+    'maker-error-name-empty': '名前を入力してください',
+    'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
 };
