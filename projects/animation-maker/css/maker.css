@@ -1085,7 +1085,7 @@ button {
     width: 100%;
     padding: 14px 24px;
     border-radius: var(--md-sys-shape-medium, 12px);
-    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-tertiary) 100%);
+    background: linear-gradient(135deg, #0d47a1 0%, #4a148c 100%);
     color: #fff !important;
     font-size: 1rem;
     font-weight: bold;
