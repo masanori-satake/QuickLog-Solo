@@ -437,6 +437,7 @@ export default {
     'maker-overflow-behavior': 'Comportamento de estouro',
     'maker-max-width': 'Largura máxima (maxWidth)',
     'maker-scale-with-height': 'Redimensionar com a altura',
+    'maker-invert': 'Inverter (Negativo/Positivo)',
     'maker-brightness': 'Brilho',
     'maker-gif-import': 'Importar imagem GIF',
     'maker-drop-hint': 'Arraste e solte o arquivo GIF aqui, ou clique para selecionar',

@@ -265,7 +265,10 @@ function performDraw(params) {
                         }
                     }
                 }
-                const brightness = count > 0 ? totalBrightness / count : 0;
+                let brightness = count > 0 ? totalBrightness / count : 0;
+                if (animation && animation.renderSpec && animation.renderSpec.invert) {
+                    brightness = 255 - brightness;
+                }
 
                 let dotSize = 0;
                 if (brightness > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;

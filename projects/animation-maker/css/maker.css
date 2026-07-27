@@ -44,12 +44,22 @@ body.theme-light {
 /* Header */
 .maker-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    padding: 8px 16px;
+    padding: 0 24px;
     background-color: var(--md-sys-color-surface-container);
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
     z-index: 100;
+    height: 64px;
+}
+
+.header-content-wrapper {
+    max-width: 1800px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .header-left {
@@ -112,14 +122,15 @@ body.theme-light {
     color: var(--md-sys-color-on-surface-variant);
 }
 
-.theme-switch {
+.theme-switch, .switch {
     display: inline-block;
     height: 24px;
     position: relative;
     width: 48px;
+    flex-shrink: 0;
 }
 
-.theme-switch input {
+.theme-switch input, .switch input {
     display: none;
 }
 
@@ -176,7 +187,16 @@ input:checked + .slider::before {
 /* Main Layout */
 .maker-main {
     display: flex;
+    justify-content: center;
     flex: 1;
+    overflow: hidden;
+    background-color: var(--md-sys-color-surface);
+}
+
+.main-content-wrapper {
+    max-width: 1800px;
+    width: 100%;
+    display: flex;
     overflow: hidden;
 }
 
@@ -1010,4 +1030,39 @@ button {
 #preview-container.retro-crt #animation-canvas,
 #preview-container.retro-nixie #animation-canvas {
     background-color: transparent !important;
+}
+
+/* Meatballs / Category Menu Styles */
+.category-menu {
+    position: absolute;
+    background-color: var(--md-sys-color-surface-container-high);
+    box-shadow: var(--md-sys-elevation-2);
+    border-radius: 8px;
+    padding: 8px 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+}
+
+.category-menu button {
+    background: none;
+    border: none;
+    width: 100%;
+    padding: 10px 20px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+}
+
+.category-menu button:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.category-menu button.delete {
+    color: var(--md-sys-color-error);
 }

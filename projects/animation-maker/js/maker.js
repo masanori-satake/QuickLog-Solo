@@ -7,18 +7,11 @@ import {
     initDB, dbGetAll, dbPut,
     STORE_CATEGORIES, DB_NAME, SYNC_CHANNEL_NAME
 } from '../shared/js/db.js';
+import { AnimationEngine } from '../shared/js/animations.js';
 import {
     saveAnimationBlob, getAnimationBlob, deleteAnimationBlob
 } from '../shared/js/idb_storage.js';
 
-// Configuration constants matching the main app
-const CELL_SIZE = 6;
-const BRIGHTNESS_HIGH = 120;
-const BRIGHTNESS_MID = 60;
-const BRIGHTNESS_LOW = 10;
-const DOT_SIZE_LARGE = 4;
-const DOT_SIZE_MID = 3;
-const DOT_SIZE_SMALL = 2;
 
 const broadcastChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
 
@@ -74,10 +67,12 @@ const state = {
     currentScale: 1.0,
     maxWidth: 200,
     scaleWithHeight: true,
+    invert: false,
     exclusionStrategy: 'freedom',
     overflowBehavior: 'repeat',
     previewColor: 'primary',
     brightness: 1.0,
+    animationEngine: null,
 
     // Interaction dragging state
     isDragging: false,
@@ -135,6 +130,7 @@ const elements = {
     configOverflow: document.getElementById('config-overflow'),
     configMaxWidth: document.getElementById('config-max-width'),
     configScaleHeight: document.getElementById('config-scale-height'),
+    configInvert: document.getElementById('config-invert'),
     configBrightness: document.getElementById('config-brightness'),
     configBrightnessValue: document.getElementById('config-brightness-value'),
 
@@ -154,9 +150,6 @@ const elements = {
     alertModalCloseBtn: document.getElementById('alert-modal-close-btn')
 };
 
-// Internal Temporary Offscreen Canvas for Downsampling
-let offscreenCanvas = null;
-let offscreenCtx = null;
 
 // Debounce timer for input-driven saves
 let saveDebounceTimer = null;
@@ -195,6 +188,7 @@ async function init() {
     setupLanguage();
     setupTheme();
     setupEventListeners();
+    setupAnimationEngine();
     await loadAnimationsList();
     setupAnimationLoop();
     updateBoundaryLines();
@@ -399,24 +393,14 @@ function showItemMenu(e, id) {
 
     const menu = document.createElement('div');
     menu.className = 'category-menu';
-    // Style matches the category editor floating menu
-    Object.assign(menu.style, {
-        position: 'absolute',
-        backgroundColor: 'var(--md-sys-color-surface-container-high)',
-        boxShadow: 'var(--md-sys-elevation-2)',
-        borderRadius: '8px',
-        padding: '8px 0',
-        zIndex: '1000',
-        display: 'flex',
-        flexDirection: 'column'
-    });
 
     const dupBtn = document.createElement('button');
     dupBtn.className = 'menu-action-btn';
-    dupBtn.style.padding = '8px 16px';
-    dupBtn.style.backgroundColor = 'transparent';
-    dupBtn.style.color = 'var(--md-sys-color-on-surface)';
-    dupBtn.appendChild(document.createTextNode(state.getMsg('duplicate')));
+    const dupIcon = document.createElement('span');
+    dupIcon.className = 'material-symbols-outlined';
+    dupIcon.textContent = 'content_copy';
+    dupBtn.appendChild(dupIcon);
+    dupBtn.appendChild(document.createTextNode(' ' + state.getMsg('duplicate')));
     dupBtn.onclick = async (event) => {
         event.stopPropagation();
         menu.remove();
@@ -425,10 +409,11 @@ function showItemMenu(e, id) {
 
     const delBtn = document.createElement('button');
     delBtn.className = 'menu-action-btn delete';
-    delBtn.style.padding = '8px 16px';
-    delBtn.style.backgroundColor = 'transparent';
-    delBtn.style.color = 'var(--md-sys-color-error)';
-    delBtn.appendChild(document.createTextNode(state.getMsg('delete')));
+    const delIcon = document.createElement('span');
+    delIcon.className = 'material-symbols-outlined';
+    delIcon.textContent = 'delete';
+    delBtn.appendChild(delIcon);
+    delBtn.appendChild(document.createTextNode(' ' + state.getMsg('delete')));
     delBtn.onclick = async (event) => {
         event.stopPropagation();
         menu.remove();
@@ -578,6 +563,20 @@ elements.animationList.ondrop = async (e) => {
 
 // Workspace selection
 async function selectAnimation(id) {
+    if (state.selectedId === id && !elements.editorWorkspace.classList.contains('hidden')) {
+        // If clicking the currently active/selected animation and the workspace is already visible, do nothing and keep unsaved changes!
+        return;
+    }
+
+    // If there is a currently selected animation, save any unsaved changes before switching!
+    if (state.selectedId && state.selectedId !== id) {
+        if (saveDebounceTimer) {
+            clearTimeout(saveDebounceTimer);
+            saveDebounceTimer = null;
+        }
+        await saveCurrentChanges();
+    }
+
     state.selectedId = id;
     const meta = state.customAnimations[id];
     if (!meta) return;
@@ -602,6 +601,7 @@ async function selectAnimation(id) {
     state.currentScale = 100 / state.targetHeight;
     state.maxWidth = spec.maxWidth || 200;
     state.scaleWithHeight = spec.scaleWithHeight !== undefined ? spec.scaleWithHeight : true;
+    state.invert = spec.invert !== undefined ? spec.invert : false;
     state.overflowBehavior = spec.overflowBehavior || 'repeat';
     state.exclusionStrategy = meta.config?.exclusionStrategy || 'freedom';
     state.previewColor = spec.previewColor || 'primary';
@@ -612,6 +612,7 @@ async function selectAnimation(id) {
     elements.configOverflow.value = state.overflowBehavior;
     elements.configMaxWidth.value = state.maxWidth;
     elements.configScaleHeight.checked = state.scaleWithHeight;
+    elements.configInvert.checked = state.invert;
     elements.configBrightness.value = state.brightness;
     elements.configBrightnessValue.textContent = state.brightness.toFixed(1);
 
@@ -691,6 +692,7 @@ async function saveCurrentChanges() {
 
     state.maxWidth = parseInt(elements.configMaxWidth.value) || 200;
     state.scaleWithHeight = elements.configScaleHeight.checked;
+    state.invert = elements.configInvert.checked;
     state.overflowBehavior = elements.configOverflow.value;
     state.brightness = parseFloat(elements.configBrightness.value) || 1.0;
 
@@ -701,6 +703,7 @@ async function saveCurrentChanges() {
             targetHeight: Math.round(state.targetHeight),
             maxWidth: state.maxWidth,
             scaleWithHeight: state.scaleWithHeight,
+            invert: state.invert,
             overflowBehavior: state.overflowBehavior,
             previewColor: state.previewColor,
             brightness: state.brightness
@@ -805,6 +808,64 @@ function updateMonitor() {
     elements.monTargetHeight.textContent = Math.round(state.targetHeight);
 }
 
+function setupAnimationEngine() {
+    const canvas = document.getElementById('animation-canvas');
+    if (canvas) {
+        state.animationEngine = new AnimationEngine(canvas);
+        updatePreviewExclusionAreas();
+        window.addEventListener('resize', () => {
+            if (state.animationEngine) {
+                state.animationEngine.resize();
+                updatePreviewExclusionAreas();
+            }
+        });
+    }
+}
+
+function updatePreviewExclusionAreas() {
+    if (!state.animationEngine) return;
+    const canvas = document.getElementById('animation-canvas');
+    if (!canvas) return;
+    const canvasRect = canvas.getBoundingClientRect();
+    const exclusionAreas = [];
+    const paddingX = 4;
+    const paddingY = 2;
+
+    const previewName = document.getElementById('preview-name');
+    const timerLabel = document.getElementById('preview-status-label');
+    const timerElapsed = document.getElementById('preview-elapsed');
+
+    [previewName, timerLabel, timerElapsed].forEach(el => {
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                exclusionAreas.push({
+                    x: rect.left - canvasRect.left - paddingX,
+                    y: rect.top - canvasRect.top - paddingY,
+                    width: rect.width + (paddingX * 2),
+                    height: rect.height + (paddingY * 2)
+                });
+            }
+        }
+    });
+
+    state.animationEngine.setExclusionAreas(exclusionAreas);
+}
+
+function updateDownsampledPreview() {
+    if (!state.animationEngine || !state.selectedId) return;
+
+    updatePreviewExclusionAreas();
+
+    if (state.isPlaying && state.gifFrames.length > 0) {
+        const colorCode = COLOR_CODES[state.previewColor] || '#1976d2';
+        const startTime = Date.now() - state.virtualElapsedMs;
+        state.animationEngine.start(state.selectedId, startTime, colorCode);
+    } else {
+        state.animationEngine.stop();
+    }
+}
+
 // Canvas Drawing Loop
 function setupAnimationLoop() {
     state.lastFrameTime = performance.now();
@@ -818,7 +879,7 @@ function setupAnimationLoop() {
                 state.virtualElapsedMs += delta;
             }
             state.lastFrameTime = now;
-            drawFrames();
+            drawRawFrames();
         } else {
             drawEmptyCanvas();
         }
@@ -827,9 +888,10 @@ function setupAnimationLoop() {
 }
 
 function triggerRedraw() {
-    if (!state.isPlaying && state.selectedId && state.gifFrames.length > 0) {
-        drawFrames();
+    if (state.selectedId && state.gifFrames.length > 0) {
+        drawRawFrames();
     }
+    updateDownsampledPreview();
 }
 
 function handleBrightnessChange(value) {
@@ -840,15 +902,9 @@ function handleBrightnessChange(value) {
 }
 
 function drawEmptyCanvas() {
-    // Preview Canvas: Standard themes or simple background
-    const ctx = elements.canvas.getContext('2d');
-    const W = elements.canvas.width = elements.previewContainer.clientWidth;
-    const H = elements.canvas.height = elements.previewContainer.clientHeight;
-
-    const bg = COLOR_CODES[state.previewColor] || '#000000';
-    ctx.fillStyle = (state.previewColor === 'retro-crt' || state.previewColor === 'retro-nixie') ? '#000000' : bg;
-    ctx.fillRect(0, 0, W, H);
-
+    if (state.animationEngine) {
+        state.animationEngine.stop();
+    }
     // Settings Canvas: Standard black background
     const rawCtx = elements.rawCanvas.getContext('2d');
     const rW = elements.rawCanvas.width = elements.rawPreviewContainer.clientWidth;
@@ -890,18 +946,15 @@ function updatePreviewModeStyles() {
     }
 }
 
-function drawFrames() {
+function drawRawFrames() {
     const W = elements.previewContainer.clientWidth;
     const H = elements.previewContainer.clientHeight; // 150
 
-    elements.canvas.width = W;
-    elements.canvas.height = H;
     elements.rawCanvas.width = W;
     elements.rawCanvas.height = H;
 
     updatePreviewModeStyles();
 
-    const ctx = elements.canvas.getContext('2d');
     const rawCtx = elements.rawCanvas.getContext('2d');
 
     const frame = getActiveFrame();
@@ -955,6 +1008,13 @@ function drawFrames() {
     } else {
         rawCtx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
     }
+
+    // Apply positive/negative inversion dynamically on raw canvas using GPU-accelerated difference blending
+    if (state.invert) {
+        rawCtx.globalCompositeOperation = 'difference';
+        rawCtx.fillStyle = '#ffffff';
+        rawCtx.fillRect(clipLeft, 0, scaledMaxW, H);
+    }
     rawCtx.restore();
 
     // Render dimmed transparent overlays for outer inactive zones
@@ -970,132 +1030,6 @@ function drawFrames() {
     rawCtx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
     rawCtx.lineWidth = 1;
     rawCtx.strokeRect(clipLeft, topY, scaledMaxW, activeHeight);
-
-
-    // ==========================================
-    // 2. Draw Downsampled Preview Canvas (ドット加工)
-    // ==========================================
-    // To perform downsampling, we draw the high-resolution frame onto our offscreen canvas first
-    if (!offscreenCanvas || offscreenCanvas.width !== W || offscreenCanvas.height !== H) {
-        offscreenCanvas = document.createElement('canvas');
-        offscreenCanvas.width = W;
-        offscreenCanvas.height = H;
-        offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
-    }
-    offscreenCtx.fillStyle = '#000000';
-    offscreenCtx.fillRect(0, 0, W, H);
-
-    offscreenCtx.save();
-    // Apply brightness adjustment to offscreen canvas
-    if (state.brightness !== undefined && state.brightness !== 1.0) {
-        offscreenCtx.filter = `brightness(${state.brightness})`;
-    }
-
-    // Horizontally clip offscreen canvas to maxWidth matching GenericGifAnimation!
-    offscreenCtx.beginPath();
-    offscreenCtx.rect(clipLeft, 0, scaledMaxW, H);
-    offscreenCtx.clip();
-
-    if (state.overflowBehavior === 'categoryColor') {
-        // High intensity red representation for visibility on downsampling
-        offscreenCtx.fillStyle = '#ffffff';
-        offscreenCtx.fillRect(clipLeft, 0, scaledMaxW, H);
-    }
-
-    if (state.overflowBehavior === 'repeat' && scaledW > 0) {
-        offscreenCtx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
-        let rightX = destX + scaledW;
-        while (rightX < clipLeft + scaledMaxW) {
-            offscreenCtx.drawImage(frame.bitmap, rightX, destY, scaledW, scaledH);
-            rightX += scaledW;
-        }
-        let leftX = destX - scaledW;
-        while (leftX + scaledW > clipLeft) {
-            offscreenCtx.drawImage(frame.bitmap, leftX, destY, scaledW, scaledH);
-            leftX -= scaledW;
-        }
-    } else {
-        offscreenCtx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
-    }
-    offscreenCtx.restore();
-
-    // Now downsample the offscreen canvas to dots
-    const imgData = offscreenCtx.getImageData(0, 0, W, H).data;
-    const rows = Math.ceil(H / CELL_SIZE);
-    const cols = Math.ceil(W / CELL_SIZE);
-    const dots = [];
-
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            const cellX = c * CELL_SIZE;
-            const cellY = r * CELL_SIZE;
-
-            let totalBrightness = 0;
-            let count = 0;
-            for (let dy = 0; dy < CELL_SIZE; dy++) {
-                for (let dx = 0; dx < CELL_SIZE; dx++) {
-                    const x = cellX + dx;
-                    const y = cellY + dy;
-                    if (x >= 0 && x < W && y >= 0 && y < H) {
-                        const idx = (y * W + x) * 4;
-                        totalBrightness += imgData[idx]; // Red channel
-                        count++;
-                    }
-                }
-            }
-            const brightness = count > 0 ? totalBrightness / count : 0;
-
-            let dotSize = 0;
-            if (brightness > BRIGHTNESS_HIGH) dotSize = DOT_SIZE_LARGE;
-            else if (brightness > BRIGHTNESS_MID) dotSize = DOT_SIZE_MID;
-            else if (brightness > BRIGHTNESS_LOW) dotSize = DOT_SIZE_SMALL;
-
-            if (dotSize > 0) {
-                dots.push({ x: cellX, y: cellY, size: dotSize });
-            }
-        }
-    }
-
-    // Render the dots to Preview Canvas
-    ctx.clearRect(0, 0, W, H);
-
-    // Apply STN LCD projection shadows if needed
-    if (state.previewColor === 'retro-lcd') {
-        ctx.fillStyle = 'rgba(15, 56, 15, 0.22)';
-        dots.forEach(dot => {
-            const dotX = dot.x + (CELL_SIZE - dot.size) / 2 + 1;
-            const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + 1;
-            ctx.fillRect(dotX, dotY, dot.size, dot.size);
-        });
-    }
-
-    dots.forEach(dot => {
-        const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
-        const dotY = dot.y + (CELL_SIZE - dot.size) / 2;
-
-        if (state.previewColor === 'retro-lcd') {
-            if (dot.size === 4) ctx.fillStyle = '#0f380f';
-            else if (dot.size === 3) ctx.fillStyle = '#306230';
-            else ctx.fillStyle = '#8bac0f';
-        } else if (state.previewColor === 'retro-crt') {
-            ctx.fillStyle = '#33ff33';
-        } else if (state.previewColor === 'retro-nixie') {
-            ctx.fillStyle = '#ff5500';
-        } else {
-            ctx.fillStyle = COLOR_CODES[state.previewColor] || '#1976d2';
-        }
-
-        ctx.fillRect(dotX, dotY, dot.size, dot.size);
-    });
-
-    // Dim the outer boundary of preview canvas as well (transparency or overlays)
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-    ctx.fillRect(0, 0, W, topY);
-    ctx.fillRect(0, topY + activeHeight, W, H - (topY + activeHeight));
-    ctx.fillRect(0, topY, clipLeft, activeHeight);
-    ctx.fillRect(clipLeft + scaledMaxW, topY, W - (clipLeft + scaledMaxW), activeHeight);
-    ctx.restore();
 }
 
 function getActiveFrame() {
@@ -1148,6 +1082,13 @@ async function handleMouseUp() {
 
 // Event Listeners setup
 function setupEventListeners() {
+    window.addEventListener('click', (e) => {
+        const menu = document.querySelector('.category-menu');
+        if (menu && !menu.contains(e.target)) {
+            menu.remove();
+        }
+    });
+
     elements.langSelect.addEventListener('change', (e) => {
         state.currentLang = e.target.value;
         const url = new URL(window.location);
@@ -1303,6 +1244,7 @@ function setupEventListeners() {
     elements.configOverflow.addEventListener('change', saveCurrentChanges);
     elements.configMaxWidth.addEventListener('input', debouncedSaveCurrentChanges);
     elements.configScaleHeight.addEventListener('change', saveCurrentChanges);
+    elements.configInvert.addEventListener('change', saveCurrentChanges);
     elements.configBrightness.addEventListener('input', (e) => {
         handleBrightnessChange(e.target.value);
     });

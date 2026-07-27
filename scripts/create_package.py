@@ -77,6 +77,23 @@ def create_zip(zip_filepath, manifest_src, temp_dir, is_dev=False, version=""):
             if 'VERCEL' in env: del env['VERCEL']
             subprocess.run(["python3", "scripts/generate_png_icons.py", dev_assets_dir, "#ea580c"], check=True, env=env)
 
+        # 1.5 Copy Subprojects (animation-maker & category-editor)
+        for subproj in ["animation-maker", "category-editor"]:
+            subproj_src = os.path.join("projects", subproj)
+            subproj_dest = os.path.join(temp_dir, "projects", subproj)
+            os.makedirs(subproj_dest, exist_ok=True)
+            for item in os.listdir(subproj_src):
+                if item == "shared":
+                    # Copy shared/ contents to this project's shared/ folder
+                    dest_shared = os.path.join(subproj_dest, "shared")
+                    shutil.copytree("shared", dest_shared, ignore=ignore_shared, dirs_exist_ok=True)
+                else:
+                    src_path = os.path.join(subproj_src, item)
+                    if os.path.isdir(src_path):
+                        shutil.copytree(src_path, os.path.join(subproj_dest, item))
+                    else:
+                        shutil.copy2(src_path, os.path.join(subproj_dest, item))
+
         # Create zip from temporary directory
         with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(temp_dir):

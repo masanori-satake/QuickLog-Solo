@@ -97,7 +97,6 @@ const ID_SYNC_STATUS_BADGE = 'sync-status-badge';
 
 const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor/';
 const ALARM_EDITOR_URL = 'https://quick-log-solo.vercel.app/alarm-editor/';
-const ANIMATION_MAKER_URL = 'https://quick-log-solo.vercel.app/animation-maker/';
 
 const ID_REPORT_MODAL = 'report-modal';
 const ID_REPORT_PREVIEW = 'report-preview';
@@ -969,14 +968,23 @@ async function syncState() {
     // Settings popup logic: Refresh content if tab is active
     const settingsPopup = getEl(ID_SETTINGS_POPUP);
     if (settingsPopup && !settingsPopup.classList.contains('hidden')) {
-            const alarmsTab = getEl('alarms-tab');
-            if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
-                await renderBusinessDays();
+        const activeEl = document.activeElement;
+
+        const alarmsTab = getEl('alarms-tab');
+        if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
+            await renderBusinessDays();
+            // Skip re-rendering alarms list if user is actively interacting with an input/select inside it
+            if (!activeEl || !alarmsTab.contains(activeEl)) {
                 await renderAlarmList();
             }
+        }
         const categoriesTab = getEl('categories-tab');
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
-            await renderCategoryEditor();
+            const hasOpenColorDropdown = categoriesTab.querySelector('.color-dropdown-menu:not(.hidden)');
+            // Skip re-rendering categories list if user is actively interacting or color dropdown is open
+            if ((!activeEl || !categoriesTab.contains(activeEl)) && !hasOpenColorDropdown) {
+                await renderCategoryEditor();
+            }
         }
         const aboutTab = getEl('about-tab');
         if (aboutTab && !aboutTab.classList.contains('hidden')) {
@@ -2723,10 +2731,16 @@ function setupEventListeners() {
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
         const lang = getLanguage();
-        const url = new URL(CATEGORY_EDITOR_URL);
-        url.searchParams.set('lang', lang);
-        url.searchParams.set('from', 'app');
-        window.open(url.toString(), '_blank', 'noopener');
+        let url;
+        if (window.location.protocol === 'chrome-extension:') {
+            url = chrome.runtime.getURL('projects/category-editor/index.html?lang=' + encodeURIComponent(lang) + '&from=app');
+        } else {
+            const urlObj = new URL(CATEGORY_EDITOR_URL);
+            urlObj.searchParams.set('lang', lang);
+            urlObj.searchParams.set('from', 'app');
+            url = urlObj.toString();
+        }
+        window.open(url, '_blank', 'noopener');
     });
 
     getEl('launch-maker-btn')?.addEventListener('click', async (e) => {
@@ -2743,10 +2757,7 @@ function setupEventListeners() {
 
         let url;
         if (window.location.protocol === 'chrome-extension:') {
-            const urlObj = new URL(ANIMATION_MAKER_URL);
-            urlObj.searchParams.set('lang', lang);
-            urlObj.searchParams.set('theme', resolvedTheme);
-            url = urlObj.toString();
+            url = chrome.runtime.getURL('projects/animation-maker/index.html?lang=' + encodeURIComponent(lang) + '&theme=' + encodeURIComponent(resolvedTheme));
         } else {
             url = `../animation-maker/index.html?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(resolvedTheme)}`;
         }
