@@ -29,43 +29,46 @@
     </script>
     <div id="maker-app">
         <header class="maker-header">
-            <div class="header-left">
-                <h1 id="maker-title-heading">
-                    <span class="material-symbols-outlined film-icon">palette</span>
-                    <span data-i18n="maker-title">QL-Animation Maker</span>
-                </h1>
-                <div class="privacy-badge" data-i18n-title="privacy-policy-local-only">
-                    <span class="material-symbols-outlined">verified_user</span>
-                    <span class="privacy-text" data-i18n="privacy-policy-local-only-short">Local Only</span>
+            <div class="header-content-wrapper">
+                <div class="header-left">
+                    <h1 id="maker-title-heading">
+                        <span class="material-symbols-outlined film-icon">palette</span>
+                        <span data-i18n="maker-title">QL-Animation Maker</span>
+                    </h1>
+                    <div class="privacy-badge" data-i18n-title="privacy-policy-local-only">
+                        <span class="material-symbols-outlined">verified_user</span>
+                        <span class="privacy-text" data-i18n="privacy-policy-local-only-short">Local Only</span>
+                    </div>
                 </div>
-            </div>
-            <div class="header-right">
-                <div class="theme-switch-wrapper">
-                    <span class="material-symbols-outlined">light_mode</span>
-                    <label class="theme-switch" for="theme-toggle">
-                        <input type="checkbox" id="theme-toggle" />
-                        <div class="slider round"></div>
-                    </label>
-                    <span class="material-symbols-outlined">dark_mode</span>
-                </div>
-                <div class="lang-switcher">
-                    <select id="lang-select-maker" class="lang-select">
-                        <option value="en">🇺🇸 English</option>
-                        <option value="ja">🇯🇵 日本語</option>
-                        <option value="de">🇩🇪 Deutsch</option>
-                        <option value="es">🇪🇸 Español</option>
-                        <option value="fr">🇫🇷 Français</option>
-                        <option value="pt">🇧🇷 Português</option>
-                        <option value="ko">🇰🇷 한국어</option>
-                        <option value="zh">🇨🇳 简体中文</option>
-                    </select>
+                <div class="header-right">
+                    <div class="theme-switch-wrapper">
+                        <span class="material-symbols-outlined">light_mode</span>
+                        <label class="theme-switch" for="theme-toggle">
+                            <input type="checkbox" id="theme-toggle" />
+                            <div class="slider round"></div>
+                        </label>
+                        <span class="material-symbols-outlined">dark_mode</span>
+                    </div>
+                    <div class="lang-switcher">
+                        <select id="lang-select-maker" class="lang-select">
+                            <option value="en">🇺🇸 English</option>
+                            <option value="ja">🇯🇵 日本語</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="pt">🇧🇷 Português</option>
+                            <option value="ko">🇰🇷 한국어</option>
+                            <option value="zh">🇨🇳 简体中文</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </header>
 
         <main class="maker-main">
-            <!-- Left Side: Custom Animation List Pane -->
-            <div class="list-pane">
+            <div class="main-content-wrapper">
+                <!-- Left Side: Custom Animation List Pane -->
+                <div class="list-pane">
                 <section class="category-list-section card">
                     <div class="section-header">
                         <h2 class="section-title">
@@ -76,25 +79,14 @@
                             <button id="add-anim-btn" class="icon-btn" data-i18n-title="btn-add-category">
                                 <span class="material-symbols-outlined">add</span>
                             </button>
+                            <button id="import-anim-btn" class="icon-btn" data-i18n-title="custom-anim-import">
+                                <span class="material-symbols-outlined">file_upload</span>
+                            </button>
+                            <input type="file" id="qlanim-file-input" accept=".qlanim,.json" style="display:none">
                         </div>
                     </div>
                     <div id="animation-list" class="category-list">
                         <!-- Custom animation items populated here -->
-                    </div>
-                </section>
-
-                <!-- Data Transfer Section (Moved under the list pane) -->
-                <section class="action-section card list-footer-actions">
-                    <div class="action-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;">
-                        <button id="btn-download-qlanim" class="primary-btn" style="padding: 8px 16px;">
-                            <span class="material-symbols-outlined" style="font-size:1.1rem;">download</span>
-                            <span data-i18n="btn-download" style="font-size:0.85rem;">Download</span>
-                        </button>
-                        <button id="btn-upload-qlanim" class="secondary-btn" style="padding: 8px 16px;">
-                            <span class="material-symbols-outlined" style="font-size:1.1rem;">upload</span>
-                            <span data-i18n="btn-upload" style="font-size:0.85rem;">Upload</span>
-                        </button>
-                        <input type="file" id="qlanim-file-input" accept=".qlanim" style="display:none">
                     </div>
                 </section>
             </div>
@@ -209,7 +201,7 @@
                                     <input type="file" id="gif-file-input" accept="image/gif" style="display:none">
                                 </div>
 
-                                <div class="drag-instruction-overlay">
+                                <div id="drag-instruction-overlay" class="drag-instruction-overlay">
                                     <span class="material-symbols-outlined">drag_pan</span>
                                     <span data-i18n="maker-drag-instruction">Drag image to adjust focus point</span>
                                 </div>
@@ -223,11 +215,12 @@
                                 <button id="btn-play-pause" class="primary-btn playback-btn icon-btn-large" data-i18n-title="tooltip-pause" style="background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);">
                                     <span class="material-symbols-outlined">pause</span>
                                 </button>
-                                <button id="btn-scale-up" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-in">
-                                    <span class="material-symbols-outlined">zoom_in</span>
-                                </button>
                                 <button id="btn-scale-down" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-out">
                                     <span class="material-symbols-outlined">zoom_out</span>
+                                </button>
+                                <span id="mon-scale" style="font-size: 0.95rem; font-weight: bold; color: var(--md-sys-color-on-surface-variant); min-width: 45px; text-align: center; display: inline-block;">1.00</span>
+                                <button id="btn-scale-up" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-in">
+                                    <span class="material-symbols-outlined">zoom_in</span>
                                 </button>
                                 <button id="btn-scale-reset" class="secondary-btn icon-btn-large" data-i18n-title="btn-reset">
                                     <span class="material-symbols-outlined">restart_alt</span>
@@ -268,11 +261,21 @@
                                 <input type="range" id="config-brightness" min="0.1" max="3.0" step="0.1" value="1.0">
                                 <span id="config-brightness-value" style="font-size:0.8rem; margin-top:4px;">1.0</span>
                             </div>
-                            <div class="input-group checkbox-container-maker full-width" style="justify-content: flex-start; margin-top: 16px;">
-                                <label class="checkbox-inline-maker">
-                                    <input type="checkbox" id="config-scale-height" checked>
-                                    <span data-i18n="maker-scale-with-height">Scale with Height</span>
-                                </label>
+                            <div class="input-group full-width" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                    <label style="font-size: 0.85rem; color: var(--md-sys-color-on-surface); cursor: pointer;" for="config-scale-height" data-i18n="maker-scale-with-height">Scale with Height</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="config-scale-height" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                    <label style="font-size: 0.85rem; color: var(--md-sys-color-on-surface); cursor: pointer;" for="config-invert" data-i18n="maker-invert">Invert (Negative/Positive Inversion)</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="config-invert">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -287,10 +290,6 @@
                                 <span id="mon-focus-y" class="monitor-value">0</span>
                             </div>
                             <div class="monitor-item">
-                                <span class="monitor-label" data-i18n="maker-current-scale">Current Scale</span>
-                                <span id="mon-scale" class="monitor-value">1.0</span>
-                            </div>
-                            <div class="monitor-item">
                                 <span class="monitor-label" data-i18n="maker-target-height">targetHeight</span>
                                 <span id="mon-target-height" class="monitor-value">100</span>
                             </div>
@@ -298,6 +297,7 @@
                     </section>
                 </div>
             </div>
+        </div>
         </main>
     </div>
 

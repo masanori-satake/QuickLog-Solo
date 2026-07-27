@@ -97,7 +97,6 @@ const ID_SYNC_STATUS_BADGE = 'sync-status-badge';
 
 const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor/';
 const ALARM_EDITOR_URL = 'https://quick-log-solo.vercel.app/alarm-editor/';
-const ANIMATION_MAKER_URL = 'https://quick-log-solo.vercel.app/animation-maker/';
 
 const ID_REPORT_MODAL = 'report-modal';
 const ID_REPORT_PREVIEW = 'report-preview';
@@ -969,14 +968,23 @@ async function syncState() {
     // Settings popup logic: Refresh content if tab is active
     const settingsPopup = getEl(ID_SETTINGS_POPUP);
     if (settingsPopup && !settingsPopup.classList.contains('hidden')) {
-            const alarmsTab = getEl('alarms-tab');
-            if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
-                await renderBusinessDays();
+        const activeEl = document.activeElement;
+
+        const alarmsTab = getEl('alarms-tab');
+        if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
+            await renderBusinessDays();
+            // Skip re-rendering alarms list if user is actively interacting with an input/select inside it
+            if (!activeEl || !alarmsTab.contains(activeEl)) {
                 await renderAlarmList();
             }
+        }
         const categoriesTab = getEl('categories-tab');
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
-            await renderCategoryEditor();
+            const hasOpenColorDropdown = categoriesTab.querySelector('.color-dropdown-menu:not(.hidden)');
+            // Skip re-rendering categories list if user is actively interacting or color dropdown is open
+            if ((!activeEl || !categoriesTab.contains(activeEl)) && !hasOpenColorDropdown) {
+                await renderCategoryEditor();
+            }
         }
         const aboutTab = getEl('about-tab');
         if (aboutTab && !aboutTab.classList.contains('hidden')) {
@@ -1642,6 +1650,12 @@ async function renderBusinessDays() {
     const state = await getCurrentAppState();
     const businessDays = state.businessDays || [1, 2, 3, 4, 5];
 
+    // Re-check activeElement immediately before destructive update
+    const activeEl = document.activeElement;
+    if (activeEl && container.contains(activeEl)) {
+        return; // Skip update if user is interacting with a control in this container
+    }
+
     container.replaceChildren();
 
     const currentLang = getLanguage();
@@ -1697,6 +1711,12 @@ async function renderAlarmList() {
     const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
     const alarms = await dbGetAll(STORE_ALARMS);
     alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+
+    // Re-check activeElement immediately before destructive update
+    const activeEl = document.activeElement;
+    if (activeEl && list.contains(activeEl)) {
+        return; // Skip update if user is actively interacting with an input/select in the list
+    }
 
     list.replaceChildren();
 
@@ -2083,6 +2103,14 @@ async function renderCategoryEditor() {
     if (!list) return;
     let categories = await dbGetAll(STORE_CATEGORIES);
     categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    // Re-check activeElement and color-dropdown immediately before destructive update
+    const activeEl = document.activeElement;
+    const hasOpenColorDropdown = list.querySelector('.color-dropdown-menu:not(.hidden)');
+    if ((activeEl && list.contains(activeEl)) || hasOpenColorDropdown) {
+        return; // Skip update if user is actively interacting or color dropdown is open
+    }
+
     list.replaceChildren();
 
     const colors = [
@@ -2720,13 +2748,33 @@ function setupEventListeners() {
         broadcastSync();
     });
 
+    /**
+     * Shared helper to construct launch URLs for local/remote subprojects.
+     *
+     * @param {string} extensionPath - Path inside Chrome Extension.
+     * @param {string} webPath - Relative/absolute path on standard web.
+     * @param {Record<string, string>} params - Query parameters to append.
+     * @returns {string} The constructed project URL.
+     */
+    function getLaunchProjectUrl(extensionPath, webPath, params) {
+        const isExtension = window.location.protocol === 'chrome-extension:';
+        const baseUrl = isExtension ? chrome.runtime.getURL(extensionPath) : webPath;
+        const urlObj = new URL(baseUrl, window.location.href);
+        for (const [key, value] of Object.entries(params)) {
+            urlObj.searchParams.set(key, value);
+        }
+        return urlObj.toString();
+    }
+
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
         const lang = getLanguage();
-        const url = new URL(CATEGORY_EDITOR_URL);
-        url.searchParams.set('lang', lang);
-        url.searchParams.set('from', 'app');
-        window.open(url.toString(), '_blank', 'noopener');
+        const url = getLaunchProjectUrl(
+            'projects/category-editor/index.html',
+            CATEGORY_EDITOR_URL,
+            { lang, from: 'app' }
+        );
+        window.open(url, '_blank', 'noopener');
     });
 
     getEl('launch-maker-btn')?.addEventListener('click', async (e) => {
@@ -2735,21 +2783,17 @@ function setupEventListeners() {
             return;
         }
         const lang = getLanguage();
-        const state = await getCurrentAppState();
-        let resolvedTheme = state.theme;
+        const appState = await getCurrentAppState();
+        let resolvedTheme = appState.theme;
         if (!resolvedTheme || resolvedTheme === 'system') {
             resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
 
-        let url;
-        if (window.location.protocol === 'chrome-extension:') {
-            const urlObj = new URL(ANIMATION_MAKER_URL);
-            urlObj.searchParams.set('lang', lang);
-            urlObj.searchParams.set('theme', resolvedTheme);
-            url = urlObj.toString();
-        } else {
-            url = `../animation-maker/index.html?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(resolvedTheme)}`;
-        }
+        const url = getLaunchProjectUrl(
+            'projects/animation-maker/index.html',
+            '../animation-maker/index.html',
+            { lang, theme: resolvedTheme }
+        );
         window.open(url, '_blank', 'noopener');
     });
 
