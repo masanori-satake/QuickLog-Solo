@@ -1,4 +1,5 @@
 import { AnimationBase } from '../animation_base.js';
+import { initAnimationDraftDB, getAnimationDraftRecord } from '../idb_storage.js';
 
 export default class GenericGifAnimation extends AnimationBase {
     static metadata = {
@@ -60,22 +61,21 @@ export default class GenericGifAnimation extends AnimationBase {
 
         try {
             // 1. Try loading from Draft DB first
-            let record = await new Promise((resolve) => {
-                const req = indexedDB.open('QuickLogAnimationDraftDB', 1);
-                req.onsuccess = (e) => {
-                    const db = e.target.result;
-                    if (!db.objectStoreNames.contains('blobs')) {
-                        resolve(null);
-                        return;
-                    }
-                    const tx = db.transaction('blobs', 'readonly');
-                    const store = tx.objectStore('blobs');
-                    const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
-                };
-                req.onerror = () => resolve(null);
-            });
+            let record = null;
+            try {
+                await initAnimationDraftDB();
+                record = await getAnimationDraftRecord(id);
+            } catch (err) {
+                console.warn('GenericGifAnimation: Failed to access Draft DB', err);
+                record = null;
+            }
+
+            // Check for tombstone (deleted record)
+            if (record && record.deleted) {
+                console.warn(`GenericGifAnimation: Animation "${id}" is marked as deleted`);
+                this.isLoading = false;
+                return;
+            }
 
             // 2. Fall back to Production DB
             if (!record) {

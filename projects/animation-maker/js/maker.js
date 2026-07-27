@@ -412,6 +412,11 @@ async function loadAnimationsList() {
         if (state.animationEngine) {
             state.animationEngine.stop();
         }
+        state.gifFrames.forEach(f => {
+            if (f.bitmap && typeof f.bitmap.close === 'function') {
+                f.bitmap.close();
+            }
+        });
         state.gifFrames = [];
         state.totalDuration = 0;
         state.gifBlob = null;
@@ -1735,6 +1740,11 @@ function setupEventListeners() {
             elements.dropZone.classList.remove('dragover');
             const file = e.dataTransfer.files?.[0];
             if (file && file.type === 'image/gif') {
+                const isValid = await validateGifBlob(file);
+                if (!isValid) {
+                    showAlert('Please drop a valid .gif image file!');
+                    return;
+                }
                 elements.dropZone.style.opacity = '0';
                 elements.dropZone.style.pointerEvents = 'none';
                 state.gifFileName = file.name;

@@ -172,14 +172,14 @@ export async function getAllAnimationDraftRecords() {
 }
 
 /**
- * Deletes a record from the Draft IndexedDB.
+ * Deletes a record from the Draft IndexedDB by persisting a tombstone.
  */
 export async function deleteAnimationDraftBlob(id) {
     const db = await initAnimationDraftDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
         const store = tx.objectStore(DRAFT_STORE_NAME);
-        const request = store.delete(id);
+        const request = store.put({ id, deleted: true });
 
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
