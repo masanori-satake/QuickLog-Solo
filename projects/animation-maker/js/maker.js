@@ -11,7 +11,13 @@ import { AnimationEngine } from '../shared/js/animations.js';
 import {
     saveAnimationBlob as idbSaveAnimationBlob,
     getAnimationBlob as idbGetAnimationBlob,
-    deleteAnimationBlob as idbDeleteAnimationBlob
+    deleteAnimationBlob as idbDeleteAnimationBlob,
+    initAnimationDraftDB,
+    saveAnimationDraftBlob,
+    getAnimationDraftBlob,
+    getAllAnimationDraftRecords,
+    deleteAnimationDraftBlob,
+    clearAnimationDraftDB
 } from '../shared/js/idb_storage.js';
 
 
@@ -50,6 +56,7 @@ const state = {
     currentTheme: 'dark',
     customAnimations: {}, // ID -> metadata
     selectedId: null,
+    loadedId: null,
     selectionToken: 0,
 
     // Loaded GIF Frame Data
@@ -195,6 +202,7 @@ async function saveAnimationBlob(id, blob, renderSpec, config) {
         draftMetadataMap[id].config = config;
     }
     draftBlobs.set(id, blob);
+    await saveAnimationDraftBlob(id, blob, renderSpec, config);
 }
 
 // Wrapper for retrieving Blobs in Draft Mode
@@ -202,7 +210,10 @@ async function getAnimationBlob(id) {
     if (draftBlobs.has(id)) {
         return draftBlobs.get(id);
     }
-    const blob = await idbGetAnimationBlob(id);
+    let blob = await getAnimationDraftBlob(id);
+    if (!blob) {
+        blob = await idbGetAnimationBlob(id);
+    }
     draftBlobs.set(id, blob);
     return blob;
 }
@@ -210,6 +221,24 @@ async function getAnimationBlob(id) {
 // Wrapper for deleting Blobs in Draft Mode
 async function deleteAnimationBlob(id) {
     draftBlobs.set(id, null);
+    await deleteAnimationDraftBlob(id);
+}
+
+// Draft State Initialization Helper
+async function initDraftState() {
+    await initAnimationDraftDB();
+    await clearAnimationDraftDB();
+
+    // Populate Draft DB with existing custom animations from Production DB
+    const map = await getCustomAnimationMetadataMap();
+    const keys = Object.keys(map);
+    for (const id of keys) {
+        const prodBlob = await idbGetAnimationBlob(id);
+        const meta = map[id];
+        if (meta) {
+            await saveAnimationDraftBlob(id, prodBlob, meta.payload?.renderSpec, meta.config);
+        }
+    }
 }
 
 // Direct Storage write for metadata map
@@ -228,6 +257,7 @@ async function saveProductionMetadataMap(map) {
 // Initializer
 async function init() {
     await initDB();
+    await initDraftState();
     setupLanguage();
     setupTheme();
     setupEventListeners();
@@ -376,8 +406,15 @@ async function loadAnimationsList() {
 
     if (sortedKeys.length === 0) {
         state.selectedId = null;
+        state.loadedId = null;
         elements.noSelectionCard.classList.remove('hidden');
         elements.editorWorkspace.classList.add('hidden');
+        if (state.animationEngine) {
+            state.animationEngine.stop();
+        }
+        state.gifFrames = [];
+        state.totalDuration = 0;
+        state.gifBlob = null;
         return;
     }
 
@@ -915,6 +952,9 @@ async function deleteAnimation(id) {
     if (state.selectedId === id) {
         state.selectedId = null;
     }
+    if (state.loadedId === id) {
+        state.loadedId = null;
+    }
 
     await loadAnimationsList();
 }
@@ -954,7 +994,7 @@ async function selectAnimation(id) {
         elements.dragInstruction.classList.remove('fade-out');
     }
 
-    if (state.selectedId === id && !elements.editorWorkspace.classList.contains('hidden')) {
+    if (state.loadedId === id && !elements.editorWorkspace.classList.contains('hidden')) {
         // If clicking the currently active/selected animation and the workspace is already visible, do nothing and keep unsaved changes!
         return;
     }
@@ -962,8 +1002,8 @@ async function selectAnimation(id) {
     state.selectionToken = (state.selectionToken || 0) + 1;
     const currentToken = state.selectionToken;
 
-    // If there is a currently selected animation, save any unsaved changes before switching!
-    if (state.selectedId && state.selectedId !== id) {
+    // If there is a currently loaded animation, save any unsaved changes before switching!
+    if (state.loadedId && state.loadedId !== id) {
         if (saveDebounceTimer) {
             clearTimeout(saveDebounceTimer);
             saveDebounceTimer = null;
@@ -973,6 +1013,7 @@ async function selectAnimation(id) {
     }
 
     state.selectedId = id;
+    state.loadedId = id;
     const meta = state.customAnimations[id];
     if (!meta) return;
 
@@ -1181,13 +1222,20 @@ async function saveCurrentChanges(isApply = false) {
         }
 
         // Save updated custom metadata and Blobs to production DB
+        const draftRecords = await getAllAnimationDraftRecords();
+        for (const record of draftRecords) {
+            const id = record.id;
+            if (draftMetadataMap[id]) {
+                productionMap[id] = draftMetadataMap[id];
+                await idbSaveAnimationBlob(id, record.blob, draftMetadataMap[id].payload.renderSpec, draftMetadataMap[id].config);
+            }
+        }
+
+        // Defensive fallback for any keys in draft metadata map not written yet
         for (const id of keysInDraft) {
-            productionMap[id] = draftMetadataMap[id];
-            if (draftBlobs.has(id)) {
-                const draftBlob = draftBlobs.get(id);
-                if (draftBlob !== null) {
-                    await idbSaveAnimationBlob(id, draftBlob, draftMetadataMap[id].payload.renderSpec, draftMetadataMap[id].config);
-                }
+            if (!productionMap[id]) {
+                productionMap[id] = draftMetadataMap[id];
+                await idbSaveAnimationBlob(id, null, draftMetadataMap[id].payload.renderSpec, draftMetadataMap[id].config);
             }
         }
 
@@ -1685,12 +1733,10 @@ function setupEventListeners() {
         if (isFile) {
             e.preventDefault();
             elements.dropZone.classList.remove('dragover');
-            if (state.gifBlob) {
-                elements.dropZone.style.opacity = '0';
-                elements.dropZone.style.pointerEvents = 'none';
-            }
             const file = e.dataTransfer.files?.[0];
             if (file && file.type === 'image/gif') {
+                elements.dropZone.style.opacity = '0';
+                elements.dropZone.style.pointerEvents = 'none';
                 state.gifFileName = file.name;
                 state.gifBlob = file;
                 elements.rawPreviewContainer.setAttribute('tabindex', '0');
@@ -1698,6 +1744,11 @@ function setupEventListeners() {
                 await parseGif(file);
                 await saveCurrentChanges();
             } else {
+                // If there's an existing gif, make sure the overlay goes back to hidden
+                if (state.gifBlob) {
+                    elements.dropZone.style.opacity = '0';
+                    elements.dropZone.style.pointerEvents = 'none';
+                }
                 showAlert('Please drop a valid .gif image file!');
             }
         }

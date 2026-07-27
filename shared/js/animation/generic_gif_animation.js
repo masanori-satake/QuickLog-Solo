@@ -59,27 +59,43 @@ export default class GenericGifAnimation extends AnimationBase {
         this.isLoading = true;
 
         try {
-            // Get record from IndexedDB (idb_storage utility)
-            const dbName = 'QuickLogAnimationDB';
-            const storeName = 'blobs';
-
-            // Retrieve from IDB directly (compatible with worker environment)
-            const record = await new Promise((resolve, reject) => {
-                const req = indexedDB.open(dbName, 1);
+            // 1. Try loading from Draft DB first
+            let record = await new Promise((resolve) => {
+                const req = indexedDB.open('QuickLogAnimationDraftDB', 1);
                 req.onsuccess = (e) => {
                     const db = e.target.result;
-                    if (!db.objectStoreNames.contains(storeName)) {
+                    if (!db.objectStoreNames.contains('blobs')) {
                         resolve(null);
                         return;
                     }
-                    const tx = db.transaction(storeName, 'readonly');
-                    const store = tx.objectStore(storeName);
+                    const tx = db.transaction('blobs', 'readonly');
+                    const store = tx.objectStore('blobs');
                     const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result);
-                    getReq.onerror = () => reject(getReq.error);
+                    getReq.onsuccess = () => resolve(getReq.result || null);
+                    getReq.onerror = () => resolve(null);
                 };
-                req.onerror = () => reject(req.error);
+                req.onerror = () => resolve(null);
             });
+
+            // 2. Fall back to Production DB
+            if (!record) {
+                record = await new Promise((resolve, reject) => {
+                    const req = indexedDB.open('QuickLogAnimationDB', 1);
+                    req.onsuccess = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains('blobs')) {
+                            resolve(null);
+                            return;
+                        }
+                        const tx = db.transaction('blobs', 'readonly');
+                        const store = tx.objectStore('blobs');
+                        const getReq = store.get(id);
+                        getReq.onsuccess = () => resolve(getReq.result || null);
+                        getReq.onerror = () => reject(getReq.error);
+                    };
+                    req.onerror = () => reject(req.error);
+                });
+            }
 
             if (!record || !record.blob) {
                 console.warn(`GenericGifAnimation: No GIF data found for custom ID "${id}"`);
