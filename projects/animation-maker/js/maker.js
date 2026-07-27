@@ -325,13 +325,14 @@ async function loadAnimationsList() {
         return orderA - orderB;
     });
 
+    elements.animationList.replaceChildren();
+
     if (sortedKeys.length === 0) {
-        // Automatically create a default custom animation so the user starts with one immediately!
-        await addNewAnimation();
+        state.selectedId = null;
+        elements.noSelectionCard.classList.remove('hidden');
+        elements.editorWorkspace.classList.add('hidden');
         return;
     }
-
-    elements.animationList.replaceChildren();
 
     sortedKeys.forEach((id, idx) => {
         const meta = state.customAnimations[id];
@@ -763,7 +764,7 @@ function renderColorPalette() {
 }
 
 // Save all changes immediately
-async function saveCurrentChanges() {
+async function saveCurrentChanges(isApply = false) {
     if (!state.selectedId) return;
     const map = await getCustomAnimationMetadataMap();
     if (!map[state.selectedId]) return;
@@ -813,7 +814,16 @@ async function saveCurrentChanges() {
         }
     });
 
-    broadcastSync('reload');
+    // Re-initialize local AnimationEngine to reflect changes in real time in the downsampled preview section
+    if (state.isPlaying && state.animationEngine && state.gifFrames.length > 0) {
+        const colorCode = COLOR_CODES[state.previewColor] || '#1976d2';
+        const startTime = Date.now() - state.virtualElapsedMs;
+        state.animationEngine.start(state.selectedId, startTime, colorCode);
+    }
+
+    if (isApply) {
+        broadcastSync('sync');
+    }
 }
 
 // Debounced version for text input handlers
@@ -1172,6 +1182,33 @@ async function handleMouseUp() {
     }
 }
 
+function resetAnimationSettings() {
+    state.focusX = 0;
+    state.focusY = 0;
+    state.targetHeight = 100;
+    state.currentScale = 1.0;
+    state.maxWidth = 200;
+    state.scaleWithHeight = true;
+    state.invert = false;
+    state.exclusionStrategy = 'freedom';
+    state.overflowBehavior = 'repeat';
+    state.previewColor = 'primary';
+    state.brightness = 1.0;
+
+    // Update Inputs in UI
+    elements.configExclusionStrategy.value = state.exclusionStrategy;
+    elements.configOverflow.value = state.overflowBehavior;
+    elements.configMaxWidth.value = state.maxWidth;
+    elements.configScaleHeight.checked = state.scaleWithHeight;
+    elements.configInvert.checked = state.invert;
+    elements.configBrightness.value = state.brightness;
+    elements.configBrightnessValue.textContent = state.brightness.toFixed(1);
+
+    renderColorPalette();
+    updatePreviewModeStyles();
+    updateMonitor();
+}
+
 // Event Listeners setup
 function setupEventListeners() {
     window.addEventListener('click', (e) => {
@@ -1198,7 +1235,23 @@ function setupEventListeners() {
 
     elements.addAnimBtn.addEventListener('click', addNewAnimation);
 
-    // Dropzone actions inside rawPreviewContainer
+    // Click to select file on dropZone (when no GIF loaded) or simple click on rawPreviewContainer (when GIF loaded)
+    let clickStartX = 0;
+    let clickStartY = 0;
+
+    elements.rawPreviewContainer.addEventListener('mousedown', (e) => {
+        clickStartX = e.clientX;
+        clickStartY = e.clientY;
+    });
+
+    elements.rawPreviewContainer.addEventListener('click', (e) => {
+        const dx = Math.abs(e.clientX - clickStartX);
+        const dy = Math.abs(e.clientY - clickStartY);
+        if (dx < 5 && dy < 5 && state.gifBlob) {
+            elements.gifFileInput.click();
+        }
+    });
+
     elements.dropZone.addEventListener('click', (e) => {
         e.stopPropagation();
         elements.gifFileInput.click();
@@ -1211,29 +1264,42 @@ function setupEventListeners() {
             state.gifBlob = file;
             elements.dropZone.style.opacity = '0';
             elements.dropZone.style.pointerEvents = 'none';
+            resetAnimationSettings();
             await parseGif(file);
             await saveCurrentChanges();
         }
     });
 
-    elements.dropZone.addEventListener('dragover', (e) => {
+    elements.rawPreviewContainer.addEventListener('dragover', (e) => {
         e.preventDefault();
+        elements.dropZone.style.opacity = '1';
+        elements.dropZone.style.pointerEvents = 'auto';
         elements.dropZone.classList.add('dragover');
     });
 
-    elements.dropZone.addEventListener('dragleave', () => {
-        elements.dropZone.classList.remove('dragover');
+    elements.rawPreviewContainer.addEventListener('dragleave', (e) => {
+        const rect = elements.rawPreviewContainer.getBoundingClientRect();
+        if (e.clientX < rect.left || e.clientX >= rect.right || e.clientY < rect.top || e.clientY >= rect.bottom) {
+            if (state.gifBlob) {
+                elements.dropZone.style.opacity = '0';
+                elements.dropZone.style.pointerEvents = 'none';
+            }
+            elements.dropZone.classList.remove('dragover');
+        }
     });
 
-    elements.dropZone.addEventListener('drop', async (e) => {
+    elements.rawPreviewContainer.addEventListener('drop', async (e) => {
         e.preventDefault();
         elements.dropZone.classList.remove('dragover');
+        if (state.gifBlob) {
+            elements.dropZone.style.opacity = '0';
+            elements.dropZone.style.pointerEvents = 'none';
+        }
         const file = e.dataTransfer.files?.[0];
         if (file && file.type === 'image/gif') {
             state.gifFileName = file.name;
             state.gifBlob = file;
-            elements.dropZone.style.opacity = '0';
-            elements.dropZone.style.pointerEvents = 'none';
+            resetAnimationSettings();
             await parseGif(file);
             await saveCurrentChanges();
         } else {
@@ -1469,6 +1535,14 @@ function setupEventListeners() {
             e.target.value = '';
         }
     });
+
+    const applyBtn = document.getElementById('apply-btn');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', async () => {
+            await saveCurrentChanges(true);
+            showToast(state.getMsg('toast-done') || 'Applied successfully!');
+        });
+    }
 }
 
 init();

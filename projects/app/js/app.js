@@ -132,6 +132,10 @@ let currentCategoryPage = 0;
 let currentAnimationType = 'digital_rain';
 /** @type {string|null} JSON string of the last rendered category state for change detection. */
 let lastCategoryRenderData = null;
+/** @type {string|null} JSON string of the last rendered logs state for change detection. */
+let lastLogsRenderData = null;
+/** @type {string} Current custom animation specification hash for change detection. */
+let currentCustomAnimSpecHash = '';
 /** @type {Object|null} Instance of the animation engine. */
 let animationEngine = null;
 /** @type {string|null} Key identifying the currently active animation instance. */
@@ -528,7 +532,7 @@ function applyFontWeight(weightValue) {
     if (select) select.value = weightValue;
 }
 
-function applyAnimation(animationType, categoryAnimation = 'default', color = 'primary') {
+function applyAnimation(animationType, categoryAnimation = 'default', color = 'primary', customAnimSpecHash = '') {
     currentAnimationType = animationType;
     let activeAnimation = (categoryAnimation && categoryAnimation !== 'default') ? categoryAnimation : animationType;
 
@@ -543,7 +547,7 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
 
     if (animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE && activeAnimation !== 'none') {
         const colorCode = getColorCode(color);
-        const animStateKey = `${activeAnimation}-${activeTask.startTime}-${colorCode}`;
+        const animStateKey = `${activeAnimation}-${activeTask.startTime}-${colorCode}-${customAnimSpecHash}`;
         if (currentActiveAnimation !== animStateKey) {
             animationEngine.start(activeAnimation, activeTask.startTime, colorCode);
             currentActiveAnimation = animStateKey;
@@ -689,6 +693,22 @@ async function renderLogs() {
         .filter(l => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
         .sort((a, b) => b.startTime - a.startTime)
         .slice(0, MAX_LOGS_DISPLAY);
+
+    // Change detection for logs rendering to avoid flickering
+    const currentLogsData = JSON.stringify(visibleLogs.map(l => ({
+        id: l.id,
+        category: l.category,
+        startTime: l.startTime,
+        endTime: l.endTime,
+        isManualStop: l.isManualStop,
+        memo: l.memo,
+        color: l.color
+    })));
+
+    if (lastLogsRenderData === currentLogsData) {
+        return;
+    }
+    lastLogsRenderData = currentLogsData;
 
     const logList = getEl(ID_LOG_LIST);
     if (!logList) return;
@@ -956,12 +976,24 @@ async function syncState() {
     // Determine active animation type
     let color = 'primary';
     let categoryAnimation = 'default';
+    let customAnimSpecHash = '';
     if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
         const cat = await dbGetByName(STORE_CATEGORIES, activeTask.category);
         color = cat ? cat.color : (activeTask.color || 'primary');
         categoryAnimation = cat ? (cat.animation || 'default') : 'default';
+
+        const animId = cat ? cat.animation : null;
+        if (animId && animId !== 'default' && animId !== 'none') {
+            const customAnims = await getCustomAnimationMetadataMap();
+            if (customAnims[animId]) {
+                const spec = customAnims[animId].payload?.renderSpec || {};
+                const conf = customAnims[animId].config || {};
+                customAnimSpecHash = JSON.stringify({ spec, conf });
+            }
+        }
     }
-    applyAnimation(state.animation || 'digital_rain', categoryAnimation, color);
+    currentCustomAnimSpecHash = customAnimSpecHash;
+    applyAnimation(state.animation || 'digital_rain', categoryAnimation, color, customAnimSpecHash);
 
     await updateUI();
 
@@ -1198,7 +1230,7 @@ async function updateUI() {
 
         startTimer();
         // Ensure proper animation visibility (called after text content is updated for accurate exclusion)
-        applyAnimation(currentAnimationType, categoryAnimation, color);
+        applyAnimation(currentAnimationType, categoryAnimation, color, currentCustomAnimSpecHash);
     } else {
         if (currentActiveAnimation !== null) {
             animationEngine?.stop();

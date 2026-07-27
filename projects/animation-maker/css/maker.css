@@ -1070,3 +1070,41 @@ button {
 .category-menu button.delete {
     color: var(--md-sys-color-error);
 }
+
+/* Apply button container & button */
+.apply-btn-container {
+    padding: 16px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container-low);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.apply-btn {
+    width: 100%;
+    padding: 14px 24px;
+    border-radius: var(--md-sys-shape-medium, 12px);
+    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-tertiary) 100%);
+    color: #fff !important;
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+}
+
+.apply-btn:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.apply-btn:active {
+    transform: translateY(0);
+}

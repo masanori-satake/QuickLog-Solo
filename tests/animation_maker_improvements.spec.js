@@ -11,6 +11,9 @@ test.describe('QL-Animation Maker Improvements', () => {
     expect(titleText).not.toContain('Beta');
     expect(titleText).not.toContain('β');
 
+    // Add a custom animation to make workspace visible
+    await page.click('#add-anim-btn');
+
     // 3. Verify single play/pause button is present and pause/play two buttons are gone
     const playPauseBtn = page.locator('#btn-play-pause');
     await expect(playPauseBtn).toBeVisible();
