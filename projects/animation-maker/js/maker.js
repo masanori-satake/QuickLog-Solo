@@ -647,6 +647,13 @@ async function selectAnimation(id) {
 
     updateMonitor();
     triggerRedraw();
+
+    // Initialize AnimationEngine for the newly selected item if playing
+    if (state.isPlaying && state.gifFrames.length > 0 && state.animationEngine) {
+        const colorCode = COLOR_CODES[state.previewColor] || '#1976d2';
+        const startTime = Date.now() - state.virtualElapsedMs;
+        state.animationEngine.start(state.selectedId, startTime, colorCode);
+    }
 }
 
 // Colors presets palette rendering
@@ -857,12 +864,10 @@ function updateDownsampledPreview() {
 
     updatePreviewExclusionAreas();
 
+    // Only update color without restarting the worker
     if (state.isPlaying && state.gifFrames.length > 0) {
         const colorCode = COLOR_CODES[state.previewColor] || '#1976d2';
-        const startTime = Date.now() - state.virtualElapsedMs;
-        state.animationEngine.start(state.selectedId, startTime, colorCode);
-    } else {
-        state.animationEngine.stop();
+        state.animationEngine.color = colorCode;
     }
 }
 
@@ -1229,10 +1234,20 @@ function setupEventListeners() {
             icon.textContent = 'pause';
             elements.btnPlayPause.setAttribute('data-i18n-title', 'tooltip-pause');
             elements.btnPlayPause.title = state.getMsg('tooltip-pause');
+            // Start AnimationEngine when playback begins
+            if (state.selectedId && state.gifFrames.length > 0 && state.animationEngine) {
+                const colorCode = COLOR_CODES[state.previewColor] || '#1976d2';
+                const startTime = Date.now() - state.virtualElapsedMs;
+                state.animationEngine.start(state.selectedId, startTime, colorCode);
+            }
         } else {
             icon.textContent = 'play_arrow';
             elements.btnPlayPause.setAttribute('data-i18n-title', 'tooltip-play');
             elements.btnPlayPause.title = state.getMsg('tooltip-play');
+            // Stop AnimationEngine when playback is paused
+            if (state.animationEngine) {
+                state.animationEngine.stop();
+            }
         }
     });
 

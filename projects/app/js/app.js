@@ -1650,6 +1650,12 @@ async function renderBusinessDays() {
     const state = await getCurrentAppState();
     const businessDays = state.businessDays || [1, 2, 3, 4, 5];
 
+    // Re-check activeElement immediately before destructive update
+    const activeEl = document.activeElement;
+    if (activeEl && container.contains(activeEl)) {
+        return; // Skip update if user is interacting with a control in this container
+    }
+
     container.replaceChildren();
 
     const currentLang = getLanguage();
@@ -1705,6 +1711,12 @@ async function renderAlarmList() {
     const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
     const alarms = await dbGetAll(STORE_ALARMS);
     alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+
+    // Re-check activeElement immediately before destructive update
+    const activeEl = document.activeElement;
+    if (activeEl && list.contains(activeEl)) {
+        return; // Skip update if user is actively interacting with an input/select in the list
+    }
 
     list.replaceChildren();
 
@@ -2091,6 +2103,14 @@ async function renderCategoryEditor() {
     if (!list) return;
     let categories = await dbGetAll(STORE_CATEGORIES);
     categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    // Re-check activeElement and color-dropdown immediately before destructive update
+    const activeEl = document.activeElement;
+    const hasOpenColorDropdown = list.querySelector('.color-dropdown-menu:not(.hidden)');
+    if ((activeEl && list.contains(activeEl)) || hasOpenColorDropdown) {
+        return; // Skip update if user is actively interacting or color dropdown is open
+    }
+
     list.replaceChildren();
 
     const colors = [
