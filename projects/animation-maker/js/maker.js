@@ -48,6 +48,7 @@ const state = {
     currentTheme: 'dark',
     customAnimations: {}, // ID -> metadata
     selectedId: null,
+    selectionToken: 0,
 
     // Loaded GIF Frame Data
     gifFrames: [], // Array of { bitmap, duration }
@@ -641,6 +642,9 @@ async function selectAnimation(id) {
         return;
     }
 
+    state.selectionToken = (state.selectionToken || 0) + 1;
+    const currentToken = state.selectionToken;
+
     // If there is a currently selected animation, save any unsaved changes before switching!
     if (state.selectedId && state.selectedId !== id) {
         if (saveDebounceTimer) {
@@ -648,6 +652,7 @@ async function selectAnimation(id) {
             saveDebounceTimer = null;
         }
         await saveCurrentChanges();
+        if (state.selectionToken !== currentToken) return;
     }
 
     state.selectedId = id;
@@ -705,12 +710,15 @@ async function selectAnimation(id) {
     state.gifHeight = 0;
 
     const blob = await getAnimationBlob(id);
+    if (state.selectionToken !== currentToken) return;
+
     if (blob) {
         state.gifBlob = blob;
         state.gifFileName = meta.name ? `${meta.name}.gif` : 'animation.gif';
         elements.dropZone.style.opacity = '0';
         elements.dropZone.style.pointerEvents = 'none';
         await parseGif(blob);
+        if (state.selectionToken !== currentToken) return;
     } else {
         state.gifBlob = null;
         elements.dropZone.style.opacity = '1';
@@ -1361,6 +1369,20 @@ function setupEventListeners() {
                 throw new Error('Invalid format');
             }
 
+            // Decode base64 GIF back to file blob first to validate
+            const base64 = data.payload?.imageData;
+            if (!base64) {
+                throw new Error('Missing imageData in payload');
+            }
+            const byteString = atob(base64.split(',')[1]);
+            const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([ab], { type: mimeString });
+
             const map = await getCustomAnimationMetadataMap();
             const existingNames = Object.values(map).map(m => m.name);
             const finalName = resolveDeduplicatedName(data.metadata?.name || 'Imported Anim', existingNames);
@@ -1386,20 +1408,9 @@ function setupEventListeners() {
                 }
             };
 
-            await setCustomAnimationMetadataMap(map);
-
-            // Decode base64 GIF back to file blob
-            const base64 = data.payload.imageData;
-            const byteString = atob(base64.split(',')[1]);
-            const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
-            const ab = new ArrayBuffer(byteString.length);
-            const ia = new Uint8Array(ab);
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-            const blob = new Blob([ab], { type: mimeString });
-
+            // Save binary Blob first, then persist metadata map only on success
             await saveAnimationBlob(newId, blob, map[newId].payload.renderSpec, map[newId].config);
+            await setCustomAnimationMetadataMap(map);
 
             state.selectedId = newId;
             await loadAnimationsList();
