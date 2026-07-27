@@ -16,6 +16,7 @@ export default {
     'page-break': 'Quebra de página',
     'btn-add-page-break': 'Adicionar quebra de página',
     'btn-add-category': 'Adicionar categoria',
+    'btn-add-custom-anim': 'Adicionar animação personalizada',
     'confirm-delete-page-break': 'Deseja excluir esta quebra de página?',
 
     // Tooltips

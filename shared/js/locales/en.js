@@ -128,6 +128,7 @@ export default {
     'page-break': 'Page Break',
     'btn-add-page-break': 'Add Page Break',
     'btn-add-category': 'Add Category',
+    'btn-add-custom-anim': 'Add Custom Animation',
     'confirm-delete-page-break': 'Do you want to delete this page break?',
 
     // Tooltips

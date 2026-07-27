@@ -16,6 +16,7 @@ export default {
     'page-break': 'Salto de página',
     'btn-add-page-break': 'Añadir salto de página',
     'btn-add-category': 'Añadir categoría',
+    'btn-add-custom-anim': 'Añadir animación personalizada',
     'confirm-delete-page-break': '¿Desea eliminar este salto de página?',
 
     // Tooltips

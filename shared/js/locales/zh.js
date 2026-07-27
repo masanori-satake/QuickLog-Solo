@@ -16,6 +16,7 @@ export default {
     'page-break': '换页',
     'btn-add-page-break': '添加换页',
     'btn-add-category': '添加分类',
+    'btn-add-custom-anim': '添加自定义动画',
     'confirm-delete-page-break': '是否删除此换页？',
 
     // Tooltips

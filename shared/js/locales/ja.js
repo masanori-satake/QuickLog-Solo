@@ -128,6 +128,7 @@ export default {
     'page-break': '改ページ',
     'btn-add-page-break': '改ページを追加',
     'btn-add-category': 'カテゴリを追加',
+    'btn-add-custom-anim': 'カスタムアニメーションを追加',
     'confirm-delete-page-break': 'この改ページを削除しますか？',
 
     // Tooltips

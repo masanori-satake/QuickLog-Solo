@@ -16,6 +16,7 @@ export default {
     'page-break': 'Seitenumbruch',
     'btn-add-page-break': 'Seitenumbruch hinzufügen',
     'btn-add-category': 'Kategorie hinzufügen',
+    'btn-add-custom-anim': 'Benutzerdefinierte Animation hinzufügen',
     'confirm-delete-page-break': 'Möchten Sie diesen Seitenumbruch löschen?',
 
     // Tooltips

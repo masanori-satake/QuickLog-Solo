@@ -9,7 +9,9 @@ import {
 } from '../shared/js/db.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import {
-    saveAnimationBlob, getAnimationBlob, deleteAnimationBlob
+    saveAnimationBlob as idbSaveAnimationBlob,
+    getAnimationBlob as idbGetAnimationBlob,
+    deleteAnimationBlob as idbDeleteAnimationBlob
 } from '../shared/js/idb_storage.js';
 
 
@@ -155,23 +157,63 @@ const elements = {
 // Debounce timer for input-driven saves
 let saveDebounceTimer = null;
 
+// Draft memory states
+let draftMetadataMap = null;
+let draftBlobs = new Map(); // ID -> Blob (including null)
+
 // Storage Tiering Helpers
 async function getCustomAnimationMetadataMap() {
+    if (draftMetadataMap) {
+        return draftMetadataMap;
+    }
+    let map;
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         const result = await chrome.storage.local.get('custom_animation_metadata_map');
-        return result.custom_animation_metadata_map || {};
+        map = result.custom_animation_metadata_map || {};
     } else {
         try {
             const stored = localStorage.getItem('custom_animation_metadata_map');
-            return stored ? JSON.parse(stored) : {};
+            map = stored ? JSON.parse(stored) : {};
         } catch (e) {
             console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
-            return {};
+            map = {};
         }
     }
+    // Deep clone to draft map
+    draftMetadataMap = JSON.parse(JSON.stringify(map));
+    return draftMetadataMap;
 }
 
 async function setCustomAnimationMetadataMap(map) {
+    draftMetadataMap = map;
+}
+
+// Wrapper for saving Blobs in Draft Mode
+async function saveAnimationBlob(id, blob, renderSpec, config) {
+    if (draftMetadataMap && draftMetadataMap[id]) {
+        draftMetadataMap[id].payload = { renderSpec };
+        draftMetadataMap[id].config = config;
+    }
+    draftBlobs.set(id, blob);
+}
+
+// Wrapper for retrieving Blobs in Draft Mode
+async function getAnimationBlob(id) {
+    if (draftBlobs.has(id)) {
+        return draftBlobs.get(id);
+    }
+    const blob = await idbGetAnimationBlob(id);
+    draftBlobs.set(id, blob);
+    return blob;
+}
+
+// Wrapper for deleting Blobs in Draft Mode
+async function deleteAnimationBlob(id) {
+    draftBlobs.set(id, null);
+}
+
+// Direct Storage write for metadata map
+async function saveProductionMetadataMap(map) {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         await chrome.storage.local.set({ custom_animation_metadata_map: map });
     } else {
@@ -288,6 +330,11 @@ function updateBoundaryLines() {
     elements.rawBoundaryTop.style.top = `${topY}px`;
     elements.rawBoundaryBottom.style.top = `${bottomY}px`;
 
+    if (state.animationEngine) {
+        state.animationEngine.simulatedHeight = H;
+        state.animationEngine.resize();
+    }
+
     triggerRedraw();
 }
 
@@ -387,6 +434,329 @@ async function loadAnimationsList() {
         // Just refresh workspace UI with current selected
         await selectAnimation(state.selectedId);
     }
+}
+
+// --- Modal Dialog Helpers for Creation, Names Renaming, and Import Collisions ---
+function hideM3Dialog() {
+    const modal = document.getElementById('m3-dialog-modal');
+    modal.classList.add('hidden');
+    // Clear dynamic structures
+    document.getElementById('m3-dialog-options-container').replaceChildren();
+    document.getElementById('m3-dialog-error').style.display = 'none';
+    document.getElementById('m3-dialog-error').textContent = '';
+}
+
+function showM3CreateDialog() {
+    const modal = document.getElementById('m3-dialog-modal');
+    const title = document.getElementById('m3-dialog-title').querySelector('span:last-child');
+    const prompt = document.getElementById('m3-dialog-prompt');
+    const input = document.getElementById('m3-dialog-input');
+    const error = document.getElementById('m3-dialog-error');
+    const okBtn = document.getElementById('m3-dialog-ok-btn');
+    const cancelBtn = document.getElementById('m3-dialog-cancel-btn');
+
+    title.textContent = state.getMsg('btn-add-custom-anim');
+    prompt.textContent = state.getMsg('placeholder-meta-name') + ':';
+    input.value = state.getMsg('placeholder-meta-name');
+    input.style.display = 'block';
+    error.style.display = 'none';
+    error.textContent = '';
+
+    modal.classList.remove('hidden');
+    input.focus();
+    input.select();
+
+    okBtn.onclick = async () => {
+        const nameVal = input.value.trim();
+        if (!nameVal) {
+            error.style.display = 'block';
+            error.textContent = 'Name cannot be empty';
+            return;
+        }
+
+        const map = await getCustomAnimationMetadataMap();
+        const existingNames = Object.values(map).map(m => m.name);
+        if (existingNames.includes(nameVal)) {
+            error.style.display = 'block';
+            // "ポップアップ内に同じ名前のカスタムアニメーションがあるので違う名前を入力する旨を促してください。"
+            error.textContent = state.currentLang === 'ja' ? '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。' : 'The same custom animation name already exists. Please enter a different name.';
+            return;
+        }
+
+        const newId = crypto.randomUUID();
+        map[newId] = {
+            name: nameVal,
+            description: '',
+            author: state.getMsg('anim-unknown-author'),
+            order: Object.keys(map).length,
+            revision: 1,
+            config: {
+                exclusionStrategy: 'freedom'
+            },
+            payload: {
+                renderSpec: {
+                    focusX: 0,
+                    focusY: 0,
+                    targetHeight: 100,
+                    maxWidth: 200,
+                    scaleWithHeight: true,
+                    overflowBehavior: 'repeat',
+                    previewColor: 'primary'
+                }
+            }
+        };
+
+        await setCustomAnimationMetadataMap(map);
+        await saveAnimationBlob(newId, null, map[newId].payload.renderSpec, map[newId].config);
+
+        state.selectedId = newId;
+        await loadAnimationsList();
+        hideM3Dialog();
+    };
+
+    cancelBtn.onclick = () => {
+        hideM3Dialog();
+    };
+}
+
+function showM3NameEditDialog(id) {
+    const modal = document.getElementById('m3-dialog-modal');
+    const title = document.getElementById('m3-dialog-title').querySelector('span:last-child');
+    const prompt = document.getElementById('m3-dialog-prompt');
+    const input = document.getElementById('m3-dialog-input');
+    const error = document.getElementById('m3-dialog-error');
+    const okBtn = document.getElementById('m3-dialog-ok-btn');
+    const cancelBtn = document.getElementById('m3-dialog-cancel-btn');
+
+    title.textContent = state.getMsg('history-edit-title');
+    prompt.textContent = state.getMsg('placeholder-meta-name') + ':';
+
+    const currentName = state.customAnimations[id]?.name || '';
+    input.value = currentName;
+    input.style.display = 'block';
+    error.style.display = 'none';
+    error.textContent = '';
+
+    modal.classList.remove('hidden');
+    input.focus();
+    input.select();
+
+    okBtn.onclick = async () => {
+        const nameVal = input.value.trim();
+        if (!nameVal) {
+            error.style.display = 'block';
+            error.textContent = 'Name cannot be empty';
+            return;
+        }
+
+        const map = await getCustomAnimationMetadataMap();
+        const existingNames = Object.keys(map)
+            .filter(k => k !== id)
+            .map(k => map[k].name);
+
+        if (existingNames.includes(nameVal)) {
+            error.style.display = 'block';
+            error.textContent = state.currentLang === 'ja' ? '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。' : 'The same custom animation name already exists. Please enter a different name.';
+            return;
+        }
+
+        map[id].name = nameVal;
+        await setCustomAnimationMetadataMap(map);
+        elements.metaName.value = nameVal;
+
+        // Refresh list labels
+        const listItems = elements.animationList.querySelectorAll('.category-item');
+        listItems.forEach(item => {
+            if (item.dataset.id === id) {
+                const nameSpan = item.querySelector('.cat-name');
+                if (nameSpan) nameSpan.textContent = nameVal;
+            }
+        });
+
+        await saveCurrentChanges();
+        hideM3Dialog();
+    };
+
+    cancelBtn.onclick = () => {
+        hideM3Dialog();
+    };
+}
+
+async function handleCustomAnimationImport(data, blob) {
+    const map = await getCustomAnimationMetadataMap();
+    const existingEntry = Object.entries(map).find(([_, m]) => m.name === data.metadata?.name);
+
+    if (existingEntry) {
+        const [existingId, existingMeta] = existingEntry;
+        // Collision detected: prompt user
+        showM3ImportCollisionDialog(data, blob, existingId, existingMeta);
+    } else {
+        // No collision: normal import
+        await proceedWithImport(data, blob, data.metadata?.name);
+    }
+}
+
+function showM3ImportCollisionDialog(data, blob, existingId, existingMeta) {
+    const modal = document.getElementById('m3-dialog-modal');
+    const title = document.getElementById('m3-dialog-title').querySelector('span:last-child');
+    const prompt = document.getElementById('m3-dialog-prompt');
+    const input = document.getElementById('m3-dialog-input');
+    const error = document.getElementById('m3-dialog-error');
+    const footer = document.getElementById('m3-dialog-footer');
+    const container = document.getElementById('m3-dialog-options-container');
+
+    title.textContent = state.getMsg('custom-anim-import');
+    prompt.textContent = state.currentLang === 'ja'
+        ? `同じ名前「${existingMeta.name}」のカスタムアニメーションが存在します。選択してください：`
+        : `A custom animation named "${existingMeta.name}" already exists. Please choose:`;
+
+    input.style.display = 'none';
+    error.style.display = 'none';
+    error.textContent = '';
+    footer.style.display = 'none'; // Custom choices buttons used instead
+
+    container.replaceChildren();
+
+    const overwriteBtn = document.createElement('button');
+    overwriteBtn.className = 'primary-btn';
+    overwriteBtn.style.width = '100%';
+    overwriteBtn.textContent = state.currentLang === 'ja' ? '上書き' : 'Overwrite';
+    overwriteBtn.onclick = async () => {
+        // Overwrite mode: Reuse existing ID but set new properties & binary Blob
+        const map = await getCustomAnimationMetadataMap();
+        map[existingId] = {
+            ...map[existingId],
+            description: data.metadata?.description || '',
+            author: data.metadata?.author || 'User',
+            revision: (map[existingId].revision || 0) + 1,
+            config: data.config || { exclusionStrategy: 'freedom' },
+            payload: {
+                renderSpec: data.payload?.renderSpec || {
+                    focusX: 0,
+                    focusY: 0,
+                    targetHeight: 100,
+                    maxWidth: 200,
+                    scaleWithHeight: true,
+                    overflowBehavior: 'repeat',
+                    previewColor: 'primary'
+                }
+            }
+        };
+
+        await saveAnimationBlob(existingId, blob, map[existingId].payload.renderSpec, map[existingId].config);
+        await setCustomAnimationMetadataMap(map);
+
+        state.selectedId = existingId;
+        await loadAnimationsList();
+        hideM3Dialog();
+        footer.style.display = 'flex';
+        showToast(state.getMsg('toast-custom-anim-imported') || 'Imported successfully!');
+    };
+
+    const renameBtn = document.createElement('button');
+    renameBtn.className = 'secondary-btn';
+    renameBtn.style.width = '100%';
+    renameBtn.textContent = state.currentLang === 'ja' ? '名前を変更してインポート' : 'Rename & Import';
+    renameBtn.onclick = () => {
+        showM3ImportRenameSubDialog(data, blob);
+    };
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'secondary-btn';
+    cancelBtn.style.width = '100%';
+    cancelBtn.textContent = state.getMsg('confirm-cancel');
+    cancelBtn.onclick = () => {
+        hideM3Dialog();
+        footer.style.display = 'flex';
+    };
+
+    container.appendChild(overwriteBtn);
+    container.appendChild(renameBtn);
+    container.appendChild(cancelBtn);
+
+    modal.classList.remove('hidden');
+}
+
+function showM3ImportRenameSubDialog(data, blob) {
+    const title = document.getElementById('m3-dialog-title').querySelector('span:last-child');
+    const prompt = document.getElementById('m3-dialog-prompt');
+    const input = document.getElementById('m3-dialog-input');
+    const error = document.getElementById('m3-dialog-error');
+    const footer = document.getElementById('m3-dialog-footer');
+    const container = document.getElementById('m3-dialog-options-container');
+
+    container.replaceChildren(); // Remove the multi choices buttons
+    footer.style.display = 'flex'; // Restore normal footer
+
+    title.textContent = state.getMsg('custom-anim-import');
+    prompt.textContent = state.currentLang === 'ja' ? '新しい名前を入力してください：' : 'Please enter a new name:';
+
+    const currentName = data.metadata?.name || '';
+    input.value = currentName;
+    input.style.display = 'block';
+    input.focus();
+    input.select();
+
+    const okBtn = document.getElementById('m3-dialog-ok-btn');
+    const cancelBtn = document.getElementById('m3-dialog-cancel-btn');
+
+    okBtn.onclick = async () => {
+        const nameVal = input.value.trim();
+        if (!nameVal) {
+            error.style.display = 'block';
+            error.textContent = 'Name cannot be empty';
+            return;
+        }
+
+        const map = await getCustomAnimationMetadataMap();
+        const existingNames = Object.values(map).map(m => m.name);
+
+        if (existingNames.includes(nameVal)) {
+            error.style.display = 'block';
+            error.style.color = 'var(--md-sys-color-error)';
+            error.textContent = state.currentLang === 'ja' ? '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。' : 'The same custom animation name already exists. Please enter a different name.';
+            return;
+        }
+
+        await proceedWithImport(data, blob, nameVal);
+        hideM3Dialog();
+    };
+
+    cancelBtn.onclick = () => {
+        hideM3Dialog();
+    };
+}
+
+async function proceedWithImport(data, blob, finalName) {
+    const map = await getCustomAnimationMetadataMap();
+    const newId = crypto.randomUUID();
+
+    map[newId] = {
+        name: finalName,
+        description: data.metadata?.description || '',
+        author: data.metadata?.author || 'User',
+        order: Object.keys(map).length,
+        revision: 1,
+        config: data.config || { exclusionStrategy: 'freedom' },
+        payload: {
+            renderSpec: data.payload?.renderSpec || {
+                focusX: 0,
+                focusY: 0,
+                targetHeight: 100,
+                maxWidth: 200,
+                scaleWithHeight: true,
+                overflowBehavior: 'repeat',
+                previewColor: 'primary'
+            }
+        }
+    };
+
+    await saveAnimationBlob(newId, blob, map[newId].payload.renderSpec, map[newId].config);
+    await setCustomAnimationMetadataMap(map);
+
+    state.selectedId = newId;
+    await loadAnimationsList();
+    showToast(state.getMsg('toast-custom-anim-imported') || 'Imported successfully!');
 }
 
 /**
@@ -502,44 +872,6 @@ function showItemMenu(e, id) {
     menu.style.left = `${rect.right - menu.offsetWidth + window.scrollX}px`;
 }
 
-// Add New Custom Animation Item
-async function addNewAnimation() {
-    const map = await getCustomAnimationMetadataMap();
-    const newId = crypto.randomUUID();
-
-    const existingNames = Object.values(map).map(m => m.name);
-    const finalName = resolveDeduplicatedName(state.getMsg('placeholder-meta-name'), existingNames);
-
-    map[newId] = {
-        name: finalName,
-        description: '',
-        author: state.getMsg('anim-unknown-author'),
-        order: Object.keys(map).length,
-        revision: 1,
-        config: {
-            exclusionStrategy: 'freedom'
-        },
-        payload: {
-            renderSpec: {
-                focusX: 0,
-                focusY: 0,
-                targetHeight: 100,
-                maxWidth: 200,
-                scaleWithHeight: true,
-                overflowBehavior: 'repeat',
-                previewColor: 'primary'
-            }
-        }
-    };
-
-    await setCustomAnimationMetadataMap(map);
-    // Keep raw binary empty initially
-    await saveAnimationBlob(newId, null, map[newId].payload.renderSpec, map[newId].config);
-
-    state.selectedId = newId;
-    await loadAnimationsList();
-    broadcastSync('reload');
-}
 
 // Duplicate
 async function duplicateAnimation(id) {
@@ -566,7 +898,6 @@ async function duplicateAnimation(id) {
 
     state.selectedId = newId;
     await loadAnimationsList();
-    broadcastSync('reload');
 }
 
 // Cascading Deletion
@@ -582,26 +913,11 @@ async function deleteAnimation(id) {
     await setCustomAnimationMetadataMap(map);
     await deleteAnimationBlob(id);
 
-    // Cascading Category Scan
-    const categories = await dbGetAll(STORE_CATEGORIES);
-    let categoriesChanged = false;
-    for (const cat of categories) {
-        if (cat.animation === id) {
-            cat.animation = 'none';
-            await dbPut(STORE_CATEGORIES, cat);
-            categoriesChanged = true;
-        }
-    }
-
     if (state.selectedId === id) {
         state.selectedId = null;
     }
 
     await loadAnimationsList();
-    broadcastSync('reload');
-    if (categoriesChanged) {
-        broadcastSync('sync');
-    }
 }
 
 // List Drag & Drop Sort
@@ -631,7 +947,6 @@ elements.animationList.ondrop = async (e) => {
 
     await setCustomAnimationMetadataMap(map);
     await loadAnimationsList();
-    broadcastSync('reload');
 };
 
 // Workspace selection
@@ -829,6 +1144,56 @@ async function saveCurrentChanges(isApply = false) {
     }
 
     if (isApply) {
+        // Direct production save
+        const productionMap = {};
+        // Retrieve original from Chrome Storage / LocalStorage
+        let origMap = {};
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            const result = await chrome.storage.local.get('custom_animation_metadata_map');
+            origMap = result.custom_animation_metadata_map || {};
+        } else {
+            try {
+                const stored = localStorage.getItem('custom_animation_metadata_map');
+                origMap = stored ? JSON.parse(stored) : {};
+            } catch (e) {
+                console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
+            }
+        }
+
+        // Apply all modifications and deletions from draftMetadataMap
+        // Any keys in draftMetadataMap but not in origMap are added or updated.
+        // Any keys in origMap but not in draftMetadataMap are deleted.
+        const keysInDraft = Object.keys(draftMetadataMap);
+        const keysInOrig = Object.keys(origMap);
+
+        // Delete removed animations from IndexedDB production blobs
+        for (const id of keysInOrig) {
+            if (!draftMetadataMap[id]) {
+                await idbDeleteAnimationBlob(id);
+                // Also Cascade update categories to 'none' in production DB
+                const categories = await dbGetAll(STORE_CATEGORIES);
+                for (const cat of categories) {
+                    if (cat.animation === id) {
+                        cat.animation = 'none';
+                        await dbPut(STORE_CATEGORIES, cat);
+                    }
+                }
+            }
+        }
+
+        // Save updated custom metadata and Blobs to production DB
+        for (const id of keysInDraft) {
+            productionMap[id] = draftMetadataMap[id];
+            if (draftBlobs.has(id)) {
+                const draftBlob = draftBlobs.get(id);
+                if (draftBlob !== null) {
+                    await idbSaveAnimationBlob(id, draftBlob, draftMetadataMap[id].payload.renderSpec, draftMetadataMap[id].config);
+                }
+            }
+        }
+
+        await saveProductionMetadataMap(productionMap);
+
         broadcastSync('sync');
     }
     return true;
@@ -1241,7 +1606,9 @@ function setupEventListeners() {
         applyTheme();
     });
 
-    elements.addAnimBtn.addEventListener('click', addNewAnimation);
+    elements.addAnimBtn.addEventListener('click', () => {
+        showM3CreateDialog();
+    });
 
     // Click to select file on dropZone (when no GIF loaded) or simple click on rawPreviewContainer (when GIF loaded)
     let clickStartX = 0;
@@ -1250,6 +1617,11 @@ function setupEventListeners() {
     elements.rawPreviewContainer.addEventListener('mousedown', (e) => {
         clickStartX = e.clientX;
         clickStartY = e.clientY;
+    });
+
+    // Prevent default dragstart on container or child elements to allow smooth mouse dragging without invoking native drag operations
+    elements.rawPreviewContainer.addEventListener('dragstart', (e) => {
+        e.preventDefault();
     });
 
     elements.rawPreviewContainer.addEventListener('click', (e) => {
@@ -1287,11 +1659,15 @@ function setupEventListeners() {
         }
     });
 
+    // Ensure we only show the drop overlay when actual files are dragged from outside.
     elements.rawPreviewContainer.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        elements.dropZone.style.opacity = '1';
-        elements.dropZone.style.pointerEvents = 'auto';
-        elements.dropZone.classList.add('dragover');
+        const isFile = e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files');
+        if (isFile) {
+            e.preventDefault();
+            elements.dropZone.style.opacity = '1';
+            elements.dropZone.style.pointerEvents = 'auto';
+            elements.dropZone.classList.add('dragover');
+        }
     });
 
     elements.rawPreviewContainer.addEventListener('dragleave', (e) => {
@@ -1306,22 +1682,25 @@ function setupEventListeners() {
     });
 
     elements.rawPreviewContainer.addEventListener('drop', async (e) => {
-        e.preventDefault();
-        elements.dropZone.classList.remove('dragover');
-        if (state.gifBlob) {
-            elements.dropZone.style.opacity = '0';
-            elements.dropZone.style.pointerEvents = 'none';
-        }
-        const file = e.dataTransfer.files?.[0];
-        if (file && file.type === 'image/gif') {
-            state.gifFileName = file.name;
-            state.gifBlob = file;
-            elements.rawPreviewContainer.setAttribute('tabindex', '0');
-            resetAnimationSettings();
-            await parseGif(file);
-            await saveCurrentChanges();
-        } else {
-            showAlert('Please drop a valid .gif image file!');
+        const isFile = e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files');
+        if (isFile) {
+            e.preventDefault();
+            elements.dropZone.classList.remove('dragover');
+            if (state.gifBlob) {
+                elements.dropZone.style.opacity = '0';
+                elements.dropZone.style.pointerEvents = 'none';
+            }
+            const file = e.dataTransfer.files?.[0];
+            if (file && file.type === 'image/gif') {
+                state.gifFileName = file.name;
+                state.gifBlob = file;
+                elements.rawPreviewContainer.setAttribute('tabindex', '0');
+                resetAnimationSettings();
+                await parseGif(file);
+                await saveCurrentChanges();
+            } else {
+                showAlert('Please drop a valid .gif image file!');
+            }
         }
     });
 
@@ -1423,7 +1802,11 @@ function setupEventListeners() {
     });
 
     // Inputs listeners (debounced for text inputs, immediate for selects/checkboxes)
-    elements.metaName.addEventListener('input', debouncedSaveCurrentChanges);
+    elements.metaName.addEventListener('click', () => {
+        if (state.selectedId) {
+            showM3NameEditDialog(state.selectedId);
+        }
+    });
     elements.metaAuthor.addEventListener('input', debouncedSaveCurrentChanges);
     elements.metaDesc.addEventListener('input', debouncedSaveCurrentChanges);
     elements.configExclusionStrategy.addEventListener('change', saveCurrentChanges);
@@ -1513,40 +1896,7 @@ function setupEventListeners() {
                 throw new Error('Malformed or invalid GIF data.');
             }
 
-            const map = await getCustomAnimationMetadataMap();
-            const existingNames = Object.values(map).map(m => m.name);
-            const finalName = resolveDeduplicatedName(data.metadata?.name || 'Imported Anim', existingNames);
-
-            const newId = crypto.randomUUID();
-
-            map[newId] = {
-                name: finalName,
-                description: data.metadata?.description || '',
-                author: data.metadata?.author || 'User',
-                order: Object.keys(map).length,
-                revision: 1,
-                config: data.config || { exclusionStrategy: 'freedom' },
-                payload: {
-                    renderSpec: data.payload?.renderSpec || {
-                        focusX: 0,
-                        focusY: 0,
-                        targetHeight: 100,
-                        maxWidth: 200,
-                        scaleWithHeight: true,
-                        overflowBehavior: 'repeat',
-                        previewColor: 'primary'
-                    }
-                }
-            };
-
-            // Save binary Blob first, then persist metadata map only on success
-            await saveAnimationBlob(newId, blob, map[newId].payload.renderSpec, map[newId].config);
-            await setCustomAnimationMetadataMap(map);
-
-            state.selectedId = newId;
-            await loadAnimationsList();
-            broadcastSync('reload');
-            showToast(state.getMsg('toast-custom-anim-imported') || 'Imported successfully!');
+            await handleCustomAnimationImport(data, blob);
 
         } catch (err) {
             showAlert('Failed to parse the file: ' + err.message);
