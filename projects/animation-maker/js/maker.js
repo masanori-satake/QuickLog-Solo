@@ -195,7 +195,13 @@ async function setCustomAnimationMetadataMap(map) {
     draftMetadataMap = map;
 }
 
-// Wrapper for saving Blobs in Draft Mode
+/**
+ * Saves an animation Blob and its rendering configuration to draft storage.
+ * @param {string} id - The animation identifier.
+ * @param {Blob|null} blob - The animation Blob to save.
+ * @param {Object} renderSpec - The animation rendering configuration.
+ * @param {Object} config - The animation settings.
+ */
 async function saveAnimationBlob(id, blob, renderSpec, config) {
     if (draftMetadataMap && draftMetadataMap[id]) {
         draftMetadataMap[id].payload = { renderSpec };
@@ -205,7 +211,11 @@ async function saveAnimationBlob(id, blob, renderSpec, config) {
     await saveAnimationDraftBlob(id, blob, renderSpec, config);
 }
 
-// Wrapper for retrieving Blobs in Draft Mode
+/**
+ * Retrieves an animation Blob from draft storage, falling back to production storage when needed.
+ * @param {string} id - The animation identifier.
+ * @return {Promise<Blob|null>} The animation Blob, or `null` if it cannot be found.
+ */
 async function getAnimationBlob(id) {
     if (draftBlobs.has(id)) {
         return draftBlobs.get(id);
@@ -218,13 +228,18 @@ async function getAnimationBlob(id) {
     return blob;
 }
 
-// Wrapper for deleting Blobs in Draft Mode
+/**
+ * Deletes a custom animation blob from draft storage.
+ * @param {string} id - The animation identifier.
+ */
 async function deleteAnimationBlob(id) {
     draftBlobs.set(id, null);
     await deleteAnimationDraftBlob(id);
 }
 
-// Draft State Initialization Helper
+/**
+ * Initializes the draft animation database and populates it with existing custom animations from production storage.
+ */
 async function initDraftState() {
     await initAnimationDraftDB();
     await clearAnimationDraftDB();
@@ -254,7 +269,9 @@ async function saveProductionMetadataMap(map) {
     }
 }
 
-// Initializer
+/**
+ * Initialize storage, localization, theme, event listeners, animation rendering, and the animation list.
+ */
 async function init() {
     await initDB();
     await initDraftState();
@@ -391,7 +408,9 @@ function resolveDeduplicatedName(name, existingNames) {
     return finalName;
 }
 
-// Custom Animations List Operations
+/**
+ * Loads custom animations, rebuilds the animation list, and synchronizes the selected animation with the workspace.
+ */
 async function loadAnimationsList() {
     state.customAnimations = await getCustomAnimationMetadataMap();
 
@@ -941,7 +960,10 @@ async function duplicateAnimation(id) {
     await loadAnimationsList();
 }
 
-// Cascading Deletion
+/**
+ * Delete a custom animation and update the remaining animation order.
+ * @param {string} id - The identifier of the animation to delete.
+ */
 async function deleteAnimation(id) {
     const map = await getCustomAnimationMetadataMap();
     delete map[id];
@@ -993,7 +1015,11 @@ elements.animationList.ondrop = async (e) => {
     await loadAnimationsList();
 };
 
-// Workspace selection
+/**
+ * Selects an animation and loads its metadata and GIF into the editor workspace.
+ * Saves pending changes for the previously loaded animation before switching.
+ * @param {string} id - The identifier of the animation to select.
+ */
 async function selectAnimation(id) {
     if (elements.dragInstruction) {
         elements.dragInstruction.classList.remove('fade-out');
@@ -1127,7 +1153,14 @@ function renderColorPalette() {
     });
 }
 
-// Save all changes immediately
+/**
+ * Saves the selected animation's metadata, render settings, and GIF blob to draft storage.
+ *
+ * When `isApply` is `true`, also applies all draft animations and deletions to production storage and broadcasts the update.
+ *
+ * @param {boolean} [isApply=false] - Whether to apply the draft changes to production storage.
+ * @returns {Promise<boolean>} `true` if changes were saved, `false` if no animation is selected or the selected animation does not exist.
+ */
 async function saveCurrentChanges(isApply = false) {
     if (!state.selectedId) return false;
     const map = await getCustomAnimationMetadataMap();
@@ -1634,7 +1667,9 @@ function resetAnimationSettings() {
     updateMonitor();
 }
 
-// Event Listeners setup
+/**
+ * Register event listeners for animation editing, preview interaction, playback, file handling, and UI controls.
+ */
 function setupEventListeners() {
     window.addEventListener('click', (e) => {
         const menu = document.querySelector('.category-menu');

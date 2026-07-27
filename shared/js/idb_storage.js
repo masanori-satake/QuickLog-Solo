@@ -43,12 +43,11 @@ export function initAnimationDB() {
 }
 
 /**
- * Saves a raw Blob, renderSpec, and optional config for a given custom animation ID.
+ * Saves animation data for a custom animation ID.
  * @param {string} id - The custom animation ID.
- * @param {Blob} blob - The raw binary data / GIF Blob.
+ * @param {Blob} blob - The animation binary data.
  * @param {Object} renderSpec - The rendering configuration.
- * @param {Object} [config] - The optional animation configuration (e.g. exclusionStrategy).
- * @returns {Promise<void>}
+ * @param {Object} [config] - The optional animation configuration.
  */
 export async function saveAnimationBlob(id, blob, renderSpec, config) {
     const db = await initAnimationDB();
@@ -70,8 +69,8 @@ let draftDbInstance = null;
 let draftDbPromise = null;
 
 /**
- * Opens and initializes the Draft IndexedDB connection.
- * @returns {Promise<IDBDatabase>}
+ * Opens and initializes the IndexedDB connection used for animation drafts.
+ * @returns {Promise<IDBDatabase>} The draft animation database connection.
  */
 export function initAnimationDraftDB() {
     if (draftDbPromise) return draftDbPromise;
@@ -117,7 +116,9 @@ export async function saveAnimationDraftBlob(id, blob, renderSpec, config) {
 }
 
 /**
- * Retrieves the raw Blob from the Draft IndexedDB.
+ * Retrieves the stored draft animation Blob for an identifier.
+ * @param {*} id - The identifier of the draft animation.
+ * @return {Promise<Blob|null>} The stored Blob, or `null` if no record exists.
  */
 export async function getAnimationDraftBlob(id) {
     const db = await initAnimationDraftDB();
@@ -138,7 +139,9 @@ export async function getAnimationDraftBlob(id) {
 }
 
 /**
- * Retrieves the complete record from the Draft IndexedDB.
+ * Retrieves a draft animation record by its identifier.
+ * @param {string} id - The record identifier.
+ * @return {Object|null} The matching draft record, or `null` if no record exists.
  */
 export async function getAnimationDraftRecord(id) {
     const db = await initAnimationDraftDB();
