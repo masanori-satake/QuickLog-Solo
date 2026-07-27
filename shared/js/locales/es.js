@@ -455,4 +455,6 @@ export default {
     'maker-data-transfer': 'Transferencia de datos',
     'maker-warning-title': 'Advertencia',
     'maker-note-extension-only': '* QL-Animation Maker solo está disponible cuando se instala como una extensión del navegador. No se puede iniciar en la versión de vista previa.',
+    'maker-error-name-empty': 'El nombre no puede estar vacío',
+    'maker-error-name-duplicate': 'Ya existe una animación personalizada con el mismo nombre. Por favor, ingrese un nombre diferente.',
 };

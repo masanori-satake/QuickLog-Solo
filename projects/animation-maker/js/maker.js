@@ -444,6 +444,9 @@ function hideM3Dialog() {
     document.getElementById('m3-dialog-options-container').replaceChildren();
     document.getElementById('m3-dialog-error').style.display = 'none';
     document.getElementById('m3-dialog-error').textContent = '';
+    // Restore normal visibility for footer and input
+    document.getElementById('m3-dialog-footer').style.display = 'flex';
+    document.getElementById('m3-dialog-input').style.display = 'block';
 }
 
 function showM3CreateDialog() {
@@ -470,7 +473,7 @@ function showM3CreateDialog() {
         const nameVal = input.value.trim();
         if (!nameVal) {
             error.style.display = 'block';
-            error.textContent = 'Name cannot be empty';
+            error.textContent = state.getMsg('maker-error-name-empty');
             return;
         }
 
@@ -478,8 +481,7 @@ function showM3CreateDialog() {
         const existingNames = Object.values(map).map(m => m.name);
         if (existingNames.includes(nameVal)) {
             error.style.display = 'block';
-            // "ポップアップ内に同じ名前のカスタムアニメーションがあるので違う名前を入力する旨を促してください。"
-            error.textContent = state.currentLang === 'ja' ? '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。' : 'The same custom animation name already exists. Please enter a different name.';
+            error.textContent = state.getMsg('maker-error-name-duplicate');
             return;
         }
 
@@ -519,7 +521,7 @@ function showM3CreateDialog() {
     };
 }
 
-function showM3NameEditDialog(id) {
+async function showM3NameEditDialog(id) {
     const modal = document.getElementById('m3-dialog-modal');
     const title = document.getElementById('m3-dialog-title').querySelector('span:last-child');
     const prompt = document.getElementById('m3-dialog-prompt');
@@ -531,7 +533,8 @@ function showM3NameEditDialog(id) {
     title.textContent = state.getMsg('history-edit-title');
     prompt.textContent = state.getMsg('placeholder-meta-name') + ':';
 
-    const currentName = state.customAnimations[id]?.name || '';
+    const map = await getCustomAnimationMetadataMap();
+    const currentName = map[id]?.name || '';
     input.value = currentName;
     input.style.display = 'block';
     error.style.display = 'none';
@@ -545,7 +548,7 @@ function showM3NameEditDialog(id) {
         const nameVal = input.value.trim();
         if (!nameVal) {
             error.style.display = 'block';
-            error.textContent = 'Name cannot be empty';
+            error.textContent = state.getMsg('maker-error-name-empty');
             return;
         }
 
@@ -556,7 +559,7 @@ function showM3NameEditDialog(id) {
 
         if (existingNames.includes(nameVal)) {
             error.style.display = 'block';
-            error.textContent = state.currentLang === 'ja' ? '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。' : 'The same custom animation name already exists. Please enter a different name.';
+            error.textContent = state.getMsg('maker-error-name-duplicate');
             return;
         }
 
@@ -649,7 +652,6 @@ function showM3ImportCollisionDialog(data, blob, existingId, existingMeta) {
         state.selectedId = existingId;
         await loadAnimationsList();
         hideM3Dialog();
-        footer.style.display = 'flex';
         showToast(state.getMsg('toast-custom-anim-imported') || 'Imported successfully!');
     };
 
@@ -667,7 +669,6 @@ function showM3ImportCollisionDialog(data, blob, existingId, existingMeta) {
     cancelBtn.textContent = state.getMsg('confirm-cancel');
     cancelBtn.onclick = () => {
         hideM3Dialog();
-        footer.style.display = 'flex';
     };
 
     container.appendChild(overwriteBtn);
@@ -682,11 +683,9 @@ function showM3ImportRenameSubDialog(data, blob) {
     const prompt = document.getElementById('m3-dialog-prompt');
     const input = document.getElementById('m3-dialog-input');
     const error = document.getElementById('m3-dialog-error');
-    const footer = document.getElementById('m3-dialog-footer');
     const container = document.getElementById('m3-dialog-options-container');
 
     container.replaceChildren(); // Remove the multi choices buttons
-    footer.style.display = 'flex'; // Restore normal footer
 
     title.textContent = state.getMsg('custom-anim-import');
     prompt.textContent = state.currentLang === 'ja' ? '新しい名前を入力してください：' : 'Please enter a new name:';
@@ -704,7 +703,7 @@ function showM3ImportRenameSubDialog(data, blob) {
         const nameVal = input.value.trim();
         if (!nameVal) {
             error.style.display = 'block';
-            error.textContent = 'Name cannot be empty';
+            error.textContent = state.getMsg('maker-error-name-empty');
             return;
         }
 
@@ -714,7 +713,7 @@ function showM3ImportRenameSubDialog(data, blob) {
         if (existingNames.includes(nameVal)) {
             error.style.display = 'block';
             error.style.color = 'var(--md-sys-color-error)';
-            error.textContent = state.currentLang === 'ja' ? '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。' : 'The same custom animation name already exists. Please enter a different name.';
+            error.textContent = state.getMsg('maker-error-name-duplicate');
             return;
         }
 
@@ -1802,9 +1801,15 @@ function setupEventListeners() {
     });
 
     // Inputs listeners (debounced for text inputs, immediate for selects/checkboxes)
-    elements.metaName.addEventListener('click', () => {
+    elements.metaName.addEventListener('click', async () => {
         if (state.selectedId) {
-            showM3NameEditDialog(state.selectedId);
+            await showM3NameEditDialog(state.selectedId);
+        }
+    });
+    elements.metaName.addEventListener('keydown', async (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && state.selectedId) {
+            e.preventDefault();
+            await showM3NameEditDialog(state.selectedId);
         }
     });
     elements.metaAuthor.addEventListener('input', debouncedSaveCurrentChanges);

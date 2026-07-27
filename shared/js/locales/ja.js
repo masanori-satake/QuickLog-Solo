@@ -480,4 +480,6 @@ export default {
     'maker-data-transfer': 'データの入出力',
     'maker-warning-title': '警告',
     'maker-note-extension-only': '※ QL-Animation Makerはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
+    'maker-error-name-empty': '名前を入力してください',
+    'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
 };

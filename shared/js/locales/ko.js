@@ -455,4 +455,6 @@ export default {
     'maker-data-transfer': '데이터 전송',
     'maker-warning-title': '경고',
     'maker-note-extension-only': '* QL-Animation Maker는 브라우저 확장 프로그램으로 설치된 경우에만 사용할 수 있습니다. 프리뷰 버전에서는 실행할 수 없습니다.',
+    'maker-error-name-empty': '이름을 입력해 주세요',
+    'maker-error-name-duplicate': '같은 이름의 커스텀 애니메이션이 이미 존재합니다. 다른 이름을 입력해 주세요.',
 };

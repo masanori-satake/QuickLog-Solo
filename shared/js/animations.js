@@ -27,6 +27,7 @@ export class AnimationEngine {
         this.requestRawBitmap = false;
         this.lastRenderStartTime = 0;
         this.lastDots = null;
+        this.lastSimulatedHeight = null;
         this.onRawBitmapDraw = null;
         this.onStop = null;
 
@@ -212,6 +213,12 @@ export class AnimationEngine {
         }
 
         const offsetY = this.simulatedHeight ? (this.canvas.height - this.simulatedHeight) / 2 : 0;
+
+        // Detect simulatedHeight changes and reset ghosting buffer
+        if (this.simulatedHeight !== this.lastSimulatedHeight) {
+            this.lastDots = null;
+            this.lastSimulatedHeight = this.simulatedHeight;
+        }
 
         // 2. Render STN LCD Ghosting (Slow latency simulation)
         if (mode === 'retro-lcd' && this.lastDots) {
