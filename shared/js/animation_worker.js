@@ -130,19 +130,6 @@ function _isInExclusion(x, y, exclusionAreas) {
     );
 }
 
-/**
- * Converts animation output into grid-aligned dots and optionally a raw bitmap.
- *
- * @param {Object} params - Rendering parameters, including dimensions, elapsed time, exclusion areas, and bitmap options.
- * @param {number} params.width - Rendering width in pixels.
- * @param {number} params.height - Rendering height in pixels.
- * @param {number} params.canvasWidth - Width of the output grid in pixels.
- * @param {Array} [params.exclusionAreas=[]] - Areas excluded from animation output.
- * @param {Array} [params.realExclusionAreas] - Physical areas excluded from output masking.
- * @param {number} params.elapsedMs - Elapsed animation time in milliseconds.
- * @param {boolean} [params.requestRawBitmap] - Whether to include a raw bitmap in the result.
- * @returns {{dots: Array<{x: number, y: number, size: number}>, rawBitmap: ImageBitmap|null}} The generated dots and optional raw bitmap.
- */
 function performDraw(params) {
     const { width, height, canvasWidth, exclusionAreas = [], realExclusionAreas, elapsedMs, requestRawBitmap } = params;
 

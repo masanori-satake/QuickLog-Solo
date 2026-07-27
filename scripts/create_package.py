@@ -5,19 +5,6 @@ import subprocess
 import shutil
 
 def create_zip(zip_filepath, manifest_src, temp_dir, is_dev=False, version=""):
-    """
-    Create a ZIP package containing the app, shared assets, and project subprojects.
-    
-    Parameters:
-        zip_filepath (str): Destination path for the ZIP package.
-        manifest_src (str): App manifest filename to package as `manifest.json`.
-        temp_dir (str): Temporary directory used to assemble the package.
-        is_dev (bool): Whether to create a development package with dev-specific branding and manifest metadata.
-        version (str): Version appended to the development manifest name.
-    
-    Returns:
-        bool: `True` if the package is created successfully, `False` otherwise.
-    """
     print(f"Creating {'Dev ' if is_dev else ''}package: {zip_filepath}")
     try:
         # Create a temporary directory to assemble the package
