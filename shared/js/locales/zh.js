@@ -457,4 +457,5 @@ export default {
     'maker-note-extension-only': '* QL-Animation Maker 仅在作为浏览器扩展程序安装时可用。在预览版中无法启动。',
     'maker-error-name-empty': '名称不能为空',
     'maker-error-name-duplicate': '已存在同名的自定义动画。请输入不同的名称。',
+    'maker-select-prompt': '请添加自定义动画',
 };

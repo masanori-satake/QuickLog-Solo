@@ -457,4 +457,5 @@ export default {
     'maker-note-extension-only': '* QL-Animation Maker est uniquement disponible lorsqu\'il est installé en tant qu\'extension de navigateur. Il ne peut pas être lancé dans la version de prévisualisation.',
     'maker-error-name-empty': 'Le nom ne peut pas être vide',
     'maker-error-name-duplicate': 'Une animation personnalisée portant le même nom existe déjà. Veuillez entrer un nom différent.',
+    'maker-select-prompt': 'Veuillez ajouter une animation personnalisée',
 };

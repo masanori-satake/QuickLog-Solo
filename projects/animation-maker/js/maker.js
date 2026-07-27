@@ -11,7 +11,13 @@ import { AnimationEngine } from '../shared/js/animations.js';
 import {
     saveAnimationBlob as idbSaveAnimationBlob,
     getAnimationBlob as idbGetAnimationBlob,
-    deleteAnimationBlob as idbDeleteAnimationBlob
+    deleteAnimationBlob as idbDeleteAnimationBlob,
+    initAnimationDraftDB,
+    saveAnimationDraftBlob,
+    getAnimationDraftBlob,
+    getAllAnimationDraftRecords,
+    deleteAnimationDraftBlob,
+    clearAnimationDraftDB
 } from '../shared/js/idb_storage.js';
 
 
@@ -50,6 +56,7 @@ const state = {
     currentTheme: 'dark',
     customAnimations: {}, // ID -> metadata
     selectedId: null,
+    loadedId: null,
     selectionToken: 0,
 
     // Loaded GIF Frame Data
@@ -188,28 +195,65 @@ async function setCustomAnimationMetadataMap(map) {
     draftMetadataMap = map;
 }
 
-// Wrapper for saving Blobs in Draft Mode
+/**
+ * Saves an animation Blob and its rendering configuration to draft storage.
+ * @param {string} id - The animation identifier.
+ * @param {Blob|null} blob - The animation Blob to save.
+ * @param {Object} renderSpec - The animation rendering configuration.
+ * @param {Object} config - The animation settings.
+ */
 async function saveAnimationBlob(id, blob, renderSpec, config) {
     if (draftMetadataMap && draftMetadataMap[id]) {
         draftMetadataMap[id].payload = { renderSpec };
         draftMetadataMap[id].config = config;
     }
     draftBlobs.set(id, blob);
+    await saveAnimationDraftBlob(id, blob, renderSpec, config);
 }
 
-// Wrapper for retrieving Blobs in Draft Mode
+/**
+ * Retrieves an animation Blob from draft storage, falling back to production storage when needed.
+ * @param {string} id - The animation identifier.
+ * @return {Promise<Blob|null>} The animation Blob, or `null` if it cannot be found.
+ */
 async function getAnimationBlob(id) {
     if (draftBlobs.has(id)) {
         return draftBlobs.get(id);
     }
-    const blob = await idbGetAnimationBlob(id);
+    let blob = await getAnimationDraftBlob(id);
+    if (!blob) {
+        blob = await idbGetAnimationBlob(id);
+    }
     draftBlobs.set(id, blob);
     return blob;
 }
 
-// Wrapper for deleting Blobs in Draft Mode
+/**
+ * Deletes a custom animation blob from draft storage.
+ * @param {string} id - The animation identifier.
+ */
 async function deleteAnimationBlob(id) {
     draftBlobs.set(id, null);
+    await deleteAnimationDraftBlob(id);
+}
+
+/**
+ * Initializes the draft animation database and populates it with existing custom animations from production storage.
+ */
+async function initDraftState() {
+    await initAnimationDraftDB();
+    await clearAnimationDraftDB();
+
+    // Populate Draft DB with existing custom animations from Production DB
+    const map = await getCustomAnimationMetadataMap();
+    const keys = Object.keys(map);
+    for (const id of keys) {
+        const prodBlob = await idbGetAnimationBlob(id);
+        const meta = map[id];
+        if (meta) {
+            await saveAnimationDraftBlob(id, prodBlob, meta.payload?.renderSpec, meta.config);
+        }
+    }
 }
 
 // Direct Storage write for metadata map
@@ -225,9 +269,12 @@ async function saveProductionMetadataMap(map) {
     }
 }
 
-// Initializer
+/**
+ * Initialize storage, localization, theme, event listeners, animation rendering, and the animation list.
+ */
 async function init() {
     await initDB();
+    await initDraftState();
     setupLanguage();
     setupTheme();
     setupEventListeners();
@@ -361,7 +408,9 @@ function resolveDeduplicatedName(name, existingNames) {
     return finalName;
 }
 
-// Custom Animations List Operations
+/**
+ * Loads custom animations, rebuilds the animation list, and synchronizes the selected animation with the workspace.
+ */
 async function loadAnimationsList() {
     state.customAnimations = await getCustomAnimationMetadataMap();
 
@@ -376,8 +425,20 @@ async function loadAnimationsList() {
 
     if (sortedKeys.length === 0) {
         state.selectedId = null;
+        state.loadedId = null;
         elements.noSelectionCard.classList.remove('hidden');
         elements.editorWorkspace.classList.add('hidden');
+        if (state.animationEngine) {
+            state.animationEngine.stop();
+        }
+        state.gifFrames.forEach(f => {
+            if (f.bitmap && typeof f.bitmap.close === 'function') {
+                f.bitmap.close();
+            }
+        });
+        state.gifFrames = [];
+        state.totalDuration = 0;
+        state.gifBlob = null;
         return;
     }
 
@@ -899,7 +960,10 @@ async function duplicateAnimation(id) {
     await loadAnimationsList();
 }
 
-// Cascading Deletion
+/**
+ * Delete a custom animation and update the remaining animation order.
+ * @param {string} id - The identifier of the animation to delete.
+ */
 async function deleteAnimation(id) {
     const map = await getCustomAnimationMetadataMap();
     delete map[id];
@@ -914,6 +978,9 @@ async function deleteAnimation(id) {
 
     if (state.selectedId === id) {
         state.selectedId = null;
+    }
+    if (state.loadedId === id) {
+        state.loadedId = null;
     }
 
     await loadAnimationsList();
@@ -948,13 +1015,17 @@ elements.animationList.ondrop = async (e) => {
     await loadAnimationsList();
 };
 
-// Workspace selection
+/**
+ * Selects an animation and loads its metadata and GIF into the editor workspace.
+ * Saves pending changes for the previously loaded animation before switching.
+ * @param {string} id - The identifier of the animation to select.
+ */
 async function selectAnimation(id) {
     if (elements.dragInstruction) {
         elements.dragInstruction.classList.remove('fade-out');
     }
 
-    if (state.selectedId === id && !elements.editorWorkspace.classList.contains('hidden')) {
+    if (state.loadedId === id && !elements.editorWorkspace.classList.contains('hidden')) {
         // If clicking the currently active/selected animation and the workspace is already visible, do nothing and keep unsaved changes!
         return;
     }
@@ -962,8 +1033,8 @@ async function selectAnimation(id) {
     state.selectionToken = (state.selectionToken || 0) + 1;
     const currentToken = state.selectionToken;
 
-    // If there is a currently selected animation, save any unsaved changes before switching!
-    if (state.selectedId && state.selectedId !== id) {
+    // If there is a currently loaded animation, save any unsaved changes before switching!
+    if (state.loadedId && state.loadedId !== id) {
         if (saveDebounceTimer) {
             clearTimeout(saveDebounceTimer);
             saveDebounceTimer = null;
@@ -973,6 +1044,7 @@ async function selectAnimation(id) {
     }
 
     state.selectedId = id;
+    state.loadedId = id;
     const meta = state.customAnimations[id];
     if (!meta) return;
 
@@ -1081,7 +1153,14 @@ function renderColorPalette() {
     });
 }
 
-// Save all changes immediately
+/**
+ * Saves the selected animation's metadata, render settings, and GIF blob to draft storage.
+ *
+ * When `isApply` is `true`, also applies all draft animations and deletions to production storage and broadcasts the update.
+ *
+ * @param {boolean} [isApply=false] - Whether to apply the draft changes to production storage.
+ * @returns {Promise<boolean>} `true` if changes were saved, `false` if no animation is selected or the selected animation does not exist.
+ */
 async function saveCurrentChanges(isApply = false) {
     if (!state.selectedId) return false;
     const map = await getCustomAnimationMetadataMap();
@@ -1181,13 +1260,20 @@ async function saveCurrentChanges(isApply = false) {
         }
 
         // Save updated custom metadata and Blobs to production DB
+        const draftRecords = await getAllAnimationDraftRecords();
+        for (const record of draftRecords) {
+            const id = record.id;
+            if (draftMetadataMap[id]) {
+                productionMap[id] = draftMetadataMap[id];
+                await idbSaveAnimationBlob(id, record.blob, draftMetadataMap[id].payload.renderSpec, draftMetadataMap[id].config);
+            }
+        }
+
+        // Defensive fallback for any keys in draft metadata map not written yet
         for (const id of keysInDraft) {
-            productionMap[id] = draftMetadataMap[id];
-            if (draftBlobs.has(id)) {
-                const draftBlob = draftBlobs.get(id);
-                if (draftBlob !== null) {
-                    await idbSaveAnimationBlob(id, draftBlob, draftMetadataMap[id].payload.renderSpec, draftMetadataMap[id].config);
-                }
+            if (!productionMap[id]) {
+                productionMap[id] = draftMetadataMap[id];
+                await idbSaveAnimationBlob(id, null, draftMetadataMap[id].payload.renderSpec, draftMetadataMap[id].config);
             }
         }
 
@@ -1581,7 +1667,9 @@ function resetAnimationSettings() {
     updateMonitor();
 }
 
-// Event Listeners setup
+/**
+ * Register event listeners for animation editing, preview interaction, playback, file handling, and UI controls.
+ */
 function setupEventListeners() {
     window.addEventListener('click', (e) => {
         const menu = document.querySelector('.category-menu');
@@ -1685,12 +1773,15 @@ function setupEventListeners() {
         if (isFile) {
             e.preventDefault();
             elements.dropZone.classList.remove('dragover');
-            if (state.gifBlob) {
-                elements.dropZone.style.opacity = '0';
-                elements.dropZone.style.pointerEvents = 'none';
-            }
             const file = e.dataTransfer.files?.[0];
             if (file && file.type === 'image/gif') {
+                const isValid = await validateGifBlob(file);
+                if (!isValid) {
+                    showAlert('Please drop a valid .gif image file!');
+                    return;
+                }
+                elements.dropZone.style.opacity = '0';
+                elements.dropZone.style.pointerEvents = 'none';
                 state.gifFileName = file.name;
                 state.gifBlob = file;
                 elements.rawPreviewContainer.setAttribute('tabindex', '0');
@@ -1698,6 +1789,11 @@ function setupEventListeners() {
                 await parseGif(file);
                 await saveCurrentChanges();
             } else {
+                // If there's an existing gif, make sure the overlay goes back to hidden
+                if (state.gifBlob) {
+                    elements.dropZone.style.opacity = '0';
+                    elements.dropZone.style.pointerEvents = 'none';
+                }
                 showAlert('Please drop a valid .gif image file!');
             }
         }
