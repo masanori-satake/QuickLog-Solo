@@ -16,6 +16,7 @@ export default {
     'page-break': 'Quebra de página',
     'btn-add-page-break': 'Adicionar quebra de página',
     'btn-add-category': 'Adicionar categoria',
+    'btn-add-custom-anim': 'Adicionar animação personalizada',
     'confirm-delete-page-break': 'Deseja excluir esta quebra de página?',
 
     // Tooltips
@@ -454,4 +455,6 @@ export default {
     'maker-data-transfer': 'Transferência de dados',
     'maker-warning-title': 'Aviso',
     'maker-note-extension-only': '* O QL-Animation Maker só está disponível quando instalado como uma extensão do navegador. Não pode ser iniciado na versão de visualização.',
+    'maker-error-name-empty': 'O nome não pode estar vazio',
+    'maker-error-name-duplicate': 'Já existe uma animação personalizada com o mesmo nome. Por favor, insira um nome diferente.',
 };

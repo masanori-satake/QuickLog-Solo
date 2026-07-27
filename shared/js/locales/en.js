@@ -128,6 +128,7 @@ export default {
     'page-break': 'Page Break',
     'btn-add-page-break': 'Add Page Break',
     'btn-add-category': 'Add Category',
+    'btn-add-custom-anim': 'Add Custom Animation',
     'confirm-delete-page-break': 'Do you want to delete this page break?',
 
     // Tooltips
@@ -479,4 +480,6 @@ export default {
     'maker-data-transfer': 'Data Transfer',
     'maker-warning-title': 'Warning',
     'maker-note-extension-only': '* QL-Animation Maker is only available when installed as a browser extension. It cannot be launched in the preview version.',
+    'maker-error-name-empty': 'Name cannot be empty',
+    'maker-error-name-duplicate': 'The same custom animation name already exists. Please enter a different name.',
 };

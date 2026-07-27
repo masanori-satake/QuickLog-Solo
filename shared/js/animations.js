@@ -27,6 +27,7 @@ export class AnimationEngine {
         this.requestRawBitmap = false;
         this.lastRenderStartTime = 0;
         this.lastDots = null;
+        this.lastSimulatedHeight = null;
         this.onRawBitmapDraw = null;
         this.onStop = null;
 
@@ -211,12 +212,20 @@ export class AnimationEngine {
             this.lastRenderStartTime = this.startTime;
         }
 
+        const offsetY = this.simulatedHeight ? (this.canvas.height - this.simulatedHeight) / 2 : 0;
+
+        // Detect simulatedHeight changes and reset ghosting buffer
+        if (this.simulatedHeight !== this.lastSimulatedHeight) {
+            this.lastDots = null;
+            this.lastSimulatedHeight = this.simulatedHeight;
+        }
+
         // 2. Render STN LCD Ghosting (Slow latency simulation)
         if (mode === 'retro-lcd' && this.lastDots) {
             this.ctx.fillStyle = 'rgba(48, 98, 48, 0.25)'; // Legacy persistent shade
             this.lastDots.forEach(dot => {
                 const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
-                const dotY = dot.y + (CELL_SIZE - dot.size) / 2;
+                const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + offsetY;
                 this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
             });
         }
@@ -226,7 +235,7 @@ export class AnimationEngine {
             this.ctx.fillStyle = 'rgba(15, 56, 15, 0.22)'; // Offset shadow under dots
             dots.forEach(dot => {
                 const dotX = dot.x + (CELL_SIZE - dot.size) / 2 + 1;
-                const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + 1;
+                const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + 1 + offsetY;
                 this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
             });
         }
@@ -234,7 +243,7 @@ export class AnimationEngine {
         // 4. Render Main dots
         dots.forEach(dot => {
             const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
-            const dotY = dot.y + (CELL_SIZE - dot.size) / 2;
+            const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + offsetY;
 
             if (mode === 'retro-lcd') {
                 if (dot.size === 4) this.ctx.fillStyle = '#0f380f'; // Darkest
@@ -311,7 +320,7 @@ export class AnimationEngine {
 
         const params = {
             width: drawWidth,
-            height: this.canvas.height,
+            height: this.simulatedHeight || this.canvas.height,
             canvasWidth: this.canvas.width,
             elapsedMs: elapsed,
             progress,
@@ -349,7 +358,8 @@ export class AnimationEngine {
             if (this.config.exclusionStrategy === 'jump') {
                 w = this._getPseudoInfo().totalWidth;
             }
-            this.worker.postMessage({ type: 'setup', payload: { width: w, height: this.canvas.height } });
+            let h = this.simulatedHeight || this.canvas.height;
+            this.worker.postMessage({ type: 'setup', payload: { width: w, height: h } });
             this.setupDone = true;
         }
     }

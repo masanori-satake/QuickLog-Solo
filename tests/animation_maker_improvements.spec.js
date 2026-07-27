@@ -13,6 +13,7 @@ test.describe('QL-Animation Maker Improvements', () => {
 
     // Add a custom animation to make workspace visible
     await page.click('#add-anim-btn');
+    await page.click('#m3-dialog-ok-btn');
 
     // 3. Verify single play/pause button is present and pause/play two buttons are gone
     const playPauseBtn = page.locator('#btn-play-pause');
