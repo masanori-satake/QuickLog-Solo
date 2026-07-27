@@ -124,6 +124,7 @@ export default {
     'page-break': '페이지 나누기',
     'btn-add-page-break': '페이지 나누기 추가',
     'btn-add-category': '카테고리 추가',
+    'btn-add-custom-anim': 'カスタムアニメーションを追加',
     'confirm-delete-page-break': '이 페이지 나누기를 삭제하시겠습니까?',
     // Tooltips
     'tooltip-copy-report': '일일 보고서를 클립보드에 복사',
@@ -471,4 +472,6 @@ export default {
     'maker-warning-title': '경고',
     'maker-note-extension-only':
         '※ QL-Animation Makerはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
+    'maker-error-name-empty': '名前を入力してください',
+    'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
 };
