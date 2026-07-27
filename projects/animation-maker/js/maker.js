@@ -1356,6 +1356,47 @@ function setupEventListeners() {
         elements.alertModal.classList.add('hidden');
     });
 
+    /**
+     * Validates that the provided Blob has a valid GIF signature and is decodable.
+     *
+     * @param {Blob} blob - The Blob to validate.
+     * @returns {Promise<boolean>} True if valid, false otherwise.
+     */
+    async function validateGifBlob(blob) {
+        try {
+            const buffer = await blob.arrayBuffer();
+            const uint8Array = new Uint8Array(buffer);
+
+            // 1. Signature check
+            if (uint8Array.length < 6) return false;
+            if (uint8Array[0] !== 0x47 || uint8Array[1] !== 0x49 || uint8Array[2] !== 0x46) {
+                return false;
+            }
+            if (uint8Array[3] !== 0x38) return false;
+            if (uint8Array[4] !== 0x37 && uint8Array[4] !== 0x39) return false;
+            if (uint8Array[5] !== 0x61) return false;
+
+            // 2. Decoder check using native ImageDecoder if available
+            if (typeof ImageDecoder !== 'undefined') {
+                const decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
+                await decoder.tracks.ready;
+                const track = decoder.tracks.selectedTrack;
+                if (!track || track.frameCount <= 0) {
+                    return false;
+                }
+                const result = await decoder.decode({ frameIndex: 0 });
+                if (result && result.image) {
+                    result.image.close();
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     // Data Transfer (Relocated side-by-side buttons)
     elements.btnImport.addEventListener('click', () => elements.qlanimFileInput.click());
     elements.qlanimFileInput.addEventListener('change', async (e) => {
@@ -1382,6 +1423,11 @@ function setupEventListeners() {
                 ia[i] = byteString.charCodeAt(i);
             }
             const blob = new Blob([ab], { type: mimeString });
+
+            const isValid = await validateGifBlob(blob);
+            if (!isValid) {
+                throw new Error('Malformed or invalid GIF data.');
+            }
 
             const map = await getCustomAnimationMetadataMap();
             const existingNames = Object.values(map).map(m => m.name);
