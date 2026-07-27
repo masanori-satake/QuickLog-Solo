@@ -555,6 +555,10 @@ input:checked + .slider::before {
     transition: opacity 0.3s ease-out;
 }
 
+.drag-instruction-overlay.fade-out {
+    opacity: 0;
+}
+
 .drag-instruction-overlay .material-symbols-outlined {
     font-size: 14px;
 }

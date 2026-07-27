@@ -448,7 +448,7 @@ export default {
     'maker-current-scale': 'Escala actual',
     'maker-target-height': 'targetHeight',
     'maker-boundary-height': 'Altura de la línea de ayuda (guía)',
-    'maker-drag-instruction': 'Arrastre la imagen para ajustar el punto de enfoque',
+    'maker-drag-instruction': 'Arrastre la imagen para ajustar la posición',
     'maker-zoom-in': 'Ampliar',
     'maker-zoom-out': 'Reducir',
     'maker-data-transfer': 'Transferencia de datos',

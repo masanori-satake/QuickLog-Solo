@@ -448,7 +448,7 @@ export default {
     'maker-current-scale': '현재 비율',
     'maker-target-height': 'targetHeight',
     'maker-boundary-height': '보조선 높이 (가이드)',
-    'maker-drag-instruction': '이미지를 드래그하여 초점을 맞추세요',
+    'maker-drag-instruction': '이미지를 드래그하여 위치를 조정할 수 있습니다',
     'maker-zoom-in': '확대',
     'maker-zoom-out': '축소',
     'maker-data-transfer': '데이터 전송',

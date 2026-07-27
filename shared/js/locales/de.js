@@ -448,7 +448,7 @@ export default {
     'maker-current-scale': 'Aktueller Maßstab',
     'maker-target-height': 'targetHeight',
     'maker-boundary-height': 'Hilfslinienhöhe (Leitfaden)',
-    'maker-drag-instruction': 'Ziehen Sie das Bild, um den Fokuspunkt anzupassen',
+    'maker-drag-instruction': 'Ziehen Sie das Bild, um die Position anzupassen',
     'maker-zoom-in': 'Vergrößern',
     'maker-zoom-out': 'Verkleinern',
     'maker-data-transfer': 'Datenübertragung',

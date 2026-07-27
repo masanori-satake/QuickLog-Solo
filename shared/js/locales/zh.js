@@ -448,7 +448,7 @@ export default {
     'maker-current-scale': '当前比例',
     'maker-target-height': 'targetHeight',
     'maker-boundary-height': '辅助线高度 (向导)',
-    'maker-drag-instruction': '拖动图片调整焦点位置',
+    'maker-drag-instruction': '拖动图片调整位置',
     'maker-zoom-in': '放大',
     'maker-zoom-out': '缩小',
     'maker-data-transfer': '数据传输',

@@ -473,7 +473,7 @@ export default {
     'maker-current-scale': 'Current Scale',
     'maker-target-height': 'targetHeight',
     'maker-boundary-height': 'Boundary Line Height (Guide)',
-    'maker-drag-instruction': 'Drag image to adjust focus point',
+    'maker-drag-instruction': 'Drag image to adjust position',
     'maker-zoom-in': 'Zoom In',
     'maker-zoom-out': 'Zoom Out',
     'maker-data-transfer': 'Data Transfer',

@@ -141,9 +141,9 @@ const elements = {
     monTargetHeight: document.getElementById('mon-target-height'),
 
     // Data Transfer
-    btnDownload: document.getElementById('btn-download-qlanim'),
-    btnUpload: document.getElementById('btn-upload-qlanim'),
+    btnImport: document.getElementById('import-anim-btn'),
     qlanimFileInput: document.getElementById('qlanim-file-input'),
+    dragInstruction: document.getElementById('drag-instruction-overlay'),
 
     alertModal: document.getElementById('alert-modal'),
     alertModalText: document.getElementById('alert-modal-text'),
@@ -387,6 +387,61 @@ async function loadAnimationsList() {
     }
 }
 
+/**
+ * Exports the custom animation with the specified ID as a packaged .qlanim file.
+ *
+ * @param {string} id - The ID of the custom animation to export.
+ */
+async function exportAnimation(id) {
+    const map = await getCustomAnimationMetadataMap();
+    const meta = map[id];
+    if (!meta) return;
+
+    const blob = await getAnimationBlob(id);
+    if (!blob) {
+        showAlert('Please import a GIF file first before exporting!');
+        return;
+    }
+
+    try {
+        const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.onabort = () => reject(new Error('FileReader aborted'));
+            reader.readAsDataURL(blob);
+        });
+
+        const qlanim = {
+            format: 'quicklog-animation-package',
+            formatVersion: '1.0',
+            id: id,
+            metadata: {
+                name: meta.name,
+                description: meta.description || '',
+                author: meta.author || 'User'
+            },
+            config: meta.config || { exclusionStrategy: 'freedom' },
+            payload: {
+                imageData: base64,
+                renderSpec: meta.payload.renderSpec
+            }
+        };
+
+        const text = JSON.stringify(qlanim, null, 2);
+        const downloadBlob = new Blob([text], { type: 'application/json' });
+        const url = URL.createObjectURL(downloadBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        const defaultName = (meta.name || 'custom_animation').toLowerCase().replace(/\s+/g, '_');
+        a.download = `${defaultName}.qlanim`;
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        showAlert('Failed to export the animation file: ' + err.message);
+    }
+}
+
 function showItemMenu(e, id) {
     const existing = document.querySelector('.category-menu');
     if (existing) existing.remove();
@@ -407,6 +462,19 @@ function showItemMenu(e, id) {
         await duplicateAnimation(id);
     };
 
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'menu-action-btn';
+    const exportIcon = document.createElement('span');
+    exportIcon.className = 'material-symbols-outlined';
+    exportIcon.textContent = 'download';
+    exportBtn.appendChild(exportIcon);
+    exportBtn.appendChild(document.createTextNode(' ' + state.getMsg('custom-anim-export')));
+    exportBtn.onclick = async (event) => {
+        event.stopPropagation();
+        menu.remove();
+        await exportAnimation(id);
+    };
+
     const delBtn = document.createElement('button');
     delBtn.className = 'menu-action-btn delete';
     const delIcon = document.createElement('span');
@@ -423,6 +491,7 @@ function showItemMenu(e, id) {
     };
 
     menu.appendChild(dupBtn);
+    menu.appendChild(exportBtn);
     menu.appendChild(delBtn);
 
     document.body.appendChild(menu);
@@ -563,6 +632,10 @@ elements.animationList.ondrop = async (e) => {
 
 // Workspace selection
 async function selectAnimation(id) {
+    if (elements.dragInstruction) {
+        elements.dragInstruction.classList.remove('fade-out');
+    }
+
     if (state.selectedId === id && !elements.editorWorkspace.classList.contains('hidden')) {
         // If clicking the currently active/selected animation and the workspace is already visible, do nothing and keep unsaved changes!
         return;
@@ -868,6 +941,8 @@ function updateDownsampledPreview() {
     if (state.isPlaying && state.gifFrames.length > 0) {
         const colorCode = COLOR_CODES[state.previewColor] || '#1976d2';
         state.animationEngine.color = colorCode;
+    } else {
+        state.animationEngine.stop();
     }
 }
 
@@ -1058,6 +1133,10 @@ function handleMouseDown(e) {
     state.dragStartY = e.clientY;
     state.dragStartFocusX = state.focusX;
     state.dragStartFocusY = state.focusY;
+
+    if (elements.dragInstruction) {
+        elements.dragInstruction.classList.add('fade-out');
+    }
 }
 
 function handleMouseMove(e) {
@@ -1270,61 +1349,7 @@ function setupEventListeners() {
     });
 
     // Data Transfer (Relocated side-by-side buttons)
-    elements.btnDownload.addEventListener('click', async () => {
-        if (!state.selectedId) {
-            showAlert('Please select a custom animation first before downloading!');
-            return;
-        }
-        const map = await getCustomAnimationMetadataMap();
-        const meta = map[state.selectedId];
-        if (!meta) return;
-
-        const blob = await getAnimationBlob(state.selectedId);
-        if (!blob) {
-            showAlert('Please import a GIF file first before downloading!');
-            return;
-        }
-
-        try {
-            const base64 = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = () => reject(reader.error);
-                reader.onabort = () => reject(new Error('FileReader aborted'));
-                reader.readAsDataURL(blob);
-            });
-
-            const qlanim = {
-                format: 'quicklog-animation-package',
-                formatVersion: '1.0',
-                id: state.selectedId,
-                metadata: {
-                    name: meta.name,
-                    description: meta.description || '',
-                    author: meta.author || 'User'
-                },
-                config: meta.config || { exclusionStrategy: 'freedom' },
-                payload: {
-                    imageData: base64,
-                    renderSpec: meta.payload.renderSpec
-                }
-            };
-
-            const text = JSON.stringify(qlanim, null, 2);
-            const downloadBlob = new Blob([text], { type: 'application/json' });
-            const url = URL.createObjectURL(downloadBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            const defaultName = (meta.name || 'custom_animation').toLowerCase().replace(/\s+/g, '_');
-            a.download = `${defaultName}.qlanim`;
-            a.click();
-            URL.revokeObjectURL(url);
-        } catch (err) {
-            showAlert('Failed to read the animation file: ' + err.message);
-        }
-    });
-
-    elements.btnUpload.addEventListener('click', () => elements.qlanimFileInput.click());
+    elements.btnImport.addEventListener('click', () => elements.qlanimFileInput.click());
     elements.qlanimFileInput.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -1379,7 +1404,7 @@ function setupEventListeners() {
             state.selectedId = newId;
             await loadAnimationsList();
             broadcastSync('reload');
-            showToast(state.getMsg('toast-loaded-json') || 'Loaded successfully!');
+            showToast(state.getMsg('toast-custom-anim-imported') || 'Imported successfully!');
 
         } catch (err) {
             showAlert('Failed to parse the file: ' + err.message);

@@ -473,7 +473,7 @@ export default {
     'maker-current-scale': '現在の倍率',
     'maker-target-height': 'ターゲット高さ',
     'maker-boundary-height': '補助線の高さ (ガイド表示)',
-    'maker-drag-instruction': '画像をドラッグしてフォーカス位置を調整できます',
+    'maker-drag-instruction': '画像をドラッグして位置を調整できます',
     'maker-zoom-in': '拡大',
     'maker-zoom-out': '縮小',
     'maker-data-transfer': 'データの入出力',
