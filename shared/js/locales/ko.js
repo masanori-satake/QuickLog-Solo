@@ -453,7 +453,7 @@ export default {
     'placeholder-meta-name': 'マイアニメーション',
     'placeholder-meta-author': 'あなたのお名前',
     'placeholder-meta-desc': 'アニメーションの簡単な説明',
-    'maker-overflow-behavior': '오버플로우 시 작동',
+    'maker-overflow-behavior': '並べて配置',
     'maker-max-width': '최대 폭 (maxWidth)',
     'maker-scale-with-height': '높이에 연동해서 확대 및 축소',
     'maker-invert': 'ネガポジ反転',
