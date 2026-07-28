@@ -269,12 +269,33 @@ async function saveProductionMetadataMap(map) {
     }
 }
 
+function setupTypography(appState) {
+    if (appState) {
+        if (appState.font) {
+            document.body.style.setProperty('--font-family', appState.font);
+        }
+        if (appState.fontWeight) {
+            const weights = {
+                'normal': '400',
+                'medium': '500',
+                'bold': '700',
+                'heavy': '900'
+            };
+            const val = weights[appState.fontWeight];
+            if (val) {
+                document.body.style.setProperty('--font-weight-custom', val);
+            }
+        }
+    }
+}
+
 /**
  * Initialize storage, localization, theme, event listeners, animation rendering, and the animation list.
  */
 async function init() {
-    await initDB();
+    const appState = await initDB();
     await initDraftState();
+    setupTypography(appState);
     setupLanguage();
     setupTheme();
     setupEventListeners();
@@ -1039,7 +1060,7 @@ async function selectAnimation(id) {
             clearTimeout(saveDebounceTimer);
             saveDebounceTimer = null;
         }
-        await saveCurrentChanges();
+        await saveCurrentChanges(false, state.loadedId);
         if (state.selectionToken !== currentToken) return;
     }
 
@@ -1154,71 +1175,74 @@ function renderColorPalette() {
 }
 
 /**
- * Saves the selected animation's metadata, render settings, and GIF blob to draft storage.
+ * Saves the active animation's metadata, render settings, and GIF blob to draft storage.
  *
  * When `isApply` is `true`, also applies all draft animations and deletions to production storage and broadcasts the update.
  *
  * @param {boolean} [isApply=false] - Whether to apply the draft changes to production storage.
+ * @param {string|null} [targetId=null] - The ID of the custom animation to save. If null, defaults to state.selectedId.
  * @returns {Promise<boolean>} `true` if changes were saved, `false` if no animation is selected or the selected animation does not exist.
  */
-async function saveCurrentChanges(isApply = false) {
-    if (!state.selectedId) return false;
-    const map = await getCustomAnimationMetadataMap();
-    if (!map[state.selectedId]) return false;
+async function saveCurrentChanges(isApply = false, targetId = null) {
+    const activeId = targetId || state.selectedId;
+    if (activeId) {
+        const map = await getCustomAnimationMetadataMap();
+        if (map[activeId]) {
+            // Map Metadata updates
+            map[activeId].name = elements.metaName.value.trim() || state.getMsg('placeholder-meta-name');
+            map[activeId].author = elements.metaAuthor.value.trim() || state.getMsg('anim-unknown-author');
+            map[activeId].description = elements.metaDesc.value.trim();
 
-    // Map Metadata updates
-    map[state.selectedId].name = elements.metaName.value.trim() || state.getMsg('placeholder-meta-name');
-    map[state.selectedId].author = elements.metaAuthor.value.trim() || state.getMsg('anim-unknown-author');
-    map[state.selectedId].description = elements.metaDesc.value.trim();
+            state.exclusionStrategy = elements.configExclusionStrategy.value;
+            map[activeId].config = {
+                exclusionStrategy: state.exclusionStrategy
+            };
 
-    state.exclusionStrategy = elements.configExclusionStrategy.value;
-    map[state.selectedId].config = {
-        exclusionStrategy: state.exclusionStrategy
-    };
+            state.maxWidth = parseInt(elements.configMaxWidth.value) || 200;
+            state.scaleWithHeight = elements.configScaleHeight.checked;
+            state.invert = elements.configInvert.checked;
+            state.overflowBehavior = elements.configOverflow.value;
+            state.brightness = parseFloat(elements.configBrightness.value) || 1.0;
 
-    state.maxWidth = parseInt(elements.configMaxWidth.value) || 200;
-    state.scaleWithHeight = elements.configScaleHeight.checked;
-    state.invert = elements.configInvert.checked;
-    state.overflowBehavior = elements.configOverflow.value;
-    state.brightness = parseFloat(elements.configBrightness.value) || 1.0;
+            map[activeId].payload = {
+                renderSpec: {
+                    focusX: Math.round(state.focusX),
+                    focusY: Math.round(state.focusY),
+                    targetHeight: Math.round(state.targetHeight),
+                    maxWidth: state.maxWidth,
+                    scaleWithHeight: state.scaleWithHeight,
+                    invert: state.invert,
+                    overflowBehavior: state.overflowBehavior,
+                    previewColor: state.previewColor,
+                    brightness: state.brightness
+                }
+            };
 
-    map[state.selectedId].payload = {
-        renderSpec: {
-            focusX: Math.round(state.focusX),
-            focusY: Math.round(state.focusY),
-            targetHeight: Math.round(state.targetHeight),
-            maxWidth: state.maxWidth,
-            scaleWithHeight: state.scaleWithHeight,
-            invert: state.invert,
-            overflowBehavior: state.overflowBehavior,
-            previewColor: state.previewColor,
-            brightness: state.brightness
+            // Increment revision to track changes
+            map[activeId].revision = (map[activeId].revision || 0) + 1;
+
+            await setCustomAnimationMetadataMap(map);
+
+            // Save Blob and configs to IndexedDB
+            await saveAnimationBlob(activeId, state.gifBlob, map[activeId].payload.renderSpec, map[activeId].config);
+            triggerRedraw();
+
+            // Refresh only the labels in list view without resetting workspace selection
+            const listItems = elements.animationList.querySelectorAll('.category-item');
+            listItems.forEach(item => {
+                if (item.dataset.id === activeId) {
+                    const nameSpan = item.querySelector('.cat-name');
+                    if (nameSpan) nameSpan.textContent = map[activeId].name;
+                }
+            });
+
+            // Re-initialize local AnimationEngine to reflect changes in real time in the downsampled preview section
+            if (state.isPlaying && state.animationEngine && state.gifFrames.length > 0 && activeId === state.selectedId) {
+                const colorCode = COLOR_CODES[state.previewColor] || '#1976d2';
+                const startTime = Date.now() - state.virtualElapsedMs;
+                state.animationEngine.start(state.selectedId, startTime, colorCode);
+            }
         }
-    };
-
-    // Increment revision to track changes
-    map[state.selectedId].revision = (map[state.selectedId].revision || 0) + 1;
-
-    await setCustomAnimationMetadataMap(map);
-
-    // Save Blob and configs to IndexedDB
-    await saveAnimationBlob(state.selectedId, state.gifBlob, map[state.selectedId].payload.renderSpec, map[state.selectedId].config);
-    triggerRedraw();
-
-    // Refresh only the labels in list view without resetting workspace selection
-    const listItems = elements.animationList.querySelectorAll('.category-item');
-    listItems.forEach(item => {
-        if (item.dataset.id === state.selectedId) {
-            const nameSpan = item.querySelector('.cat-name');
-            if (nameSpan) nameSpan.textContent = map[state.selectedId].name;
-        }
-    });
-
-    // Re-initialize local AnimationEngine to reflect changes in real time in the downsampled preview section
-    if (state.isPlaying && state.animationEngine && state.gifFrames.length > 0) {
-        const colorCode = COLOR_CODES[state.previewColor] || '#1976d2';
-        const startTime = Date.now() - state.virtualElapsedMs;
-        state.animationEngine.start(state.selectedId, startTime, colorCode);
     }
 
     if (isApply) {
@@ -1241,12 +1265,12 @@ async function saveCurrentChanges(isApply = false) {
         // Apply all modifications and deletions from draftMetadataMap
         // Any keys in draftMetadataMap but not in origMap are added or updated.
         // Any keys in origMap but not in draftMetadataMap are deleted.
-        const keysInDraft = Object.keys(draftMetadataMap);
+        const keysInDraft = Object.keys(draftMetadataMap || {});
         const keysInOrig = Object.keys(origMap);
 
         // Delete removed animations from IndexedDB production blobs
         for (const id of keysInOrig) {
-            if (!draftMetadataMap[id]) {
+            if (!draftMetadataMap || !draftMetadataMap[id]) {
                 await idbDeleteAnimationBlob(id);
                 // Also Cascade update categories to 'none' in production DB
                 const categories = await dbGetAll(STORE_CATEGORIES);
@@ -1263,17 +1287,17 @@ async function saveCurrentChanges(isApply = false) {
         const draftRecords = await getAllAnimationDraftRecords();
         for (const record of draftRecords) {
             const id = record.id;
-            if (draftMetadataMap[id]) {
+            if (draftMetadataMap && draftMetadataMap[id]) {
                 productionMap[id] = draftMetadataMap[id];
-                await idbSaveAnimationBlob(id, record.blob, draftMetadataMap[id].payload.renderSpec, draftMetadataMap[id].config);
+                await idbSaveAnimationBlob(id, record.blob || null, draftMetadataMap[id].payload?.renderSpec, draftMetadataMap[id].config);
             }
         }
 
         // Defensive fallback for any keys in draft metadata map not written yet
         for (const id of keysInDraft) {
-            if (!productionMap[id]) {
+            if (!productionMap[id] && draftMetadataMap && draftMetadataMap[id]) {
                 productionMap[id] = draftMetadataMap[id];
-                await idbSaveAnimationBlob(id, null, draftMetadataMap[id].payload.renderSpec, draftMetadataMap[id].config);
+                await idbSaveAnimationBlob(id, null, draftMetadataMap[id].payload?.renderSpec, draftMetadataMap[id].config);
             }
         }
 

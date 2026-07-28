@@ -150,7 +150,8 @@ function performDraw(params) {
         exclusionAreas: strategy === 'jump' ? [] : exclusionAreas,
         speed: speedFactor,
         customAnimationId: params.customAnimationId,
-        color: params.color
+        color: params.color,
+        isDraft: params.isDraft || false
     };
 
     // Use raw exclusion areas for physical masking to prevent drawing over UI

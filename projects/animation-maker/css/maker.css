@@ -877,7 +877,8 @@ button {
 
 #preview-name-heading {
     font-size: var(--md-sys-typescale-title-medium-size, 1rem);
-    font-weight: var(--md-sys-typescale-title-large-weight, 500);
+    font-family: var(--font-family), inherit;
+    font-weight: var(--font-weight-custom, var(--md-sys-typescale-title-large-weight, 500));
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high, #000);
     line-height: 1.2;
     margin: 0 0 4px;
@@ -899,8 +900,8 @@ button {
 
 .preview-elapsed {
     font-size: var(--md-sys-typescale-headline-medium-size, 1.75rem);
-    font-weight: var(--md-sys-typescale-headline-large-weight, 700);
-    font-family: 'Roboto Mono', 'Courier New', monospace;
+    font-family: var(--font-family), 'Roboto Mono', 'Courier New', monospace;
+    font-weight: var(--font-weight-custom, var(--md-sys-typescale-headline-large-weight, 700));
     line-height: 1;
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high, #000);
     color: var(--md-sys-color-on-surface);
@@ -1267,6 +1268,45 @@ button {
     color: var(--md-sys-color-on-surface-variant);
     margin-bottom: 8px;
     display: block;
+}
+
+.playback-scale-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.playback-scale-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.playback-scale-row.upper-row {
+    justify-content: space-between;
+}
+
+.playback-scale-row.upper-row #btn-play-pause {
+    flex: 1;
+    border-radius: var(--md-sys-shape-full);
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.playback-scale-row.lower-row {
+    justify-content: center;
+}
+
+.playback-scale-row.lower-row #mon-scale {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: var(--md-sys-color-on-surface-variant);
+    min-width: 60px;
+    text-align: center;
+    display: inline-block;
 }
 
 .operation-vertical-stack {
