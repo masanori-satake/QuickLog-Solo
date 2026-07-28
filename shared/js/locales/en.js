@@ -212,6 +212,7 @@ export default {
 
     'toast-copied': 'Copied!',
     'toast-done': 'Done!',
+    'toast-done-with-reopen-msg': 'Applied successfully! If the settings panel is open, please close and reopen it to apply the new animation.',
     'toast-imported': 'Import completed.',
     'toast-cat-imported': 'Categories imported',
     'toast-deleted': 'Deletion completed',
@@ -477,6 +478,7 @@ export default {
     'maker-drag-instruction': 'Drag image to adjust position',
     'maker-zoom-in': 'Zoom In',
     'maker-zoom-out': 'Zoom Out',
+    'maker-playback-zoom': 'Playback & Zoom',
     'maker-data-transfer': 'Data Transfer',
     'maker-warning-title': 'Warning',
     'maker-note-extension-only': '* QL-Animation Maker is only available when installed as a browser extension. It cannot be launched in the preview version.',

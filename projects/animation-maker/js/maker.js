@@ -94,7 +94,7 @@ const state = {
     // Drag-to-reorder list index
     draggedIndex: null,
 
-    getMsg: (key) => (messages[state.currentLang] && messages[state.currentLang][key]) || messages.en[key] || key
+    getMsg: (key) => (messages[state.currentLang] && messages[state.currentLang][key]) || (messages._common && messages._common[key]) || messages.en[key] || key
 };
 
 // DOM Elements
@@ -1368,6 +1368,7 @@ function setupAnimationEngine() {
     const canvas = document.getElementById('animation-canvas');
     if (canvas) {
         state.animationEngine = new AnimationEngine(canvas);
+        state.animationEngine.isDraft = true;
         updatePreviewExclusionAreas();
         window.addEventListener('resize', () => {
             if (state.animationEngine) {
@@ -2011,7 +2012,7 @@ function setupEventListeners() {
         applyBtn.addEventListener('click', async () => {
             const saved = await saveCurrentChanges(true);
             if (saved) {
-                showToast(state.getMsg('toast-done') || 'Applied successfully!');
+                showToast(state.getMsg('toast-done-with-reopen-msg') || 'Applied successfully!');
             }
         });
     }

@@ -212,6 +212,7 @@ export default {
 
     'toast-copied': 'コピーしました！',
     'toast-done': '完了しました！',
+    'toast-done-with-reopen-msg': '完了しました！設定パネルを開いている場合は、新しいアニメーションを適用するため、一度閉じてから再度開き直してください。',
     'toast-imported': 'インポートが完了しました。',
     'toast-cat-imported': 'カテゴリをインポートしました',
     'toast-deleted': '削除が完了しました',
@@ -477,6 +478,7 @@ export default {
     'maker-drag-instruction': '画像をドラッグして位置を調整できます',
     'maker-zoom-in': '拡大',
     'maker-zoom-out': '縮小',
+    'maker-playback-zoom': '再生とズーム',
     'maker-data-transfer': 'データの入出力',
     'maker-warning-title': '警告',
     'maker-note-extension-only': '※ QL-Animation Makerはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
