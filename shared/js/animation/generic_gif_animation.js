@@ -252,11 +252,10 @@ export default class GenericGifAnimation extends AnimationBase {
         ctx.rect(clipLeft, 0, scaledMaxW, this.height);
         ctx.clip();
 
-        // 2. Render background / overflow color if categoryColor
-        if (this.renderSpec.overflowBehavior === 'categoryColor' && params.color) {
-            ctx.fillStyle = params.color;
-            ctx.fillRect(clipLeft, 0, scaledMaxW, this.height);
-        }
+        // 2. Render background / overflow color
+        // Fill underlay background: pure white if invert is OFF, pure black if invert is ON
+        ctx.fillStyle = (this.renderSpec && this.renderSpec.invert) ? '#000000' : '#ffffff';
+        ctx.fillRect(clipLeft, 0, scaledMaxW, this.height);
 
         // 3. Draw image with repeat or single tile
         if (this.renderSpec.overflowBehavior === 'repeat' && scaledW > 0) {
