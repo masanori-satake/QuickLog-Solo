@@ -457,7 +457,7 @@ export default {
     'placeholder-meta-name': 'マイアニメーション',
     'placeholder-meta-author': 'あなたのお名前',
     'placeholder-meta-desc': 'アニメーションの簡単な説明',
-    'maker-overflow-behavior': 'はみ出し時の挙動',
+    'maker-overflow-behavior': '並べて配置',
     'maker-max-width': '最大幅 (maxWidth)',
     'maker-scale-with-height': '高さに連動して拡大縮小',
     'maker-invert': 'ネガポジ反転',
