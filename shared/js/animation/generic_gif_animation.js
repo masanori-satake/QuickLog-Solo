@@ -109,7 +109,7 @@ export default class GenericGifAnimation extends AnimationBase {
                 focusX: 0,
                 focusY: 0,
                 targetHeight: 100,
-                maxWidth: 200,
+                maxWidth: 2030,
                 scaleWithHeight: false,
                 overflowBehavior: 'categoryColor'
             };

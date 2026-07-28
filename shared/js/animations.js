@@ -327,6 +327,15 @@ export class AnimationEngine {
             drawWidth = this._getPseudoInfo().totalWidth;
         }
 
+        const offsetY = this.simulatedHeight ? (this.canvas.height - this.simulatedHeight) / 2 : 0;
+        let adjustedRealExclusionAreas = this.exclusionAreas;
+        if (offsetY !== 0) {
+            adjustedRealExclusionAreas = this.exclusionAreas.map(area => ({
+                ...area,
+                y: area.y - offsetY
+            }));
+        }
+
         const params = {
             width: drawWidth,
             height: this.simulatedHeight || this.canvas.height,
@@ -335,7 +344,7 @@ export class AnimationEngine {
             progress,
             step: Math.floor(progress * 240),
             exclusionAreas: this.config.exclusionStrategy === 'jump' ? [] : this._getVirtualExclusionAreas(),
-            realExclusionAreas: this.exclusionAreas,
+            realExclusionAreas: adjustedRealExclusionAreas,
             requestRawBitmap: this.requestRawBitmap,
             customAnimationId: this.customAnimationId,
             color: this.color,
