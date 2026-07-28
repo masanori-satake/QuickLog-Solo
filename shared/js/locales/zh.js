@@ -207,6 +207,8 @@ export default {
     'alert-init-error': '应用初始化失败。',
     'toast-copied': '已复制！',
     'toast-done': '已完成！',
+    'toast-done-with-reopen-msg':
+        '完了しました！設定パネルを開いている場合は、新しいアニメーションを適用するため、一度閉じてから再度開き直してください。',
     'toast-imported': '导入完成。',
     'toast-cat-imported': '分类已导入',
     'toast-deleted': '删除完成',
@@ -464,6 +466,7 @@ export default {
     'maker-drag-instruction': '画像をドラッグして位置を調整できます',
     'maker-zoom-in': '拡大',
     'maker-zoom-out': '縮小',
+    'maker-playback-zoom': '再生とズーム',
     'maker-data-transfer': 'データの入出力',
     'maker-warning-title': '警告',
     'maker-note-extension-only':
