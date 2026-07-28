@@ -436,7 +436,7 @@ export default {
     'placeholder-meta-name': 'Minha Animação',
     'placeholder-meta-author': 'Seu Nome',
     'placeholder-meta-desc': 'Breve explicação da sua animação',
-    'maker-overflow-behavior': 'Comportamento de estouro',
+    'maker-overflow-behavior': 'Ladrilhar horizontalmente',
     'maker-max-width': 'Largura máxima (maxWidth)',
     'maker-scale-with-height': 'Redimensionar com a altura',
     'maker-invert': 'Inverter (Negativo/Positivo)',

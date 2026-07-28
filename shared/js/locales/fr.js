@@ -436,7 +436,7 @@ export default {
     'placeholder-meta-name': 'Mon Animation',
     'placeholder-meta-author': 'Votre Nom',
     'placeholder-meta-desc': 'Brève explication de votre animation',
-    'maker-overflow-behavior': 'Comportement de débordement',
+    'maker-overflow-behavior': 'Mosaïque horizontale',
     'maker-max-width': 'Largeur maximale (maxWidth)',
     'maker-scale-with-height': 'Mettre à l\'échelle avec la hauteur',
     'maker-invert': 'Inverser (Négatif/Positif)',

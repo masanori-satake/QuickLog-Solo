@@ -94,11 +94,13 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
         // A. Change FG回避 (Exclusion Strategy) to "mask"
         await page.selectOption('#config-exclusion-strategy', 'mask');
 
-        // B. Change はみ出し時の挙動 (Overflow Behavior) to "categoryColor"
-        await page.selectOption('#config-overflow', 'categoryColor');
-
+        // B. Change はみ出し時の挙動 (Overflow Behavior) to "categoryColor" by unchecking the switch
         // C & D. Toggle Scale with Height and Invert using page.evaluate to bypass custom styled switch visibility
         await page.evaluate(() => {
+            const overflow = document.getElementById('config-overflow');
+            overflow.checked = false;
+            overflow.dispatchEvent(new Event('change'));
+
             const scaleHeight = document.getElementById('config-scale-height');
             scaleHeight.checked = false;
             scaleHeight.dispatchEvent(new Event('change'));

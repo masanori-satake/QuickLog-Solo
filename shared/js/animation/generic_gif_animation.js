@@ -217,11 +217,14 @@ export default class GenericGifAnimation extends AnimationBase {
         const imgHeight = frame.bitmap.height;
 
         // Scaling factor math
-        let S = 1.0;
+        let S;
+        const targetH = this.renderSpec.targetHeight || 100;
         if (this.renderSpec.scaleWithHeight) {
             // S is relative to the canvas height divided by targetHeight
-            const targetH = this.renderSpec.targetHeight || 100;
             S = this.height / targetH;
+        } else {
+            // S is the scale factor at 100% height limit, independent of canvas height H
+            S = 100 / targetH;
         }
 
         const scaledW = imgWidth * S;

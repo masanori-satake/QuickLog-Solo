@@ -648,6 +648,13 @@ async function showM3NameEditDialog(id) {
         await setCustomAnimationMetadataMap(map);
         elements.metaName.value = nameVal;
 
+        if (id === state.selectedId) {
+            state.gifFileName = nameVal ? `${nameVal}.gif` : 'animation.gif';
+            if (elements.gifFileNameSpan) {
+                elements.gifFileNameSpan.textContent = state.gifFileName;
+            }
+        }
+
         // Refresh list labels
         const listItems = elements.animationList.querySelectorAll('.category-item');
         listItems.forEach(item => {
@@ -1096,7 +1103,7 @@ async function selectAnimation(id) {
 
     // Populate Inputs
     elements.configExclusionStrategy.value = state.exclusionStrategy;
-    elements.configOverflow.value = state.overflowBehavior;
+    elements.configOverflow.checked = (state.overflowBehavior === 'repeat');
     elements.configMaxWidth.value = state.maxWidth;
     elements.configScaleHeight.checked = state.scaleWithHeight;
     elements.configInvert.checked = state.invert;
@@ -1200,7 +1207,7 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
             state.maxWidth = parseInt(elements.configMaxWidth.value) || 2030;
             state.scaleWithHeight = elements.configScaleHeight.checked;
             state.invert = elements.configInvert.checked;
-            state.overflowBehavior = elements.configOverflow.value;
+            state.overflowBehavior = elements.configOverflow.checked ? 'repeat' : 'categoryColor';
             state.brightness = parseFloat(elements.configBrightness.value) || 1.0;
 
             map[activeId].payload = {
@@ -1678,7 +1685,7 @@ function resetAnimationSettings() {
 
     // Update Inputs in UI
     elements.configExclusionStrategy.value = state.exclusionStrategy;
-    elements.configOverflow.value = state.overflowBehavior;
+    elements.configOverflow.checked = (state.overflowBehavior === 'repeat');
     elements.configMaxWidth.value = state.maxWidth;
     elements.configScaleHeight.checked = state.scaleWithHeight;
     elements.configInvert.checked = state.invert;
