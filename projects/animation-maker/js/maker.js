@@ -1244,7 +1244,7 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
         }
     }
 
-    if (isApply) {
+    if (isApply === true) {
         // Direct production save
         const productionMap = {};
         // Retrieve original from Chrome Storage / LocalStorage
@@ -1568,11 +1568,9 @@ function drawRawFrames() {
     rawCtx.rect(clipLeft, 0, scaledMaxW, H);
     rawCtx.clip();
 
-    // Fill Overflow color
-    if (state.overflowBehavior === 'categoryColor') {
-        rawCtx.fillStyle = COLOR_CODES[state.previewColor] || '#1976d2';
-        rawCtx.fillRect(clipLeft, 0, scaledMaxW, H);
-    }
+    // Fill underlay background: pure white if invert is OFF, pure black if invert is ON
+    rawCtx.fillStyle = state.invert ? '#000000' : '#ffffff';
+    rawCtx.fillRect(clipLeft, 0, scaledMaxW, H);
 
     if (state.overflowBehavior === 'repeat' && scaledW > 0) {
         rawCtx.drawImage(frame.bitmap, destX, destY, scaledW, scaledH);
@@ -1935,11 +1933,11 @@ function setupEventListeners() {
     });
     elements.metaAuthor.addEventListener('input', debouncedSaveCurrentChanges);
     elements.metaDesc.addEventListener('input', debouncedSaveCurrentChanges);
-    elements.configExclusionStrategy.addEventListener('change', saveCurrentChanges);
-    elements.configOverflow.addEventListener('change', saveCurrentChanges);
+    elements.configExclusionStrategy.addEventListener('change', () => saveCurrentChanges());
+    elements.configOverflow.addEventListener('change', () => saveCurrentChanges());
     elements.configMaxWidth.addEventListener('input', debouncedSaveCurrentChanges);
-    elements.configScaleHeight.addEventListener('change', saveCurrentChanges);
-    elements.configInvert.addEventListener('change', saveCurrentChanges);
+    elements.configScaleHeight.addEventListener('change', () => saveCurrentChanges());
+    elements.configInvert.addEventListener('change', () => saveCurrentChanges());
     elements.configBrightness.addEventListener('input', (e) => {
         handleBrightnessChange(e.target.value);
     });
