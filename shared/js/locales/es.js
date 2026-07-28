@@ -209,6 +209,8 @@ export default {
     'alert-init-error': 'Error al inicializar la aplicación.',
     'toast-copied': '¡Copiado!',
     'toast-done': '¡Hecho!',
+    'toast-done-with-reopen-msg':
+        '完了しました！設定パネルを開いている場合は、新しいアニメーションを適用するため、一度閉じてから再度開き直してください。',
     'toast-imported': 'Importación completada.',
     'toast-cat-imported': 'Categorías importadas',
     'toast-deleted': 'Eliminación completada',
@@ -471,6 +473,7 @@ export default {
     'maker-drag-instruction': '画像をドラッグして位置を調整できます',
     'maker-zoom-in': '拡大',
     'maker-zoom-out': '縮小',
+    'maker-playback-zoom': '再生とズーム',
     'maker-data-transfer': 'データの入出力',
     'maker-warning-title': '警告',
     'maker-note-extension-only':
