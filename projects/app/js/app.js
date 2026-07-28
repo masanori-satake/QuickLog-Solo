@@ -2631,7 +2631,11 @@ function setupEventListeners() {
         historyEdit: getEl('history-edit-modal')
     };
 
-    getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', () => popups.settings?.classList.remove('hidden'));
+    getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', async () => {
+        popups.settings?.classList.remove('hidden');
+        await updateAnimationSelect();
+        await renderCategoryEditor();
+    });
 
     queryAll('.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn').forEach(btn => {
         btn.onclick = (e) => {

@@ -75,7 +75,7 @@ const state = {
     focusY: 0,
     targetHeight: 100,
     currentScale: 1.0,
-    maxWidth: 200,
+    maxWidth: 2030,
     scaleWithHeight: true,
     invert: false,
     exclusionStrategy: 'freedom',
@@ -145,8 +145,7 @@ const elements = {
     configBrightnessValue: document.getElementById('config-brightness-value'),
 
     // Monitor Specs
-    monFocusX: document.getElementById('mon-focus-x'),
-    monFocusY: document.getElementById('mon-focus-y'),
+    monFocus: document.getElementById('mon-focus'),
     monScale: document.getElementById('mon-scale'),
     monTargetHeight: document.getElementById('mon-target-height'),
 
@@ -582,7 +581,7 @@ function showM3CreateDialog() {
                     focusX: 0,
                     focusY: 0,
                     targetHeight: 100,
-                    maxWidth: 200,
+                    maxWidth: 2030,
                     scaleWithHeight: true,
                     overflowBehavior: 'repeat',
                     previewColor: 'primary'
@@ -720,7 +719,7 @@ function showM3ImportCollisionDialog(data, blob, existingId, existingMeta) {
                     focusX: 0,
                     focusY: 0,
                     targetHeight: 100,
-                    maxWidth: 200,
+                    maxWidth: 2030,
                     scaleWithHeight: true,
                     overflowBehavior: 'repeat',
                     previewColor: 'primary'
@@ -824,7 +823,7 @@ async function proceedWithImport(data, blob, finalName) {
                 focusX: 0,
                 focusY: 0,
                 targetHeight: 100,
-                maxWidth: 200,
+                maxWidth: 2030,
                 scaleWithHeight: true,
                 overflowBehavior: 'repeat',
                 previewColor: 'primary'
@@ -1087,7 +1086,7 @@ async function selectAnimation(id) {
     state.focusY = spec.focusY !== undefined ? spec.focusY : 0;
     state.targetHeight = spec.targetHeight || 100;
     state.currentScale = 100 / state.targetHeight;
-    state.maxWidth = spec.maxWidth || 200;
+    state.maxWidth = spec.maxWidth || 2030;
     state.scaleWithHeight = spec.scaleWithHeight !== undefined ? spec.scaleWithHeight : true;
     state.invert = spec.invert !== undefined ? spec.invert : false;
     state.overflowBehavior = spec.overflowBehavior || 'repeat';
@@ -1198,7 +1197,7 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
                 exclusionStrategy: state.exclusionStrategy
             };
 
-            state.maxWidth = parseInt(elements.configMaxWidth.value) || 200;
+            state.maxWidth = parseInt(elements.configMaxWidth.value) || 2030;
             state.scaleWithHeight = elements.configScaleHeight.checked;
             state.invert = elements.configInvert.checked;
             state.overflowBehavior = elements.configOverflow.value;
@@ -1382,8 +1381,9 @@ async function parseGif(blob) {
 }
 
 function updateMonitor() {
-    elements.monFocusX.textContent = Math.round(state.focusX);
-    elements.monFocusY.textContent = Math.round(state.focusY);
+    if (elements.monFocus) {
+        elements.monFocus.textContent = `(${Math.round(state.focusX)}, ${Math.round(state.focusY)})`;
+    }
     elements.monScale.textContent = getScaleFactor().toFixed(2);
     elements.monTargetHeight.textContent = Math.round(state.targetHeight);
 }
@@ -1670,7 +1670,7 @@ function resetAnimationSettings() {
     state.focusY = 0;
     state.targetHeight = 100;
     state.currentScale = 1.0;
-    state.maxWidth = 200;
+    state.maxWidth = 2030;
     state.scaleWithHeight = true;
     state.invert = false;
     state.exclusionStrategy = 'freedom';

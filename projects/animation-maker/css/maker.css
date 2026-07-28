@@ -876,15 +876,14 @@ button {
 }
 
 #preview-name-heading {
-    font-size: var(--md-sys-typescale-title-medium-size, 1rem);
-    font-family: var(--font-family), inherit;
-    font-weight: var(--font-weight-custom, var(--md-sys-typescale-title-large-weight, 500));
-    text-shadow: 0 0 4px var(--md-sys-color-surface-container-high, #000);
+    font-size: var(--md-sys-typescale-title-medium-size);
+    font-family: var(--font-family);
+    font-weight: var(--font-weight-custom, var(--md-sys-typescale-title-large-weight));
+    text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
     line-height: 1.2;
-    margin: 0 0 4px;
+    margin-bottom: var(--md-sys-spacing-0-5, 4px);
     text-align: center;
     width: 100%;
-    max-width: 100%;
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
