@@ -461,7 +461,7 @@ export default {
     'placeholder-meta-name': 'My Animation',
     'placeholder-meta-author': 'Your Name',
     'placeholder-meta-desc': 'Brief explanation of your animation',
-    'maker-overflow-behavior': 'Overflow Behavior',
+    'maker-overflow-behavior': 'Tile horizontally',
     'maker-max-width': 'Max Width (maxWidth)',
     'maker-scale-with-height': 'Scale with Height',
     'maker-invert': 'Invert (Negative/Positive Inversion)',

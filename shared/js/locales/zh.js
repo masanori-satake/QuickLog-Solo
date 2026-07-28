@@ -436,7 +436,7 @@ export default {
     'placeholder-meta-name': '我的动画',
     'placeholder-meta-author': '您的名字',
     'placeholder-meta-desc': '动画的简短说明',
-    'maker-overflow-behavior': '溢出行为',
+    'maker-overflow-behavior': '水平平铺',
     'maker-max-width': '最大宽度 (maxWidth)',
     'maker-scale-with-height': '按高度缩放',
     'maker-invert': '反转（黑白反转）',

@@ -436,7 +436,7 @@ export default {
     'placeholder-meta-name': '내 애니메이션',
     'placeholder-meta-author': '당신의 이름',
     'placeholder-meta-desc': '애니메이션에 대한 간단한 설명',
-    'maker-overflow-behavior': '오버플로우 동작',
+    'maker-overflow-behavior': '가로로 바둑판식 배열',
     'maker-max-width': '최대 너비 (maxWidth)',
     'maker-scale-with-height': '높이에 맞게 조정',
     'maker-invert': '반전 (네거티브/포지티브)',

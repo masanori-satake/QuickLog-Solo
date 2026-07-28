@@ -1060,6 +1060,7 @@ button {
     text-align: left;
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     gap: 10px;
     font-size: 0.9rem;
     color: var(--md-sys-color-on-surface);
@@ -1282,11 +1283,11 @@ button {
 }
 
 .playback-scale-row.upper-row {
-    justify-content: space-between;
+    justify-content: center;
 }
 
 .playback-scale-row.upper-row #btn-play-pause {
-    flex: 1;
+    width: 100px;
     border-radius: var(--md-sys-shape-full);
     height: 44px;
     display: flex;
