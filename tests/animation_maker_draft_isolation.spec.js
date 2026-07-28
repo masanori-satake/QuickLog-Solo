@@ -127,11 +127,19 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
                 const req = indexedDB.open('QuickLogAnimationDB', 1);
                 req.onsuccess = (e) => {
                     const db = e.target.result;
-                    const tx = db.transaction('blobs', 'readonly');
-                    const store = tx.objectStore('blobs');
-                    const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
+                    if (!db.objectStoreNames.contains('blobs')) {
+                        resolve(null);
+                        return;
+                    }
+                    try {
+                        const tx = db.transaction('blobs', 'readonly');
+                        const store = tx.objectStore('blobs');
+                        const getReq = store.get(id);
+                        getReq.onsuccess = () => resolve(getReq.result || null);
+                        getReq.onerror = () => resolve(null);
+                    } catch (error) {
+                        resolve(null);
+                    }
                 };
                 req.onerror = () => resolve(null);
             });
@@ -147,11 +155,19 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
                 const req = indexedDB.open('QuickLogAnimationDraftDB', 1);
                 req.onsuccess = (e) => {
                     const db = e.target.result;
-                    const tx = db.transaction('blobs', 'readonly');
-                    const store = tx.objectStore('blobs');
-                    const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
+                    if (!db.objectStoreNames.contains('blobs')) {
+                        resolve(null);
+                        return;
+                    }
+                    try {
+                        const tx = db.transaction('blobs', 'readonly');
+                        const store = tx.objectStore('blobs');
+                        const getReq = store.get(id);
+                        getReq.onsuccess = () => resolve(getReq.result || null);
+                        getReq.onerror = () => resolve(null);
+                    } catch (error) {
+                        resolve(null);
+                    }
                 };
                 req.onerror = () => resolve(null);
             });
@@ -180,11 +196,19 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
                 const req = indexedDB.open('QuickLogAnimationDB', 1);
                 req.onsuccess = (e) => {
                     const db = e.target.result;
-                    const tx = db.transaction('blobs', 'readonly');
-                    const store = tx.objectStore('blobs');
-                    const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
+                    if (!db.objectStoreNames.contains('blobs')) {
+                        resolve(null);
+                        return;
+                    }
+                    try {
+                        const tx = db.transaction('blobs', 'readonly');
+                        const store = tx.objectStore('blobs');
+                        const getReq = store.get(id);
+                        getReq.onsuccess = () => resolve(getReq.result || null);
+                        getReq.onerror = () => resolve(null);
+                    } catch (error) {
+                        resolve(null);
+                    }
                 };
                 req.onerror = () => resolve(null);
             });
