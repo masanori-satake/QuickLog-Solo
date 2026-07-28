@@ -812,7 +812,11 @@ export function initUI(state, elements) {
             if (thisGeneration !== populateAnimationOptionsGeneration) {
                 return; // Abort if a newer call has started
             }
-            Object.keys(customAnims).forEach(id => {
+            Object.keys(customAnims).sort((a, b) => {
+                const orderA = customAnims[a].order ?? 0;
+                const orderB = customAnims[b].order ?? 0;
+                return orderA - orderB;
+            }).forEach(id => {
                 const opt = document.createElement('option');
                 opt.value = id;
                 opt.textContent = customAnims[id].name || id;

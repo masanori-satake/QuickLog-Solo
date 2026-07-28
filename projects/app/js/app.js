@@ -1116,7 +1116,11 @@ async function updateAnimationSelect() {
 
         // Append custom animations if available
         const customAnims = await getCustomAnimationMetadataMap();
-        Object.keys(customAnims).forEach(id => {
+        Object.keys(customAnims).sort((a, b) => {
+            const orderA = customAnims[a].order ?? 0;
+            const orderB = customAnims[b].order ?? 0;
+            return orderA - orderB;
+        }).forEach(id => {
             const opt = createEl('option');
             opt.value = id;
             opt.textContent = customAnims[id].name;
@@ -2216,7 +2220,11 @@ async function renderCategoryEditor() {
                         tooltip: getAnimationTooltip(anim.metadata, lang)
                     };
                 }),
-                ...Object.keys(customAnims).map(id => {
+                ...Object.keys(customAnims).sort((a, b) => {
+                    const orderA = customAnims[a].order ?? 0;
+                    const orderB = customAnims[b].order ?? 0;
+                    return orderA - orderB;
+                }).map(id => {
                     return {
                         value: id,
                         label: customAnims[id].name,

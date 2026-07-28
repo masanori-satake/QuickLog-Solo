@@ -127,4 +127,80 @@ test.describe('QL-Animation Maker Improvements', () => {
     expect(selectOptions).toContain('My Animation');
     expect(selectOptions).toContain('My Animation (1)');
   });
+
+  test('should verify filename renaming to custom animation name when selecting a GIF in Maker', async ({ page }) => {
+    await page.goto('/projects/animation-maker/index.html?lang=ja&theme=dark');
+    await page.waitForSelector('#maker-app');
+
+    // Add custom animation
+    await page.click('#add-anim-btn');
+    await page.click('#m3-dialog-ok-btn');
+
+    // Rename the animation to "Test GIF Renaming"
+    await page.click('#meta-name');
+    await page.fill('#m3-dialog-input', 'Test GIF Renaming');
+    await page.click('#m3-dialog-ok-btn');
+
+    // Mock file input change event with a fake file of different name
+    await page.setInputFiles('#gif-file-input', {
+      name: 'original_name.gif',
+      mimeType: 'image/gif',
+      buffer: Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
+    });
+
+    // Wait for the name to be updated in the UI
+    const gifFileNameElement = page.locator('#gif-file-name');
+    await expect(gifFileNameElement).toHaveText('Test GIF Renaming.gif');
+  });
+
+  test('should verify correct order of custom animations in QuickLog-Solo dropdowns', async ({ page }) => {
+    const dbName = `OrderTestDB_${Math.random().toString(36).substring(7)}`;
+    await page.goto(`?db=${dbName}`);
+    await page.waitForSelector('#app');
+
+    // Handle persistence modal if visible
+    const okBtn = page.locator('#confirm-ok-btn');
+    if (await okBtn.isVisible()) {
+      await okBtn.click();
+    }
+
+    // Set custom_animation_metadata_map directly in localStorage to test sorting order
+    await page.evaluate(() => {
+      const map = {
+        "test-anim-2": {
+          name: "My Anim 2",
+          order: 2,
+          config: { exclusionStrategy: 'freedom' }
+        },
+        "test-anim-1": {
+          name: "My Anim 1",
+          order: 1,
+          config: { exclusionStrategy: 'freedom' }
+        }
+      };
+      localStorage.setItem('custom_animation_metadata_map', JSON.stringify(map));
+    });
+
+    // Open Settings to trigger rendering of dropdowns
+    await page.click('#settings-toggle');
+
+    // Open Categories tab
+    await page.click('button.tab-btn[data-tab="categories"]');
+
+    // Find the animation select element for categories
+    const animSelects = page.locator('.category-editor-item select');
+    // Let's get options text contents of the first visible select
+    if (await animSelects.count() > 0) {
+      const firstSelect = animSelects.first();
+      const options = await firstSelect.locator('option').allTextContents();
+
+      // Index of "My Anim 1" should be less than "My Anim 2"
+      const index1 = options.indexOf("My Anim 1");
+      const index2 = options.indexOf("My Anim 2");
+
+      expect(index1).toBeGreaterThan(-1);
+      expect(index2).toBeGreaterThan(-1);
+      expect(index1).toBeLessThan(index2);
+    }
+  });
 });
