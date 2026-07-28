@@ -212,6 +212,7 @@ export default {
 
     'toast-copied': 'Copied!',
     'toast-done': 'Done!',
+    'toast-done-with-reopen-msg': 'Applied successfully! If the settings panel is open, please close and reopen it to apply the new animation.',
     'toast-imported': 'Import completed.',
     'toast-cat-imported': 'Categories imported',
     'toast-deleted': 'Deletion completed',

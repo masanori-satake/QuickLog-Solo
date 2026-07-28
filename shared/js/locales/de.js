@@ -183,6 +183,7 @@ export default {
     'alert-init-error': 'Fehler beim Initialisieren der App.',
     'toast-copied': 'Kopiert!',
     'toast-done': 'Erledigt!',
+    'toast-done-with-reopen-msg': 'Erfolgreich angewendet! Wenn das Einstellungsfenster geöffnet ist, schließen Sie es bitte und öffnen Sie es erneut, um die neue Animation anzuwenden.',
     'toast-imported': 'Import abgeschlossen.',
     'toast-cat-imported': 'Kategorien importiert',
     'toast-deleted': 'Löschen abgeschlossen',

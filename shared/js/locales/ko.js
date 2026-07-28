@@ -183,6 +183,7 @@ export default {
     'alert-init-error': '앱 초기화에 실패했습니다.',
     'toast-copied': '복사되었습니다!',
     'toast-done': '완료되었습니다!',
+    'toast-done-with-reopen-msg': '성공적으로 적용되었습니다! 설정 패널이 열려 있는 경우, 새 애니메이션을 적용하려면 패널을 닫았다가 다시 열어주세요.',
     'toast-imported': '가져오기가 완료되었습니다.',
     'toast-cat-imported': '카테고리를 가져왔습니다',
     'toast-deleted': '삭제가 완료되었습니다',

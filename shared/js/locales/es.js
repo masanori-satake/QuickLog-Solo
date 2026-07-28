@@ -183,6 +183,7 @@ export default {
     'alert-init-error': 'Error al inicializar la aplicación.',
     'toast-copied': '¡Copiado!',
     'toast-done': '¡Hecho!',
+    'toast-done-with-reopen-msg': '¡Aplicado con éxito! Si el panel de configuración está abierto, ciérrelo y vuelva a abrirlo para aplicar la nueva animación.',
     'toast-imported': 'Importación completada.',
     'toast-cat-imported': 'Categorías importadas',
     'toast-deleted': 'Eliminación completada',

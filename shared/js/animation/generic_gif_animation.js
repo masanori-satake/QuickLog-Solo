@@ -53,7 +53,7 @@ export default class GenericGifAnimation extends AnimationBase {
     /**
      * Loads the custom GIF from IndexedDB and decodes its frames.
      */
-    async loadCustomGif(id) {
+    async loadCustomGif(id, isDraft = false) {
         if (this.isLoading || this.currentId === id) return;
         this.reset();
         this.currentId = id;
@@ -62,12 +62,14 @@ export default class GenericGifAnimation extends AnimationBase {
         try {
             // 1. Try loading from Draft DB first
             let record = null;
-            try {
-                await initAnimationDraftDB();
-                record = await getAnimationDraftRecord(id);
-            } catch (err) {
-                console.warn('GenericGifAnimation: Failed to access Draft DB', err);
-                record = null;
+            if (isDraft) {
+                try {
+                    await initAnimationDraftDB();
+                    record = await getAnimationDraftRecord(id);
+                } catch (err) {
+                    console.warn('GenericGifAnimation: Failed to access Draft DB', err);
+                    record = null;
+                }
             }
 
             // Check for tombstone (deleted record)
@@ -185,7 +187,7 @@ export default class GenericGifAnimation extends AnimationBase {
 
         // Lazy load GIF if changed
         if (this.currentId !== customId && !this.isLoading) {
-            this.loadCustomGif(customId);
+            this.loadCustomGif(customId, params.isDraft);
             return;
         }
 

@@ -183,6 +183,7 @@ export default {
     'alert-init-error': '应用初始化失败。',
     'toast-copied': '已复制！',
     'toast-done': '已完成！',
+    'toast-done-with-reopen-msg': '应用成功！如果设置面板已打开，请将其关闭并重新打开以应用新动画。',
     'toast-imported': '导入完成。',
     'toast-cat-imported': '分类已导入',
     'toast-deleted': '删除完成',

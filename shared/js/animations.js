@@ -85,9 +85,18 @@ export class AnimationEngine {
     }
 
     _getVirtualExclusionAreas() {
-        if (this.config.exclusionStrategy !== 'jump') return this.exclusionAreas;
+        const offsetY = this.simulatedHeight ? (this.canvas.height - this.simulatedHeight) / 2 : 0;
+        let adjustedAreas = this.exclusionAreas;
+        if (offsetY !== 0) {
+            adjustedAreas = this.exclusionAreas.map(area => ({
+                ...area,
+                y: area.y - offsetY
+            }));
+        }
+
+        if (this.config.exclusionStrategy !== 'jump') return adjustedAreas;
         const info = this._getPseudoInfo();
-        return this.exclusionAreas.map(area => {
+        return adjustedAreas.map(area => {
             const vX = this._mapToVirtualX(area.x);
             let vWidth = area.width;
             const areaRight = area.x + area.width;
@@ -329,7 +338,8 @@ export class AnimationEngine {
             realExclusionAreas: this.exclusionAreas,
             requestRawBitmap: this.requestRawBitmap,
             customAnimationId: this.customAnimationId,
-            color: this.color
+            color: this.color,
+            isDraft: this.isDraft || false
         };
 
         this.lastDrawRequestTime = performance.now();

@@ -183,6 +183,7 @@ export default {
     'alert-init-error': 'Échec de l\'initialisation.',
     'toast-copied': 'Copié !',
     'toast-done': 'Terminé !',
+    'toast-done-with-reopen-msg': 'Appliqué avec succès ! Si le panneau des paramètres est ouvert, veuillez le fermer et le rouvrir pour appliquer la nouvelle animation.',
     'toast-imported': 'Importation réussie.',
     'toast-cat-imported': 'Catégories importées',
     'toast-deleted': 'Suppression terminée',

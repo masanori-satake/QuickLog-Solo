@@ -212,6 +212,7 @@ export default {
 
     'toast-copied': 'コピーしました！',
     'toast-done': '完了しました！',
+    'toast-done-with-reopen-msg': '完了しました！設定パネルを開いている場合は、新しいアニメーションを適用するため、一度閉じてから再度開き直してください。',
     'toast-imported': 'インポートが完了しました。',
     'toast-cat-imported': 'カテゴリをインポートしました',
     'toast-deleted': '削除が完了しました',

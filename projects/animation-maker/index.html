@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="shared/css/m3-theme.css">
     <link rel="stylesheet" href="css/maker.css">
-    <link rel="icon" href="shared/assets/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="../../shared/assets/icon.svg" type="image/svg+xml">
 </head>
 <body class="theme-dark">
     <script>
@@ -51,14 +51,14 @@
                     </div>
                     <div class="lang-switcher">
                         <select id="lang-select-maker" class="lang-select">
-                            <option value="en">🇺🇸 English</option>
-                            <option value="ja">🇯🇵 日本語</option>
-                            <option value="de">🇩🇪 Deutsch</option>
-                            <option value="es">🇪🇸 Español</option>
-                            <option value="fr">🇫🇷 Français</option>
-                            <option value="pt">🇧🇷 Português</option>
-                            <option value="ko">🇰🇷 한국어</option>
-                            <option value="zh">🇨🇳 简体中文</option>
+                            <option value="en" data-i18n="lang-en-native">🇺🇸 English</option>
+                            <option value="ja" data-i18n="lang-ja-native">🇯🇵 日本語</option>
+                            <option value="de" data-i18n="lang-de-native">🇩🇪 Deutsch</option>
+                            <option value="es" data-i18n="lang-es-native">🇪🇸 Español</option>
+                            <option value="fr" data-i18n="lang-fr-native">🇫🇷 Français</option>
+                            <option value="pt" data-i18n="lang-pt-native">🇧🇷 Português</option>
+                            <option value="ko" data-i18n="lang-ko-native">🇰🇷 한국어</option>
+                            <option value="zh" data-i18n="lang-zh-native">🇨🇳 简体中文</option>
                         </select>
                     </div>
                 </div>
@@ -114,73 +114,83 @@
                             <span class="material-symbols-outlined">info</span>
                             <span data-i18n="section-metadata">Metadata</span>
                         </h2>
-                        <div class="input-grid">
-                            <div class="input-group">
-                                <label data-i18n="label-name">Name</label>
-                                <input type="text" id="meta-name" placeholder="My Animation" maxlength="50" data-i18n-placeholder="placeholder-meta-name" readonly style="cursor: pointer;" role="button" aria-haspopup="dialog">
+                        <div class="metadata-grid">
+                            <div class="metadata-left-column">
+                                <div class="input-group">
+                                    <label data-i18n="label-name">Name</label>
+                                    <input type="text" id="meta-name" placeholder="My Animation" maxlength="50" data-i18n-placeholder="placeholder-meta-name" readonly style="cursor: pointer;" role="button" aria-haspopup="dialog">
+                                </div>
+                                <div class="input-group">
+                                    <label data-i18n="label-author">Author</label>
+                                    <input type="text" id="meta-author" placeholder="Your Name" maxlength="50" data-i18n-placeholder="placeholder-meta-author">
+                                </div>
                             </div>
-                            <div class="input-group">
-                                <label data-i18n="label-author">Author</label>
-                                <input type="text" id="meta-author" placeholder="Your Name" maxlength="50" data-i18n-placeholder="placeholder-meta-author">
-                            </div>
-                            <div class="input-group full-width">
-                                <label data-i18n="label-description">Description</label>
-                                <input type="text" id="meta-desc" placeholder="Brief explanation of your animation" maxlength="200" data-i18n-placeholder="placeholder-meta-desc">
+                            <div class="metadata-right-column">
+                                <div class="input-group" style="height: 100%;">
+                                    <label data-i18n="label-description">Description</label>
+                                    <textarea id="meta-desc" placeholder="Brief explanation of your animation" maxlength="200" data-i18n-placeholder="placeholder-meta-desc" rows="3"></textarea>
+                                </div>
                             </div>
                         </div>
                     </section>
 
                     <!-- Preview Section -->
                     <section class="preview-section card">
-                        <div class="preview-header">
-                            <h2 class="section-title">
-                                <span class="material-symbols-outlined">visibility</span>
-                                <span data-i18n="section-preview">Preview</span>
-                            </h2>
-                        </div>
+                        <h2 class="section-title">
+                            <span class="material-symbols-outlined">visibility</span>
+                            <span data-i18n="section-preview">Preview</span>
+                        </h2>
 
-                        <!-- Aux Boundary Height Selector -->
-                        <div class="boundary-controls">
-                            <label data-i18n="maker-boundary-height">Boundary Line Height (Guide)</label>
-                            <div class="boundary-selector">
-                                <label class="radio-label">
-                                    <input type="radio" name="boundary-height" value="100" checked>
-                                    <span data-i18n="timer-height-normal">Normal (100px)</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="boundary-height" value="66">
-                                    <span data-i18n="timer-height-compact">Compact (66px)</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="boundary-height" value="50">
-                                    <span data-i18n="timer-height-mini">Mini (50px)</span>
-                                </label>
-                            </div>
-                        </div>
+                        <div class="preview-layout-container">
+                            <!-- Left: Animation Display Wrapper -->
+                            <div id="preview-left-side" class="animation-side-wrapper">
+                                <div id="preview-container-wrapper">
+                                    <div id="preview-container" class="preview-container">
+                                        <canvas id="animation-canvas"></canvas>
+                                        <!-- Boundary Line Helpers overlaying the canvas -->
+                                        <div class="boundary-line boundary-top"></div>
+                                        <div class="boundary-line boundary-bottom"></div>
 
-                        <div id="preview-container-wrapper">
-                            <div id="preview-container" class="preview-container">
-                                <canvas id="animation-canvas"></canvas>
-                                <!-- Boundary Line Helpers overlaying the canvas -->
-                                <div class="boundary-line boundary-top"></div>
-                                <div class="boundary-line boundary-bottom"></div>
-
-                                <!-- Dummy overlay base matching Category Editor exactly -->
-                                <div id="preview-overlay-base" class="preview-overlay-base">
-                                    <h2 id="preview-name-heading" aria-hidden="true"><span id="preview-name">Designing</span></h2>
-                                    <div id="preview-timer-box-base" class="preview-timer-box" aria-hidden="true">
-                                        <span id="preview-status-label" class="material-symbols-outlined">play_arrow</span>
-                                        <div id="preview-elapsed" class="preview-elapsed">12:34:56</div>
+                                        <!-- Dummy overlay base matching Category Editor exactly -->
+                                        <div id="preview-overlay-base" class="preview-overlay-base">
+                                            <h2 id="preview-name-heading" aria-hidden="true"><span id="preview-name">Designing</span></h2>
+                                            <div id="preview-timer-box-base" class="preview-timer-box" aria-hidden="true">
+                                                <span id="preview-status-label" class="material-symbols-outlined">play_arrow</span>
+                                                <div id="preview-elapsed" class="preview-elapsed">12:34:56</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Color Preset Picker (17 M3 Colors + Retro Modes) -->
-                        <div class="color-picker-section" style="margin-top: 16px; border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 16px;">
-                            <label data-i18n="setting-theme" style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 8px; display: block;">Color</label>
-                            <div id="preview-color-palette" class="color-palette" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                <!-- Color circles added dynamically -->
+                            <!-- Right: Controls -->
+                            <div class="preview-right-side-controls">
+                                <!-- Aux Boundary Height Selector -->
+                                <div class="boundary-controls">
+                                    <label data-i18n="maker-boundary-height">Boundary Line Height (Guide)</label>
+                                    <div class="boundary-selector vertical-stack">
+                                        <label class="radio-label">
+                                            <input type="radio" name="boundary-height" value="100" checked>
+                                            <span data-i18n="timer-height-normal">Normal (100px)</span>
+                                        </label>
+                                        <label class="radio-label">
+                                            <input type="radio" name="boundary-height" value="66">
+                                            <span data-i18n="timer-height-compact">Compact (66px)</span>
+                                        </label>
+                                        <label class="radio-label">
+                                            <input type="radio" name="boundary-height" value="50">
+                                            <span data-i18n="timer-height-mini">Mini (50px)</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Color Preset Picker (17 M3 Colors + Retro Modes) -->
+                                <div class="color-picker-section">
+                                    <label data-i18n="setting-theme" style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 8px; display: block;">Color</label>
+                                    <div id="preview-color-palette" class="color-palette compact-multi-line">
+                                        <!-- Color circles added dynamically -->
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -192,112 +202,129 @@
                             <span data-i18n="section-config">Configuration</span>
                         </h2>
 
-                        <!-- Simulated raw canvas area (same width/height as preview container) -->
-                        <div id="raw-preview-container-wrapper" style="display: flex; flex-direction: column; align-items: center; gap: 16px; background-color: var(--md-sys-color-surface-container-lowest); border-radius: var(--md-sys-shape-medium); padding: 16px; border: 1px solid var(--md-sys-color-outline-variant); margin-bottom: 16px;">
-                            <div id="raw-preview-container" class="preview-container" style="cursor: grab;">
-                                <canvas id="raw-canvas"></canvas>
-                                <!-- Boundary Line Helpers overlaying the raw canvas -->
-                                <div class="boundary-line raw-boundary-top"></div>
-                                <div class="boundary-line raw-boundary-bottom"></div>
+                        <div class="config-layout-container">
+                            <!-- Left Side: Animation + Monitors underneath -->
+                            <div class="config-left-side">
+                                <!-- Simulated raw canvas area (same width/height as preview container) -->
+                                <div id="raw-preview-container-wrapper">
+                                    <div id="raw-preview-container" class="preview-container" style="cursor: grab;">
+                                        <canvas id="raw-canvas"></canvas>
+                                        <!-- Boundary Line Helpers overlaying the raw canvas -->
+                                        <div class="boundary-line raw-boundary-top"></div>
+                                        <div class="boundary-line raw-boundary-bottom"></div>
 
-                                <!-- Drop Zone inside raw-preview-container -->
-                                <div id="drop-zone" class="drop-zone" style="position: absolute; inset: 0; background-color: rgba(0, 0, 0, 0.8); border: none; border-radius: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 15; transition: opacity 0.3s;">
-                                    <span class="material-symbols-outlined cloud-icon" style="font-size:36px;">cloud_upload</span>
-                                    <p data-i18n="maker-drop-hint" style="font-size:0.8rem; color: #fff; text-align:center; padding: 0 16px;">Drag & Drop GIF file here, or click to select</p>
-                                    <input type="file" id="gif-file-input" accept="image/gif" style="display:none">
+                                        <!-- Drop Zone inside raw-preview-container -->
+                                        <div id="drop-zone" class="drop-zone" style="position: absolute; inset: 0; background-color: rgba(0, 0, 0, 0.8); border: none; border-radius: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 15; transition: opacity 0.3s;">
+                                            <span class="material-symbols-outlined cloud-icon" style="font-size:36px;">cloud_upload</span>
+                                            <p data-i18n="maker-drop-hint" style="font-size:0.8rem; color: #fff; text-align:center; padding: 0 16px;">Drag & Drop GIF file here, or click to select</p>
+                                            <input type="file" id="gif-file-input" accept="image/gif" style="display:none">
+                                        </div>
+
+                                        <div id="drag-instruction-overlay" class="drag-instruction-overlay">
+                                            <span class="material-symbols-outlined">drag_pan</span>
+                                            <span data-i18n="maker-drag-instruction">Drag image to adjust focus point</span>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div id="drag-instruction-overlay" class="drag-instruction-overlay">
-                                    <span class="material-symbols-outlined">drag_pan</span>
-                                    <span data-i18n="maker-drag-instruction">Drag image to adjust focus point</span>
+                                <!-- Metadata & Specs Monitors list (placed vertically below animation wrapper) -->
+                                <div id="gif-info-box" class="gif-info-box hidden specs-vertical-list">
+                                    <div class="spec-row">
+                                        <span class="spec-label" data-i18n="maker-file-name">File:</span>
+                                        <span id="gif-file-name" class="spec-value">-</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label" data-i18n="maker-dimensions">Dimensions:</span>
+                                        <span id="gif-dimensions" class="spec-value">-</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label" data-i18n="maker-frames-count">Frames:</span>
+                                        <span id="gif-frames" class="spec-value">-</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">focusX</span>
+                                        <span id="mon-focus-x" class="spec-value">0</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">focusY</span>
+                                        <span id="mon-focus-y" class="spec-value">0</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label" data-i18n="maker-target-height">targetHeight</span>
+                                        <span id="mon-target-height" class="spec-value">100</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Left side Buttons and Right side File Info Block Row -->
-                        <div class="control-and-info-row" style="margin-bottom: 24px;">
-                            <!-- Left: Buttons Group -->
-                            <div class="control-buttons-group">
-                                <button id="btn-play-pause" class="primary-btn playback-btn icon-btn-large" data-i18n-title="tooltip-pause" style="background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);">
-                                    <span class="material-symbols-outlined">pause</span>
-                                </button>
-                                <button id="btn-scale-down" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-out">
-                                    <span class="material-symbols-outlined">zoom_out</span>
-                                </button>
-                                <span id="mon-scale" style="font-size: 0.95rem; font-weight: bold; color: var(--md-sys-color-on-surface-variant); min-width: 45px; text-align: center; display: inline-block;">1.00</span>
-                                <button id="btn-scale-up" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-in">
-                                    <span class="material-symbols-outlined">zoom_in</span>
-                                </button>
-                                <button id="btn-scale-reset" class="secondary-btn icon-btn-large" data-i18n-title="btn-reset">
-                                    <span class="material-symbols-outlined">restart_alt</span>
-                                </button>
-                            </div>
-
-                            <!-- Right: File Info Block -->
-                            <div id="gif-info-box" class="gif-info-box hidden">
-                                <p><strong data-i18n="maker-file-name">File:</strong> <span id="gif-file-name">-</span></p>
-                                <p><strong data-i18n="maker-dimensions">Dimensions:</strong> <span id="gif-dimensions">-</span></p>
-                                <p><strong data-i18n="maker-frames-count">Frames:</strong> <span id="gif-frames">-</span></p>
-                            </div>
-                        </div>
-
-                        <!-- Config Parameters Grid -->
-                        <div class="input-grid">
-                            <div class="input-group">
-                                <label data-i18n="label-exclusion-strategy">Exclusion Strategy</label>
-                                <select id="config-exclusion-strategy">
-                                    <option value="mask">Mask (Standard)</option>
-                                    <option value="jump">Pseudo Space (Jump UI)</option>
-                                    <option value="freedom">Ignore (Draw All)</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label data-i18n="maker-overflow-behavior">Overflow Behavior</label>
-                                <select id="config-overflow">
-                                    <option value="repeat">Repeat (Tile)</option>
-                                    <option value="categoryColor">Category Color Fill</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label data-i18n="maker-max-width">Max Width (maxWidth)</label>
-                                <input type="number" id="config-max-width" min="10" max="1000" value="200">
-                            </div>
-                            <div class="input-group">
-                                <label data-i18n="maker-brightness">Brightness</label>
-                                <input type="range" id="config-brightness" min="0.1" max="3.0" step="0.1" value="1.0">
-                                <span id="config-brightness-value" style="font-size:0.8rem; margin-top:4px;">1.0</span>
-                            </div>
-                            <div class="input-group full-width" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                                    <label style="font-size: 0.85rem; color: var(--md-sys-color-on-surface); cursor: pointer;" for="config-scale-height" data-i18n="maker-scale-with-height">Scale with Height</label>
-                                    <label class="switch">
-                                        <input type="checkbox" id="config-scale-height" checked>
-                                        <span class="slider round"></span>
-                                    </label>
+                            <!-- Right Side: Operations stacked vertically -->
+                            <div class="config-right-side-controls">
+                                <!-- Playback/Stop and Scale controls row -->
+                                <div class="playback-scale-control-group">
+                                    <div class="input-group">
+                                        <label>Playback & Zoom</label>
+                                        <div class="control-buttons-group">
+                                            <button id="btn-play-pause" class="primary-btn playback-btn icon-btn-large" data-i18n-title="tooltip-pause" style="background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);">
+                                                <span class="material-symbols-outlined">pause</span>
+                                            </button>
+                                            <button id="btn-scale-down" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-out">
+                                                <span class="material-symbols-outlined">zoom_out</span>
+                                            </button>
+                                            <span id="mon-scale" style="font-size: 0.95rem; font-weight: bold; color: var(--md-sys-color-on-surface-variant); min-width: 45px; text-align: center; display: inline-block;">1.00</span>
+                                            <button id="btn-scale-up" class="secondary-btn icon-btn-large" data-i18n-title="maker-zoom-in">
+                                                <span class="material-symbols-outlined">zoom_in</span>
+                                            </button>
+                                            <button id="btn-scale-reset" class="secondary-btn icon-btn-large" data-i18n-title="btn-reset">
+                                                <span class="material-symbols-outlined">restart_alt</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                                    <label style="font-size: 0.85rem; color: var(--md-sys-color-on-surface); cursor: pointer;" for="config-invert" data-i18n="maker-invert">Invert (Negative/Positive Inversion)</label>
-                                    <label class="switch">
-                                        <input type="checkbox" id="config-invert">
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Monitor Specifications (Relocated as part of Settings Section) -->
-                        <div class="monitor-grid" style="margin-top: 16px; border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 16px;">
-                            <div class="monitor-item">
-                                <span class="monitor-label">focusX</span>
-                                <span id="mon-focus-x" class="monitor-value">0</span>
-                            </div>
-                            <div class="monitor-item">
-                                <span class="monitor-label">focusY</span>
-                                <span id="mon-focus-y" class="monitor-value">0</span>
-                            </div>
-                            <div class="monitor-item">
-                                <span class="monitor-label" data-i18n="maker-target-height">targetHeight</span>
-                                <span id="mon-target-height" class="monitor-value">100</span>
+                                <!-- Operation controls stacked vertically -->
+                                <div class="operation-vertical-stack">
+                                    <div class="input-group">
+                                        <label data-i18n="label-exclusion-strategy">Exclusion Strategy</label>
+                                        <select id="config-exclusion-strategy">
+                                            <option value="mask">Mask (Standard)</option>
+                                            <option value="jump">Pseudo Space (Jump UI)</option>
+                                            <option value="freedom">Ignore (Draw All)</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label data-i18n="maker-overflow-behavior">Overflow Behavior</label>
+                                        <select id="config-overflow">
+                                            <option value="repeat">Repeat (Tile)</option>
+                                            <option value="categoryColor">Category Color Fill</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label data-i18n="maker-max-width">Max Width (maxWidth)</label>
+                                        <input type="number" id="config-max-width" min="10" max="1000" value="200">
+                                    </div>
+                                    <div class="input-group">
+                                        <label data-i18n="maker-brightness">Brightness</label>
+                                        <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                                            <input type="range" id="config-brightness" min="0.1" max="3.0" step="0.1" value="1.0" style="flex: 1;">
+                                            <span id="config-brightness-value" style="font-size: 0.85rem; font-weight: bold; min-width: 24px;">1.0</span>
+                                        </div>
+                                    </div>
+                                    <div class="switch-group-vertical">
+                                        <div class="switch-row">
+                                            <label style="font-size: 0.85rem; color: var(--md-sys-color-on-surface); cursor: pointer;" for="config-scale-height" data-i18n="maker-scale-with-height">Scale with Height</label>
+                                            <label class="switch">
+                                                <input type="checkbox" id="config-scale-height" checked>
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                        <div class="switch-row">
+                                            <label style="font-size: 0.85rem; color: var(--md-sys-color-on-surface); cursor: pointer;" for="config-invert" data-i18n="maker-invert">Invert (Negative/Positive Inversion)</label>
+                                            <label class="switch">
+                                                <input type="checkbox" id="config-invert">
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </section>
