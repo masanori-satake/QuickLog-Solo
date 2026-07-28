@@ -1568,8 +1568,8 @@ function drawRawFrames() {
     rawCtx.rect(clipLeft, 0, scaledMaxW, H);
     rawCtx.clip();
 
-    // Fill underlay background: pure white if invert is OFF, pure black if invert is ON
-    rawCtx.fillStyle = state.invert ? '#000000' : '#ffffff';
+    // Fill underlay background: always pure white (#ffffff) to ensure proper positive/negative inversion colors under difference blend
+    rawCtx.fillStyle = '#ffffff';
     rawCtx.fillRect(clipLeft, 0, scaledMaxW, H);
 
     if (state.overflowBehavior === 'repeat' && scaledW > 0) {
