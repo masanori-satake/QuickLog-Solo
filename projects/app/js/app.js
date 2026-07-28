@@ -2633,8 +2633,13 @@ function setupEventListeners() {
 
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', async () => {
         popups.settings?.classList.remove('hidden');
-        await updateAnimationSelect();
-        await renderCategoryEditor();
+        try {
+            await updateAnimationSelect();
+            await renderCategoryEditor();
+        } catch (err) {
+            console.error('Failed to update settings UI:', err);
+            showToast(t('alert-error') || 'Operation failed');
+        }
     });
 
     queryAll('.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn').forEach(btn => {
