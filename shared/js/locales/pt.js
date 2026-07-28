@@ -453,6 +453,7 @@ export default {
     'maker-drag-instruction': 'Arraste a imagem para ajustar a posição',
     'maker-zoom-in': 'Ampliar',
     'maker-zoom-out': 'Reduzir',
+    'maker-playback-zoom': 'Reprodução e Zoom',
     'maker-data-transfer': 'Transferência de dados',
     'maker-warning-title': 'Aviso',
     'maker-note-extension-only': '* O QL-Animation Maker só está disponível quando instalado como uma extensão do navegador. Não pode ser iniciado na versão de visualização.',

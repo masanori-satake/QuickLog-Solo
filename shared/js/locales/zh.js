@@ -453,6 +453,7 @@ export default {
     'maker-drag-instruction': '拖动图片调整位置',
     'maker-zoom-in': '放大',
     'maker-zoom-out': '缩小',
+    'maker-playback-zoom': '播放与缩放',
     'maker-data-transfer': '数据传输',
     'maker-warning-title': '警告',
     'maker-note-extension-only': '* QL-Animation Maker 仅在作为浏览器扩展程序安装时可用。在预览版中无法启动。',
