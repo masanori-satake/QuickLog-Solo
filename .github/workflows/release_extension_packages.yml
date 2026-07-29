@@ -1,87 +1,87 @@
-name: "リリース: 拡張機能パッケージの公開 (Release: Publish Extension Packages)"
+name: 'リリース: 拡張機能パッケージの公開 (Release: Publish Extension Packages)'
 
 on:
-  push:
-    tags:
-      - 'v*.*.*' # セマンティックバージョニングのタグをトリガーとする
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: 'Tag name to release (e.g. v1.20.0)'
-        required: true
-        type: string
+    push:
+        tags:
+            - 'v*.*.*' # セマンティックバージョニングのタグをトリガーとする
+    workflow_dispatch:
+        inputs:
+            tag_name:
+                description: 'Tag name to release (e.g. v1.20.0)'
+                required: true
+                type: string
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  build-and-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # Releaseの作成およびアセットのアップロードに必須
+    build-and-release:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write # Releaseの作成およびアセットのアップロードに必須
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
-      - name: Setup and Install Dependencies
-        uses: ./.github/actions/setup-and-install
-        with:
-          install-playwright: 'true'
+            - name: Setup and Install Dependencies
+              uses: ./.github/actions/setup-and-install
+              with:
+                  install-playwright: 'true'
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: '3.x'
 
-      - name: Cache Python dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+            - name: Cache Python dependencies
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/pip
+                  key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pip-
 
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
+            - name: Install Python dependencies
+              run: pip install -r requirements.txt
 
-      - name: Build packages
-        run: |
-          rm -rf releases/*.zip
-          npm run build
+            - name: Build packages
+              run: |
+                  rm -rf releases/*.zip
+                  npm run build
 
-      - name: リリースタagの決定とリリース作成/更新 (Determine Tag and Create/Update Release)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # 手動実行の場合は入力から、タグpushの場合は参照からタグ名を取得
-          TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name }}"
-          echo "Processing release for tag: $TAG_NAME"
+            - name: リリースタagの決定とリリース作成/更新 (Determine Tag and Create/Update Release)
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  # 手動実行の場合は入力から、タグpushの場合は参照からタグ名を取得
+                  TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name }}"
+                  echo "Processing release for tag: $TAG_NAME"
 
-          # 1. Ensure the release exists (create as a draft if missing)
-          if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            echo "Release $TAG_NAME does not exist. Creating new draft release with retries..."
-            gh release create "$TAG_NAME" --draft --generate-notes --retry 5 --retry-delay 10
-          else
-            echo "Release $TAG_NAME already exists. Editing to ensure it is in draft status before asset uploads..."
-            gh release edit "$TAG_NAME" --draft
-          fi
+                  # 1. Ensure the release exists (create as a draft if missing)
+                  if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
+                    echo "Release $TAG_NAME does not exist. Creating new draft release with retries..."
+                    gh release create "$TAG_NAME" --draft --generate-notes --retry 5 --retry-delay 10
+                  else
+                    echo "Release $TAG_NAME already exists. Editing to ensure it is in draft status before asset uploads..."
+                    gh release edit "$TAG_NAME" --draft
+                  fi
 
-          # 2. Upload assets sequentially with pre-upload cleanup and retries to avoid race conditions
-          echo "Uploading assets to release $TAG_NAME..."
-          for filepath in releases/*.zip; do
-            echo "Uploading $(basename $filepath)..."
-            gh release upload "$TAG_NAME" "$filepath" --clobber --timeout 5m
-          done
-          echo "All assets uploaded successfully!"
+                  # 2. Upload assets sequentially with pre-upload cleanup and retries to avoid race conditions
+                  echo "Uploading assets to release $TAG_NAME..."
+                  for filepath in releases/*.zip; do
+                    echo "Uploading $(basename $filepath)..."
+                    gh release upload "$TAG_NAME" "$filepath" --clobber --timeout 5m
+                  done
+                  echo "All assets uploaded successfully!"
 
-          # 3. Publish the release by removing draft status
-          echo "Publishing release $TAG_NAME..."
-          gh release edit "$TAG_NAME" --draft=false --retry 5 --retry-delay 10
-          echo "Successfully published release $TAG_NAME!"
+                  # 3. Publish the release by removing draft status
+                  echo "Publishing release $TAG_NAME..."
+                  gh release edit "$TAG_NAME" --draft=false --retry 5 --retry-delay 10
+                  echo "Successfully published release $TAG_NAME!"

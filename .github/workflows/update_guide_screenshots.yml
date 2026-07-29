@@ -1,59 +1,59 @@
-name: "更新: ガイド用スクリーンショット (Update: Guide Screenshots)"
+name: '更新: ガイド用スクリーンショット (Update: Guide Screenshots)'
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  contents: write
-  pull-requests: write
+    contents: write
+    pull-requests: write
 
 jobs:
-  update-assets:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    update-assets:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        persist-credentials: false
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
-    - name: Setup and Install Dependencies
-      uses: ./.github/actions/setup-and-install
-      with:
-        install-playwright: 'true'
+            - name: Setup and Install Dependencies
+              uses: ./.github/actions/setup-and-install
+              with:
+                  install-playwright: 'true'
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: '3.x'
 
-    - name: Cache Python dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+            - name: Cache Python dependencies
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/pip
+                  key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pip-
 
-    - name: Install Python dependencies
-      run: pip install -r requirements.txt
+            - name: Install Python dependencies
+              run: pip install -r requirements.txt
 
-    - name: Update screenshots
-      run: npm run update-guide-images
+            - name: Update screenshots
+              run: npm run update-guide-images
 
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v7.0.5
-      with:
-        commit-message: "chore: ガイド用スクリーンショットの更新 [skip ci]"
-        add-paths: 'shared/assets/guide/*.png'
-        branch: "chore/update-guide-screenshots"
-        title: "chore: ガイド用スクリーンショットの更新 [skip ci]"
-        body: "自動生成されたガイド用スクリーンショットの更新です。"
+            - name: Create Pull Request
+              uses: peter-evans/create-pull-request@v7.0.5
+              with:
+                  commit-message: 'chore: ガイド用スクリーンショットの更新 [skip ci]'
+                  add-paths: 'shared/assets/guide/*.png'
+                  branch: 'chore/update-guide-screenshots'
+                  title: 'chore: ガイド用スクリーンショットの更新 [skip ci]'
+                  body: '自動生成されたガイド用スクリーンショットの更新です。'
