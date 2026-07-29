@@ -203,7 +203,7 @@ jobs:
 
       - name: Post Coverage Comment
         if: github.event_name == 'pull_request'
-        uses: ArtiomTr/jest-coverage-reporter@v2
+        uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
