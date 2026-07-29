@@ -5,7 +5,7 @@ import path from 'path';
 test.describe('Custom Animation (GIF) E2E rendering', () => {
     test.beforeEach(async ({ page }) => {
         // Log all console messages from browser
-        page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
+        page.on('console', (msg) => console.log('BROWSER CONSOLE:', msg.text()));
 
         // Mock chrome extension storage API so custom animation features are fully enabled in the web preview context
         await page.addInitScript(() => {
@@ -15,37 +15,47 @@ test.describe('Custom Animation (GIF) E2E rendering', () => {
                     sendMessage: () => Promise.resolve(),
                     onMessage: {
                         addListener: () => {},
-                        removeListener: () => {}
-                    }
+                        removeListener: () => {},
+                    },
                 },
                 storage: {
                     local: {
                         get: async (keys) => {
                             const result = {};
-                            const keyList = typeof keys === 'string' ? [keys] : (Array.isArray(keys) ? keys : Object.keys(keys || {}));
-                            keyList.forEach(k => {
+                            const keyList =
+                                typeof keys === 'string'
+                                    ? [keys]
+                                    : Array.isArray(keys)
+                                      ? keys
+                                      : Object.keys(keys || {});
+                            keyList.forEach((k) => {
                                 result[k] = storageState[k];
                             });
                             return result;
                         },
                         set: async (obj) => {
                             Object.assign(storageState, obj);
-                        }
+                        },
                     },
                     sync: {
                         get: async (keys) => {
                             const result = {};
-                            const keyList = typeof keys === 'string' ? [keys] : (Array.isArray(keys) ? keys : Object.keys(keys || {}));
-                            keyList.forEach(k => {
+                            const keyList =
+                                typeof keys === 'string'
+                                    ? [keys]
+                                    : Array.isArray(keys)
+                                      ? keys
+                                      : Object.keys(keys || {});
+                            keyList.forEach((k) => {
                                 result[k] = storageState[k];
                             });
                             return result;
                         },
                         set: async (obj) => {
                             Object.assign(storageState, obj);
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             };
         });
     });
@@ -63,7 +73,8 @@ test.describe('Custom Animation (GIF) E2E rendering', () => {
 
         // Parse and replace 1x1 transparent base64 GIF with a 1x1 solid white base64 GIF
         const qlanimObj = JSON.parse(qlanimText);
-        qlanimObj.payload.imageData = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+        qlanimObj.payload.imageData =
+            'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
         // Set overflowBehavior to categoryColor so that the category color fills the canvas background as expected
         qlanimObj.payload.renderSpec.overflowBehavior = 'categoryColor';
         const updatedQlanimText = JSON.stringify(qlanimObj);
@@ -106,14 +117,16 @@ test.describe('Custom Animation (GIF) E2E rendering', () => {
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
             let nonZero = 0;
             for (let i = 0; i < imgData.length; i += 4) {
-                if (imgData[i] + imgData[i+1] + imgData[i+2] > 0) {
+                if (imgData[i] + imgData[i + 1] + imgData[i + 2] > 0) {
                     nonZero++;
                 }
             }
             return { nonZero, width: canvas.width, height: canvas.height };
         });
 
-        console.log(`E2E custom GIF canvas stats: ${canvasStats.nonZero} non-zero pixels out of ${canvasStats.width * canvasStats.height}`);
+        console.log(
+            `E2E custom GIF canvas stats: ${canvasStats.nonZero} non-zero pixels out of ${canvasStats.width * canvasStats.height}`
+        );
 
         // We expect at least some pixels to be drawn on the canvas (since we use repeat and scaleWithHeight)
         expect(canvasStats.nonZero).toBeGreaterThanOrEqual(10);

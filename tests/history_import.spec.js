@@ -31,7 +31,7 @@ test.describe('History CSV Import Robustness', () => {
 
         const fileChooserPromise = page.waitForEvent('filechooser');
 
-        page.once('dialog', async dialog => {
+        page.once('dialog', async (dialog) => {
             expect(dialog.message()).toContain('Invalid file format');
             await dialog.dismiss();
         });
@@ -53,23 +53,26 @@ test.describe('History CSV Import Robustness', () => {
         await page.waitForSelector('.category-btn');
 
         const now = Date.now();
-        await page.evaluate(({now, dbName}) => {
-            return new Promise((resolve) => {
-                const request = indexedDB.open(dbName);
-                request.onsuccess = (e) => {
-                    const db = e.target.result;
-                    const tx = db.transaction('logs', 'readwrite');
-                    tx.objectStore('logs').clear().onsuccess = () => {
-                        tx.objectStore('logs').add({
-                            category: 'Existing',
-                            startTime: now - 7200000,
-                            endTime: now - 3600000
-                        });
-                        tx.oncomplete = () => resolve();
+        await page.evaluate(
+            ({ now, dbName }) => {
+                return new Promise((resolve) => {
+                    const request = indexedDB.open(dbName);
+                    request.onsuccess = (e) => {
+                        const db = e.target.result;
+                        const tx = db.transaction('logs', 'readwrite');
+                        tx.objectStore('logs').clear().onsuccess = () => {
+                            tx.objectStore('logs').add({
+                                category: 'Existing',
+                                startTime: now - 7200000,
+                                endTime: now - 3600000,
+                            });
+                            tx.oncomplete = () => resolve();
+                        };
                     };
-                };
-            });
-        }, {now, dbName});
+                });
+            },
+            { now, dbName }
+        );
         await page.reload();
 
         const csv = `id,category,startTime,endTime,tags\n2,Overlapping,${now - 5400000},${now - 1800000},`;
@@ -96,23 +99,26 @@ test.describe('History CSV Import Robustness', () => {
 
         const now = Date.now();
         const startTime = now - 3600000;
-        await page.evaluate(({startTime, dbName}) => {
-            return new Promise((resolve) => {
-                const request = indexedDB.open(dbName);
-                request.onsuccess = (e) => {
-                    const db = e.target.result;
-                    const tx = db.transaction('logs', 'readwrite');
-                    tx.objectStore('logs').clear().onsuccess = () => {
-                        tx.objectStore('logs').add({
-                            category: 'DuplicateMe',
-                            startTime: startTime,
-                            endTime: startTime + 100000
-                        });
-                        tx.oncomplete = () => resolve();
+        await page.evaluate(
+            ({ startTime, dbName }) => {
+                return new Promise((resolve) => {
+                    const request = indexedDB.open(dbName);
+                    request.onsuccess = (e) => {
+                        const db = e.target.result;
+                        const tx = db.transaction('logs', 'readwrite');
+                        tx.objectStore('logs').clear().onsuccess = () => {
+                            tx.objectStore('logs').add({
+                                category: 'DuplicateMe',
+                                startTime: startTime,
+                                endTime: startTime + 100000,
+                            });
+                            tx.oncomplete = () => resolve();
+                        };
                     };
-                };
-            });
-        }, {startTime, dbName});
+                });
+            },
+            { startTime, dbName }
+        );
         await page.reload();
 
         const csv = `id,category,startTime,endTime,tags\n3,DuplicateMe,${startTime},${startTime + 100000},`;
@@ -121,7 +127,7 @@ test.describe('History CSV Import Robustness', () => {
         await page.click('#settings-toggle');
         await page.click('button[data-tab="general"]');
 
-        page.once('dialog', async dialog => {
+        page.once('dialog', async (dialog) => {
             expect(dialog.message()).toContain('Import completed');
             expect(dialog.message()).toContain('1 duplicates skipped');
             await dialog.dismiss();
@@ -180,7 +186,7 @@ test.describe('History CSV Import Robustness', () => {
         await page.click('#confirm-ok-btn');
         const fileChooser = await fileChooserPromise;
         // Should show fatal error modal because no valid rows found
-        page.once('dialog', async dialog => {
+        page.once('dialog', async (dialog) => {
             expect(dialog.message()).toContain('Invalid file format');
             await dialog.dismiss();
         });

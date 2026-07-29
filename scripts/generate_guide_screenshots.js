@@ -27,7 +27,7 @@ async function generateScreenshots() {
 
         // Capture the entire app container
         await page.locator('#app').screenshot({
-            path: path.join(ASSET_DIR, `01_main_${lang}.png`)
+            path: path.join(ASSET_DIR, `01_main_${lang}.png`),
         });
 
         // --- 02_recording: Recording state ---
@@ -37,18 +37,20 @@ async function generateScreenshots() {
         await page.goto(`${BASE_URL}?lang=${lang}&db=${dbName}`);
         await page.waitForSelector('.category-btn');
 
-        await page.goto(`${BASE_URL}?lang=${lang}&db=${dbName}&test_cat=${testCat}&test_elapsed=3661000&test_resumable=${testCat}`);
+        await page.goto(
+            `${BASE_URL}?lang=${lang}&db=${dbName}&test_cat=${testCat}&test_elapsed=3661000&test_resumable=${testCat}`
+        );
         await page.waitForSelector('.status-running');
         await page.waitForSelector('.category-btn');
         await page.waitForTimeout(500);
 
         await page.locator('#app').screenshot({
-            path: path.join(ASSET_DIR, `02_recording_${lang}.png`)
+            path: path.join(ASSET_DIR, `02_recording_${lang}.png`),
         });
 
         // --- 03_header_actions: Capture the entire header for context ---
         await page.locator('header').screenshot({
-            path: path.join(ASSET_DIR, `03_header_actions_${lang}.png`)
+            path: path.join(ASSET_DIR, `03_header_actions_${lang}.png`),
         });
 
         // --- 04_settings_backup: Backup settings ---
@@ -71,7 +73,7 @@ async function generateScreenshots() {
 
         // Settings modal is usually better as a focused shot
         await page.locator('#settings-popup .modal-content').screenshot({
-            path: path.join(ASSET_DIR, `04_settings_backup_${lang}.png`)
+            path: path.join(ASSET_DIR, `04_settings_backup_${lang}.png`),
         });
 
         await page.close();
@@ -80,9 +82,11 @@ async function generateScreenshots() {
     await browser.close();
 }
 
-generateScreenshots().then(() => {
-    console.log('Done!');
-}).catch(err => {
-    console.error('Error generating screenshots:', err);
-    process.exit(1);
-});
+generateScreenshots()
+    .then(() => {
+        console.log('Done!');
+    })
+    .catch((err) => {
+        console.error('Error generating screenshots:', err);
+        process.exit(1);
+    });

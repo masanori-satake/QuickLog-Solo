@@ -10,28 +10,28 @@ export default class RedCapJumper extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Red-Cap Jumper & Dust Clouds",
-            ja: "ジャンプアクション",
-            de: "Rotkappen-Springer & Staubwolken",
-            es: "Saltador de gorra roja y nubes de polvo",
-            fr: "Sauteur à casquette rouge et nuages de poussière",
-            pt: "Saltador de boné vermelho e nuvens de poeira",
-            ko: "빨간 모자 점퍼와 먼지 구름",
-            zh: "红帽跳跃者与尘埃云"
+            en: 'Red-Cap Jumper & Dust Clouds',
+            ja: 'ジャンプアクション',
+            de: 'Rotkappen-Springer & Staubwolken',
+            es: 'Saltador de gorra roja y nubes de polvo',
+            fr: 'Sauteur à casquette rouge et nuages de poussière',
+            pt: 'Saltador de boné vermelho e nuvens de poeira',
+            ko: '빨간 모자 점퍼와 먼지 구름',
+            zh: '红帽跳跃者与尘埃云',
         },
         description: {
-            en: "A retro pixel hero leaps in a parabolic arc every 1.5 seconds, emitting tiny dust particles upon landing.",
-            ja: "レトロなドット絵のヒーローが1.5秒ごとに跳躍し、着地時に足元から白い砂煙が左右に飛び散ります。",
-            de: "Ein Retro-Pixel-Held springt alle 1,5 Sekunden in einem parabolischen Bogen und stößt beim Landen winzige Staubpartikel aus.",
-            es: "Un héroe de píxeles retro salta en un arco parabólico cada 1,5 segundos, emitiendo pequeñas partículas de polvo al aterrizar.",
+            en: 'A retro pixel hero leaps in a parabolic arc every 1.5 seconds, emitting tiny dust particles upon landing.',
+            ja: 'レトロなドット絵のヒーローが1.5秒ごとに跳躍し、着地時に足元から白い砂煙が左右に飛び散ります。',
+            de: 'Ein Retro-Pixel-Held springt alle 1,5 Sekunden in einem parabolischen Bogen und stößt beim Landen winzige Staubpartikel aus.',
+            es: 'Un héroe de píxeles retro salta en un arco parabólico cada 1,5 segundos, emitiendo pequeñas partículas de polvo al aterrizar.',
             fr: "Un héros rétro en pixel saut dans un arc parabolique toutes les 1,5 secondes, émettant de minuscules particules de poussière à l'atterrissage.",
-            pt: "Um herói retro em pixel salta em um arco parabólico a cada 1,5 segundos, emitindo minúsculas partículas de poeira ao aterrissar.",
-            ko: "레트로 픽셀 영웅이 1.5초마다 포물선을 그리며 도약하고, 착지할 때 미세한 먼지 입자를 뿜어냅니다.",
-            zh: "一个复古像素英雄每1.5秒以抛物线弧度跃起，在落地时发射微小的尘埃粒子。"
+            pt: 'Um herói retro em pixel salta em um arco parabólico a cada 1,5 segundos, emitindo minúsculas partículas de poeira ao aterrissar.',
+            ko: '레트로 픽셀 영웅이 1.5초마다 포물선을 그리며 도약하고, 착지할 때 미세한 먼지 입자를 뿜어냅니다.',
+            zh: '一个复古像素英雄每1.5秒以抛物线弧度跃起，在落地时发射微小的尘埃粒子。',
         },
-        author: "QuickLog-Solo",
+        author: 'QuickLog-Solo',
         devOnly: true,
-        rewindable: true
+        rewindable: true,
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -77,8 +77,8 @@ export default class RedCapJumper extends AnimationBase {
         if (t >= 300 && t < jumpStart) {
             // Squash downward before jumping
             const factor = (t - 300) / 200; // 0 to 1
-            scaleY = 1.0 - factor * 0.3;    // Squash to 0.7
-            scaleX = 1.0 + factor * 0.2;    // Stretch wide
+            scaleY = 1.0 - factor * 0.3; // Squash to 0.7
+            scaleX = 1.0 + factor * 0.2; // Stretch wide
         } else if (t >= jumpStart && t < jumpEnd) {
             // Parabolic Arc: y = -4 * max_height * progress * (1 - progress)
             const progress = (t - jumpStart) / jumpDuration; // 0 to 1
@@ -88,11 +88,14 @@ export default class RedCapJumper extends AnimationBase {
 
             armUp = true;
             if (progress < 0.2) {
-                scaleY = 1.3; scaleX = 0.8; // Stretch up at start
+                scaleY = 1.3;
+                scaleX = 0.8; // Stretch up at start
             } else if (progress > 0.8) {
-                scaleY = 1.1; scaleX = 0.9;
+                scaleY = 1.1;
+                scaleX = 0.9;
             } else {
-                scaleY = 1.0; scaleX = 1.0;
+                scaleY = 1.0;
+                scaleX = 1.0;
             }
         } else if (t >= jumpEnd && t < jumpEnd + 150) {
             // Landing squash
@@ -134,7 +137,7 @@ export default class RedCapJumper extends AnimationBase {
         ctx.fillRect(-3, -charSize - 5, 6, 2); // Cap dome
         ctx.fillRect(-3, -charSize - 3, 8, 1); // Cap visor
         ctx.fillStyle = '#ffd54f'; // Face skin tone
-        ctx.fillRect(-3, -charSize - 2, 6, 4);  // Face
+        ctx.fillRect(-3, -charSize - 2, 6, 4); // Face
 
         // Body
         ctx.fillStyle = '#1976d2'; // Blue overalls / body
@@ -145,7 +148,7 @@ export default class RedCapJumper extends AnimationBase {
         if (armUp) {
             // One arm raised high, other down
             ctx.fillRect(-6, -charSize + 2, 2, 4); // Left arm down
-            ctx.fillRect(4, -charSize - 4, 2, 6);  // Right arm up
+            ctx.fillRect(4, -charSize - 4, 2, 6); // Right arm up
         } else {
             // Both arms down
             ctx.fillRect(-6, -charSize + 3, 2, 4);

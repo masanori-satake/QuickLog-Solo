@@ -1,11 +1,36 @@
 import {
-    openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
-    dbGetByName, getCurrentAppState, dbGetActiveTask, dbAddMultiple, dbClear, setDatabaseName, DB_NAME as ACTUAL_DB_NAME,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
+    openDatabase,
+    dbAdd,
+    dbGet,
+    dbGetAll,
+    dbCount,
+    dbPut,
+    dbDelete,
+    initDB,
+    closeDatabase,
+    dbImportCategories,
+    dbGetByName,
+    getCurrentAppState,
+    dbGetActiveTask,
+    dbAddMultiple,
+    dbClear,
+    setDatabaseName,
+    DB_NAME as ACTUAL_DB_NAME,
+    STORE_LOGS,
+    STORE_CATEGORIES,
+    STORE_SETTINGS,
+    STORE_ALARMS,
+    SETTING_KEY_THEME,
+    SETTING_KEY_PAUSE_STATE,
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 import { t } from '../shared/js/i18n.js';
-import { SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0, SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK } from '../shared/js/schema.js';
+import {
+    SCHEMA_KIND_CATEGORY,
+    SCHEMA_VERSION_1_0,
+    SCHEMA_TYPE_CATEGORY,
+    SCHEMA_TYPE_PAGE_BREAK,
+} from '../shared/js/schema.js';
 
 describe('DB Module', () => {
     const DEFAULT_DB_NAME = 'QuickLogSoloDB';
@@ -98,7 +123,7 @@ describe('DB Module', () => {
         // Expect either Japanese or English name depending on environment
         const nameJA = '💻 開発・プログラミング';
         const nameEN = '💻 Development/Coding';
-        expect(categories.find(c => c.name === nameJA || c.name === nameEN)).toBeDefined();
+        expect(categories.find((c) => c.name === nameJA || c.name === nameEN)).toBeDefined();
     });
 
     test('initDB handles multiple active tasks by closing orphaned ones', async () => {
@@ -114,11 +139,11 @@ describe('DB Module', () => {
         expect(settings.activeTask.category).toBe('New Task');
 
         const allLogs = await dbGetAll(STORE_LOGS);
-        const openTasks = allLogs.filter(l => !l.endTime);
+        const openTasks = allLogs.filter((l) => !l.endTime);
         expect(openTasks.length).toBe(1);
         expect(openTasks[0].category).toBe('New Task');
 
-        const closedTask = allLogs.find(l => l.category === 'Old Task');
+        const closedTask = allLogs.find((l) => l.category === 'Old Task');
         expect(closedTask.endTime).toBeDefined();
         expect(closedTask.endTime).toBe(closedTask.startTime + 1000);
     });
@@ -190,7 +215,7 @@ describe('DB Module', () => {
         expect(settings.activeTask.startTime).toBe(startTime);
 
         const allLogs = await dbGetAll(STORE_LOGS);
-        const openLogs = allLogs.filter(l => !l.endTime);
+        const openLogs = allLogs.filter((l) => !l.endTime);
         expect(openLogs.length).toBe(1);
         expect(openLogs[0].category).toBe(SYSTEM_CATEGORY_IDLE);
 
@@ -204,12 +229,12 @@ describe('DB Module', () => {
         const alarms = await dbGetAll(STORE_ALARMS);
         expect(alarms.length).toBe(10);
 
-        const alarm2359 = alarms.find(a => a.time === '23:59');
+        const alarm2359 = alarms.find((a) => a.time === '23:59');
         expect(alarm2359).toBeDefined();
         expect(alarm2359.action).toBe('stop');
         expect(alarm2359.message).toBe(t('alarm-action-stop'));
 
-        const alarm0900 = alarms.find(a => a.time === '09:00');
+        const alarm0900 = alarms.find((a) => a.time === '09:00');
         expect(alarm0900).toBeDefined();
         expect(alarm0900.message).toBe('');
     });
@@ -219,16 +244,16 @@ describe('DB Module', () => {
         // Create an old-format alarm (missing type etc.)
         await dbAdd(STORE_ALARMS, {
             enabled: true,
-            time: "10:00",
-            message: "Old Alarm",
-            action: "none"
+            time: '10:00',
+            message: 'Old Alarm',
+            action: 'none',
         });
         closeDatabase();
 
         await initDB();
 
         const alarms = await dbGetAll(STORE_ALARMS);
-        const alarm = alarms.find(a => a.message === "Old Alarm");
+        const alarm = alarms.find((a) => a.message === 'Old Alarm');
         expect(alarm.type).toBe('daily_business');
         expect(alarm.daysOfWeek).toEqual([1, 2, 3, 4, 5]);
         expect(alarm.dayOfMonth).toBe(1);
@@ -255,7 +280,7 @@ describe('DB Module', () => {
 
     test('initDB cleans up old logs', async () => {
         await openDatabase();
-        const oldTime = Date.now() - (41 * 24 * 60 * 60 * 1000); // 41 days ago
+        const oldTime = Date.now() - 41 * 24 * 60 * 60 * 1000; // 41 days ago
         await dbAdd(STORE_LOGS, { category: 'Old', startTime: oldTime, endTime: oldTime + 1000 });
         await dbAdd(STORE_LOGS, { category: 'Recent', startTime: Date.now() - 1000, endTime: Date.now() });
         closeDatabase();
@@ -264,8 +289,8 @@ describe('DB Module', () => {
 
         const logs = await dbGetAll(STORE_LOGS);
         // Should only contain Recent task (and maybe dummy history if it was empty, but Recent makes it non-empty)
-        expect(logs.find(l => l.category === 'Old')).toBeUndefined();
-        expect(logs.find(l => l.category === 'Recent')).toBeDefined();
+        expect(logs.find((l) => l.category === 'Old')).toBeUndefined();
+        expect(logs.find((l) => l.category === 'Recent')).toBeDefined();
     });
 
     test('dbClear removes all items from a store', async () => {
@@ -283,30 +308,48 @@ describe('DB Module', () => {
             await dbAdd(STORE_CATEGORIES, { name: 'Existing', color: 'primary', order: 0 });
 
             const items = [
-                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'Existing', color: 'secondary' }, // Should be skipped (conflict)
-                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'New', color: 'teal' },
-                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_PAGE_BREAK }
+                {
+                    kind: SCHEMA_KIND_CATEGORY,
+                    version: SCHEMA_VERSION_1_0,
+                    type: SCHEMA_TYPE_CATEGORY,
+                    name: 'Existing',
+                    color: 'secondary',
+                }, // Should be skipped (conflict)
+                {
+                    kind: SCHEMA_KIND_CATEGORY,
+                    version: SCHEMA_VERSION_1_0,
+                    type: SCHEMA_TYPE_CATEGORY,
+                    name: 'New',
+                    color: 'teal',
+                },
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_PAGE_BREAK },
             ];
 
             await dbImportCategories(items, 'append');
             const result = await dbGetAll(STORE_CATEGORIES);
 
             expect(result.length).toBe(3);
-            expect(result.find(c => c.name === 'Existing').color).toBe('primary');
-            expect(result.find(c => c.name === 'New').color).toBe('teal');
-            expect(result.some(c => c.name.startsWith('__PAGE_BREAK__'))).toBe(true);
+            expect(result.find((c) => c.name === 'Existing').color).toBe('primary');
+            expect(result.find((c) => c.name === 'New').color).toBe('teal');
+            expect(result.some((c) => c.name.startsWith('__PAGE_BREAK__'))).toBe(true);
             // Verify order
-            expect(result.find(c => c.name === 'New').order).toBeGreaterThan(0);
+            expect(result.find((c) => c.name === 'New').order).toBeGreaterThan(0);
         });
 
         test('dbImportCategories rejects invalid items', async () => {
             await openDatabase();
             const items = [
-                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'Invalid Color', color: 'super-red' }
+                {
+                    kind: SCHEMA_KIND_CATEGORY,
+                    version: SCHEMA_VERSION_1_0,
+                    type: SCHEMA_TYPE_CATEGORY,
+                    name: 'Invalid Color',
+                    color: 'super-red',
+                },
             ];
             await dbImportCategories(items, 'append');
             const result = await dbGetAll(STORE_CATEGORIES);
-            expect(result.find(c => c.name === 'Invalid Color')).toBeUndefined();
+            expect(result.find((c) => c.name === 'Invalid Color')).toBeUndefined();
         });
 
         test('imports categories in overwrite mode', async () => {
@@ -314,7 +357,13 @@ describe('DB Module', () => {
             await dbAdd(STORE_CATEGORIES, { name: 'Old', color: 'primary', order: 0 });
 
             const items = [
-                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'New', color: 'green' }
+                {
+                    kind: SCHEMA_KIND_CATEGORY,
+                    version: SCHEMA_VERSION_1_0,
+                    type: SCHEMA_TYPE_CATEGORY,
+                    name: 'New',
+                    color: 'green',
+                },
             ];
 
             await dbImportCategories(items, 'overwrite');
@@ -325,5 +374,4 @@ describe('DB Module', () => {
             expect(result[0].order).toBe(0);
         });
     });
-
 });

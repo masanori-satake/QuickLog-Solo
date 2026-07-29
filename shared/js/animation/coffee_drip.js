@@ -9,27 +9,27 @@ export default class CoffeeDrip extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Coffee Drip",
-            ja: "コーヒードリップ",
-            de: "Kaffee-Drip",
-            es: "Goteo de café",
-            fr: "Goutte à goutte de café",
-            pt: "Café coado",
-            ko: "커피 드립",
-            zh: "咖啡滴漏"
+            en: 'Coffee Drip',
+            ja: 'コーヒードリップ',
+            de: 'Kaffee-Drip',
+            es: 'Goteo de café',
+            fr: 'Goutte à goutte de café',
+            pt: 'Café coado',
+            ko: '커피 드립',
+            zh: '咖啡滴漏',
         },
         description: {
-            en: "A relaxing coffee brewing animation that fills the pot.",
-            ja: "ポットにコーヒーが溜まっていく、リラックスできるドリップアニメーションです。",
-            de: "Eine entspannende Kaffeebrüh-Animation, die die Kanne füllt.",
-            es: "Una relajante animación de preparación de café que llena la cafetera.",
-            fr: "Une animation relaxante de préparation de café qui remplit la verseuse.",
-            pt: "Uma animação relaxante de preparo de café que enche a jarra.",
-            ko: "포트에 커피가 차오르는 편안한 드립 애니메이션입니다.",
-            zh: "一种放松的咖啡冲泡动画，咖啡壶逐渐装满。"
+            en: 'A relaxing coffee brewing animation that fills the pot.',
+            ja: 'ポットにコーヒーが溜まっていく、リラックスできるドリップアニメーションです。',
+            de: 'Eine entspannende Kaffeebrüh-Animation, die die Kanne füllt.',
+            es: 'Una relajante animación de preparación de café que llena la cafetera.',
+            fr: 'Une animation relaxante de préparation de café qui remplit la verseuse.',
+            pt: 'Uma animação relaxante de preparo de café que enche a jarra.',
+            ko: '포트에 커피가 차오르는 편안한 드립 애니메이션입니다.',
+            zh: '一种放松的咖啡冲泡动画，咖啡壶逐渐装满。',
         },
-        author: "QuickLog-Solo",
-        rewindable: true
+        author: 'QuickLog-Solo',
+        rewindable: true,
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'mask' };
@@ -71,7 +71,7 @@ export default class CoffeeDrip extends AnimationBase {
             const spots = [width * 0.15, width * 0.85, width * 0.25, width * 0.75];
             const halfW = 30 * scale;
             for (const spot of spots) {
-                const overlap = exclusionAreas.some(area => {
+                const overlap = exclusionAreas.some((area) => {
                     return spot + halfW > area.x && spot - halfW < area.x + area.width;
                 });
                 if (!overlap) {
@@ -121,7 +121,7 @@ export default class CoffeeDrip extends AnimationBase {
         const dropP = (elapsedMs / 1000) % 1;
         ctx.globalAlpha = 0.8;
         ctx.beginPath();
-        ctx.arc(centerX, (50 * scale) + dropP * (10 * scale), 2 * scale, 0, Math.PI * 2);
+        ctx.arc(centerX, 50 * scale + dropP * (10 * scale), 2 * scale, 0, Math.PI * 2);
         ctx.fill();
 
         // 4. Filling coffee

@@ -1,4 +1,3 @@
-
 import { test, expect } from '@playwright/test';
 
 const languages = ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
@@ -18,14 +17,14 @@ test.describe('I18n display verification', () => {
 
             // Verify a specific label based on language
             const expectedStopTexts = {
-                'ja': '終了',
-                'en': 'Stop',
-                'de': 'Beenden',
-                'es': 'Detener',
-                'fr': 'Arrêter',
-                'pt': 'Parar',
-                'ko': '종료',
-                'zh': '停止'
+                ja: '終了',
+                en: 'Stop',
+                de: 'Beenden',
+                es: 'Detener',
+                fr: 'Arrêter',
+                pt: 'Parar',
+                ko: '종료',
+                zh: '停止',
             };
             await expect(stopBtnText).toHaveText(expectedStopTexts[lang]);
 

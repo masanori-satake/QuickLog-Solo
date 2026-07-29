@@ -4,10 +4,19 @@
 
 export function initMetrics(state, elements) {
     const {
-        metricsPanel, showMetricsCheck, metricLatency, metricDensity,
-        metricChange, needleLatency, needleDensity,
-        needleChange, consoleSection, consoleOutput, clearConsoleBtn,
-        toggleConsoleBtn, tapeCounterEl
+        metricsPanel,
+        showMetricsCheck,
+        metricLatency,
+        metricDensity,
+        metricChange,
+        needleLatency,
+        needleDensity,
+        needleChange,
+        consoleSection,
+        consoleOutput,
+        clearConsoleBtn,
+        toggleConsoleBtn,
+        tapeCounterEl,
     } = elements;
 
     let metricsInterval = null;
@@ -17,12 +26,12 @@ export function initMetrics(state, elements) {
     function updateMeter(needle, value, max) {
         if (!needle) return;
         const percent = Math.min(1, value / max);
-        const angle = -45 + (percent * 90);
+        const angle = -45 + percent * 90;
         needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
     }
 
     function resetMeters() {
-        [needleLatency, needleDensity, needleChange].forEach(needle => {
+        [needleLatency, needleDensity, needleChange].forEach((needle) => {
             if (needle) needle.style.transform = 'translateX(-50%) rotate(-45deg)';
         });
         metricLatency.textContent = '-- ms';
@@ -62,7 +71,7 @@ export function initMetrics(state, elements) {
 
         if (!engine._handleWorkerMessage._isPatched) {
             const original = engine._handleWorkerMessage;
-            engine._handleWorkerMessage = function(e) {
+            engine._handleWorkerMessage = function (e) {
                 if (e.data.type === 'drawResponse') {
                     lastLatency = performance.now() - engine.lastDrawRequestTime;
                 } else if (e.data.type === 'error') {
@@ -92,13 +101,15 @@ export function initMetrics(state, elements) {
             let changed = 0;
 
             for (let i = 0; i < imgData.length; i += 4) {
-                const isNonZero = imgData[i] + imgData[i+1] + imgData[i+2] > 0;
+                const isNonZero = imgData[i] + imgData[i + 1] + imgData[i + 2] > 0;
                 if (isNonZero) nonZero++;
 
                 if (lastImageData) {
-                    if (imgData[i] !== lastImageData[i] ||
-                        imgData[i+1] !== lastImageData[i+1] ||
-                        imgData[i+2] !== lastImageData[i+2]) {
+                    if (
+                        imgData[i] !== lastImageData[i] ||
+                        imgData[i + 1] !== lastImageData[i + 1] ||
+                        imgData[i + 2] !== lastImageData[i + 2]
+                    ) {
                         changed++;
                     }
                 }
@@ -125,7 +136,6 @@ export function initMetrics(state, elements) {
             } else {
                 metricLatency.style.color = '#4caf50';
             }
-
         }, 1000);
     }
 
@@ -166,6 +176,6 @@ export function initMetrics(state, elements) {
         resetMeters,
         updateTapeCounter,
         appendConsole,
-        showConsole
+        showConsole,
     };
 }

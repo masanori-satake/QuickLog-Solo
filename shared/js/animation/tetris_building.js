@@ -9,26 +9,26 @@ export default class TetrisBuilding extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Tetris Building",
-            ja: "テトリス・ビルディング",
-            de: "Tetris-Bau",
-            es: "Construcción Tetris",
-            fr: "Construction Tetris",
-            pt: "Construção Tetris",
-            ko: "테트리스 빌딩",
-            zh: "俄罗斯方块建筑"
+            en: 'Tetris Building',
+            ja: 'テトリス・ビルディング',
+            de: 'Tetris-Bau',
+            es: 'Construcción Tetris',
+            fr: 'Construction Tetris',
+            pt: 'Construção Tetris',
+            ko: '테트리스 빌딩',
+            zh: '俄罗斯方块建筑',
         },
         description: {
-            en: "Falling blocks stack up to fill the screen, clearing rows along the way.",
-            ja: "落ちてくるブロックが積み上がり、横一列が揃うと消えていくビルドアップ・アニメーションです。",
-            de: "Fallende Blöcke stapeln sich, um den Bildschirm zu füllen, und löschen dabei Reihen.",
-            es: "Bloques que caen se apilan para llenar la pantalla, despejando filas por el camino.",
+            en: 'Falling blocks stack up to fill the screen, clearing rows along the way.',
+            ja: '落ちてくるブロックが積み上がり、横一列が揃うと消えていくビルドアップ・アニメーションです。',
+            de: 'Fallende Blöcke stapeln sich, um den Bildschirm zu füllen, und löschen dabei Reihen.',
+            es: 'Bloques que caen se apilan para llenar la pantalla, despejando filas por el camino.',
             fr: "Des blocs qui tombent s'empilent pour remplir l'écran, effaçant des lignes au passage.",
-            pt: "Blocos que caem se empilham para preencher a tela, limpando linhas pelo caminho.",
-            ko: "떨어지는 블록이 쌓여 화면을 채우고, 그 과정에서 가로 줄을 지웁니다。",
-            zh: "下落的方块堆叠以填满屏幕，并在此过程中消除行。"
+            pt: 'Blocos que caem se empilham para preencher a tela, limpando linhas pelo caminho.',
+            ko: '떨어지는 블록이 쌓여 화면을 채우고, 그 과정에서 가로 줄을 지웁니다。',
+            zh: '下落的方块堆叠以填满屏幕，并在此过程中消除行。',
         },
-        author: "QuickLog-Solo"
+        author: 'QuickLog-Solo',
     };
 
     config = { mode: 'matrix', exclusionStrategy: 'mask' };
@@ -64,7 +64,9 @@ export default class TetrisBuilding extends AnimationBase {
 
         // Initialize empty grid
         // 空のグリッドを初期化
-        this.grid = Array(this.rows).fill(0).map(() => Array(this.cols).fill(0));
+        this.grid = Array(this.rows)
+            .fill(0)
+            .map(() => Array(this.cols).fill(0));
 
         this.lastBlockP = 0;
         this.clearingLine = -1;
@@ -84,11 +86,10 @@ export default class TetrisBuilding extends AnimationBase {
         if (exclusionAreas && exclusionAreas.length > 0) {
             const gridWidthPx = this.cols * this.cellSize;
             // Potential spots: left or right / 配置候補：左または右
-            const spots = [1, Math.floor(width / 6) - (this.cols * 2) - 1];
+            const spots = [1, Math.floor(width / 6) - this.cols * 2 - 1];
             for (const spot of spots) {
-                const overlap = exclusionAreas.some(area => {
-                    return (spot * this.cellSize) < (area.x + area.width) &&
-                           (spot * this.cellSize + gridWidthPx) > area.x;
+                const overlap = exclusionAreas.some((area) => {
+                    return spot * this.cellSize < area.x + area.width && spot * this.cellSize + gridWidthPx > area.x;
                 });
                 if (!overlap) {
                     this.xOffset = spot;
@@ -104,7 +105,9 @@ export default class TetrisBuilding extends AnimationBase {
 
         // Reset grid if progress resets / 進捗がリセットされたらグリッドもリセット
         if (progress < this.lastBlockP) {
-            this.grid = Array(this.rows).fill(0).map(() => Array(this.cols).fill(0));
+            this.grid = Array(this.rows)
+                .fill(0)
+                .map(() => Array(this.cols).fill(0));
             this.lastBlockP = 0;
         }
 
@@ -134,7 +137,9 @@ export default class TetrisBuilding extends AnimationBase {
         // 3. グリッドをマトリックス形式に変換
         const matrixRows = Math.ceil(height / 6);
         const matrixCols = Math.ceil(width / 6);
-        const matrix = Array(matrixRows).fill(0).map(() => Array(matrixCols).fill(0));
+        const matrix = Array(matrixRows)
+            .fill(0)
+            .map(() => Array(matrixCols).fill(0));
 
         // Draw stacked blocks
         // 積み上がったブロックの描画
@@ -142,7 +147,7 @@ export default class TetrisBuilding extends AnimationBase {
             for (let c = 0; c < this.cols; c++) {
                 if (this.grid[r][c]) {
                     // Flash line when clearing / 消去中の行は点滅
-                    if (r === this.clearingLine && Math.floor(progress * 10000 / 100) % 2 === 0) continue;
+                    if (r === this.clearingLine && Math.floor((progress * 10000) / 100) % 2 === 0) continue;
 
                     // Each block is drawn as matrix cells
                     const cellDotSize = this.cellSize / 6;
@@ -209,7 +214,7 @@ export default class TetrisBuilding extends AnimationBase {
      */
     checkLineClear() {
         for (let r = 0; r < this.rows; r++) {
-            if (this.grid[r].every(cell => cell === 1)) {
+            if (this.grid[r].every((cell) => cell === 1)) {
                 this.clearingLine = r;
                 this.clearTimer = 0;
                 break;

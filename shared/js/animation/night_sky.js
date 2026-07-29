@@ -9,27 +9,27 @@ export default class NightSky extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Night Sky",
-            ja: "夜空",
-            de: "Nachthimmel",
-            es: "Cielo nocturno",
-            fr: "Ciel nocturne",
-            pt: "Céu noturno",
-            ko: "밤하늘",
-            zh: "星空"
+            en: 'Night Sky',
+            ja: '夜空',
+            de: 'Nachthimmel',
+            es: 'Cielo nocturno',
+            fr: 'Ciel nocturne',
+            pt: 'Céu noturno',
+            ko: '밤하늘',
+            zh: '星空',
         },
         description: {
-            en: "A peaceful night sky where twinkling stars and a moon slowly form a constellation.",
-            ja: "きらめく星々と月がゆっくりと繋がり、星座を描き出す静かな夜空です。",
-            de: "Ein friedlicher Nachthimmel, an dem funkelnde Sterne und ein Mond langsam ein Sternbild bilden.",
-            es: "Un cielo nocturno tranquilo donde las estrellas centelleantes y la luna forman lentamente una constelación.",
-            fr: "Un ciel nocturne paisible où les étoiles scintillantes et la lune forment lentement une constellation.",
-            pt: "Um céu noturno tranquilo onde estrelas cintilantes e a lua formam lentamente uma constelação.",
-            ko: "반짝이는 별들과 달이 천천히 별자리를 형성하는 평화로운 밤하늘입니다。",
-            zh: "宁静的夜空，闪烁的星星和月亮慢慢形成一个星座。"
+            en: 'A peaceful night sky where twinkling stars and a moon slowly form a constellation.',
+            ja: 'きらめく星々と月がゆっくりと繋がり、星座を描き出す静かな夜空です。',
+            de: 'Ein friedlicher Nachthimmel, an dem funkelnde Sterne und ein Mond langsam ein Sternbild bilden.',
+            es: 'Un cielo nocturno tranquilo donde las estrellas centelleantes y la luna forman lentamente una constelación.',
+            fr: 'Un ciel nocturne paisible où les étoiles scintillantes et la lune forment lentement une constellation.',
+            pt: 'Um céu noturno tranquilo onde estrelas cintilantes e a lua formam lentamente uma constelação.',
+            ko: '반짝이는 별들과 달이 천천히 별자리를 형성하는 평화로운 밤하늘입니다。',
+            zh: '宁静的夜空，闪烁的星星和月亮慢慢形成一个星座。',
         },
-        author: "QuickLog-Solo",
-        rewindable: true
+        author: 'QuickLog-Solo',
+        rewindable: true,
     };
 
     constructor() {
@@ -38,19 +38,27 @@ export default class NightSky extends AnimationBase {
         // Coordinates for the constellation (percentage of width/height)
         // 星座の各点の座標（幅・高さに対する割合）
         this.constellationPoints = [
-            {x: 0.2, y: 0.2}, {x: 0.3, y: 0.4}, {x: 0.5, y: 0.3},
-            {x: 0.7, y: 0.5}, {x: 0.8, y: 0.2}, {x: 0.6, y: 0.7},
-            {x: 0.4, y: 0.8}, {x: 0.2, y: 0.6}, {x: 0.2, y: 0.2}
+            { x: 0.2, y: 0.2 },
+            { x: 0.3, y: 0.4 },
+            { x: 0.5, y: 0.3 },
+            { x: 0.7, y: 0.5 },
+            { x: 0.8, y: 0.2 },
+            { x: 0.6, y: 0.7 },
+            { x: 0.4, y: 0.8 },
+            { x: 0.2, y: 0.6 },
+            { x: 0.2, y: 0.2 },
         ];
 
         // Random background stars
         // 背景のランダムな星々
-        this.backgroundStars = Array(50).fill(0).map(() => ({
-            x: Math.random(),
-            y: Math.random(),
-            size: 1 + Math.random() * 2,
-            twinkleOffset: Math.random() * Math.PI * 2
-        }));
+        this.backgroundStars = Array(50)
+            .fill(0)
+            .map(() => ({
+                x: Math.random(),
+                y: Math.random(),
+                size: 1 + Math.random() * 2,
+                twinkleOffset: Math.random() * Math.PI * 2,
+            }));
     }
 
     config = { mode: 'sprite', exclusionStrategy: 'jump' };
@@ -90,18 +98,18 @@ export default class NightSky extends AnimationBase {
             sprites.push({ x: pt1.x * width, y: pt1.y * height, size: 2 });
 
             if (i < linesToDraw) {
-                const pt2 = this.constellationPoints[i+1];
+                const pt2 = this.constellationPoints[i + 1];
                 // Draw dotted line between constellation points
                 // 星座の点と点の間に点線を描画
                 const dx = (pt2.x - pt1.x) * width;
                 const dy = (pt2.y - pt1.y) * height;
-                const dist = Math.sqrt(dx*dx + dy*dy);
+                const dist = Math.sqrt(dx * dx + dy * dy);
                 const steps = Math.floor(dist / 8);
                 for (let s = 1; s < steps; s++) {
                     sprites.push({
                         x: pt1.x * width + dx * (s / steps),
                         y: pt1.y * height + dy * (s / steps),
-                        size: 1
+                        size: 1,
                     });
                 }
             }
@@ -127,11 +135,11 @@ export default class NightSky extends AnimationBase {
 
             // Movement logic: In -> Stop -> Out
             if (p < 0.3) {
-                ufoX = width * (p / 0.3 * 0.95 - 0.2); // Fly In / 飛来
+                ufoX = width * ((p / 0.3) * 0.95 - 0.2); // Fly In / 飛来
             } else if (p < 0.7) {
                 ufoX = width * 0.75; // Stop / 停止
             } else {
-                ufoX = width * (0.75 + (p - 0.7) / 0.3 * 0.45); // Fly Out / 退去
+                ufoX = width * (0.75 + ((p - 0.7) / 0.3) * 0.45); // Fly Out / 退去
             }
 
             // UFO Body / UFO本体

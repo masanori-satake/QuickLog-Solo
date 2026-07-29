@@ -11,28 +11,28 @@ export default class TargetReticle extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Target Reticle & Shadow Silhouette",
-            ja: "ターゲット照準と黒い影",
-            de: "Zielabsehen & Schattensilhouette",
-            es: "Retícula de objetivo y silueta de sombra",
+            en: 'Target Reticle & Shadow Silhouette',
+            ja: 'ターゲット照準と黒い影',
+            de: 'Zielabsehen & Schattensilhouette',
+            es: 'Retícula de objetivo y silueta de sombra',
             fr: "Réticule de cible et silhouette d'ombre",
-            pt: "Retículo do alvo e silhueta de sombra",
-            ko: "표적 조준경과 검은 그림자",
-            zh: "目标十字线与影子剪影"
+            pt: 'Retículo do alvo e silhueta de sombra',
+            ko: '표적 조준경과 검은 그림자',
+            zh: '目标十字线与影子剪影',
         },
         description: {
             en: "A circular pixel crosshair drifts smoothly in a figure-8 loop, while a dark shadow silhouette's sharp eyes blink in the background.",
-            ja: "円形のドット照準器が8の字の軌道を描いて浮遊し、背後に現れた黒い人物の鋭い目が2秒周期で明滅します。",
-            de: "Ein kreisförmiges Pixel-Fadenkreuz driftet sanft in einer Acht-Schleife, während die scharfen Augen einer dunklen Schattensilhouette im Hintergrund blinken.",
-            es: "Una retícula de píxeles circular se desplaza suavemente en un bucle en forma de 8, mientras los ojos afilados de una silueta de sombra parpadean en el fondo.",
+            ja: '円形のドット照準器が8の字の軌道を描いて浮遊し、背後に現れた黒い人物の鋭い目が2秒周期で明滅します。',
+            de: 'Ein kreisförmiges Pixel-Fadenkreuz driftet sanft in einer Acht-Schleife, während die scharfen Augen einer dunklen Schattensilhouette im Hintergrund blinken.',
+            es: 'Una retícula de píxeles circular se desplaza suavemente en un bucle en forma de 8, mientras los ojos afilados de una silueta de sombra parpadean en el fondo.',
             fr: "Un réticule circulaire en pixel dérive doucement en forme de 8, tandis que les yeux aiguisés d'une silhouette d'ombre clignotent en arrière-plan.",
-            pt: "Um retículo circular de pixel flutua suavemente em uma trajetória de 8, enquanto os olhos afiados de uma silhueta de sombra piscam ao fundo.",
-            ko: "원형 픽셀 조준경이 8자 궤도를 그리며 떠돌고, 배경 속 검은 실루엣의 날카로운 눈빛이 2초마다 깜박입니다.",
-            zh: "一个圆形的像素十字准星在8字形循环中平滑漂移，而背景中黑影剪影的敏锐眼睛每2秒闪烁一次。"
+            pt: 'Um retículo circular de pixel flutua suavemente em uma trajetória de 8, enquanto os olhos afiados de uma silhueta de sombra piscam ao fundo.',
+            ko: '원형 픽셀 조준경이 8자 궤도를 그리며 떠돌고, 배경 속 검은 실루엣의 날카로운 눈빛이 2초마다 깜박입니다.',
+            zh: '一个圆形的像素十字准星在8字形循环中平滑漂移，而背景中黑影剪影的敏锐眼睛每2秒闪烁一次。',
         },
-        author: "QuickLog-Solo",
+        author: 'QuickLog-Solo',
         devOnly: true,
-        rewindable: true
+        rewindable: true,
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -107,9 +107,19 @@ export default class TargetReticle extends AnimationBase {
             // Bold, larger eyes
             const eyeW = Math.round(Math.max(5, shadowW * 0.08));
             // Left eye
-            ctx.fillRect(Math.round(-headRadius * 0.45 - (eyeW / 2)), eyeY, eyeW, Math.round(Math.max(2, eyeHeight * 1.5)));
+            ctx.fillRect(
+                Math.round(-headRadius * 0.45 - eyeW / 2),
+                eyeY,
+                eyeW,
+                Math.round(Math.max(2, eyeHeight * 1.5))
+            );
             // Right eye
-            ctx.fillRect(Math.round(headRadius * 0.45 - (eyeW / 2)), eyeY, eyeW, Math.round(Math.max(2, eyeHeight * 1.5)));
+            ctx.fillRect(
+                Math.round(headRadius * 0.45 - eyeW / 2),
+                eyeY,
+                eyeW,
+                Math.round(Math.max(2, eyeHeight * 1.5))
+            );
         }
 
         ctx.restore();
@@ -117,7 +127,7 @@ export default class TargetReticle extends AnimationBase {
         // --- Layer 2: Crosshair / Target Reticle drifting in Figure-8 path ---
         // Figure-8 infinity math: x = sin(t), y = sin(2t)
         const pathPeriod = 4500; // 4.5 seconds loop period
-        const t = (elapsedMs % pathPeriod) / pathPeriod * Math.PI * 2;
+        const t = ((elapsedMs % pathPeriod) / pathPeriod) * Math.PI * 2;
         const scaleX = width * 0.35;
         const scaleY = height * 0.25;
 
@@ -145,13 +155,17 @@ export default class TargetReticle extends AnimationBase {
         // Crosshairs tick marks (top, bottom, left, right)
         ctx.beginPath();
         // Top
-        ctx.moveTo(0, -rSize); ctx.lineTo(0, -rSize - 6);
+        ctx.moveTo(0, -rSize);
+        ctx.lineTo(0, -rSize - 6);
         // Bottom
-        ctx.moveTo(0, rSize); ctx.lineTo(0, rSize + 6);
+        ctx.moveTo(0, rSize);
+        ctx.lineTo(0, rSize + 6);
         // Left
-        ctx.moveTo(-rSize, 0); ctx.lineTo(-rSize - 6, 0);
+        ctx.moveTo(-rSize, 0);
+        ctx.lineTo(-rSize - 6, 0);
         // Right
-        ctx.moveTo(rSize, 0); ctx.lineTo(rSize + 6, 0);
+        ctx.moveTo(rSize, 0);
+        ctx.lineTo(rSize + 6, 0);
         ctx.stroke();
 
         ctx.restore();

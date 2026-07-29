@@ -24,7 +24,11 @@ const state = {
     inputInitialState: null,
 
     t: (key, params = {}) => {
-        let msg = (messages[state.currentLang] && messages[state.currentLang][key]) || (messages._common && messages._common[key]) || messages.en[key] || key;
+        let msg =
+            (messages[state.currentLang] && messages[state.currentLang][key]) ||
+            (messages._common && messages._common[key]) ||
+            messages.en[key] ||
+            key;
         for (const [pKey, pVal] of Object.entries(params)) {
             msg = msg.replace(`{${pKey}}`, pVal);
         }
@@ -35,7 +39,7 @@ const state = {
         toast.textContent = msg;
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 3000);
-    }
+    },
 };
 
 const elements = {
@@ -72,7 +76,7 @@ const elements = {
     tagReplaceCloseBtn: document.getElementById('tag-replace-close-btn'),
     closeTagReplaceModalBtn: document.getElementById('close-tag-replace-modal-btn'),
     modalUndoBtn: document.getElementById('modal-undo-btn'),
-    modalRedoBtn: document.getElementById('modal-redo-btn')
+    modalRedoBtn: document.getElementById('modal-redo-btn'),
 };
 
 let historyMod, uiMod;
@@ -124,7 +128,7 @@ function setupTheme() {
     const savedTheme = localStorage.getItem('category-editor-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     state.currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    elements.themeToggle.checked = (state.currentTheme === 'dark');
+    elements.themeToggle.checked = state.currentTheme === 'dark';
     applyTheme();
 }
 
@@ -170,17 +174,17 @@ function updateBackLink() {
 }
 
 function updateTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
         const key = el.getAttribute('data-i18n');
         el.textContent = state.t(key);
     });
 
-    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => {
         const key = el.getAttribute('data-i18n-title');
         el.title = state.t(key);
     });
 
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
         const key = el.getAttribute('data-i18n-placeholder');
         el.placeholder = state.t(key);
     });
@@ -189,7 +193,7 @@ function updateTranslations() {
 function setupAnimationEngine() {
     const canvas = document.getElementById('animation-canvas');
     state.animationEngine = new AnimationEngine(canvas);
-    animationRegistry.forEach(anim => {
+    animationRegistry.forEach((anim) => {
         state.animationEngine.register(anim.id, anim.class, anim.id);
     });
     state.animationEngine.resize();
@@ -260,10 +264,25 @@ function setupEventListeners() {
 function loadDefaultCategories() {
     const defaultSet = [
         { name: state.t('init-cat-dev'), color: 'primary', tags: state.t('init-tag-dev'), animation: 'digital_rain' },
-        { name: state.t('init-cat-meeting'), color: 'secondary', tags: state.t('init-tag-meeting'), animation: 'migrating_birds' },
-        { name: state.t('init-cat-research'), color: 'tertiary', tags: state.t('init-tag-research'), animation: 'ripple' },
+        {
+            name: state.t('init-cat-meeting'),
+            color: 'secondary',
+            tags: state.t('init-tag-meeting'),
+            animation: 'migrating_birds',
+        },
+        {
+            name: state.t('init-cat-research'),
+            color: 'tertiary',
+            tags: state.t('init-tag-research'),
+            animation: 'ripple',
+        },
         { name: state.t('init-cat-admin'), color: 'neutral', tags: state.t('init-tag-admin'), animation: 'dot_typing' },
-        { name: state.t('init-cat-break'), color: 'outline', tags: state.t('init-tag-break'), animation: 'coffee_drip' }
+        {
+            name: state.t('init-cat-break'),
+            color: 'outline',
+            tags: state.t('init-tag-break'),
+            animation: 'coffee_drip',
+        },
     ];
 
     state.categories = defaultSet;
@@ -279,7 +298,7 @@ function refreshUIAfterHistoryChange() {
     const prevSelectedIndices = [...state.selectedIndices];
     state.renderCategoryList();
 
-    state.selectedIndices = prevSelectedIndices.filter(idx => idx < state.categories.length);
+    state.selectedIndices = prevSelectedIndices.filter((idx) => idx < state.categories.length);
     if (state.selectedIndices.length === 0 && state.categories.length > 0) {
         state.selectedIndices = [0];
         state.lastSelectedIndex = 0;
@@ -316,7 +335,8 @@ function updatePreview() {
 
     const colorKey = cat.color || 'primary';
     const computedStyle = getComputedStyle(document.body);
-    const color = computedStyle.getPropertyValue(`--custom-cat-${colorKey}`).trim() || uiMod.COLOR_CODES[colorKey] || '#1976d2';
+    const color =
+        computedStyle.getPropertyValue(`--custom-cat-${colorKey}`).trim() || uiMod.COLOR_CODES[colorKey] || '#1976d2';
 
     const canvasRect = state.animationEngine.canvas.getBoundingClientRect();
     const exclusionAreas = [];
@@ -327,15 +347,15 @@ function updatePreview() {
     const timerLabel = document.getElementById('preview-status-label');
     const timerElapsed = document.getElementById('preview-elapsed');
 
-    [previewName, timerLabel, timerElapsed].forEach(el => {
+    [previewName, timerLabel, timerElapsed].forEach((el) => {
         if (el) {
             const rect = el.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
                 exclusionAreas.push({
                     x: rect.left - canvasRect.left - paddingX,
                     y: rect.top - canvasRect.top - paddingY,
-                    width: rect.width + (paddingX * 2),
-                    height: rect.height + (paddingY * 2)
+                    width: rect.width + paddingX * 2,
+                    height: rect.height + paddingY * 2,
                 });
             }
         }

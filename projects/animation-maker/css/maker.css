@@ -15,10 +15,13 @@
 }
 
 body {
-    font-family: Roboto, 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
+    font-family:
+        Roboto, 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
     height: 100vh;
     overflow: hidden;
-    transition: background-color 0.3s, color 0.3s;
+    transition:
+        background-color 0.3s,
+        color 0.3s;
     background-color: var(--maker-bg);
     color: var(--md-sys-color-on-surface);
 }
@@ -124,7 +127,8 @@ body.theme-light {
     color: var(--md-sys-color-on-surface-variant);
 }
 
-.theme-switch, .switch {
+.theme-switch,
+.switch {
     display: inline-block;
     height: 24px;
     position: relative;
@@ -132,7 +136,8 @@ body.theme-light {
     flex-shrink: 0;
 }
 
-.theme-switch input, .switch input {
+.theme-switch input,
+.switch input {
     display: none;
 }
 
@@ -147,7 +152,7 @@ body.theme-light {
 .slider::before {
     background-color: #fff;
     bottom: 4px;
-    content: "";
+    content: '';
     height: 16px;
     left: 4px;
     position: absolute;
@@ -229,7 +234,10 @@ input:checked + .slider::before {
     padding: var(--md-sys-spacing-2);
     border: 1px solid var(--md-sys-color-outline-variant);
     box-shadow: var(--md-sys-elevation-1);
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    transition:
+        background-color 0.3s,
+        color 0.3s,
+        border-color 0.3s;
 }
 
 .section-title {
@@ -362,7 +370,8 @@ input:checked + .slider::before {
     color: var(--md-sys-color-on-surface-variant);
 }
 
-.input-group input, .input-group select {
+.input-group input,
+.input-group select {
     padding: 10px;
     border-radius: var(--md-sys-shape-extra-small);
     border: 1px solid var(--md-sys-color-outline-variant);
@@ -401,7 +410,8 @@ input:checked + .slider::before {
     gap: 8px;
 }
 
-.drop-zone:hover, .drop-zone.dragover {
+.drop-zone:hover,
+.drop-zone.dragover {
     border-color: var(--md-sys-color-primary);
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
@@ -509,11 +519,16 @@ input:checked + .slider::before {
     user-select: none;
     border-radius: var(--md-sys-shape-medium);
     border: 1px solid var(--md-sys-color-outline-variant);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 0 1px rgba(255, 255, 255, 0.2);
-    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        inset 0 0 1px rgba(255, 255, 255, 0.2);
+    transition:
+        background-color 0.3s,
+        box-shadow 0.3s;
 }
 
-#animation-canvas, #raw-canvas {
+#animation-canvas,
+#raw-canvas {
     width: 100%;
     height: 100%;
     display: block;
@@ -532,11 +547,13 @@ input:checked + .slider::before {
 }
 
 /* Standard height helper line defaults (100px) */
-.boundary-top, .raw-boundary-top {
+.boundary-top,
+.raw-boundary-top {
     top: 25px; /* (150 - 100) / 2 */
 }
 
-.boundary-bottom, .raw-boundary-bottom {
+.boundary-bottom,
+.raw-boundary-bottom {
     top: 125px; /* 150 - 25 */
 }
 
@@ -637,14 +654,14 @@ input:checked + .slider::before {
 }
 
 /* Retro Display Mode Color Options in Palette (L, C, N indicators) */
-.color-option[data-color="retro-lcd"] {
+.color-option[data-color='retro-lcd'] {
     background-color: #9bbc0f !important;
     border-color: #0f380f !important;
     position: relative;
 }
 
-.color-option[data-color="retro-lcd"]::after {
-    content: "L";
+.color-option[data-color='retro-lcd']::after {
+    content: 'L';
     position: absolute;
     inset: 0;
     display: flex;
@@ -655,14 +672,14 @@ input:checked + .slider::before {
     font-size: 14px;
 }
 
-.color-option[data-color="retro-crt"] {
+.color-option[data-color='retro-crt'] {
     background-color: #3f3 !important;
     border-color: #030c04 !important;
     position: relative;
 }
 
-.color-option[data-color="retro-crt"]::after {
-    content: "C";
+.color-option[data-color='retro-crt']::after {
+    content: 'C';
     position: absolute;
     inset: 0;
     display: flex;
@@ -673,14 +690,14 @@ input:checked + .slider::before {
     font-size: 14px;
 }
 
-.color-option[data-color="retro-nixie"] {
+.color-option[data-color='retro-nixie'] {
     background-color: #f50 !important;
     border-color: #0c0603 !important;
     position: relative;
 }
 
-.color-option[data-color="retro-nixie"]::after {
-    content: "N";
+.color-option[data-color='retro-nixie']::after {
+    content: 'N';
     position: absolute;
     inset: 0;
     display: flex;
@@ -692,9 +709,9 @@ input:checked + .slider::before {
 }
 
 /* Hide the letter when selected so only checkmark displays */
-.color-option.selected[data-color="retro-lcd"]::after,
-.color-option.selected[data-color="retro-crt"]::after,
-.color-option.selected[data-color="retro-nixie"]::after {
+.color-option.selected[data-color='retro-lcd']::after,
+.color-option.selected[data-color='retro-crt']::after,
+.color-option.selected[data-color='retro-nixie']::after {
     display: none;
 }
 
@@ -762,7 +779,9 @@ button {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.primary-btn, .secondary-btn, .danger-btn {
+.primary-btn,
+.secondary-btn,
+.danger-btn {
     padding: 12px 24px;
     border-radius: var(--md-sys-shape-full);
     font-weight: 500;
@@ -779,13 +798,15 @@ button {
     color: var(--md-sys-color-on-secondary-container);
 }
 
-.primary-btn:hover, .secondary-btn:hover {
+.primary-btn:hover,
+.secondary-btn:hover {
     filter: brightness(1.1);
     box-shadow: var(--md-sys-elevation-1);
     transform: translateY(-1px);
 }
 
-.primary-btn:active, .secondary-btn:active {
+.primary-btn:active,
+.secondary-btn:active {
     transform: translateY(0);
 }
 
@@ -880,7 +901,9 @@ button {
 
 #preview-overlay-base {
     background-color: transparent !important;
-    transition: background-color 0.3s, color 0.3s;
+    transition:
+        background-color 0.3s,
+        color 0.3s;
 }
 
 #preview-overlay-base.anim-active {
@@ -932,15 +955,16 @@ button {
 }
 
 #preview-container.retro-lcd::after {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 10;
 
     /* Ultra-fine pixel grid bounds */
-    background: linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
     background-size: 6px 6px; /* Sync with CELL_SIZE = 6 */
 }
 
@@ -958,17 +982,20 @@ button {
 }
 
 #preview-container.retro-crt::before {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 10;
 
     /* Horizontal scanlines & vertical aperture grille slits */
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-    background-size: 100% 4px, 3px 100%;
-    box-shadow: inset 0 0 24px rgba(0,0,0,0.92);
+    background:
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size:
+        100% 4px,
+        3px 100%;
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.92);
 }
 
 #preview-container.retro-crt #animation-canvas {
@@ -983,19 +1010,24 @@ button {
 }
 
 @keyframes crt-jitter-flicker-editor {
-    0%, 100% { opacity: 0.992; }
-    50% { opacity: 1.0; }
+    0%,
+    100% {
+        opacity: 0.992;
+    }
+    50% {
+        opacity: 1;
+    }
 }
 
 #preview-container.retro-nixie {
     background-color: #0c0603 !important;
     position: relative;
-    filter: url("#nixie-heat-shimmer");
+    filter: url('#nixie-heat-shimmer');
     animation: nixie-flicker-editor 0.2s infinite;
 }
 
 #preview-container.retro-nixie::before {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
@@ -1007,16 +1039,16 @@ button {
 }
 
 #preview-container.retro-nixie::after {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 11;
 
     /* Glass bulb glare highlight */
-    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 40%, transparent 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 40%, transparent 100%);
     border-radius: inherit;
-    box-shadow: inset 0 0 32px rgba(0,0,0,0.95);
+    box-shadow: inset 0 0 32px rgba(0, 0, 0, 0.95);
 }
 
 #preview-container.retro-nixie #animation-canvas {
@@ -1027,18 +1059,22 @@ button {
 #preview-container.retro-nixie #preview-elapsed,
 #preview-container.retro-nixie #preview-status-label {
     color: #f50 !important;
-    text-shadow: 0 0 2px #fff, 0 0 6px #f50, 0 0 12px #ff2a00 !important;
+    text-shadow:
+        0 0 2px #fff,
+        0 0 6px #f50,
+        0 0 12px #ff2a00 !important;
 }
 
 @keyframes nixie-flicker-editor {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 0.99;
-        filter: url("#nixie-heat-shimmer") brightness(1);
+        filter: url('#nixie-heat-shimmer') brightness(1);
     }
 
     50% {
-        opacity: 1.0;
-        filter: url("#nixie-heat-shimmer") brightness(1.05);
+        opacity: 1;
+        filter: url('#nixie-heat-shimmer') brightness(1.05);
     }
 }
 
@@ -1113,7 +1149,10 @@ button {
     border: none;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+    transition:
+        transform 0.2s,
+        filter 0.2s,
+        box-shadow 0.2s;
 }
 
 .apply-btn:hover {
@@ -1346,7 +1385,9 @@ button {
 
 body.theme-light .preview-container {
     background-color: #f0f0f0;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), inset 0 0 1px rgba(0, 0, 0, 0.1);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.15),
+        inset 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 body.theme-light #preview-container.anim-active:not(.retro-lcd, .retro-crt, .retro-nixie) {

@@ -1,5 +1,13 @@
 import {
-    initDB, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS, STORE_CATEGORIES, SETTING_KEY_LANGUAGE
+    initDB,
+    dbPut,
+    dbClear,
+    dbAddMultiple,
+    STORE_ALARMS,
+    STORE_SETTINGS,
+    SETTING_KEY_BUSINESS_DAYS,
+    STORE_CATEGORIES,
+    SETTING_KEY_LANGUAGE,
 } from '../shared/js/db.js';
 
 export async function initData(state) {
@@ -42,11 +50,11 @@ export async function exportAlarms(state) {
         version: '1.0',
         businessDays: state.businessDays,
         categories: state.categories,
-        alarms: state.alarms.map(a => {
+        alarms: state.alarms.map((a) => {
             const rest = { ...a };
             delete rest.id;
             return rest;
-        })
+        }),
     };
     await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
 }

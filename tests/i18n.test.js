@@ -23,11 +23,11 @@ describe('i18n Module', () => {
 
         const mockNavigator = {
             language: 'en-US',
-            userLanguage: undefined
+            userLanguage: undefined,
         };
         Object.defineProperty(window, 'navigator', {
             value: mockNavigator,
-            configurable: true
+            configurable: true,
         });
     });
 
@@ -35,7 +35,7 @@ describe('i18n Module', () => {
         window.location = originalLocation;
         Object.defineProperty(window, 'navigator', {
             value: originalNavigator,
-            configurable: true
+            configurable: true,
         });
     });
 

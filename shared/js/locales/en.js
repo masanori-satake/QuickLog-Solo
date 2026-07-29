@@ -1,22 +1,22 @@
 export default {
     // UI Header & Sections
-    'title': 'QuickLog-Solo',
+    title: 'QuickLog-Solo',
     'copy-report-btn': 'Copy Daily Report',
     'copy-report-title': 'Daily Report Copy',
     'tag-aggregation-title': 'Tag Aggregation',
     'copy-aggregation-btn': 'Copy Stats',
-    'tags': 'Tags',
+    tags: 'Tags',
     'no-tags': '(No Tags)',
     'total-work-time': 'Work Time',
-    'settings': 'Settings',
-    'delete': 'Delete',
-    'duplicate': 'Duplicate',
+    settings: 'Settings',
+    delete: 'Delete',
+    duplicate: 'Duplicate',
     'btn-copy': 'Copy',
 
     // Controls
-    'pause': 'Pause',
-    'resume': 'Resume',
-    'stop': 'Stop',
+    pause: 'Pause',
+    resume: 'Resume',
+    stop: 'Stop',
 
     // Settings Modal
     'tab-general': 'General',
@@ -40,7 +40,7 @@ export default {
     'alarm-adj-none': 'No adjustment',
     'alarm-adj-prev_business_day': 'Forward (Previous business day)',
     'alarm-adj-next_business_day': 'Backward (Next business day)',
-    'alarm-adj-skip': 'Skip (Don\'t execute)',
+    'alarm-adj-skip': "Skip (Don't execute)",
     'alarm-adj-desc-none': 'Execute on the specified day even if it is a holiday.',
     'alarm-adj-desc-prev_business_day': 'If the specified day is a holiday, execute on the previous business day.',
     'alarm-adj-desc-next_business_day': 'If the specified day is a holiday, execute on the next business day.',
@@ -49,8 +49,10 @@ export default {
     'label-before-end-1': '',
     'label-before-end-2': 'days before end (0 is the last day)',
     'back-to-app': 'Back to App',
-    'alarm-setting-description': 'Display a message at a specified time and automatically "Stop", "Pause", or "Start" tasks as needed.',
-    'alarm-note-extension-only': '* The alarm feature only works when installed as a browser extension. Notifications and auto-actions are not executed in the preview version.',
+    'alarm-setting-description':
+        'Display a message at a specified time and automatically "Stop", "Pause", or "Start" tasks as needed.',
+    'alarm-note-extension-only':
+        '* The alarm feature only works when installed as a browser extension. Notifications and auto-actions are not executed in the preview version.',
     'alarm-label-enabled': 'Enabled',
     'alarm-label-time': 'Time',
     'alarm-label-message': 'Message',
@@ -117,12 +119,14 @@ export default {
     'import-overwrite': 'Overwrite',
 
     // About Tab
-    'version': 'Version',
-    'developer': 'Developer',
+    version: 'Version',
+    developer: 'Developer',
     'about-stats-logs': 'Work History Count',
     'about-stats-categories': 'Category Count',
-    'about-description': 'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved in IndexedDB within your browser (and also to the local file system when the backup is executed) and is never sent externally. It maintains high transparency and security through strict dependency verification via GitHub Actions and continuous auditing with Google OSV-Scanner.',
-    'about-disclaimer': '[Disclaimer] This is a personal open-source project and is provided "AS IS" without warranty of any kind. The developer shall not be liable for any damages arising from its use. Use at your own risk.',
+    'about-description':
+        'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved in IndexedDB within your browser (and also to the local file system when the backup is executed) and is never sent externally. It maintains high transparency and security through strict dependency verification via GitHub Actions and continuous auditing with Google OSV-Scanner.',
+    'about-disclaimer':
+        '[Disclaimer] This is a personal open-source project and is provided "AS IS" without warranty of any kind. The developer shall not be liable for any damages arising from its use. Use at your own risk.',
 
     // Auto Stop & Page Break
     'page-break': 'Page Break',
@@ -174,7 +178,8 @@ export default {
     'backup-directory': 'Directory',
     'backup-file-count': 'File Count',
     'backup-file-count-unit': 'days',
-    'backup-description-new': 'Regular backups are recommended to prevent data loss in IndexedDB due to browser cache clearing. With backup data, you can also smoothly transition to other browsers.',
+    'backup-description-new':
+        'Regular backups are recommended to prevent data loss in IndexedDB due to browser cache clearing. With backup data, you can also smoothly transition to other browsers.',
     'toast-backup-completed': 'Backup completed',
 
     // Messages & Dialogs
@@ -194,16 +199,22 @@ export default {
     'btn-split': 'Split',
     'btn-delete': 'Delete',
     'confirm-cancel': 'Cancel',
-    'confirm-delete-category': 'Do you want to delete category "{name}"?\n(Category colors will be removed from past logs)',
+    'confirm-delete-category':
+        'Do you want to delete category "{name}"?\n(Category colors will be removed from past logs)',
     'confirm-delete-selected': 'Do you want to delete the selected {count} items?',
     'confirm-import-overwrite': 'Delete all existing categories and overwrite?',
     'confirm-export-csv': 'Work history will be exported as CSV. Any active task will be ended. Proceed?',
-    'confirm-import-csv': 'Work history will be imported from CSV and appended. Any active task will be ended. Proceed?',
+    'confirm-import-csv':
+        'Work history will be imported from CSV and appended. Any active task will be ended. Proceed?',
     'confirm-clear-logs': 'All work history will be deleted. Any active task will be ended. Proceed?',
-    'confirm-sync-pull': 'Local work history will be deleted and re-acquired from other devices. Any active task will be ended. Proceed?',
-    'confirm-sync-clear-cloud': 'Work history will be deleted from all synced devices, not just this one. Any active task will be ended. Proceed?',
-    'confirm-reset-all': 'Categories and settings will be reset. Any active task will be ended. Proceed? (Work history will be preserved)',
-    'confirm-reset-settings': 'Settings will be reset. Any active task will be ended. Proceed? (Work history and categories will be preserved)',
+    'confirm-sync-pull':
+        'Local work history will be deleted and re-acquired from other devices. Any active task will be ended. Proceed?',
+    'confirm-sync-clear-cloud':
+        'Work history will be deleted from all synced devices, not just this one. Any active task will be ended. Proceed?',
+    'confirm-reset-all':
+        'Categories and settings will be reset. Any active task will be ended. Proceed? (Work history will be preserved)',
+    'confirm-reset-settings':
+        'Settings will be reset. Any active task will be ended. Proceed? (Work history and categories will be preserved)',
 
     'alert-invalid-category': 'Invalid category name. (Max 50 chars, "{idle}" is reserved)',
     'alert-duplicate-category': 'A category with the same name already exists.',
@@ -212,7 +223,8 @@ export default {
 
     'toast-copied': 'Copied!',
     'toast-done': 'Done!',
-    'toast-done-with-reopen-msg': 'Applied successfully! If the settings panel is open, please close and reopen it to apply the new animation.',
+    'toast-done-with-reopen-msg':
+        'Applied successfully! If the settings panel is open, please close and reopen it to apply the new animation.',
     'toast-imported': 'Import completed.',
     'toast-cat-imported': 'Categories imported',
     'toast-deleted': 'Deletion completed',
@@ -222,18 +234,22 @@ export default {
     'notification-btn-close': 'Close',
 
     'import-err-fatal': 'Invalid file format. Importing aborted.',
-    'import-err-partial': '{errorCount} out of {total} rows are corrupted. Do you want to import only the {validCount} valid rows?',
-    'import-err-field': 'Some data is incomplete (e.g., invalid color). Do you want to apply default values and import all, or skip the invalid rows?',
+    'import-err-partial':
+        '{errorCount} out of {total} rows are corrupted. Do you want to import only the {validCount} valid rows?',
+    'import-err-field':
+        'Some data is incomplete (e.g., invalid color). Do you want to apply default values and import all, or skip the invalid rows?',
     'import-btn-import-valid': 'Import Valid Only',
     'import-btn-apply-fallback': 'Apply Defaults',
     'import-btn-skip-invalid': 'Skip Invalid Rows',
     'import-btn-abort': 'Abort',
 
-    'backup-err-0byte': 'An empty backup file ({name}) was found. This might indicate an error. Do you want to ignore this file and continue?',
+    'backup-err-0byte':
+        'An empty backup file ({name}) was found. This might indicate an error. Do you want to ignore this file and continue?',
     'backup-btn-ignore-continue': 'Ignore & Continue',
     'backup-btn-abort-investigate': 'Abort & Investigate',
 
-    'backup-err-locked': 'The file is locked by another program or you don\'t have permission. Please close other apps and try again.',
+    'backup-err-locked':
+        "The file is locked by another program or you don't have permission. Please close other apps and try again.",
     'backup-err-not-found': 'Backup directory not found. Please select the directory again.',
     'backup-err-unknown': 'An unexpected error occurred: {message}',
     'toast-backup-failed-detail': 'Backup failed. Reason: {reason}',
@@ -379,7 +395,8 @@ export default {
     'btn-close': 'Close',
     'pr-guide-title': 'Pull Request Preparation',
     'pr-step-1': 'Download your animation as a <code>.js</code> file.',
-    'pr-step-2': 'Fork the <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> repository.',
+    'pr-step-2':
+        'Fork the <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> repository.',
     'pr-step-3': 'Place your file in <code>shared/js/animation/</code>.',
     'pr-step-4': 'Commit your changes and create a Pull Request!',
     'pr-note': 'Your contribution makes this tool better for everyone!',
@@ -414,25 +431,29 @@ export default {
     'toast-export-success': 'Copy successful',
     'toast-no-categories': 'No categories to copy',
     'page-break-label': 'Page Break',
-    'undo': 'Undo',
-    'redo': 'Redo',
+    undo: 'Undo',
+    redo: 'Redo',
     'tag-box-title': 'Tag Box',
     'tag-replace-title': 'Replace Tags',
     'tag-replace-before': 'Before',
     'tag-replace-after': 'After',
     'tooltip-replace-tags': 'Replace Tags',
-    'privacy-policy-local-only': 'All processing is completed within the browser, and there is no coordination with external servers. Your information will never be leaked outside.',
+    'privacy-policy-local-only':
+        'All processing is completed within the browser, and there is no coordination with external servers. Your information will never be leaked outside.',
     'privacy-policy-local-only-short': 'Local Only',
     'setting-session-sync': 'Device Sync (Sync) (β)',
-    'setting-session-sync-desc': 'Synchronize settings, categories, and recent history across devices using browser sync.',
+    'setting-session-sync-desc':
+        'Synchronize settings, categories, and recent history across devices using browser sync.',
     'setting-session-sync-note': '* Note: Sync between different browsers (e.g., Chrome and Edge) is not supported.',
     'confirm-enable-session-sync': 'Enable device sync? Current data will be uploaded to browser sync storage.',
-    'confirm-disable-session-sync': 'Disable device sync? Syncing on this device will stop, but data shared with other devices will be kept.',
+    'confirm-disable-session-sync':
+        'Disable device sync? Syncing on this device will stop, but data shared with other devices will be kept.',
     'session-sync-active': 'Sync Enabled',
     'local-only-active': 'Local Only',
 
     'sync-setup-title': 'Device Sync Setup',
-    'sync-setup-desc': 'To start synchronization, please choose the priority between existing data and data from other devices.',
+    'sync-setup-desc':
+        'To start synchronization, please choose the priority between existing data and data from other devices.',
     'sync-setup-settings-title': 'Settings & Categories Sync',
     'sync-setup-history-title': 'History Sync',
     'sync-setup-cloud-to-local': 'Overwrite with data from other devices',
@@ -454,7 +475,8 @@ export default {
     'btn-delete-selected-anim': 'Delete Selected Animation',
     'toast-custom-anim-imported': 'Custom animation imported successfully',
     'toast-custom-anim-exported': 'Custom animation copied to clipboard',
-    'confirm-delete-custom-anim': 'Do you want to delete custom animation "{name}"?\n(Categories assigned to this animation will fall back to "None")',
+    'confirm-delete-custom-anim':
+        'Do you want to delete custom animation "{name}"?\n(Categories assigned to this animation will fall back to "None")',
     'alert-invalid-qlanim': 'Invalid .qlanim format. Please check the file structure.',
     'btn-launch-maker': 'Launch QL-Animation Maker',
     'maker-title': 'QL-Animation Maker',
@@ -481,7 +503,8 @@ export default {
     'maker-playback-zoom': 'Playback & Zoom',
     'maker-data-transfer': 'Data Transfer',
     'maker-warning-title': 'Warning',
-    'maker-note-extension-only': '* QL-Animation Maker is only available when installed as a browser extension. It cannot be launched in the preview version.',
+    'maker-note-extension-only':
+        '* QL-Animation Maker is only available when installed as a browser extension. It cannot be launched in the preview version.',
     'maker-error-name-empty': 'Name cannot be empty',
     'maker-error-name-duplicate': 'The same custom animation name already exists. Please enter a different name.',
     'maker-select-prompt': 'Please add a custom animation',

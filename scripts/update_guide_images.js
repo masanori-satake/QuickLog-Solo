@@ -5,20 +5,20 @@ async function updateScreenshots() {
     console.log('Starting Vite server...');
     const vite = spawn('npx', ['vite', '--port', '8080'], {
         shell: true,
-        stdio: 'inherit'
+        stdio: 'inherit',
     });
 
     try {
         console.log('Waiting for Vite server to be ready...');
         await waitOn({
             resources: ['http://localhost:8080/projects/app/app.html'],
-            timeout: 30000
+            timeout: 30000,
         });
 
         console.log('Running screenshot generation script...');
         const generator = spawn('node', ['scripts/generate_guide_screenshots.js'], {
             shell: true,
-            stdio: 'inherit'
+            stdio: 'inherit',
         });
 
         await new Promise((resolve, reject) => {
@@ -27,7 +27,6 @@ async function updateScreenshots() {
                 else reject(new Error(`Generator exited with code ${code}`));
             });
         });
-
     } catch (err) {
         console.error('Failed to update screenshots:', err);
         process.exit(1);

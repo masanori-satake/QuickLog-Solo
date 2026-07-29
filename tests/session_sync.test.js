@@ -15,7 +15,7 @@ global.chrome = {
                 else {
                     const result = {};
                     if (Array.isArray(keys)) {
-                        keys.forEach(k => result[k] = mockSyncData[k]);
+                        keys.forEach((k) => (result[k] = mockSyncData[k]));
                     } else if (typeof keys === 'string') {
                         result[keys] = mockSyncData[keys];
                     }
@@ -25,12 +25,12 @@ global.chrome = {
             set: (data, cb) => {
                 Object.assign(mockSyncData, data);
                 cb();
-            }
-        }
+            },
+        },
     },
     runtime: {
-        lastError: null
-    }
+        lastError: null,
+    },
 };
 
 describe('Session Sync Logic', () => {
@@ -54,14 +54,14 @@ describe('Session Sync Logic', () => {
             startTime: 1000,
             endTime: 2000,
             tags: 'tag1',
-            color: 'primary'
+            color: 'primary',
         };
         await dbAdd(STORE_LOGS, localLog);
 
         // 2. Define remote logs (one existing, one new)
         const remoteLogs = [
             { category: 'Work', startTime: 1000, endTime: 2000, tags: 'tag1', color: 'primary' },
-            { category: 'Research', startTime: 3000, endTime: 4000, tags: 'tag2', color: 'secondary' }
+            { category: 'Research', startTime: 3000, endTime: 4000, tags: 'tag2', color: 'secondary' },
         ];
 
         // 3. Trigger merge
@@ -72,7 +72,7 @@ describe('Session Sync Logic', () => {
         // result will have Unknown gap between 2000 and 3000
         expect(finalLogs.length).toBe(3);
 
-        const researchLog = finalLogs.find(l => l.category === 'Research');
+        const researchLog = finalLogs.find((l) => l.category === 'Research');
         expect(researchLog).toBeDefined();
         expect(researchLog.startTime).toBe(3000);
     });
@@ -85,18 +85,16 @@ describe('Session Sync Logic', () => {
             category: 'Category A',
             startTime: 1000,
             endTime: 2000,
-            updatedAt: 100
+            updatedAt: 100,
         });
 
         // 2. Define remote log (Newer)
-        const remoteLogs = [
-            { syncId, category: 'Category B', startTime: 1000, endTime: 2000, updatedAt: 200 }
-        ];
+        const remoteLogs = [{ syncId, category: 'Category B', startTime: 1000, endTime: 2000, updatedAt: 200 }];
 
         await sessionSync.mergeLogs(remoteLogs);
 
         const finalLogs = await dbGetAll(STORE_LOGS);
-        const log = finalLogs.find(l => l.syncId === syncId);
+        const log = finalLogs.find((l) => l.syncId === syncId);
         expect(log.category).toBe('Category B');
     });
 
@@ -108,18 +106,16 @@ describe('Session Sync Logic', () => {
             category: 'Category B',
             startTime: 1000,
             endTime: 2000,
-            updatedAt: 200
+            updatedAt: 200,
         });
 
         // 2. Define remote log (Old)
-        const remoteLogs = [
-            { syncId, category: 'Category A', startTime: 1000, endTime: 2000, updatedAt: 100 }
-        ];
+        const remoteLogs = [{ syncId, category: 'Category A', startTime: 1000, endTime: 2000, updatedAt: 100 }];
 
         await sessionSync.mergeLogs(remoteLogs);
 
         const finalLogs = await dbGetAll(STORE_LOGS);
-        const log = finalLogs.find(l => l.syncId === syncId);
+        const log = finalLogs.find((l) => l.syncId === syncId);
         expect(log.category).toBe('Category B');
     });
 
@@ -128,15 +124,13 @@ describe('Session Sync Logic', () => {
         await dbAdd(STORE_LOGS, { category: 'Local', startTime: 1000, endTime: 2000, syncId: 'sid1' });
 
         // Remote also has ID 1 but different syncId
-        const remoteLogs = [
-            { id: 1, category: 'Remote', startTime: 3000, endTime: 4000, syncId: 'sid2' }
-        ];
+        const remoteLogs = [{ id: 1, category: 'Remote', startTime: 3000, endTime: 4000, syncId: 'sid2' }];
 
         await sessionSync.mergeLogs(remoteLogs);
 
         const logs = await dbGetAll(STORE_LOGS);
-        const local = logs.find(l => l.syncId === 'sid1');
-        const remote = logs.find(l => l.syncId === 'sid2');
+        const local = logs.find((l) => l.syncId === 'sid1');
+        const remote = logs.find((l) => l.syncId === 'sid2');
         expect(local.id).not.toBe(remote.id);
         expect(remote.id).toBeDefined();
     });
@@ -148,14 +142,12 @@ describe('Session Sync Logic', () => {
             startTime: 1000,
             endTime: null,
             tags: 'tag1',
-            color: 'primary'
+            color: 'primary',
         };
         await dbAdd(STORE_LOGS, localLog);
 
         // 2. Define remote log with endTime
-        const remoteLogs = [
-            { category: 'Work', startTime: 1000, endTime: 2000, tags: 'tag1', color: 'primary' }
-        ];
+        const remoteLogs = [{ category: 'Work', startTime: 1000, endTime: 2000, tags: 'tag1', color: 'primary' }];
 
         // 3. Trigger merge
         await sessionSync.mergeLogs(remoteLogs);
@@ -185,8 +177,8 @@ describe('Session Sync Logic', () => {
             language: 'en',
             reportSettings: {},
             timerHeight: 'normal',
-            businessDays: [1,2,3,4,5],
-            activeTask: null
+            businessDays: [1, 2, 3, 4, 5],
+            activeTask: null,
         };
 
         // Enable sync first
@@ -217,7 +209,12 @@ describe('Session Sync Logic', () => {
         expect(pauseState.isPaused).toBe(false);
 
         // Case 2: Paused task
-        const pausedTask = { category: SYSTEM_CATEGORY_IDLE, startTime: 6000, endTime: null, resumableCategory: 'Work' };
+        const pausedTask = {
+            category: SYSTEM_CATEGORY_IDLE,
+            startTime: 6000,
+            endTime: null,
+            resumableCategory: 'Work',
+        };
         await db.dbAdd(db.STORE_LOGS, pausedTask);
 
         await sessionSync.syncActiveTask(pausedTask);

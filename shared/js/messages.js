@@ -21,5 +21,5 @@ export const messages = {
     fr,
     pt,
     ko,
-    zh
+    zh,
 };

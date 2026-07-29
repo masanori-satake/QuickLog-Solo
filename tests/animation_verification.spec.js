@@ -31,7 +31,7 @@ test.describe('Animation Rendering Verification', () => {
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
             let nonZero = 0;
             for (let i = 0; i < imgData.length; i += 4) {
-                if (imgData[i] + imgData[i+1] + imgData[i+2] > 0) {
+                if (imgData[i] + imgData[i + 1] + imgData[i + 2] > 0) {
                     nonZero++;
                 }
             }

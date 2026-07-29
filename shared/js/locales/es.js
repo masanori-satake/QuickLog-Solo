@@ -1,15 +1,15 @@
 export default {
-    'title': 'QuickLog-Solo',
+    title: 'QuickLog-Solo',
     'copy-report-btn': 'Copiar informe diario',
     'copy-report-title': 'Copiar informe diario',
     'tag-aggregation-title': 'Agregación de etiquetas',
     'copy-aggregation-btn': 'Copiar estadísticas',
-    'tags': 'Etiquetas',
+    tags: 'Etiquetas',
     'no-tags': '(Sin etiquetas)',
     'total-work-time': 'Tiempo de trabajo',
-    'settings': 'Ajustes',
-    'delete': 'Eliminar',
-    'duplicate': 'Duplicar',
+    settings: 'Ajustes',
+    delete: 'Eliminar',
+    duplicate: 'Duplicar',
     'btn-copy': 'Copiar',
 
     // Auto Stop & Page Break
@@ -36,9 +36,9 @@ export default {
     'tooltip-status-paused': 'En pausa',
     'tooltip-status-stopped': 'Finalizado',
     'tooltip-calendar': 'Seleccionar fecha',
-    'pause': 'Pausa',
-    'resume': 'Reanudar',
-    'stop': 'Detener',
+    pause: 'Pausa',
+    resume: 'Reanudar',
+    stop: 'Detener',
     'tab-general': 'General',
     'tab-categories': 'Categorías',
     'tab-maintenance': 'Mantenimiento',
@@ -69,8 +69,10 @@ export default {
     'label-before-end-1': '',
     'label-before-end-2': 'días antes del final (0 es el último día)',
     'back-to-app': 'Volver a la aplicación',
-    'alarm-setting-description': 'Muestra un mensaje a una hora específica y, si es necesario, realiza acciones automáticas como «Finalizar», «Pausar» o «Iniciar».',
-    'alarm-note-extension-only': '* La función de alarma solo funciona cuando está instalada como una extensión de navegador. Las notificaciones y acciones automáticas no se ejecutan en la versión de vista previa.',
+    'alarm-setting-description':
+        'Muestra un mensaje a una hora específica y, si es necesario, realiza acciones automáticas como «Finalizar», «Pausar» o «Iniciar».',
+    'alarm-note-extension-only':
+        '* La función de alarma solo funciona cuando está instalada como una extensión de navegador. Las notificaciones y acciones automáticas no se ejecutan en la versión de vista previa.',
     'alarm-label-enabled': 'Activado',
     'alarm-label-time': 'Hora',
     'alarm-label-message': 'Mensaje',
@@ -119,12 +121,14 @@ export default {
     'import-setting': 'Modo de importación:',
     'import-append': 'Añadir',
     'import-overwrite': 'Sobrescribir',
-    'version': 'Versión',
-    'developer': 'Desarrollador',
+    version: 'Versión',
+    developer: 'Desarrollador',
     'about-stats-logs': 'Número de historiales de trabajo',
     'about-stats-categories': 'Número de categorías',
-    'about-description': 'QuickLog-Solo es una herramienta de notas de trabajo minimalista centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (y también en el sistema de archivos local cuando se realiza el respaldo) y nunca se envían al exterior. Mantiene una alta transparencia y seguridad mediante la verificación estricta de dependencias vía GitHub Actions y auditorías continuas con Google OSV-Scanner.',
-    'about-disclaimer': '[Descargo de responsabilidad] Este es un proyecto personal de código abierto y se proporciona "TAL CUAL" sin garantía de ningún tipo. El desarrollador no será responsable de ningún daño derivado de su uso. Úselo bajo su propio riesgo.',
+    'about-description':
+        'QuickLog-Solo es una herramienta de notas de trabajo minimalista centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (y también en el sistema de archivos local cuando se realiza el respaldo) y nunca se envían al exterior. Mantiene una alta transparencia y seguridad mediante la verificación estricta de dependencias vía GitHub Actions y auditorías continuas con Google OSV-Scanner.',
+    'about-disclaimer':
+        '[Descargo de responsabilidad] Este es un proyecto personal de código abierto y se proporciona "TAL CUAL" sin garantía de ningún tipo. El desarrollador no será responsable de ningún daño derivado de su uso. Úselo bajo su propio riesgo.',
     'maintenance-clear-logs': 'Borrar historial de trabajo',
     'btn-clear-logs': 'Eliminar todos los historiales de trabajo',
     'maintenance-sync-pull': 'Volver a sincronizar el historial',
@@ -148,7 +152,8 @@ export default {
     'backup-directory': 'Directorio',
     'backup-file-count': 'Archivos',
     'backup-file-count-unit': 'días',
-    'backup-description-new': 'Se recomiendan respaldos periódicos para evitar la pérdida de datos en IndexedDB debido a la limpieza del caché del navegador. Con los datos de respaldo, también puede realizar la transición sin problemas a otros navegadores.',
+    'backup-description-new':
+        'Se recomiendan respaldos periódicos para evitar la pérdida de datos en IndexedDB debido a la limpieza del caché del navegador. Con los datos de respaldo, también puede realizar la transición sin problemas a otros navegadores.',
     'toast-backup-completed': 'Respaldo completado',
 
     'confirm-end-task': '¿Realmente desea finalizar la tarea?',
@@ -173,17 +178,22 @@ export default {
     'confirm-export-csv': 'El historial de trabajo se exportará como CSV. Se finalizará la tarea actual. ¿Continuar?',
     'confirm-import-csv': 'El historial de trabajo se importará desde CSV. Se finalizará la tarea actual. ¿Continuar?',
     'confirm-clear-logs': 'Se eliminarán todos los historiales de trabajo. Se finalizará la tarea actual. ¿Continuar?',
-    'confirm-sync-pull': 'Se eliminará el historial de trabajo local y se volverá a adquirir de otros dispositivos. Se finalizará la tarea actual. ¿Continuar?',
-    'confirm-sync-clear-cloud': 'Se eliminará el historial de todos los dispositivos sincronizados, no solo de este. Se finalizará la tarea actual. ¿Continuar?',
-    'confirm-reset-all': 'Se restablecerán categorías y ajustes. Se finalizará la tarea actual. ¿Continuar? (Los historiales de trabajo se mantienen)',
-    'confirm-reset-settings': 'Se restablecerán los ajustes. Se finalizará la tarea actual. ¿Continuar? (Historiales de trabajo y categorías se mantienen)',
+    'confirm-sync-pull':
+        'Se eliminará el historial de trabajo local y se volverá a adquirir de otros dispositivos. Se finalizará la tarea actual. ¿Continuar?',
+    'confirm-sync-clear-cloud':
+        'Se eliminará el historial de todos los dispositivos sincronizados, no solo de este. Se finalizará la tarea actual. ¿Continuar?',
+    'confirm-reset-all':
+        'Se restablecerán categorías y ajustes. Se finalizará la tarea actual. ¿Continuar? (Los historiales de trabajo se mantienen)',
+    'confirm-reset-settings':
+        'Se restablecerán los ajustes. Se finalizará la tarea actual. ¿Continuar? (Historiales de trabajo y categorías se mantienen)',
     'alert-invalid-category': 'Nombre de categoría inválido. (Máx 50 car., "{idle}" reservado)',
     'alert-duplicate-category': 'Ya existe una categoría con ese nombre.',
     'alert-import-error': 'Error al importar categorías.',
     'alert-init-error': 'Error al inicializar la aplicación.',
     'toast-copied': '¡Copiado!',
     'toast-done': '¡Hecho!',
-    'toast-done-with-reopen-msg': '¡Aplicado con éxito! Si el panel de configuración está abierto, ciérrelo y vuelva a abrirlo para aplicar la nueva animación.',
+    'toast-done-with-reopen-msg':
+        '¡Aplicado con éxito! Si el panel de configuración está abierto, ciérrelo y vuelva a abrirlo para aplicar la nueva animación.',
     'toast-imported': 'Importación completada.',
     'toast-cat-imported': 'Categorías importadas',
     'toast-deleted': 'Eliminación completada',
@@ -193,24 +203,34 @@ export default {
     'notification-btn-close': 'Cerrar',
 
     'import-err-fatal': 'Formato de archivo no válido. Importación abortada.',
-    'import-err-partial': '{errorCount} de {total} filas están dañadas. ¿Desea importar solo las {validCount} filas válidas?',
-    'import-err-field': 'Algunos datos están incompletos (p. ej., color no válido). ¿Desea aplicar valores predeterminados e importar todo, o saltar las filas no válidas?',
+    'import-err-partial':
+        '{errorCount} de {total} filas están dañadas. ¿Desea importar solo las {validCount} filas válidas?',
+    'import-err-field':
+        'Algunos datos están incompletos (p. ej., color no válido). ¿Desea aplicar valores predeterminados e importar todo, o saltar las filas no válidas?',
     'import-btn-import-valid': 'Importar solo válidos',
     'import-btn-apply-fallback': 'Aplicar valores predeterminados',
     'import-btn-skip-invalid': 'Saltar filas no válidas',
     'import-btn-abort': 'Abortar',
 
-    'backup-err-0byte': 'Se encontró un archivo de respaldo vacío ({name}). Esto podría indicar un error. ¿Desea ignorar este archivo y continuar?',
+    'backup-err-0byte':
+        'Se encontró un archivo de respaldo vacío ({name}). Esto podría indicar un error. ¿Desea ignorar este archivo y continuar?',
     'backup-btn-ignore-continue': 'Ignorar y continuar',
     'backup-btn-abort-investigate': 'Abortar e investigar',
 
-    'backup-err-locked': 'El archivo está bloqueado por otro programa o no tiene permiso. Cierre otras aplicaciones e inténtelo de nuevo.',
+    'backup-err-locked':
+        'El archivo está bloqueado por otro programa o no tiene permiso. Cierre otras aplicaciones e inténtelo de nuevo.',
     'backup-err-not-found': 'Directorio de respaldo no encontrado. Seleccione el directorio de nuevo.',
     'backup-err-unknown': 'Ocurrió un error inesperado: {message}',
     'toast-backup-failed-detail': 'Respaldo fallido. Razón: {reason}',
 
     'day-names': ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
-    'day-0': 'S', 'day-1': 'M', 'day-2': 'T', 'day-3': 'W', 'day-4': 'T', 'day-5': 'F', 'day-6': 'S',
+    'day-0': 'S',
+    'day-1': 'M',
+    'day-2': 'T',
+    'day-3': 'W',
+    'day-4': 'T',
+    'day-5': 'F',
+    'day-6': 'S',
     'idle-category': '(En espera)',
     'idle-category-log': '(En espera)',
     'category-unknown': 'Desconocido',
@@ -341,7 +361,8 @@ export default {
     'btn-close': 'Cerrar',
     'pr-guide-title': 'Guía de Pull Request',
     'pr-step-1': 'Descargue su animación como un archivo <code>.js</code>.',
-    'pr-step-2': 'Bifurque el repositorio <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
+    'pr-step-2':
+        'Bifurque el repositorio <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
     'pr-step-3': 'Coloque su archivo en <code>shared/js/animation/</code>.',
     'pr-step-4': '¡Envíe un Pull Request!',
     'pr-note': '¡Su contribución hace que esta herramienta sea mejor para todos!',
@@ -376,25 +397,31 @@ export default {
     'toast-export-success': 'Copiado exitoso',
     'toast-no-categories': 'No hay categorías para copiar',
     'page-break-label': 'Salto de página',
-    'undo': 'Deshacer',
-    'redo': 'Rehacer',
+    undo: 'Deshacer',
+    redo: 'Rehacer',
     'tag-box-title': 'Caja de etiquetas',
     'tag-replace-title': 'Reemplazar etiquetas',
     'tag-replace-before': 'Antes',
     'tag-replace-after': 'Después',
     'tooltip-replace-tags': 'Reemplazar etiquetas',
-    'privacy-policy-local-only': 'Todo el procesamiento se completa dentro del navegador y no hay coordinación con servidores externos. Su información nunca se filtrará al exterior.',
+    'privacy-policy-local-only':
+        'Todo el procesamiento se completa dentro del navegador y no hay coordinación con servidores externos. Su información nunca se filtrará al exterior.',
     'privacy-policy-local-only-short': 'Solo local',
     'setting-session-sync': 'Sincronización entre dispositivos (Sync) (β)',
-    'setting-session-sync-desc': 'Sincroniza ajustes, categorías e historial reciente entre dispositivos mediante la sincronización del navegador.',
-    'setting-session-sync-note': '* Nota: No se admite la sincronización entre diferentes navegadores (por ejemplo, Chrome y Edge).',
-    'confirm-enable-session-sync': '¿Activar la sincronización entre dispositivos? Tus datos actuales se subirán al almacenamiento en la nube de tu navegador.',
-    'confirm-disable-session-sync': '¿Desactivar la sincronización entre dispositivos? Este dispositivo dejará de sincronizarse, pero los datos compartidos con otros dispositivos se conservarán.',
+    'setting-session-sync-desc':
+        'Sincroniza ajustes, categorías e historial reciente entre dispositivos mediante la sincronización del navegador.',
+    'setting-session-sync-note':
+        '* Nota: No se admite la sincronización entre diferentes navegadores (por ejemplo, Chrome y Edge).',
+    'confirm-enable-session-sync':
+        '¿Activar la sincronización entre dispositivos? Tus datos actuales se subirán al almacenamiento en la nube de tu navegador.',
+    'confirm-disable-session-sync':
+        '¿Desactivar la sincronización entre dispositivos? Este dispositivo dejará de sincronizarse, pero los datos compartidos con otros dispositivos se conservarán.',
     'session-sync-active': 'Sincronización activa',
     'local-only-active': 'Solo local',
 
     'sync-setup-title': 'Configuración de Sincronización entre Dispositivos',
-    'sync-setup-desc': 'Para iniciar la sincronización, elija la prioridad entre los datos existentes y los datos de otros dispositivos.',
+    'sync-setup-desc':
+        'Para iniciar la sincronización, elija la prioridad entre los datos existentes y los datos de otros dispositivos.',
     'sync-setup-settings-title': 'Sincronización de Ajustes y Categorías',
     'sync-setup-history-title': 'Sincronización de Historial',
     'sync-setup-cloud-to-local': 'Sobrescribir con datos de otros dispositivos',
@@ -429,7 +456,8 @@ export default {
     'btn-delete-selected-anim': 'Eliminar animación seleccionada',
     'toast-custom-anim-imported': 'Animación personalizada importada con éxito',
     'toast-custom-anim-exported': 'Animación personalizada copiada al portapapeles',
-    'confirm-delete-custom-anim': '¿Desea eliminar la animación personalizada "{name}"?\n(Las categorías asignadas a esta animación se restablecerán a "Ninguna")',
+    'confirm-delete-custom-anim':
+        '¿Desea eliminar la animación personalizada "{name}"?\n(Las categorías asignadas a esta animación se restablecerán a "Ninguna")',
     'alert-invalid-qlanim': 'Formato .qlanim no válido. Por favor, compruebe la estructura del archivo.',
     'btn-launch-maker': 'Iniciar QL-Animation Maker',
     'maker-title': 'QL-Animation Maker',
@@ -456,8 +484,10 @@ export default {
     'maker-playback-zoom': 'Reproducción y Zoom',
     'maker-data-transfer': 'Transferencia de datos',
     'maker-warning-title': 'Advertencia',
-    'maker-note-extension-only': '* QL-Animation Maker solo está disponible cuando se instala como una extensión del navegador. No se puede iniciar en la versión de vista previa.',
+    'maker-note-extension-only':
+        '* QL-Animation Maker solo está disponible cuando se instala como una extensión del navegador. No se puede iniciar en la versión de vista previa.',
     'maker-error-name-empty': 'El nombre no puede estar vacío',
-    'maker-error-name-duplicate': 'Ya existe una animación personalizada con el mismo nombre. Por favor, ingrese un nombre diferente.',
+    'maker-error-name-duplicate':
+        'Ya existe una animación personalizada con el mismo nombre. Por favor, ingrese un nombre diferente.',
     'maker-select-prompt': 'Por favor, agregue una animación personalizada',
 };

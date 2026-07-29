@@ -76,33 +76,36 @@ test.describe('Analysis and Reporting', () => {
         const startTime2 = endTime;
         const endTime2 = startTime2 + 15 * 60 * 1000; // 10:32
 
-        await page.evaluate(({start, end, start2, end2, dbName}) => {
-            return new Promise((resolve) => {
-                const request = indexedDB.open(dbName);
-                request.onsuccess = (e) => {
-                    const db = e.target.result;
-                    const tx = db.transaction('logs', 'readwrite');
-                    const store = tx.objectStore('logs');
-                    store.clear().onsuccess = () => {
-                        store.add({
-                            category: 'Task1',
-                            startTime: start,
-                            endTime: end,
-                            color: 'primary',
-                            tags: ''
-                        });
-                        store.add({
-                            category: 'Task2',
-                            startTime: start2,
-                            endTime: end2,
-                            color: 'secondary',
-                            tags: ''
-                        });
-                        tx.oncomplete = () => resolve();
+        await page.evaluate(
+            ({ start, end, start2, end2, dbName }) => {
+                return new Promise((resolve) => {
+                    const request = indexedDB.open(dbName);
+                    request.onsuccess = (e) => {
+                        const db = e.target.result;
+                        const tx = db.transaction('logs', 'readwrite');
+                        const store = tx.objectStore('logs');
+                        store.clear().onsuccess = () => {
+                            store.add({
+                                category: 'Task1',
+                                startTime: start,
+                                endTime: end,
+                                color: 'primary',
+                                tags: '',
+                            });
+                            store.add({
+                                category: 'Task2',
+                                startTime: start2,
+                                endTime: end2,
+                                color: 'secondary',
+                                tags: '',
+                            });
+                            tx.oncomplete = () => resolve();
+                        };
                     };
-                };
-            });
-        }, {start: startTime, end: endTime, start2: startTime2, end2: endTime2, dbName});
+                });
+            },
+            { start: startTime, end: endTime, start2: startTime2, end2: endTime2, dbName }
+        );
 
         await page.reload();
         await page.waitForSelector('.category-btn');
@@ -138,31 +141,34 @@ test.describe('Analysis and Reporting', () => {
         noon.setHours(12, 0, 0, 0);
         const baseTime = noon.getTime();
 
-        await page.evaluate(({baseTime, dbName}) => {
-            return new Promise((resolve) => {
-                const request = indexedDB.open(dbName);
-                request.onsuccess = (e) => {
-                    const db = e.target.result;
-                    const tx = db.transaction('logs', 'readwrite');
-                    const store = tx.objectStore('logs');
-                    store.clear().onsuccess = () => {
-                        store.add({
-                            category: 'TaskA',
-                            startTime: baseTime - 3600000, // 11:00
-                            endTime: baseTime - 1800000,  // 11:30
-                            tags: 'Tag1, Tag2'
-                        });
-                        store.add({
-                            category: 'TaskB',
-                            startTime: baseTime - 1800000, // 11:30
-                            endTime: baseTime,            // 12:00
-                            tags: 'Tag1'
-                        });
-                        tx.oncomplete = () => resolve();
+        await page.evaluate(
+            ({ baseTime, dbName }) => {
+                return new Promise((resolve) => {
+                    const request = indexedDB.open(dbName);
+                    request.onsuccess = (e) => {
+                        const db = e.target.result;
+                        const tx = db.transaction('logs', 'readwrite');
+                        const store = tx.objectStore('logs');
+                        store.clear().onsuccess = () => {
+                            store.add({
+                                category: 'TaskA',
+                                startTime: baseTime - 3600000, // 11:00
+                                endTime: baseTime - 1800000, // 11:30
+                                tags: 'Tag1, Tag2',
+                            });
+                            store.add({
+                                category: 'TaskB',
+                                startTime: baseTime - 1800000, // 11:30
+                                endTime: baseTime, // 12:00
+                                tags: 'Tag1',
+                            });
+                            tx.oncomplete = () => resolve();
+                        };
                     };
-                };
-            });
-        }, {baseTime, dbName});
+                });
+            },
+            { baseTime, dbName }
+        );
 
         await page.reload();
         await page.waitForSelector('.category-btn');

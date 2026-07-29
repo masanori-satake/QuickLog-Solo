@@ -3,36 +3,36 @@ import { jest } from '@jest/globals';
 // Mock chrome API
 global.chrome = {
     runtime: {
-        getURL: jest.fn(path => path),
+        getURL: jest.fn((path) => path),
         sendMessage: jest.fn().mockReturnValue(Promise.resolve()),
         onInstalled: { addListener: jest.fn() },
         onStartup: { addListener: jest.fn() },
-        onMessage: { addListener: jest.fn() }
+        onMessage: { addListener: jest.fn() },
     },
     alarms: {
         onAlarm: { addListener: jest.fn() },
         getAll: jest.fn().mockResolvedValue([]),
         clear: jest.fn().mockResolvedValue(true),
-        create: jest.fn()
+        create: jest.fn(),
     },
     notifications: {
         create: jest.fn(),
         clear: jest.fn(),
         onButtonClicked: { addListener: jest.fn() },
-        onClicked: { addListener: jest.fn() }
+        onClicked: { addListener: jest.fn() },
     },
     sidePanel: {
-        setPanelBehavior: jest.fn().mockReturnValue(Promise.resolve())
+        setPanelBehavior: jest.fn().mockReturnValue(Promise.resolve()),
     },
     action: {
-        onClicked: { addListener: jest.fn() }
-    }
+        onClicked: { addListener: jest.fn() },
+    },
 };
 
 // Mock BroadcastChannel
 global.BroadcastChannel = jest.fn().mockImplementation(() => ({
     postMessage: jest.fn(),
-    onmessage: null
+    onmessage: null,
 }));
 
 // Mock modules
@@ -62,25 +62,25 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     SETTING_KEY_LAST_PULLED_SYNC_TIME: 'lastPulledSyncTime',
     SETTING_KEY_PAUSE_STATE: 'pauseState',
     SETTING_KEY_CLIENT_ID: 'clientId',
-    SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds'
+    SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds',
 }));
 
 jest.unstable_mockModule('../shared/js/logic.js', () => ({
     stopTaskLogic: jest.fn(),
     pauseTaskLogic: jest.fn(),
     startTaskLogic: jest.fn(),
-    calculateNextAlarmTime: jest.fn()
+    calculateNextAlarmTime: jest.fn(),
 }));
 
 jest.unstable_mockModule('../shared/js/i18n.js', () => ({
-    t: jest.fn(key => key),
-    setLanguage: jest.fn()
+    t: jest.fn((key) => key),
+    setLanguage: jest.fn(),
 }));
 
 jest.unstable_mockModule('../shared/js/session_sync.js', () => ({
     isSessionSyncEnabled: jest.fn().mockResolvedValue(false),
     pullFromCloud: jest.fn().mockResolvedValue(),
-    pushToCloud: jest.fn().mockResolvedValue()
+    pushToCloud: jest.fn().mockResolvedValue(),
 }));
 
 const { getCurrentAppState, dbGetByName } = await import('../shared/js/db.js');
@@ -94,7 +94,6 @@ const onButtonClickedListener = chrome.notifications.onButtonClicked.addListener
 const onClickedListener = chrome.notifications.onClicked.addListener.mock.calls[0][0];
 
 describe('Background Alarm Logic', () => {
-
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -103,7 +102,7 @@ describe('Background Alarm Logic', () => {
         const alarm = { name: 'ql_alarm_1' };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, action: 'stop', message: 'Stop it' }],
-            activeTask: null
+            activeTask: null,
         });
 
         await onAlarmListener(alarm);
@@ -117,7 +116,7 @@ describe('Background Alarm Logic', () => {
         const activeTask = { category: 'Work' };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, action: 'stop', message: 'Stop it' }],
-            activeTask: activeTask
+            activeTask: activeTask,
         });
 
         await onAlarmListener(alarm);
@@ -126,7 +125,7 @@ describe('Background Alarm Logic', () => {
             expect.stringContaining('alarm_1_'),
             expect.objectContaining({
                 message: 'Stop it',
-                priority: 2
+                priority: 2,
             })
         );
         expect(stopTaskLogic).toHaveBeenCalledWith(activeTask, true);
@@ -136,7 +135,7 @@ describe('Background Alarm Logic', () => {
         const alarm = { name: 'ql_alarm_1' };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, action: 'pause', message: 'Pause it' }],
-            activeTask: { category: '__IDLE__', isPaused: true }
+            activeTask: { category: '__IDLE__', isPaused: true },
         });
 
         await onAlarmListener(alarm);
@@ -149,7 +148,7 @@ describe('Background Alarm Logic', () => {
         const alarm = { name: 'ql_alarm_1' };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, action: 'start', actionCategory: 'Work', message: 'Start Work' }],
-            activeTask: { category: 'Work', isPaused: false }
+            activeTask: { category: 'Work', isPaused: false },
         });
 
         await onAlarmListener(alarm);
@@ -163,7 +162,7 @@ describe('Background Alarm Logic', () => {
         const activeTask = { category: 'Work', isPaused: false };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, action: 'start', actionCategory: 'Study', message: 'Start Study' }],
-            activeTask: activeTask
+            activeTask: activeTask,
         });
         dbGetByName.mockResolvedValue({ name: 'Study', color: 'blue', tags: 'tag1' });
 
@@ -177,7 +176,7 @@ describe('Background Alarm Logic', () => {
         const alarm = { name: 'ql_alarm_1' };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, action: 'none', message: 'Just notify' }],
-            activeTask: { category: 'Work' }
+            activeTask: { category: 'Work' },
         });
 
         await onAlarmListener(alarm);
@@ -189,7 +188,7 @@ describe('Background Alarm Logic', () => {
         const alarm = { name: 'ql_test_alarm' };
         getCurrentAppState.mockResolvedValue({
             activeTask: null,
-            alarms: []
+            alarms: [],
         });
 
         await onAlarmListener(alarm);
@@ -197,7 +196,7 @@ describe('Background Alarm Logic', () => {
         expect(chrome.notifications.create).toHaveBeenCalledWith(
             expect.stringContaining('alarm_999_'),
             expect.objectContaining({
-                priority: 2
+                priority: 2,
             })
         );
     });
@@ -207,7 +206,7 @@ describe('Background Alarm Logic', () => {
         const activeTask = { category: 'Work' };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, action: 'stop', message: 'Stop it', requireConfirmation: true }],
-            activeTask: activeTask
+            activeTask: activeTask,
         });
 
         await onAlarmListener(alarm);
@@ -217,7 +216,7 @@ describe('Background Alarm Logic', () => {
             expect.stringContaining('alarm_1_'),
             expect.objectContaining({
                 requireInteraction: true,
-                buttons: [{ title: 'notification-btn-ok' }, { title: 'notification-btn-close' }]
+                buttons: [{ title: 'notification-btn-ok' }, { title: 'notification-btn-close' }],
             })
         );
         // Action should NOT be executed yet
@@ -230,7 +229,7 @@ describe('Background Alarm Logic', () => {
         const activeTask = { category: 'Work' };
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: alarmId, enabled: true, action: 'stop', message: 'Stop it', requireConfirmation: true }],
-            activeTask: activeTask
+            activeTask: activeTask,
         });
 
         // Simulate clicking "OK" (index 0)
@@ -245,7 +244,7 @@ describe('Background Alarm Logic', () => {
         const notificationId = `alarm_${alarmId}_12345`;
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: alarmId, enabled: true, action: 'stop', message: 'Stop it', requireConfirmation: true }],
-            activeTask: { category: 'Work' }
+            activeTask: { category: 'Work' },
         });
 
         // Simulate clicking "Close" (index 1 when action exists)
@@ -257,7 +256,7 @@ describe('Background Alarm Logic', () => {
 
     test('opens side panel when notification is clicked', async () => {
         const notificationId = 'alarm_1_12345';
-        chrome.windows = { getCurrent: jest.fn(cb => cb({ id: 1 })) };
+        chrome.windows = { getCurrent: jest.fn((cb) => cb({ id: 1 })) };
         chrome.sidePanel.open = jest.fn().mockResolvedValue(true);
 
         await onClickedListener(notificationId);

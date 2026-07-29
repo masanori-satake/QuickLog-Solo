@@ -16,13 +16,13 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 
 各ワークフローは、役割に応じて **Audit（監査）**, **Test（テスト）**, **Release（公開）**, **Update（更新）** の4つのグループに分類されています。
 
-| グループ | ワークフロー名 | ファイル | 概要 | トリガー |
-| :--- | :--- | :--- | :--- | :--- |
-| CI | **テストと静的解析** | `tests-and-lint.yml` | Python静的チェック、Lint、単体/E2E/アニメーションテスト | `main`へのPush/PR (*1), 手動 |
-| CI | **脆弱性検査** | `osv-scan.yml` | OSV-Scannerによる依存関係の脆弱性スキャン | `main`へのPush/PR (*1), 定期実行 |
-| Release | **リリース: Webアプリケーションのデプロイ** | `release_web_deploy.yml` | Vercelへの自動デプロイ（Landing Page, Studio等） | `main`へのPush/PR (*1), 手動 |
-| **Release** | **リリース: 拡張機能パッケージの公開** | `release_extension_packages.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
-| Update | **更新: ガイド用スクリーンショット** | `update_guide_screenshots.yml` | クイックスタートガイド用画像のリポジトリ自動反映 | `main`へのPush/PR (*1), 手動 |
+| グループ    | ワークフロー名                              | ファイル                         | 概要                                                     | トリガー                         |
+| :---------- | :------------------------------------------ | :------------------------------- | :------------------------------------------------------- | :------------------------------- |
+| CI          | **テストと静的解析**                        | `tests-and-lint.yml`             | Python静的チェック、Lint、単体/E2E/アニメーションテスト  | `main`へのPush/PR (*1), 手動     |
+| CI          | **脆弱性検査**                              | `osv-scan.yml`                   | OSV-Scannerによる依存関係の脆弱性スキャン                | `main`へのPush/PR (*1), 定期実行 |
+| Release     | **リリース: Webアプリケーションのデプロイ** | `release_web_deploy.yml`         | Vercelへの自動デプロイ（Landing Page, Studio等）         | `main`へのPush/PR (*1), 手動     |
+| **Release** | **リリース: 拡張機能パッケージの公開**      | `release_extension_packages.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush               |
+| Update      | **更新: ガイド用スクリーンショット**        | `update_guide_screenshots.yml`   | クイックスタートガイド用画像のリポジトリ自動反映         | `main`へのPush/PR (*1), 手動     |
 
 - (*1) `main`へのPush時は `paths` フィルタに関わらず常に実行されます（ブランチ保護ルールとの兼ね合い）。
 
@@ -42,6 +42,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
     - 各プラットフォームのクリーンな環境で実行され、マージ可否の最終判断基準となります。
 
 ### ブランチトリガーと無限ループ防止
+
 PR マージ時の動作を確実にするため、および自動更新による無限ループを防ぐため、以下の指針を徹底しています。
 
 - **PR作成権限の確保:** 資産の自動更新などで Pull Request を自動作成するワークフロー（`peter-evans/create-pull-request` 等を使用する場合）を正しく動作させるため、リポジトリ設定の **Settings > Actions > General > Workflow permissions** にて **"Allow GitHub Actions to create and approve pull requests"** を有効にする必要があります。これは YAML ファイル内で `pull-requests: write` を指定している場合でも必要な設定です。
@@ -73,10 +74,10 @@ PR マージ時の動作を確実にするため、および自動更新によ�
 
 - **実行コマンド**: `npm run update-guide-images`
 - **内部処理**:
-  1. `scripts/generate_guide_screenshots.js` が実行されます。
-  2. Playwright を使用して `projects/app/app.html` を開き、内部状態（ダミーデータ等）を注入します。
-  3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
-  4. 生成された画像は `shared/assets/guide/` に保存されます。
+    1. `scripts/generate_guide_screenshots.js` が実行されます。
+    2. Playwright を使用して `projects/app/app.html` を開き、内部状態（ダミーデータ等）を注入します。
+    3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
+    4. 生成された画像は `shared/assets/guide/` に保存されます。
 - **自動化**: `update_guide_screenshots.yml` ワークフローにより、コード変更時にこれらの画像が自動的に再生成され、リポジトリにコミットされます。
 - **検証**: CI (`ci.yml`) の E2E テストフェーズにおいて、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
 
@@ -119,6 +120,7 @@ graph TD
 ```
 
 #### 特徴的な条件判断
+
 - **トリガーの最適化**: `ci.yml` 内の各ジョブは、変更されたファイルに基づいて条件付きで実行されます（`tj-actions/changed-files` を活用）。関連性のないファイル（ドキュメントのみの変更など）の更新時には重いテストをスキップすることで、リソースを節約します。
 - **並列実行**: 監査・品質、脆弱性スキャン、E2Eテスト、アニメーション評価はそれぞれ独立したジョブとして並列に実行されます。
 
@@ -127,10 +129,12 @@ graph TD
 ### 2. 公開・配布 (Release)
 
 #### Webアプリケーションのデプロイ (`release_web_deploy.yml`)
+
 GitHub Actions 経由でビルドを行い、Vercel へデプロイします。
 プルリクエスト時にもプレビュー環境が構築されるため、マージ前に Release/Dev 各 ZIP パッケージの動作やブランディング（オレンジアイコン等）を実機で確認することが可能です。
 
 #### 拡張機能パッケージの公開 (`release_extension_packages.yml`)
+
 Node.js **v24** 環境で動作します。本番用の Release ZIP と検証用の Dev ZIP の両方を生成し、GitHub Release にアセットとしてアップロードします。
 
 ---
@@ -177,6 +181,7 @@ flowchart LR
 ---
 
 ## 免責事項 (Disclaimer)
+
 本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
 利用に際して生じたいかなる損害（データの消失、業務の中断、PCの不具合など、本ツールやドキュメントを利用したことによるすべての損害）について、開発者は一切の責任を負いません。
 MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
