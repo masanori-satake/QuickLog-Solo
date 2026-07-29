@@ -31,11 +31,20 @@ body {
     height: var(--header-height);
     display: flex;
     align-items: center;
-    justify-content: space-between;
     background-color: var(--md-sys-color-surface-container);
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
     z-index: 100;
     padding: 0 24px;
+}
+
+.header-content-wrapper {
+    max-width: 1800px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
 }
 
 .header-left,
@@ -43,6 +52,41 @@ body {
     display: flex;
     align-items: center;
     gap: 16px;
+}
+
+.privacy-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 16px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-primary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: help;
+    border: 1px solid var(--md-sys-color-primary-container);
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.privacy-badge:hover {
+    background-color: var(--md-sys-color-primary-container);
+}
+
+.privacy-badge .material-symbols-outlined {
+    font-size: 16px;
+}
+
+@media (width <= 900px) {
+    .privacy-text {
+        display: none;
+    }
+
+    .privacy-badge {
+        padding: 4px;
+    }
 }
 
 .header-left h1 {
@@ -197,6 +241,15 @@ select:focus {
 /* Main Layout */
 .editor-main {
     flex: 1;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--md-sys-color-surface);
+}
+
+.main-content-wrapper {
+    max-width: 1800px;
+    width: 100%;
     display: flex;
     overflow: hidden;
 }
@@ -433,10 +486,18 @@ select:focus {
     height: var(--footer-height);
     display: flex;
     align-items: center;
-    justify-content: space-between;
     background-color: var(--md-sys-color-surface-container);
     border-top: 1px solid var(--md-sys-color-outline-variant);
     padding: 0 24px;
+}
+
+.footer-content-wrapper {
+    max-width: 1800px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .footer-left,
