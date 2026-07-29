@@ -20,53 +20,31 @@ jobs:
     timeout-minutes: 15
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - name: Setup and Install Dependencies
+      uses: ./.github/workflows/setup-and-install.yml
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        install-playwright: true
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '24'
-        cache: 'npm'
-
-    - name: Install Python Playwright
-      run: pip install playwright
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Cache Playwright browsers
+    - name: Cache Python dependencies
       uses: actions/cache@v4
-      id: playwright-cache
       with:
-        path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
         restore-keys: |
-          ${{ runner.os }}-playwright-
+          ${{ runner.os }}-pip-
 
-    - name: Install Playwright Browsers
-      run: python3 -m playwright install chromium --with-deps
+    - name: Install Python dependencies
+      run: pip install -r requirements.txt
 
     - name: Update screenshots
       run: npm run update-guide-images
 
-    - name: Commit and push changes (PR)
-      if: github.event_name == 'pull_request'
-      uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: "chore: ガイド用スクリーンショットの更新 [skip ci]"
-        file_pattern: 'shared/assets/guide/*.png'
-        branch: ${{ github.head_ref }}
-
-    - name: Create Pull Request (Manual/Main)
-      if: github.event_name != 'pull_request'
+    - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7.0.5
       with:
         commit-message: "chore: ガイド用スクリーンショットの更新 [skip ci]"

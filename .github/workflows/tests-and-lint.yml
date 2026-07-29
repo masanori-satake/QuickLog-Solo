@@ -1,8 +1,12 @@
-name: "CI: 継続的インテグレーション (Continuous Integration)"
+name: "CI: テストと静的解析 (Tests and Linting)"
 
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/release_*.yml'
   pull_request:
     branches: [ main ]
     paths:
@@ -14,6 +18,10 @@ on:
       - 'package-lock.json'
       - 'eslint.config.js'
       - '.stylelintrc.json'
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/release_*.yml'
   workflow_dispatch:
 
 env:

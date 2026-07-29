@@ -24,61 +24,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build-and-deploy:
+    # このジョブは自己完結しており、他のワークフローに依存しません。
     runs-on: ubuntu-latest
     permissions:
       contents: read
     timeout-minutes: 10
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Setup and Install Dependencies
+        uses: ./.github/workflows/setup-and-install.yml
+        with:
+          install-playwright: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Cache Playwright browsers
+      - name: Cache Python dependencies
         uses: actions/cache@v4
-        id: playwright-cache
         with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-playwright-
+            ${{ runner.os }}-pip-
 
-      - name: Install Python Playwright
-        run: pip install playwright
-
-      - name: Install Playwright Browsers
-        run: python3 -m playwright install chromium --with-deps
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
 
       - name: Build packages (Generates ZIPs and Branded Icons)
         run: npm run build
 
       - name: Prepare Deployment Directory
         run: |
-          mkdir dist_web
-          cp vercel.json dist_web/
-          mkdir -p dist_web/projects
-          cp -r projects/web dist_web/projects/
-          cp -r projects/app dist_web/projects/
-          cp -r projects/category-editor dist_web/projects/
-          cp -r projects/alarm-editor dist_web/projects/
-          cp -r projects/studio dist_web/projects/
-          cp -r projects/animation-maker dist_web/projects/
-          cp -r shared dist_web/
-          cp -r releases dist_web/
-
+          mkdir -p dist_web
+          rsync -av --exclude='.*' vercel.json dist_web/
+          rsync -av --exclude='.*' projects/ dist_web/projects/
+          rsync -av --exclude='.*' shared/ dist_web/shared/
+          rsync -av --exclude='.*' releases/ dist_web/releases/
           # Remove symlinks in dist_web to ensure they are real directories/files for Vercel
           find dist_web -type l -delete
 
