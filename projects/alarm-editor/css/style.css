@@ -1,4 +1,4 @@
-@import url('../shared/css/variables.css');
+@import url('../../../shared/css/variables.css');
 
 :root {
     --header-height: var(--editor-header-height);

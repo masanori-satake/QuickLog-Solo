@@ -1244,19 +1244,8 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
     if (isApply === true) {
         // Direct production save
         const productionMap = {};
-        // Retrieve original from Chrome Storage / LocalStorage
-        let origMap = {};
-        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-            const result = await chrome.storage.local.get('custom_animation_metadata_map');
-            origMap = result.custom_animation_metadata_map || {};
-        } else {
-            try {
-                const stored = localStorage.getItem('custom_animation_metadata_map');
-                origMap = stored ? JSON.parse(stored) : {};
-            } catch (e) {
-                console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
-            }
-        }
+        // Retrieve original from shared storage
+        const origMap = await sharedGetCustomAnimationMetadataMap();
 
         // Apply all modifications and deletions from draftMetadataMap
         // Any keys in draftMetadataMap but not in origMap are added or updated.
