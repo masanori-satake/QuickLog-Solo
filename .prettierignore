@@ -1,0 +1,8 @@
+node_modules/
+test-results/
+dist_web/
+releases/
+package-lock.json
+package.json
+_locales/
+shared/js/animation_registry.js

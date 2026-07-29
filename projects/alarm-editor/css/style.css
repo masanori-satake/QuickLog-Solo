@@ -1,7 +1,9 @@
+@import url('../shared/css/variables.css');
+
 :root {
-    --header-height: 64px;
-    --footer-height: 72px;
-    --master-width: 360px;
+    --header-height: var(--editor-header-height);
+    --footer-height: var(--editor-footer-height);
+    --master-width: var(--alarm-editor-master-width);
     --color-sunday: var(--md-sys-color-error);
     --color-on-sunday: var(--md-sys-color-on-error);
     --color-saturday: var(--md-sys-color-primary);
@@ -212,7 +214,7 @@ select:focus {
     display: flex;
     flex-direction: column;
     padding: 24px;
-    gap: 16px;
+    gap: var(--detail-pane-gap-small);
     overflow-y: auto;
     background-color: var(--md-sys-color-surface);
 }
@@ -220,7 +222,7 @@ select:focus {
 .detail-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    gap: var(--detail-pane-gap);
     align-items: start;
 }
 
@@ -456,7 +458,7 @@ select:focus {
 .modal {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--modal-backdrop-dark);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -513,7 +515,7 @@ select:focus {
 
 #toast {
     position: fixed;
-    bottom: 80px;
+    bottom: var(--toast-bottom-offset);
     left: 50%;
     transform: translateX(-50%);
     background-color: var(--md-sys-color-inverse-surface);

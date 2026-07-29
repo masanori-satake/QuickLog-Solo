@@ -1,7 +1,9 @@
+@import url('../shared/css/variables.css');
+
 :root {
     --border-width: 1px;
     --timer-height-factor: 1;
-    --timer-base-height: 80px;
+    --timer-base-height: var(--timer-display-height-normal);
 }
 
 * {
@@ -385,9 +387,9 @@ body.timer-mini #elapsed-time {
     line-height: 1;
 }
 
-.status-running { color: #22c55e; }
-.status-paused { color: #f59e0b; }
-.status-stopped { color: #ef4444; }
+.status-running { color: var(--status-running-color); }
+.status-paused { color: var(--status-paused-color); }
+.status-stopped { color: var(--status-stopped-color); }
 
 .blink {
     animation: gentle-blink 2s ease-in-out infinite;
@@ -525,7 +527,7 @@ body.timer-mini #elapsed-time {
     display: flex;
     flex-direction: row;
     gap: 8px;
-    height: 300px; /* Increased to fit 8 rows of buttons */
+    height: var(--category-section-height); /* Increased to fit 8 rows of buttons */
     margin-bottom: var(--md-sys-spacing-1);
 }
 
@@ -602,7 +604,7 @@ body.timer-mini #elapsed-time {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: var(--modal-backdrop-light);
     backdrop-filter: blur(2px);
 }
 
@@ -1579,16 +1581,16 @@ body.theme-dark button:active {
 
 /* Responsive adjustments */
 @media (height <= 550px) {
-    #category-section { height: 240px; }
-    #current-task-display { height: 70px; }
+    #category-section { height: var(--category-section-height-compact); }
+    #current-task-display { height: var(--timer-display-height-compact); }
     #current-task-name { font-size: 0.9rem; }
     #elapsed-time { font-size: 1.5rem; }
 }
 
 @media (height <= 400px) {
-    #category-section { height: 200px; }
+    #category-section { height: var(--category-section-height-mini); }
     header { min-height: 40px; }
-    #current-task-display { height: 60px; }
+    #current-task-display { height: var(--timer-display-height-mini); }
 }
 
 /* Backup Tab Styles */

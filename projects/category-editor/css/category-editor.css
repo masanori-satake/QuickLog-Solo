@@ -1,9 +1,10 @@
 /* Category Editor Specific Styles */
+@import url('../shared/css/variables.css');
 
 :root {
-    --header-height: 64px;
-    --footer-height: 72px;
-    --list-width: 600px;
+    --header-height: var(--editor-header-height);
+    --footer-height: var(--editor-footer-height);
+    --list-width: var(--editor-list-width);
 }
 
 body {
@@ -656,7 +657,7 @@ input[type="text"]:disabled, select:disabled {
 .modal {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--modal-backdrop-dark);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -744,7 +745,7 @@ input[type="text"]:disabled, select:disabled {
 /* Toast */
 #toast {
     position: fixed;
-    bottom: 80px;
+    bottom: var(--toast-bottom-offset);
     left: 50%;
     transform: translateX(-50%);
     background-color: var(--md-sys-color-inverse-surface);

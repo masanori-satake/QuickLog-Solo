@@ -1,26 +1,73 @@
 import {
-    initDB, getCurrentAppState, dbGetByName, dbGetAll, dbCount, dbPut, dbAdd, dbAddMultiple, dbDelete, dbClear, dbImportCategories,
+    initDB,
+    getCurrentAppState,
+    dbGetByName,
+    dbGetAll,
+    dbCount,
+    dbPut,
+    dbAdd,
+    dbAddMultiple,
+    dbDelete,
+    dbClear,
+    dbImportCategories,
     setDatabaseName,
     SETTING_KEY_SESSION_SYNC,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_FONT_WEIGHT, SETTING_KEY_ANIMATION, SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
-    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE
+    STORE_LOGS,
+    STORE_CATEGORIES,
+    STORE_SETTINGS,
+    STORE_ALARMS,
+    SETTING_KEY_THEME,
+    SETTING_KEY_FONT,
+    SETTING_KEY_FONT_WEIGHT,
+    SETTING_KEY_ANIMATION,
+    SETTING_KEY_LANGUAGE,
+    SETTING_KEY_REPORT_SETTINGS,
+    SETTING_KEY_BUSINESS_DAYS,
+    SETTING_KEY_TIMER_HEIGHT,
+    SETTING_KEY_PAUSE_STATE,
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
 import {
-    formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem,
-    splitHistoryItem
+    formatDuration,
+    formatLogDuration,
+    startTaskLogic,
+    stopTaskLogic,
+    pauseTaskLogic,
+    generateReport,
+    calculateTagAggregation,
+    updateHistoryStartTime,
+    deleteHistoryItem,
+    splitHistoryItem,
 } from '../shared/js/logic.js';
-import { escapeCsv, parseCsvLine, isValidCategoryName, SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, generateUUID } from '../shared/js/utils.js';
+import {
+    escapeCsv,
+    parseCsvLine,
+    isValidCategoryName,
+    SYSTEM_CATEGORY_IDLE,
+    SYSTEM_CATEGORY_UNKNOWN,
+    SYSTEM_CATEGORY_PAGE_BREAK,
+    generateUUID,
+} from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { saveAnimationBlob } from '../shared/js/idb_storage.js';
-import { isSessionSyncEnabled, pullFromCloud, performInitialSync, clearCloudHistory, broadcastSync, setupBroadcastChannel } from '../shared/js/session_sync.js';
+import {
+    isSessionSyncEnabled,
+    pullFromCloud,
+    performInitialSync,
+    clearCloudHistory,
+    broadcastSync,
+    setupBroadcastChannel,
+} from '../shared/js/session_sync.js';
 import { animations } from '../shared/js/animation_registry.js';
 import {
-    validateCategorySchema, SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0,
-    SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK
+    validateCategorySchema,
+    SCHEMA_KIND_CATEGORY,
+    SCHEMA_VERSION_1_0,
+    SCHEMA_TYPE_CATEGORY,
+    SCHEMA_TYPE_PAGE_BREAK,
 } from '../shared/js/schema.js';
+import { getCustomAnimationMetadataMap, setCustomAnimationMetadataMap } from '../shared/js/utils/storage.js';
 
 // QuickLog-Solo: Main Application Entry
 
@@ -39,7 +86,7 @@ const ITEMS_PER_PAGE = 16;
 const EXCLUSION_PADDING_X = 4;
 const EXCLUSION_PADDING_Y = 2;
 
-const CSV_HEADER = "id,category,startTime,endTime,tags\n";
+const CSV_HEADER = 'id,category,startTime,endTime,tags\n';
 
 const ID_SETTINGS_POPUP = 'settings-popup';
 const ID_SETTINGS_TOGGLE = 'settings-toggle';
@@ -154,7 +201,7 @@ let reportSettings = {
     emoji: 'keep',
     endTime: 'none',
     duration: 'none',
-    adjust: 'none'
+    adjust: 'none',
 };
 
 const getEl = (id) => document.getElementById(id);
@@ -163,16 +210,56 @@ const getBody = () => document.body;
 const createEl = (tag) => document.createElement(tag);
 
 const FONTS = [
-    { name: 'Roboto / Noto Sans JP', value: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt'] },
-    { name: 'Dela Gothic One', value: "'Dela Gothic One', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja'] },
-    { name: 'Yusei Magic', value: "'Yusei Magic', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja'] },
-    { name: 'Roboto / Noto Sans KR', value: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ko'] },
-    { name: 'Roboto / Noto Sans SC', value: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['zh'] },
-    { name: 'Inter', value: "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] },
-    { name: 'Montserrat', value: "'Montserrat', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] },
-    { name: 'Open Sans', value: "'Open Sans', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] },
-    { name: 'Ubuntu', value: "'Ubuntu', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif", lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] },
-    { name: 'font-system', value: 'system-ui, -apple-system, "Noto Sans Symbols", "Noto Color Emoji", sans-serif', lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'] }
+    {
+        name: 'Roboto / Noto Sans JP',
+        value: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        lang: ['ja', 'en', 'de', 'es', 'fr', 'pt'],
+    },
+    {
+        name: 'Dela Gothic One',
+        value: "'Dela Gothic One', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        lang: ['ja'],
+    },
+    {
+        name: 'Yusei Magic',
+        value: "'Yusei Magic', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        lang: ['ja'],
+    },
+    {
+        name: 'Roboto / Noto Sans KR',
+        value: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        lang: ['ko'],
+    },
+    {
+        name: 'Roboto / Noto Sans SC',
+        value: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        lang: ['zh'],
+    },
+    {
+        name: 'Inter',
+        value: "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
+    },
+    {
+        name: 'Montserrat',
+        value: "'Montserrat', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
+    },
+    {
+        name: 'Open Sans',
+        value: "'Open Sans', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
+    },
+    {
+        name: 'Ubuntu',
+        value: "'Ubuntu', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
+    },
+    {
+        name: 'font-system',
+        value: 'system-ui, -apple-system, "Noto Sans Symbols", "Noto Color Emoji", sans-serif',
+        lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
+    },
 ];
 
 // --- Task Control ---
@@ -181,7 +268,7 @@ async function startTask(categoryName, resumableCategory = null) {
     if (syncTimeout) clearTimeout(syncTimeout);
     const cat = await dbGetByName(STORE_CATEGORIES, categoryName);
     const color = cat ? cat.color : null;
-    const tags = cat ? (cat.tags || '') : '';
+    const tags = cat ? cat.tags || '' : '';
     activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
     updateUI();
     broadcastSync();
@@ -219,9 +306,10 @@ async function openHistoryActionModal(log) {
 
     if (!modal) return;
 
-    const durationMs = log.endTime ? (log.endTime - log.startTime) : (Date.now() - log.startTime);
+    const durationMs = log.endTime ? log.endTime - log.startTime : Date.now() - log.startTime;
     const isSpecialCategory = log.category === SYSTEM_CATEGORY_IDLE || log.category === SYSTEM_CATEGORY_UNKNOWN;
-    const canSplit = !log.isManualStop && !isSpecialCategory && (log.endTime ? durationMs >= 120000 : durationMs >= 60000);
+    const canSplit =
+        !log.isManualStop && !isSpecialCategory && (log.endTime ? durationMs >= 120000 : durationMs >= 60000);
 
     splitBtn.disabled = !canSplit;
     deleteBtn.disabled = !log.endTime;
@@ -286,7 +374,9 @@ async function openHistoryEditModal(log) {
 
     // Determine if it's a stop marker
     const isStopMarker = log.isManualStop;
-    const isTask = log.endTime == null || (!isStopMarker && log.category !== SYSTEM_CATEGORY_IDLE && log.category !== SYSTEM_CATEGORY_UNKNOWN);
+    const isTask =
+        log.endTime == null ||
+        (!isStopMarker && log.category !== SYSTEM_CATEGORY_IDLE && log.category !== SYSTEM_CATEGORY_UNKNOWN);
     const titleKey = isStopMarker ? 'history-edit-stop-title' : 'history-edit-title';
     const labelKey = isStopMarker ? 'history-edit-end-time' : 'history-edit-start-time';
 
@@ -298,7 +388,7 @@ async function openHistoryEditModal(log) {
     // Get surrounding logs for range validation
     const allLogs = await dbGetAll(STORE_LOGS);
     const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
-    const currentIndex = sortedLogs.findIndex(l => l.id === log.id);
+    const currentIndex = sortedLogs.findIndex((l) => l.id === log.id);
     const prevLog = currentIndex > 0 ? sortedLogs[currentIndex - 1] : null;
 
     const currentDayStart = new Date(log.startTime).setHours(0, 0, 0, 0);
@@ -316,10 +406,12 @@ async function openHistoryEditModal(log) {
 
         // Populate category dropdown
         const categories = await dbGetAll(STORE_CATEGORIES);
-        const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+        const workCategories = categories.filter(
+            (c) => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+        );
         categorySelect.replaceChildren();
 
-        const currentCategoryExists = workCategories.some(c => c.name === log.category);
+        const currentCategoryExists = workCategories.some((c) => c.name === log.category);
         if (!currentCategoryExists) {
             const opt = createEl('option');
             opt.value = log.category;
@@ -328,7 +420,7 @@ async function openHistoryEditModal(log) {
             categorySelect.appendChild(opt);
         }
 
-        workCategories.forEach(c => {
+        workCategories.forEach((c) => {
             const opt = createEl('option');
             opt.value = c.name;
             opt.textContent = c.name;
@@ -353,7 +445,7 @@ async function openHistoryEditModal(log) {
             let minTs = currentDayStart;
             if (prevLog) {
                 const isContiguous = Math.abs(prevLog.endTime - log.startTime) <= 1000;
-                minTs = (isContiguous && !prevLog.isManualStop) ? (prevLog.startTime + 60000) : prevLog.endTime;
+                minTs = isContiguous && !prevLog.isManualStop ? prevLog.startTime + 60000 : prevLog.endTime;
             }
             const maxTs = Date.now();
             if (newTs < minTs || newTs > maxTs) {
@@ -405,7 +497,7 @@ async function openHistoryEditModal(log) {
                 const cat = await dbGetByName(STORE_CATEGORIES, newCategoryName);
                 log.category = newCategoryName;
                 log.color = cat ? cat.color : log.color;
-                log.tags = cat ? (cat.tags || '') : log.tags;
+                log.tags = cat ? cat.tags || '' : log.tags;
             }
             log.memo = memoInput.value.trim() || undefined;
             log.updatedAt = Date.now();
@@ -418,7 +510,7 @@ async function openHistoryEditModal(log) {
             log.startTime = newTs;
             await dbPut(STORE_SETTINGS, {
                 key: SETTING_KEY_PAUSE_STATE,
-                value: { ...log, isPaused: log.category === SYSTEM_CATEGORY_IDLE }
+                value: { ...log, isPaused: log.category === SYSTEM_CATEGORY_IDLE },
             });
             activeTask = log;
         }
@@ -480,9 +572,9 @@ function applyTimerHeight(height) {
     body.classList.add(`timer-${height}`);
 
     const factors = {
-        'normal': 1,
-        'compact': 2 / 3,
-        'mini': 0.5
+        normal: 1,
+        compact: 2 / 3,
+        mini: 0.5,
     };
     const factor = factors[height] || 1;
 
@@ -508,7 +600,6 @@ function applyTheme(theme) {
     if (select) select.value = theme;
 }
 
-
 function applyFont(fontValue) {
     getBody().style.setProperty('--font-family', fontValue);
     const select = getEl(ID_FONT_SELECT);
@@ -517,10 +608,10 @@ function applyFont(fontValue) {
 
 function applyFontWeight(weightValue) {
     const weights = {
-        'normal': '400',
-        'medium': '500',
-        'bold': '700',
-        'heavy': '900'
+        normal: '400',
+        medium: '500',
+        bold: '700',
+        heavy: '900',
     };
     const val = weights[weightValue] || '';
     if (val) {
@@ -534,7 +625,7 @@ function applyFontWeight(weightValue) {
 
 function applyAnimation(animationType, categoryAnimation = 'default', color = 'primary', customAnimSpecHash = '') {
     currentAnimationType = animationType;
-    let activeAnimation = (categoryAnimation && categoryAnimation !== 'default') ? categoryAnimation : animationType;
+    let activeAnimation = categoryAnimation && categoryAnimation !== 'default' ? categoryAnimation : animationType;
 
     if (categoryAnimation === 'none') {
         activeAnimation = 'none';
@@ -575,8 +666,8 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
         display?.classList.remove('anim-active', 'retro-lcd', 'retro-crt', 'retro-nixie');
         const base = getEl('current-task-display-base');
         base?.classList.remove('anim-active');
-        const colorClasses = Array.from(base?.classList || []).filter(c => c.startsWith('cat-'));
-        colorClasses.forEach(c => base.classList.remove(c));
+        const colorClasses = Array.from(base?.classList || []).filter((c) => c.startsWith('cat-'));
+        colorClasses.forEach((c) => base.classList.remove(c));
         getEl(ID_PAUSE_BTN)?.classList.remove('anim-active');
         getEl(ID_END_BTN)?.classList.remove('anim-active');
     }
@@ -587,7 +678,7 @@ function splitCategoriesIntoPages(allCategories) {
 
     const pages = [[]];
     let currentPageIdx = 0;
-    allCategories.forEach(cat => {
+    allCategories.forEach((cat) => {
         if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
             // Only push a new page if current page isn't empty
             // to avoid multiple page breaks creating multiple empty pages
@@ -631,7 +722,7 @@ async function renderCategories() {
     const currentRenderData = JSON.stringify({
         page: currentCategoryPage,
         activeTask: activeTaskCatName,
-        categories: pageCategories.map(c => ({ name: c.name, color: c.color }))
+        categories: pageCategories.map((c) => ({ name: c.name, color: c.color })),
     });
 
     if (lastCategoryRenderData === currentRenderData) {
@@ -643,7 +734,7 @@ async function renderCategories() {
     if (!list) return;
     list.replaceChildren();
 
-    pageCategories.forEach(cat => {
+    pageCategories.forEach((cat) => {
         const btn = createEl('button');
         btn.className = `category-btn cat-${cat.color || 'primary'}`;
         const isActive = activeTask && activeTask.category === cat.name;
@@ -688,24 +779,24 @@ async function renderLogs() {
         console.error('Failed to get data for logs:', e);
         return;
     }
-    const categoryMap = new Map(categories.map(c => [c.name, c]));
+    const categoryMap = new Map(categories.map((c) => [c.name, c]));
     const visibleLogs = allLogs
-        .filter(l => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
+        .filter((l) => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
         .sort((a, b) => b.startTime - a.startTime)
         .slice(0, MAX_LOGS_DISPLAY);
 
     // Change detection for logs rendering to avoid flickering
     const currentLogsData = JSON.stringify({
         lang: getLanguage(),
-        logs: visibleLogs.map(l => ({
+        logs: visibleLogs.map((l) => ({
             id: l.id,
             category: l.category,
             startTime: l.startTime,
             endTime: l.endTime,
             isManualStop: l.isManualStop,
             memo: l.memo,
-            color: l.color
-        }))
+            color: l.color,
+        })),
     });
 
     if (lastLogsRenderData === currentLogsData) {
@@ -743,7 +834,9 @@ function createLogElement(log, categoryMap) {
     const li = createEl('li');
     li.className = 'log-item';
     const startTimeStr = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const endTimeStr = log.endTime ? new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const endTimeStr = log.endTime
+        ? new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '';
 
     // Tags are hidden in history as per requirements
     const timeRangeSpan = createEl('span');
@@ -765,7 +858,7 @@ function createLogElement(log, categoryMap) {
     }
 
     const durationMs = log.endTime ? log.endTime - log.startTime : 0;
-    const durationText = (log.endTime && !log.isManualStop) ? formatLogDuration(durationMs) : '';
+    const durationText = log.endTime && !log.isManualStop ? formatLogDuration(durationMs) : '';
 
     let colorClass;
     let displayName = log.category;
@@ -824,8 +917,8 @@ function updateAnimationExclusionAreas() {
             exclusionAreas.push({
                 x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
                 y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
-                width: rect.width + (EXCLUSION_PADDING_X * 2),
-                height: rect.height + (EXCLUSION_PADDING_Y * 2)
+                width: rect.width + EXCLUSION_PADDING_X * 2,
+                height: rect.height + EXCLUSION_PADDING_Y * 2,
             });
         }
     }
@@ -836,8 +929,8 @@ function updateAnimationExclusionAreas() {
             exclusionAreas.push({
                 x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
                 y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
-                width: rect.width + (EXCLUSION_PADDING_X * 2),
-                height: rect.height + (EXCLUSION_PADDING_Y * 2)
+                width: rect.width + EXCLUSION_PADDING_X * 2,
+                height: rect.height + EXCLUSION_PADDING_Y * 2,
             });
         }
     }
@@ -848,8 +941,8 @@ function updateAnimationExclusionAreas() {
             exclusionAreas.push({
                 x: rect.left - canvasRect.left - EXCLUSION_PADDING_X,
                 y: rect.top - canvasRect.top - EXCLUSION_PADDING_Y,
-                width: rect.width + (EXCLUSION_PADDING_X * 2),
-                height: rect.height + (EXCLUSION_PADDING_Y * 2)
+                width: rect.width + EXCLUSION_PADDING_X * 2,
+                height: rect.height + EXCLUSION_PADDING_Y * 2,
             });
         }
     }
@@ -882,7 +975,7 @@ function initAnimationEngine() {
         animationEngine.onStop = () => {
             currentActiveAnimation = null;
         };
-        animations.forEach(anim => {
+        animations.forEach((anim) => {
             animationEngine.register(anim.id, anim.class, anim.id);
         });
         animationEngine.resize();
@@ -902,7 +995,6 @@ function initAnimationEngine() {
         observer.observe(canvas.parentElement);
     }
 }
-
 
 async function syncState() {
     if (!isAppInitialized) return;
@@ -971,9 +1063,9 @@ async function syncState() {
     updateFontSelect();
 
     // Ensure the selected font is valid for the current language, or fallback
-    const currentLang = (lang === 'auto') ? detectBrowserLanguage() : lang;
-    const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
-    const fontToApply = filteredFonts.some(f => f.value === state.font) ? state.font : filteredFonts[0].value;
+    const currentLang = lang === 'auto' ? detectBrowserLanguage() : lang;
+    const filteredFonts = FONTS.filter((f) => f.lang.includes(currentLang));
+    const fontToApply = filteredFonts.some((f) => f.value === state.font) ? state.font : filteredFonts[0].value;
     applyFont(fontToApply);
 
     // Determine active animation type
@@ -982,8 +1074,8 @@ async function syncState() {
     let customAnimSpecHash = '';
     if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
         const cat = await dbGetByName(STORE_CATEGORIES, activeTask.category);
-        color = cat ? cat.color : (activeTask.color || 'primary');
-        categoryAnimation = cat ? (cat.animation || 'default') : 'default';
+        color = cat ? cat.color : activeTask.color || 'primary';
+        categoryAnimation = cat ? cat.animation || 'default' : 'default';
 
         const animId = cat ? cat.animation : null;
         if (animId && animId !== 'default' && animId !== 'none') {
@@ -1034,7 +1126,9 @@ async function updateAboutStats() {
         const logCount = await dbCount(STORE_LOGS);
         const categories = await dbGetAll(STORE_CATEGORIES);
         // Exclude system categories and page breaks from count
-        const categoryCount = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).length;
+        const categoryCount = categories.filter(
+            (c) => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+        ).length;
 
         const logCountEl = getEl(ID_STATS_LOG_COUNT);
         if (logCountEl) logCountEl.textContent = logCount.toLocaleString();
@@ -1049,9 +1143,10 @@ async function updateAboutStats() {
 function getAnimationTooltip(metadata, lang) {
     let description = '';
     if (metadata.description) {
-        description = (typeof metadata.description === 'object')
-            ? (metadata.description[lang] || metadata.description['en'] || '')
-            : metadata.description;
+        description =
+            typeof metadata.description === 'object'
+                ? metadata.description[lang] || metadata.description['en'] || ''
+                : metadata.description;
     }
 
     const author = metadata.author;
@@ -1061,33 +1156,6 @@ function getAnimationTooltip(metadata, lang) {
         return description ? `${description}\n${authorLine}` : authorLine;
     }
     return '';
-}
-
-async function getCustomAnimationMetadataMap() {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        const result = await chrome.storage.local.get('custom_animation_metadata_map');
-        return result.custom_animation_metadata_map || {};
-    } else {
-        try {
-            const stored = localStorage.getItem('custom_animation_metadata_map');
-            return stored ? JSON.parse(stored) : {};
-        } catch (e) {
-            console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
-            return {};
-        }
-    }
-}
-
-async function setCustomAnimationMetadataMap(map) {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        await chrome.storage.local.set({ custom_animation_metadata_map: map });
-    } else {
-        try {
-            localStorage.setItem('custom_animation_metadata_map', JSON.stringify(map));
-        } catch (e) {
-            console.error('Failed to save custom_animation_metadata_map to localStorage:', e);
-        }
-    }
 }
 
 async function updateAnimationSelect() {
@@ -1101,7 +1169,7 @@ async function updateAnimationSelect() {
         noneOpt.textContent = t('anim-none');
         animSelect.appendChild(noneOpt);
 
-        animations.forEach(anim => {
+        animations.forEach((anim) => {
             const opt = createEl('option');
             opt.value = anim.id;
             if (typeof anim.metadata.name === 'object') {
@@ -1116,16 +1184,18 @@ async function updateAnimationSelect() {
 
         // Append custom animations if available
         const customAnims = await getCustomAnimationMetadataMap();
-        Object.keys(customAnims).sort((a, b) => {
-            const orderA = customAnims[a].order ?? 0;
-            const orderB = customAnims[b].order ?? 0;
-            return orderA - orderB;
-        }).forEach(id => {
-            const opt = createEl('option');
-            opt.value = id;
-            opt.textContent = customAnims[id].name;
-            animSelect.appendChild(opt);
-        });
+        Object.keys(customAnims)
+            .sort((a, b) => {
+                const orderA = customAnims[a].order ?? 0;
+                const orderB = customAnims[b].order ?? 0;
+                return orderA - orderB;
+            })
+            .forEach((id) => {
+                const opt = createEl('option');
+                opt.value = id;
+                opt.textContent = customAnims[id].name;
+                animSelect.appendChild(opt);
+            });
 
         animSelect.value = currentAnimationType;
     }
@@ -1138,18 +1208,18 @@ function updateFontSelect() {
         const currentLang = getLanguage();
 
         fontSelect.replaceChildren();
-        const filteredFonts = FONTS.filter(f => f.lang.includes(currentLang));
+        const filteredFonts = FONTS.filter((f) => f.lang.includes(currentLang));
 
-        filteredFonts.forEach(f => {
+        filteredFonts.forEach((f) => {
             const opt = createEl('option');
             opt.value = f.value;
-            opt.textContent = (f.name === 'font-system') ? t('font-system') : f.name;
+            opt.textContent = f.name === 'font-system' ? t('font-system') : f.name;
             opt.style.fontFamily = f.value;
             fontSelect.appendChild(opt);
         });
 
         // If the previously selected font is not in the filtered list, select the first available one
-        if (!filteredFonts.some(f => f.value === currentFont)) {
+        if (!filteredFonts.some((f) => f.value === currentFont)) {
             if (filteredFonts.length > 0) {
                 fontSelect.value = filteredFonts[0].value;
                 // We should also update the style since the value changed
@@ -1181,7 +1251,7 @@ async function updateUI() {
         pauseBtn: getEl(ID_PAUSE_BTN),
         endBtn: getEl(ID_END_BTN),
         elapsedTime: getEl(ID_ELAPSED_TIME),
-        display: getEl(ID_CURRENT_TASK_DISPLAY)
+        display: getEl(ID_CURRENT_TASK_DISPLAY),
     };
 
     if (activeTask) {
@@ -1193,7 +1263,7 @@ async function updateUI() {
             color = 'neutral';
         } else {
             const cat = await dbGetByName(STORE_CATEGORIES, activeTask.category);
-            color = cat ? cat.color : (activeTask.color || 'primary');
+            color = cat ? cat.color : activeTask.color || 'primary';
             categoryAnimation = cat ? cat.animation : 'default';
         }
 
@@ -1290,7 +1360,7 @@ async function openReportModal() {
     reportSelectedDate.setHours(0, 0, 0, 0);
 
     const allLogs = await dbGetAll(STORE_LOGS);
-    reportLogDates = new Set(allLogs.map(l => new Date(l.startTime).setHours(0, 0, 0, 0)));
+    reportLogDates = new Set(allLogs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
 
     const state = await getCurrentAppState();
     if (state.reportSettings) {
@@ -1314,7 +1384,7 @@ async function openTagAggregationModal() {
     tagAggregationSelectedDate.setHours(0, 0, 0, 0);
 
     const allLogs = await dbGetAll(STORE_LOGS);
-    reportLogDates = new Set(allLogs.map(l => new Date(l.startTime).setHours(0, 0, 0, 0)));
+    reportLogDates = new Set(allLogs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
 
     await updateTagAggregationUI();
     getEl(ID_TAG_AGGREGATION_MODAL).classList.remove('hidden');
@@ -1361,13 +1431,15 @@ async function updateReportUI() {
     const allLogs = await dbGetAll(STORE_LOGS);
     const startOfDay = d.getTime();
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
-    const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime).sort((a, b) => a.startTime - b.startTime);
+    const dayLogs = allLogs
+        .filter((l) => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime)
+        .sort((a, b) => a.startTime - b.startTime);
 
     const reportText = generateReport(dayLogs, {
         ...reportSettings,
         idleText: t('idle-category-log'),
         headerTime: t('report-header-time'),
-        headerCategory: t('report-header-category')
+        headerCategory: t('report-header-category'),
     });
     getEl(ID_REPORT_PREVIEW).textContent = reportText || t('no-logs-for-day');
 }
@@ -1395,13 +1467,13 @@ function moveSelectedDate(currentDate, delta) {
 
     if (delta < 0) {
         // Find previous date with logs
-        const prevDates = logDates.filter(d => d < current);
+        const prevDates = logDates.filter((d) => d < current);
         if (prevDates.length > 0) {
             newDate = new Date(prevDates[prevDates.length - 1]);
         }
     } else {
         // Find next date with logs, up to today
-        const nextDates = logDates.filter(d => d > current && d <= today);
+        const nextDates = logDates.filter((d) => d > current && d <= today);
         if (nextDates.length > 0) {
             newDate = new Date(nextDates[0]);
         } else if (current < today) {
@@ -1441,7 +1513,7 @@ function renderCalendar(containerId, selectedDate, onSelect) {
     // Header
     const days = t('day-names');
     const headerRow = createEl('tr');
-    days.forEach(day => {
+    days.forEach((day) => {
         const th = createEl('th');
         th.textContent = day;
         headerRow.appendChild(th);
@@ -1495,7 +1567,7 @@ async function updateTagAggregationUI() {
     const allLogs = await dbGetAll(STORE_LOGS);
     const startOfDay = d.getTime();
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
-    const dayLogs = allLogs.filter(l => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime);
+    const dayLogs = allLogs.filter((l) => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime);
 
     const { tagAgg, noTagDuration, totalWorkDuration } = calculateTagAggregation(dayLogs);
 
@@ -1550,7 +1622,7 @@ async function updateTagAggregationUI() {
     };
 
     // 1. Tag rows
-    sortedTags.forEach(tag => {
+    sortedTags.forEach((tag) => {
         appendAggregationRow(tag, tagAgg[tag]);
     });
 
@@ -1619,7 +1691,7 @@ function showMultiChoice(message, choices) {
         msgEl.innerText = message;
         container.replaceChildren();
 
-        choices.forEach(choice => {
+        choices.forEach((choice) => {
             const btn = createEl('button');
             btn.textContent = choice.label;
             if (choice.class) btn.className = choice.class;
@@ -1652,22 +1724,22 @@ function showSyncSetupModal() {
         }
 
         // Reset state
-        settingsRadios.forEach(r => r.checked = false);
-        historyRadios.forEach(r => r.checked = false);
+        settingsRadios.forEach((r) => (r.checked = false));
+        historyRadios.forEach((r) => (r.checked = false));
         okBtn.disabled = true;
 
         const updateOkButton = () => {
-            const settingsSelected = [...settingsRadios].some(r => r.checked);
-            const historySelected = [...historyRadios].some(r => r.checked);
+            const settingsSelected = [...settingsRadios].some((r) => r.checked);
+            const historySelected = [...historyRadios].some((r) => r.checked);
             okBtn.disabled = !(settingsSelected && historySelected);
         };
 
-        settingsRadios.forEach(r => r.onchange = updateOkButton);
-        historyRadios.forEach(r => r.onchange = updateOkButton);
+        settingsRadios.forEach((r) => (r.onchange = updateOkButton));
+        historyRadios.forEach((r) => (r.onchange = updateOkButton));
 
         okBtn.onclick = () => {
-            const settingsMode = [...settingsRadios].find(r => r.checked)?.value;
-            const historyMode = [...historyRadios].find(r => r.checked)?.value;
+            const settingsMode = [...settingsRadios].find((r) => r.checked)?.value;
+            const historyMode = [...historyRadios].find((r) => r.checked)?.value;
             modal.classList.add('hidden');
             resolve({ settingsMode, historyMode });
         };
@@ -1703,7 +1775,7 @@ async function renderBusinessDays() {
 
     // 0: Sun, 1: Mon, ..., 6: Sat
     // To display Sun-Sat, use [0, 1, 2, 3, 4, 5, 6]
-    [0, 1, 2, 3, 4, 5, 6].forEach(day => {
+    [0, 1, 2, 3, 4, 5, 6].forEach((day) => {
         // Let's use a known date: 2024-01-07 is Sunday
         const d = new Date(2024, 0, 7 + day);
         const label = formatter.format(d);
@@ -1718,7 +1790,7 @@ async function renderBusinessDays() {
             let newDays = [...businessDays];
             if (newDays.includes(day)) {
                 if (newDays.length > 1) {
-                    newDays = newDays.filter(d => d !== day);
+                    newDays = newDays.filter((d) => d !== day);
                 } else {
                     alert(t('alert-business-days-min'));
                     return;
@@ -1748,7 +1820,9 @@ async function renderAlarmList() {
     }
 
     const categories = await dbGetAll(STORE_CATEGORIES);
-    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+    const workCategories = categories.filter(
+        (c) => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+    );
     const alarms = await dbGetAll(STORE_ALARMS);
     alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
 
@@ -1760,7 +1834,7 @@ async function renderAlarmList() {
 
     list.replaceChildren();
 
-    alarms.forEach(alarm => {
+    alarms.forEach((alarm) => {
         const item = createEl('div');
         item.className = 'alarm-item';
 
@@ -1823,7 +1897,7 @@ async function renderAlarmList() {
         typeLabel.textContent = t('alarm-label-type');
         const typeSelect = createEl('select');
         typeSelect.className = 'alarm-type';
-        ['daily', 'daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'].forEach(val => {
+        ['daily', 'daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'].forEach((val) => {
             const opt = createEl('option');
             opt.value = val;
             opt.textContent = t(`alarm-type-${val}`);
@@ -1844,8 +1918,10 @@ async function renderAlarmList() {
         const weeklyContainer = createEl('div');
         weeklyContainer.className = 'filter-chips';
         const currentLang = getLanguage();
-        const formatter = new Intl.DateTimeFormat(currentLang === 'auto' ? undefined : currentLang, { weekday: 'narrow' });
-        [0, 1, 2, 3, 4, 5, 6].forEach(day => {
+        const formatter = new Intl.DateTimeFormat(currentLang === 'auto' ? undefined : currentLang, {
+            weekday: 'narrow',
+        });
+        [0, 1, 2, 3, 4, 5, 6].forEach((day) => {
             const d = new Date(2024, 0, 7 + day);
             const chip = createEl('button');
             chip.className = 'filter-chip' + ((alarm.daysOfWeek || []).includes(day) ? ' active' : '');
@@ -1855,7 +1931,7 @@ async function renderAlarmList() {
             chip.onclick = () => {
                 let days = [...(alarm.daysOfWeek || [])];
                 if (days.includes(day)) {
-                    days = days.filter(d => d !== day);
+                    days = days.filter((d) => d !== day);
                 } else {
                     days.push(day);
                 }
@@ -1920,7 +1996,7 @@ async function renderAlarmList() {
             const adjOptions = ['none', 'prev_business_day', 'next_business_day', 'skip'];
 
             holidaySelect.replaceChildren();
-            adjOptions.forEach(val => {
+            adjOptions.forEach((val) => {
                 const opt = createEl('option');
                 opt.value = val;
                 opt.textContent = t(`alarm-adj-${val}`);
@@ -1934,7 +2010,7 @@ async function renderAlarmList() {
 
                 holidaySelect.appendChild(opt);
             });
-            holidaySelect.disabled = (type === 'daily' || type === 'daily_business');
+            holidaySelect.disabled = type === 'daily' || type === 'daily_business';
         };
         rowHoliday.appendChild(holidayLabel);
         rowHoliday.appendChild(holidaySelect);
@@ -1963,7 +2039,7 @@ async function renderAlarmList() {
         actionLabel.textContent = t('alarm-label-action');
         const actionSelect = createEl('select');
         actionSelect.className = 'alarm-action';
-        ['none', 'stop', 'pause', 'start'].forEach(val => {
+        ['none', 'stop', 'pause', 'start'].forEach((val) => {
             const opt = createEl('option');
             opt.value = val;
             opt.textContent = t(`alarm-action-${val}`);
@@ -1983,7 +2059,7 @@ async function renderAlarmList() {
         catLabel.textContent = t('alarm-label-action-category');
         const catSelect = createEl('select');
         catSelect.className = 'alarm-category';
-        workCategories.forEach(c => {
+        workCategories.forEach((c) => {
             const opt = createEl('option');
             opt.value = c.name;
             opt.textContent = c.name;
@@ -2016,7 +2092,11 @@ async function renderAlarmList() {
             alarm.actionCategory = catSelect.value;
 
             // Apply guardrails
-            if (alarm.type === 'monthly_date' && alarm.dayOfMonth === 1 && alarm.holidayAdjustment === 'prev_business_day') {
+            if (
+                alarm.type === 'monthly_date' &&
+                alarm.dayOfMonth === 1 &&
+                alarm.holidayAdjustment === 'prev_business_day'
+            ) {
                 alarm.holidayAdjustment = 'none';
             }
             if (alarm.type === 'monthly_end_relative' && alarm.holidayAdjustment === 'next_business_day') {
@@ -2071,7 +2151,7 @@ function getColorCode(color) {
         cyan: '#039be5',
         'retro-lcd': '#9bbc0f',
         'retro-crt': '#33ff33',
-        'retro-nixie': '#ff5500'
+        'retro-nixie': '#ff5500',
     };
     return codes[color] || '#1976d2';
 }
@@ -2112,7 +2192,7 @@ async function updateBackupUI() {
         }
     }
 
-    backupManager.getFileCount().then(count => {
+    backupManager.getFileCount().then((count) => {
         const fileCountDisplay = getEl(ID_BACKUP_FILE_COUNT_DISPLAY);
         if (fileCountDisplay) fileCountDisplay.textContent = count.toString();
     });
@@ -2142,7 +2222,9 @@ async function renderCategoryEditor() {
     const list = getEl(ID_CATEGORY_EDITOR_LIST);
     if (!list) return;
     let categories = await dbGetAll(STORE_CATEGORIES);
-    categories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    categories = categories
+        .filter((c) => c.name !== SYSTEM_CATEGORY_IDLE)
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     // Re-check activeElement and color-dropdown immediately before destructive update
     const activeEl = document.activeElement;
@@ -2154,9 +2236,23 @@ async function renderCategoryEditor() {
     list.replaceChildren();
 
     const colors = [
-        'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
-        'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan',
-        'retro-lcd', 'retro-crt', 'retro-nixie'
+        'primary',
+        'secondary',
+        'tertiary',
+        'error',
+        'neutral',
+        'outline',
+        'teal',
+        'green',
+        'yellow',
+        'orange',
+        'pink',
+        'indigo',
+        'brown',
+        'cyan',
+        'retro-lcd',
+        'retro-crt',
+        'retro-nixie',
     ];
 
     const lang = getLanguage();
@@ -2213,24 +2309,26 @@ async function renderCategoryEditor() {
             const animOptions = [
                 { value: 'none', label: t('anim-none'), tooltip: '' },
                 { value: 'default', label: t('anim-default'), tooltip: '' },
-                ...animations.map(anim => {
+                ...animations.map((anim) => {
                     return {
                         value: anim.id,
                         label: getAnimLabel(anim),
-                        tooltip: getAnimationTooltip(anim.metadata, lang)
+                        tooltip: getAnimationTooltip(anim.metadata, lang),
                     };
                 }),
-                ...Object.keys(customAnims).sort((a, b) => {
-                    const orderA = customAnims[a].order ?? 0;
-                    const orderB = customAnims[b].order ?? 0;
-                    return orderA - orderB;
-                }).map(id => {
-                    return {
-                        value: id,
-                        label: customAnims[id].name,
-                        tooltip: customAnims[id].description || ''
-                    };
-                })
+                ...Object.keys(customAnims)
+                    .sort((a, b) => {
+                        const orderA = customAnims[a].order ?? 0;
+                        const orderB = customAnims[b].order ?? 0;
+                        return orderA - orderB;
+                    })
+                    .map((id) => {
+                        return {
+                            value: id,
+                            label: customAnims[id].name,
+                            tooltip: customAnims[id].description || '',
+                        };
+                    }),
             ];
 
             const row1 = createEl('div');
@@ -2267,7 +2365,7 @@ async function renderCategoryEditor() {
             colorTrigger.dataset.color = cat.color;
             const colorMenu = createEl('div');
             colorMenu.className = 'color-dropdown-menu hidden';
-            colors.forEach(color => {
+            colors.forEach((color) => {
                 const colorItem = createEl('div');
                 colorItem.className = 'color-dropdown-item' + (color === cat.color ? ' selected' : '');
                 colorItem.dataset.color = color;
@@ -2279,7 +2377,7 @@ async function renderCategoryEditor() {
 
             const animSelect = createEl('select');
             animSelect.className = 'category-edit-animation';
-            animOptions.forEach(opt => {
+            animOptions.forEach((opt) => {
                 const optEl = createEl('option');
                 optEl.value = opt.value;
                 optEl.textContent = opt.label;
@@ -2347,10 +2445,12 @@ async function renderCategoryEditor() {
             const colorMenu = item.querySelector('.color-dropdown-menu');
             colorTrigger.onclick = (e) => {
                 e.stopPropagation();
-                queryAll('.color-dropdown-menu').forEach(m => { if (m !== colorMenu) m.classList.add('hidden'); });
+                queryAll('.color-dropdown-menu').forEach((m) => {
+                    if (m !== colorMenu) m.classList.add('hidden');
+                });
                 colorMenu.classList.toggle('hidden');
             };
-            colorMenu.querySelectorAll('.color-dropdown-item').forEach(btn => {
+            colorMenu.querySelectorAll('.color-dropdown-item').forEach((btn) => {
                 btn.onclick = async (e) => {
                     e.stopPropagation();
                     cat.color = btn.dataset.color;
@@ -2378,7 +2478,12 @@ async function renderCategoryEditor() {
             const renderTags = () => {
                 tagListEl.replaceChildren();
                 const tagStr = cat.tags || '';
-                const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+                const tags = tagStr
+                    ? tagStr
+                          .split(',')
+                          .map((t) => t.trim())
+                          .filter(Boolean)
+                    : [];
                 tags.forEach((tag, idx) => {
                     const pill = createEl('span');
                     pill.className = 'tag-pill';
@@ -2409,7 +2514,12 @@ async function renderCategoryEditor() {
                     const newTag = tagInput.value.trim().replace(/,/g, '');
                     if (newTag) {
                         const tagStr = cat.tags || '';
-                        const tags = tagStr ? tagStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+                        const tags = tagStr
+                            ? tagStr
+                                  .split(',')
+                                  .map((t) => t.trim())
+                                  .filter(Boolean)
+                            : [];
                         if (!tags.includes(newTag)) {
                             tags.push(newTag);
                             cat.tags = tags.join(',');
@@ -2427,7 +2537,9 @@ async function renderCategoryEditor() {
         }
 
         item.querySelector('.delete-cat-btn').onclick = async () => {
-            const confirmMsg = isPageBreak ? t('confirm-delete-page-break') : t('confirm-delete-category', { name: cat.name });
+            const confirmMsg = isPageBreak
+                ? t('confirm-delete-page-break')
+                : t('confirm-delete-category', { name: cat.name });
             if (await showConfirm(confirmMsg)) {
                 await dbDelete(STORE_CATEGORIES, cat.id);
                 updateUI();
@@ -2450,7 +2562,7 @@ async function renderCategoryEditor() {
         const draggingItem = list.querySelector('.dragging');
         if (!draggingItem) return;
         const siblings = [...list.querySelectorAll('.category-editor-item:not(.dragging)')];
-        let nextSibling = siblings.find(sibling => {
+        let nextSibling = siblings.find((sibling) => {
             return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
         });
         list.insertBefore(draggingItem, nextSibling);
@@ -2461,7 +2573,7 @@ async function renderCategoryEditor() {
         const items = [...list.querySelectorAll('.category-editor-item')];
         const currentCategories = await dbGetAll(STORE_CATEGORIES);
         // Map current categories by ID for easy lookup
-        const catMap = new Map(currentCategories.map(c => [c.id.toString(), c]));
+        const catMap = new Map(currentCategories.map((c) => [c.id.toString(), c]));
 
         for (let i = 0; i < items.length; i++) {
             const id = items[i].dataset.id;
@@ -2509,7 +2621,7 @@ async function renderCustomAnimationsTab() {
         return;
     }
 
-    keys.forEach(id => {
+    keys.forEach((id) => {
         const opt = createEl('option');
         opt.value = id;
         opt.textContent = customAnims[id].name;
@@ -2545,7 +2657,7 @@ async function importCustomAnimation(text) {
 
     const custom_animation_metadata_map = await getCustomAnimationMetadataMap();
 
-    const finalId = (!id || custom_animation_metadata_map[id]) ? generateUUID() : id;
+    const finalId = !id || custom_animation_metadata_map[id] ? generateUUID() : id;
 
     const byteString = atob(payload.imageData.split(',')[1]);
     const mimeString = payload.imageData.split(',')[0].split(':')[1].split(';')[0];
@@ -2560,7 +2672,7 @@ async function importCustomAnimation(text) {
 
     // Resolve name duplicate by appending sequence numbering (1), (2), etc.
     let finalName = metadata.name || 'My Animation';
-    const existingNames = new Set(Object.values(custom_animation_metadata_map).map(item => item.name));
+    const existingNames = new Set(Object.values(custom_animation_metadata_map).map((item) => item.name));
     if (existingNames.has(finalName)) {
         let suffix = 1;
         let candidateName = `${finalName} (${suffix})`;
@@ -2576,8 +2688,8 @@ async function importCustomAnimation(text) {
         description: metadata.description || '',
         config: config || { exclusionStrategy: 'freedom' },
         payload: {
-            renderSpec: payload.renderSpec
-        }
+            renderSpec: payload.renderSpec,
+        },
     };
 
     await setCustomAnimationMetadataMap(custom_animation_metadata_map);
@@ -2607,26 +2719,30 @@ function setupEventListeners() {
 
     // Category Wheel Pagination
     const categorySection = getEl(ID_CATEGORY_SECTION);
-    categorySection?.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        dbGetAll(STORE_CATEGORIES).then(categories => {
-            const pages = splitCategoriesIntoPages(categories);
-            const totalPages = pages.length;
-            if (e.deltaY > 0) {
-                // Scroll down -> next page
-                if (currentCategoryPage < totalPages - 1) {
-                    currentCategoryPage++;
-                    renderCategories();
+    categorySection?.addEventListener(
+        'wheel',
+        (e) => {
+            e.preventDefault();
+            dbGetAll(STORE_CATEGORIES).then((categories) => {
+                const pages = splitCategoriesIntoPages(categories);
+                const totalPages = pages.length;
+                if (e.deltaY > 0) {
+                    // Scroll down -> next page
+                    if (currentCategoryPage < totalPages - 1) {
+                        currentCategoryPage++;
+                        renderCategories();
+                    }
+                } else {
+                    // Scroll up -> prev page
+                    if (currentCategoryPage > 0) {
+                        currentCategoryPage--;
+                        renderCategories();
+                    }
                 }
-            } else {
-                // Scroll up -> prev page
-                if (currentCategoryPage > 0) {
-                    currentCategoryPage--;
-                    renderCategories();
-                }
-            }
-        });
-    }, { passive: false });
+            });
+        },
+        { passive: false }
+    );
 
     // Modals
     const popups = {
@@ -2636,7 +2752,7 @@ function setupEventListeners() {
         multiChoice: getEl('multi-choice-modal'),
         syncSetup: getEl('sync-setup-modal'),
         historyAction: getEl('history-action-modal'),
-        historyEdit: getEl('history-edit-modal')
+        historyEdit: getEl('history-edit-modal'),
     };
 
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', async () => {
@@ -2650,18 +2766,22 @@ function setupEventListeners() {
         }
     });
 
-    queryAll('.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn').forEach(btn => {
+    queryAll(
+        '.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn'
+    ).forEach((btn) => {
         btn.onclick = (e) => {
             e.stopPropagation(); // Avoid triggering window.onclick
-            Object.values(popups).forEach(p => p?.classList.add('hidden'));
+            Object.values(popups).forEach((p) => p?.classList.add('hidden'));
         };
     });
 
     window.onclick = (event) => {
-        Object.values(popups).forEach(p => { if (event.target === p) p.classList.add('hidden'); });
+        Object.values(popups).forEach((p) => {
+            if (event.target === p) p.classList.add('hidden');
+        });
         // Close custom dropdowns when clicking outside
         if (!event.target.closest('.custom-color-dropdown')) {
-            queryAll('.color-dropdown-menu').forEach(m => m.classList.add('hidden'));
+            queryAll('.color-dropdown-menu').forEach((m) => m.classList.add('hidden'));
         }
         if (!event.target.closest('#report-date-display-box')) {
             getEl(ID_REPORT_CALENDAR_CONTAINER)?.classList.add('hidden');
@@ -2719,7 +2839,13 @@ function setupEventListeners() {
         }
     });
 
-    [ID_REPORT_FORMAT_SELECT, ID_REPORT_EMOJI_SELECT, ID_REPORT_ENDTIME_SELECT, ID_REPORT_DURATION_SELECT, ID_REPORT_ADJUST_SELECT].forEach(id => {
+    [
+        ID_REPORT_FORMAT_SELECT,
+        ID_REPORT_EMOJI_SELECT,
+        ID_REPORT_ENDTIME_SELECT,
+        ID_REPORT_DURATION_SELECT,
+        ID_REPORT_ADJUST_SELECT,
+    ].forEach((id) => {
         getEl(id)?.addEventListener('change', (e) => {
             const key = e.target.dataset.key || id.replace('report-', '').replace('-select', '');
             reportSettings[key] = e.target.value;
@@ -2740,10 +2866,12 @@ function setupEventListeners() {
             const plainType = 'text/plain';
             const blobHtml = new Blob([text], { type: htmlType });
             const blobPlain = new Blob([text], { type: plainType });
-            const data = [new ClipboardItem({
-                [htmlType]: blobHtml,
-                [plainType]: blobPlain,
-            })];
+            const data = [
+                new ClipboardItem({
+                    [htmlType]: blobHtml,
+                    [plainType]: blobPlain,
+                }),
+            ];
             await navigator.clipboard.write(data);
         } else {
             await navigator.clipboard.writeText(text);
@@ -2753,10 +2881,10 @@ function setupEventListeners() {
     });
 
     // Tabs
-    queryAll('.tab-btn').forEach(btn => {
+    queryAll('.tab-btn').forEach((btn) => {
         btn.onclick = () => {
-            queryAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            queryAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            queryAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+            queryAll('.tab-content').forEach((c) => c.classList.add('hidden'));
 
             let tabName = btn.dataset.tab;
             btn.classList.add('active');
@@ -2822,11 +2950,10 @@ function setupEventListeners() {
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
         const lang = getLanguage();
-        const url = getLaunchProjectUrl(
-            'projects/category-editor/index.html',
-            CATEGORY_EDITOR_URL,
-            { lang, from: 'app' }
-        );
+        const url = getLaunchProjectUrl('projects/category-editor/index.html', CATEGORY_EDITOR_URL, {
+            lang,
+            from: 'app',
+        });
         window.open(url, '_blank', 'noopener');
     });
 
@@ -2842,11 +2969,10 @@ function setupEventListeners() {
             resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
 
-        const url = getLaunchProjectUrl(
-            'projects/animation-maker/index.html',
-            '../animation-maker/index.html',
-            { lang, theme: resolvedTheme }
-        );
+        const url = getLaunchProjectUrl('projects/animation-maker/index.html', '../animation-maker/index.html', {
+            lang,
+            theme: resolvedTheme,
+        });
         window.open(url, '_blank', 'noopener');
     });
 
@@ -2863,17 +2989,20 @@ function setupEventListeners() {
         if (typeof chrome !== 'undefined' && (chrome.notifications || chrome.alarms)) {
             // 1. Immediate notification test
             if (chrome.notifications) {
-                chrome.notifications.create({
-                    type: 'basic',
-                    iconUrl: 'shared/assets/icon128.png',
-                    title: t('title'),
-                    message: t('test-notification-message') + " (Immediate)",
-                    priority: 2
-                }, (_id) => {
-                    if (chrome.runtime.lastError) {
-                        console.error('QuickLog-Solo: Test notification failed:', chrome.runtime.lastError);
+                chrome.notifications.create(
+                    {
+                        type: 'basic',
+                        iconUrl: 'shared/assets/icon128.png',
+                        title: t('title'),
+                        message: t('test-notification-message') + ' (Immediate)',
+                        priority: 2,
+                    },
+                    (_id) => {
+                        if (chrome.runtime.lastError) {
+                            console.error('QuickLog-Solo: Test notification failed:', chrome.runtime.lastError);
+                        }
                     }
-                });
+                );
             }
 
             // 2. Background alarm test (schedules an alarm for 1 minute in the future)
@@ -2883,7 +3012,7 @@ function setupEventListeners() {
                 await chrome.alarms.clear(testAlarmName);
                 // We use exactly 1.0 minutes to ensure scheduling by the browser
                 chrome.alarms.create(testAlarmName, { delayInMinutes: 1.0 });
-                showToast("Background test scheduled. Please wait 60s.");
+                showToast('Background test scheduled. Please wait 60s.');
             }
         } else {
             alert('Extension APIs not available in this environment.');
@@ -2897,7 +3026,7 @@ function setupEventListeners() {
     backupManager.onConfirm = async (key, params) => {
         const choice = await showMultiChoice(t(key, params), [
             { label: t('backup-btn-ignore-continue'), value: true, class: 'primary-btn' },
-            { label: t('backup-btn-abort-investigate'), value: false, class: 'danger-btn' }
+            { label: t('backup-btn-abort-investigate'), value: false, class: 'danger-btn' },
         ]);
         return choice;
     };
@@ -2927,7 +3056,6 @@ function setupEventListeners() {
         await updateUI();
         broadcastSync();
     });
-
 
     const fontSelect = getEl(ID_FONT_SELECT);
     if (fontSelect) {
@@ -3014,7 +3142,7 @@ function setupEventListeners() {
                 name,
                 color: 'primary',
                 order: categories.length,
-                tags: ''
+                tags: '',
             });
             if (input) input.value = '';
             renderCategories();
@@ -3029,7 +3157,7 @@ function setupEventListeners() {
         const pbName = `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}`;
         await dbPut(STORE_CATEGORIES, {
             name: pbName,
-            order: categories.length
+            order: categories.length,
         });
         renderCategories();
         renderCategoryEditor();
@@ -3049,11 +3177,11 @@ function setupEventListeners() {
             version: '1.0',
             businessDays,
             categories,
-            alarms: alarms.map(a => {
+            alarms: alarms.map((a) => {
                 const rest = { ...a };
                 delete rest.id;
                 return rest;
-            })
+            }),
         };
 
         try {
@@ -3097,24 +3225,31 @@ function setupEventListeners() {
     getEl(ID_EXPORT_CATEGORIES_BTN)?.addEventListener('click', async () => {
         const categories = await dbGetAll(STORE_CATEGORIES);
         categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        const exportData = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE);
+        const exportData = categories.filter((c) => c.name !== SYSTEM_CATEGORY_IDLE);
 
         // Convert to NDJSON according to schema
-        const ndjson = exportData.map(c => {
-            const isPageBreak = (c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
-            const entry = {
-                kind: SCHEMA_KIND_CATEGORY,
-                version: SCHEMA_VERSION_1_0,
-                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
-            };
-            if (!isPageBreak) {
-                entry.name = c.name;
-                entry.color = c.color;
-                entry.tags = c.tags ? c.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
-                entry.animation = c.animation || 'default';
-            }
-            return JSON.stringify(entry);
-        }).join('\n');
+        const ndjson = exportData
+            .map((c) => {
+                const isPageBreak = (c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+                const entry = {
+                    kind: SCHEMA_KIND_CATEGORY,
+                    version: SCHEMA_VERSION_1_0,
+                    type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY,
+                };
+                if (!isPageBreak) {
+                    entry.name = c.name;
+                    entry.color = c.color;
+                    entry.tags = c.tags
+                        ? c.tags
+                              .split(',')
+                              .map((t) => t.trim())
+                              .filter(Boolean)
+                        : [];
+                    entry.animation = c.animation || 'default';
+                }
+                return JSON.stringify(entry);
+            })
+            .join('\n');
 
         try {
             await navigator.clipboard.writeText(ndjson);
@@ -3154,7 +3289,7 @@ function setupEventListeners() {
                 return;
             }
 
-            const lines = text.split(/\r?\n/).filter(line => line.trim());
+            const lines = text.split(/\r?\n/).filter((line) => line.trim());
 
             // Security: Limit number of lines
             if (lines.length > 1000) {
@@ -3187,7 +3322,9 @@ function setupEventListeners() {
 
             // Level 2: Partial Error (Some lines failed)
             if (errorCount > 0) {
-                const proceed = await showConfirm(t('import-err-partial', { total, errorCount, validCount: validItems.length }));
+                const proceed = await showConfirm(
+                    t('import-err-partial', { total, errorCount, validCount: validItems.length })
+                );
                 if (!proceed) {
                     return;
                 }
@@ -3207,7 +3344,7 @@ function setupEventListeners() {
             await dbImportCategories(finalItems, importMode);
 
             // Artificial delay to ensure visual feedback as per UI standards
-            await new Promise(resolve => setTimeout(resolve, IMPORT_FEEDBACK_DELAY_MS));
+            await new Promise((resolve) => setTimeout(resolve, IMPORT_FEEDBACK_DELAY_MS));
 
             showToast(t('toast-cat-imported'));
             renderCategories();
@@ -3243,11 +3380,13 @@ function setupEventListeners() {
         performMaintenanceAction(t('confirm-export-csv'), async () => {
             const logs = await dbGetAll(STORE_LOGS);
             let csv = CSV_HEADER;
-            logs.forEach(l => { csv += `${l.id},${escapeCsv(l.category)},${l.startTime},${l.endTime},${escapeCsv(l.tags || '')}\n`; });
+            logs.forEach((l) => {
+                csv += `${l.id},${escapeCsv(l.category)},${l.startTime},${l.endTime},${escapeCsv(l.tags || '')}\n`;
+            });
             const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
             const a = createEl('a');
             a.href = url;
-            a.download = `quicklog_backup_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `quicklog_backup_${new Date().toISOString().slice(0, 10)}.csv`;
             a.click();
         });
     });
@@ -3265,7 +3404,7 @@ function setupEventListeners() {
 
         try {
             const categories = await dbGetAll(STORE_CATEGORIES);
-            const categoryMap = new Map(categories.map(c => [c.name, c]));
+            const categoryMap = new Map(categories.map((c) => [c.name, c]));
 
             // Security: Limit file size (e.g., 5MB for CSV history)
             if (file.size > 5 * 1024 * 1024) {
@@ -3274,7 +3413,10 @@ function setupEventListeners() {
             }
 
             const text = await file.text();
-            const lines = text.split(/\r?\n/).filter(line => line.trim() !== '').slice(1);
+            const lines = text
+                .split(/\r?\n/)
+                .filter((line) => line.trim() !== '')
+                .slice(1);
 
             // Security: Limit number of lines
             if (lines.length > 50000) {
@@ -3285,7 +3427,7 @@ function setupEventListeners() {
 
             const existingLogs = await dbGetAll(STORE_LOGS);
             // Optimization: Create a Set of keys for O(1) duplicate lookup
-            const existingKeys = new Set(existingLogs.map(l => `${l.category}|${l.startTime}`));
+            const existingKeys = new Set(existingLogs.map((l) => `${l.category}|${l.startTime}`));
             const importedKeys = new Set(); // To prevent duplicates within the same CSV
 
             const now = Date.now();
@@ -3336,8 +3478,8 @@ function setupEventListeners() {
                     category,
                     startTime,
                     endTime: endTime,
-                    tags: tags || (cat ? (cat.tags || '') : ''),
-                    color: cat ? (cat.color || 'primary') : 'primary'
+                    tags: tags || (cat ? cat.tags || '' : ''),
+                    color: cat ? cat.color || 'primary' : 'primary',
                 });
                 importedKeys.add(recordKey);
             }
@@ -3352,11 +3494,13 @@ function setupEventListeners() {
             }
 
             if (errorCount > 0) {
-                const proceed = await showConfirm(t('import-err-partial', {
-                    total: lines.length,
-                    errorCount,
-                    validCount: validRows.length
-                }));
+                const proceed = await showConfirm(
+                    t('import-err-partial', {
+                        total: lines.length,
+                        errorCount,
+                        validCount: validRows.length,
+                    })
+                );
                 if (!proceed) return;
             }
 
@@ -3404,7 +3548,7 @@ function setupEventListeners() {
         performMaintenanceAction(t('confirm-sync-pull'), async () => {
             try {
                 // Add a slight delay to avoid race conditions with async stopTask push
-                await new Promise(resolve => setTimeout(resolve, 200));
+                await new Promise((resolve) => setTimeout(resolve, 200));
                 await performInitialSync('none', 'cloud-to-local');
                 await broadcastSync('reload');
                 location.reload();
@@ -3423,7 +3567,7 @@ function setupEventListeners() {
                     await stopTask();
                 }
                 // Add a slight delay to avoid race conditions with async stopTask push
-                await new Promise(resolve => setTimeout(resolve, 200));
+                await new Promise((resolve) => setTimeout(resolve, 200));
                 await clearCloudHistory();
                 await dbClear(STORE_LOGS);
                 // Force idle state in settings (using literal to avoid import issues in CI/extension context)
@@ -3467,7 +3611,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         await initDB();
 
         if (await isSessionSyncEnabled()) {
-            await pullFromCloud().catch(err => console.error('Failed to pull from cloud during initialization:', err));
+            await pullFromCloud().catch((err) =>
+                console.error('Failed to pull from cloud during initialization:', err)
+            );
         }
 
         initAnimationEngine();
@@ -3506,7 +3652,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         delayedSync.activePromise = null;
                     }
                 })();
-                await delayedSync.activePromise.catch(err => {
+                await delayedSync.activePromise.catch((err) => {
                     console.error('QuickLog-Solo: Sync failed', err);
                 });
             }
@@ -3525,7 +3671,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let lastTick = Date.now();
     setInterval(() => {
         const now = Date.now();
-        if (now - lastTick > 10000) { // Jump > 10s detected (e.g. PC wake)
+        if (now - lastTick > 10000) {
+            // Jump > 10s detected (e.g. PC wake)
             console.log('QuickLog-Solo: Wake detected, triggering sync.');
             delayedSync();
         }
@@ -3565,8 +3712,8 @@ async function handleTestParameters() {
             startTime: startTime,
             endTime: null,
             resumableCategory: resumable,
-            color: cat ? (cat.color || 'primary') : 'primary',
-            tags: cat ? (cat.tags || '') : ''
+            color: cat ? cat.color || 'primary' : 'primary',
+            tags: cat ? cat.tags || '' : '',
         };
         const id = await dbAdd(STORE_LOGS, newLog);
         newLog.id = id;

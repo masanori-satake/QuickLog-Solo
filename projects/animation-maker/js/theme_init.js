@@ -1,4 +1,4 @@
-(function() {
+(function () {
     const urlParams = new URLSearchParams(window.location.search);
     let theme = urlParams.get('theme');
     if (!theme) {
