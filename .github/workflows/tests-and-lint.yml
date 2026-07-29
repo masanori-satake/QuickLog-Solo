@@ -1,8 +1,12 @@
-name: "CI: 継続的インテグレーション (Continuous Integration)"
+name: "CI: テストと静的解析 (Tests and Linting)"
 
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/release_*.yml'
   pull_request:
     branches: [ main ]
     paths:
@@ -14,6 +18,10 @@ on:
       - 'package-lock.json'
       - 'eslint.config.js'
       - '.stylelintrc.json'
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/release_*.yml'
   workflow_dispatch:
 
 env:
@@ -29,10 +37,10 @@ permissions:
   contents: read
 
 jobs:
-  audit-and-quality:
-    name: 監査と品質管理 (Audit and Quality)
+  python-checks:
+    name: Pythonスクリプトによる静的チェック (Static Checks by Python)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -63,14 +71,16 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
         with:
-          node-version: '24'
-          cache: 'npm'
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
 
       - name: 1. ルートディレクトリのクリーンネス確認 (Root Directory Cleanliness)
         run: python3 scripts/check_root_files.py
@@ -90,7 +100,43 @@ jobs:
         id: verify-no-deps
         run: python3 scripts/audit_production_dependencies.py
 
-      - name: 6. ESLint
+      - name: 6. 透明性レポートのサマリー作成 (Transparency Report Summary)
+        if: always()
+        run: |
+          echo "### Transparency Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.verify-no-deps.outcome }}" == "success" ]; then
+            echo "- Pure Vanilla JS policy: passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Pure Vanilla JS policy: failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- Root cleanliness / policy / version checks: completed" >> $GITHUB_STEP_SUMMARY
+
+  lint:
+    name: Linter (ESLint, Stylelint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup and Install Dependencies
+        uses: ./.github/workflows/setup-and-install.yml
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            projects/**
+            shared/**
+            tests/**
+            scripts/**
+            package.json
+            eslint.config.js
+            .stylelintrc.json
+
+      - name: 1. ESLint
         if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
@@ -104,7 +150,7 @@ jobs:
             fi
           fi
 
-      - name: 7. Stylelint
+      - name: 2. Stylelint
         if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
@@ -118,32 +164,48 @@ jobs:
             fi
           fi
 
-      - name: 8. Jest tests
+  unit-tests:
+    name: 単体テスト (Unit Tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup and Install Dependencies
+        uses: ./.github/workflows/setup-and-install.yml
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            projects/**
+            shared/**
+            tests/**
+            scripts/**
+            package.json
+
+      - name: Run Jest tests
         if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            npm test
+            npm test -- --coverage
           else
             JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
             if [ -n "$JS_FILES" ]; then
-              npm test -- --findRelatedTests $JS_FILES --passWithNoTests
+              npm test -- --coverage --findRelatedTests $JS_FILES --passWithNoTests
             else
               echo "No JS files changed, running all tests as fallback."
-              npm test
+              npm test -- --coverage
             fi
           fi
 
-      - name: 9. 透明性レポートのサマリー作成 (Transparency Report Summary)
-        if: always()
-        run: |
-          echo "### Transparency Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.verify-no-deps.outcome }}" == "success" ]; then
-            echo "- Pure Vanilla JS policy: passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- Pure Vanilla JS policy: failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "- Root cleanliness / policy / version checks: completed" >> $GITHUB_STEP_SUMMARY
+      - name: Post Coverage Comment
+        if: github.event_name == 'pull_request'
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   osv-scan:
     name: 脆弱性検査 (Vulnerability Scan)
@@ -156,42 +218,18 @@ jobs:
 
   e2e-tests:
     name: E2Eテスト (E2E Tests)
-    needs: audit-and-quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup and Install Dependencies
+        uses: ./.github/workflows/setup-and-install.yml
         with:
-          python-version: '3.x'
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-v2-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-v2-
-
-      - name: Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install chromium --with-deps
+          install-playwright: true
 
       - name: Install Playwright Dependencies (if cache hit)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
       - name: Start local server
@@ -203,44 +241,27 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e -- --grep-invert "Animation Quality Evaluation"
 
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: test-results/
+
   animation-tests:
     name: アニメーション品質テスト (Animation Quality)
-    needs: audit-and-quality
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup and Install Dependencies
+        uses: ./.github/workflows/setup-and-install.yml
         with:
-          python-version: '3.x'
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-v2-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-v2-
-
-      - name: Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install chromium --with-deps
+          install-playwright: true
 
       - name: Install Playwright Dependencies (if cache hit)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
       - name: Start local server
@@ -248,3 +269,10 @@ jobs:
 
       - name: Run Animation Quality Evaluation
         run: npm run test:animation-eval
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: animation-test-results
+          path: test-results/

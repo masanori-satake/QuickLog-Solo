@@ -31,6 +31,7 @@ ALLOWED_ROOT_ITEMS = {
     "node_modules",
     ".pr_agent.toml",
     ".qodo_merge.toml",
+    "requirements.txt",
 }
 
 def check_root_directory():

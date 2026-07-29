@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag name to release (e.g. v0.26.1)'
+        description: 'Tag name to release (e.g. v1.20.0)'
         required: true
         type: string
 
@@ -19,75 +19,55 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  release:
+  build-and-release:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Releaseの作成およびアセットのアップロードに必須
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup and Install Dependencies
+        uses: ./.github/workflows/setup-and-install.yml
+        with:
+          install-playwright: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Cache Playwright browsers
+      - name: Cache Python dependencies
         uses: actions/cache@v4
-        id: playwright-cache
         with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-playwright-
+            ${{ runner.os }}-pip-
 
-      - name: Install Python Playwright
-        run: pip install playwright
-
-      - name: Install Playwright Browsers
-        run: python3 -m playwright install chromium --with-deps
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
 
       - name: Build packages
         run: |
           rm -rf releases/*.zip
           npm run build
 
-      - name: Create GitHub Release and Upload Assets
+      - name: リリースタagの決定とリリース作成/更新 (Determine Tag and Create/Update Release)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # 手動実行の場合は入力から、タグpushの場合は参照からタグ名を取得
           TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name }}"
+          echo "Processing release for tag: $TAG_NAME"
 
           # 1. Ensure the release exists (create as a draft if missing)
           if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            echo "Release $TAG_NAME does not exist. Creating new draft release..."
-            MAX_RETRIES=5
-            RETRY_COUNT=0
-            SUCCESS=false
-            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-              if gh release create "$TAG_NAME" --draft --generate-notes; then
-                SUCCESS=true
-                break
-              else
-                RETRY_COUNT=$((RETRY_COUNT+1))
-                echo "gh release create failed. Retrying in 10 seconds ($RETRY_COUNT/$MAX_RETRIES)..."
-                sleep 10
-              fi
-            done
-            if [ "$SUCCESS" = false ]; then
-              echo "Failed to create release after $MAX_RETRIES attempts."
-              exit 1
-            fi
+            echo "Release $TAG_NAME does not exist. Creating new draft release with retries..."
+            gh release create "$TAG_NAME" --draft --generate-notes --retry 5 --retry-delay 10
           else
             echo "Release $TAG_NAME already exists. Editing to ensure it is in draft status before asset uploads..."
             gh release edit "$TAG_NAME" --draft
@@ -96,57 +76,12 @@ jobs:
           # 2. Upload assets sequentially with pre-upload cleanup and retries to avoid race conditions
           echo "Uploading assets to release $TAG_NAME..."
           for filepath in releases/*.zip; do
-            filename=$(basename "$filepath")
-            echo "Processing asset: $filename..."
-
-            MAX_RETRIES=5
-            RETRY_COUNT=0
-            SUCCESS=false
-
-            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-              # Ensure no pre-existing or partially uploaded asset of the same name exists
-              # This prevents "ReleaseAsset.name already exists" and "Error creating policy" errors on retry
-              echo "Ensuring no pre-existing asset named $filename exists..."
-              gh release delete-asset "$TAG_NAME" "$filename" -y >/dev/null 2>&1 || true
-              sleep 3
-
-              echo "Uploading $filename (Attempt $((RETRY_COUNT+1))/$MAX_RETRIES)..."
-              if gh release upload "$TAG_NAME" "$filepath"; then
-                SUCCESS=true
-                break
-              else
-                RETRY_COUNT=$((RETRY_COUNT+1))
-                echo "Upload of $filename failed. Retrying in 15 seconds ($RETRY_COUNT/$MAX_RETRIES)..."
-                sleep 15
-              fi
-            done
-
-            if [ "$SUCCESS" = false ]; then
-              echo "Failed to upload $filename after $MAX_RETRIES attempts."
-              exit 1
-            fi
-            echo "Successfully uploaded $filename!"
-            sleep 3  # Brief delay between assets to avoid concurrent write rate limits
+            echo "Uploading $(basename $filepath)..."
+            gh release upload "$TAG_NAME" "$filepath" --clobber --timeout 5m
           done
           echo "All assets uploaded successfully!"
 
           # 3. Publish the release by removing draft status
           echo "Publishing release $TAG_NAME..."
-          MAX_RETRIES=5
-          RETRY_COUNT=0
-          SUCCESS=false
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            if gh release edit "$TAG_NAME" --draft=false; then
-              SUCCESS=true
-              break
-            else
-              RETRY_COUNT=$((RETRY_COUNT+1))
-              echo "gh release edit --draft=false failed. Retrying in 10 seconds ($RETRY_COUNT/$MAX_RETRIES)..."
-              sleep 10
-            fi
-          done
-          if [ "$SUCCESS" = false ]; then
-            echo "Failed to publish release $TAG_NAME after $MAX_RETRIES attempts."
-            exit 1
-          fi
+          gh release edit "$TAG_NAME" --draft=false --retry 5 --retry-delay 10
           echo "Successfully published release $TAG_NAME!"
