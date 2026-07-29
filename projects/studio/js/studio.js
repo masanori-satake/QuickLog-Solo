@@ -14,7 +14,7 @@ import { initIO } from './io.js';
 const StudioState = {
     STOPPED: 'STOPPED',
     PLAYING: 'PLAYING',
-    PAUSED: 'PAUSED',
+    PAUSED: 'PAUSED'
 };
 
 const state = {
@@ -22,7 +22,7 @@ const state = {
     metaLang: 'en',
     metaData: {
         name: {},
-        description: {},
+        description: {}
     },
     engine: null,
     currentState: StudioState.STOPPED,
@@ -37,15 +37,13 @@ const state = {
 
     // Methods to be filled by modules or studio.js
     getMsg: (key) => (messages[state.currentLang] && messages[state.currentLang][key]) || messages.en[key] || key,
-    markDirty: () => {
-        state.isDirty = true;
-    },
+    markDirty: () => { state.isDirty = true; },
     showToast: (msg) => {
         const toast = document.getElementById('toast');
         toast.textContent = msg;
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 3000);
-    },
+    }
 };
 
 // DOM Elements
@@ -121,7 +119,7 @@ const elements = {
     consoleSection: document.getElementById('console-section'),
     consoleOutput: document.getElementById('console-output'),
     clearConsoleBtn: document.getElementById('clear-console'),
-    toggleConsoleBtn: document.getElementById('toggle-console'),
+    toggleConsoleBtn: document.getElementById('toggle-console')
 };
 
 // Initialize
@@ -175,7 +173,7 @@ function setupTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     state.currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    elements.themeToggle.checked = state.currentTheme === 'dark';
+    elements.themeToggle.checked = (state.currentTheme === 'dark');
 }
 
 function applyTheme() {
@@ -218,7 +216,7 @@ function updateBackLink() {
 }
 
 function updateTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach((el) => {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (messages[state.currentLang] && messages[state.currentLang][key]) {
             el.textContent = messages[state.currentLang][key];
@@ -229,7 +227,7 @@ function updateTranslations() {
         }
     });
 
-    document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
         const key = el.getAttribute('data-i18n-html');
         const html = (messages[state.currentLang] && messages[state.currentLang][key]) || messages.en[key];
         if (html) {
@@ -238,7 +236,7 @@ function updateTranslations() {
         }
     });
 
-    document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
         const key = el.getAttribute('data-i18n-title');
         if (messages[state.currentLang] && messages[state.currentLang][key]) {
             el.title = messages[state.currentLang][key];
@@ -247,7 +245,7 @@ function updateTranslations() {
         }
     });
 
-    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
         if (messages[state.currentLang] && messages[state.currentLang][key]) {
             el.placeholder = messages[state.currentLang][key];
@@ -256,13 +254,10 @@ function updateTranslations() {
 }
 
 function populateSamples() {
-    animations.forEach((anim) => {
+    animations.forEach(anim => {
         const option = document.createElement('option');
         option.value = anim.id;
-        const name =
-            typeof anim.metadata.name === 'object'
-                ? anim.metadata.name[state.currentLang] || anim.metadata.name.en
-                : anim.metadata.name;
+        const name = typeof anim.metadata.name === 'object' ? anim.metadata.name[state.currentLang] || anim.metadata.name.en : anim.metadata.name;
         const glyph = anim.devOnly ? '\u3000 ' : '📦 ';
         option.textContent = glyph + name;
         elements.sampleSelect.appendChild(option);
@@ -372,7 +367,7 @@ function resetStudioUI(full = true) {
         elements.metaLangSelect.value = state.currentLang;
         state.metaData = {
             name: {},
-            description: {},
+            description: {}
         };
         elements.metaName.value = '';
         elements.metaAuthor.value = '';
@@ -393,7 +388,7 @@ function resetStudioUI(full = true) {
 
     const defaultColor = '#0056d2';
     state.currentPreviewColor = defaultColor;
-    document.querySelectorAll('.color-preset').forEach((p) => {
+    document.querySelectorAll('.color-preset').forEach(p => {
         const isDefault = p.style.backgroundColor === 'rgb(0, 86, 210)';
         p.classList.toggle('active', isDefault);
     });
@@ -426,7 +421,7 @@ function resetStudioUI(full = true) {
 }
 
 async function loadSample(id) {
-    const anim = animations.find((a) => a.id === id);
+    const anim = animations.find(a => a.id === id);
     if (!anim) return;
 
     try {
@@ -454,8 +449,7 @@ function loadCurrentMetaData() {
 function parseAndPopulate(code, metadata) {
     state.isDirty = false;
     state.metaData.name = typeof metadata.name === 'object' ? { ...metadata.name } : { en: metadata.name };
-    state.metaData.description =
-        typeof metadata.description === 'object' ? { ...metadata.description } : { en: metadata.description || '' };
+    state.metaData.description = typeof metadata.description === 'object' ? { ...metadata.description } : { en: metadata.description || '' };
     loadCurrentMetaData();
 
     elements.metaAuthor.value = metadata.author || '';
@@ -487,14 +481,8 @@ function parseAndPopulate(code, metadata) {
     elements.inputDraw.value = extractMethod(classContent, 'draw');
 
     if (elements.inputDraw.value) {
-        elements.inputDraw.value = elements.inputDraw.value.replace(
-            /draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*,\s*/,
-            'draw(ctx, { '
-        );
-        elements.inputDraw.value = elements.inputDraw.value.replace(
-            /draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*\}\s*\)/,
-            'draw(ctx, params)'
-        );
+        elements.inputDraw.value = elements.inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*,\s*/, 'draw(ctx, { ');
+        elements.inputDraw.value = elements.inputDraw.value.replace(/draw\s*\(\s*ctx\s*,\s*\{\s*width\s*,\s*height\s*\}\s*\)/, 'draw(ctx, params)');
     }
 
     classContent = classContent.replace(/usePseudoSpace:\s*(true|false),?\s*/g, '');
@@ -504,27 +492,21 @@ function parseAndPopulate(code, metadata) {
     const onMouseMove = extractMethod(classContent, 'onMouseMove');
     elements.inputInteraction.value = (onClick ? onClick + '\n\n' : '') + (onMouseMove ? onMouseMove : '');
 
-    if (!elements.inputSetup.value)
-        elements.inputSetup.value = 'setup(width, height) {\n  this.width = width;\n  this.height = height;\n}';
-    if (!elements.inputDraw.value)
-        elements.inputDraw.value = 'draw(ctx, { elapsedMs, progress, step, exclusionAreas }) {\n  \n}';
-    if (!elements.inputInteraction.value)
-        elements.inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
+    if (!elements.inputSetup.value) elements.inputSetup.value = 'setup(width, height) {\n  this.width = width;\n  this.height = height;\n}';
+    if (!elements.inputDraw.value) elements.inputDraw.value = 'draw(ctx, { elapsedMs, progress, step, exclusionAreas }) {\n  \n}';
+    if (!elements.inputInteraction.value) elements.inputInteraction.value = 'onClick(x, y) {\n  \n}\n\nonMouseMove(x, y) {\n  \n}';
 
     let vars = classContent;
     const toRemove = ['metadata', 'config', 'setup', 'draw', 'onClick', 'onMouseMove'];
 
-    toRemove.forEach((name) => {
+    toRemove.forEach(name => {
         let r;
         while ((r = findRange(vars, name)) !== null) {
             vars = vars.substring(0, r.start) + vars.substring(r.end);
         }
     });
 
-    vars = vars
-        .replace(/^\s*;+/gm, '')
-        .replace(/;+\s*$/gm, '')
-        .replace(/\n\s*\n\s*\n/g, '\n\n');
+    vars = vars.replace(/^\s*;+/gm, '').replace(/;+\s*$/gm, '').replace(/\n\s*\n\s*\n/g, '\n\n');
     elements.inputVars.value = vars.trim();
 }
 
@@ -544,12 +526,10 @@ function deindent(text) {
 
     if (minIndent === Infinity) return text;
 
-    return lines
-        .map((line) => {
-            if (line.trim().length === 0) return '';
-            return line.substring(minIndent);
-        })
-        .join('\n');
+    return lines.map(line => {
+        if (line.trim().length === 0) return '';
+        return line.substring(minIndent);
+    }).join('\n');
 }
 
 function findRange(text, namePattern) {
@@ -611,7 +591,7 @@ function startTest() {
 
     state.engine.config = {
         mode: elements.configMode.value,
-        exclusionStrategy: elements.configExclusionStrategy.value,
+        exclusionStrategy: elements.configExclusionStrategy.value
     };
 
     state.updateExclusionAreas();
@@ -619,7 +599,7 @@ function startTest() {
     const originalStart = state.engine.start;
     const originalDraw = state.engine.draw;
 
-    state.engine.draw = function () {
+    state.engine.draw = function() {
         if (state.currentState === StudioState.PAUSED || state.isScrubbing) return;
 
         const now = performance.now();
@@ -633,7 +613,7 @@ function startTest() {
         _requestStudioDraw(state.virtualElapsedMs);
     };
 
-    state.engine.start = function (name, startTime, color) {
+    state.engine.start = function(name, startTime, color) {
         this.stop();
         this.activeAnimationId = 'test';
         this.startTime = startTime;
@@ -644,10 +624,7 @@ function startTest() {
         this.requestRawBitmap = elements.showCanvasCheck.checked;
         this.onRawBitmapDraw = (bitmap) => {
             const ctx = elements.rawCanvas.getContext('2d');
-            if (
-                elements.rawCanvas.width !== state.engine.canvas.width ||
-                elements.rawCanvas.height !== state.engine.canvas.height
-            ) {
+            if (elements.rawCanvas.width !== state.engine.canvas.width || elements.rawCanvas.height !== state.engine.canvas.height) {
                 elements.rawCanvas.width = state.engine.canvas.width;
                 elements.rawCanvas.height = state.engine.canvas.height;
             }
@@ -737,10 +714,9 @@ function _requestStudioDraw(elapsed) {
         elapsedMs: elapsed,
         progress,
         step: Math.floor(progress * 240),
-        exclusionAreas:
-            state.engine.config.exclusionStrategy === 'jump' ? [] : state.engine._getVirtualExclusionAreas(),
+        exclusionAreas: state.engine.config.exclusionStrategy === 'jump' ? [] : state.engine._getVirtualExclusionAreas(),
         realExclusionAreas: state.engine.exclusionAreas,
-        requestRawBitmap: state.engine.requestRawBitmap,
+        requestRawBitmap: state.engine.requestRawBitmap
     };
 
     state.engine.lastDrawRequestTime = performance.now();
@@ -749,19 +725,7 @@ function _requestStudioDraw(elapsed) {
 }
 
 function setInputDisabled(disabled) {
-    [
-        elements.metaName,
-        elements.metaAuthor,
-        elements.metaDesc,
-        elements.configMode,
-        elements.configExclusionStrategy,
-        elements.configRewindable,
-        elements.inputVars,
-        elements.inputSetup,
-        elements.inputDraw,
-        elements.inputInteraction,
-        elements.sampleSelect,
-    ].forEach((el) => {
+    [elements.metaName, elements.metaAuthor, elements.metaDesc, elements.configMode, elements.configExclusionStrategy, elements.configRewindable, elements.inputVars, elements.inputSetup, elements.inputDraw, elements.inputInteraction, elements.sampleSelect].forEach(el => {
         el.disabled = disabled;
     });
 }

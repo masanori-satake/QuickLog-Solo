@@ -7,7 +7,7 @@
 const originalConsole = {
     log: console.log,
     warn: console.warn,
-    error: console.error,
+    error: console.error
 };
 
 console.log = (...args) => {
@@ -72,8 +72,8 @@ self.onmessage = async (e) => {
                     payload: {
                         dots,
                         rawBitmap,
-                        elapsedMs: payload.elapsedMs,
-                    },
+                        elapsedMs: payload.elapsedMs
+                    }
                 };
                 if (rawBitmap) {
                     self.postMessage(response, [rawBitmap]);
@@ -108,8 +108,8 @@ function _getPseudoInfo(exclusionAreas, canvasWidth) {
     if (!exclusionAreas || exclusionAreas.length === 0) {
         return { left: 0, width: 0, totalWidth: canvasWidth };
     }
-    const minX = Math.min(...exclusionAreas.map((a) => a.x));
-    const maxX = Math.max(...exclusionAreas.map((a) => a.x + a.width));
+    const minX = Math.min(...exclusionAreas.map(a => a.x));
+    const maxX = Math.max(...exclusionAreas.map(a => a.x + a.width));
     const left = Math.floor(minX / CELL_SIZE) * CELL_SIZE;
     const right = Math.ceil(maxX / CELL_SIZE) * CELL_SIZE;
     const width = right - left;
@@ -124,9 +124,9 @@ function _mapToRealX(virtualX, strategy, exclusionAreas, canvasWidth) {
 }
 
 function _isInExclusion(x, y, exclusionAreas) {
-    return exclusionAreas.some(
-        (area) =>
-            x < area.x + area.width && x + CELL_SIZE > area.x && y < area.y + area.height && y + CELL_SIZE > area.y
+    return exclusionAreas.some(area =>
+        x < area.x + area.width && x + CELL_SIZE > area.x &&
+        y < area.y + area.height && y + CELL_SIZE > area.y
     );
 }
 
@@ -151,7 +151,7 @@ function performDraw(params) {
         speed: speedFactor,
         customAnimationId: params.customAnimationId,
         color: params.color,
-        isDraft: params.isDraft || false,
+        isDraft: params.isDraft || false
     };
 
     // Use raw exclusion areas for physical masking to prevent drawing over UI
@@ -201,7 +201,7 @@ function performDraw(params) {
         const sprites = animation.draw(null, animationParams);
         if (!sprites || !Array.isArray(sprites)) return { dots: [], rawBitmap: null };
 
-        sprites.forEach((sprite) => {
+        sprites.forEach(sprite => {
             const realX = _mapToRealX(sprite.x, strategy, physicalMask, canvasWidth);
             const realY = sprite.y;
             const cellX = Math.floor(realX / CELL_SIZE) * CELL_SIZE;

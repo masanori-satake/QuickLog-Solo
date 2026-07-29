@@ -4,52 +4,22 @@
 
 export function initPreview(state, elements) {
     const {
-        canvas,
-        exclusionSim,
-        showExclusionCheck,
-        showCanvasCheck,
-        rawCanvasContainer,
-        rawCanvas,
-        shrinkPreviewBtn,
-        expandPreviewBtn,
-        previewContainer,
-        colorPresetsContainer,
-        speedSlider,
-        speedValue,
-        stopBtn,
-        rewindBtn,
-        playBtn,
-        ffBtn,
-        pauseBtn,
-        ejectBtn,
-        sampleSelect,
-        configMode,
-        configRewindable,
+        canvas, exclusionSim, showExclusionCheck, showCanvasCheck,
+        rawCanvasContainer, rawCanvas, shrinkPreviewBtn, expandPreviewBtn,
+        previewContainer, colorPresetsContainer, speedSlider, speedValue,
+        stopBtn, rewindBtn, playBtn, ffBtn, pauseBtn, ejectBtn, sampleSelect,
+        configMode, configRewindable
     } = elements;
 
     function setupColorPresets() {
         const colors = [
-            '#0056d2',
-            '#1976d2',
-            '#039be5',
-            '#0097a7',
-            '#00796b',
-            '#388e3c',
-            '#7cb342',
-            '#fbc02d',
-            '#ffa000',
-            '#f57c00',
-            '#d32f2f',
-            '#c2185b',
-            '#8e24aa',
-            '#5e35b1',
-            '#303f9f',
-            'retro-lcd',
-            'retro-crt',
-            'retro-nixie',
+            '#0056d2', '#1976d2', '#039be5', '#0097a7', '#00796b', '#388e3c',
+            '#7cb342', '#fbc02d', '#ffa000', '#f57c00', '#d32f2f', '#c2185b',
+            '#8e24aa', '#5e35b1', '#303f9f',
+            'retro-lcd', 'retro-crt', 'retro-nixie'
         ];
 
-        colors.forEach((color) => {
+        colors.forEach(color => {
             const div = document.createElement('div');
             div.className = 'color-preset';
             div.dataset.color = color;
@@ -65,7 +35,7 @@ export function initPreview(state, elements) {
 
             div.addEventListener('click', () => {
                 state.currentPreviewColor = color;
-                document.querySelectorAll('.color-preset').forEach((p) => p.classList.remove('active'));
+                document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
                 div.classList.add('active');
 
                 // Toggle retro display classes on studio's elements.previewContainer
@@ -105,7 +75,7 @@ export function initPreview(state, elements) {
                 x: rect.left - canvasRect.left,
                 y: rect.top - canvasRect.top,
                 width: rect.width,
-                height: rect.height,
+                height: rect.height
             };
             state.engine.setExclusionAreas([area]);
         } else {
@@ -224,11 +194,11 @@ export function initPreview(state, elements) {
 
             const startWait = performance.now();
             while (state.engine.isDrawPending && performance.now() - startWait < 50) {
-                await new Promise((r) => setTimeout(r, 2));
+                await new Promise(r => setTimeout(r, 2));
             }
 
             if (state.requestStudioDraw) state.requestStudioDraw(state.virtualElapsedMs);
-            await new Promise((resolve) => setTimeout(resolve, interval));
+            await new Promise(resolve => setTimeout(resolve, interval));
         }
 
         btn.classList.remove('active');
@@ -299,6 +269,6 @@ export function initPreview(state, elements) {
         updateExclusionAreas,
         updateCanvasControlVisibility,
         updateTapeControlState,
-        adjustPreviewHeight,
+        adjustPreviewHeight
     };
 }

@@ -4,21 +4,10 @@
 
 export function initIO(state, elements) {
     const {
-        downloadBtn,
-        uploadBtn,
-        uploadInput,
-        prBtn,
-        prModal,
-        closePrBtns,
-        metaName,
-        metaAuthor,
-        configRewindable,
-        configMode,
-        configExclusionStrategy,
-        inputVars,
-        inputSetup,
-        inputDraw,
-        inputInteraction,
+        downloadBtn, uploadBtn, uploadInput, prBtn, prModal,
+        closePrBtns, metaName, metaAuthor, configRewindable,
+        configMode, configExclusionStrategy, inputVars, inputSetup,
+        inputDraw, inputInteraction
     } = elements;
 
     function getMsg(key) {
@@ -37,18 +26,13 @@ export function initIO(state, elements) {
 
         const indentCode = (code, spaces) => {
             if (!code || !code.trim()) return '';
-            return code
-                .split('\n')
-                .map((line) => ' '.repeat(spaces) + line)
-                .join('\n')
-                .trimStart();
+            return code.split('\n').map(line => ' '.repeat(spaces) + line).join('\n').trimStart();
         };
 
         if (state.saveCurrentMetaData) state.saveCurrentMetaData();
 
-        const hasCellSize = [inputVars.value, inputSetup.value, inputDraw.value, inputInteraction.value].some(
-            (val) => val && val.includes('CELL_SIZE')
-        );
+        const hasCellSize = [inputVars.value, inputSetup.value, inputDraw.value, inputInteraction.value]
+            .some(val => val && val.includes('CELL_SIZE'));
         const utilsImport = hasCellSize ? `\nimport { CELL_SIZE } from '${utilsUrl}';` : '';
 
         return `import { AnimationBase } from '${animationBaseUrl}';${utilsImport}
@@ -79,14 +63,8 @@ export default class CustomAnimation extends AnimationBase {
 
     function downloadAnimation() {
         let code = buildModuleCode();
-        code = code.replace(
-            /import\s*{\s*AnimationBase\s*}\s*from\s*['"].*\/js\/animation_base\.js['"]/,
-            "import { AnimationBase } from '../animation_base.js'"
-        );
-        code = code.replace(
-            /import\s*{\s*CELL_SIZE\s*}\s*from\s*['"].*\/js\/utils\.js['"]/,
-            "import { CELL_SIZE } from '../utils.js'"
-        );
+        code = code.replace(/import\s*{\s*AnimationBase\s*}\s*from\s*['"].*\/js\/animation_base\.js['"]/, "import { AnimationBase } from '../animation_base.js'");
+        code = code.replace(/import\s*{\s*CELL_SIZE\s*}\s*from\s*['"].*\/js\/utils\.js['"]/, "import { CELL_SIZE } from '../utils.js'");
         const blob = new Blob([code], { type: 'application/javascript' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -109,8 +87,7 @@ export default class CustomAnimation extends AnimationBase {
                 try {
                     const data = JSON.parse(content);
                     state.metaData.name = typeof data.name === 'object' ? { ...data.name } : { en: data.name || '' };
-                    state.metaData.description =
-                        typeof data.description === 'object' ? { ...data.description } : { en: data.description || '' };
+                    state.metaData.description = typeof data.description === 'object' ? { ...data.description } : { en: data.description || '' };
                     if (state.loadCurrentMetaData) state.loadCurrentMetaData();
                     metaAuthor.value = data.author || '';
                     configMode.value = data.mode || 'canvas';
@@ -129,8 +106,7 @@ export default class CustomAnimation extends AnimationBase {
                     if (state.showToast) state.showToast(getMsg('toast-invalid-json'));
                 }
             } else if (file.name.endsWith('.js')) {
-                if (state.parseAndPopulate)
-                    state.parseAndPopulate(content, { name: 'Imported', description: '', author: '' });
+                if (state.parseAndPopulate) state.parseAndPopulate(content, { name: 'Imported', description: '', author: '' });
                 state.isDirty = false;
                 if (state.showToast) state.showToast(getMsg('toast-loaded-js'));
                 if (state.updateAllHighlight) state.updateAllHighlight();
@@ -145,7 +121,7 @@ export default class CustomAnimation extends AnimationBase {
     uploadBtn.addEventListener('click', () => uploadInput.click());
     uploadInput.addEventListener('change', handleUpload);
     prBtn.addEventListener('click', () => prModal.classList.remove('hidden'));
-    closePrBtns.forEach((btn) => btn.addEventListener('click', () => prModal.classList.add('hidden')));
+    closePrBtns.forEach(btn => btn.addEventListener('click', () => prModal.classList.add('hidden')));
     prModal.addEventListener('click', (e) => {
         if (e.target === prModal) {
             prModal.classList.add('hidden');
@@ -161,6 +137,6 @@ export default class CustomAnimation extends AnimationBase {
     });
 
     return {
-        buildModuleCode,
+        buildModuleCode
     };
 }

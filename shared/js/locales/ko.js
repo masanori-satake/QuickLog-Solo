@@ -1,15 +1,15 @@
 export default {
-    title: 'QuickLog-Solo',
+    'title': 'QuickLog-Solo',
     'copy-report-btn': '일일 보고서 복사',
     'copy-report-title': '일일 보고서 복사',
     'tag-aggregation-title': '태그 집계',
     'copy-aggregation-btn': '통계 복사',
-    tags: '태그',
+    'tags': '태그',
     'no-tags': '(태그 없음)',
     'total-work-time': '작업 시간',
-    settings: '설정',
-    delete: '삭제',
-    duplicate: '복제',
+    'settings': '설정',
+    'delete': '삭제',
+    'duplicate': '복제',
     'btn-copy': '복사',
 
     // Auto Stop & Page Break
@@ -36,9 +36,9 @@ export default {
     'tooltip-status-paused': '일시 중지됨',
     'tooltip-status-stopped': '종료됨',
     'tooltip-calendar': '날짜 선택',
-    pause: '일시 중지',
-    resume: '재개',
-    stop: '종료',
+    'pause': '일시 중지',
+    'resume': '재개',
+    'stop': '종료',
     'tab-general': '일반',
     'tab-categories': '카테고리',
     'tab-maintenance': '유지 관리',
@@ -69,10 +69,8 @@ export default {
     'label-before-end-1': '월말부터',
     'label-before-end-2': '일 전 (0은 말일)',
     'back-to-app': '앱으로 돌아가기',
-    'alarm-setting-description':
-        '지정된 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 "종료", "일시 중지" 또는 "시작"합니다.',
-    'alarm-note-extension-only':
-        '* 알람 기능은 브라우저 확장 프로그램으로 설치된 경우에만 작동합니다. 미리보기 버전에서는 알림 및 자동 동작이 실행되지 않습니다.',
+    'alarm-setting-description': '지정된 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 "종료", "일시 중지" 또는 "시작"합니다.',
+    'alarm-note-extension-only': '* 알람 기능은 브라우저 확장 프로그램으로 설치된 경우에만 작동합니다. 미리보기 버전에서는 알림 및 자동 동작이 실행되지 않습니다.',
     'alarm-label-enabled': '활성화됨',
     'alarm-label-time': '시간',
     'alarm-label-message': '메시지',
@@ -121,14 +119,12 @@ export default {
     'import-setting': '가져오기 설정:',
     'import-append': '추가',
     'import-overwrite': '덮어쓰기',
-    version: '버전',
-    developer: '개발자',
+    'version': '버전',
+    'developer': '개발자',
     'about-stats-logs': '작업 이력 수',
     'about-stats-categories': '카테고리 수',
-    'about-description':
-        'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 메모 도구입니다. 데이터는 브라우저의 IndexedDB에 저장되며(백업을 실행했을 때는 로컬 파일 시스템에도 저장됩니다) 외부로 전송되지 않습니다. GitHub Actions를 통한 엄격한 의존성 검증과 Google OSV-Scanner의 지속적인 감사를 통해 높은 투명성과 보안성을 유지합니다.',
-    'about-disclaimer':
-        '[면책 조항] 이 프로젝트는 개인 오픈 소스 프로젝트이며 어떠한 보증도 제공하지 않습니다. 개발자는 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 사용자의 책임 하에 이용해 주십시오.',
+    'about-description': 'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 메모 도구입니다. 데이터는 브라우저의 IndexedDB에 저장되며(백업을 실행했을 때는 로컬 파일 시스템에도 저장됩니다) 외부로 전송되지 않습니다. GitHub Actions를 통한 엄격한 의존성 검증과 Google OSV-Scanner의 지속적인 감사를 통해 높은 투명성과 보안성을 유지합니다.',
+    'about-disclaimer': '[면책 조항] 이 프로젝트는 개인 오픈 소스 프로젝트이며 어떠한 보증도 제공하지 않습니다. 개발자는 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 사용자의 책임 하에 이용해 주십시오.',
     'maintenance-clear-logs': '작업 이력 삭제',
     'btn-clear-logs': '모든 작업 이력 삭제',
     'maintenance-sync-pull': '동기화 이력 다시 가져오기',
@@ -152,8 +148,7 @@ export default {
     'backup-directory': '디렉토리',
     'backup-file-count': '파일 수',
     'backup-file-count-unit': '일치',
-    'backup-description-new':
-        '브라우저 캐시 삭제 등으로 IndexedDB 데이터가 사라지는 것을 방지하기 위해 정기적인 백업을 권장합니다. 백업 데이터가 있으면 다른 브라우저로의 이동도 원활하게 할 수 있습니다.',
+    'backup-description-new': '브라우저 캐시 삭제 등으로 IndexedDB 데이터가 사라지는 것을 방지하기 위해 정기적인 백업을 권장합니다. 백업 데이터가 있으면 다른 브라우저로의 이동도 원활하게 할 수 있습니다.',
     'toast-backup-completed': '백업이 완료되었습니다',
 
     'confirm-end-task': '작업을 종료하시겠습니까?',
@@ -178,10 +173,8 @@ export default {
     'confirm-export-csv': '작업 이력 데이터를 CSV로 내보냅니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',
     'confirm-import-csv': 'CSV에서 작업 이력을 가져옵니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',
     'confirm-clear-logs': '모든 작업 이력을 삭제합니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',
-    'confirm-sync-pull':
-        '로컬 작업 이력을 삭제하고 다른 기기에서 다시 가져옵니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',
-    'confirm-sync-clear-cloud':
-        '이 기기뿐만 아니라 동기화된 모든 기기에서 작업 이력이 삭제됩니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',
+    'confirm-sync-pull': '로컬 작업 이력을 삭제하고 다른 기기에서 다시 가져옵니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',
+    'confirm-sync-clear-cloud': '이 기기뿐만 아니라 동기화된 모든 기기에서 작업 이력이 삭제됩니다. 진행 중인 작업은 종료됩니다. 계속하시겠습니까?',
     'confirm-reset-all': '카테고리와 설정을 초기화합니다. 계속하시겠습니까? (작업 이력은 유지됨)',
     'confirm-reset-settings': '설정을 초기화합니다. 계속하시겠습니까? (작업 이력과 카테고리는 유지됨)',
     'alert-invalid-category': '유효하지 않은 카테고리 이름입니다. (50자 이내, "{idle}"은 사용할 수 없습니다)',
@@ -190,8 +183,7 @@ export default {
     'alert-init-error': '앱 초기화에 실패했습니다.',
     'toast-copied': '복사되었습니다!',
     'toast-done': '완료되었습니다!',
-    'toast-done-with-reopen-msg':
-        '성공적으로 적용되었습니다! 설정 패널이 열려 있는 경우, 새 애니메이션을 적용하려면 패널을 닫았다가 다시 열어주세요.',
+    'toast-done-with-reopen-msg': '성공적으로 적용되었습니다! 설정 패널이 열려 있는 경우, 새 애니메이션을 적용하려면 패널을 닫았다가 다시 열어주세요.',
     'toast-imported': '가져오기가 완료되었습니다.',
     'toast-cat-imported': '카테고리를 가져왔습니다',
     'toast-deleted': '삭제가 완료되었습니다',
@@ -201,34 +193,24 @@ export default {
     'notification-btn-close': '닫기',
 
     'import-err-fatal': '파일 형식이 올바르지 않습니다. 가져오기를 중단합니다.',
-    'import-err-partial':
-        '전체 {total}행 중 {errorCount}행이 손상되었습니다. 정상적인 {validCount}행만 가져오시겠습니까?',
-    'import-err-field':
-        '일부 데이터에 결함이 있습니다(예: 유효하지 않은 색상). 기본값을 적용하여 모두 가져오시겠습니까, 아니면 결함이 있는 행을 제외하시겠습니까?',
+    'import-err-partial': '전체 {total}행 중 {errorCount}행이 손상되었습니다. 정상적인 {validCount}행만 가져오시겠습니까?',
+    'import-err-field': '일부 데이터에 결함이 있습니다(예: 유효하지 않은 색상). 기본값을 적용하여 모두 가져오시겠습니까, 아니면 결함이 있는 행을 제외하시겠습니까?',
     'import-btn-import-valid': '정상 항목만 가져오기',
     'import-btn-apply-fallback': '기본값 적용',
     'import-btn-skip-invalid': '결함 있는 행 제외',
     'import-btn-abort': '취소',
 
-    'backup-err-0byte':
-        '내용이 비어 있는 백업 파일({name})이 발견되었습니다. 이는 비정상적인 상태일 수 있습니다. 이 파일을 무시하고 계속하시겠습니까?',
+    'backup-err-0byte': '내용이 비어 있는 백업 파일({name})이 발견되었습니다. 이는 비정상적인 상태일 수 있습니다. 이 파일을 무시하고 계속하시겠습니까?',
     'backup-btn-ignore-continue': '무시하고 계속',
     'backup-btn-abort-investigate': '중단하고 조사',
 
-    'backup-err-locked':
-        '파일이 다른 프로그램에서 잠겨 있거나 액세스 권한이 없습니다. 다른 앱을 닫고 다시 시도하십시오.',
+    'backup-err-locked': '파일이 다른 프로그램에서 잠겨 있거나 액세스 권한이 없습니다. 다른 앱을 닫고 다시 시도하십시오.',
     'backup-err-not-found': '백업 폴더를 찾을 수 없습니다. 폴더를 다시 선택하십시오.',
     'backup-err-unknown': '예기치 않은 오류가 발생했습니다: {message}',
     'toast-backup-failed-detail': '백업에 실패했습니다. 상세: {reason}',
 
     'day-names': ['일', '월', '화', '수', '목', '금', '토'],
-    'day-0': '일',
-    'day-1': '월',
-    'day-2': '화',
-    'day-3': '수',
-    'day-4': '목',
-    'day-5': '금',
-    'day-6': '토',
+    'day-0': '일', 'day-1': '월', 'day-2': '화', 'day-3': '수', 'day-4': '목', 'day-5': '금', 'day-6': '토',
     'idle-category': '(대기)',
     'idle-category-log': '(대기)',
     'category-unknown': '알 수 없음',
@@ -359,8 +341,7 @@ export default {
     'btn-close': '닫기',
     'pr-guide-title': '풀 리퀘스트 가이드',
     'pr-step-1': '작성한 애니메이션을 <code>.js</code> 파일로 다운로드합니다.',
-    'pr-step-2':
-        '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> 저장소를 포크합니다.',
+    'pr-step-2': '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> 저장소를 포크합니다.',
     'pr-step-3': '다운로드한 파일을 <code>shared/js/animation/</code>에 추가합니다.',
     'pr-step-4': '풀 리퀘스트를 제출하세요!',
     'pr-note': '여러분의 기여가 이 도구를 더욱 좋게 만듭니다!',
@@ -395,23 +376,20 @@ export default {
     'toast-export-success': '복사 성공',
     'toast-no-categories': '복사할 카테고리가 없습니다',
     'page-break-label': '페이지 나누기',
-    undo: '실행 취소',
-    redo: '다시 실행',
+    'undo': '실행 취소',
+    'redo': '다시 실행',
     'tag-box-title': '태그 박스',
     'tag-replace-title': '태그 바꾸기',
     'tag-replace-before': '이전',
     'tag-replace-after': '이후',
     'tooltip-replace-tags': '태그 바꾸기',
-    'privacy-policy-local-only':
-        '모든 처리는 브라우저 내에서 완료되며 외부 서버와 연동되지 않습니다. 입력한 정보가 외부로 유출되지 않습니다.',
+    'privacy-policy-local-only': '모든 처리는 브라우저 내에서 완료되며 외부 서버와 연동되지 않습니다. 입력한 정보가 외부로 유출되지 않습니다.',
     'privacy-policy-local-only-short': '로컬 완결',
     'setting-session-sync': '기기 간 동기화 (Sync) (β)',
     'setting-session-sync-desc': '브라우저 동기화 기능을 사용하여 기기 간에 설정, 카테고리, 최근 이력을 공유합니다.',
     'setting-session-sync-note': '※ Chrome과 Edge 등 서로 다른 브라우저 간의 동기화는 지원되지 않습니다.',
-    'confirm-enable-session-sync':
-        '기기 간 동기화를 활성화하시겠습니까? 현재 데이터가 브라우저 동기화 저장소에 업로드됩니다.',
-    'confirm-disable-session-sync':
-        '기기 간 동기화를 비활성화하시겠습니까? 이 기기에서의 동기화는 중단되지만, 다른 기기와 공유된 데이터는 유지됩니다.',
+    'confirm-enable-session-sync': '기기 간 동기화를 활성화하시겠습니까? 현재 데이터가 브라우저 동기화 저장소에 업로드됩니다.',
+    'confirm-disable-session-sync': '기기 간 동기화를 비활성화하시겠습니까? 이 기기에서의 동기화는 중단되지만, 다른 기기와 공유된 데이터는 유지됩니다.',
     'session-sync-active': '동기화 활성화됨',
     'local-only-active': '로컬 완결',
 
@@ -451,8 +429,7 @@ export default {
     'btn-delete-selected-anim': '선택한 애니메이션 삭제',
     'toast-custom-anim-imported': '사용자 정의 애니메이션을 성공적으로 가져왔습니다',
     'toast-custom-anim-exported': '사용자 정의 애니메이션이 클립보드에 복사되었습니다',
-    'confirm-delete-custom-anim':
-        '사용자 정의 애니메이션 "{name}"을(를) 삭제하시겠습니까?\n(이 애니메이션이 할당된 카테고리는 "없음"으로 재설정됩니다)',
+    'confirm-delete-custom-anim': '사용자 정의 애니메이션 "{name}"을(를) 삭제하시겠습니까?\n(이 애니메이션이 할당된 카테고리는 "없음"으로 재설정됩니다)',
     'alert-invalid-qlanim': '유효하지 않은 .qlanim 형식입니다. 파일 구조를 확인하십시오.',
     'btn-launch-maker': 'QL-Animation Maker 실행',
     'maker-title': 'QL-Animation Maker',
@@ -479,8 +456,7 @@ export default {
     'maker-playback-zoom': '재생 및 줌',
     'maker-data-transfer': '데이터 전송',
     'maker-warning-title': '경고',
-    'maker-note-extension-only':
-        '* QL-Animation Maker는 브라우저 확장 프로그램으로 설치된 경우에만 사용할 수 있습니다. 프리뷰 버전에서는 실행할 수 없습니다.',
+    'maker-note-extension-only': '* QL-Animation Maker는 브라우저 확장 프로그램으로 설치된 경우에만 사용할 수 있습니다. 프리뷰 버전에서는 실행할 수 없습니다.',
     'maker-error-name-empty': '이름을 입력해 주세요',
     'maker-error-name-duplicate': '같은 이름의 커스텀 애니메이션이 이미 존재합니다. 다른 이름을 입력해 주세요.',
     'maker-select-prompt': '커스텀 애니메이션을 추가해 주세요',

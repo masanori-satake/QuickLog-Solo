@@ -20,14 +20,14 @@ test.describe('Data Import and Export Consistency', () => {
 
         const clipboardText = await page.evaluate(async () => {
             // Wait for clipboard update
-            for (let i = 0; i < 10; i++) {
+            for(let i=0; i<10; i++) {
                 const text = await navigator.clipboard.readText();
                 if (text && text.includes('QuickLogSolo/Category')) return text;
-                await new Promise((r) => setTimeout(r, 100));
+                await new Promise(r => setTimeout(r, 100));
             }
             return navigator.clipboard.readText();
         });
-        const lines = clipboardText.split('\n').filter((l) => l.trim());
+        const lines = clipboardText.split('\n').filter(l => l.trim());
 
         expect(lines.length).toBeGreaterThan(0);
 
@@ -66,12 +66,12 @@ test.describe('Data Import and Export Consistency', () => {
                         startTime: now - 300000, // 5 minutes ago
                         endTime: now,
                         tags: '',
-                        updatedAt: Date.now(),
+                        updatedAt: Date.now()
                     });
                     transaction.oncomplete = () => resolve();
-                    transaction.onerror = () => reject(new Error('Failed to insert test log'));
+                    transaction.onerror = () => reject(new Error("Failed to insert test log"));
                 };
-                request.onerror = () => reject(new Error('Failed to open DB'));
+                request.onerror = () => reject(new Error("Failed to open DB"));
             });
         }, catName);
 
@@ -90,12 +90,12 @@ test.describe('Data Import and Export Consistency', () => {
         const download = await downloadPromise;
         const downloadPath = await download.path();
         const csvContent = fs.readFileSync(downloadPath, 'utf8');
-        const lines = csvContent.split('\n').filter((l) => l.trim());
+        const lines = csvContent.split('\n').filter(l => l.trim());
 
         expect(lines[0]).toBe('id,category,startTime,endTime,tags');
         expect(lines.length).toBeGreaterThan(1);
         /* eslint-disable-next-line no-control-regex */
-        expect(lines[1]).toContain(catName.replace(/[^\x00-\x7F]/g, ''));
+        expect(lines[1]).toContain(catName.replace(/[^\x00-\x7F]/g, ""));
     });
 
     test('should handle Category Import Overwrite mode correctly', async ({ page }) => {
@@ -108,7 +108,7 @@ test.describe('Data Import and Export Consistency', () => {
             version: '1.0',
             type: 'category',
             name: 'ImportedTestCat',
-            color: 'teal',
+            color: 'teal'
         });
 
         await page.evaluate((text) => navigator.clipboard.writeText(text), importData);
@@ -126,15 +126,13 @@ test.describe('Data Import and Export Consistency', () => {
         await page.click('#settings-toggle');
         await page.click('button[data-tab="categories"]');
 
-        const mixedData =
-            'Not JSON\n' +
-            JSON.stringify({
-                kind: 'QuickLogSolo/Category',
-                version: '1.0',
-                type: 'category',
-                name: 'ValidItem',
-                color: 'orange',
-            });
+        const mixedData = 'Not JSON\n' + JSON.stringify({
+            kind: 'QuickLogSolo/Category',
+            version: '1.0',
+            type: 'category',
+            name: 'ValidItem',
+            color: 'orange'
+        });
         await page.evaluate((text) => navigator.clipboard.writeText(text), mixedData);
 
         await page.click('#import-categories-btn');
@@ -148,7 +146,7 @@ test.describe('Data Import and Export Consistency', () => {
 
         const dots = page.locator('.pagination-dot');
         const count = await dots.count();
-        for (let i = 0; i < count; i++) {
+        for(let i=0; i<count; i++) {
             if (await validItem.isVisible()) break;
             await dots.nth(i).click();
         }
@@ -162,12 +160,12 @@ test.describe('Data Import and Export Consistency', () => {
         const legacyData = JSON.stringify({
             type: 'category',
             name: 'LegacyCat',
-            color: 'orange',
+            color: 'orange'
         });
 
         await page.evaluate((text) => navigator.clipboard.writeText(text), legacyData);
 
-        page.once('dialog', async (dialog) => {
+        page.once('dialog', async dialog => {
             expect(dialog.message()).toContain('Invalid file format');
             await dialog.dismiss();
         });

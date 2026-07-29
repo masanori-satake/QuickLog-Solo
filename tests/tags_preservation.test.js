@@ -1,16 +1,4 @@
-import {
-    setDatabaseName,
-    initDB,
-    dbAdd,
-    dbGetAll,
-    dbClear,
-    STORE_LOGS,
-    STORE_CATEGORIES,
-    STORE_SETTINGS,
-    dbPut,
-    dbGetByName,
-    closeDatabase,
-} from '../shared/js/db.js';
+import { setDatabaseName, initDB, dbAdd, dbGetAll, dbClear, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, dbPut, dbGetByName, closeDatabase } from '../shared/js/db.js';
 import { startTaskLogic } from '../shared/js/logic.js';
 
 describe('Tags Preservation and Migration', () => {
@@ -35,7 +23,7 @@ describe('Tags Preservation and Migration', () => {
         await dbAdd(STORE_LOGS, {
             category: 'Dev',
             startTime: startTime,
-            endTime: startTime + 5000,
+            endTime: startTime + 5000
         });
 
         // Initialize DB (which triggers migration)
@@ -56,7 +44,7 @@ describe('Tags Preservation and Migration', () => {
         expect(activeTask.color).toBe('orange');
 
         const logs = await dbGetAll(STORE_LOGS);
-        const log = logs.find((l) => l.id === activeTask.id);
+        const log = logs.find(l => l.id === activeTask.id);
         expect(log.tags).toBe('team,sync');
         expect(log.color).toBe('orange');
     });
@@ -71,7 +59,7 @@ describe('Tags Preservation and Migration', () => {
             startTime: startTime,
             endTime: startTime + 5000,
             tags: 'old-tag',
-            color: 'primary',
+            color: 'primary'
         });
 
         // Simulate category rename (only updating STORE_CATEGORIES)

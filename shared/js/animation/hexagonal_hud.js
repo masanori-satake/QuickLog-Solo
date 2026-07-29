@@ -11,28 +11,28 @@ export default class HexagonalHud extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Hexagonal HUD Sync & Pulse',
-            ja: 'ヘキサゴンHUD',
-            de: 'Hexagonales HUD-Sync & Puls',
-            es: 'Sincronización y pulso de HUD hexagonal',
-            fr: 'Synchronisation et pulsation de HUD hexagonal',
-            pt: 'Sincronização e pulsação de HUD hexagonal',
-            ko: '육각형 HUD 싱크 & 펄스',
-            zh: '六角形HUD同步与脉冲',
+            en: "Hexagonal HUD Sync & Pulse",
+            ja: "ヘキサゴンHUD",
+            de: "Hexagonales HUD-Sync & Puls",
+            es: "Sincronización y pulso de HUD hexagonal",
+            fr: "Synchronisation et pulsation de HUD hexagonal",
+            pt: "Sincronização e pulsação de HUD hexagonal",
+            ko: "육각형 HUD 싱크 & 펄스",
+            zh: "六角形HUD同步与脉冲"
         },
         description: {
             en: "Concentric sharp hexagons expand outward in a low-framerate rhythm while 'ACTIVE' flashes in the core.",
-            ja: '一定のリズムで同心円状の六角形が中央から外側へ拡大し、中央部に「ACTIVE」の文字がネオンカラーで明滅します。',
+            ja: "一定のリズムで同心円状の六角形が中央から外側へ拡大し、中央部に「ACTIVE」の文字がネオンカラーで明滅します。",
             de: "Konzentrische scharfe Sechsecke dehnen sich in einem rhythmischen Puls mit niedriger Bildrate nach außen aus, während 'ACTIVE' im Kern blinkt.",
             es: "Hexágonos concéntricos nítidos se expanden hacia afuera en un pulso rítmico de baja velocidad de fotogramas, mientras 'ACTIVE' parpadea en el núcleo.",
             fr: "Des hexagones concentriques nets s'étendent vers l'extérieur dans une pulsation rythmique à faible taux de rafraîchissement, tandis que 'ACTIVE' clignote au cœur.",
             pt: "Hexágonos concêntricos nítidos se expandem para fora em uma pulsação rítmica de baixa taxa de quadros, enquanto 'ACTIVE' pisca no núcleo.",
             ko: "동심원의 선명한 육각형이 낮은 프레임 레이트로 리드미컬하게 바깥쪽으로 확장하며, 중앙에 'ACTIVE' 텍스트가 깜박입니다.",
-            zh: "同心清晰的六角形以低帧率节奏脉冲向外扩张，同时'ACTIVE'在核心处闪烁。",
+            zh: "同心清晰的六角形以低帧率节奏脉冲向外扩张，同时'ACTIVE'在核心处闪烁。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true,
-        rewindable: true,
+        rewindable: true
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -89,8 +89,8 @@ export default class HexagonalHud extends AnimationBase {
             ctx.save();
 
             // Dynamic bold sizing for dot matrix visibility (bounded by width to prevent overflow)
-            const pSize = height >= 60 && width >= 96 ? 3 : 2;
-            ctx.translate(Math.round(centerX - 15.5 * pSize), Math.round(centerY - 3 * pSize));
+            const pSize = (height >= 60 && width >= 96) ? 3 : 2;
+            ctx.translate(Math.round(centerX - (15.5 * pSize)), Math.round(centerY - (3 * pSize)));
 
             const drawActiveText = () => {
                 // A, C, T, I, V, E in pixel block style
@@ -100,49 +100,28 @@ export default class HexagonalHud extends AnimationBase {
                 };
 
                 // 'A'
-                for (let y = 1; y <= 5; y++) {
-                    drawPixel(0, y);
-                    drawPixel(4, y);
-                }
-                for (let x = 1; x <= 3; x++) {
-                    drawPixel(x, 0);
-                    drawPixel(x, 2);
-                }
+                for (let y = 1; y <= 5; y++) { drawPixel(0, y); drawPixel(4, y); }
+                for (let x = 1; x <= 3; x++) { drawPixel(x, 0); drawPixel(x, 2); }
 
                 // 'C' (shifted X by 6)
                 for (let y = 1; y <= 4; y++) drawPixel(6, y);
-                for (let x = 7; x <= 9; x++) {
-                    drawPixel(x, 0);
-                    drawPixel(x, 5);
-                }
+                for (let x = 7; x <= 9; x++) { drawPixel(x, 0); drawPixel(x, 5); }
 
                 // 'T' (shifted X by 11)
                 for (let x = 11; x <= 15; x++) drawPixel(x, 0);
                 for (let y = 1; y <= 5; y++) drawPixel(13, y);
 
                 // 'I' (shifted X by 17)
-                for (let x = 17; x <= 19; x++) {
-                    drawPixel(x, 0);
-                    drawPixel(x, 5);
-                }
+                for (let x = 17; x <= 19; x++) { drawPixel(x, 0); drawPixel(x, 5); }
                 for (let y = 1; y <= 4; y++) drawPixel(18, y);
 
                 // 'V' (shifted X by 21)
-                for (let y = 0; y <= 3; y++) {
-                    drawPixel(21, y);
-                    drawPixel(25, y);
-                }
-                drawPixel(22, 4);
-                drawPixel(24, 4);
-                drawPixel(23, 5);
+                for (let y = 0; y <= 3; y++) { drawPixel(21, y); drawPixel(25, y); }
+                drawPixel(22, 4); drawPixel(24, 4); drawPixel(23, 5);
 
                 // 'E' (shifted X by 27)
                 for (let y = 0; y <= 5; y++) drawPixel(27, y);
-                for (let x = 28; x <= 30; x++) {
-                    drawPixel(x, 0);
-                    drawPixel(x, 2);
-                    drawPixel(x, 5);
-                }
+                for (let x = 28; x <= 30; x++) { drawPixel(x, 0); drawPixel(x, 2); drawPixel(x, 5); }
             };
 
             drawActiveText();

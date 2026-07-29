@@ -9,26 +9,26 @@ export default class Ripple extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Ripple',
-            ja: '波紋',
-            de: 'Wellen',
-            es: 'Ondas',
-            fr: 'Ondulations',
-            pt: 'Ondulações',
-            ko: '파문',
-            zh: '涟漪',
+            en: "Ripple",
+            ja: "波紋",
+            de: "Wellen",
+            es: "Ondas",
+            fr: "Ondulations",
+            pt: "Ondulações",
+            ko: "파문",
+            zh: "涟漪"
         },
         description: {
-            en: 'Dynamic concentric ripples that expand and fade across the background.',
-            ja: '画面いっぱいに広がり、消えていくダイナミックな同心円状の波紋です。',
-            de: 'Dynamische konzentrische Wellen, die sich über den Hintergrund ausbreiten und verblassen.',
-            es: 'Ondas concéntricas dinámicas que se expanden y se desvanecen por el fondo.',
+            en: "Dynamic concentric ripples that expand and fade across the background.",
+            ja: "画面いっぱいに広がり、消えていくダイナミックな同心円状の波紋です。",
+            de: "Dynamische konzentrische Wellen, die sich über den Hintergrund ausbreiten und verblassen.",
+            es: "Ondas concéntricas dinámicas que se expanden y se desvanecen por el fondo.",
             fr: "Ondulations concentriques dynamiques qui s'étendent et s'estompent sur l'arrière-plan.",
-            pt: 'Ondulações concêntricas dinâmicas que se expandem e desaparecem pelo fundo.',
-            ko: '배경을 가로질러 확장되고 사라지는 다이내믹한 동심원 파문입니다。',
-            zh: '动态同心涟漪在背景中扩散并淡出。',
+            pt: "Ondulações concêntricas dinâmicas que se expandem e desaparecem pelo fundo.",
+            ko: "배경을 가로질러 확장되고 사라지는 다이내믹한 동심원 파문입니다。",
+            zh: "动态同心涟漪在背景中扩散并淡出。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo"
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -58,11 +58,10 @@ export default class Ripple extends AnimationBase {
      */
     onClick(x, y) {
         this.ripples.push({
-            x,
-            y,
+            x, y,
             radius: 0,
             life: 1.0,
-            speed: 2,
+            speed: 2
         });
     }
 
@@ -85,7 +84,7 @@ export default class Ripple extends AnimationBase {
                 y: Math.random() * height,
                 radius: 0,
                 life: 1.0,
-                speed: 1 + Math.random() * 1.5,
+                speed: 1 + Math.random() * 1.5
             });
         }
 
@@ -112,7 +111,7 @@ export default class Ripple extends AnimationBase {
 
         // 3. Remove finished ripples
         // 3. 終わった波紋を削除
-        this.ripples = this.ripples.filter((r) => r.life > 0 && r.radius < this.maxRadius);
+        this.ripples = this.ripples.filter(r => r.life > 0 && r.radius < this.maxRadius);
 
         ctx.globalAlpha = 1.0;
     }

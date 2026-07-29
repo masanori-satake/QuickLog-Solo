@@ -9,16 +9,16 @@ export default class RepellingDigitalRain extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Repelling Digital Rain',
-            ja: 'Repelling digital rain',
+            en: "Repelling Digital Rain",
+            ja: "Repelling digital rain"
         },
         description: {
             en: "Digital rain that bounces off exclusion areas. Demonstrates 'freedom' strategy and collision detection.",
-            ja: "排他領域ではじけ飛ぶデジタル・レインです。'freedom' 戦略と衝突判定のデモンストレーション用サンプルです。",
+            ja: "排他領域ではじけ飛ぶデジタル・レインです。'freedom' 戦略と衝突判定のデモンストレーション用サンプルです。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true,
-        rewindable: true,
+        rewindable: true
     };
 
     config = { mode: 'sprite', exclusionStrategy: 'freedom' };
@@ -51,9 +51,7 @@ export default class RepellingDigitalRain extends AnimationBase {
         // Initialize or update columns based on width
         // 幅に合わせて列を初期化または更新します
         if (this.columns.length !== colCount) {
-            this.columns = Array(colCount)
-                .fill(0)
-                .map(() => this.createColumn(height));
+            this.columns = Array(colCount).fill(0).map(() => this.createColumn(height));
         }
         // Clear particles on setup/resize
         this.particles = [];
@@ -70,7 +68,7 @@ export default class RepellingDigitalRain extends AnimationBase {
             y: Math.random() * (height + 200) - 100,
             speed: 1 + Math.random() * 3,
             maxDots: 10 + Math.random() * 20,
-            dots: [],
+            dots: []
         };
     }
 
@@ -91,7 +89,7 @@ export default class RepellingDigitalRain extends AnimationBase {
             // Upward initial velocity for the bounce
             vy: -1 - Math.random() * 2,
             life: 1.0,
-            size: 2 + Math.floor(Math.random() * 2), // Larger dots (2 or 3) for visibility
+            size: 2 + Math.floor(Math.random() * 2) // Larger dots (2 or 3) for visibility
         };
     }
 
@@ -105,8 +103,9 @@ export default class RepellingDigitalRain extends AnimationBase {
      */
     getHitExclusion(x, y, exclusionAreas) {
         if (!exclusionAreas || exclusionAreas.length === 0) return null;
-        return exclusionAreas.find(
-            (area) => x >= area.x && x <= area.x + area.width && y >= area.y && y <= area.y + area.height
+        return exclusionAreas.find(area =>
+            x >= area.x && x <= area.x + area.width &&
+            y >= area.y && y <= area.y + area.height
         );
     }
 
@@ -174,7 +173,7 @@ export default class RepellingDigitalRain extends AnimationBase {
 
                 const isLead = idx === col.dots.length - 1;
                 // Head is larger (3), middle is medium (2), tail is small (1)
-                const size = isLead ? 3 : idx > col.dots.length - 6 ? 2 : 1;
+                const size = isLead ? 3 : (idx > col.dots.length - 6 ? 2 : 1);
                 sprites.push({ x, y: dot.y, size });
             });
         });

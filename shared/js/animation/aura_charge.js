@@ -10,28 +10,28 @@ export default class AuraCharge extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Aura Charge & Particle Spark',
-            ja: 'オーラチャージ',
-            de: 'Aura-Aufladung & Partikelfunken',
-            es: 'Carga de aura y chispas de partículas',
+            en: "Aura Charge & Particle Spark",
+            ja: "オーラチャージ",
+            de: "Aura-Aufladung & Partikelfunken",
+            es: "Carga de aura y chispas de partículas",
             fr: "Charge d'aura et étincelles de particules",
-            pt: 'Carga de aura e faíscas de partículas',
-            ko: '아우라 차지 & 파티클 스파크',
-            zh: '气场充电与粒子火花',
+            pt: "Carga de aura e faíscas de partículas",
+            ko: "아우라 차지 & 파티클 스파크",
+            zh: "气场充电与粒子火花"
         },
         description: {
-            en: 'A dark silhouette powers up in the center. A cyan pixel orb pulses while sparks emit diagonally and fade out.',
-            ja: '暗い人影がエネルギーを充填。手元の青い光が脈動し、四角いスパーク粒子が斜め外側へ飛び散ります。',
-            de: 'Eine dunkle Silhouette lädt sich im Zentrum auf. Eine cyanfarbene Pixel-Kugel pulsiert, während Funken diagonal emittiert werden und verblassen.',
-            es: 'Una silueta oscura se carga de energía en el centro. Una orbe de píxeles cian pulsa mientras las chispas se emiten diagonalmente y se desvanecen.',
+            en: "A dark silhouette powers up in the center. A cyan pixel orb pulses while sparks emit diagonally and fade out.",
+            ja: "暗い人影がエネルギーを充填。手元の青い光が脈動し、四角いスパーク粒子が斜め外側へ飛び散ります。",
+            de: "Eine dunkle Silhouette lädt sich im Zentrum auf. Eine cyanfarbene Pixel-Kugel pulsiert, während Funken diagonal emittiert werden und verblassen.",
+            es: "Una silueta oscura se carga de energía en el centro. Una orbe de píxeles cian pulsa mientras las chispas se emiten diagonalmente y se desvanecen.",
             fr: "Une silhouette sombre se charge en énergie au centre. Un orbe de pixels cyan pulse tandis que des étincelles sont émises en diagonale et s'estompent.",
-            pt: 'Uma silhueta escura se carrega de energia no centro. Uma órbita de pixels ciano pulsa enquanto faíscas são emitidas diagonalmente e desaparecem.',
-            ko: '어두운 실루엣이 중앙에서 기를 모읍니다. 시안색 픽셀 구체가 진동하며 대각선으로 스파크가 튀고 사라집니다.',
-            zh: '一个黑暗的剪影在中心充电。一个青色的像素球体脉动，同时火花向对角线发射并淡出。',
+            pt: "Uma silhueta escura se carrega de energia no centro. Uma órbita de pixels ciano pulsa enquanto faíscas são emitidas diagonalmente e desaparecem.",
+            ko: "어두운 실루엣이 중앙에서 기를 모읍니다. 시안색 픽셀 구체가 진동하며 대각선으로 스파크가 튀고 사라집니다.",
+            zh: "一个黑暗的剪影在中心充电。一个青色的像素球体脉动，同时火花向对角线发射并淡出。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true,
-        rewindable: true,
+        rewindable: true
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -67,7 +67,7 @@ export default class AuraCharge extends AnimationBase {
         if (elapsedMs - this.lastSparkTime > 100) {
             this.lastSparkTime = elapsedMs;
             // Generate 1-2 sparks diagonally outward
-            const angles = [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4];
+            const angles = [Math.PI/4, 3*Math.PI/4, 5*Math.PI/4, 7*Math.PI/4];
             const randAngle = angles[Math.floor(Math.random() * angles.length)] + (Math.random() - 0.5) * 0.3;
             const speed = 2.0 + Math.random() * 2.0;
 
@@ -76,20 +76,20 @@ export default class AuraCharge extends AnimationBase {
                 y: centerY + 5, // Close to character hands
                 vx: Math.cos(randAngle) * speed,
                 vy: Math.sin(randAngle) * speed,
-                life: 300, // ms
+                life: 300 // ms
             });
         }
 
         // Update sparks
-        this.sparks = this.sparks.filter((s) => s.life > 0);
-        this.sparks.forEach((s) => {
+        this.sparks = this.sparks.filter(s => s.life > 0);
+        this.sparks.forEach(s => {
             s.x += s.vx;
             s.y += s.vy;
             s.life -= 16.67; // approx frame time
         });
 
         // Draw Sparks (yellow pixels with high Red channel)
-        this.sparks.forEach((s) => {
+        this.sparks.forEach(s => {
             const opacity = Math.max(0, s.life / 300);
             ctx.fillStyle = `rgba(255, 235, 59, ${opacity})`; // Vibrant Yellow
             ctx.fillRect(Math.round(s.x) - 2, Math.round(s.y) - 2, 5, 5); // Thicker 5x5 sparks

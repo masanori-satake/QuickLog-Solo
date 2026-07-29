@@ -86,9 +86,9 @@ body {
 }
 
 /* Generic Inputs */
-input[type='time'],
-input[type='text'],
-input[type='number'],
+input[type="time"],
+input[type="text"],
+input[type="number"],
 select {
     padding: 10px 14px;
     border-radius: 8px;
@@ -98,11 +98,11 @@ select {
     font-size: 0.95rem;
 }
 
-input[type='time'] {
+input[type="time"] {
     width: fit-content;
 }
 
-input[type='number'] {
+input[type="number"] {
     width: 80px;
 }
 
@@ -137,7 +137,7 @@ select:focus {
 
 .switch .slider::before {
     position: absolute;
-    content: '';
+    content: "";
     height: 24px;
     width: 24px;
     left: 4px;

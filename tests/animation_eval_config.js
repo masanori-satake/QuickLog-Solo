@@ -24,5 +24,5 @@ export const EVAL_CONFIG = {
     SAMPLE_INTERVAL_MS: 500,
 
     // Total duration (ms) to run each animation for evaluation.
-    TOTAL_EVALUATION_MS: 20000,
+    TOTAL_EVALUATION_MS: 20000
 };
