@@ -59,15 +59,32 @@ jobs:
             - name: リリースタagの決定とリリース作成/更新 (Determine Tag and Create/Update Release)
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAG_NAME: ${{ github.event.inputs.tag_name || github.ref_name }}
               run: |
                   # 手動実行の場合は入力から、タグpushの場合は参照からタグ名を取得
-                  TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name }}"
                   echo "Processing release for tag: $TAG_NAME"
+
+                  # Retry helper function
+                  retry_command() {
+                    local retries=5
+                    local delay=10
+                    local count=0
+                    until "$@"; do
+                      count=$((count + 1))
+                      if [ $count -ge $retries ]; then
+                        echo "Command failed after $retries attempts: $*"
+                        return 1
+                      fi
+                      echo "Command failed, retrying in ${delay}s... (attempt $count/$retries)"
+                      sleep $delay
+                    done
+                    return 0
+                  }
 
                   # 1. Ensure the release exists (create as a draft if missing)
                   if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
                     echo "Release $TAG_NAME does not exist. Creating new draft release with retries..."
-                    gh release create "$TAG_NAME" --draft --generate-notes --retry 5 --retry-delay 10
+                    retry_command gh release create "$TAG_NAME" --draft --generate-notes
                   else
                     echo "Release $TAG_NAME already exists. Editing to ensure it is in draft status before asset uploads..."
                     gh release edit "$TAG_NAME" --draft
@@ -77,11 +94,11 @@ jobs:
                   echo "Uploading assets to release $TAG_NAME..."
                   for filepath in releases/*.zip; do
                     echo "Uploading $(basename $filepath)..."
-                    gh release upload "$TAG_NAME" "$filepath" --clobber --timeout 5m
+                    timeout 5m gh release upload "$TAG_NAME" "$filepath" --clobber
                   done
                   echo "All assets uploaded successfully!"
 
                   # 3. Publish the release by removing draft status
                   echo "Publishing release $TAG_NAME..."
-                  gh release edit "$TAG_NAME" --draft=false --retry 5 --retry-delay 10
+                  retry_command gh release edit "$TAG_NAME" --draft=false
                   echo "Successfully published release $TAG_NAME!"

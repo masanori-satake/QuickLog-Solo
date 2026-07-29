@@ -44,6 +44,7 @@ jobs:
               uses: actions/checkout@v4
               with:
                   fetch-depth: 0
+                  persist-credentials: false
 
             - name: Get changed files
               id: changed-files
@@ -117,6 +118,8 @@ jobs:
         steps:
             - name: Checkout Code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Setup and Install Dependencies
               uses: ./.github/actions/setup-and-install
@@ -125,7 +128,8 @@ jobs:
               id: changed-files
               uses: tj-actions/changed-files@v45
               with:
-                  files: |
+                json: true
+                files: |
                       projects/**
                       shared/**
                       tests/**
@@ -140,9 +144,9 @@ jobs:
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
                     npx eslint .
                   else
-                    JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
-                    if [ -n "$JS_FILES" ]; then
-                      npx eslint $JS_FILES
+                    mapfile -t JS_FILES < <(echo '${{ steps.changed-files.outputs.all_changed_files }}' | jq -r '.[] | select(test("\\.(js|cjs)$"))')
+                    if [ ${`#JS_FILES`[@]} -gt 0 ]; then
+                      npx eslint "${JS_FILES[@]}"
                     else
                       echo "No JS files changed, skipping ESLint."
                     fi
@@ -154,9 +158,9 @@ jobs:
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
                     npx stylelint "**/*.css"
                   else
-                    CSS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep '\.css$' || true)
-                    if [ -n "$CSS_FILES" ]; then
-                      npx stylelint $CSS_FILES
+                    mapfile -t CSS_FILES < <(echo '${{ steps.changed-files.outputs.all_changed_files }}' | jq -r '.[] | select(test("\\.css$"))')
+                    if [ ${`#CSS_FILES`[@]} -gt 0 ]; then
+                      npx stylelint "${CSS_FILES[@]}"
                     else
                       echo "No CSS files changed, skipping Stylelint."
                     fi
@@ -169,6 +173,8 @@ jobs:
         steps:
             - name: Checkout Code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Setup and Install Dependencies
               uses: ./.github/actions/setup-and-install
@@ -177,6 +183,7 @@ jobs:
               id: changed-files
               uses: tj-actions/changed-files@v45
               with:
+                  json: true
                   files: |
                       projects/**
                       shared/**
@@ -190,9 +197,9 @@ jobs:
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
                     npm test -- --coverage
                   else
-                    JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
-                    if [ -n "$JS_FILES" ]; then
-                      npm test -- --coverage --findRelatedTests $JS_FILES --passWithNoTests
+                    mapfile -t JS_FILES < <(echo '${{ steps.changed-files.outputs.all_changed_files }}' | jq -r '.[] | select(test("\\.(js|cjs)$"))')
+                    if [ ${`#JS_FILES`[@]} -gt 0 ]; then
+                      npm test -- --coverage --findRelatedTests "${JS_FILES[@]}" --passWithNoTests
                     else
                       echo "No JS files changed, running all tests as fallback."
                       npm test -- --coverage
@@ -213,6 +220,8 @@ jobs:
         steps:
             - name: Checkout Code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Setup and Install Dependencies
               uses: ./.github/actions/setup-and-install
@@ -245,6 +254,8 @@ jobs:
         steps:
             - name: Checkout Code
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Setup and Install Dependencies
               uses: ./.github/actions/setup-and-install
