@@ -1765,7 +1765,8 @@ function setupEventListeners() {
     elements.gifFileInput.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
         if (file) {
-            state.gifFileName = file.name;
+            const meta = state.selectedId ? state.customAnimations[state.selectedId] : null;
+            state.gifFileName = (meta && meta.name) ? `${meta.name}.gif` : file.name;
             state.gifBlob = file;
             elements.dropZone.style.opacity = '0';
             elements.dropZone.style.pointerEvents = 'none';
@@ -1812,7 +1813,8 @@ function setupEventListeners() {
                 }
                 elements.dropZone.style.opacity = '0';
                 elements.dropZone.style.pointerEvents = 'none';
-                state.gifFileName = file.name;
+                const meta = state.selectedId ? state.customAnimations[state.selectedId] : null;
+                state.gifFileName = (meta && meta.name) ? `${meta.name}.gif` : file.name;
                 state.gifBlob = file;
                 elements.rawPreviewContainer.setAttribute('tabindex', '0');
                 resetAnimationSettings();

@@ -38,6 +38,11 @@ def generate_icons(output_dir=None, bg_color=None):
         from playwright.sync_api import sync_playwright
         print("Playwright found. Generating icons...")
     except ImportError:
+        # Check if icons already exist before failing
+        required_icons = [os.path.join(output_dir, f"icon{size}.png") for size in [16, 32, 48, 128]]
+        if all(os.path.exists(icon) for icon in required_icons):
+            print("Playwright not available, but all required PNG icons already exist. Skipping regeneration.")
+            return True
         print("Error: No module named 'playwright'. Please install it to generate extension icons.")
         return False
 
