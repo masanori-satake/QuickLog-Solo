@@ -18,7 +18,7 @@
             <div class="header-content-wrapper">
                 <div class="header-left">
                     <h1 id="alarm-title-heading">
-                        <span class="material-symbols-outlined title-icon">notifications</span>
+                        <span class="material-symbols-outlined title-icon" aria-hidden="true">notifications</span>
                         <span data-i18n="alarm-editor-title">アラームエディタ</span>
                     </h1>
                     <div class="history-controls">
@@ -62,7 +62,7 @@
         <main class="editor-main">
             <div class="main-content-wrapper">
                 <aside class="master-pane">
-                    <section class="alarm-list-section card">
+                    <div class="alarm-list-section card">
                         <div class="business-days-section">
                             <label data-i18n="business-days">稼働曜日</label>
                             <div id="business-days-container" class="filter-chips"></div>
@@ -70,7 +70,7 @@
                         <div id="alarm-editor-list">
                             <!-- Alarms will be rendered here -->
                         </div>
-                    </section>
+                    </div>
                 </aside>
                 <section class="detail-pane">
                     <div id="detail-empty-state" class="empty-state">
