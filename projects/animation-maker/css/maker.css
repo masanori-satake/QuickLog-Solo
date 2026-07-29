@@ -1,5 +1,5 @@
 /* QL-Animation Maker Styles */
-@import url('../shared/css/variables.css');
+@import url('../../../shared/css/variables.css');
 
 :root {
     --list-width: 320px;
