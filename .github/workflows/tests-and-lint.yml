@@ -117,6 +117,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup and Install Dependencies
         uses: ./.github/workflows/setup-and-install.yml
 
@@ -166,6 +169,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup and Install Dependencies
         uses: ./.github/workflows/setup-and-install.yml
 
@@ -197,7 +203,7 @@ jobs:
 
       - name: Post Coverage Comment
         if: github.event_name == 'pull_request'
-        uses: jest-coverage-reporter/action@v2
+        uses: ArtiomTr/jest-coverage-reporter@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -215,6 +221,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup and Install Dependencies
         uses: ./.github/workflows/setup-and-install.yml
         with:
@@ -244,6 +253,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup and Install Dependencies
         uses: ./.github/workflows/setup-and-install.yml
         with:

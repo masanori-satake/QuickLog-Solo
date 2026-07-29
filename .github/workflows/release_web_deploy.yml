@@ -31,6 +31,9 @@ jobs:
       contents: read
     timeout-minutes: 10
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup and Install Dependencies
         uses: ./.github/workflows/setup-and-install.yml
         with:
