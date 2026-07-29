@@ -117,7 +117,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup and Install Dependencies
-        uses: ./.github/workflows/setup-and-install.yml
+        uses: ./.github/actions/setup-and-install
 
       - name: Get changed files
         id: changed-files
@@ -169,7 +169,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup and Install Dependencies
-        uses: ./.github/workflows/setup-and-install.yml
+        uses: ./.github/actions/setup-and-install
 
       - name: Get changed files
         id: changed-files
@@ -212,9 +212,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup and Install Dependencies
-        uses: ./.github/workflows/setup-and-install.yml
+        uses: ./.github/actions/setup-and-install
         with:
-          install-playwright: true
+          install-playwright: 'true'
 
       - name: Install Playwright Dependencies (if cache hit)
         run: npx playwright install-deps chromium
@@ -244,9 +244,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup and Install Dependencies
-        uses: ./.github/workflows/setup-and-install.yml
+        uses: ./.github/actions/setup-and-install
         with:
-          install-playwright: true
+          install-playwright: 'true'
 
       - name: Install Playwright Dependencies (if cache hit)
         run: npx playwright install-deps chromium
