@@ -189,18 +189,19 @@ test.describe('QL-Animation Maker Improvements', () => {
 
     // Find the animation select element for categories
     const animSelects = page.locator('.category-editor-item select');
+    // Ensure at least one select is rendered
+    expect(await animSelects.count()).toBeGreaterThan(0);
+
     // Let's get options text contents of the first visible select
-    if (await animSelects.count() > 0) {
-      const firstSelect = animSelects.first();
-      const options = await firstSelect.locator('option').allTextContents();
+    const firstSelect = animSelects.first();
+    const options = await firstSelect.locator('option').allTextContents();
 
-      // Index of "My Anim 1" should be less than "My Anim 2"
-      const index1 = options.indexOf("My Anim 1");
-      const index2 = options.indexOf("My Anim 2");
+    // Index of "My Anim 1" should be less than "My Anim 2"
+    const index1 = options.indexOf("My Anim 1");
+    const index2 = options.indexOf("My Anim 2");
 
-      expect(index1).toBeGreaterThan(-1);
-      expect(index2).toBeGreaterThan(-1);
-      expect(index1).toBeLessThan(index2);
-    }
+    expect(index1).toBeGreaterThan(-1);
+    expect(index2).toBeGreaterThan(-1);
+    expect(index1).toBeLessThan(index2);
   });
 });
