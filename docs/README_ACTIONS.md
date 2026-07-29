@@ -19,7 +19,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 | グループ | ワークフロー名 | ファイル | 概要 | トリガー |
 | :--- | :--- | :--- | :--- | :--- |
 | CI | **テストと静的解析** | `tests-and-lint.yml` | Python静的チェック、Lint、単体/E2E/アニメーションテスト | `main`へのPush/PR (*1), 手動 |
-| CI | **脆弱性検査** | `osv-scan.yml` | OSV-Scannerによる依存関係の脆弱性スキャン | `main`へのPush/PR (*1), 手動, 定期実行 |
+| CI | **脆弱性検査** | `osv-scan.yml` | OSV-Scannerによる依存関係の脆弱性スキャン | `main`へのPush/PR (*1), 定期実行 |
 | Release | **リリース: Webアプリケーションのデプロイ** | `release_web_deploy.yml` | Vercelへの自動デプロイ（Landing Page, Studio等） | `main`へのPush/PR (*1), 手動 |
 | **Release** | **リリース: 拡張機能パッケージの公開** | `release_extension_packages.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
 | Update | **更新: ガイド用スクリーンショット** | `update_guide_screenshots.yml` | クイックスタートガイド用画像のリポジトリ自動反映 | `main`へのPush/PR (*1), 手動 |
@@ -103,8 +103,9 @@ graph TD
         Start --> Job5[animation-tests]
     end
 
+    StartOSV([トリガー: Push/PR/Weekly Schedule])
     subgraph "osv-scan.yml"
-        Start --> OSVScan[脆弱性検査<br/>OSV Scan]
+        StartOSV --> OSVScan[脆弱性検査<br/>OSV Scan]
     end
 
     style Job1 fill:#f9f,stroke:#333
@@ -114,6 +115,7 @@ graph TD
     style Job5 fill:#fdf,stroke:#333
     style PreCommit fill:#ffb,stroke:#333
     style OSVScan fill:#dff,stroke:#333
+    style StartOSV fill:#efe,stroke:#333
 ```
 
 #### 特徴的な条件判断
