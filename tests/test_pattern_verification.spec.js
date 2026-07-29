@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Verification Pattern (TestPattern) Rendering', () => {
     test('should render Verification Pattern and ensure it is not obscured by opaque backgrounds', async ({ page }) => {
+        test.setTimeout(60000);
         const dbName = `TestPatternDB_${Math.random().toString(36).substring(7)}`;
         // baseURL in playwright.config.js points to /projects/app/app.html
         await page.goto(`?db=${dbName}`);

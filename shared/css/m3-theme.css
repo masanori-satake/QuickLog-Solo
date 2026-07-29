@@ -482,13 +482,7 @@ body.theme-dark {
 
 .switch input,
 .theme-switch input {
-    position: absolute;
-    opacity: 0;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+    display: none !important;
 }
 
 .switch .slider,
@@ -522,12 +516,6 @@ body.theme-dark {
 .switch input:checked + .slider::before,
 .theme-switch input:checked + .slider::before {
     transform: translateX(24px);
-}
-
-.switch input:focus-visible + .slider,
-.theme-switch input:focus-visible + .slider {
-    outline: 2px solid var(--md-sys-color-primary);
-    outline-offset: 2px;
 }
 
 /* Undo/Redo History Controls */
