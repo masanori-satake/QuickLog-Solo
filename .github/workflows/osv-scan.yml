@@ -12,6 +12,9 @@ on:
       - 'projects/**'
       - 'package.json'
       - 'package-lock.json'
+      - '.github/workflows/osv-scan.yml'
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sundays at midnight UTC
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,7 +28,7 @@ permissions:
 jobs:
   osv-scan:
     name: 脆弱性検査 (OSV Scan)
-    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.9.1"
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@daa2c68f50d845057895a9c300e42478481c1d26"  # v1.9.1
     with:
       scan-args: |-
         --recursive
