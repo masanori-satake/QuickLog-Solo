@@ -38,9 +38,6 @@ body {
 }
 
 .header-content-wrapper {
-    max-width: 1800px;
-    width: 100%;
-    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -54,44 +51,17 @@ body {
     gap: 16px;
 }
 
-.privacy-badge {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 16px;
-    padding: 2px 8px;
-    border-radius: 12px;
-    background-color: var(--md-sys-color-surface-container);
-    color: var(--md-sys-color-primary);
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: help;
-    border: 1px solid var(--md-sys-color-primary-container);
-    transition: background-color 0.2s;
-    white-space: nowrap;
-}
-
-.privacy-badge:hover {
-    background-color: var(--md-sys-color-primary-container);
-}
-
-.privacy-badge .material-symbols-outlined {
-    font-size: 16px;
-}
-
-@media (width <= 900px) {
-    .privacy-text {
-        display: none;
-    }
-
-    .privacy-badge {
-        padding: 4px;
-    }
-}
-
 .header-left h1 {
     font-size: 1.25rem;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title-icon {
+    font-size: 1.5rem;
+    color: var(--md-sys-color-primary);
 }
 
 .history-controls {
@@ -156,75 +126,6 @@ select:focus {
     border-color: transparent;
 }
 
-/* Switch Styles (M3-like) */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 52px;
-    height: 32px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.switch .slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background-color: var(--md-sys-color-outline);
-    transition: 0.4s;
-    border-radius: 32px;
-}
-
-.switch .slider::before {
-    position: absolute;
-    content: "";
-    height: 24px;
-    width: 24px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
-}
-
-/* Specific theme-switch overrides (avoiding !important by using higher specificity) */
-.switch.theme-switch {
-    width: 44px;
-    height: 24px;
-}
-
-.theme-switch .slider {
-    border-radius: 34px;
-}
-
-.switch.theme-switch .slider::before {
-    background-color: var(--md-sys-color-surface-container-highest);
-    bottom: 4px;
-    height: 16px;
-    left: 4px;
-    width: 16px;
-}
-
-/* Switch checked states (higher specificity) */
-.switch input:checked + .slider {
-    background-color: var(--md-sys-color-primary);
-}
-
-.switch input:checked + .slider::before {
-    transform: translateX(20px);
-}
-
-/* Language switcher select */
-.lang-switcher select {
-    padding: 6px 12px;
-    font-family: var(--font-family);
-    font-size: 0.9rem;
-}
-
 /* Theme Switch and Language Select wrapper */
 .theme-switch-wrapper {
     display: flex;
@@ -248,8 +149,6 @@ select:focus {
 }
 
 .main-content-wrapper {
-    max-width: 1800px;
-    width: 100%;
     display: flex;
     overflow: hidden;
 }
@@ -291,9 +190,22 @@ select:focus {
     margin: 8px 0;
 }
 
+
+.alarm-list-section {
+    flex: 1;
+    margin: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.alarm-list-section.card {
+    padding: 16px;
+}
+
 /* Business Days Section */
 .business-days-section {
-    padding: 16px;
+    padding: 0 0 16px;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
     display: flex;
     flex-direction: column;
@@ -357,7 +269,7 @@ select:focus {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    padding: 12px;
+    padding: 12px 0 0;
     gap: 8px;
 }
 
@@ -435,15 +347,6 @@ select:focus {
     font-size: 1.5rem;
 }
 
-.section-card {
-    background-color: var(--md-sys-color-surface-container-low);
-    border-radius: 16px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    border: 1px solid var(--md-sys-color-outline-variant);
-}
 
 .section-title {
     font-size: 0.9rem;
@@ -492,9 +395,6 @@ select:focus {
 }
 
 .footer-content-wrapper {
-    max-width: 1800px;
-    width: 100%;
-    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -585,4 +485,14 @@ select:focus {
     border-radius: 8px;
     z-index: 2000;
     box-shadow: var(--md-sys-elevation-3);
+}
+
+body.theme-dark {
+    color-scheme: dark;
+}
+
+body.theme-dark select,
+body.theme-dark input,
+body.theme-dark textarea {
+    color-scheme: dark;
 }
