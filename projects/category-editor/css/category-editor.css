@@ -10,7 +10,7 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: var(--font-family);
+    font-family: var(--standard-ui-font);
     background-color: var(--md-sys-color-surface);
     color: var(--md-sys-color-on-surface);
     height: 100vh;
@@ -122,7 +122,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--md-sys-color-on-surface-variant);
+    color: var(--md-sys-color-primary);
 }
 
 .card > .section-title {
@@ -347,6 +347,10 @@ input[type="text"], select {
 
 option {
     font-family: var(--font-family);
+}
+
+.lang-select {
+    background-color: var(--md-sys-color-surface-container-highest);
 }
 
 input[type="text"]:focus, select:focus {
@@ -608,6 +612,7 @@ input[type="text"]:disabled, select:disabled {
 
 #preview-name-heading {
     font-size: var(--md-sys-typescale-title-medium-size);
+    font-family: var(--font-family);
     font-weight: var(--md-sys-typescale-title-large-weight);
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
     line-height: 1.2;
@@ -632,7 +637,7 @@ input[type="text"]:disabled, select:disabled {
 .preview-elapsed {
     font-size: var(--md-sys-typescale-headline-medium-size);
     font-weight: var(--md-sys-typescale-headline-large-weight);
-    font-family: 'Roboto Mono', 'Courier New', monospace;
+    font-family: var(--font-family), 'Roboto Mono', 'Courier New', monospace;
     line-height: 1;
     text-shadow: 0 0 4px var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface);
@@ -775,12 +780,12 @@ input[type="text"]:disabled, select:disabled {
     margin-left: 24px;
 }
 
-
 .theme-switch {
     display: inline-block;
     height: 24px;
     position: relative;
-    width: 44px;
+    width: 48px;
+    flex-shrink: 0;
 }
 
 .theme-switch input {
@@ -788,16 +793,15 @@ input[type="text"]:disabled, select:disabled {
 }
 
 .slider {
-    background-color: var(--md-sys-color-outline);
-    inset: 0;
+    background-color: var(--md-sys-color-outline-variant);
     cursor: pointer;
+    inset: 0;
     position: absolute;
     transition: 0.4s;
-    border-radius: 34px;
 }
 
 .slider::before {
-    background-color: var(--md-sys-color-surface-container-highest);
+    background-color: #fff;
     bottom: 4px;
     content: "";
     height: 16px;
@@ -805,7 +809,6 @@ input[type="text"]:disabled, select:disabled {
     position: absolute;
     transition: 0.4s;
     width: 16px;
-    border-radius: 50%;
 }
 
 input:checked + .slider {
@@ -813,7 +816,15 @@ input:checked + .slider {
 }
 
 input:checked + .slider::before {
-    transform: translateX(20px);
+    transform: translateX(24px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round::before {
+    border-radius: 50%;
 }
 
 /* Utilities */

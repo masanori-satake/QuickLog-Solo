@@ -92,6 +92,14 @@ body {
 .header-left h1 {
     font-size: 1.25rem;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title-icon {
+    font-size: 1.5rem;
+    color: var(--md-sys-color-primary);
 }
 
 .history-controls {
@@ -193,16 +201,17 @@ select:focus {
 
 /* Specific theme-switch overrides (avoiding !important by using higher specificity) */
 .switch.theme-switch {
-    width: 44px;
+    width: 48px;
     height: 24px;
 }
 
 .theme-switch .slider {
     border-radius: 34px;
+    background-color: var(--md-sys-color-outline-variant);
 }
 
 .switch.theme-switch .slider::before {
-    background-color: var(--md-sys-color-surface-container-highest);
+    background-color: #fff;
     bottom: 4px;
     height: 16px;
     left: 4px;
@@ -218,11 +227,20 @@ select:focus {
     transform: translateX(20px);
 }
 
+.switch.theme-switch input:checked + .slider::before {
+    transform: translateX(24px);
+}
+
 /* Language switcher select */
 .lang-switcher select {
     padding: 6px 12px;
     font-family: var(--font-family);
     font-size: 0.9rem;
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.lang-select {
+    background-color: var(--md-sys-color-surface-container-highest);
 }
 
 /* Theme Switch and Language Select wrapper */
@@ -291,9 +309,30 @@ select:focus {
     margin: 8px 0;
 }
 
+/* Cards */
+.card {
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--md-sys-elevation-1);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.alarm-list-section {
+    flex: 1;
+    margin: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.alarm-list-section.card {
+    padding: 16px;
+}
+
 /* Business Days Section */
 .business-days-section {
-    padding: 16px;
+    padding: 0 0 16px;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
     display: flex;
     flex-direction: column;
@@ -357,7 +396,7 @@ select:focus {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    padding: 12px;
+    padding: 12px 0 0;
     gap: 8px;
 }
 
@@ -436,13 +475,14 @@ select:focus {
 }
 
 .section-card {
-    background-color: var(--md-sys-color-surface-container-low);
+    background-color: var(--md-sys-color-surface-container-high);
     border-radius: 16px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 16px;
     border: 1px solid var(--md-sys-color-outline-variant);
+    box-shadow: var(--md-sys-elevation-1);
 }
 
 .section-title {
@@ -585,4 +625,14 @@ select:focus {
     border-radius: 8px;
     z-index: 2000;
     box-shadow: var(--md-sys-elevation-3);
+}
+
+body.theme-dark {
+    color-scheme: dark;
+}
+
+body.theme-dark select,
+body.theme-dark input,
+body.theme-dark textarea {
+    color-scheme: dark;
 }

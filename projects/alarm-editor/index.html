@@ -17,7 +17,10 @@
         <header class="editor-header">
             <div class="header-content-wrapper">
                 <div class="header-left">
-                    <h1 data-i18n="alarm-editor-title">アラームエディタ</h1>
+                    <h1 id="alarm-title-heading">
+                        <span class="material-symbols-outlined title-icon">notifications</span>
+                        <span data-i18n="alarm-editor-title">アラームエディタ</span>
+                    </h1>
                     <div class="history-controls">
                         <button id="undo-btn" class="icon-btn" disabled data-i18n-title="undo">
                             <span class="material-symbols-outlined">undo</span>
@@ -59,13 +62,15 @@
         <main class="editor-main">
             <div class="main-content-wrapper">
                 <aside class="master-pane">
-                    <div class="business-days-section">
-                        <label data-i18n="business-days">稼働曜日</label>
-                        <div id="business-days-container" class="filter-chips"></div>
-                    </div>
-                    <div id="alarm-editor-list">
-                        <!-- Alarms will be rendered here -->
-                    </div>
+                    <section class="alarm-list-section card">
+                        <div class="business-days-section">
+                            <label data-i18n="business-days">稼働曜日</label>
+                            <div id="business-days-container" class="filter-chips"></div>
+                        </div>
+                        <div id="alarm-editor-list">
+                            <!-- Alarms will be rendered here -->
+                        </div>
+                    </section>
                 </aside>
                 <section class="detail-pane">
                     <div id="detail-empty-state" class="empty-state">
