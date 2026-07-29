@@ -1,0 +1,36 @@
+name: "CI: 脆弱性検査 (Vulnerability Scan)"
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'projects/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/osv-scan.yml'
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sundays at midnight UTC
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: read
+  security-events: write
+  contents: read
+
+jobs:
+  osv-scan:
+    name: 脆弱性検査 (OSV Scan)
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@daa2c68f50d845057895a9c300e42478481c1d26"  # v1.9.1
+    with:
+      scan-args: |-
+        --recursive
+        ./projects
+        ./package.json

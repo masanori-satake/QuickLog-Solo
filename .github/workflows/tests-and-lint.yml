@@ -18,10 +18,6 @@ on:
       - 'package-lock.json'
       - 'eslint.config.js'
       - '.stylelintrc.json'
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - '.github/workflows/release_*.yml'
   workflow_dispatch:
 
 env:
@@ -206,15 +202,6 @@ jobs:
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-
-  osv-scan:
-    name: 脆弱性検査 (Vulnerability Scan)
-    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.9.1"
-    with:
-      scan-args: |-
-        --recursive
-        ./projects
-        ./package.json
 
   e2e-tests:
     name: E2Eテスト (E2E Tests)

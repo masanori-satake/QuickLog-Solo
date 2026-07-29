@@ -18,7 +18,8 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 
 | グループ | ワークフロー名 | ファイル | 概要 | トリガー |
 | :--- | :--- | :--- | :--- | :--- |
-| CI | **継続的インテグレーション (CI)** | `ci.yml` | 監査、コード品質(Lint/Unit)、OSV-Scanner、E2Eテスト、アニメーション品質 | `main`へのPush/PR (*1), 手動 |
+| CI | **テストと静的解析** | `tests-and-lint.yml` | Python静的チェック、Lint、単体/E2E/アニメーションテスト | `main`へのPush/PR (*1), 手動 |
+| CI | **脆弱性検査** | `osv-scan.yml` | OSV-Scannerによる依存関係の脆弱性スキャン | `main`へのPush/PR (*1), 定期実行 |
 | Release | **リリース: Webアプリケーションのデプロイ** | `release_web_deploy.yml` | Vercelへの自動デプロイ（Landing Page, Studio等） | `main`へのPush/PR (*1), 手動 |
 | **Release** | **リリース: 拡張機能パッケージの公開** | `release_extension_packages.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
 | Update | **更新: ガイド用スクリーンショット** | `update_guide_screenshots.yml` | クイックスタートガイド用画像のリポジトリ自動反映 | `main`へのPush/PR (*1), 手動 |
@@ -85,42 +86,36 @@ PR マージ時の動作を確実にするため、および自動更新によ�
 
 ### 1. 継続的インテグレーション (CI)
 
-`ci.yml` は、監査、品質管理、E2Eテスト、アニメーション評価のすべての検証ステップを統合したワークフローです。並列実行（Jobs）により、検証時間を短縮しつつ包括的な品質保証を行います。
+本プロジェクトのCIは、`tests-and-lint.yml` と `osv-scan.yml` の2つの主要なワークフローによって構成されています。これらは並列に実行され、迅速なフィードバックを提供します。
 
-#### フローチャート (CI: ci.yml)
+#### フローチャート (CI)
 
 ```mermaid
 graph TD
     Start([トリガー: Push/PR/Dispatch])
     Start --> PreCommit[pre-commit.ci<br/>Integrity / Basic Check]
-    Start --> Checkout[GHA: リポジトリのチェックアウト]
-    Checkout --> GetChanged{変更ファイルの取得}
 
-    subgraph "Audit & Quality (audit-and-quality job)"
-        GetChanged --> CleanCheck[整合性・バージョン・依存関係検証]
-        CleanCheck --> Lint[静的解析<br/>ESLint / Stylelint]
-        Lint --> UnitTests[ユニットテスト<br/>Jest]
+    subgraph "tests-and-lint.yml"
+        Start --> Job1[python-checks]
+        Start --> Job2[lint]
+        Start --> Job3[unit-tests]
+        Start --> Job4[e2e-tests]
+        Start --> Job5[animation-tests]
     end
 
-    subgraph "Vulnerability Scan (osv-scan job)"
-        GetChanged --> OSVScan[OSV-Scannerによる監査]
+    StartOSV([トリガー: Push/PR/Weekly Schedule])
+    subgraph "osv-scan.yml"
+        StartOSV --> OSVScan[脆弱性検査<br/>OSV Scan]
     end
 
-    subgraph "E2E (e2e-tests job)"
-        GetChanged --> Playwright[Playwright実行]
-        Playwright --> RunE2E[E2Eテスト実行]
-    end
-
-    subgraph "Animation (animation-tests job)"
-        GetChanged --> AnimEval[アニメーション品質評価]
-    end
-
-    style CleanCheck fill:#f9f,stroke:#333
+    style Job1 fill:#f9f,stroke:#333
+    style Job2 fill:#bbf,stroke:#333
+    style Job3 fill:#bbf,stroke:#333
+    style Job4 fill:#dfd,stroke:#333
+    style Job5 fill:#fdf,stroke:#333
     style PreCommit fill:#ffb,stroke:#333
-    style Lint fill:#bbf,stroke:#333
-    style UnitTests fill:#bbf,stroke:#333
-    style RunE2E fill:#dfd,stroke:#333
-    style AnimEval fill:#fdf,stroke:#333
+    style OSVScan fill:#dff,stroke:#333
+    style StartOSV fill:#efe,stroke:#333
 ```
 
 #### 特徴的な条件判断
