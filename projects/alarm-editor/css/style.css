@@ -68,6 +68,7 @@ body {
     cursor: help;
     border: 1px solid var(--md-sys-color-primary-container);
     transition: background-color 0.2s;
+    white-space: nowrap;
 }
 
 .privacy-badge:hover {
