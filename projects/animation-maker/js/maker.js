@@ -3,10 +3,11 @@
  */
 
 import { messages } from '../shared/js/messages.js';
+import { initDB, dbGetAll, dbPut, STORE_CATEGORIES, DB_NAME, SYNC_CHANNEL_NAME } from '../shared/js/db.js';
 import {
-    initDB, dbGetAll, dbPut,
-    STORE_CATEGORIES, DB_NAME, SYNC_CHANNEL_NAME
-} from '../shared/js/db.js';
+    getCustomAnimationMetadataMap as sharedGetCustomAnimationMetadataMap,
+    setCustomAnimationMetadataMap as sharedSetCustomAnimationMetadataMap,
+} from '../shared/js/utils/storage.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import {
     saveAnimationBlob as idbSaveAnimationBlob,
@@ -17,9 +18,8 @@ import {
     getAnimationDraftBlob,
     getAllAnimationDraftRecords,
     deleteAnimationDraftBlob,
-    clearAnimationDraftDB
+    clearAnimationDraftDB,
 } from '../shared/js/idb_storage.js';
-
 
 const broadcastChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
 
@@ -45,7 +45,7 @@ const COLOR_CODES = {
     cyan: '#039be5',
     'retro-lcd': '#9bbc0f',
     'retro-crt': '#33ff33',
-    'retro-nixie': '#ff5500'
+    'retro-nixie': '#ff5500',
 };
 
 const COLORS = Object.keys(COLOR_CODES);
@@ -94,7 +94,11 @@ const state = {
     // Drag-to-reorder list index
     draggedIndex: null,
 
-    getMsg: (key) => (messages[state.currentLang] && messages[state.currentLang][key]) || (messages._common && messages._common[key]) || messages.en[key] || key
+    getMsg: (key) =>
+        (messages[state.currentLang] && messages[state.currentLang][key]) ||
+        (messages._common && messages._common[key]) ||
+        messages.en[key] ||
+        key,
 };
 
 // DOM Elements
@@ -156,9 +160,8 @@ const elements = {
 
     alertModal: document.getElementById('alert-modal'),
     alertModalText: document.getElementById('alert-modal-text'),
-    alertModalCloseBtn: document.getElementById('alert-modal-close-btn')
+    alertModalCloseBtn: document.getElementById('alert-modal-close-btn'),
 };
-
 
 // Debounce timer for input-driven saves
 let saveDebounceTimer = null;
@@ -172,19 +175,7 @@ async function getCustomAnimationMetadataMap() {
     if (draftMetadataMap) {
         return draftMetadataMap;
     }
-    let map;
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        const result = await chrome.storage.local.get('custom_animation_metadata_map');
-        map = result.custom_animation_metadata_map || {};
-    } else {
-        try {
-            const stored = localStorage.getItem('custom_animation_metadata_map');
-            map = stored ? JSON.parse(stored) : {};
-        } catch (e) {
-            console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
-            map = {};
-        }
-    }
+    const map = await sharedGetCustomAnimationMetadataMap();
     // Deep clone to draft map
     draftMetadataMap = JSON.parse(JSON.stringify(map));
     return draftMetadataMap;
@@ -257,15 +248,7 @@ async function initDraftState() {
 
 // Direct Storage write for metadata map
 async function saveProductionMetadataMap(map) {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        await chrome.storage.local.set({ custom_animation_metadata_map: map });
-    } else {
-        try {
-            localStorage.setItem('custom_animation_metadata_map', JSON.stringify(map));
-        } catch (e) {
-            console.error('Failed to save custom_animation_metadata_map to localStorage:', e);
-        }
-    }
+    await sharedSetCustomAnimationMetadataMap(map);
 }
 
 function setupTypography(appState) {
@@ -275,10 +258,10 @@ function setupTypography(appState) {
         }
         if (appState.fontWeight) {
             const weights = {
-                'normal': '400',
-                'medium': '500',
-                'bold': '700',
-                'heavy': '900'
+                normal: '400',
+                medium: '500',
+                bold: '700',
+                heavy: '900',
             };
             const val = weights[appState.fontWeight];
             if (val) {
@@ -314,7 +297,7 @@ function setupTheme() {
     const savedTheme = localStorage.getItem('maker-theme') || localStorage.getItem('studio-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     state.currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    elements.themeToggle.checked = (state.currentTheme === 'dark');
+    elements.themeToggle.checked = state.currentTheme === 'dark';
     applyTheme();
 }
 
@@ -347,17 +330,17 @@ function setupLanguage() {
 }
 
 function updateTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
         const key = el.getAttribute('data-i18n');
         el.textContent = state.getMsg(key);
     });
 
-    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => {
         const key = el.getAttribute('data-i18n-title');
         el.title = state.getMsg(key);
     });
 
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
         const key = el.getAttribute('data-i18n-placeholder');
         el.placeholder = state.getMsg(key);
     });
@@ -451,7 +434,7 @@ async function loadAnimationsList() {
         if (state.animationEngine) {
             state.animationEngine.stop();
         }
-        state.gifFrames.forEach(f => {
+        state.gifFrames.forEach((f) => {
             if (f.bitmap && typeof f.bitmap.close === 'function') {
                 f.bitmap.close();
             }
@@ -559,7 +542,7 @@ function showM3CreateDialog() {
         }
 
         const map = await getCustomAnimationMetadataMap();
-        const existingNames = Object.values(map).map(m => m.name);
+        const existingNames = Object.values(map).map((m) => m.name);
         if (existingNames.includes(nameVal)) {
             error.style.display = 'block';
             error.textContent = state.getMsg('maker-error-name-duplicate');
@@ -574,7 +557,7 @@ function showM3CreateDialog() {
             order: Object.keys(map).length,
             revision: 1,
             config: {
-                exclusionStrategy: 'freedom'
+                exclusionStrategy: 'freedom',
             },
             payload: {
                 renderSpec: {
@@ -584,9 +567,9 @@ function showM3CreateDialog() {
                     maxWidth: 2030,
                     scaleWithHeight: true,
                     overflowBehavior: 'repeat',
-                    previewColor: 'primary'
-                }
-            }
+                    previewColor: 'primary',
+                },
+            },
         };
 
         await setCustomAnimationMetadataMap(map);
@@ -635,8 +618,8 @@ async function showM3NameEditDialog(id) {
 
         const map = await getCustomAnimationMetadataMap();
         const existingNames = Object.keys(map)
-            .filter(k => k !== id)
-            .map(k => map[k].name);
+            .filter((k) => k !== id)
+            .map((k) => map[k].name);
 
         if (existingNames.includes(nameVal)) {
             error.style.display = 'block';
@@ -657,7 +640,7 @@ async function showM3NameEditDialog(id) {
 
         // Refresh list labels
         const listItems = elements.animationList.querySelectorAll('.category-item');
-        listItems.forEach(item => {
+        listItems.forEach((item) => {
             if (item.dataset.id === id) {
                 const nameSpan = item.querySelector('.cat-name');
                 if (nameSpan) nameSpan.textContent = nameVal;
@@ -697,9 +680,10 @@ function showM3ImportCollisionDialog(data, blob, existingId, existingMeta) {
     const container = document.getElementById('m3-dialog-options-container');
 
     title.textContent = state.getMsg('custom-anim-import');
-    prompt.textContent = state.currentLang === 'ja'
-        ? `同じ名前「${existingMeta.name}」のカスタムアニメーションが存在します。選択してください：`
-        : `A custom animation named "${existingMeta.name}" already exists. Please choose:`;
+    prompt.textContent =
+        state.currentLang === 'ja'
+            ? `同じ名前「${existingMeta.name}」のカスタムアニメーションが存在します。選択してください：`
+            : `A custom animation named "${existingMeta.name}" already exists. Please choose:`;
 
     input.style.display = 'none';
     error.style.display = 'none';
@@ -729,9 +713,9 @@ function showM3ImportCollisionDialog(data, blob, existingId, existingMeta) {
                     maxWidth: 2030,
                     scaleWithHeight: true,
                     overflowBehavior: 'repeat',
-                    previewColor: 'primary'
-                }
-            }
+                    previewColor: 'primary',
+                },
+            },
         };
 
         await saveAnimationBlob(existingId, blob, map[existingId].payload.renderSpec, map[existingId].config);
@@ -796,7 +780,7 @@ function showM3ImportRenameSubDialog(data, blob) {
         }
 
         const map = await getCustomAnimationMetadataMap();
-        const existingNames = Object.values(map).map(m => m.name);
+        const existingNames = Object.values(map).map((m) => m.name);
 
         if (existingNames.includes(nameVal)) {
             error.style.display = 'block';
@@ -833,9 +817,9 @@ async function proceedWithImport(data, blob, finalName) {
                 maxWidth: 2030,
                 scaleWithHeight: true,
                 overflowBehavior: 'repeat',
-                previewColor: 'primary'
-            }
-        }
+                previewColor: 'primary',
+            },
+        },
     };
 
     await saveAnimationBlob(newId, blob, map[newId].payload.renderSpec, map[newId].config);
@@ -878,13 +862,13 @@ async function exportAnimation(id) {
             metadata: {
                 name: meta.name,
                 description: meta.description || '',
-                author: meta.author || 'User'
+                author: meta.author || 'User',
             },
             config: meta.config || { exclusionStrategy: 'freedom' },
             payload: {
                 imageData: base64,
-                renderSpec: meta.payload.renderSpec
-            }
+                renderSpec: meta.payload.renderSpec,
+            },
         };
 
         const text = JSON.stringify(qlanim, null, 2);
@@ -959,7 +943,6 @@ function showItemMenu(e, id) {
     menu.style.left = `${rect.right - menu.offsetWidth + window.scrollX}px`;
 }
 
-
 // Duplicate
 async function duplicateAnimation(id) {
     const map = await getCustomAnimationMetadataMap();
@@ -968,14 +951,14 @@ async function duplicateAnimation(id) {
     const source = map[id];
     const newId = crypto.randomUUID();
 
-    const existingNames = Object.values(map).map(m => m.name);
+    const existingNames = Object.values(map).map((m) => m.name);
     const finalName = resolveDeduplicatedName(source.name, existingNames);
 
     map[newId] = {
         ...JSON.parse(JSON.stringify(source)),
         name: finalName,
         order: Object.keys(map).length,
-        revision: 1
+        revision: 1,
     };
 
     await setCustomAnimationMetadataMap(map);
@@ -996,9 +979,11 @@ async function deleteAnimation(id) {
     delete map[id];
 
     // Reorder indices
-    Object.keys(map).sort((a,b) => (map[a].order ?? 0) - (map[b].order ?? 0)).forEach((k, idx) => {
-        map[k].order = idx;
-    });
+    Object.keys(map)
+        .sort((a, b) => (map[a].order ?? 0) - (map[b].order ?? 0))
+        .forEach((k, idx) => {
+            map[k].order = idx;
+        });
 
     await setCustomAnimationMetadataMap(map);
     await deleteAnimationBlob(id);
@@ -1020,7 +1005,7 @@ elements.animationList.ondragover = (e) => {
     if (!draggingItem) return;
 
     const siblings = [...elements.animationList.querySelectorAll('.category-item:not(.dragging)')];
-    let nextSibling = siblings.find(sibling => {
+    let nextSibling = siblings.find((sibling) => {
         return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
     });
     elements.animationList.insertBefore(draggingItem, nextSibling);
@@ -1079,7 +1064,7 @@ async function selectAnimation(id) {
     elements.editorWorkspace.classList.remove('hidden');
 
     // Remove active style on all and add to current
-    elements.animationList.querySelectorAll('.category-item').forEach(item => {
+    elements.animationList.querySelectorAll('.category-item').forEach((item) => {
         item.classList.toggle('active', item.dataset.id === id);
     });
 
@@ -1103,7 +1088,7 @@ async function selectAnimation(id) {
 
     // Populate Inputs
     elements.configExclusionStrategy.value = state.exclusionStrategy;
-    elements.configOverflow.checked = (state.overflowBehavior === 'repeat');
+    elements.configOverflow.checked = state.overflowBehavior === 'repeat';
     elements.configMaxWidth.value = state.maxWidth;
     elements.configScaleHeight.checked = state.scaleWithHeight;
     elements.configInvert.checked = state.invert;
@@ -1114,7 +1099,7 @@ async function selectAnimation(id) {
     updatePreviewModeStyles();
 
     // Reset frame lists & fetch from IndexedDB
-    state.gifFrames.forEach(f => {
+    state.gifFrames.forEach((f) => {
         if (f.bitmap && typeof f.bitmap.close === 'function') {
             f.bitmap.close();
         }
@@ -1158,7 +1143,7 @@ async function selectAnimation(id) {
 // Colors presets palette rendering
 function renderColorPalette() {
     elements.previewColorPalette.replaceChildren();
-    COLORS.forEach(color => {
+    COLORS.forEach((color) => {
         const opt = document.createElement('div');
         opt.className = 'color-option' + (color === state.previewColor ? ' selected' : '');
         opt.style.backgroundColor = COLOR_CODES[color];
@@ -1201,7 +1186,7 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
 
             state.exclusionStrategy = elements.configExclusionStrategy.value;
             map[activeId].config = {
-                exclusionStrategy: state.exclusionStrategy
+                exclusionStrategy: state.exclusionStrategy,
             };
 
             state.maxWidth = parseInt(elements.configMaxWidth.value) || 2030;
@@ -1220,8 +1205,8 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
                     invert: state.invert,
                     overflowBehavior: state.overflowBehavior,
                     previewColor: state.previewColor,
-                    brightness: state.brightness
-                }
+                    brightness: state.brightness,
+                },
             };
 
             // Increment revision to track changes
@@ -1235,7 +1220,7 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
 
             // Refresh only the labels in list view without resetting workspace selection
             const listItems = elements.animationList.querySelectorAll('.category-item');
-            listItems.forEach(item => {
+            listItems.forEach((item) => {
                 if (item.dataset.id === activeId) {
                     const nameSpan = item.querySelector('.cat-name');
                     if (nameSpan) nameSpan.textContent = map[activeId].name;
@@ -1243,7 +1228,12 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
             });
 
             // Re-initialize local AnimationEngine to reflect changes in real time in the downsampled preview section
-            if (state.isPlaying && state.animationEngine && state.gifFrames.length > 0 && activeId === state.selectedId) {
+            if (
+                state.isPlaying &&
+                state.animationEngine &&
+                state.gifFrames.length > 0 &&
+                activeId === state.selectedId
+            ) {
                 const colorCode = COLOR_CODES[state.previewColor] || '#1976d2';
                 const startTime = Date.now() - state.virtualElapsedMs;
                 state.animationEngine.start(state.selectedId, startTime, colorCode);
@@ -1254,19 +1244,8 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
     if (isApply === true) {
         // Direct production save
         const productionMap = {};
-        // Retrieve original from Chrome Storage / LocalStorage
-        let origMap = {};
-        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-            const result = await chrome.storage.local.get('custom_animation_metadata_map');
-            origMap = result.custom_animation_metadata_map || {};
-        } else {
-            try {
-                const stored = localStorage.getItem('custom_animation_metadata_map');
-                origMap = stored ? JSON.parse(stored) : {};
-            } catch (e) {
-                console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
-            }
-        }
+        // Retrieve original from shared storage
+        const origMap = await sharedGetCustomAnimationMetadataMap();
 
         // Apply all modifications and deletions from draftMetadataMap
         // Any keys in draftMetadataMap but not in origMap are added or updated.
@@ -1295,7 +1274,12 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
             const id = record.id;
             if (draftMetadataMap && draftMetadataMap[id]) {
                 productionMap[id] = draftMetadataMap[id];
-                await idbSaveAnimationBlob(id, record.blob || null, draftMetadataMap[id].payload?.renderSpec, draftMetadataMap[id].config);
+                await idbSaveAnimationBlob(
+                    id,
+                    record.blob || null,
+                    draftMetadataMap[id].payload?.renderSpec,
+                    draftMetadataMap[id].config
+                );
             }
         }
 
@@ -1303,7 +1287,12 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
         for (const id of keysInDraft) {
             if (!productionMap[id] && draftMetadataMap && draftMetadataMap[id]) {
                 productionMap[id] = draftMetadataMap[id];
-                await idbSaveAnimationBlob(id, null, draftMetadataMap[id].payload?.renderSpec, draftMetadataMap[id].config);
+                await idbSaveAnimationBlob(
+                    id,
+                    null,
+                    draftMetadataMap[id].payload?.renderSpec,
+                    draftMetadataMap[id].config
+                );
             }
         }
 
@@ -1380,7 +1369,6 @@ async function parseGif(blob) {
 
         updateMonitor();
         triggerRedraw();
-
     } catch (err) {
         console.error('GIF Parsing failed:', err);
         showAlert(state.getMsg('alert-invalid-qlanim') + ' (' + err.message + ')');
@@ -1423,15 +1411,15 @@ function updatePreviewExclusionAreas() {
     const timerLabel = document.getElementById('preview-status-label');
     const timerElapsed = document.getElementById('preview-elapsed');
 
-    [previewName, timerLabel, timerElapsed].forEach(el => {
+    [previewName, timerLabel, timerElapsed].forEach((el) => {
         if (el) {
             const rect = el.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
                 exclusionAreas.push({
                     x: rect.left - canvasRect.left - paddingX,
                     y: rect.top - canvasRect.top - paddingY,
-                    width: rect.width + (paddingX * 2),
-                    height: rect.height + (paddingY * 2)
+                    width: rect.width + paddingX * 2,
+                    height: rect.height + paddingY * 2,
                 });
             }
         }
@@ -1495,8 +1483,8 @@ function drawEmptyCanvas() {
     }
     // Settings Canvas: Standard black background
     const rawCtx = elements.rawCanvas.getContext('2d');
-    const rW = elements.rawCanvas.width = elements.rawPreviewContainer.clientWidth;
-    const rH = elements.rawCanvas.height = elements.rawPreviewContainer.clientHeight;
+    const rW = (elements.rawCanvas.width = elements.rawPreviewContainer.clientWidth);
+    const rH = (elements.rawCanvas.height = elements.rawPreviewContainer.clientHeight);
     rawCtx.fillStyle = '#111111';
     rawCtx.fillRect(0, 0, rW, rH);
 }
@@ -1552,11 +1540,11 @@ function drawRawFrames() {
     const scaledW = frame.bitmap.width * S;
     const scaledH = frame.bitmap.height * S;
 
-    const destX = (W / 2) - (state.focusX * S);
-    const destY = (H / 2) - (state.focusY * S);
+    const destX = W / 2 - state.focusX * S;
+    const destY = H / 2 - state.focusY * S;
 
     const scaledMaxW = state.maxWidth * S;
-    const clipLeft = (W / 2) - (scaledMaxW / 2);
+    const clipLeft = W / 2 - scaledMaxW / 2;
 
     // ==========================================
     // 1. Draw Raw Canvas (ドット等の加工なし)
@@ -1652,8 +1640,8 @@ function handleMouseMove(e) {
     const S = getScaleFactor();
 
     // Update focus coordinates
-    state.focusX = state.dragStartFocusX - (dx / S);
-    state.focusY = state.dragStartFocusY - (dy / S);
+    state.focusX = state.dragStartFocusX - dx / S;
+    state.focusY = state.dragStartFocusY - dy / S;
 
     // Bounds limit to image dimensions
     state.focusX = Math.max(0, Math.min(state.gifWidth, state.focusX));
@@ -1685,7 +1673,7 @@ function resetAnimationSettings() {
 
     // Update Inputs in UI
     elements.configExclusionStrategy.value = state.exclusionStrategy;
-    elements.configOverflow.checked = (state.overflowBehavior === 'repeat');
+    elements.configOverflow.checked = state.overflowBehavior === 'repeat';
     elements.configMaxWidth.value = state.maxWidth;
     elements.configScaleHeight.checked = state.scaleWithHeight;
     elements.configInvert.checked = state.invert;
@@ -1766,7 +1754,7 @@ function setupEventListeners() {
         const file = e.target.files?.[0];
         if (file) {
             const meta = state.selectedId ? state.customAnimations[state.selectedId] : null;
-            state.gifFileName = (meta && meta.name) ? `${meta.name}.gif` : file.name;
+            state.gifFileName = meta && meta.name ? `${meta.name}.gif` : file.name;
             state.gifBlob = file;
             elements.dropZone.style.opacity = '0';
             elements.dropZone.style.pointerEvents = 'none';
@@ -1814,7 +1802,7 @@ function setupEventListeners() {
                 elements.dropZone.style.opacity = '0';
                 elements.dropZone.style.pointerEvents = 'none';
                 const meta = state.selectedId ? state.customAnimations[state.selectedId] : null;
-                state.gifFileName = (meta && meta.name) ? `${meta.name}.gif` : file.name;
+                state.gifFileName = meta && meta.name ? `${meta.name}.gif` : file.name;
                 state.gifBlob = file;
                 elements.rawPreviewContainer.setAttribute('tabindex', '0');
                 resetAnimationSettings();
@@ -1841,7 +1829,7 @@ function setupEventListeners() {
         if (e.touches.length === 1) {
             const mockEvent = {
                 clientX: e.touches[0].clientX,
-                clientY: e.touches[0].clientY
+                clientY: e.touches[0].clientY,
             };
             handleMouseDown(mockEvent);
         }
@@ -1850,7 +1838,7 @@ function setupEventListeners() {
         if (state.isDragging && e.touches.length === 1) {
             const mockEvent = {
                 clientX: e.touches[0].clientX,
-                clientY: e.touches[0].clientY
+                clientY: e.touches[0].clientY,
             };
             handleMouseMove(mockEvent);
         }
@@ -1858,7 +1846,7 @@ function setupEventListeners() {
     window.addEventListener('touchend', handleMouseUp);
 
     // Boundary Lines radio options
-    document.querySelectorAll('input[name="boundary-height"]').forEach(radio => {
+    document.querySelectorAll('input[name="boundary-height"]').forEach((radio) => {
         radio.addEventListener('change', () => {
             updateBoundaryLines();
             updateMonitor();
@@ -2030,7 +2018,6 @@ function setupEventListeners() {
             }
 
             await handleCustomAnimationImport(data, blob);
-
         } catch (err) {
             showAlert('Failed to parse the file: ' + err.message);
         } finally {

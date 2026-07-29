@@ -1,265 +1,277 @@
-name: "CI: テストと静的解析 (Tests and Linting)"
+name: 'CI: テストと静的解析 (Tests and Linting)'
 
 on:
-  push:
-    branches: [ main ]
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - '.github/workflows/release_*.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'projects/**'
-      - 'shared/**'
-      - 'tests/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'eslint.config.js'
-      - '.stylelintrc.json'
-  workflow_dispatch:
+    push:
+        branches: [main]
+        paths-ignore:
+            - 'docs/**'
+            - 'README.md'
+            - '.github/workflows/release_*.yml'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'projects/**'
+            - 'shared/**'
+            - 'tests/**'
+            - 'scripts/**'
+            - 'package.json'
+            - 'package-lock.json'
+            - 'eslint.config.js'
+            - '.stylelintrc.json'
+    workflow_dispatch:
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  actions: read
-  security-events: write
-  contents: read
+    actions: read
+    security-events: write
+    contents: read
+    checks: write
+    pull-requests: write
 
 jobs:
-  python-checks:
-    name: Pythonスクリプトによる静的チェック (Static Checks by Python)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    python-checks:
+        name: Pythonスクリプトによる静的チェック (Static Checks by Python)
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v45
-        with:
-          files: |
-            projects/**
-            shared/**
-            tests/**
-            scripts/**
-            package.json
+            - name: Get changed files
+              id: changed-files
+              uses: tj-actions/changed-files@v45
+              with:
+                  files: |
+                      projects/**
+                      shared/**
+                      tests/**
+                      scripts/**
+                      package.json
 
-      - name: Get app-related changed files
-        id: app-changes
-        uses: tj-actions/changed-files@v45
-        with:
-          files: |
-            projects/app/**
-            shared/**
+            - name: Get app-related changed files
+              id: app-changes
+              uses: tj-actions/changed-files@v45
+              with:
+                  files: |
+                      projects/app/**
+                      shared/**
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: '3.x'
 
-      - name: Cache Python dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+            - name: Cache Python dependencies
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/pip
+                  key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pip-
 
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
+            - name: Install Python dependencies
+              run: pip install -r requirements.txt
 
-      - name: 1. ルートディレクトリのクリーンネス確認 (Root Directory Cleanliness)
-        run: python3 scripts/check_root_files.py
+            - name: 1. ルートディレクトリのクリーンネス確認 (Root Directory Cleanliness)
+              run: python3 scripts/check_root_files.py
 
-      - name: 2. プロジェクトポリシー確認 (Project Policy Guard)
-        run: python3 scripts/verify_project_policies.py
+            - name: 2. プロジェクトポリシー確認 (Project Policy Guard)
+              run: python3 scripts/verify_project_policies.py
 
-      - name: 3. バージョンの一貫性確認 (Version Consistency)
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
-        run: python3 scripts/check_version.py
+            - name: 3. バージョンの一貫性確認 (Version Consistency)
+              if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+              run: python3 scripts/check_version.py
 
-      - name: 4. バージョン影響評価 (Version Impact)
-        if: (github.event_name == 'pull_request' && steps.app-changes.outputs.any_changed == 'true') || github.event_name == 'workflow_dispatch'
-        run: python3 scripts/verify_version_impact.py
+            - name: 4. バージョン影響評価 (Version Impact)
+              if: (github.event_name == 'pull_request' && steps.app-changes.outputs.any_changed == 'true') || github.event_name == 'workflow_dispatch'
+              run: python3 scripts/verify_version_impact.py
 
-      - name: 5. 外部OSS依存関係なしの確認 (No Production Dependencies)
-        id: verify-no-deps
-        run: python3 scripts/audit_production_dependencies.py
+            - name: 5. 外部OSS依存関係なしの確認 (No Production Dependencies)
+              id: verify-no-deps
+              run: python3 scripts/audit_production_dependencies.py
 
-      - name: 6. 透明性レポートのサマリー作成 (Transparency Report Summary)
-        if: always()
-        run: |
-          echo "### Transparency Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.verify-no-deps.outcome }}" == "success" ]; then
-            echo "- Pure Vanilla JS policy: passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- Pure Vanilla JS policy: failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "- Root cleanliness / policy / version checks: completed" >> $GITHUB_STEP_SUMMARY
+            - name: 6. 透明性レポートのサマリー作成 (Transparency Report Summary)
+              if: always()
+              run: |
+                  echo "### Transparency Report" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  if [ "${{ steps.verify-no-deps.outcome }}" == "success" ]; then
+                    echo "- Pure Vanilla JS policy: passed" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "- Pure Vanilla JS policy: failed" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  echo "- Root cleanliness / policy / version checks: completed" >> $GITHUB_STEP_SUMMARY
 
-  lint:
-    name: Linter (ESLint, Stylelint)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    lint:
+        name: Linter (ESLint, Stylelint)
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
-      - name: Setup and Install Dependencies
-        uses: ./.github/actions/setup-and-install
+            - name: Setup and Install Dependencies
+              uses: ./.github/actions/setup-and-install
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v45
-        with:
-          files: |
-            projects/**
-            shared/**
-            tests/**
-            scripts/**
-            package.json
-            eslint.config.js
-            .stylelintrc.json
+            - name: Get changed files
+              id: changed-files
+              uses: tj-actions/changed-files@v45
+              with:
+                  files: |
+                      projects/**
+                      shared/**
+                      tests/**
+                      scripts/**
+                      package.json
+                      eslint.config.js
+                      .stylelintrc.json
 
-      - name: 1. ESLint
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            npx eslint .
-          else
-            JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
-            if [ -n "$JS_FILES" ]; then
-              npx eslint $JS_FILES
-            else
-              echo "No JS files changed, skipping ESLint."
-            fi
-          fi
+            - name: 1. ESLint
+              if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+              run: |
+                  if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+                    npx eslint .
+                  else
+                    JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
+                    if [ -n "$JS_FILES" ]; then
+                      npx eslint $JS_FILES
+                    else
+                      echo "No JS files changed, skipping ESLint."
+                    fi
+                  fi
 
-      - name: 2. Stylelint
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            npx stylelint "**/*.css"
-          else
-            CSS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep '\.css$' || true)
-            if [ -n "$CSS_FILES" ]; then
-              npx stylelint $CSS_FILES
-            else
-              echo "No CSS files changed, skipping Stylelint."
-            fi
-          fi
+            - name: 2. Stylelint
+              if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+              run: |
+                  if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+                    npx stylelint "**/*.css"
+                  else
+                    CSS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep '\.css$' || true)
+                    if [ -n "$CSS_FILES" ]; then
+                      npx stylelint $CSS_FILES
+                    else
+                      echo "No CSS files changed, skipping Stylelint."
+                    fi
+                  fi
 
-  unit-tests:
-    name: 単体テスト (Unit Tests)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    unit-tests:
+        name: 単体テスト (Unit Tests)
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
-      - name: Setup and Install Dependencies
-        uses: ./.github/actions/setup-and-install
+            - name: Setup and Install Dependencies
+              uses: ./.github/actions/setup-and-install
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v45
-        with:
-          files: |
-            projects/**
-            shared/**
-            tests/**
-            scripts/**
-            package.json
+            - name: Get changed files
+              id: changed-files
+              uses: tj-actions/changed-files@v45
+              with:
+                  files: |
+                      projects/**
+                      shared/**
+                      tests/**
+                      scripts/**
+                      package.json
 
-      - name: Run Jest tests
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            npm test -- --coverage
-          else
-            JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
-            if [ -n "$JS_FILES" ]; then
-              npm test -- --coverage --findRelatedTests $JS_FILES --passWithNoTests
-            else
-              echo "No JS files changed, running all tests as fallback."
-              npm test -- --coverage
-            fi
-          fi
+            - name: Run Jest tests
+              if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+              run: |
+                  if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+                    npm test -- --coverage
+                  else
+                    JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
+                    if [ -n "$JS_FILES" ]; then
+                      npm test -- --coverage --findRelatedTests $JS_FILES --passWithNoTests
+                    else
+                      echo "No JS files changed, running all tests as fallback."
+                      npm test -- --coverage
+                    fi
+                  fi
 
-      - name: Post Coverage Comment
-        if: github.event_name == 'pull_request'
-        uses: ArtiomTr/jest-coverage-report-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+            - name: Post Coverage Comment
+              if: github.event_name == 'pull_request'
+              uses: ArtiomTr/jest-coverage-report-action@v2
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  test-script: npm test
 
-  e2e-tests:
-    name: E2Eテスト (E2E Tests)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    e2e-tests:
+        name: E2Eテスト (E2E Tests)
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
-      - name: Setup and Install Dependencies
-        uses: ./.github/actions/setup-and-install
-        with:
-          install-playwright: 'true'
+            - name: Setup and Install Dependencies
+              uses: ./.github/actions/setup-and-install
+              with:
+                  install-playwright: 'true'
 
-      - name: Install Playwright Dependencies (if cache hit)
-        run: npx playwright install-deps chromium
+            - name: Install Playwright Dependencies (if cache hit)
+              run: npx playwright install-deps chromium
 
-      - name: Start local server
-        run: python3 -m http.server 8080 &
+            - name: Start local server
+              run: python3 -m http.server 8080 &
 
-      - name: Wait for local server
-        run: npx wait-on http://localhost:8080 -t 30000
+            - name: Wait for local server
+              run: npx wait-on http://localhost:8080 -t 30000
 
-      - name: Run E2E tests
-        run: npm run test:e2e -- --grep-invert "Animation Quality Evaluation"
+            - name: Run E2E tests
+              run: npm run test:e2e -- --grep-invert "Animation Quality Evaluation"
 
-      - name: Upload test results on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-test-results
-          path: test-results/
+            - name: Upload test results on failure
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: e2e-test-results
+                  path: test-results/
 
-  animation-tests:
-    name: アニメーション品質テスト (Animation Quality)
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    animation-tests:
+        name: アニメーション品質テスト (Animation Quality)
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
-      - name: Setup and Install Dependencies
-        uses: ./.github/actions/setup-and-install
-        with:
-          install-playwright: 'true'
+            - name: Setup and Install Dependencies
+              uses: ./.github/actions/setup-and-install
+              with:
+                  install-playwright: 'true'
 
-      - name: Install Playwright Dependencies (if cache hit)
-        run: npx playwright install-deps chromium
+            - name: Install Playwright Dependencies (if cache hit)
+              run: npx playwright install-deps chromium
 
-      - name: Start local server
-        run: python3 -m http.server 8080 &
+            - name: Start local server
+              run: python3 -m http.server 8080 &
 
-      - name: Run Animation Quality Evaluation
-        run: npm run test:animation-eval
+            - name: Run Animation Quality Evaluation
+              run: npm run test:animation-eval
 
-      - name: Upload test results on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: animation-test-results
-          path: test-results/
+            - name: Upload test results on failure
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: animation-test-results
+                  path: test-results/

@@ -4,22 +4,54 @@
 
 import { SYSTEM_CATEGORY_PAGE_BREAK, generateDuplicateName } from '../shared/js/utils.js';
 import { animations as animationRegistry } from '../shared/js/animation_registry.js';
+import { getCustomAnimationMetadataMap } from '../shared/js/utils/storage.js';
 
 export function initUI(state, elements) {
     const {
-        categoryListEl, detailSection, editNameInput, tagListEl,
-        tagInput, colorPaletteEl, editAnimationSelect, previewNameEl,
-        animInfoEl, animDescEl, animAuthorEl, addCategoryBtn,
-        deleteSelectedBtn, addPageBreakBtn, newStartBtn, clearAllBtn,
-        globalTagListEl, tagReplaceModalEl, replaceTableBodyEl,
-        tagReplaceBtn, tagReplaceCloseBtn, closeTagReplaceModalBtn,
-        modalUndoBtn, modalRedoBtn
+        categoryListEl,
+        detailSection,
+        editNameInput,
+        tagListEl,
+        tagInput,
+        colorPaletteEl,
+        editAnimationSelect,
+        previewNameEl,
+        animInfoEl,
+        animDescEl,
+        animAuthorEl,
+        addCategoryBtn,
+        deleteSelectedBtn,
+        addPageBreakBtn,
+        newStartBtn,
+        clearAllBtn,
+        globalTagListEl,
+        tagReplaceModalEl,
+        replaceTableBodyEl,
+        tagReplaceBtn,
+        tagReplaceCloseBtn,
+        closeTagReplaceModalBtn,
+        modalUndoBtn,
+        modalRedoBtn,
     } = elements;
 
     const COLORS = [
-        'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
-        'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan',
-        'retro-lcd', 'retro-crt', 'retro-nixie'
+        'primary',
+        'secondary',
+        'tertiary',
+        'error',
+        'neutral',
+        'outline',
+        'teal',
+        'green',
+        'yellow',
+        'orange',
+        'pink',
+        'indigo',
+        'brown',
+        'cyan',
+        'retro-lcd',
+        'retro-crt',
+        'retro-nixie',
     ];
 
     const COLOR_CODES = {
@@ -39,26 +71,11 @@ export function initUI(state, elements) {
         cyan: '#039be5',
         'retro-lcd': '#9bbc0f',
         'retro-crt': '#33ff33',
-        'retro-nixie': '#ff5500'
+        'retro-nixie': '#ff5500',
     };
 
     let customAnims = {};
     let populateAnimationOptionsGeneration = 0;
-
-    async function getCustomAnimationMetadataMap() {
-        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-            const result = await chrome.storage.local.get('custom_animation_metadata_map');
-            return result.custom_animation_metadata_map || {};
-        } else {
-            try {
-                const stored = localStorage.getItem('custom_animation_metadata_map');
-                return stored ? JSON.parse(stored) : {};
-            } catch (e) {
-                console.error('Failed to parse custom_animation_metadata_map from localStorage:', e);
-                return {};
-            }
-        }
-    }
 
     function t(key, params) {
         if (state.t) return state.t(key, params);
@@ -70,7 +87,10 @@ export function initUI(state, elements) {
         state.categories.forEach((cat, idx) => {
             const item = document.createElement('div');
             const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
-            item.className = 'category-item' + (isPageBreak ? ' page-break' : '') + (state.selectedIndices.includes(idx) ? ' active' : '');
+            item.className =
+                'category-item' +
+                (isPageBreak ? ' page-break' : '') +
+                (state.selectedIndices.includes(idx) ? ' active' : '');
             item.draggable = true;
             item.dataset.index = idx;
 
@@ -115,7 +135,9 @@ export function initUI(state, elements) {
                         e.stopPropagation();
                         if (state.recordAction) state.recordAction();
                         state.categories.splice(idx, 1);
-                        state.selectedIndices = state.selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
+                        state.selectedIndices = state.selectedIndices
+                            .filter((i) => i !== idx)
+                            .map((i) => (i > idx ? i - 1 : i));
                         if (state.lastSelectedIndex === idx) state.lastSelectedIndex = -1;
                         else if (state.lastSelectedIndex > idx) state.lastSelectedIndex--;
                         renderCategoryList();
@@ -142,7 +164,7 @@ export function initUI(state, elements) {
             item.onclick = (e) => {
                 if (e.ctrlKey || e.metaKey) {
                     if (state.selectedIndices.includes(idx)) {
-                        state.selectedIndices = state.selectedIndices.filter(i => i !== idx);
+                        state.selectedIndices = state.selectedIndices.filter((i) => i !== idx);
                     } else {
                         state.selectedIndices.push(idx);
                         state.selectedIndices = [...new Set(state.selectedIndices)];
@@ -208,7 +230,9 @@ export function initUI(state, elements) {
             if (confirm(t('confirm-delete-category', { name: cat.name }))) {
                 if (state.recordAction) state.recordAction();
                 state.categories.splice(idx, 1);
-                state.selectedIndices = state.selectedIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
+                state.selectedIndices = state.selectedIndices
+                    .filter((i) => i !== idx)
+                    .map((i) => (i > idx ? i - 1 : i));
                 if (state.lastSelectedIndex === idx) state.lastSelectedIndex = -1;
                 else if (state.lastSelectedIndex > idx) state.lastSelectedIndex--;
                 renderCategoryList();
@@ -230,7 +254,10 @@ export function initUI(state, elements) {
 
     function duplicateCategory(idx) {
         const original = state.categories[idx];
-        const newName = generateDuplicateName(original.name, state.categories.map(c => c.name));
+        const newName = generateDuplicateName(
+            original.name,
+            state.categories.map((c) => c.name)
+        );
         const newCat = { ...original, name: newName };
 
         state.categories.splice(idx + 1, 0, newCat);
@@ -251,21 +278,21 @@ export function initUI(state, elements) {
             nameEl.textContent = '';
             nameEl.title = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) ? '' : cat.name;
             if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
-                 const icon = document.createElement('span');
-                 icon.className = 'material-symbols-outlined';
-                 icon.textContent = 'insert_page_break';
-                 nameEl.appendChild(icon);
-                 nameEl.appendChild(document.createTextNode(' ' + t('page-break-label')));
+                const icon = document.createElement('span');
+                icon.className = 'material-symbols-outlined';
+                icon.textContent = 'insert_page_break';
+                nameEl.appendChild(icon);
+                nameEl.appendChild(document.createTextNode(' ' + t('page-break-label')));
             } else {
-                 nameEl.textContent = cat.name;
+                nameEl.textContent = cat.name;
             }
         }
     }
 
     function clearCategoryClasses(el) {
         if (!el) return;
-        const classes = Array.from(el.classList).filter(c => c.startsWith('cat-'));
-        classes.forEach(c => el.classList.remove(c));
+        const classes = Array.from(el.classList).filter((c) => c.startsWith('cat-'));
+        classes.forEach((c) => el.classList.remove(c));
     }
 
     function renderDetail() {
@@ -286,7 +313,10 @@ export function initUI(state, elements) {
             const isMulti = state.selectedIndices.length > 1;
             if (labelTags) labelTags.textContent = t(isMulti ? 'tags-common' : 'tags');
             if (labelTheme) labelTheme.textContent = t(isMulti ? 'setting-theme-common' : 'setting-theme');
-            if (labelAnimation) labelAnimation.textContent = t(isMulti ? 'setting-animation-by-category-common' : 'setting-animation-by-category');
+            if (labelAnimation)
+                labelAnimation.textContent = t(
+                    isMulti ? 'setting-animation-by-category-common' : 'setting-animation-by-category'
+                );
 
             if (state.selectedIndices.length === 0) {
                 detailSection.classList.add('hidden');
@@ -324,7 +354,7 @@ export function initUI(state, elements) {
                 updateColorSelection(firstCat.color || 'primary');
                 editAnimationSelect.value = firstCat.animation || 'default';
 
-                colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
+                colorPaletteEl.querySelectorAll('.color-option').forEach((opt) => {
                     if (isFirstPageBreak) {
                         opt.classList.remove('selected');
                         opt.style.pointerEvents = 'none';
@@ -378,7 +408,7 @@ export function initUI(state, elements) {
                 editAnimationSelect.disabled = true;
 
                 tagListEl.replaceChildren();
-                colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
+                colorPaletteEl.querySelectorAll('.color-option').forEach((opt) => {
                     opt.classList.remove('selected');
                     opt.style.pointerEvents = 'none';
                     opt.style.opacity = '0.5';
@@ -397,7 +427,7 @@ export function initUI(state, elements) {
             editNameInput.placeholder = t('label-name');
             tagInput.disabled = false;
             editAnimationSelect.disabled = false;
-            colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
+            colorPaletteEl.querySelectorAll('.color-option').forEach((opt) => {
                 opt.style.pointerEvents = 'auto';
                 opt.style.opacity = '1';
             });
@@ -442,12 +472,13 @@ export function initUI(state, elements) {
         }
 
         const effectiveId = animId === 'default' ? 'digital_rain' : animId;
-        const anim = animationRegistry.find(a => a.id === effectiveId);
+        const anim = animationRegistry.find((a) => a.id === effectiveId);
 
         if (anim && anim.metadata) {
-            const desc = typeof anim.metadata.description === 'object' ?
-                (anim.metadata.description[state.currentLang] || anim.metadata.description['en']) :
-                anim.metadata.description;
+            const desc =
+                typeof anim.metadata.description === 'object'
+                    ? anim.metadata.description[state.currentLang] || anim.metadata.description['en']
+                    : anim.metadata.description;
             animDescEl.textContent = desc || '';
 
             const author = anim.metadata.author || t('anim-unknown-author');
@@ -465,7 +496,10 @@ export function initUI(state, elements) {
 
     function getCategoryTags(cat) {
         if (!cat || !cat.tags) return [];
-        return cat.tags.split(',').map(t => t.trim()).filter(Boolean);
+        return cat.tags
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean);
     }
 
     function updateCategoryTags(cat, tags) {
@@ -478,14 +512,14 @@ export function initUI(state, elements) {
         globalTagListEl.replaceChildren();
 
         const allTags = new Set();
-        state.categories.forEach(cat => {
+        state.categories.forEach((cat) => {
             if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
-            getCategoryTags(cat).forEach(tag => allTags.add(tag));
+            getCategoryTags(cat).forEach((tag) => allTags.add(tag));
         });
 
         const sortedTags = Array.from(allTags).sort((a, b) => a.localeCompare(b, state.currentLang));
 
-        sortedTags.forEach(tag => {
+        sortedTags.forEach((tag) => {
             const pill = document.createElement('span');
             pill.className = 'tag-pill';
             pill.textContent = tag;
@@ -516,13 +550,13 @@ export function initUI(state, elements) {
             commonTags = getCategoryTags(state.categories[idx]);
         } else {
             const tagSets = state.selectedIndices
-                .map(idx => state.categories[idx])
-                .filter(cat => !cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
-                .map(cat => new Set(getCategoryTags(cat)));
+                .map((idx) => state.categories[idx])
+                .filter((cat) => !cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
+                .map((cat) => new Set(getCategoryTags(cat)));
 
             if (tagSets.length > 0) {
                 const firstSet = tagSets[0];
-                commonTags = Array.from(firstSet).filter(tag => tagSets.every(s => s.has(tag)));
+                commonTags = Array.from(firstSet).filter((tag) => tagSets.every((s) => s.has(tag)));
                 commonTags.sort((a, b) => a.localeCompare(b, state.currentLang));
             }
         }
@@ -543,11 +577,11 @@ export function initUI(state, elements) {
             removeBtn.onclick = (e) => {
                 e.stopPropagation();
                 if (state.recordAction) state.recordAction();
-                state.selectedIndices.forEach(idx => {
+                state.selectedIndices.forEach((idx) => {
                     const cat = state.categories[idx];
                     if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
                     const tags = getCategoryTags(cat);
-                    const filtered = tags.filter(t => t !== tag);
+                    const filtered = tags.filter((t) => t !== tag);
                     updateCategoryTags(cat, filtered);
                 });
                 renderTags();
@@ -560,7 +594,7 @@ export function initUI(state, elements) {
 
     function renderColorPalette() {
         colorPaletteEl.replaceChildren();
-        COLORS.forEach(color => {
+        COLORS.forEach((color) => {
             const opt = document.createElement('div');
             opt.className = 'color-option';
             opt.style.backgroundColor = COLOR_CODES[color];
@@ -574,7 +608,7 @@ export function initUI(state, elements) {
             opt.onclick = () => {
                 if (state.selectedIndices.length === 0) return;
                 if (state.recordAction) state.recordAction();
-                state.selectedIndices.forEach(idx => {
+                state.selectedIndices.forEach((idx) => {
                     const cat = state.categories[idx];
                     if (!cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
                         cat.color = color;
@@ -589,7 +623,7 @@ export function initUI(state, elements) {
     }
 
     function updateColorSelection(color) {
-        colorPaletteEl.querySelectorAll('.color-option').forEach(opt => {
+        colorPaletteEl.querySelectorAll('.color-option').forEach((opt) => {
             opt.classList.toggle('selected', opt.dataset.color === color);
         });
     }
@@ -599,14 +633,14 @@ export function initUI(state, elements) {
         replaceTableBodyEl.replaceChildren();
 
         const allTags = new Set();
-        state.categories.forEach(cat => {
+        state.categories.forEach((cat) => {
             if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
-            getCategoryTags(cat).forEach(tag => allTags.add(tag));
+            getCategoryTags(cat).forEach((tag) => allTags.add(tag));
         });
 
         const sortedTags = Array.from(allTags).sort((a, b) => a.localeCompare(b, state.currentLang));
 
-        sortedTags.forEach(tag => {
+        sortedTags.forEach((tag) => {
             const row = document.createElement('tr');
 
             const beforeCell = document.createElement('td');
@@ -639,7 +673,10 @@ export function initUI(state, elements) {
 
             const updatePills = () => {
                 list.replaceChildren();
-                const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+                const tags = editor.dataset.tags
+                    .split(',')
+                    .map((t) => t.trim())
+                    .filter(Boolean);
                 tags.forEach((t, i) => {
                     const p = document.createElement('span');
                     p.className = 'tag-pill';
@@ -668,7 +705,10 @@ export function initUI(state, elements) {
                     let newTag = input.value.trim().replace(/,/g, '');
                     if (newTag) {
                         if (newTag.length > 30) newTag = newTag.substring(0, 30);
-                        const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+                        const tags = editor.dataset.tags
+                            .split(',')
+                            .map((t) => t.trim())
+                            .filter(Boolean);
                         if (!tags.includes(newTag) && tags.length < 20) {
                             tags.push(newTag);
                             editor.dataset.tags = tags.join(',');
@@ -690,7 +730,10 @@ export function initUI(state, elements) {
                 editor.classList.remove('drag-over');
                 const droppedTag = e.dataTransfer.getData('text/plain');
                 if (droppedTag) {
-                    const tags = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+                    const tags = editor.dataset.tags
+                        .split(',')
+                        .map((t) => t.trim())
+                        .filter(Boolean);
                     if (!tags.includes(droppedTag) && tags.length < 20) {
                         tags.push(droppedTag);
                         editor.dataset.tags = tags.join(',');
@@ -727,34 +770,37 @@ export function initUI(state, elements) {
     }
 
     function updateModalHistoryButtons() {
-        if (modalUndoBtn) modalUndoBtn.disabled = (state.historyStack.length === 0);
-        if (modalRedoBtn) modalRedoBtn.disabled = (state.redoStack.length === 0);
+        if (modalUndoBtn) modalUndoBtn.disabled = state.historyStack.length === 0;
+        if (modalRedoBtn) modalRedoBtn.disabled = state.redoStack.length === 0;
     }
 
     function performTagReplace() {
         const rows = replaceTableBodyEl.querySelectorAll('tr');
         const replaceMap = new Map();
-        rows.forEach(row => {
+        rows.forEach((row) => {
             const editor = row.querySelector('.tag-editor');
             const original = editor.dataset.originalTag;
-            const replacement = editor.dataset.tags.split(',').map(t => t.trim()).filter(Boolean);
+            const replacement = editor.dataset.tags
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean);
             replaceMap.set(original, replacement);
         });
 
         if (state.recordAction) state.recordAction();
 
         let anyChanged = false;
-        state.categories.forEach(cat => {
+        state.categories.forEach((cat) => {
             if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
             const tags = getCategoryTags(cat);
             let newTags = [];
             let changed = false;
 
-            tags.forEach(tag => {
+            tags.forEach((tag) => {
                 if (replaceMap.has(tag)) {
                     const replacements = replaceMap.get(tag);
                     if (replacements.length > 0) {
-                        replacements.forEach(r => {
+                        replacements.forEach((r) => {
                             if (!newTags.includes(r)) {
                                 newTags.push(r);
                             }
@@ -798,11 +844,14 @@ export function initUI(state, elements) {
         defOpt.textContent = t('anim-default');
         editAnimationSelect.appendChild(defOpt);
 
-        animationRegistry.forEach(anim => {
+        animationRegistry.forEach((anim) => {
             if (anim.devOnly) return;
             const opt = document.createElement('option');
             opt.value = anim.id;
-            opt.textContent = (typeof anim.metadata.name === 'object' ? (anim.metadata.name[state.currentLang] || anim.metadata.name['en']) : anim.metadata.name) || anim.id;
+            opt.textContent =
+                (typeof anim.metadata.name === 'object'
+                    ? anim.metadata.name[state.currentLang] || anim.metadata.name['en']
+                    : anim.metadata.name) || anim.id;
             editAnimationSelect.appendChild(opt);
         });
 
@@ -812,16 +861,18 @@ export function initUI(state, elements) {
             if (thisGeneration !== populateAnimationOptionsGeneration) {
                 return; // Abort if a newer call has started
             }
-            Object.keys(customAnims).sort((a, b) => {
-                const orderA = customAnims[a].order ?? 0;
-                const orderB = customAnims[b].order ?? 0;
-                return orderA - orderB;
-            }).forEach(id => {
-                const opt = document.createElement('option');
-                opt.value = id;
-                opt.textContent = customAnims[id].name || id;
-                editAnimationSelect.appendChild(opt);
-            });
+            Object.keys(customAnims)
+                .sort((a, b) => {
+                    const orderA = customAnims[a].order ?? 0;
+                    const orderB = customAnims[b].order ?? 0;
+                    return orderA - orderB;
+                })
+                .forEach((id) => {
+                    const opt = document.createElement('option');
+                    opt.value = id;
+                    opt.textContent = customAnims[id].name || id;
+                    editAnimationSelect.appendChild(opt);
+                });
         } catch (e) {
             console.error('Error populating custom animation options:', e);
         }
@@ -836,7 +887,7 @@ export function initUI(state, elements) {
             name: 'New Category',
             color: 'primary',
             animation: 'default',
-            tags: ''
+            tags: '',
         };
         state.categories.push(newCat);
         state.selectedIndices = [state.categories.length - 1];
@@ -865,7 +916,7 @@ export function initUI(state, elements) {
     addPageBreakBtn.addEventListener('click', () => {
         if (state.recordAction) state.recordAction();
         const newPB = {
-            name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         };
         state.categories.push(newPB);
         state.selectedIndices = [state.categories.length - 1];
@@ -905,7 +956,7 @@ export function initUI(state, elements) {
             if (tag && state.selectedIndices.length > 0) {
                 if (tag.length > 30) tag = tag.substring(0, 30);
                 let changed = false;
-                state.selectedIndices.forEach(idx => {
+                state.selectedIndices.forEach((idx) => {
                     const cat = state.categories[idx];
                     if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
 
@@ -951,7 +1002,7 @@ export function initUI(state, elements) {
             if (sanitizedTag.length > 30) sanitizedTag = sanitizedTag.substring(0, 30);
 
             let changed = false;
-            state.selectedIndices.forEach(idx => {
+            state.selectedIndices.forEach((idx) => {
                 const cat = state.categories[idx];
                 if (cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return;
 
@@ -977,7 +1028,7 @@ export function initUI(state, elements) {
         if (state.selectedIndices.length === 0) return;
         if (state.recordAction) state.recordAction();
         const animation = e.target.value;
-        state.selectedIndices.forEach(idx => {
+        state.selectedIndices.forEach((idx) => {
             const cat = state.categories[idx];
             if (!cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
                 cat.animation = animation;
@@ -1053,7 +1104,7 @@ export function initUI(state, elements) {
         if (!dragging) return;
 
         const siblings = [...categoryListEl.querySelectorAll('.category-item:not(.dragging)')];
-        let nextSibling = siblings.find(sibling => {
+        let nextSibling = siblings.find((sibling) => {
             return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
         });
 
@@ -1084,12 +1135,12 @@ export function initUI(state, elements) {
         const dragIdx = parseInt(dragging.dataset.index);
         const dragItem = state.categories[dragIdx];
 
-        const newCategories = items.map(item => state.categories[parseInt(item.dataset.index)]);
-        const prevSelectedItems = state.selectedIndices.map(i => state.categories[i]);
+        const newCategories = items.map((item) => state.categories[parseInt(item.dataset.index)]);
+        const prevSelectedItems = state.selectedIndices.map((i) => state.categories[i]);
 
         if (state.recordAction) state.recordAction();
         state.categories = newCategories;
-        state.selectedIndices = prevSelectedItems.map(item => state.categories.indexOf(item)).filter(i => i !== -1);
+        state.selectedIndices = prevSelectedItems.map((item) => state.categories.indexOf(item)).filter((i) => i !== -1);
         state.lastSelectedIndex = state.categories.indexOf(dragItem);
 
         renderCategoryList();
@@ -1107,6 +1158,6 @@ export function initUI(state, elements) {
         populateAnimationOptions,
         updateListItem,
         getCategoryTags,
-        COLOR_CODES
+        COLOR_CODES,
     };
 }

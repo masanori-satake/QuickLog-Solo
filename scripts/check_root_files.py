@@ -17,6 +17,7 @@ ALLOWED_ROOT_ITEMS = {
     "eslint.config.js",
     "jest.config.cjs",
     "jest.setup.js",
+    "jest.setup.cjs",
     "package-lock.json",
     "package.json",
     "playwright.config.js",
