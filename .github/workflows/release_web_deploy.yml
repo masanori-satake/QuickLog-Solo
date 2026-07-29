@@ -37,9 +37,9 @@ jobs:
           persist-credentials: false
 
       - name: Setup and Install Dependencies
-        uses: ./.github/workflows/setup-and-install.yml
+        uses: ./.github/actions/setup-and-install
         with:
-          install-playwright: true
+          install-playwright: 'true'
 
       - name: Set up Python
         uses: actions/setup-python@v5
