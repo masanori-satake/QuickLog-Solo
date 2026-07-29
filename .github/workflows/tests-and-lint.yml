@@ -33,6 +33,15 @@ permissions:
   contents: read
 
 jobs:
+  setup:
+    name: Setup and Install Dependencies
+    uses: ./.github/workflows/setup-and-install.yml
+    with:
+      # e2e-tests と animation-tests の両方で必要なので、ここでインストールします
+      install-playwright: true
+    # このワークフローでは secrets は不要ですが、将来的な拡張性のために残しておきます
+    secrets: inherit
+
   python-checks:
     name: Pythonスクリプトによる静的チェック (Static Checks by Python)
     runs-on: ubuntu-latest
@@ -110,14 +119,12 @@ jobs:
 
   lint:
     name: Linter (ESLint, Stylelint)
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Setup and Install Dependencies
-        uses: ./.github/workflows/setup-and-install.yml
 
       - name: Get changed files
         id: changed-files
@@ -162,14 +169,12 @@ jobs:
 
   unit-tests:
     name: 単体テスト (Unit Tests)
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Setup and Install Dependencies
-        uses: ./.github/workflows/setup-and-install.yml
 
       - name: Get changed files
         id: changed-files
@@ -205,16 +210,12 @@ jobs:
 
   e2e-tests:
     name: E2Eテスト (E2E Tests)
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Setup and Install Dependencies
-        uses: ./.github/workflows/setup-and-install.yml
-        with:
-          install-playwright: true
 
       - name: Install Playwright Dependencies (if cache hit)
         run: npx playwright install-deps chromium
@@ -237,16 +238,12 @@ jobs:
 
   animation-tests:
     name: アニメーション品質テスト (Animation Quality)
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Setup and Install Dependencies
-        uses: ./.github/workflows/setup-and-install.yml
-        with:
-          install-playwright: true
 
       - name: Install Playwright Dependencies (if cache hit)
         run: npx playwright install-deps chromium
