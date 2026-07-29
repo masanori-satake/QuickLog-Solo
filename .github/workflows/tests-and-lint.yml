@@ -202,6 +202,7 @@ jobs:
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          test-script: npm test
 
   e2e-tests:
     name: E2Eテスト (E2E Tests)
