@@ -30,46 +30,34 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     SETTING_KEY_LAST_PULLED_SYNC_TIME: 'lastPulledSyncTime',
     SETTING_KEY_CLIENT_ID: 'clientId',
     SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds',
-    SETTING_KEY_GLOBAL_CLEAR_TIME: 'globalClearTime',
+    SETTING_KEY_GLOBAL_CLEAR_TIME: 'globalClearTime'
 }));
 
 const {
-    formatDuration,
-    formatLogDuration,
-    startTaskLogic,
-    stopTaskLogic,
-    pauseTaskLogic,
-    stripEmojis,
-    getVisualWidth,
-    visualPadEnd,
-    generateReport,
-    calculateTagAggregation,
-    updateHistoryStartTime,
-    deleteHistoryItem,
-    splitHistoryItem,
+    formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem,
+    splitHistoryItem
 } = await import('../shared/js/logic.js');
-const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } =
-    await import('../shared/js/db.js');
+const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
 
 describe('Logic Module', () => {
     describe('formatDuration', () => {
         test('formats milliseconds correctly', () => {
-            const ms = 2 * 3600000 + 15 * 60000 + 30000;
+            const ms = (2 * 3600000) + (15 * 60000) + 30000;
             expect(formatDuration(ms)).toBe('02:15:30');
         });
 
         test('handles single digits with padding', () => {
-            const ms = 1 * 3600000 + 5 * 60000 + 9000;
+            const ms = (1 * 3600000) + (5 * 60000) + 9000;
             expect(formatDuration(ms)).toBe('01:05:09');
         });
 
         test('handles long durations (100+ hours)', () => {
-            const ms = 100 * 3600000;
+            const ms = (100 * 3600000);
             expect(formatDuration(ms)).toBe('100:00:00');
-            const ms2 = 123 * 3600000 + 45 * 60000 + 6000;
+            const ms2 = (123 * 3600000) + (45 * 60000) + 6000;
             expect(formatDuration(ms2)).toBe('123:45:06');
-            const ms3 = 1024 * 3600000 + 59 * 60000 + 59000;
+            const ms3 = (1024 * 3600000) + (59 * 60000) + 59000;
             expect(formatDuration(ms3)).toBe('1024:59:59');
         });
     });
@@ -105,7 +93,7 @@ describe('Logic Module', () => {
                 { startTime: 3000, endTime: 5000, category: 'Task 2', tags: 'B, C' },
                 { startTime: 6000, endTime: 7000, category: 'Task 3', tags: '' }, // No tags
                 { startTime: 8000, endTime: 9000, category: SYSTEM_CATEGORY_IDLE, tags: '' }, // Idle should be ignored
-                { startTime: 9000, endTime: 10000, category: 'Task 4', isManualStop: true }, // Manual stop should be ignored
+                { startTime: 9000, endTime: 10000, category: 'Task 4', isManualStop: true } // Manual stop should be ignored
             ];
             const { tagAgg, noTagDuration, totalWorkDuration } = calculateTagAggregation(logs);
             expect(tagAgg['A']).toBe(1000);
@@ -117,7 +105,9 @@ describe('Logic Module', () => {
         });
 
         test('deduplicates tags in a single log entry', () => {
-            const logs = [{ startTime: 0, endTime: 1000, category: 'Task', tags: 'A, A, B' }];
+            const logs = [
+                { startTime: 0, endTime: 1000, category: 'Task', tags: 'A, A, B' }
+            ];
             const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
             expect(tagAgg['A']).toBe(1000); // Not 2000
             expect(tagAgg['B']).toBe(1000);
@@ -127,7 +117,7 @@ describe('Logic Module', () => {
         test('handles overlapping tags with different spacing', () => {
             const logs = [
                 { startTime: 0, endTime: 1000, tags: 'Tag1,Tag2' },
-                { startTime: 1000, endTime: 2000, tags: ' Tag1 , Tag3 ' },
+                { startTime: 1000, endTime: 2000, tags: ' Tag1 , Tag3 ' }
             ];
             const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
             expect(tagAgg['Tag1']).toBe(2000);
@@ -146,13 +136,10 @@ describe('Logic Module', () => {
             const newTask = await startTaskLogic('Work', null);
             expect(newTask.category).toBe('Work');
             expect(dbAdd).toHaveBeenCalled();
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_SETTINGS,
-                expect.objectContaining({
-                    key: SETTING_KEY_PAUSE_STATE,
-                    value: expect.objectContaining({ category: 'Work', isPaused: false }),
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
+                key: SETTING_KEY_PAUSE_STATE,
+                value: expect.objectContaining({ category: 'Work', isPaused: false })
+            }));
         });
 
         test('startTaskLogic includes color and tags in log entry for historical preservation', async () => {
@@ -162,14 +149,11 @@ describe('Logic Module', () => {
             expect(newTask.category).toBe('Work');
             expect(newTask.color).toBe(color);
             expect(newTask.tags).toBe(tags);
-            expect(dbAdd).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    category: 'Work',
-                    color: color,
-                    tags: tags,
-                })
-            );
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: 'Work',
+                color: color,
+                tags: tags
+            }));
         });
 
         test('startTaskLogic does nothing if same category', async () => {
@@ -185,24 +169,18 @@ describe('Logic Module', () => {
             const result = await stopTaskLogic(activeTask, true);
             expect(result).toBeNull();
             // Original task should be completed with isManualStop: false
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 1,
-                    category: 'Work',
-                    endTime: expect.any(Number),
-                    isManualStop: false,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                category: 'Work',
+                endTime: expect.any(Number),
+                isManualStop: false
+            }));
             // A new stop marker should be added
-            expect(dbAdd).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    category: SYSTEM_CATEGORY_IDLE,
-                    endTime: expect.any(Number),
-                    isManualStop: true,
-                })
-            );
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE,
+                endTime: expect.any(Number),
+                isManualStop: true
+            }));
             expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
 
@@ -212,57 +190,39 @@ describe('Logic Module', () => {
             await stopTaskLogic(activeTask, true, customEnd);
 
             // Task should be closed at customEnd
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 1,
-                    endTime: customEnd,
-                    isManualStop: false,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                endTime: customEnd,
+                isManualStop: false
+            }));
             // Stop marker should be created at customEnd
-            expect(dbAdd).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    category: SYSTEM_CATEGORY_IDLE,
-                    startTime: customEnd,
-                    endTime: customEnd,
-                    isManualStop: true,
-                })
-            );
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE,
+                startTime: customEnd,
+                endTime: customEnd,
+                isManualStop: true
+            }));
         });
 
         test('stopTaskLogic handles custom end time during pause state', async () => {
             const customEnd = 5000;
-            const pauseState = {
-                id: 2,
-                category: SYSTEM_CATEGORY_IDLE,
-                startTime: 1000,
-                resumableCategory: 'Work',
-                isPaused: true,
-            };
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: 1000, resumableCategory: 'Work', isPaused: true };
             await stopTaskLogic(pauseState, true, customEnd);
 
             // The pause/idle log should be completed at customEnd
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 2,
-                    category: SYSTEM_CATEGORY_IDLE,
-                    endTime: customEnd,
-                    isManualStop: false,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                category: SYSTEM_CATEGORY_IDLE,
+                endTime: customEnd,
+                isManualStop: false
+            }));
             // A separate manual stop marker should be added at customEnd
-            expect(dbAdd).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    category: SYSTEM_CATEGORY_IDLE,
-                    startTime: customEnd,
-                    endTime: customEnd,
-                    isManualStop: true,
-                })
-            );
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE,
+                startTime: customEnd,
+                endTime: customEnd,
+                isManualStop: true
+            }));
             expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
 
@@ -272,7 +232,7 @@ describe('Logic Module', () => {
                 category: SYSTEM_CATEGORY_IDLE,
                 startTime: customEnd,
                 endTime: customEnd,
-                isManualStop: true,
+                isManualStop: true
             };
             const { dbGetManualStopsAt } = await import('../shared/js/db.js');
             dbGetManualStopsAt.mockResolvedValue([existingStopMarker]);
@@ -281,44 +241,29 @@ describe('Logic Module', () => {
             await stopTaskLogic(activeTask, true, customEnd);
 
             // dbAdd should NOT be called for the stop marker because it's a duplicate
-            const stopMarkerAdds = dbAdd.mock.calls.filter(
-                (call) => call[0] === STORE_LOGS && call[1].isManualStop === true
+            const stopMarkerAdds = dbAdd.mock.calls.filter(call =>
+                call[0] === STORE_LOGS && call[1].isManualStop === true
             );
             expect(stopMarkerAdds.length).toBe(0);
         });
 
         test('stopTaskLogic handles pause state with id', async () => {
             const now = Date.now();
-            const pauseState = {
-                id: 2,
-                category: SYSTEM_CATEGORY_IDLE,
-                startTime: now - 60000,
-                resumableCategory: 'Work',
-                isPaused: true,
-            };
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: now - 60000, resumableCategory: 'Work', isPaused: true };
             const result = await stopTaskLogic(pauseState);
             expect(result).toBeNull();
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 2,
-                    category: SYSTEM_CATEGORY_IDLE,
-                    endTime: expect.any(Number),
-                    isManualStop: false,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                category: SYSTEM_CATEGORY_IDLE,
+                endTime: expect.any(Number),
+                isManualStop: false
+            }));
             expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
 
         test('stopTaskLogic handles manual stop during pause state by adding separate marker', async () => {
             const now = Date.now();
-            const pauseState = {
-                id: 2,
-                category: SYSTEM_CATEGORY_IDLE,
-                startTime: now - 60000,
-                resumableCategory: 'Work',
-                isPaused: true,
-            };
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: now - 60000, resumableCategory: 'Work', isPaused: true };
 
             const { dbGetManualStopsAt } = await import('../shared/js/db.js');
             dbGetManualStopsAt.mockResolvedValue([]);
@@ -326,23 +271,17 @@ describe('Logic Module', () => {
             const result = await stopTaskLogic(pauseState, true);
             expect(result).toBeNull();
             // The idle log should be completed normally
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 2,
-                    category: SYSTEM_CATEGORY_IDLE,
-                    endTime: expect.any(Number),
-                    isManualStop: false,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                category: SYSTEM_CATEGORY_IDLE,
+                endTime: expect.any(Number),
+                isManualStop: false
+            }));
             // A separate manual stop marker should be added
-            expect(dbAdd).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    category: SYSTEM_CATEGORY_IDLE,
-                    isManualStop: true,
-                })
-            );
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE,
+                isManualStop: true
+            }));
             expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
 
@@ -354,31 +293,16 @@ describe('Logic Module', () => {
             expect(newTask.resumableCategory).toBe('Work');
             expect(newTask.isPaused).toBe(true);
             expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ category: SYSTEM_CATEGORY_IDLE }));
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_SETTINGS,
-                expect.objectContaining({ key: SETTING_KEY_PAUSE_STATE, value: expect.objectContaining({ id: 123 }) })
-            );
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({ id: 1, category: 'Work', endTime: expect.any(Number) })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({ key: SETTING_KEY_PAUSE_STATE, value: expect.objectContaining({ id: 123 }) }));
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 1, category: 'Work', endTime: expect.any(Number) }));
         });
 
         test('startTaskLogic stops pause state and updates log entry before starting new task', async () => {
             const now = Date.now();
-            const pauseState = {
-                id: 2,
-                category: SYSTEM_CATEGORY_IDLE,
-                startTime: now - 60000,
-                resumableCategory: 'Work',
-                isPaused: true,
-            };
+            const pauseState = { id: 2, category: SYSTEM_CATEGORY_IDLE, startTime: now - 60000, resumableCategory: 'Work', isPaused: true };
             const newTask = await startTaskLogic('Meeting', pauseState);
             expect(newTask.category).toBe('Meeting');
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({ id: 2, category: SYSTEM_CATEGORY_IDLE, endTime: expect.any(Number) })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, category: SYSTEM_CATEGORY_IDLE, endTime: expect.any(Number) }));
             expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ category: 'Meeting' }));
             expect(dbDelete).toHaveBeenCalledWith(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
         });
@@ -389,12 +313,9 @@ describe('Logic Module', () => {
             dbAdd.mockResolvedValue(123);
             await stopTaskLogic(activeNoId);
             // Hits line 372: } else { await dbAdd(STORE_LOGS, idleLog); }
-            expect(dbAdd).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    category: SYSTEM_CATEGORY_IDLE,
-                })
-            );
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                category: SYSTEM_CATEGORY_IDLE
+            }));
         });
 
         test('stopTaskLogic deletes task if duration is 0 (handles manual stop cleanup)', async () => {
@@ -410,21 +331,9 @@ describe('Logic Module', () => {
 
     describe('Report Generation Logic', () => {
         const sampleLogs = [
-            {
-                startTime: new Date('2026-03-03T10:00:00').getTime(),
-                endTime: new Date('2026-03-03T10:30:00').getTime(),
-                category: 'Task 1',
-            },
-            {
-                startTime: new Date('2026-03-03T10:30:00').getTime(),
-                endTime: new Date('2026-03-03T11:00:00').getTime(),
-                category: '💻 Task 2',
-            },
-            {
-                startTime: new Date('2026-03-03T11:00:00').getTime(),
-                endTime: new Date('2026-03-03T11:15:00').getTime(),
-                category: '__IDLE__',
-            },
+            { startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T10:30:00').getTime(), category: 'Task 1' },
+            { startTime: new Date('2026-03-03T10:30:00').getTime(), endTime: new Date('2026-03-03T11:00:00').getTime(), category: '💻 Task 2' },
+            { startTime: new Date('2026-03-03T11:00:00').getTime(), endTime: new Date('2026-03-03T11:15:00').getTime(), category: '__IDLE__' }
         ];
 
         const defaultOptions = {
@@ -434,7 +343,7 @@ describe('Logic Module', () => {
             duration: 'none',
             idleText: '(待機)',
             headerTime: 'Time',
-            headerCategory: 'Category',
+            headerCategory: 'Category'
         };
 
         test('stripEmojis removes emojis correctly', () => {
@@ -477,14 +386,9 @@ describe('Logic Module', () => {
         test('generates csv report with endTime, duration and escaping', () => {
             const logsWithSpecialChars = [
                 ...sampleLogs,
-                { startTime: 1000, endTime: 2000, category: 'Task with "quotes", commas, and\nnewlines' },
+                { startTime: 1000, endTime: 2000, category: 'Task with "quotes", commas, and\nnewlines' }
             ];
-            const report = generateReport(logsWithSpecialChars, {
-                ...defaultOptions,
-                format: 'csv',
-                endTime: 'show',
-                duration: 'right',
-            });
+            const report = generateReport(logsWithSpecialChars, { ...defaultOptions, format: 'csv', endTime: 'show', duration: 'right' });
             expect(report).toContain('startTime,endTime,category,duration');
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?,\d{1,2}:\d{2}( [AP]M)?,Task 1,30m/);
             expect(report).toContain('"Task with ""quotes"", commas, and\nnewlines"');
@@ -499,17 +403,16 @@ describe('Logic Module', () => {
         });
 
         test('generates tsv report with endTime, duration and escaping', () => {
-            const logsWithTab = [...sampleLogs, { startTime: 1000, endTime: 2000, category: 'Task "A"\tB\nC' }];
-            const report = generateReport(logsWithTab, {
-                ...defaultOptions,
-                format: 'tsv',
-                endTime: 'show',
-                duration: 'right',
-            });
+            const logsWithTab = [
+                ...sampleLogs,
+                { startTime: 1000, endTime: 2000, category: 'Task "A"\tB\nC' }
+            ];
+            const report = generateReport(logsWithTab, { ...defaultOptions, format: 'tsv', endTime: 'show', duration: 'right' });
             expect(report).toContain('startTime\tendTime\tcategory\tduration');
             expect(report).toMatch(/\d{1,2}:\d{2}( [AP]M)?\t\d{1,2}:\d{2}( [AP]M)?\tTask 1\t30m/);
             expect(report).toContain('"Task ""A""\tB\nC"');
         });
+
 
         test('handles emoji removal', () => {
             const report = generateReport(sampleLogs, { ...defaultOptions, emoji: 'remove' });
@@ -536,7 +439,7 @@ describe('Logic Module', () => {
         test('filters out manual stop markers', () => {
             const logsWithStop = [
                 ...sampleLogs,
-                { startTime: Date.now(), endTime: Date.now(), category: '__IDLE__', isManualStop: true },
+                { startTime: Date.now(), endTime: Date.now(), category: '__IDLE__', isManualStop: true }
             ];
             const report = generateReport(logsWithStop, defaultOptions);
             const idleCount = (report.match(/\(待機\)/g) || []).length;
@@ -545,16 +448,8 @@ describe('Logic Module', () => {
 
         test('handles time adjustment rounding correctly', () => {
             const logs = [
-                {
-                    startTime: new Date('2026-03-03T10:00:00').getTime(),
-                    endTime: new Date('2026-03-03T10:07:00').getTime(),
-                    category: 'Task 1',
-                },
-                {
-                    startTime: new Date('2026-03-03T10:07:00').getTime(),
-                    endTime: new Date('2026-03-03T10:15:00').getTime(),
-                    category: 'Task 2',
-                },
+                { startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T10:07:00').getTime(), category: 'Task 1' },
+                { startTime: new Date('2026-03-03T10:07:00').getTime(), endTime: new Date('2026-03-03T10:15:00').getTime(), category: 'Task 2' }
             ];
             // Adjust to 5m. 10:07 should round to 10:05.
             const report = generateReport(logs, { ...defaultOptions, adjust: '5', endTime: 'show' });
@@ -565,11 +460,7 @@ describe('Logic Module', () => {
 
         test('preserves workday boundaries during time adjustment', () => {
             const logs = [
-                {
-                    startTime: new Date('2026-03-03T09:02:00').getTime(),
-                    endTime: new Date('2026-03-03T17:58:00').getTime(),
-                    category: 'Work',
-                },
+                { startTime: new Date('2026-03-03T09:02:00').getTime(), endTime: new Date('2026-03-03T17:58:00').getTime(), category: 'Work' }
             ];
             // Even with 10m adjustment, 09:02 and 17:58 should be preserved as they are boundaries.
             const report = generateReport(logs, { ...defaultOptions, adjust: '10', endTime: 'show' });
@@ -603,7 +494,9 @@ describe('Logic Module', () => {
         });
 
         test('handles invalid adjust values gracefully', () => {
-            const logs = [{ startTime: 1000000, endTime: 1100000, category: 'Task' }];
+            const logs = [
+                { startTime: 1000000, endTime: 1100000, category: 'Task' }
+            ];
             // adjust: 'none' -> 0 ms interval
             const expected = generateReport(logs, { ...defaultOptions, adjust: 'none' });
 
@@ -620,7 +513,9 @@ describe('Logic Module', () => {
         });
 
         test('handles single log during time adjustment', () => {
-            const logs = [{ startTime: new Date('2026-03-03T10:00:00').getTime(), category: 'Task 1' }];
+            const logs = [
+                { startTime: new Date('2026-03-03T10:00:00').getTime(), category: 'Task 1' }
+            ];
             // Only one unique timestamp.
             const report = generateReport(logs, { ...defaultOptions, adjust: '10', endTime: 'show' });
             expect(report).toContain('10:00');
@@ -628,16 +523,8 @@ describe('Logic Module', () => {
 
         test('handles very large adjust values', () => {
             const logs = [
-                {
-                    startTime: new Date('2026-03-03T10:00:00').getTime(),
-                    endTime: new Date('2026-03-03T11:00:00').getTime(),
-                    category: 'Task 1',
-                },
-                {
-                    startTime: new Date('2026-03-03T11:00:00').getTime(),
-                    endTime: new Date('2026-03-03T12:00:00').getTime(),
-                    category: 'Task 2',
-                },
+                { startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T11:00:00').getTime(), category: 'Task 1' },
+                { startTime: new Date('2026-03-03T11:00:00').getTime(), endTime: new Date('2026-03-03T12:00:00').getTime(), category: 'Task 2' }
             ];
             // Adjust to 1440m (24h). Since first and last are preserved, boundaries should remain.
             const report = generateReport(logs, { ...defaultOptions, adjust: '1440', endTime: 'show' });
@@ -647,16 +534,8 @@ describe('Logic Module', () => {
 
         test('handles multiple tasks with gaps during time adjustment', () => {
             const logs = [
-                {
-                    startTime: new Date('2026-03-03T10:02:00').getTime(),
-                    endTime: new Date('2026-03-03T10:08:00').getTime(),
-                    category: 'Task 1',
-                },
-                {
-                    startTime: new Date('2026-03-03T11:02:00').getTime(),
-                    endTime: new Date('2026-03-03T11:08:00').getTime(),
-                    category: 'Task 2',
-                },
+                { startTime: new Date('2026-03-03T10:02:00').getTime(), endTime: new Date('2026-03-03T10:08:00').getTime(), category: 'Task 1' },
+                { startTime: new Date('2026-03-03T11:02:00').getTime(), endTime: new Date('2026-03-03T11:08:00').getTime(), category: 'Task 2' }
             ];
             // Adjust to 10m.
             // 10:02 (first) fixed
@@ -684,7 +563,7 @@ describe('Logic Module', () => {
             const t10_03 = new Date('2026-03-03T10:03:00').getTime();
             const logs2 = [
                 { startTime: t10_02, endTime: t10_03, category: 'T1' },
-                { startTime: t10_03, endTime: t10_11, category: 'T2' },
+                { startTime: t10_03, endTime: t10_11, category: 'T2' }
             ];
             // uniqueTimes: [t10_02, t10_03, t10_11]
             // adjust: 10m (600,000ms). t10_03 rounds to 10:00.
@@ -698,21 +577,16 @@ describe('Logic Module', () => {
             expect(report).toMatch(/10:03/);
         });
 
+
         test('generateReport supports duration: bottom in various formats', () => {
-            const logs = [
-                {
-                    startTime: new Date('2026-03-03T10:00:00').getTime(),
-                    endTime: new Date('2026-03-03T10:00:01').getTime(),
-                    category: 'Dev',
-                },
-            ];
+            const logs = [{ startTime: new Date('2026-03-03T10:00:00').getTime(), endTime: new Date('2026-03-03T10:00:01').getTime(), category: 'Dev' }];
             const options = {
                 format: 'html',
                 duration: 'bottom',
                 endTime: 'show',
                 idleText: '(待機)',
                 headerTime: 'Time',
-                headerCategory: 'Category',
+                headerCategory: 'Category'
             };
             const html = generateReport(logs, options);
             expect(html).toContain('<br>(1s)');
@@ -738,7 +612,7 @@ describe('Logic Module', () => {
             const logs = [
                 { startTime: 0, endTime: 1000, category: SYSTEM_CATEGORY_IDLE },
                 { startTime: 1000, endTime: 2000, category: 'Work', isManualStop: true },
-                { startTime: 2000, endTime: 3000, category: `${SYSTEM_CATEGORY_PAGE_BREAK}_123` },
+                { startTime: 2000, endTime: 3000, category: `${SYSTEM_CATEGORY_PAGE_BREAK}_123` }
             ];
             const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
             expect(tagAgg).toEqual({});
@@ -748,7 +622,7 @@ describe('Logic Module', () => {
         test('handles zero or negative duration logs', () => {
             const logs = [
                 { startTime: 1000, endTime: 1000, category: 'Zero', tags: 'A' },
-                { startTime: 2000, endTime: 1000, category: 'Negative', tags: 'B' },
+                { startTime: 2000, endTime: 1000, category: 'Negative', tags: 'B' }
             ];
             const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
             expect(tagAgg).toEqual({});
@@ -758,7 +632,7 @@ describe('Logic Module', () => {
         test('ignores logs with missing endTime (active tasks)', () => {
             const logs = [
                 { startTime: 1000, endTime: 2000, category: 'Work', tags: 'TagA' },
-                { startTime: 3000, endTime: null, category: 'Active', tags: 'TagB' },
+                { startTime: 3000, endTime: null, category: 'Active', tags: 'TagB' }
             ];
             const { tagAgg, totalWorkDuration } = calculateTagAggregation(logs);
             expect(tagAgg['TagA']).toBe(1000);
@@ -767,7 +641,9 @@ describe('Logic Module', () => {
         });
 
         test('handles malformed tag strings correctly', () => {
-            const logs = [{ startTime: 0, endTime: 1000, category: 'Task', tags: ', , ' }];
+            const logs = [
+                { startTime: 0, endTime: 1000, category: 'Task', tags: ', , ' }
+            ];
             const { tagAgg, noTagDuration, totalWorkDuration } = calculateTagAggregation(logs);
             expect(tagAgg).toEqual({});
             expect(noTagDuration).toBe(1000);
@@ -783,53 +659,41 @@ describe('Logic Module', () => {
         test('updateHistoryStartTime updates log and propagates to previous contiguous log', async () => {
             const logs = [
                 { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' },
-                { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' },
+                { id: 2, startTime: 2000, endTime: 3000, category: 'Task 2' }
             ];
             dbGetAll.mockResolvedValue(logs);
 
             await updateHistoryStartTime(2, 2500);
 
             // Task 2 updated
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 2,
-                    startTime: 2500,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                startTime: 2500
+            }));
             // Task 1 updated (propagation)
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 1,
-                    endTime: 2500,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                endTime: 2500
+            }));
         });
 
         test('updateHistoryStartTime syncs pauseState if active task is updated', async () => {
             const log = { id: 1, startTime: 1000, endTime: null, category: 'Work' };
             dbGetAll.mockResolvedValue([log]);
-            dbGet.mockResolvedValue({
-                key: SETTING_KEY_PAUSE_STATE,
-                value: { id: 1, category: 'Work', isPaused: false },
-            });
+            dbGet.mockResolvedValue({ key: SETTING_KEY_PAUSE_STATE, value: { id: 1, category: 'Work', isPaused: false } });
 
             await updateHistoryStartTime(1, 1500);
 
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_SETTINGS,
-                expect.objectContaining({
-                    key: SETTING_KEY_PAUSE_STATE,
-                    value: expect.objectContaining({ id: 1, startTime: 1500, isPaused: false }),
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
+                key: SETTING_KEY_PAUSE_STATE,
+                value: expect.objectContaining({ id: 1, startTime: 1500, isPaused: false })
+            }));
         });
 
         test('updateHistoryStartTime does not propagate if not contiguous (gap > tolerance)', async () => {
             const logs = [
                 { id: 1, startTime: 1000, endTime: 1500, category: 'Task 1' }, // Gap of 1500
-                { id: 2, startTime: 3000, endTime: 4000, category: 'Task 2' },
+                { id: 2, startTime: 3000, endTime: 4000, category: 'Task 2' }
             ];
             dbGetAll.mockResolvedValue(logs);
 
@@ -843,22 +707,19 @@ describe('Logic Module', () => {
         test('updateHistoryStartTime handles stop markers (updates both start and end, and offsets previous end by 0s)', async () => {
             const logs = [
                 { id: 1, startTime: 10000, endTime: 20000, category: 'Task 1' },
-                { id: 2, startTime: 20000, endTime: 20000, category: 'IDLE', isManualStop: true },
+                { id: 2, startTime: 20000, endTime: 20000, category: 'IDLE', isManualStop: true }
             ];
             dbGetAll.mockResolvedValue(logs);
 
             await updateHistoryStartTime(2, 30000);
 
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 2,
-                    startTime: 30000,
-                    endTime: 30000,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                startTime: 30000,
+                endTime: 30000
+            }));
             const calls = dbPut.mock.calls;
-            const log1Update = calls.find((c) => c[1].id === 1)[1];
+            const log1Update = calls.find(c => c[1].id === 1)[1];
             expect(log1Update.endTime).toBe(30000);
         });
 
@@ -866,7 +727,7 @@ describe('Logic Module', () => {
             const logs = [
                 { id: 1, startTime: 10000, endTime: 20000, category: 'Task 1' },
                 { id: 2, startTime: 20000, endTime: 20000, category: 'IDLE', isManualStop: true },
-                { id: 3, startTime: 20000, endTime: 40000, category: 'Task 2' },
+                { id: 3, startTime: 20000, endTime: 40000, category: 'Task 2' }
             ];
             dbGetAll.mockResolvedValue(logs);
 
@@ -874,10 +735,7 @@ describe('Logic Module', () => {
 
             expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 3, startTime: 30000 }));
             // Task 2 was contiguous with Task 3 at 20000, so it moves to 30000
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({ id: 2, startTime: 30000, endTime: 30000 })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 2, startTime: 30000, endTime: 30000 }));
             // Task 1 was contiguous with Task 2 at 20000, so Task 1 ends at 30000
             expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({ id: 1, endTime: 30000 }));
         });
@@ -885,7 +743,7 @@ describe('Logic Module', () => {
         test('updateHistoryStartTime propagates correctly even with a small gap within tolerance', async () => {
             const logs = [
                 { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' },
-                { id: 2, startTime: 2005, endTime: 3000, category: 'Task 2' }, // 5ms gap
+                { id: 2, startTime: 2005, endTime: 3000, category: 'Task 2' } // 5ms gap
             ];
             dbGetAll.mockResolvedValue(logs);
 
@@ -901,7 +759,7 @@ describe('Logic Module', () => {
                 { id: 1, startTime: 10000, endTime: 20000, category: 'Task 1' },
                 { id: 2, startTime: 20000, endTime: 30000, category: 'Task 2' },
                 { id: 3, startTime: 30000, endTime: 30000, category: 'IDLE', isManualStop: true },
-                { id: 4, startTime: 30000, endTime: 40000, category: 'Task 3' },
+                { id: 4, startTime: 30000, endTime: 40000, category: 'Task 3' }
             ];
             dbGetAll.mockResolvedValue(logs);
 
@@ -909,28 +767,22 @@ describe('Logic Module', () => {
 
             expect(dbDelete).toHaveBeenCalledWith(STORE_LOGS, 2);
             // Task 3: startTime 20000, endTime 20000 (propagated from Task 2's old startTime)
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 3,
-                    startTime: 20000,
-                    endTime: 20000,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 3,
+                startTime: 20000,
+                endTime: 20000
+            }));
             // Task 4: startTime 20000 (propagated from Task 3's new endTime)
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 4,
-                    startTime: 20000,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 4,
+                startTime: 20000
+            }));
         });
 
         test('deleteHistoryItem propagates correctly even with a small gap within tolerance', async () => {
             const logs = [
                 { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' },
-                { id: 2, startTime: 2005, endTime: 3000, category: 'Task 2' }, // 5ms gap
+                { id: 2, startTime: 2005, endTime: 3000, category: 'Task 2' } // 5ms gap
             ];
             dbGetAll.mockResolvedValue(logs);
 
@@ -942,7 +794,9 @@ describe('Logic Module', () => {
         });
 
         test('deleteHistoryItem handles last item (no propagation)', async () => {
-            const logs = [{ id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' }];
+            const logs = [
+                { id: 1, startTime: 1000, endTime: 2000, category: 'Task 1' }
+            ];
             dbGetAll.mockResolvedValue(logs);
 
             await deleteHistoryItem(1);
@@ -985,21 +839,15 @@ describe('Logic Module', () => {
             await deleteHistoryItem(1);
 
             // Log 2 updated: startTime should move to 1000
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 2,
-                    startTime: 1000,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 2,
+                startTime: 1000
+            }));
             // pauseState should be updated as well
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_SETTINGS,
-                expect.objectContaining({
-                    key: SETTING_KEY_PAUSE_STATE,
-                    value: expect.objectContaining({ id: 2, startTime: 1000, isPaused: false }),
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
+                key: SETTING_KEY_PAUSE_STATE,
+                value: expect.objectContaining({ id: 2, startTime: 1000, isPaused: false })
+            }));
         });
     });
 
@@ -1015,7 +863,7 @@ describe('Logic Module', () => {
                 startTime: startTs,
                 endTime: startTs + 300000, // 5 minutes
                 category: 'Work',
-                tags: 'tag1',
+                tags: 'tag1'
             };
             dbGet.mockResolvedValue(originalLog);
 
@@ -1023,23 +871,17 @@ describe('Logic Module', () => {
 
             expect(result).toBe(true);
             // Original log updated
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 1,
-                    endTime: startTs + 60000, // Original + 1 minute
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                endTime: startTs + 60000 // Original + 1 minute
+            }));
             // New log added
-            expect(dbAdd).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    startTime: startTs + 60000,
-                    endTime: startTs + 300000,
-                    category: 'Work',
-                    tags: 'tag1',
-                })
-            );
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                startTime: startTs + 60000,
+                endTime: startTs + 300000,
+                category: 'Work',
+                tags: 'tag1'
+            }));
         });
 
         test('fails if log has no endTime and duration is less than 1 minute', async () => {
@@ -1074,17 +916,14 @@ describe('Logic Module', () => {
             await splitHistoryItem(1);
 
             // pauseState should point to the NEW log (the remainder)
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_SETTINGS,
-                expect.objectContaining({
-                    key: SETTING_KEY_PAUSE_STATE,
-                    value: expect.objectContaining({
-                        id: 123,
-                        startTime: startTs + 60000,
-                        category: 'Work',
-                    }),
+            expect(dbPut).toHaveBeenCalledWith(STORE_SETTINGS, expect.objectContaining({
+                key: SETTING_KEY_PAUSE_STATE,
+                value: expect.objectContaining({
+                    id: 123,
+                    startTime: startTs + 60000,
+                    category: 'Work'
                 })
-            );
+            }));
         });
 
         test('splits an ongoing task if elapsed time is >= 1 minute', async () => {
@@ -1094,7 +933,7 @@ describe('Logic Module', () => {
                 startTime: startTs,
                 endTime: null,
                 category: 'Work',
-                tags: 'tag1',
+                tags: 'tag1'
             };
             dbGet.mockImplementation((store, key) => {
                 if (store === STORE_LOGS && key === 1) return Promise.resolve(ongoingLog);
@@ -1105,23 +944,17 @@ describe('Logic Module', () => {
 
             expect(result).toBe(true);
             // Original log updated with endTime
-            expect(dbPut).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    id: 1,
-                    endTime: startTs + 60000,
-                })
-            );
+            expect(dbPut).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                id: 1,
+                endTime: startTs + 60000
+            }));
             // New log added with no endTime
-            expect(dbAdd).toHaveBeenCalledWith(
-                STORE_LOGS,
-                expect.objectContaining({
-                    startTime: startTs + 60000,
-                    endTime: null,
-                    category: 'Work',
-                    tags: 'tag1',
-                })
-            );
+            expect(dbAdd).toHaveBeenCalledWith(STORE_LOGS, expect.objectContaining({
+                startTime: startTs + 60000,
+                endTime: null,
+                category: 'Work',
+                tags: 'tag1'
+            }));
         });
 
         test('fails to split ongoing task if elapsed time is < 1 minute', async () => {
@@ -1131,7 +964,7 @@ describe('Logic Module', () => {
                 startTime: startTs,
                 endTime: null,
                 category: 'Work',
-                tags: 'tag1',
+                tags: 'tag1'
             };
             dbGet.mockImplementation((store, key) => {
                 if (store === STORE_LOGS && key === 2) return Promise.resolve(ongoingLog);

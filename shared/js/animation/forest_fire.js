@@ -21,21 +21,21 @@ export default class ForestFire extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Forest Fire Simulation',
-            ja: '森林火災のシミュレーション',
+            en: "Forest Fire Simulation",
+            ja: "森林火災のシミュレーション"
         },
         description: {
-            en: 'A simulation of a forest fire. Click to start a fire, and watch it spread with the wind.',
-            ja: '森林火災のシミュレーションです。クリックで火をつけ、風に乗って広がる様子を観察しましょう。',
+            en: "A simulation of a forest fire. Click to start a fire, and watch it spread with the wind.",
+            ja: "森林火災のシミュレーションです。クリックで火をつけ、風に乗って広がる様子を観察しましょう。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true,
-        rewindable: true,
+        rewindable: true
     };
 
     config = {
         mode: 'canvas',
-        exclusionStrategy: 'freedom',
+        exclusionStrategy: 'freedom'
     };
 
     // --- State Constants ---
@@ -45,24 +45,24 @@ export default class ForestFire extends AnimationBase {
     BURNT = 3;
 
     // --- Simulation Constants ---
-    GRID_SIZE = 5; // Resolution of the simulation
-    SPREAD_PROBABILITY = 0.08; // Base chance to spread to a neighbor
-    WIND_X = 0.15; // Extra probability in horizontal direction (rightward)
-    WIND_Y = 0.05; // Extra probability in vertical direction (downward)
-    BURN_TIME = 12; // How many frames a cell stays burning
+    GRID_SIZE = 5;              // Resolution of the simulation
+    SPREAD_PROBABILITY = 0.08;  // Base chance to spread to a neighbor
+    WIND_X = 0.15;              // Extra probability in horizontal direction (rightward)
+    WIND_Y = 0.05;              // Extra probability in vertical direction (downward)
+    BURN_TIME = 12;             // How many frames a cell stays burning
 
     // --- Advanced Behavior Tuning ---
     INITIAL_TREE_COVERAGE = 0.8; // Initial percentage of the grid filled with trees
-    SIMULATION_FPS = 15; // Approximate updates per second
-    REPLANT_RADIUS = 4; // Radius of the area replanted on click
-    CELL_GAP = 0.5; // Gap between grid cells when rendering
-    FLICKER_THRESHOLD = 0.5; // Probability threshold for fire color flickering
+    SIMULATION_FPS = 15;        // Approximate updates per second
+    REPLANT_RADIUS = 4;         // Radius of the area replanted on click
+    CELL_GAP = 0.5;             // Gap between grid cells when rendering
+    FLICKER_THRESHOLD = 0.5;    // Probability threshold for fire color flickering
 
     constructor() {
         super();
-        this.grid = new Uint8Array(0); // Current state
-        this.gridBuffer = new Uint8Array(0); // Next state
-        this.timers = new Uint8Array(0); // Time remaining for burning cells
+        this.grid = new Uint8Array(0);        // Current state
+        this.gridBuffer = new Uint8Array(0);  // Next state
+        this.timers = new Uint8Array(0);      // Time remaining for burning cells
         this.cols = 0;
         this.rows = 0;
         this.width = 0;
@@ -97,9 +97,9 @@ export default class ForestFire extends AnimationBase {
         // Pre-calculate neighbor info
         this.neighbors = [
             { dx: -1, dy: 0, w: 1.0 - this.WIND_X }, // West
-            { dx: 1, dy: 0, w: 1.0 + this.WIND_X }, // East
+            { dx: 1, dy: 0, w: 1.0 + this.WIND_X },  // East
             { dx: 0, dy: -1, w: 1.0 - this.WIND_Y }, // North
-            { dx: 0, dy: 1, w: 1.0 + this.WIND_Y }, // South
+            { dx: 0, dy: 1, w: 1.0 + this.WIND_Y }   // South
         ];
     }
 
@@ -109,7 +109,7 @@ export default class ForestFire extends AnimationBase {
      */
     draw(ctx, { elapsedMs, exclusionAreas = [], speed = 1 } = {}) {
         // Run update logic at a fixed interval
-        const updateThreshold = 1000 / this.SIMULATION_FPS / speed;
+        const updateThreshold = (1000 / this.SIMULATION_FPS) / speed;
         if (elapsedMs - this.lastUpdateMs > updateThreshold) {
             this.update(exclusionAreas);
             this.lastUpdateMs = elapsedMs;
@@ -123,7 +123,7 @@ export default class ForestFire extends AnimationBase {
         this.gridBuffer.set(this.grid);
 
         // Clear trees in exclusion areas (firebreaks)
-        exclusionAreas.forEach((area) => {
+        exclusionAreas.forEach(area => {
             const gx1 = Math.floor(area.x / this.GRID_SIZE);
             const gy1 = Math.floor(area.y / this.GRID_SIZE);
             const gx2 = Math.ceil((area.x + area.width) / this.GRID_SIZE);
@@ -161,7 +161,7 @@ export default class ForestFire extends AnimationBase {
                         if (nx >= 0 && nx < this.cols && ny >= 0 && ny < this.rows) {
                             const targetIdx = ny * this.cols + nx;
                             if (this.grid[targetIdx] === this.TREE) {
-                                if (Math.random() < this.SPREAD_PROBABILITY * n.w) {
+                                if (Math.random() < (this.SPREAD_PROBABILITY * n.w)) {
                                     this.gridBuffer[targetIdx] = this.BURNING;
                                     this.timers[targetIdx] = this.BURN_TIME;
                                 }
@@ -194,12 +194,7 @@ export default class ForestFire extends AnimationBase {
                         ctx.fillStyle = '#3a3a3a'; // Charcoal
                         break;
                 }
-                ctx.fillRect(
-                    x * this.GRID_SIZE,
-                    y * this.GRID_SIZE,
-                    this.GRID_SIZE - this.CELL_GAP,
-                    this.GRID_SIZE - this.CELL_GAP
-                );
+                ctx.fillRect(x * this.GRID_SIZE, y * this.GRID_SIZE, this.GRID_SIZE - this.CELL_GAP, this.GRID_SIZE - this.CELL_GAP);
             }
         }
     }
@@ -223,7 +218,7 @@ export default class ForestFire extends AnimationBase {
                         const ny = gy + j;
                         if (nx >= 0 && nx < this.cols && ny >= 0 && ny < this.rows) {
                             const nidx = ny * this.cols + nx;
-                            if (this.grid[nidx] !== this.BURNING && Math.sqrt(i * i + j * j) < r) {
+                            if (this.grid[nidx] !== this.BURNING && Math.sqrt(i*i + j*j) < r) {
                                 this.grid[nidx] = this.TREE;
                                 this.timers[nidx] = 0;
                             }

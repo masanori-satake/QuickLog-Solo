@@ -89,7 +89,7 @@ body {
     background: var(--md-sys-color-surface);
     border-radius: 16px;
     padding: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .step-card h3 {
@@ -243,8 +243,7 @@ body {
         margin-bottom: 8px;
     }
 
-    .step-card ol,
-    .step-card ul {
+    .step-card ol, .step-card ul {
         margin: 0;
         padding-left: 1.2rem;
     }

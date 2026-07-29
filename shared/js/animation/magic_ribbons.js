@@ -11,28 +11,28 @@ export default class MagicRibbons extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Twin Magical Spiral Ribbons',
-            ja: '変身エフェクト',
-            de: 'Magische Spiralbänder',
-            es: 'Cintas espirales mágicas dobles',
-            fr: 'Rubans spiraux magiques jumeaux',
-            pt: 'Fitas espirais mágicas duplas',
-            ko: '트윈 매지컬 나선 리본',
-            zh: '双魔法螺旋丝带',
+            en: "Twin Magical Spiral Ribbons",
+            ja: "変身エフェクト",
+            de: "Magische Spiralbänder",
+            es: "Cintas espirales mágicas dobles",
+            fr: "Rubans spiraux magiques jumeaux",
+            pt: "Fitas espirais mágicas duplas",
+            ko: "트윈 매지컬 나선 리본",
+            zh: "双魔法螺旋丝带"
         },
         description: {
-            en: 'Colored pixel ribbons spiral stereoscopically around a central static silhouette, culminating in a particle burst at the top.',
-            ja: '中央のシルエットに沿って、2色のピクセルリボンがサイン波を描き、前後に立体交差しながら上昇して上端で弾けます。',
-            de: 'Farbige Pixelbänder spiralen sich stereoskopisch um eine zentrale statische Silhouette und gipfeln in einem Partikelausbruch oben.',
-            es: 'Cintas de píxeles de colores giran estereoscópicamente alrededor de una silueta estática central, culminando en un estallido de partículas en la parte superior.',
+            en: "Colored pixel ribbons spiral stereoscopically around a central static silhouette, culminating in a particle burst at the top.",
+            ja: "中央のシルエットに沿って、2色のピクセルリボンがサイン波を描き、前後に立体交差しながら上昇して上端で弾けます。",
+            de: "Farbige Pixelbänder spiralen sich stereoskopisch um eine zentrale statische Silhouette und gipfeln in einem Partikelausbruch oben.",
+            es: "Cintas de píxeles de colores giran estereoscópicamente alrededor de una silueta estática central, culminando en un estallido de partículas en la parte superior.",
             fr: "Des rubans de pixels colorés spiralent de manière stéréoscopique autour d'une silhouette statique centrale, culminant par une explosion de particules au sommet.",
-            pt: 'Fitas de pixels coloridos espiralam estereoscopicamente em torno de uma silhueta estática central, culminando em uma explosão de partículas no topo.',
-            ko: '색상 픽셀 리본이 중앙의 실루엣을 따라 입체적으로 회전하며 상승하고, 맨 위에서 스파크 입자를 발산합니다.',
-            zh: '彩色像素带围绕中央静态剪影呈立体螺旋状上升，在顶部达到粒子爆发的高潮。',
+            pt: "Fitas de pixels coloridos espiralam estereoscopicamente em torno de uma silhueta estática central, culminando em uma explosão de partículas no topo.",
+            ko: "색상 픽셀 리본이 중앙의 실루엣을 따라 입체적으로 회전하며 상승하고, 맨 위에서 스파크 입자를 발산합니다.",
+            zh: "彩色像素带围绕中央静态剪影呈立体螺旋状上升，在顶部达到粒子爆发的高潮。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true,
-        rewindable: true,
+        rewindable: true
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -56,7 +56,7 @@ export default class MagicRibbons extends AnimationBase {
         // Central Silhouette drawing
         const charH = Math.max(30, height * 0.45);
         const headRadius = Math.max(3, charH * 0.16);
-        const charY = height / 2 + charH / 2;
+        const charY = (height / 2) + (charH / 2);
 
         // Ribbon 1 (Pink/Rose) and Ribbon 2 (Golden Yellow) (Both have Red: 255)
         const ribbon1Color = '#ff4081';
@@ -72,7 +72,7 @@ export default class MagicRibbons extends AnimationBase {
         // 1. Draw BEHIND points
         for (let y = height; y >= 0; y -= 4) {
             // phase shift Ribbon 2
-            const phase1 = elapsedMs * 0.005 - y * 0.05;
+            const phase1 = (elapsedMs * 0.005) - (y * 0.05);
             const phase2 = phase1 + Math.PI;
 
             const xOff1 = Math.sin(phase1);
@@ -105,7 +105,7 @@ export default class MagicRibbons extends AnimationBase {
 
         // 3. Draw FRONT points
         for (let y = height; y >= 0; y -= 4) {
-            const phase1 = elapsedMs * 0.005 - y * 0.05;
+            const phase1 = (elapsedMs * 0.005) - (y * 0.05);
             const phase2 = phase1 + Math.PI;
 
             const xOff1 = Math.sin(phase1);

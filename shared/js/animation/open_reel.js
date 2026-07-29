@@ -9,27 +9,27 @@ export default class OpenReel extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Open Reel',
-            ja: 'オープン・リール',
-            de: 'Tonbandmaschine',
-            es: 'Carrete abierto',
-            fr: 'Bande libre',
-            pt: 'Rolo aberto',
-            ko: '오픈 릴',
-            zh: '开盘式录音机',
+            en: "Open Reel",
+            ja: "オープン・リール",
+            de: "Tonbandmaschine",
+            es: "Carrete abierto",
+            fr: "Bande libre",
+            pt: "Rolo aberto",
+            ko: "오픈 릴",
+            zh: "开盘式录音机"
         },
         description: {
-            en: 'Vintage tape recorder with spinning reels and moving VU meters.',
-            ja: '回転するリールと動くVUメーターを備えた、ヴィンテージなテープレコーダーのアニメーションです。',
-            de: 'Vintage-Tonbandgerät mit drehenden Spulen und beweglichen VU-Metern.',
-            es: 'Grabadora de cinta antigua con carretes giratorios y medidores VU móviles.',
-            fr: 'Magnétophone vintage avec bobines rotatives et VU-mètres mobiles.',
-            pt: 'Gravador de rolo vintage com carretéis giratórios e medidores VU móveis.',
-            ko: '회전하는 릴과 움직이는 VU 미터가 있는 빈티지 테이프 레코더입니다.',
-            zh: '带有旋转带盘和移动 VU 表的复古磁带录音机。',
+            en: "Vintage tape recorder with spinning reels and moving VU meters.",
+            ja: "回転するリールと動くVUメーターを備えた、ヴィンテージなテープレコーダーのアニメーションです。",
+            de: "Vintage-Tonbandgerät mit drehenden Spulen und beweglichen VU-Metern.",
+            es: "Grabadora de cinta antigua con carretes giratorios y medidores VU móviles.",
+            fr: "Magnétophone vintage avec bobines rotatives et VU-mètres mobiles.",
+            pt: "Gravador de rolo vintage com carretéis giratórios e medidores VU móveis.",
+            ko: "회전하는 릴과 움직이는 VU 미터가 있는 빈티지 테이프 레코더입니다.",
+            zh: "带有旋转带盘和移动 VU 表的复古磁带录音机。"
         },
-        author: 'QuickLog-Solo',
-        rewindable: true,
+        author: "QuickLog-Solo",
+        rewindable: true
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'mask' };
@@ -68,8 +68,8 @@ export default class OpenReel extends AnimationBase {
 
         if (exclusionAreas && exclusionAreas.length > 0) {
             const spots = [60 * scale, width - 60 * scale];
-            for (const spot of spots) {
-                const overlap = exclusionAreas.some((area) => {
+             for (const spot of spots) {
+                const overlap = exclusionAreas.some(area => {
                     return spot + 50 * scale > area.x && spot - 50 * scale < area.x + area.width;
                 });
                 if (!overlap) {
@@ -86,8 +86,8 @@ export default class OpenReel extends AnimationBase {
 
         if (exclusionAreas && exclusionAreas.length > 0) {
             const spots = [width - 60 * scale, 60 * scale];
-            for (const spot of spots) {
-                const overlap = exclusionAreas.some((area) => {
+             for (const spot of spots) {
+                const overlap = exclusionAreas.some(area => {
                     return spot + 50 * scale > area.x && spot - 50 * scale < area.x + area.width;
                 });
                 if (!overlap && Math.abs(spot - reelCenterX) > 100 * scale) {
@@ -103,13 +103,13 @@ export default class OpenReel extends AnimationBase {
         // 3. Draw Reels
         // 3. リールの描画
         const rotation = time * 2;
-        [-25 * scale, 25 * scale].forEach((offset) => {
+        [ -25 * scale, 25 * scale ].forEach(offset => {
             this.drawReel(ctx, reelCenterX + offset, reelCenterY, rotation, 20 * scale);
         });
 
         // 4. Draw VU Meters
         // 4. VUメーターの描画
-        [-25 * scale, 25 * scale].forEach((offset) => {
+        [ -25 * scale, 25 * scale ].forEach(offset => {
             this.drawVUMeter(ctx, vuCenterX + offset, vuCenterY, time, offset, scale);
         });
     }
@@ -124,8 +124,8 @@ export default class OpenReel extends AnimationBase {
         ctx.stroke();
 
         // Spokes / スポーク
-        for (let i = 0; i < 3; i++) {
-            const angle = rotation + (i * Math.PI * 2) / 3;
+        for(let i=0; i<3; i++) {
+            const angle = rotation + (i * Math.PI * 2 / 3);
             ctx.beginPath();
             ctx.moveTo(rx, ry);
             ctx.lineTo(rx + Math.cos(angle) * (radius * 0.9), ry + Math.sin(angle) * (radius * 0.9));

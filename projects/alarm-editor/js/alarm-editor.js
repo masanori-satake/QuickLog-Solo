@@ -1,15 +1,7 @@
 import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
 import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
 import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
-import {
-    initData,
-    saveAlarm,
-    saveAllAlarms,
-    saveBusinessDays,
-    saveLanguage,
-    exportAlarms,
-    importAlarms,
-} from './data-io.js';
+import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, saveLanguage, exportAlarms, importAlarms } from './data-io.js';
 import { initUI } from './ui.js';
 import { initHistory } from './history.js';
 
@@ -19,7 +11,7 @@ const state = {
     businessDays: [1, 2, 3, 4, 5],
     selectedAlarmId: null,
     language: 'ja',
-    theme: 'light',
+    theme: 'light'
 };
 
 const elements = {
@@ -52,7 +44,7 @@ const elements = {
     themeToggle: document.getElementById('theme-toggle'),
     langSelect: document.getElementById('lang-select-editor'),
     resetBtn: document.getElementById('reset-btn'),
-    alarmResetBtn: document.getElementById('alarm-reset-btn'),
+    alarmResetBtn: document.getElementById('alarm-reset-btn')
 };
 
 function getDefaultAlarm(id, index, order) {
@@ -69,7 +61,7 @@ function getDefaultAlarm(id, index, order) {
         daysBeforeEnd: 0,
         holidayAdjustment: 'none',
         requireConfirmation: false,
-        order: order !== undefined ? order : index,
+        order: order !== undefined ? order : index
     };
 }
 
@@ -104,7 +96,7 @@ async function init() {
     const savedTheme = localStorage.getItem('quicklog-theme') || 'light';
     state.theme = savedTheme;
     document.body.className = `theme-${state.theme}`;
-    elements.themeToggle.checked = state.theme === 'dark';
+    elements.themeToggle.checked = (state.theme === 'dark');
 
     const history = initHistory(state);
     const ui = initUI(state, elements);
@@ -117,7 +109,7 @@ async function init() {
         ui.renderDetail();
         ui.updateHistoryButtons(history);
         elements.langSelect.value = state.language;
-        elements.themeToggle.checked = state.theme === 'dark';
+        elements.themeToggle.checked = (state.theme === 'dark');
         document.body.className = `theme-${state.theme}`;
         applyLanguage();
 
@@ -281,18 +273,12 @@ async function init() {
 }
 
 function showConfirm(msg) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         const modal = document.getElementById('confirm-modal');
         document.getElementById('confirm-message').textContent = msg;
         modal.classList.remove('hidden');
-        document.getElementById('confirm-ok-btn').onclick = () => {
-            modal.classList.add('hidden');
-            resolve(true);
-        };
-        document.getElementById('confirm-cancel-btn').onclick = () => {
-            modal.classList.add('hidden');
-            resolve(false);
-        };
+        document.getElementById('confirm-ok-btn').onclick = () => { modal.classList.add('hidden'); resolve(true); };
+        document.getElementById('confirm-cancel-btn').onclick = () => { modal.classList.add('hidden'); resolve(false); };
     });
 }
 

@@ -9,7 +9,7 @@ export function initHistory(state) {
     function record() {
         const snapshot = JSON.stringify({
             alarms: state.alarms,
-            businessDays: state.businessDays,
+            businessDays: state.businessDays
         });
 
         if (historyStack.length > 0 && historyStack[historyStack.length - 1] === snapshot) {

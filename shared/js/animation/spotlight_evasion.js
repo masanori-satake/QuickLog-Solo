@@ -11,28 +11,28 @@ export default class SpotlightEvasion extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Horizontal Spotlight Evasion',
-            ja: 'サーチライト回避',
-            de: 'Horizontale Scheinwerfer-Flucht',
-            es: 'Evasión de foco horizontal',
-            fr: 'Évasion de projecteur horizontale',
-            pt: 'Evasão de holofote horizontal',
-            ko: '수평 서치라이트 회피',
-            zh: '水平探照灯规避',
+            en: "Horizontal Spotlight Evasion",
+            ja: "サーチライト回避",
+            de: "Horizontale Scheinwerfer-Flucht",
+            es: "Evasión de foco horizontal",
+            fr: "Évasion de projecteur horizontale",
+            pt: "Evasão de holofote horizontal",
+            ko: "수평 서치라이트 회피",
+            zh: "水平探照灯规避"
         },
         description: {
-            en: 'A translucent white spotlight sways back and forth. The center silhouette crouches whenever the light passes over.',
-            ja: '半透明のサーチライトが左右に往復し、中央のシルエットが光を避けるために素早くしゃがみ込みます。',
-            de: 'Ein durchscheinendes weißes Spotlight schwankt hin und her. Die mittlere Silhouette duckt sich, wann immer das Licht vorbeizieht.',
-            es: 'Un foco blanco translúcido se balancea de un lado a otro. La silueta central se agacha cuando pasa la luz.',
+            en: "A translucent white spotlight sways back and forth. The center silhouette crouches whenever the light passes over.",
+            ja: "半透明のサーチライトが左右に往復し、中央のシルエットが光を避けるために素早くしゃがみ込みます。",
+            de: "Ein durchscheinendes weißes Spotlight schwankt hin und her. Die mittlere Silhouette duckt sich, wann immer das Licht vorbeizieht.",
+            es: "Un foco blanco translúcido se balancea de un lado a otro. La silueta central se agacha cuando pasa la luz.",
             fr: "Un projecteur blanc translucide balance d'avant en arrière. La silhouette centrale s'accroupit dès que la lumière passe.",
-            pt: 'Um holofote branco translúcido balança de um lado para o outro. A silhueta central se agacha sempre que a luz passa.',
-            ko: '반투명한 흰색 서치라이트가 좌우로 흔들립니다. 빛이 지나갈 때마다 중앙의 실루엣이 몸을 숙입니다.',
-            zh: '一个半透明的白色探照灯左右摇摆。每当光线经过时，中央的剪影就会蹲下。',
+            pt: "Um holofote branco translúcido balança de um lado para o outro. A silhueta central se agacha sempre que a luz passa.",
+            ko: "반투명한 흰색 서치라이트가 좌우로 흔들립니다. 빛이 지나갈 때마다 중앙의 실루엣이 몸을 숙입니다.",
+            zh: "一个半透明的白色探照灯左右摇摆。每当光线经过时，中央的剪影就会蹲下。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true,
-        rewindable: true,
+        rewindable: true
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -62,7 +62,7 @@ export default class SpotlightEvasion extends AnimationBase {
 
         // Calculate spotlight center position
         const maxOffset = width * 0.4;
-        const lightX = width / 2 + xOffset * maxOffset;
+        const lightX = (width / 2) + xOffset * maxOffset;
 
         const lightRadius = Math.max(30, width * 0.15);
 
@@ -75,7 +75,7 @@ export default class SpotlightEvasion extends AnimationBase {
 
         // Human vertical size (Significantly larger for crisp dot representation, but responsive)
         const humanHeight = Math.max(12, Math.min(24, height * 0.45));
-        const currentHeight = Math.round(isOverlap ? humanHeight * 0.55 : humanHeight);
+        const currentHeight = Math.round(isOverlap ? (humanHeight * 0.55) : humanHeight);
 
         // Render Ground Line (bolder and brighter)
         ctx.fillStyle = '#888888';

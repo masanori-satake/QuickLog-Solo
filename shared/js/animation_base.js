@@ -16,7 +16,7 @@ export class AnimationBase {
         name: 'Base Animation',
         description: 'Template for animations',
         author: 'QuickLog-Solo',
-        rewindable: false,
+        rewindable: false
     };
 
     /**
@@ -26,7 +26,7 @@ export class AnimationBase {
      */
     config = {
         mode: 'canvas',
-        exclusionStrategy: 'mask',
+        exclusionStrategy: 'mask'
     };
 
     /**

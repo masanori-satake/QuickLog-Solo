@@ -4,20 +4,10 @@
 
 export function initEditor(state, elements) {
     const {
-        inputVars,
-        inputSetup,
-        inputDraw,
-        inputInteraction,
-        codeTabs,
-        editors,
-        toggleWrapBtn,
-        showSearchBtn,
-        searchBar,
-        searchInput,
-        replaceInput,
-        btnReplace,
-        btnReplaceAll,
-        closeSearchBtn,
+        inputVars, inputSetup, inputDraw, inputInteraction,
+        codeTabs, editors, toggleWrapBtn, showSearchBtn,
+        searchBar, searchInput, replaceInput, btnReplace,
+        btnReplaceAll, closeSearchBtn
     } = elements;
 
     // Internal state
@@ -67,17 +57,14 @@ export function initEditor(state, elements) {
             { regex: /\/\/.*/g, class: 'hl-comment' },
             { regex: /\/\*[\s\S]*?\*\//g, class: 'hl-comment' },
             { regex: /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, class: 'hl-string' },
-            {
-                regex: /\b(class|extends|export|default|static|this|new|if|else|for|while|return|function|let|const|var|async|await|try|catch|finally|throw)\b/g,
-                class: 'hl-keyword',
-            },
+            { regex: /\b(class|extends|export|default|static|this|new|if|else|for|while|return|function|let|const|var|async|await|try|catch|finally|throw)\b/g, class: 'hl-keyword' },
             { regex: /\b\d+\b/g, class: 'hl-number' },
             { regex: /\b(\w+)(?=\s*\()/g, class: 'hl-function' },
-            { regex: /[{}[\]()]/g, class: 'hl-bracket' },
+            { regex: /[{}[\]()]/g, class: 'hl-bracket' }
         ];
 
         highlightEl.replaceChildren();
-        lines.forEach((line) => {
+        lines.forEach(line => {
             const lineDiv = document.createElement('div');
             lineDiv.className = 'logical-line';
             if (!line) {
@@ -88,9 +75,9 @@ export function initEditor(state, elements) {
 
             let parts = [{ text: line, isToken: false }];
 
-            rules.forEach((rule) => {
+            rules.forEach(rule => {
                 const newParts = [];
-                parts.forEach((part) => {
+                parts.forEach(part => {
                     if (part.isToken) {
                         newParts.push(part);
                         return;
@@ -115,7 +102,7 @@ export function initEditor(state, elements) {
                 parts = newParts;
             });
 
-            parts.forEach((part) => {
+            parts.forEach(part => {
                 if (part.isToken) {
                     const span = document.createElement('span');
                     span.className = part.className;
@@ -186,15 +173,15 @@ export function initEditor(state, elements) {
     }
 
     function updateAllHighlight() {
-        [inputVars, inputSetup, inputDraw, inputInteraction].forEach((ta) => updateHighlight(ta));
+        [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateHighlight(ta));
     }
 
     function updateAllGutter() {
-        [inputVars, inputSetup, inputDraw, inputInteraction].forEach((ta) => updateGutter(ta));
+        [inputVars, inputSetup, inputDraw, inputInteraction].forEach(ta => updateGutter(ta));
     }
 
     // Event Listeners
-    [inputVars, inputSetup, inputDraw, inputInteraction].forEach((el) => {
+    [inputVars, inputSetup, inputDraw, inputInteraction].forEach(el => {
         el.addEventListener('input', () => {
             if (state.markDirty) state.markDirty();
             updateGutter(el);
@@ -206,10 +193,10 @@ export function initEditor(state, elements) {
         el.addEventListener('keydown', (e) => handleKeyDown(e, el));
     });
 
-    codeTabs.forEach((tab) => {
+    codeTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            codeTabs.forEach((t) => t.classList.remove('active'));
-            editors.forEach((e) => e.classList.remove('active'));
+            codeTabs.forEach(t => t.classList.remove('active'));
+            editors.forEach(e => e.classList.remove('active'));
             tab.classList.add('active');
             const targetId = tab.getAttribute('data-target');
             const target = document.getElementById(targetId);
@@ -227,7 +214,7 @@ export function initEditor(state, elements) {
     toggleWrapBtn.addEventListener('click', () => {
         isWordWrap = !isWordWrap;
         toggleWrapBtn.classList.toggle('active', isWordWrap);
-        document.querySelectorAll('.editor-textarea, .editor-highlight').forEach((el) => {
+        document.querySelectorAll('.editor-textarea, .editor-highlight').forEach(el => {
             if (isWordWrap) {
                 el.classList.remove('no-wrap');
             } else {
@@ -266,6 +253,6 @@ export function initEditor(state, elements) {
     // Public methods
     return {
         updateAllHighlight,
-        updateAllGutter,
+        updateAllGutter
     };
 }

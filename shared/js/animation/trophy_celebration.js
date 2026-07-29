@@ -12,28 +12,28 @@ export default class TrophyCelebration extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Trophy Celebration Static Loop',
-            ja: 'アイテム獲得お祝い',
-            de: 'Trophäenfeier Statische Schleife',
-            es: 'Bucle estático de celebración de trofeo',
-            fr: 'Boucle statique de célébration de trophée',
-            pt: 'Loop estático de celebração de troféu',
-            ko: '트로피 축하 정적 루프',
-            zh: '奖杯庆祝静态循环',
+            en: "Trophy Celebration Static Loop",
+            ja: "アイテム獲得お祝い",
+            de: "Trophäenfeier Statische Schleife",
+            es: "Bucle estático de celebración de trofeo",
+            fr: "Boucle statique de célébration de trophée",
+            pt: "Loop estático de celebração de troféu",
+            ko: "트로피 축하 정적 루프",
+            zh: "奖杯庆祝静态循环"
         },
         description: {
-            en: 'A pixel character holds a checkbox icon high. Diagonal 1-pixel sparkles flash alternately to create a celebration rhythm.',
-            ja: 'チェックボックスを高々と掲げたキャラクターの周囲に、ドットのキラキラが交互に発生してお祝いのリズムを刻みます。',
-            de: 'Ein Pixel-Held hält ein Häkchen-Symbol hoch. Diagonale 1-Pixel-Funken blinken abwechselnd, um einen Rhythmus zu erzeugen.',
-            es: 'Un personaje de píxeles sostiene en alto un icono de casilla de verificación. Destellos diagonales de 1 píxel parpadean alternativamente.',
+            en: "A pixel character holds a checkbox icon high. Diagonal 1-pixel sparkles flash alternately to create a celebration rhythm.",
+            ja: "チェックボックスを高々と掲げたキャラクターの周囲に、ドットのキラキラが交互に発生してお祝いのリズムを刻みます。",
+            de: "Ein Pixel-Held hält ein Häkchen-Symbol hoch. Diagonale 1-Pixel-Funken blinken abwechselnd, um einen Rhythmus zu erzeugen.",
+            es: "Un personaje de píxeles sostiene en alto un icono de casilla de verificación. Destellos diagonales de 1 píxel parpadean alternativamente.",
             fr: "Un personnage en pixel tient un icône de case à cocher en l'air. Des étincelles diagonales de 1 pixel clignotent alternativement.",
-            pt: 'Um personagem de pixel segura um ícone de caixa de seleção no alto. Faíscas diagonais de 1 pixel piscam alternadamente.',
-            ko: '픽셀 영웅이 체크박스 아이콘을 높이 들어 올립니다. 대각선 방향으로 1픽셀짜리 불꽃이 번갈아 깜박입니다.',
-            zh: '一个像素字符高举复选框图标。对角线方向交替闪烁1像素小火花，渲染庆祝氛围。',
+            pt: "Um personagem de pixel segura um ícone de caixa de seleção no alto. Faíscas diagonais de 1 pixel piscam alternadamente.",
+            ko: "픽셀 영웅이 체크박스 아이콘을 높이 들어 올립니다. 대각선 방향으로 1픽셀짜리 불꽃이 번갈아 깜박입니다.",
+            zh: "一个像素字符高举复选框图标。对角线方向交替闪烁1像素小火花，渲染庆祝氛围。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true,
-        rewindable: true,
+        rewindable: true
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -59,7 +59,7 @@ export default class TrophyCelebration extends AnimationBase {
         const centerX = width / 2;
 
         // Toggle sparkles frame every 150ms
-        const frameToggle = Math.floor(elapsedMs / 150) % 2 === 1;
+        const frameToggle = (Math.floor(elapsedMs / 150) % 2) === 1;
 
         // Render Ground (brighter grey)
         ctx.fillStyle = '#888888';
@@ -105,12 +105,7 @@ export default class TrophyCelebration extends AnimationBase {
         // Document inner details (white surface with checkmark)
         const innerBorder = height >= 60 ? 3 : 2;
         ctx.fillStyle = '#000000';
-        ctx.fillRect(
-            roundedCenterX - iconW / 2 + innerBorder,
-            iconY - iconH / 2 + innerBorder,
-            iconW - innerBorder * 2,
-            iconH - innerBorder * 2
-        );
+        ctx.fillRect(roundedCenterX - iconW / 2 + innerBorder, iconY - iconH / 2 + innerBorder, iconW - (innerBorder * 2), iconH - (innerBorder * 2));
 
         // Lime Green Checkmark inside (High-Red component, thick 2x2 block style, responsive)
         ctx.fillStyle = '#c6ff00'; // Lime Green (Red: 198)
@@ -136,32 +131,12 @@ export default class TrophyCelebration extends AnimationBase {
         ctx.fillStyle = '#ffffff';
         if (!frameToggle) {
             // Sparkle set 1
-            ctx.fillRect(
-                roundedCenterX - iconW / 2 - sparkleOffset,
-                iconY - iconH / 2 - sparkleOffset,
-                sparkleSize,
-                sparkleSize
-            ); // Bottom-left or top-left
-            ctx.fillRect(
-                roundedCenterX + iconW / 2 + (sparkleOffset - sparkleSize),
-                iconY + iconH / 2 + (sparkleOffset - sparkleSize),
-                sparkleSize,
-                sparkleSize
-            ); // Bottom-right
+            ctx.fillRect(roundedCenterX - iconW / 2 - sparkleOffset, iconY - iconH / 2 - sparkleOffset, sparkleSize, sparkleSize); // Bottom-left or top-left
+            ctx.fillRect(roundedCenterX + iconW / 2 + (sparkleOffset - sparkleSize), iconY + iconH / 2 + (sparkleOffset - sparkleSize), sparkleSize, sparkleSize); // Bottom-right
         } else {
             // Sparkle set 2
-            ctx.fillRect(
-                roundedCenterX + iconW / 2 + (sparkleOffset - sparkleSize),
-                iconY - iconH / 2 - sparkleOffset,
-                sparkleSize,
-                sparkleSize
-            ); // Top-right
-            ctx.fillRect(
-                roundedCenterX - iconW / 2 - sparkleOffset,
-                iconY + iconH / 2 + (sparkleOffset - sparkleSize),
-                sparkleSize,
-                sparkleSize
-            ); // Bottom-left
+            ctx.fillRect(roundedCenterX + iconW / 2 + (sparkleOffset - sparkleSize), iconY - iconH / 2 - sparkleOffset, sparkleSize, sparkleSize); // Top-right
+            ctx.fillRect(roundedCenterX - iconW / 2 - sparkleOffset, iconY + iconH / 2 + (sparkleOffset - sparkleSize), sparkleSize, sparkleSize); // Bottom-left
         }
     }
 }

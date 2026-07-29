@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test('Preview animations on landing page', async ({ page }) => {
-    page.on('console', (msg) => console.log('BROWSER LOG:', msg.text()));
-    page.on('pageerror', (err) => console.log('BROWSER ERROR:', err.message));
+    page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+    page.on('pageerror', err => console.log('BROWSER ERROR:', err.message));
 
     // Use a unique DB to avoid state contamination
     const dbName = `PreviewTestDB_${Math.random().toString(36).substring(7)}`;
@@ -28,7 +28,7 @@ test('Preview animations on landing page', async ({ page }) => {
         const canvas = document.getElementById('animation-canvas');
         const ctx = canvas.getContext('2d');
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        return imgData.some((p) => p !== 0);
+        return imgData.some(p => p !== 0);
     });
     console.log('Initial canvas content:', canvasContent);
 
@@ -42,7 +42,7 @@ test('Preview animations on landing page', async ({ page }) => {
         const canvas = document.getElementById('animation-canvas');
         const ctx = canvas.getContext('2d');
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        return imgData.some((p) => p !== 0);
+        return imgData.some(p => p !== 0);
     });
     console.log('Canvas content after starting task:', canvasContent);
 
@@ -56,21 +56,17 @@ test('Preview animations on landing page', async ({ page }) => {
         const canvas = document.getElementById('animation-canvas');
         const ctx = canvas.getContext('2d');
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        return imgData.some((p) => p !== 0);
+        return imgData.some(p => p !== 0);
     });
     console.log('Canvas content after switching to Category 3:', canvasContent);
     expect(canvasContent).toBe(true);
 
     // Verify anim-active class is applied
-    const isAnimActiveOnDisplay = await frame.evaluate(() =>
-        document.getElementById('current-task-display').classList.contains('anim-active')
-    );
+    const isAnimActiveOnDisplay = await frame.evaluate(() => document.getElementById('current-task-display').classList.contains('anim-active'));
     console.log('Is anim-active on display:', isAnimActiveOnDisplay);
     expect(isAnimActiveOnDisplay).toBe(true);
 
-    const isAnimActiveOnBase = await frame.evaluate(() =>
-        document.getElementById('current-task-display-base').classList.contains('anim-active')
-    );
+    const isAnimActiveOnBase = await frame.evaluate(() => document.getElementById('current-task-display-base').classList.contains('anim-active'));
     console.log('Is anim-active on base:', isAnimActiveOnBase);
     expect(isAnimActiveOnBase).toBe(true);
 

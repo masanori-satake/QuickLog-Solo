@@ -6,19 +6,19 @@ export default class GenericGifAnimation extends AnimationBase {
         specVersion: '1.1',
         name: {
             ja: 'カスタムGIF',
-            en: 'Custom GIF',
+            en: 'Custom GIF'
         },
         description: {
             ja: 'ユーザーがインポートしたカスタムGIFアニメーション',
-            en: 'Custom GIF animation imported by user',
+            en: 'Custom GIF animation imported by user'
         },
         author: 'User',
-        rewindable: true,
+        rewindable: true
     };
 
     config = {
         mode: 'canvas',
-        exclusionStrategy: 'mask',
+        exclusionStrategy: 'mask'
     };
 
     constructor() {
@@ -34,7 +34,7 @@ export default class GenericGifAnimation extends AnimationBase {
      * Resets the animation state.
      */
     reset() {
-        this.frames.forEach((f) => {
+        this.frames.forEach(f => {
             if (f.bitmap && typeof f.bitmap.close === 'function') {
                 f.bitmap.close();
             }
@@ -46,7 +46,7 @@ export default class GenericGifAnimation extends AnimationBase {
         this.isLoading = false;
         this.config = {
             mode: 'canvas',
-            exclusionStrategy: 'mask',
+            exclusionStrategy: 'mask'
         };
     }
 
@@ -111,11 +111,11 @@ export default class GenericGifAnimation extends AnimationBase {
                 targetHeight: 100,
                 maxWidth: 2030,
                 scaleWithHeight: false,
-                overflowBehavior: 'categoryColor',
+                overflowBehavior: 'categoryColor'
             };
             this.config = {
                 mode: 'canvas',
-                exclusionStrategy: (record.config && record.config.exclusionStrategy) || 'mask',
+                exclusionStrategy: (record.config && record.config.exclusionStrategy) || 'mask'
             };
 
             // Parse GIF using browser native ImageDecoder if available
@@ -157,7 +157,7 @@ export default class GenericGifAnimation extends AnimationBase {
 
                     this.frames.push({
                         bitmap,
-                        duration: frameDuration,
+                        duration: frameDuration
                     });
                     accumulatedDuration += frameDuration;
                 }
@@ -234,13 +234,13 @@ export default class GenericGifAnimation extends AnimationBase {
         const focusY = this.renderSpec.focusY || 0;
 
         // Destination X & Y to align scaled focus point on the center of the canvas
-        const destX = this.width / 2 - focusX * S;
-        const destY = this.height / 2 - focusY * S;
+        const destX = (this.width / 2) - (focusX * S);
+        const destY = (this.height / 2) - (focusY * S);
 
         // maxWidth clamping math
         const maxW = this.renderSpec.maxWidth || this.width;
         const scaledMaxW = maxW * S;
-        const clipLeft = this.width / 2 - scaledMaxW / 2;
+        const clipLeft = (this.width / 2) - (scaledMaxW / 2);
 
         // Save context state for clipping and color fills
         ctx.save();

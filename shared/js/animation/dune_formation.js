@@ -21,38 +21,38 @@ export default class DuneFormation extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Dune Formation',
-            ja: '砂丘の形成',
+            en: "Dune Formation",
+            ja: "砂丘の形成"
         },
         description: {
-            en: 'Simulates sand grains forming ripples and dunes as they blow across the screen and hit obstacles.',
-            ja: '風に吹かれた砂粒が画面内を移動し、障害物にぶつかって砂紋や砂丘を形成する様子をシミュレートします。',
+            en: "Simulates sand grains forming ripples and dunes as they blow across the screen and hit obstacles.",
+            ja: "風に吹かれた砂粒が画面内を移動し、障害物にぶつかって砂紋や砂丘を形成する様子をシミュレートします。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true,
-        rewindable: true,
+        rewindable: true
     };
 
     config = {
         mode: 'canvas',
-        exclusionStrategy: 'freedom',
+        exclusionStrategy: 'freedom'
     };
 
     // --- Simulation Constants ---
-    GRID_SIZE = 4; // Size of each accumulation cell (pixels)
-    MAX_PARTICLES = 1500; // Number of active sand grains
-    WIND_STRENGTH = 1.2; // Horizontal force
-    SETTLE_PROBABILITY = 0.4; // Chance to stay when hitting ground
-    ROLL_PROBABILITY = 0.3; // Chance to roll forward instead of stopping
-    MAX_HEIGHT = 15; // Maximum sand height per cell
+    GRID_SIZE = 4;              // Size of each accumulation cell (pixels)
+    MAX_PARTICLES = 1500;       // Number of active sand grains
+    WIND_STRENGTH = 1.2;        // Horizontal force
+    SETTLE_PROBABILITY = 0.4;   // Chance to stay when hitting ground
+    ROLL_PROBABILITY = 0.3;     // Chance to roll forward instead of stopping
+    MAX_HEIGHT = 15;            // Maximum sand height per cell
 
     // --- Visual & Behavior Tuning ---
-    SAND_TRAP_THRESHOLD = 8; // Height threshold where sand starts trapping other grains
+    SAND_TRAP_THRESHOLD = 8;    // Height threshold where sand starts trapping other grains
     CREEP_VELOCITY_REDUCTION = 0.4; // How much velocity is lost when rolling/creeping
-    CREEP_VERTICAL_JITTER = 2.0; // Random vertical force when rolling
-    EMISSION_OFFSET = -10; // Start X position for new grains
+    CREEP_VERTICAL_JITTER = 2.0;    // Random vertical force when rolling
+    EMISSION_OFFSET = -10;      // Start X position for new grains
     OUT_OF_BOUNDS_PADDING = 10; // Extra space around edges before cleanup
-    MIN_SAND_ALPHA = 0.2; // Starting opacity for the first layer of sand
+    MIN_SAND_ALPHA = 0.2;       // Starting opacity for the first layer of sand
 
     constructor() {
         super();
@@ -89,7 +89,7 @@ export default class DuneFormation extends AnimationBase {
             x: x,
             y: y,
             vx: this.WIND_STRENGTH * (0.8 + Math.random() * 0.4),
-            vy: (Math.random() - 0.5) * 0.2,
+            vy: (Math.random() - 0.5) * 0.2
         };
     }
 
@@ -113,11 +113,9 @@ export default class DuneFormation extends AnimationBase {
             p.y += p.vy * dt;
 
             // Out of bounds cleanup
-            if (
-                p.x > this.width + this.OUT_OF_BOUNDS_PADDING ||
+            if (p.x > this.width + this.OUT_OF_BOUNDS_PADDING ||
                 p.y < -this.OUT_OF_BOUNDS_PADDING ||
-                p.y > this.height + this.OUT_OF_BOUNDS_PADDING
-            ) {
+                p.y > this.height + this.OUT_OF_BOUNDS_PADDING) {
                 this.particles.splice(i, 1);
                 continue;
             }
@@ -130,13 +128,13 @@ export default class DuneFormation extends AnimationBase {
                 const currentHeight = this.grid[idx];
 
                 // Collision with UI obstacles (Exclusion Areas)
-                const isHitObstacle = exclusionAreas.some(
-                    (area) =>
-                        p.x >= area.x && p.x <= area.x + area.width && p.y >= area.y && p.y <= area.y + area.height
+                const isHitObstacle = exclusionAreas.some(area =>
+                    p.x >= area.x && p.x <= area.x + area.width &&
+                    p.y >= area.y && p.y <= area.y + area.height
                 );
 
                 // Probability of settling increases with existing height (sand traps sand)
-                const isHitSand = currentHeight > Math.random() * this.SAND_TRAP_THRESHOLD;
+                const isHitSand = currentHeight > (Math.random() * this.SAND_TRAP_THRESHOLD);
 
                 if (isHitObstacle || isHitSand) {
                     const r = Math.random();

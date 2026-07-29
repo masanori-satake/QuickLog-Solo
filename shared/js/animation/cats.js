@@ -9,26 +9,26 @@ export default class Cats extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Cats',
-            ja: '猫',
-            de: 'Katzen',
-            es: 'Gatos',
-            fr: 'Chats',
-            pt: 'Gatos',
-            ko: '고양이',
-            zh: '猫',
+            en: "Cats",
+            ja: "猫",
+            de: "Katzen",
+            es: "Gatos",
+            fr: "Chats",
+            pt: "Gatos",
+            ko: "고양이",
+            zh: "猫"
         },
         description: {
-            en: 'Pixel art cats walking around and eating food.',
-            ja: '猫たちが歩き回ったり、餌を食べたりします。',
-            de: 'Pixel-Art-Katzen, die herumspazieren und Futter fressen.',
-            es: 'Gatos de arte de píxeles caminando y comiendo comida.',
-            fr: 'Des chats en pixel art qui se promènent et mangent de la nourriture.',
-            pt: 'Gatos de arte pixelada andando e comendo comida.',
-            ko: '도트 아트 고양이들이 돌아다니며 먹이를 먹습니다.',
-            zh: '像素艺术猫在到处走动并吃食物。',
+            en: "Pixel art cats walking around and eating food.",
+            ja: "猫たちが歩き回ったり、餌を食べたりします。",
+            de: "Pixel-Art-Katzen, die herumspazieren und Futter fressen.",
+            es: "Gatos de arte de píxeles caminando y comiendo comida.",
+            fr: "Des chats en pixel art qui se promènent et mangent de la nourriture.",
+            pt: "Gatos de arte pixelada andando e comendo comida.",
+            ko: "도트 아트 고양이들이 돌아다니며 먹이를 먹습니다.",
+            zh: "像素艺术猫在到处走动并吃食物。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo"
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -56,36 +56,9 @@ export default class Cats extends AnimationBase {
         // Initialize cat instances
         // 猫のインスタンスを初期化
         this.cats = [
-            {
-                x: Math.random() * width,
-                y: this.groundY,
-                targetX: Math.random() * width,
-                state: 'walking',
-                timer: 0,
-                color: '#fff',
-                scale: 1.5,
-                interested: true,
-            },
-            {
-                x: Math.random() * width,
-                y: this.groundY,
-                targetX: Math.random() * width,
-                state: 'sitting',
-                timer: 100,
-                color: '#aaa',
-                scale: 1.4,
-                interested: false,
-            },
-            {
-                x: Math.random() * width,
-                y: this.groundY,
-                targetX: Math.random() * width,
-                state: 'walking',
-                timer: 0,
-                color: '#ccc',
-                scale: 1.6,
-                interested: true,
-            },
+            { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'walking', timer: 0, color: '#fff', scale: 1.5, interested: true },
+            { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'sitting', timer: 100, color: '#aaa', scale: 1.4, interested: false },
+            { x: Math.random() * width, y: this.groundY, targetX: Math.random() * width, state: 'walking', timer: 0, color: '#ccc', scale: 1.6, interested: true }
         ];
         this.foods = [];
         this.lastPlatforms = [];
@@ -124,14 +97,14 @@ export default class Cats extends AnimationBase {
 
         // 1. Update Food state
         // 1. 餌の状態更新
-        this.foods = this.foods.filter((f) => f.life > 0);
+        this.foods = this.foods.filter(f => f.life > 0);
 
         // 2. Define platforms (Top of UI text boxes + ground)
         // 2. 足場の定義（テキスト領域の上端 + 地面）
-        const platforms = exclusionAreas.map((area) => ({
+        const platforms = exclusionAreas.map(area => ({
             y: area.y,
             xStart: area.x,
-            xEnd: area.x + area.width,
+            xEnd: area.x + area.width
         }));
 
         const allPlatforms = [...platforms, { y: this.groundY, xStart: 0, xEnd: width }];
@@ -144,9 +117,7 @@ export default class Cats extends AnimationBase {
 
             // Find current platform the cat is on
             // 現在乗っている足場を確認
-            const currentPlatform = allPlatforms.find(
-                (p) => Math.abs(cat.y - p.y) < 5 && cat.x >= p.xStart && cat.x <= p.xEnd
-            );
+            const currentPlatform = allPlatforms.find(p => Math.abs(cat.y - p.y) < 5 && cat.x >= p.xStart && cat.x <= p.xEnd);
 
             // Food detection logic
             // 餌の検知ロジック
@@ -165,12 +136,10 @@ export default class Cats extends AnimationBase {
             // State management: walking, sitting, eating
             // 状態管理：歩く、座る、食べる
             if (cat.state === 'walking') {
-                const speed = cat.interested && this.foods.length > 0 ? 1.2 : 0.8;
-                if (cat.x < cat.targetX) cat.x += speed;
-                else cat.x -= speed;
+                const speed = (cat.interested && this.foods.length > 0) ? 1.2 : 0.8;
+                if (cat.x < cat.targetX) cat.x += speed; else cat.x -= speed;
 
-                const atEdge =
-                    currentPlatform && (cat.x <= currentPlatform.xStart + 5 || cat.x >= currentPlatform.xEnd - 5);
+                const atEdge = currentPlatform && (cat.x <= currentPlatform.xStart + 5 || cat.x >= currentPlatform.xEnd - 5);
                 if (Math.abs(cat.x - cat.targetX) < 2 || atEdge) {
                     cat.state = 'sitting';
                     cat.timer = 100 + Math.random() * 200;
@@ -198,7 +167,7 @@ export default class Cats extends AnimationBase {
 
         // 4. Draw Food
         // 4. 餌の描画
-        this.foods.forEach((f) => {
+        this.foods.forEach(f => {
             ctx.fillStyle = '#ffa';
             ctx.fillRect(f.x - 2, f.y - 2, 4, 2);
             ctx.fillRect(f.x - 1, f.y - 4, 2, 2);
@@ -223,9 +192,9 @@ export default class Cats extends AnimationBase {
 
         // Body, Head, Ears
         ctx.fillRect(-6, -6, 10, 6); // Body
-        ctx.fillRect(2, -10, 6, 6); // Head
-        ctx.fillRect(3, -12, 2, 2); // Ear L
-        ctx.fillRect(6, -12, 2, 2); // Ear R
+        ctx.fillRect(2, -10, 6, 6);  // Head
+        ctx.fillRect(3, -12, 2, 2);  // Ear L
+        ctx.fillRect(6, -12, 2, 2);  // Ear R
 
         // Legs (Walking animation)
         if (cat.state === 'walking') {

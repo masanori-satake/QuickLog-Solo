@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-1.19.9-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kllhfalcincleolgoepnailfjendigdh?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh) [![Crowdin](https://badges.crowdin.net/quicklog-solo/localized.svg)](https://crowdin.com/project/quicklog-solo) [![Tests & Lint](https://img.shields.io/github/actions/workflow/status/masanori-satake/QuickLog-Solo/tests-and-lint.yml?branch=main&label=Tests%20%26%20Lint)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/tests-and-lint.yml) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/masanori-satake/QuickLog-Solo/main.svg)](https://results.pre-commit.ci/latest/github/masanori-satake/QuickLog-Solo/main) [![Web Deploy](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml)
+![Version](https://img.shields.io/badge/version-1.19.10-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kllhfalcincleolgoepnailfjendigdh?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh) [![Crowdin](https://badges.crowdin.net/quicklog-solo/localized.svg)](https://crowdin.com/project/quicklog-solo) [![Tests & Lint](https://img.shields.io/github/actions/workflow/status/masanori-satake/QuickLog-Solo/tests-and-lint.yml?branch=main&label=Tests%20%26%20Lint)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/tests-and-lint.yml) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/masanori-satake/QuickLog-Solo/main.svg)](https://results.pre-commit.ci/latest/github/masanori-satake/QuickLog-Solo/main) [![Web Deploy](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml)
 
 # <img src="shared/assets/icon.svg" width="32" style="vertical-align: middle; margin-right: 8px;"> QuickLog-Solo
 
@@ -9,7 +9,6 @@
 設計思想や行動指針については [AGENTS.md](AGENTS.md) を参照してください。
 
 ## 特徴
-
 - **1秒で記録、1秒で集計:** カテゴリを選ぶだけで即座に計測開始。前後のタスクは自動的に連結・終了処理され、日報や集計データもワンクリックで作成できます。
 - **ブラウザ・サイドバー常駐:** Chrome, Edge のサイドパネルに対応。作業を妨げず、いつでもブラウザの傍らでクイックに記録可能です。
 - **Visual Healing（視覚的癒やし）:** 20種類以上のLCDドットマトリクス風アニメーションを搭載。「1秒の重み」を緩やかな変化で表現し、作業中のストレスを軽減する心地よい体験を提供します。
@@ -26,13 +25,11 @@
 ## インストール方法
 
 ### 🚀 リリース版 (Chrome Web Store) - 推奨
-
 Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にインストールできます。**新バージョンへの自動アップデートが適用されるため、通常はこちらの利用を強く推奨します。**
 
 [![Available in the Chrome Web Store](shared/assets/badges/chrome-web-store-badge-en.png)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh)
 
 ### 🛠️ 開発版 (Zip)
-
 **最新の未リリース機能をいち早く試したい方**は、以下の手順でインストールしてください。開発版へのフィードバックは随時受け付けています。なお、**開発版は新しいバージョンへの自動アップデートが行われないため、手動での更新が必要です。**
 
 1. `releases/QuickLog-Solo-v{version}.zip` などのZIPファイルをダウンロードして解凍します（`{version}`部分は最新のバージョン番号に読み替えてください）。
@@ -42,7 +39,6 @@ Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にイン�
 5. ツールバーの拡張機能アイコンをクリックし、QuickLog-Solo をピン留めして使用します。
 
 ## 使用方法
-
 - **タスク開始:** カテゴリボタンをクリックすると、即座に計測が始まります。
 - **一時停止/再開:** 「一時停止」ボタンで休憩や割り込みに対応. 再度クリックで元のタスクを再開します。
 - **タスク終了:** 「終了」ボタンで現在の作業を完了します。
@@ -52,7 +48,6 @@ Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にイン�
 - **メンテナンス:** 設定（⚙️）の「メンテナンス」タブから、ログの一括削除や、カテゴリ・設定の初期化（リセット）が行えます。不具合発生時や環境をクリーンにしたい場合に使用します。
 
 ## データの保存場所とリスク (Data Storage & Risks)
-
 - **データの保存先:** 記録されたデータはすべてブラウザ内の **IndexedDB** に保存されます（バックアップを実行した際には、ローカルファイルシステムにも保存されます）。
 - **消失リスク:** ブラウザの「閲覧履歴の消去」やキャッシュクリア、またはブラウザ自体の仕様により、データが予期せず削除される可能性があります。
 - **推奨事項:** 大切な記録を守るため、設定の「バックアップ」タブから定期的にバックアップを実行することを強く推奨します。
@@ -61,7 +56,6 @@ Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にイン�
 - **Recommendation:** To protect your valuable records, we strongly recommend performing regular backups from the "Backup" tab of the settings.
 
 ## プライバシーとセキュリティ (Privacy & Security)
-
 - **Local Only:** 本アプリは、CSP（Content Security Policy）により技術的に外部への通信を一切行わないことが保証されています。
 - **トラッキングなし:** アクセス解析や広告、外部サービスへのデータ送信は一切行いません。
 - **透明性:** プログラムは Vanilla JS で記述されており、依存関係によるブラックボックスがありません。また、開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。さらに、Google OSV-Scanner を用いた[透明性レポート（監査ログ）](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml)を公開し、依存関係の安全性と透明性を確保しています。
@@ -70,20 +64,17 @@ Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にイン�
 - **Transparency:** The program is written in Vanilla JS with no hidden dependencies. You can directly inspect the contents of IndexedDB using browser developer tools (F12). We also publish a [Transparency Report (Audit Logs)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/tests-and-lint.yml) powered by Google OSV-Scanner to ensure the security and transparency of dependencies.
 
 ## カスタマイズ
-
 - **テーマ:** ライトモード / ダークモードの切り替えが可能です。
 - **アクセントカラー:** カテゴリごとに 14 色のカラーバリエーションから選択できます。
 - **フォント切り替え:** 言語ごとに最適化された複数のフォントから選択可能です。
 - **背景アニメーション:** 20 種類以上の LCD ドットマトリクス風アニメーションを搭載。
 
 ## 関連プロジェクト
-
 - **[QL-Category Editor](https://quick-log-solo.vercel.app/category-editor):** 広い画面でカテゴリの詳細編集や並び替えを効率的に行えるウェブベースのエディタ。
 - **[QL-Alarm Editor](https://quick-log-solo.vercel.app/alarm-editor):** 高度なアラーム設定や稼働日設定を視覚的に管理できるエディタ。
 - **[QL-Animation Studio (β版)](https://quick-log-solo.vercel.app/studio):** ブラウザ上でオリジナルの背景アニメーションを作成・テストできる開発環境。
 
 ## 開発者向け情報
-
 開発環境の構築、ディレクトリ構成、テスト方法などの技術的な詳細は [docs/README_DEV.md](docs/README_DEV.md) を参照してください。
 
 ---
@@ -91,7 +82,6 @@ Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にイン�
 This project uses Material Design 3, an open-source design system by Google.
 
 ## 免責事項 (Disclaimer)
-
 本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
 利用に際して生じたいかなる損害（データの消失、業務の中断、PCの不具合など、本ツールやドキュメントを利用したことによるすべての損害）について、開発者は一切の責任を負いません。
 MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
