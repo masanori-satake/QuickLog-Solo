@@ -18,10 +18,6 @@ on:
       - 'package-lock.json'
       - 'eslint.config.js'
       - '.stylelintrc.json'
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - '.github/workflows/release_*.yml'
   workflow_dispatch:
 
 env:
