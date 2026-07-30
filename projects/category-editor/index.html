@@ -23,7 +23,7 @@
             let resolvedTheme = 'dark'; // body default is theme-dark
             if (themeParam === 'light' || themeParam === 'dark') {
                 resolvedTheme = themeParam;
-            } else if (savedTheme === 'light' || savedTheme === 'dark') {
+            } else if (savedTheme) {
                 resolvedTheme = savedTheme;
             } else if (prefersLight) {
                 resolvedTheme = 'light';

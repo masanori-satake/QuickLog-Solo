@@ -2947,35 +2947,16 @@ function setupEventListeners() {
         return urlObj.toString();
     }
 
-    async function launchProjectInNewTab(extensionPath, webPath, extraParams = {}) {
-        // Synchronously open an empty tab to avoid popup blockers
-        const newTab = window.open('', '_blank', 'noopener');
-
-        // Now do async work
-        const lang = getLanguage();
-        const appState = await getCurrentAppState();
-        let resolvedTheme = appState.theme;
-        if (!resolvedTheme || resolvedTheme === 'system') {
-            resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-
-        const params = {
-            lang,
-            theme: resolvedTheme,
-            ...extraParams,
-        };
-
-        const url = getLaunchProjectUrl(extensionPath, webPath, params);
-
-        // Navigate the previously-opened tab to the final URL
-        if (newTab) {
-            newTab.location.href = url;
-        }
-    }
-
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
-        launchProjectInNewTab('projects/category-editor/index.html', CATEGORY_EDITOR_URL, { from: 'app' });
+        const lang = getLanguage();
+        const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
+        const url = getLaunchProjectUrl('projects/category-editor/index.html', CATEGORY_EDITOR_URL, {
+            lang,
+            theme: resolvedTheme,
+            from: 'app',
+        });
+        window.open(url, '_blank', 'noopener');
     });
 
     getEl('launch-maker-btn')?.addEventListener('click', (e) => {
@@ -2983,12 +2964,26 @@ function setupEventListeners() {
         if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.id) {
             return;
         }
-        launchProjectInNewTab('projects/animation-maker/index.html', '../animation-maker/index.html');
+        const lang = getLanguage();
+        const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
+
+        const url = getLaunchProjectUrl('projects/animation-maker/index.html', '../animation-maker/index.html', {
+            lang,
+            theme: resolvedTheme,
+        });
+        window.open(url, '_blank', 'noopener');
     });
 
     getEl('alarm-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
-        launchProjectInNewTab('projects/alarm-editor/index.html', ALARM_EDITOR_URL, { from: 'app' });
+        const lang = getLanguage();
+        const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
+        const url = getLaunchProjectUrl('projects/alarm-editor/index.html', ALARM_EDITOR_URL, {
+            lang,
+            theme: resolvedTheme,
+            from: 'app',
+        });
+        window.open(url, '_blank', 'noopener');
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
