@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QL-Category Editor</title>
+    <title>業務カテゴリ・エディタ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Fira+Code:wght@400;500&family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -43,7 +43,7 @@
                     <a href="../web/" class="back-link" data-i18n-title="back-to-landing">
                         <span class="material-symbols-outlined">arrow_back</span>
                     </a>
-                    <h1 id="editor-title-heading"><span class="material-symbols-outlined">edit_note</span> <span data-i18n="category-editor-title">QL-Category Editor</span></h1>
+                    <h1 id="editor-title-heading"><span class="material-symbols-outlined title-icon">edit_note</span> <span data-i18n="category-editor-title">業務カテゴリ・エディタ</span></h1>
                     <div class="history-controls">
                         <button id="undo-btn" class="icon-btn" data-i18n-title="undo" disabled><span class="material-symbols-outlined">undo</span></button>
                         <button id="redo-btn" class="icon-btn" data-i18n-title="redo" disabled><span class="material-symbols-outlined">redo</span></button>
@@ -187,6 +187,10 @@
                     <button id="export-btn" class="primary-btn">
                         <span class="material-symbols-outlined">content_copy</span>
                         <span data-i18n="btn-export-json">コピー (Export)</span>
+                    </button>
+                    <button id="apply-btn" class="apply-btn hidden">
+                        <span data-i18n="btn-apply">適用</span>
+                        <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
                 </div>
             </div>

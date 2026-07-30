@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-1.19.14-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kllhfalcincleolgoepnailfjendigdh?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh) [![Crowdin](https://badges.crowdin.net/quicklog-solo/localized.svg)](https://crowdin.com/project/quicklog-solo) [![Tests & Lint](https://img.shields.io/github/actions/workflow/status/masanori-satake/QuickLog-Solo/tests-and-lint.yml?branch=main&label=Tests%20%26%20Lint)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/tests-and-lint.yml) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/masanori-satake/QuickLog-Solo/main.svg)](https://results.pre-commit.ci/latest/github/masanori-satake/QuickLog-Solo/main) [![Web Deploy](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml)
+![Version](https://img.shields.io/badge/version-1.19.15-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kllhfalcincleolgoepnailfjendigdh?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh) [![Crowdin](https://badges.crowdin.net/quicklog-solo/localized.svg)](https://crowdin.com/project/quicklog-solo) [![Tests & Lint](https://img.shields.io/github/actions/workflow/status/masanori-satake/QuickLog-Solo/tests-and-lint.yml?branch=main&label=Tests%20%26%20Lint)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/tests-and-lint.yml) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/masanori-satake/QuickLog-Solo/main.svg)](https://results.pre-commit.ci/latest/github/masanori-satake/QuickLog-Solo/main) [![Web Deploy](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml)
 
 # <img src="shared/assets/icon.svg" width="32" style="vertical-align: middle; margin-right: 8px;"> QuickLog-Solo
 
@@ -69,10 +69,11 @@ Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にイン�
 - **フォント切り替え:** 言語ごとに最適化された複数のフォントから選択可能です。
 - **背景アニメーション:** 20 種類以上の LCD ドットマトリクス風アニメーションを搭載。
 
-## 関連プロジェクト
-- **[QL-Category Editor](https://quick-log-solo.vercel.app/category-editor):** 広い画面でカテゴリの詳細編集や並び替えを効率的に行えるウェブベースのエディタ。
-- **[QL-Alarm Editor](https://quick-log-solo.vercel.app/alarm-editor):** 高度なアラーム設定や稼働日設定を視覚的に管理できるエディタ。
-- **[QL-Animation Studio (β版)](https://quick-log-solo.vercel.app/studio):** ブラウザ上でオリジナルの背景アニメーションを作成・テストできる開発環境。
+## 関連プロジェクト (Related Projects)
+- **[業務カテゴリ・エディタ (Category Editor)](https://quick-log-solo.vercel.app/category-editor):** 広い画面でカテゴリの詳細編集や並び替えを効率的に行えるウェブベースのエディタ。 (A web-based editor to efficiently edit and reorder category details on a larger screen.)
+- **[アラーム・エディタ (Alarm Editor)](https://quick-log-solo.vercel.app/alarm-editor):** 高度なアラーム設定や稼働日設定を視覚的に管理できるエディタ。 (An editor to visually manage advanced alarm and business day configurations.)
+- **[アニメーション・メーカー (Animation Maker)](https://quick-log-solo.vercel.app/animation-maker):** プログラミング不要で、GIF画像をアップロードするだけで誰でも直感的に自分だけのカスタムアニメーションを作成・追加できるエディタ。 (A no-code editor that allows anyone to easily create and add their own custom animations by simply uploading a GIF.)
+- **[QL-Animation Studio (β版)](https://quick-log-solo.vercel.app/studio):** ブラウザ上でオリジナルの背景アニメーションを作成・テストできる開発環境。 (A development workspace to code and test custom background animations in the browser.)
 
 ## 開発者向け情報
 開発環境の構築、ディレクトリ構成、テスト方法などの技術的な詳細は [docs/README_DEV.md](docs/README_DEV.md) を参照してください。

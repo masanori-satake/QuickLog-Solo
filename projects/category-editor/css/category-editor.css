@@ -659,7 +659,7 @@ input[type="text"]:disabled, select:disabled {
 }
 
 .modal.hidden {
-    display: none;
+    display: none !important;
 }
 
 .modal-content {
@@ -755,7 +755,7 @@ input[type="text"]:disabled, select:disabled {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* Theme Switch */

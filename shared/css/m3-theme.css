@@ -524,3 +524,38 @@ body.theme-dark {
     gap: 4px;
     margin-left: 12px;
 }
+
+/* Title icon color matching */
+.title-icon {
+    font-size: 1.5rem !important;
+    color: var(--md-sys-color-primary) !important;
+}
+
+/* Apply button style */
+.apply-btn {
+    width: auto;
+    padding: 10px 24px;
+    border-radius: var(--md-sys-shape-medium, 12px);
+    background: linear-gradient(135deg, #0d47a1 0%, #4a148c 100%);
+    color: #fff !important;
+    font-size: 0.95rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+}
+
+.apply-btn:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.apply-btn:active {
+    transform: translateY(0);
+}
