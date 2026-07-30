@@ -1028,13 +1028,6 @@ export function initUI(state, elements) {
         updateAnimationInfo();
     });
 
-    newStartBtn.addEventListener('click', () => {
-        if (confirm(t('confirm-load-default'))) {
-            if (state.recordAction) state.recordAction();
-            if (state.loadDefaultCategories) state.loadDefaultCategories();
-        }
-    });
-
     clearAllBtn.addEventListener('click', () => {
         if (confirm(t('confirm-clear-all'))) {
             if (state.recordAction) state.recordAction();

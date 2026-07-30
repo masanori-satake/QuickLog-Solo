@@ -635,6 +635,10 @@ body.theme-light .hl-bracket { color: #af00db; }
     height: 48px;
 }
 
+#clear-console {
+    color: var(--md-sys-color-error) !important;
+}
+
 .console-section.collapsed #clear-console {
     display: none;
 }
@@ -1372,11 +1376,6 @@ body.theme-dark .tape-btn.primary {
     color: #0f380f;
     font-weight: bold;
     font-size: 11px;
-}
-
-/* Force Clear Console Button to display in red */
-#clear-console {
-    color: var(--md-sys-color-error) !important;
 }
 
 /* Hide the letter when selected so only checkmark displays */

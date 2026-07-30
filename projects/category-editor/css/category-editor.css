@@ -176,6 +176,10 @@ body {
     transition: opacity 0.2s;
 }
 
+.delete-item-btn {
+    color: var(--md-sys-color-error) !important;
+}
+
 .category-item:hover .delete-item-btn,
 .category-item:hover .more-item-btn {
     opacity: 1;
@@ -1139,10 +1143,6 @@ body.theme-light .secondary-btn:hover {
 
 /* Force Delete/Clear Buttons to display in red */
 #delete-selected-btn {
-    color: var(--md-sys-color-error) !important;
-}
-
-.delete-item-btn {
     color: var(--md-sys-color-error) !important;
 }
 
