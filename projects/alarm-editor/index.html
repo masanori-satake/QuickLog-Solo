@@ -116,51 +116,24 @@
                         </div>
 
                         <div class="detail-grid">
-                            <div class="detail-left-col">
-                                <div class="section-card">
-                                    <div class="section-title">
-                                        <span class="material-symbols-outlined">schedule</span>
-                                        <span data-i18n="alarm-section-basic">基本設定</span>
-                                    </div>
-                                    <div class="input-row">
-                                        <div class="input-group">
-                                            <label data-i18n="alarm-label-time">時刻</label>
-                                            <input type="time" id="alarm-time-input">
-                                        </div>
-                                        <div class="input-group">
-                                            <label data-i18n="alarm-label-confirmation">確認が必要</label>
-                                            <label class="switch">
-                                                <input type="checkbox" id="alarm-confirm-toggle">
-                                                <span class="slider"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="input-group">
-                                        <label data-i18n="alarm-label-message">メッセージ</label>
-                                        <input type="text" id="alarm-message-input" data-i18n-placeholder="alarm-placeholder-message">
-                                    </div>
-                                </div>
-
-                                <div class="section-card">
-                                    <div class="section-title">
-                                        <span class="material-symbols-outlined">bolt</span>
-                                        <span data-i18n="alarm-section-action">アクション設定</span>
-                                    </div>
-                                    <div class="input-group">
-                                        <label data-i18n="alarm-label-action">実行するアクション</label>
-                                        <select id="alarm-action-select"></select>
-                                    </div>
-                                    <div class="input-group hidden" id="action-category-group">
-                                        <label data-i18n="alarm-label-action-category">カテゴリ</label>
-                                        <select id="alarm-action-category-select"></select>
-                                    </div>
-                                </div>
-                            </div>
-
+                            <!-- スケジュール設定 Card -->
                             <div class="section-card">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">event</span>
                                     <span data-i18n="alarm-section-schedule">スケジュール設定</span>
+                                </div>
+                                <div class="input-row">
+                                    <div class="input-group">
+                                        <label data-i18n="alarm-label-time">時刻</label>
+                                        <input type="time" id="alarm-time-input">
+                                    </div>
+                                    <div class="input-group">
+                                        <label data-i18n="alarm-label-confirmation">確認が必要</label>
+                                        <label class="switch">
+                                            <input type="checkbox" id="alarm-confirm-toggle">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
                                 </div>
                                 <div class="input-group">
                                     <label data-i18n="alarm-label-type">タイプ</label>
@@ -195,6 +168,26 @@
                                     <label data-i18n="alarm-label-holiday-adjustment">休日調整</label>
                                     <select id="alarm-holiday-adj-select"></select>
                                     <div id="alarm-adj-desc" class="setting-description-box"></div>
+                                </div>
+                            </div>
+
+                            <!-- アクション設定 Card -->
+                            <div class="section-card">
+                                <div class="section-title">
+                                    <span class="material-symbols-outlined">bolt</span>
+                                    <span data-i18n="alarm-section-action">アクション設定</span>
+                                </div>
+                                <div class="input-group">
+                                    <label data-i18n="alarm-label-message">メッセージ</label>
+                                    <input type="text" id="alarm-message-input" data-i18n-placeholder="alarm-placeholder-message">
+                                </div>
+                                <div class="input-group">
+                                    <label data-i18n="alarm-label-action">実行するアクション</label>
+                                    <select id="alarm-action-select"></select>
+                                </div>
+                                <div class="input-group hidden" id="action-category-group">
+                                    <label data-i18n="alarm-label-action-category">カテゴリ</label>
+                                    <select id="alarm-action-category-select"></select>
                                 </div>
                             </div>
                         </div>

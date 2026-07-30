@@ -1374,6 +1374,11 @@ body.theme-dark .tape-btn.primary {
     font-size: 11px;
 }
 
+/* Force Clear Console Button to display in red */
+#clear-console {
+    color: var(--md-sys-color-error) !important;
+}
+
 /* Hide the letter when selected so only checkmark displays */
 .color-preset.active[data-color="retro-lcd"]::after,
 .color-preset.active[data-color="retro-crt"]::after,

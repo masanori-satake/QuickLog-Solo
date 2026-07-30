@@ -9,7 +9,7 @@ import {
 } from '../shared/js/schema.js';
 
 export function initDataIO(state, elements) {
-    const { importBtn, exportBtn, codeViewEl } = elements;
+    const { importBtn, exportBtn } = elements;
 
     function t(key, params) {
         if (state.t) return state.t(key, params);
@@ -23,25 +23,6 @@ export function initDataIO(state, elements) {
     function getCategoryTags(cat) {
         if (!cat || !cat.tags) return [];
         return cat.tags.split(',').map(t => t.trim()).filter(Boolean);
-    }
-
-    function updateCodeView() {
-        const ndjson = state.categories.map(cat => {
-            const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
-            const entry = {
-                kind: SCHEMA_KIND_CATEGORY,
-                version: SCHEMA_VERSION_1_0,
-                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
-            };
-            if (!isPageBreak) {
-                entry.name = cat.name;
-                entry.color = cat.color;
-                entry.tags = getCategoryTags(cat);
-                entry.animation = cat.animation || 'default';
-            }
-            return JSON.stringify(entry);
-        }).join('\n');
-        codeViewEl.textContent = ndjson;
     }
 
     async function handleImport() {
@@ -105,7 +86,6 @@ export function initDataIO(state, elements) {
             if (state.renderCategoryList) state.renderCategoryList();
             if (state.renderDetail) state.renderDetail();
             if (state.renderGlobalTagBox) state.renderGlobalTagBox();
-            updateCodeView();
             showToast(t('toast-import-success'));
         } catch (err) {
             console.error(err);
@@ -149,7 +129,5 @@ export function initDataIO(state, elements) {
     importBtn.addEventListener('click', handleImport);
     exportBtn.addEventListener('click', handleExport);
 
-    return {
-        updateCodeView
-    };
+    return {};
 }

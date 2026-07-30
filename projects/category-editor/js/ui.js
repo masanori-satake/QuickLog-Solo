@@ -22,7 +22,6 @@ export function initUI(state, elements) {
         addCategoryBtn,
         deleteSelectedBtn,
         addPageBreakBtn,
-        newStartBtn,
         clearAllBtn,
         globalTagListEl,
         tagReplaceModalEl,
@@ -143,7 +142,6 @@ export function initUI(state, elements) {
                         renderCategoryList();
                         renderDetail();
                         renderGlobalTagBox();
-                        if (state.updateCodeView) state.updateCodeView();
                     };
                     item.appendChild(deleteBtn);
                 } else {
@@ -238,7 +236,6 @@ export function initUI(state, elements) {
                 renderCategoryList();
                 renderDetail();
                 renderGlobalTagBox();
-                if (state.updateCodeView) state.updateCodeView();
             }
             menu.remove();
         };
@@ -266,7 +263,6 @@ export function initUI(state, elements) {
         renderCategoryList();
         renderDetail();
         renderGlobalTagBox();
-        if (state.updateCodeView) state.updateCodeView();
     }
 
     function updateListItem(idx) {
@@ -586,7 +582,6 @@ export function initUI(state, elements) {
                 });
                 renderTags();
                 renderGlobalTagBox();
-                if (state.updateCodeView) state.updateCodeView();
             };
             tagListEl.appendChild(pill);
         });
@@ -616,7 +611,6 @@ export function initUI(state, elements) {
                 });
                 renderDetail();
                 renderCategoryList();
-                if (state.updateCodeView) state.updateCodeView();
             };
             colorPaletteEl.appendChild(opt);
         });
@@ -824,7 +818,6 @@ export function initUI(state, elements) {
             renderTags();
             renderGlobalTagBox();
             renderTagReplaceModal(); // Re-render table with new state
-            if (state.updateCodeView) state.updateCodeView();
             updateModalHistoryButtons();
         }
     }
@@ -894,7 +887,6 @@ export function initUI(state, elements) {
         state.lastSelectedIndex = state.categories.length - 1;
         renderCategoryList();
         renderDetail();
-        if (state.updateCodeView) state.updateCodeView();
         categoryListEl.scrollTop = categoryListEl.scrollHeight;
     });
 
@@ -909,7 +901,6 @@ export function initUI(state, elements) {
             renderCategoryList();
             renderDetail();
             renderGlobalTagBox();
-            if (state.updateCodeView) state.updateCodeView();
         }
     });
 
@@ -923,7 +914,6 @@ export function initUI(state, elements) {
         state.lastSelectedIndex = state.categories.length - 1;
         renderCategoryList();
         renderDetail();
-        if (state.updateCodeView) state.updateCodeView();
         categoryListEl.scrollTop = categoryListEl.scrollHeight;
     });
 
@@ -946,7 +936,6 @@ export function initUI(state, elements) {
         state.categories[idx].name = name;
         previewNameEl.textContent = name;
         updateListItem(idx);
-        if (state.updateCodeView) state.updateCodeView();
     });
 
     tagInput.addEventListener('keydown', (e) => {
@@ -973,7 +962,6 @@ export function initUI(state, elements) {
                 if (changed) {
                     renderTags();
                     renderGlobalTagBox();
-                    if (state.updateCodeView) state.updateCodeView();
                 }
                 tagInput.value = '';
             }
@@ -1019,7 +1007,6 @@ export function initUI(state, elements) {
             if (changed) {
                 renderTags();
                 renderGlobalTagBox();
-                if (state.updateCodeView) state.updateCodeView();
             }
         }
     });
@@ -1035,7 +1022,6 @@ export function initUI(state, elements) {
             }
         });
         renderDetail();
-        if (state.updateCodeView) state.updateCodeView();
     });
 
     editAnimationSelect.addEventListener('mouseenter', () => {
@@ -1058,7 +1044,6 @@ export function initUI(state, elements) {
             renderCategoryList();
             renderDetail();
             renderGlobalTagBox();
-            if (state.updateCodeView) state.updateCodeView();
         }
     });
 
@@ -1145,7 +1130,6 @@ export function initUI(state, elements) {
 
         renderCategoryList();
         renderDetail();
-        if (state.updateCodeView) state.updateCodeView();
     });
 
     return {
