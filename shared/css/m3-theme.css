@@ -34,6 +34,9 @@
   --md-sys-color-inverse-surface: #313033;
   --md-sys-color-inverse-on-surface: #f4eff4;
 
+  /* --- Semantic Action Colors --- */
+  --action-destructive: var(--md-sys-color-error);
+
   /* --- Semantic Colors for Days (App specific) --- */
   --app-color-sunday: #d32f2f;
   --app-color-on-sunday: #fff;
@@ -180,6 +183,9 @@ body.theme-dark {
   --md-sys-color-surface-container-highest: #35343a;
   --md-sys-color-inverse-surface: #e5e1e6;
   --md-sys-color-inverse-on-surface: #313033;
+
+  /* --- Semantic Action Colors --- */
+  --action-destructive: var(--md-sys-color-error);
 
   /* Custom Category Tonal Presets (Dark - Mapped to M3 Roles) */
   --custom-cat-primary-container: #0d47a1;

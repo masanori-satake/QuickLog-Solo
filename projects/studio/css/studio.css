@@ -636,7 +636,7 @@ body.theme-light .hl-bracket { color: #af00db; }
 }
 
 #clear-console {
-    color: var(--md-sys-color-error) !important;
+    color: var(--action-destructive) !important;
 }
 
 .console-section.collapsed #clear-console {
