@@ -50,15 +50,11 @@ const elements = {
     animInfoEl: document.getElementById('animation-info'),
     animDescEl: document.getElementById('anim-desc'),
     animAuthorEl: document.getElementById('anim-author'),
-    codeViewEl: document.getElementById('code-view'),
-    codeModalEl: document.getElementById('code-modal'),
-    btnShowCode: document.getElementById('btn-show-code'),
     addCategoryBtn: document.getElementById('add-category-btn'),
     deleteSelectedBtn: document.getElementById('delete-selected-btn'),
     addPageBreakBtn: document.getElementById('add-page-break-btn'),
     importBtn: document.getElementById('import-btn'),
     exportBtn: document.getElementById('export-btn'),
-    newStartBtn: document.getElementById('new-start-btn'),
     clearAllBtn: document.getElementById('clear-all-btn'),
     globalTagListEl: document.getElementById('global-tag-list'),
     langSelect: document.getElementById('lang-select-editor'),
@@ -104,8 +100,6 @@ async function init() {
     state.renderGlobalTagBox = uiMod.renderGlobalTagBox;
     state.populateAnimationOptions = uiMod.populateAnimationOptions;
     state.updateListItem = uiMod.updateListItem;
-
-    state.updateCodeView = dataIoMod.updateCodeView;
 
     state.updatePreview = updatePreview;
     state.loadDefaultCategories = loadDefaultCategories;
@@ -224,10 +218,6 @@ function setupEventListeners() {
         state.renderDetail();
     });
 
-    elements.btnShowCode.addEventListener('click', () => {
-        elements.codeModalEl.classList.remove('hidden');
-    });
-
     if (elements.openTagReplaceBtn) {
         elements.openTagReplaceBtn.addEventListener('click', () => {
             if (uiMod.renderTagReplaceModal) uiMod.renderTagReplaceModal();
@@ -253,9 +243,6 @@ function setupEventListeners() {
     });
 
     window.addEventListener('click', (e) => {
-        if (e.target === elements.codeModalEl) {
-            elements.codeModalEl.classList.add('hidden');
-        }
         const menu = document.querySelector('.category-menu');
         if (menu && !menu.contains(e.target)) {
             menu.remove();
@@ -278,7 +265,6 @@ function loadDefaultCategories() {
     state.renderCategoryList();
     state.renderDetail();
     state.renderGlobalTagBox();
-    state.updateCodeView();
 }
 
 function refreshUIAfterHistoryChange() {
@@ -297,7 +283,6 @@ function refreshUIAfterHistoryChange() {
     state.renderCategoryList();
     state.renderDetail();
     state.renderGlobalTagBox();
-    state.updateCodeView();
     historyMod.updateHistoryButtons();
     if (uiMod.updateModalHistoryButtons) uiMod.updateModalHistoryButtons();
 }

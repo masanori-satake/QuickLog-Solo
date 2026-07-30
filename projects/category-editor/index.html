@@ -174,20 +174,12 @@
         <footer class="editor-footer">
             <div class="footer-content-wrapper">
                 <div class="footer-left">
-                    <button id="new-start-btn" class="tertiary-btn">
-                        <span class="material-symbols-outlined">auto_awesome</span>
-                        <span data-i18n="btn-new-start">Start from Default</span>
-                    </button>
                     <button id="clear-all-btn" class="tertiary-btn">
                         <span class="material-symbols-outlined">delete_sweep</span>
                         <span data-i18n="btn-clear-all">Clear All</span>
                     </button>
                 </div>
                 <div class="footer-right">
-                    <button id="btn-show-code" class="tertiary-btn" style="margin-right: 16px;">
-                        <span class="material-symbols-outlined">code</span>
-                        <span data-i18n="section-code-view">NDJSON View</span>
-                    </button>
                     <button id="import-btn" class="secondary-btn">
                         <span class="material-symbols-outlined">content_paste</span>
                         <span data-i18n="btn-import-json">貼り付け (Import)</span>
@@ -201,20 +193,6 @@
         </footer>
     </div>
 
-    <div id="code-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="section-title"><span class="material-symbols-outlined">code</span> <span data-i18n="section-code-view">NDJSON View</span></h3>
-                <button class="icon-btn" onclick="document.getElementById('code-modal').classList.add('hidden')"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            <div class="modal-body">
-                <pre id="code-view" class="code-view"></pre>
-            </div>
-            <div class="modal-footer">
-                <button class="primary-btn" onclick="document.getElementById('code-modal').classList.add('hidden')" data-i18n="btn-close">Close</button>
-            </div>
-        </div>
-    </div>
 
     <div id="tag-replace-modal" class="modal hidden">
         <div class="modal-content">

@@ -99,24 +99,21 @@ test.describe('Category Editor Multi-selection Tags', () => {
     await page.fill('#tag-input', 'tagE');
     await page.keyboard.press('Enter');
 
-    // Verify internally via NDJSON
-    await page.click('#btn-show-code');
-    let codeView = await page.textContent('#code-view');
-    let cats = codeView.trim().split('\n').map(l => JSON.parse(l));
-    expect(cats[0].tags).toContain('tagE');
-    expect(cats[1].tags).toContain('tagE');
-    await page.click('#code-modal button[data-i18n="btn-close"]');
+    // Verify internally
+    let cats = await page.evaluate(() => window.state.categories);
+    // Split and parse tags from comma-separated string
+    const getTagsList = (tagsStr) => tagsStr ? tagsStr.split(',').map(t => t.trim()) : [];
+    expect(getTagsList(cats[0].tags)).toContain('tagE');
+    expect(getTagsList(cats[1].tags)).toContain('tagE');
 
     // 3. Remove tagB
     await page.locator('.tag-pill:has-text("tagB") .tag-remove').click();
 
     // Verify internally
-    await page.click('#btn-show-code');
-    codeView = await page.textContent('#code-view');
-    cats = codeView.trim().split('\n').map(l => JSON.parse(l));
-    expect(cats[0].tags).not.toContain('tagB');
-    expect(cats[1].tags).not.toContain('tagB');
-    expect(cats[0].tags).toContain('tagA');
-    expect(cats[1].tags).toContain('tagC');
+    cats = await page.evaluate(() => window.state.categories);
+    expect(getTagsList(cats[0].tags)).not.toContain('tagB');
+    expect(getTagsList(cats[1].tags)).not.toContain('tagB');
+    expect(getTagsList(cats[0].tags)).toContain('tagA');
+    expect(getTagsList(cats[1].tags)).toContain('tagC');
   });
 });
