@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="alarm-editor-title">Alarm Editor - QuickLog-Solo</title>
+    <title data-i18n="alarm-editor-title">アラーム・エディタ - QuickLog-Solo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
@@ -42,7 +42,7 @@
                 <div class="header-left">
                     <h1 id="alarm-title-heading">
                         <span class="material-symbols-outlined title-icon">notifications</span>
-                        <span data-i18n="alarm-editor-title">アラームエディタ</span>
+                        <span data-i18n="alarm-editor-title">アラーム・エディタ</span>
                     </h1>
                     <div class="history-controls">
                         <button id="undo-btn" class="icon-btn" disabled data-i18n-title="undo">
@@ -212,6 +212,10 @@
                     <button id="export-btn" class="primary-btn">
                         <span class="material-symbols-outlined">content_copy</span>
                         <span data-i18n="btn-export-json">コピー (Export)</span>
+                    </button>
+                    <button id="apply-btn" class="apply-btn hidden">
+                        <span data-i18n="btn-apply">適用</span>
+                        <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
                 </div>
             </div>

@@ -6,6 +6,7 @@ import { AnimationEngine } from '../shared/js/animations.js';
 import { animations as animationRegistry } from '../shared/js/animation_registry.js';
 import { messages } from '../shared/js/messages.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
+import { setDatabaseName, initDB, dbGetAll, dbClear, dbAddMultiple, STORE_CATEGORIES } from '../shared/js/db.js';
 
 import { initHistory } from './history.js';
 import { initUI } from './ui.js';
@@ -55,6 +56,7 @@ const elements = {
     addPageBreakBtn: document.getElementById('add-page-break-btn'),
     importBtn: document.getElementById('import-btn'),
     exportBtn: document.getElementById('export-btn'),
+    applyBtn: document.getElementById('apply-btn'),
     clearAllBtn: document.getElementById('clear-all-btn'),
     globalTagListEl: document.getElementById('global-tag-list'),
     langSelect: document.getElementById('lang-select-editor'),
@@ -75,10 +77,20 @@ let historyMod, uiMod;
 
 async function init() {
     const urlParams = new URLSearchParams(window.location.search);
+    state.fromApp = (urlParams.get('from') === 'app');
+
     setupLanguage(urlParams);
     setupAppMode(urlParams);
     setupTheme();
     setupAnimationEngine();
+
+    if (state.fromApp) {
+        setDatabaseName('QuickLogSoloDB');
+        await initDB(false);
+        if (elements.importBtn) elements.importBtn.classList.add('hidden');
+        if (elements.exportBtn) elements.exportBtn.classList.add('hidden');
+        if (elements.applyBtn) elements.applyBtn.classList.remove('hidden');
+    }
 
     // Module initialization
     window.state = state;
@@ -109,7 +121,11 @@ async function init() {
 
     uiMod.renderColorPalette();
     await uiMod.populateAnimationOptions();
-    loadDefaultCategories();
+    if (state.fromApp) {
+        await loadAppCategories();
+    } else {
+        loadDefaultCategories();
+    }
     uiMod.renderGlobalTagBox();
     state.clearHistory();
 }
@@ -248,6 +264,24 @@ function setupEventListeners() {
             menu.remove();
         }
     });
+
+    if (elements.applyBtn) {
+        elements.applyBtn.onclick = async () => {
+            try {
+                await commitCategoryChanges();
+                // Show toast for 5 seconds as requested
+                const toast = document.getElementById('toast');
+                if (toast) {
+                    toast.textContent = state.t('btn-apply') + 'しました';
+                    toast.classList.remove('hidden');
+                    setTimeout(() => toast.classList.add('hidden'), 5000);
+                }
+            } catch (e) {
+                console.error(e);
+                state.showToast('Error applying changes');
+            }
+        };
+    }
 }
 
 function loadDefaultCategories() {
@@ -334,6 +368,62 @@ function updatePreview() {
 
     state.animationEngine.setExclusionAreas(exclusionAreas);
     state.animationEngine.start(animation === 'default' ? 'digital_rain' : animation, Date.now(), color);
+}
+
+async function loadAppCategories() {
+    try {
+        let allCategories = await dbGetAll(STORE_CATEGORIES);
+        allCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        // Filter out SYSTEM_CATEGORY_IDLE (usually __idle__) to avoid showing it in category list
+        allCategories = allCategories.filter(c => c.name !== '__idle__');
+
+        state.categories = allCategories.map(c => ({
+            name: c.name,
+            color: c.color || 'primary',
+            tags: c.tags || '',
+            animation: c.animation || 'default'
+        }));
+    } catch (e) {
+        console.error('Failed to load categories from app database, falling back to defaults:', e);
+        // fallback to standard defaults if loading fails
+        const defaultSet = [
+            { name: state.t('init-cat-dev'), color: 'primary', tags: state.t('init-tag-dev'), animation: 'digital_rain' },
+            { name: state.t('init-cat-meeting'), color: 'secondary', tags: state.t('init-tag-meeting'), animation: 'migrating_birds' },
+            { name: state.t('init-cat-research'), color: 'tertiary', tags: state.t('init-tag-research'), animation: 'ripple' },
+            { name: state.t('init-cat-admin'), color: 'neutral', tags: state.t('init-tag-admin'), animation: 'dot_typing' },
+            { name: state.t('init-cat-break'), color: 'outline', tags: state.t('init-tag-break'), animation: 'coffee_drip' }
+        ];
+        state.categories = defaultSet;
+    }
+
+    state.selectedIndices = state.categories.length > 0 ? [0] : [];
+    state.lastSelectedIndex = state.categories.length > 0 ? 0 : -1;
+    state.renderCategoryList();
+    state.renderDetail();
+    state.renderGlobalTagBox();
+}
+
+async function commitCategoryChanges() {
+    // Write directly to QuickLogSoloDB's STORE_CATEGORIES
+    // First clear existing categories
+    await dbClear(STORE_CATEGORIES);
+
+    // Prepare category records with orders
+    const records = state.categories.map((cat, i) => ({
+        name: cat.name,
+        color: cat.color || 'primary',
+        tags: cat.tags || '',
+        animation: cat.animation || 'default',
+        order: i
+    }));
+
+    // Add multiple
+    await dbAddMultiple(STORE_CATEGORIES, records);
+
+    // Post message to BroadcastChannel to notify main app!
+    const bc = new BroadcastChannel('quicklog_solo_sync_QuickLogSoloDB');
+    bc.postMessage({ type: 'sync' });
 }
 
 init();
