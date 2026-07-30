@@ -26,7 +26,8 @@ export default {
     // Alarms Tab
     'business-days': '근무 요일',
     'alarm-io-title': '알람 입출력(클립보드)',
-    'alarm-editor-title': '알람 에디터',
+    'alarm-editor-title': 'アラーム・エディタ',
+    'btn-launch-alarm-editor': 'アラーム・エディタを起動',
     'alarm-label-type': '실행 타이밍',
     'alarm-type-daily': '매일',
     'alarm-type-daily_business': '매일(근무일만)',
@@ -390,6 +391,7 @@ export default {
     'btn-clear-console': '콘솔 지우기',
     // Category Editor
     'category-editor-title': '업무 카테고리 에디터',
+    'btn-launch-category-editor': '業務カテゴリ・エディタを起動',
     'category-detail': '카테고리 상세',
     'tags-common': '태그(공통)',
     'setting-theme-common': '테마(공통)',
@@ -448,8 +450,8 @@ export default {
     'confirm-delete-custom-anim':
         "커스텀 애니메이션 '{name}'을(를) 삭제하시겠습니까?\n(이 애니메이션이 할당된 모든 카테고리 설정은 '없음'으로 변경됩니다)",
     'alert-invalid-qlanim': '맞지 않는 .qlanim 형식입니다. 파일 구조를 확인해 주십시오.',
-    'btn-launch-maker': 'QL-Animation Maker 기동',
-    'maker-title': 'QL-Animation Maker',
+    'btn-launch-maker': 'アニメーション・メーカーを起動',
+    'maker-title': 'アニメーション・メーカー',
     'placeholder-meta-name': 'マイアニメーション',
     'placeholder-meta-author': 'あなたのお名前',
     'placeholder-meta-desc': 'アニメーションの簡単な説明',
@@ -474,7 +476,7 @@ export default {
     'maker-data-transfer': '데이터 입출력',
     'maker-warning-title': '경고',
     'maker-note-extension-only':
-        '※ QL-Animation Makerはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
+        '※ アニメーション・メーカーはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
     'maker-error-name-empty': '名前を入力してください',
     'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
     'maker-select-prompt': 'カスタムアニメーションを追加してください',
