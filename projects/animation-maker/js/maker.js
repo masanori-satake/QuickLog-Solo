@@ -296,7 +296,11 @@ function setupTheme() {
     state.currentTheme =
         themeParam && (themeParam === 'light' || themeParam === 'dark')
             ? themeParam
-            : savedTheme || (prefersDark ? 'dark' : 'light');
+            : savedTheme === 'light' || savedTheme === 'dark'
+              ? savedTheme
+              : prefersDark
+                ? 'dark'
+                : 'light';
 
     elements.themeToggle.checked = state.currentTheme === 'dark';
     applyTheme();

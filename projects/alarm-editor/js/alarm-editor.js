@@ -99,7 +99,7 @@ async function init() {
 
     state.theme = (themeParam && (themeParam === 'light' || themeParam === 'dark'))
         ? themeParam
-        : (savedTheme || (prefersDark ? 'dark' : 'light'));
+        : ((savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : (prefersDark ? 'dark' : 'light'));
 
     document.body.className = `theme-${state.theme}`;
     elements.themeToggle.checked = (state.theme === 'dark');
