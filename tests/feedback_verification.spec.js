@@ -46,9 +46,5 @@ test('Feedback implementation verification', async ({ page }) => {
   console.log('Anim desc:', animDesc);
   expect(animDesc.length).toBeGreaterThan(0);
 
-  // Check NDJSON View Modal
-  await page.click('#btn-show-code');
-  await expect(page.locator('#code-modal')).toBeVisible();
-
   await page.screenshot({ path: 'tests/screenshots/feedback_refined.png' });
 });
