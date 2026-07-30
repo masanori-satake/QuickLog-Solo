@@ -2947,11 +2947,17 @@ function setupEventListeners() {
         return urlObj.toString();
     }
 
-    getEl('advanced-editor-link')?.addEventListener('click', (e) => {
+    getEl('advanced-editor-link')?.addEventListener('click', async (e) => {
         e.preventDefault();
         const lang = getLanguage();
+        const appState = await getCurrentAppState();
+        let resolvedTheme = appState.theme;
+        if (!resolvedTheme || resolvedTheme === 'system') {
+            resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
         const url = getLaunchProjectUrl('projects/category-editor/index.html', CATEGORY_EDITOR_URL, {
             lang,
+            theme: resolvedTheme,
             from: 'app',
         });
         window.open(url, '_blank', 'noopener');
@@ -2976,13 +2982,20 @@ function setupEventListeners() {
         window.open(url, '_blank', 'noopener');
     });
 
-    getEl('alarm-editor-link')?.addEventListener('click', (e) => {
+    getEl('alarm-editor-link')?.addEventListener('click', async (e) => {
         e.preventDefault();
         const lang = getLanguage();
-        const url = new URL(ALARM_EDITOR_URL);
-        url.searchParams.set('lang', lang);
-        url.searchParams.set('from', 'app');
-        window.open(url.toString(), '_blank', 'noopener');
+        const appState = await getCurrentAppState();
+        let resolvedTheme = appState.theme;
+        if (!resolvedTheme || resolvedTheme === 'system') {
+            resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        const url = getLaunchProjectUrl('projects/alarm-editor/index.html', ALARM_EDITOR_URL, {
+            lang,
+            theme: resolvedTheme,
+            from: 'app',
+        });
+        window.open(url, '_blank', 'noopener');
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {

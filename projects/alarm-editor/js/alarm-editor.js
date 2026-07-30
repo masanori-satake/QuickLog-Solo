@@ -93,8 +93,14 @@ async function init() {
     applyLanguage();
 
     // Theme handling
-    const savedTheme = localStorage.getItem('quicklog-theme') || 'light';
-    state.theme = savedTheme;
+    const themeParam = urlParams.get('theme');
+    const savedTheme = localStorage.getItem('quicklog-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    state.theme = (themeParam && (themeParam === 'light' || themeParam === 'dark'))
+        ? themeParam
+        : (savedTheme || (prefersDark ? 'dark' : 'light'));
+
     document.body.className = `theme-${state.theme}`;
     elements.themeToggle.checked = (state.theme === 'dark');
 
