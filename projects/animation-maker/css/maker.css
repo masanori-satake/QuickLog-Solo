@@ -53,6 +53,19 @@ body.theme-light {
     padding: 0 24px;
 }
 
+.maker-footer .footer-content-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.maker-footer .footer-left,
+.maker-footer .footer-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
 /* Header */
 .maker-header {
     display: flex;
