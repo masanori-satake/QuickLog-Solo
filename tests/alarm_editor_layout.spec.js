@@ -75,6 +75,9 @@ test.describe('Alarm Editor Layout and Features', () => {
     const box1 = await card1.boundingBox();
     const box2 = await card2.boundingBox();
 
+    expect(box1).not.toBeNull();
+    expect(box2).not.toBeNull();
+
     // In horizontal layout, the vertical positions (y) should be identical or extremely close
     expect(Math.abs(box1.y - box2.y)).toBeLessThanOrEqual(2);
     // Heights should be identical (stretch)
@@ -87,6 +90,9 @@ test.describe('Alarm Editor Layout and Features', () => {
 
     const mBox1 = await card1.boundingBox();
     const mBox2 = await card2.boundingBox();
+
+    expect(mBox1).not.toBeNull();
+    expect(mBox2).not.toBeNull();
 
     // In stacked layout, card1 should be above card2
     expect(mBox1.y + mBox1.height).toBeLessThan(mBox2.y);
