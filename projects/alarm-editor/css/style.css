@@ -10,6 +10,10 @@
     --color-on-saturday: var(--md-sys-color-on-primary);
 }
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -173,9 +177,14 @@ select:focus {
 
 .detail-grid {
     display: flex;
-    flex-direction: column;
+    flex-flow: row wrap;
     gap: var(--detail-pane-gap);
     align-items: stretch;
+}
+
+.detail-grid > .section-card {
+    flex: 1 1 calc(50% - var(--detail-pane-gap) / 2);
+    min-width: 320px;
 }
 
 .detail-left-col {
