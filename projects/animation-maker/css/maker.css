@@ -43,6 +43,16 @@ body.theme-light {
     height: 100vh;
 }
 
+/* Footer */
+.maker-footer {
+    height: var(--editor-footer-height);
+    display: flex;
+    align-items: center;
+    background-color: var(--md-sys-color-surface-container);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    padding: 0 24px;
+}
+
 /* Header */
 .maker-header {
     display: flex;
@@ -1003,22 +1013,13 @@ button {
 }
 
 /* Apply button container & button */
-.apply-btn-container {
-    padding: 16px;
-    border-top: 1px solid var(--md-sys-color-outline-variant);
-    background-color: var(--md-sys-color-surface-container-low);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 .apply-btn {
-    width: 100%;
-    padding: 14px 24px;
+    width: auto;
+    padding: 10px 24px;
     border-radius: var(--md-sys-shape-medium, 12px);
     background: linear-gradient(135deg, #0d47a1 0%, #4a148c 100%);
     color: #fff !important;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: bold;
     display: flex;
     align-items: center;
