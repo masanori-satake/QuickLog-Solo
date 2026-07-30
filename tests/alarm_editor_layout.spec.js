@@ -56,4 +56,47 @@ test.describe('Alarm Editor Layout and Features', () => {
     // Privacy text should be hidden (display: none)
     await expect(privacyText).toHaveCSS('display', 'none');
   });
+
+  test('Horizontal Cards layout in FullHD and Vertical Stacking on mobile viewports', async ({ page }) => {
+    // Select first alarm row to display the form if not visible
+    const alarmRow = page.locator('#alarm-editor-list .alarm-item').first();
+    await alarmRow.click();
+    await page.waitForSelector('#alarm-detail-form:not(.hidden)');
+
+    // 1. FullHD Viewport (Side-by-side)
+    await page.setViewportSize({ width: 1920, height: 1080 });
+
+    const cards = page.locator('#alarm-detail-form .detail-grid > .section-card');
+    await expect(cards).toHaveCount(2);
+
+    const card1 = cards.nth(0);
+    const card2 = cards.nth(1);
+
+    const box1 = await card1.boundingBox();
+    const box2 = await card2.boundingBox();
+
+    expect(box1).not.toBeNull();
+    expect(box2).not.toBeNull();
+
+    // In horizontal layout, the vertical positions (y) should be identical or extremely close
+    expect(Math.abs(box1.y - box2.y)).toBeLessThanOrEqual(2);
+    // Heights should be identical (stretch)
+    expect(Math.abs(box1.height - box2.height)).toBeLessThanOrEqual(2);
+    // card1 should be on the left of card2
+    expect(box1.x + box1.width).toBeLessThan(box2.x);
+
+    // 2. Mobile Viewport (Vertical stacking)
+    await page.setViewportSize({ width: 400, height: 1080 });
+
+    const mBox1 = await card1.boundingBox();
+    const mBox2 = await card2.boundingBox();
+
+    expect(mBox1).not.toBeNull();
+    expect(mBox2).not.toBeNull();
+
+    // In stacked layout, card1 should be above card2
+    expect(mBox1.y + mBox1.height).toBeLessThan(mBox2.y);
+    // Their horizontal starting positions should be very close
+    expect(Math.abs(mBox1.x - mBox2.x)).toBeLessThanOrEqual(5);
+  });
 });
