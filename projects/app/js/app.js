@@ -2767,7 +2767,7 @@ function setupEventListeners() {
     });
 
     queryAll(
-        '.close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn'
+        '.settings-close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn'
     ).forEach((btn) => {
         btn.onclick = (e) => {
             e.stopPropagation(); // Avoid triggering window.onclick

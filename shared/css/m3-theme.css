@@ -554,12 +554,6 @@ body.theme-dark {
     transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
 }
 
-.apply-btn:not(:disabled):hover {
-    filter: brightness(1.15);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    transform: translateY(-2px);
-}
-
 .apply-btn:active {
     transform: translateY(0);
 }
@@ -569,6 +563,12 @@ body.theme-dark {
     cursor: not-allowed;
     transform: none !important;
     box-shadow: none !important;
+}
+
+.apply-btn:not(:disabled):hover {
+    filter: brightness(1.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
 }
 
 /* Close button style */

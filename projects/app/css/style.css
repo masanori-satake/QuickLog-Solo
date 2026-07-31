@@ -630,7 +630,7 @@ body.timer-mini #elapsed-time {
     flex-direction: column;
 }
 
-.close-btn, .report-close-btn, .tag-aggregation-close-btn {
+.settings-close-btn, .report-close-btn, .tag-aggregation-close-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.75rem;
