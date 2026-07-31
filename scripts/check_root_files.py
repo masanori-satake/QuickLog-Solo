@@ -26,6 +26,7 @@ ALLOWED_ROOT_ITEMS = {
     "tests",
     "vercel.json",
     "crowdin.yml",
+    "vite.config.js",
     "releases",
     ".vercelignore",
     "node_modules",
