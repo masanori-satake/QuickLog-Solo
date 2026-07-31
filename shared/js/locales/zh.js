@@ -186,6 +186,7 @@ export default {
     'btn-split': '分割',
     'btn-delete': '削除',
     'confirm-cancel': '取消',
+    'confirm-discard-changes': '変更が保存されていません。変更を破棄して閉じますか？',
     'confirm-delete-category': 'カテゴリ「{name}」を削除しますか？\n（過去の作業履歴からはカテゴリ色が消えます）',
     'confirm-delete-selected': '是否删除所选的 {count} 个项目？',
     'confirm-import-overwrite': '删除所有现有分类并覆盖？',
