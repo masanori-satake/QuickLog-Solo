@@ -142,6 +142,30 @@ describe('Schema Compliance Tests', () => {
             expect(ajvValidateHistory(data)).toBe(true);
         });
 
+        test('should validate idle entry with valid resumableCategory (100 chars max)', () => {
+            const base = {
+                kind: 'QuickLogSolo/History',
+                version: '1.0',
+                type: 'idle',
+                startTime: Date.now()
+            };
+
+            // Exactly 100 chars - should be accepted
+            const okData = { ...base, resumableCategory: 'a'.repeat(100) };
+            expect(validateHistorySchema(okData)).toBe(true);
+            expect(ajvValidateHistory(okData)).toBe(true);
+
+            // 101 chars - should be rejected
+            const tooLongData = { ...base, resumableCategory: 'a'.repeat(101) };
+            expect(validateHistorySchema(tooLongData)).toBe(false);
+            expect(ajvValidateHistory(tooLongData)).toBe(false);
+
+            // Non-string resumableCategory - should be rejected
+            const nonStringData = { ...base, resumableCategory: 123 };
+            expect(validateHistorySchema(nonStringData)).toBe(false);
+            expect(ajvValidateHistory(nonStringData)).toBe(false);
+        });
+
         test('should validate a correct stop entry', () => {
             const data = {
                 kind: 'QuickLogSolo/History',
