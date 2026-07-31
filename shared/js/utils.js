@@ -21,9 +21,9 @@ export function escapeHtml(str) {
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
-        "'": '&#39;'
+        "'": '&#39;',
     };
-    return str.replace(/[&<>"']/g, m => map[m]);
+    return str.replace(/[&<>"']/g, (m) => map[m]);
 }
 
 /**
@@ -91,7 +91,7 @@ export function parseCsvLine(line) {
         }
     }
     parts.push(current);
-    return parts.map(p => p.trim());
+    return parts.map((p) => p.trim());
 }
 
 /**
@@ -103,13 +103,30 @@ export function isValidCategoryName(name) {
     if (typeof name !== 'string') return false;
     const trimmed = name.trim();
     if (trimmed.length === 0 || trimmed.length > 50) return false;
-    if (trimmed === SYSTEM_CATEGORY_IDLE || trimmed === SYSTEM_CATEGORY_UNKNOWN || trimmed.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) return false;
+    if (
+        trimmed === SYSTEM_CATEGORY_IDLE ||
+        trimmed === SYSTEM_CATEGORY_UNKNOWN ||
+        trimmed.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+    )
+        return false;
     return true;
 }
 
 const VALID_COLORS = [
-    'primary', 'secondary', 'tertiary', 'error', 'neutral', 'outline',
-    'teal', 'green', 'yellow', 'orange', 'pink', 'indigo', 'brown', 'cyan'
+    'primary',
+    'secondary',
+    'tertiary',
+    'error',
+    'neutral',
+    'outline',
+    'teal',
+    'green',
+    'yellow',
+    'orange',
+    'pink',
+    'indigo',
+    'brown',
+    'cyan',
 ];
 
 /**
@@ -133,7 +150,7 @@ export function generateDuplicateName(baseName, existingNames) {
     let maxNum = 0;
     const pattern = new RegExp(`^${cleanBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\((\\d+)\\)$`);
 
-    existingNames.forEach(name => {
+    existingNames.forEach((name) => {
         const match = name.match(pattern);
         if (match) {
             const num = parseInt(match[1], 10);

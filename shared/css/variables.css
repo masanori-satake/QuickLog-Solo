@@ -1,29 +1,29 @@
 /* Design Custom Variables for QuickLog-Solo */
 
 :root {
-  /* --- Semantic Status Colors --- */
-  --status-running-color: #22c55e;
-  --status-paused-color: #f59e0b;
-  --status-stopped-color: #ef4444;
+    /* --- Semantic Status Colors --- */
+    --status-running-color: #22c55e;
+    --status-paused-color: #f59e0b;
+    --status-stopped-color: #ef4444;
 
-  /* --- Layout & Grid Dimensions --- */
-  --category-section-height: 300px;
-  --category-section-height-compact: 240px;
-  --category-section-height-mini: 200px;
-  --timer-display-height-normal: 80px;
-  --timer-display-height-compact: 70px;
-  --timer-display-height-mini: 60px;
-  --editor-header-height: 64px;
-  --editor-footer-height: 72px;
-  --editor-list-width: 600px;
-  --alarm-editor-master-width: 360px;
+    /* --- Layout & Grid Dimensions --- */
+    --category-section-height: 300px;
+    --category-section-height-compact: 240px;
+    --category-section-height-mini: 200px;
+    --timer-display-height-normal: 80px;
+    --timer-display-height-compact: 70px;
+    --timer-display-height-mini: 60px;
+    --editor-header-height: 64px;
+    --editor-footer-height: 72px;
+    --editor-list-width: 600px;
+    --alarm-editor-master-width: 360px;
 
-  /* --- UI Overlays & Backdrops --- */
-  --modal-backdrop-light: rgba(0, 0, 0, 0.4);
-  --modal-backdrop-dark: rgba(0, 0, 0, 0.5);
-  --toast-bottom-offset: 80px;
+    /* --- UI Overlays & Backdrops --- */
+    --modal-backdrop-light: rgba(0, 0, 0, 0.4);
+    --modal-backdrop-dark: rgba(0, 0, 0, 0.5);
+    --toast-bottom-offset: 80px;
 
-  /* --- Spacing --- */
-  --detail-pane-gap: 24px;
-  --detail-pane-gap-small: 16px;
+    /* --- Spacing --- */
+    --detail-pane-gap: 24px;
+    --detail-pane-gap-small: 16px;
 }
