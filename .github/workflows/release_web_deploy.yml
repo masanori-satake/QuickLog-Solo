@@ -9,7 +9,6 @@ on:
             - 'shared/**'
             - 'scripts/**'
             - 'tests/**'
-            - 'releases/**'
             - 'package.json'
             - 'package-lock.json'
             - 'vercel.json'

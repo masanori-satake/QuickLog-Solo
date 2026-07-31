@@ -16,7 +16,6 @@ ALLOWED_ROOT_ITEMS = {
     "docs",
     "eslint.config.js",
     "jest.config.cjs",
-    "jest.setup.js",
     "jest.setup.cjs",
     "package-lock.json",
     "package.json",
@@ -33,6 +32,8 @@ ALLOWED_ROOT_ITEMS = {
     ".pr_agent.toml",
     ".qodo_merge.toml",
     "requirements.txt",
+    ".kiro",
+    ".markdownlintignore",
 }
 
 def check_root_directory():
