@@ -195,6 +195,7 @@ export default {
     'btn-split': 'Split',
     'btn-delete': 'Delete',
     'confirm-cancel': 'Cancel',
+    'confirm-discard-changes': 'Changes are not saved. Do you want to discard changes and close?',
     'confirm-delete-category': 'Do you want to delete category "{name}"?\n(Category colors will be removed from past logs)',
     'confirm-delete-selected': 'Do you want to delete the selected {count} items?',
     'confirm-import-overwrite': 'Delete all existing categories and overwrite?',

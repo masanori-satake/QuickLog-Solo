@@ -188,7 +188,11 @@
                         <span class="material-symbols-outlined">content_copy</span>
                         <span data-i18n="btn-export-json">コピー (Export)</span>
                     </button>
-                    <button id="apply-btn" class="apply-btn hidden">
+                    <button id="close-btn" class="close-btn hidden">
+                        <span class="material-symbols-outlined">close</span>
+                        <span data-i18n="btn-close">閉じる</span>
+                    </button>
+                    <button id="apply-btn" class="apply-btn hidden" disabled>
                         <span data-i18n="btn-apply">適用</span>
                         <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
@@ -232,6 +236,16 @@
                     <span data-i18n="btn-replace">Replace</span>
                 </button>
                 <button id="tag-replace-close-btn" class="secondary-btn" data-i18n="btn-close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 400px; padding: 24px;">
+            <p id="confirm-message" style="margin-bottom: 24px; font-size: 1rem; color: var(--md-sys-color-on-surface); line-height: 1.5;"></p>
+            <div class="confirm-btns" style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="confirm-cancel-btn" class="secondary-btn" data-i18n="confirm-cancel">キャンセル</button>
+                <button id="confirm-ok-btn" class="primary-btn">OK</button>
             </div>
         </div>
     </div>

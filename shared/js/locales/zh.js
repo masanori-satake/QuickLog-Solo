@@ -168,6 +168,7 @@ export default {
     'btn-split': '分割',
     'btn-delete': '删除',
     'confirm-cancel': '取消',
+    'confirm-discard-changes': '更改未保存。是否放弃更改并关闭？',
     'confirm-delete-category': '删除分类 "{name}"？\n（旧工作历史中的分类颜色将消失）',
     'confirm-delete-selected': '是否删除所选的 {count} 个项目？',
     'confirm-import-overwrite': '删除所有现有分类并覆盖？',

@@ -168,6 +168,7 @@ export default {
     'btn-split': 'Aufteilen',
     'btn-delete': 'Löschen',
     'confirm-cancel': 'Abbrechen',
+    'confirm-discard-changes': 'Änderungen sind nicht gespeichert. Möchten Sie die Änderungen verwerfen und schließen?',
     'confirm-delete-category': 'Kategorie "{name}" löschen?\n(Kategoriefarben werden aus alten Arbeitshistorien entfernt)',
     'confirm-delete-selected': 'Möchten Sie die ausgewählten {count} Elemente löschen?',
     'confirm-import-overwrite': 'Alle bestehenden Kategorien löschen und überschreiben?',

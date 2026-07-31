@@ -19,12 +19,18 @@ export function initHistory(state, elements) {
         }
         state.redoStack = [];
         updateHistoryButtons();
+
+        state.isDirty = true;
+        if (window.updateButtonStates) window.updateButtonStates();
     }
 
     function clearHistory() {
         state.historyStack = [];
         state.redoStack = [];
         updateHistoryButtons();
+
+        state.isDirty = false;
+        if (window.updateButtonStates) window.updateButtonStates();
     }
 
     function undo() {
@@ -36,6 +42,9 @@ export function initHistory(state, elements) {
 
         const previousState = state.historyStack.pop();
         state.categories = JSON.parse(previousState);
+
+        state.isDirty = true;
+        if (window.updateButtonStates) window.updateButtonStates();
 
         if (state.refreshUIAfterHistoryChange) state.refreshUIAfterHistoryChange();
     }
@@ -49,6 +58,9 @@ export function initHistory(state, elements) {
 
         const nextState = state.redoStack.pop();
         state.categories = JSON.parse(nextState);
+
+        state.isDirty = true;
+        if (window.updateButtonStates) window.updateButtonStates();
 
         if (state.refreshUIAfterHistoryChange) state.refreshUIAfterHistoryChange();
     }

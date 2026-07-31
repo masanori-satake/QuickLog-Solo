@@ -11,7 +11,8 @@ const state = {
     businessDays: [1, 2, 3, 4, 5],
     selectedAlarmId: null,
     language: 'ja',
-    theme: 'light'
+    theme: 'light',
+    isDirty: false
 };
 
 const elements = {
@@ -40,6 +41,7 @@ const elements = {
     exportBtn: document.getElementById('export-btn'),
     importBtn: document.getElementById('import-btn'),
     applyBtn: document.getElementById('apply-btn'),
+    closeBtn: document.getElementById('close-btn'),
     undoBtn: document.getElementById('undo-btn'),
     redoBtn: document.getElementById('redo-btn'),
     themeToggle: document.getElementById('theme-toggle'),
@@ -75,6 +77,7 @@ async function init() {
         setDatabaseName('QuickLogSoloDB');
         if (elements.importBtn) elements.importBtn.classList.add('hidden');
         if (elements.exportBtn) elements.exportBtn.classList.add('hidden');
+        if (elements.closeBtn) elements.closeBtn.classList.remove('hidden');
         if (elements.applyBtn) elements.applyBtn.classList.remove('hidden');
     } else {
         setDatabaseName('QuickLogSoloAlarmEditorDB');
@@ -142,15 +145,29 @@ async function init() {
         await persistencePromise;
     }
 
-    state.onHistoryChange = syncUI;
+    function updateButtonStates() {
+        if (elements.applyBtn) {
+            elements.applyBtn.disabled = !state.isDirty;
+        }
+    }
+
+    state.onHistoryChange = () => {
+        state.isDirty = true;
+        updateButtonStates();
+        return syncUI();
+    };
 
     state.recordAction = () => {
         history.record();
         ui.updateHistoryButtons(history);
+        state.isDirty = true;
+        updateButtonStates();
     };
 
     // Initial snapshot
     state.recordAction();
+    state.isDirty = false;
+    updateButtonStates();
 
     state.onAlarmChange = async (alarm) => {
         state.recordAction();
@@ -268,16 +285,26 @@ async function init() {
         elements.applyBtn.onclick = async () => {
             try {
                 await commitChanges(state);
-                // Show toast for 5 seconds as requested
-                const toast = document.getElementById('toast');
-                if (toast) {
-                    toast.textContent = (t('btn-apply') || '適用') + 'しました';
-                    toast.classList.remove('hidden');
-                    setTimeout(() => toast.classList.add('hidden'), 5000);
-                }
+                state.isDirty = false;
+                updateButtonStates();
+                window.close();
             } catch (e) {
                 console.error(e);
                 state.showToast('Error applying changes');
+            }
+        };
+    }
+
+    // Close button
+    if (elements.closeBtn) {
+        elements.closeBtn.onclick = async () => {
+            if (!state.isDirty) {
+                window.close();
+            } else {
+                const msg = t('confirm-discard-changes') || '変更が保存されていません。変更を破棄して閉じますか？';
+                if (await showConfirm(msg)) {
+                    window.close();
+                }
             }
         };
     }

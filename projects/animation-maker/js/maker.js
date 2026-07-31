@@ -58,6 +58,7 @@ const state = {
     selectedId: null,
     loadedId: null,
     selectionToken: 0,
+    isDirty: false,
 
     // Loaded GIF Frame Data
     gifFrames: [], // Array of { bitmap, duration }
@@ -162,6 +163,7 @@ const elements = {
     alertModalText: document.getElementById('alert-modal-text'),
     alertModalCloseBtn: document.getElementById('alert-modal-close-btn'),
 
+    closeBtn: document.getElementById('close-btn'),
     applyBtn: document.getElementById('apply-btn'),
 };
 
@@ -170,7 +172,7 @@ const elements = {
  */
 function syncApplyButtonState() {
     if (elements.applyBtn) {
-        elements.applyBtn.disabled = !state.selectedId;
+        elements.applyBtn.disabled = !state.isDirty || !state.selectedId;
     }
 }
 
@@ -983,6 +985,7 @@ async function duplicateAnimation(id) {
     await saveAnimationBlob(newId, sourceBlob, map[newId].payload.renderSpec, map[newId].config);
 
     state.selectedId = newId;
+    state.isDirty = true;
     syncApplyButtonState();
     await loadAnimationsList();
 }
@@ -1013,6 +1016,8 @@ async function deleteAnimation(id) {
         state.loadedId = null;
     }
 
+    state.isDirty = true;
+    syncApplyButtonState();
     await loadAnimationsList();
 }
 
@@ -1042,6 +1047,8 @@ elements.animationList.ondrop = async (e) => {
     });
 
     await setCustomAnimationMetadataMap(map);
+    state.isDirty = true;
+    syncApplyButtonState();
     await loadAnimationsList();
 };
 
@@ -1257,6 +1264,10 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
                 const startTime = Date.now() - state.virtualElapsedMs;
                 state.animationEngine.start(state.selectedId, startTime, colorCode);
             }
+            if (!isApply) {
+                state.isDirty = true;
+                syncApplyButtonState();
+            }
         }
     }
 
@@ -1318,6 +1329,8 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
         await saveProductionMetadataMap(productionMap);
 
         broadcastSync('sync');
+        state.isDirty = false;
+        syncApplyButtonState();
     }
     return true;
 }
@@ -2048,10 +2061,42 @@ function setupEventListeners() {
         elements.applyBtn.addEventListener('click', async () => {
             const saved = await saveCurrentChanges(true);
             if (saved) {
-                showToast(state.getMsg('toast-done-with-reopen-msg') || 'Applied successfully!');
+                state.isDirty = false;
+                syncApplyButtonState();
+                window.close();
             }
         });
     }
+
+    if (elements.closeBtn) {
+        elements.closeBtn.addEventListener('click', async () => {
+            if (!state.isDirty) {
+                window.close();
+            } else {
+                const msg =
+                    state.getMsg('confirm-discard-changes') || '変更が保存されていません。変更を破棄して閉じますか？';
+                if (await showConfirm(msg)) {
+                    window.close();
+                }
+            }
+        });
+    }
+}
+
+function showConfirm(msg) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        document.getElementById('confirm-message').textContent = msg;
+        modal.classList.remove('hidden');
+        document.getElementById('confirm-ok-btn').onclick = () => {
+            modal.classList.add('hidden');
+            resolve(true);
+        };
+        document.getElementById('confirm-cancel-btn').onclick = () => {
+            modal.classList.add('hidden');
+            resolve(false);
+        };
+    });
 }
 
 init();

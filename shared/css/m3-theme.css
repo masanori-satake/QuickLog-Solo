@@ -559,3 +559,39 @@ body.theme-dark {
 .apply-btn:active {
     transform: translateY(0);
 }
+
+.apply-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Close button style */
+.close-btn {
+    width: auto;
+    padding: 10px 24px;
+    border-radius: var(--md-sys-shape-medium, 12px);
+    background: linear-gradient(135deg, #ba1a1a 0%, #b71c1c 100%);
+    color: #fff !important;
+    font-size: 0.95rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+}
+
+.close-btn:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.close-btn:active {
+    transform: translateY(0);
+}
