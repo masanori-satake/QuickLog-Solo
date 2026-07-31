@@ -1,0 +1,229 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 IF-02: check_root_files.py の許可リスト修正": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436569322
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436586613
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436726884
+      }
+    ],
+    "1.2 IF-03: background.js の重複 JSDoc 削除": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436569641
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436590025
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436727891
+      }
+    ],
+    "1.3 IF-04: README_TEST.md のファイル名修正": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436570575
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436591140
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436728702
+      }
+    ],
+    "1.4 IF-05: requirements.txt の重複ファイル削除": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436571072
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436590754
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436729367
+      }
+    ],
+    "1.5 IF-06: package.json の name フィールド修正": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436571792
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436591776
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436730271
+      }
+    ],
+    "1.6 RD-03: README_DEV.md のテスト実行方法を参照リンクに置換": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436572390
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436596473
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436731656
+      }
+    ],
+    "1.7 MS-04: AGENTS.md の言語統制ルール明確化": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436572742
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436598347
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436733250
+      }
+    ],
+    "2. Phase 0 チェックポイント": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436573140
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785438257086
+      }
+    ],
+    "3.1 IF-01a: shared/js/utils.js の ESLint 除外解除と修正": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436573702
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785438261825
+      }
+    ],
+    "3.2 IF-01b: shared/js/schema.js の ESLint 除外解除と修正": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436574053
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785438262872
+      }
+    ],
+    "3.3 IF-01c: shared/js/i18n.js の ESLint 除外解除と修正": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436574769
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785438264558
+      }
+    ],
+    "3.4 IF-01d: ESLint 除外解除後のバージョンバンプ（パッチ）": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436575399
+      }
+    ],
+    "3.5 AM-02: ESLint 除外理由のコメント追記": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436576361
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785438265489
+      }
+    ],
+    "3.6 RD-04: pre-commit の jest フックをJS変更時のみ実行に変更": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436576842
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785438267318
+      }
+    ],
+    "3.7 OD-04: release_web_deploy.yml のトリガー修正": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436577088
+      },
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785438268027
+      }
+    ],
+    "4. 最終チェックポイント": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436577326
+      }
+    ],
+    "1. Phase 0: 即時修正（依存関係なし）": [
+      {
+        "executionId": "cf4ba777-6d5f-42ed-9cdf-1178123b6369",
+        "chatSessionId": "sess_97078e70-82c7-4c8d-86a3-347819309fa3",
+        "timestamp": 1785436734018
+      }
+    ]
+  }
+}

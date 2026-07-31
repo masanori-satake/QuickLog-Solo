@@ -683,23 +683,7 @@ graph TD
     - **File System Access API:** `backup.test.js` では、`window.showDirectoryPicker` や `FileSystemHandle` を Jest のモック関数 (`jest.fn()`) で置き換えています。これにより、実際のディスク操作を発生させずに、ファイル保存や読み込みのロジック、エラーハンドリングを検証します。
     - **Chrome/Browser Extension API:** `chrome.storage` や `chrome.alarms` などの拡張機能固有の API は、グローバルオブジェクトとしてモックを定義し、期待される動作をシミュレートします。
 
-### 実行コマンド
-```bash
-# 全テストの実行
-npm test
-
-# リンターの実行
-npx eslint .
-npx stylelint "**/*.css"
-```
-
-### pre-commit フック
-コミット時に以下のチェックが自動的に実行されます。
-1. **check-version:** `version.json`, `package.json`, およびマニフェストファイル間でのバージョン整合性チェック。
-2. **create-package:** ブラウザ別パッケージ（ZIP）の自動生成。
-3. **eslint:** JS の静的解析。特に関数や try-catch ブロック内での不必要な変数への再代入を避けるため、 `no-useless-assignment` ルールを遵守してください。
-4. **stylelint:** CSS の静的解析。
-5. **jest:** ユニットテストの実行。
+詳細は [テスト計画書 (README_TEST.md)](README_TEST.md) を参照してください。
 
 ---
 
