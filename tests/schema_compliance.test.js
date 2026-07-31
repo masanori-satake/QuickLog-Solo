@@ -155,6 +155,11 @@ describe('Schema Compliance Tests', () => {
             expect(validateHistorySchema(okData)).toBe(true);
             expect(ajvValidateHistory(okData)).toBe(true);
 
+            // null resumableCategory - should be accepted (per json schema spec)
+            const nullData = { ...base, resumableCategory: null };
+            expect(validateHistorySchema(nullData)).toBe(true);
+            expect(ajvValidateHistory(nullData)).toBe(true);
+
             // 101 chars - should be rejected
             const tooLongData = { ...base, resumableCategory: 'a'.repeat(101) };
             expect(validateHistorySchema(tooLongData)).toBe(false);

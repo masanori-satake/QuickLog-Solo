@@ -80,6 +80,7 @@ export function validateHistorySchema(data) {
     } else if (type === SCHEMA_TYPE_HISTORY_IDLE) {
         if (
             data.resumableCategory !== undefined &&
+            data.resumableCategory !== null &&
             (typeof data.resumableCategory !== 'string' || data.resumableCategory.length > 100)
         )
             return false;
