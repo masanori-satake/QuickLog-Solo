@@ -49,14 +49,14 @@ def get_commits_since(commit_hash, paths=None):
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             commits = result.stdout.split('\0')
             return [c.strip() for c in commits if c.strip()]
-        except:
+        except subprocess.CalledProcessError:
             return []
 
 def get_version_from_file(filepath):
     try:
         with open(filepath, 'r') as f:
             return json.load(f).get('version')
-    except:
+    except (FileNotFoundError, json.JSONDecodeError, AttributeError):
         return None
 
 def get_version_at_commit(filepath, commit_hash):
@@ -64,7 +64,7 @@ def get_version_at_commit(filepath, commit_hash):
         cmd = ["git", "show", f"{commit_hash}:{filepath}"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return json.loads(result.stdout).get('version')
-    except:
+    except (subprocess.CalledProcessError, json.JSONDecodeError, AttributeError):
         return None
 
 def has_staged_impactful_changes():
