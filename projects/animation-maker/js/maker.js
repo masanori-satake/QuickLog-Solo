@@ -168,11 +168,11 @@ const elements = {
 };
 
 /**
- * Syncs the apply button's disabled state based on whether an animation is selected.
+ * Syncs the apply button's disabled state based on whether changes are dirty.
  */
 function syncApplyButtonState() {
     if (elements.applyBtn) {
-        elements.applyBtn.disabled = !state.isDirty || !state.selectedId;
+        elements.applyBtn.disabled = !state.isDirty;
     }
 }
 
@@ -1340,6 +1340,10 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
 
 // Debounced version for text input handlers
 function debouncedSaveCurrentChanges() {
+    // Set dirty state synchronously so Close button detects changes immediately
+    state.isDirty = true;
+    syncApplyButtonState();
+
     if (saveDebounceTimer) {
         clearTimeout(saveDebounceTimer);
     }

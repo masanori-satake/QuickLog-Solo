@@ -12,7 +12,8 @@ const state = {
     selectedAlarmId: null,
     language: 'ja',
     theme: 'light',
-    isDirty: false
+    isDirty: false,
+    initialSnapshot: null
 };
 
 const elements = {
@@ -169,6 +170,14 @@ async function init() {
     state.isDirty = false;
     updateButtonStates();
 
+    // Store initial snapshot for discard restoration
+    if (state.fromApp) {
+        state.initialSnapshot = {
+            alarms: JSON.parse(JSON.stringify(state.alarms)),
+            businessDays: [...state.businessDays]
+        };
+    }
+
     state.onAlarmChange = async (alarm) => {
         state.recordAction();
         await saveAlarm(alarm);
@@ -303,6 +312,11 @@ async function init() {
             } else {
                 const msg = t('confirm-discard-changes') || '変更が保存されていません。変更を破棄して閉じますか？';
                 if (await showConfirm(msg)) {
+                    // Restore initial snapshot to production database before closing
+                    if (state.fromApp && state.initialSnapshot) {
+                        await saveAllAlarms(state.initialSnapshot.alarms);
+                        await saveBusinessDays(state.initialSnapshot.businessDays);
+                    }
                     window.close();
                 }
             }

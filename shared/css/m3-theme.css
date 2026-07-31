@@ -42,6 +42,10 @@
   --app-color-weekday-active: var(--md-sys-color-tertiary);
   --app-color-on-weekday-active: var(--md-sys-color-on-tertiary);
 
+  /* --- Semantic Close Button Color --- */
+  --app-color-close: #ba1a1a;
+  --app-color-close-secondary: #b71c1c;
+
   /* --- Fonts --- */
   --font-family: 'Roboto', 'Inter', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
   --standard-ui-font: 'Roboto', 'Inter', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
@@ -550,7 +554,7 @@ body.theme-dark {
     transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
 }
 
-.apply-btn:hover {
+.apply-btn:not(:disabled):hover {
     filter: brightness(1.15);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
@@ -572,7 +576,7 @@ body.theme-dark {
     width: auto;
     padding: 10px 24px;
     border-radius: var(--md-sys-shape-medium, 12px);
-    background: linear-gradient(135deg, #ba1a1a 0%, #b71c1c 100%);
+    background: linear-gradient(135deg, var(--app-color-close) 0%, var(--app-color-close-secondary) 100%);
     color: #fff !important;
     font-size: 0.95rem;
     font-weight: bold;

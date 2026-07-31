@@ -88,6 +88,9 @@ export function initHistory(state, elements) {
             }
             state.redoStack = [];
             updateHistoryButtons();
+
+            state.isDirty = true;
+            if (window.updateButtonStates) window.updateButtonStates();
         }
         state.inputInitialState = null;
     }
