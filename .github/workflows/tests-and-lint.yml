@@ -128,6 +128,7 @@ jobs:
               id: changed-files
               uses: tj-actions/changed-files@v45
               with:
+                  json: true
                   files: |
                       projects/**
                       shared/**
@@ -182,6 +183,7 @@ jobs:
               id: changed-files
               uses: tj-actions/changed-files@v45
               with:
+                  json: true
                   files: |
                       projects/**
                       shared/**
