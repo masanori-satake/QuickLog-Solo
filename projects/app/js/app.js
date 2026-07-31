@@ -1104,10 +1104,7 @@ async function syncState() {
             // Skip re-rendering alarms list if user is actively interacting with an input/select inside it
             const alarmList = getEl(ID_ALARM_LIST);
             const businessDaysContainer = getEl(ID_BUSINESS_DAYS_CONTAINER);
-            const isEditing = activeEl && (
-                alarmList?.contains(activeEl) ||
-                businessDaysContainer?.contains(activeEl)
-            );
+            const isEditing = activeEl && (alarmList?.contains(activeEl) || businessDaysContainer?.contains(activeEl));
             if (!isEditing) {
                 await renderAlarmList();
             }
@@ -1118,10 +1115,8 @@ async function syncState() {
             // Skip re-rendering categories list if user is actively interacting or color dropdown is open
             const categoryEditorList = getEl(ID_CATEGORY_EDITOR_LIST);
             const addCategoryBox = getEl('add-category-box-settings');
-            const isEditing = activeEl && (
-                categoryEditorList?.contains(activeEl) ||
-                addCategoryBox?.contains(activeEl)
-            );
+            const isEditing =
+                activeEl && (categoryEditorList?.contains(activeEl) || addCategoryBox?.contains(activeEl));
             if (!isEditing && !hasOpenColorDropdown) {
                 await renderCategoryEditor();
             }
