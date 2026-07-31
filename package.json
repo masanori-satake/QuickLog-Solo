@@ -12,7 +12,9 @@
     "test": "python3 scripts/generate_animation_registry.py && python3 scripts/verify_animations.py && node --experimental-vm-modules ./node_modules/.bin/jest",
     "test:e2e": "python3 scripts/generate_animation_registry.py && playwright test",
     "test:animation-eval": "python3 scripts/generate_animation_registry.py && playwright test tests/animation_evaluation.spec.js",
-    "build": "python3 scripts/generate_png_icons.py && python3 scripts/generate_animation_registry.py && python3 scripts/check_version.py && python3 scripts/create_package.py",
+    "build": "python3 scripts/generate_png_icons.py && python3 scripts/generate_animation_registry.py && python3 scripts/check_version.py && npm run build:vite",
+    "build:vite": "vite build",
+    "package": "npm run build && cd dist && zip -r ../extension.zip .",
     "version:bump": "python3 scripts/bump_version.py",
     "update-guide-images": "node scripts/update_guide_images.js"
   },
