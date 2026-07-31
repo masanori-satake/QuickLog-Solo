@@ -188,6 +188,7 @@ export default {
     'btn-split': '分割',
     'btn-delete': '削除',
     'confirm-cancel': 'Cancelar',
+    'confirm-discard-changes': '変更が保存されていません。変更を破棄して閉じますか？',
     'confirm-delete-category': 'カテゴリ「{name}」を削除しますか？\n（過去の作業履歴からはカテゴリ色が消えます）',
     'confirm-delete-selected': 'Deseja excluir os {count} itens selecionados?',
     'confirm-import-overwrite': 'Excluir todas as categorias e sobrescrever?',
