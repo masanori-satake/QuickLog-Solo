@@ -20,7 +20,7 @@ export function detectBrowserLanguage() {
         }
     }
 
-    const lang = (typeof navigator !== 'undefined') ? (navigator.language || navigator.userLanguage) : 'en';
+    const lang = typeof navigator !== 'undefined' ? navigator.language || navigator.userLanguage : 'en';
     const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
     for (const prefix of prefixes) {
         if (lang.startsWith(prefix)) return prefix;
@@ -60,7 +60,7 @@ export function t(key, params = {}) {
     let message = messages[currentLanguage][key] || messages['_common']?.[key] || messages['en'][key] || key;
 
     // Simple placeholder replacement
-    Object.keys(params).forEach(param => {
+    Object.keys(params).forEach((param) => {
         message = message.replace(new RegExp(`\\{${param}\\}`, 'g'), params[param]);
     });
 
@@ -74,17 +74,17 @@ export function t(key, params = {}) {
 export function applyLanguage() {
     if (typeof document === 'undefined') return;
 
-    document.querySelectorAll('[data-i18n]').forEach(el => {
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
         const key = el.getAttribute('data-i18n');
         el.textContent = t(key);
     });
 
-    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => {
         const key = el.getAttribute('data-i18n-title');
         el.title = t(key);
     });
 
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
         const key = el.getAttribute('data-i18n-placeholder');
         el.placeholder = t(key);
     });
