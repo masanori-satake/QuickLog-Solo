@@ -279,6 +279,19 @@ export function initUI(state, elements) {
         if (alarm) {
             alarm.message = messageInput.value.trim();
             renderAlarmList();
+
+            // Calculate dynamic name for the header
+            let unnamedCounter = 1;
+            let alarmName = '';
+            for (const a of state.alarms) {
+                if (a.id === alarm.id) {
+                    alarmName = a.message || t('alarm-label-default-name', { index: unnamedCounter });
+                    break;
+                }
+                if (!a.message) unnamedCounter++;
+            }
+            alarmIdEl.textContent = alarmName;
+
             if (state.onAlarmChange) state.onAlarmChange(alarm);
         }
     };

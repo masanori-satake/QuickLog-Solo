@@ -168,6 +168,7 @@ export default {
     'btn-split': 'Dividir',
     'btn-delete': 'Eliminar',
     'confirm-cancel': 'Cancelar',
+    'confirm-discard-changes': 'Los cambios no se han guardado. ¿Desea descartar los cambios y cerrar?',
     'confirm-delete-category': '¿Eliminar categoría "{name}"?\n(Los colores desaparecerán de historiales antiguos)',
     'confirm-delete-selected': '¿Desea eliminar los {count} elementos seleccionados?',
     'confirm-import-overwrite': '¿Eliminar todas las categorías y sobrescribir?',

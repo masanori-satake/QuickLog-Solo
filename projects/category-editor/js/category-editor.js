@@ -23,6 +23,7 @@ const state = {
     redoStack: [],
     isRecordingInput: false,
     inputInitialState: null,
+    isDirty: false,
 
     t: (key, params = {}) => {
         let msg = (messages[state.currentLang] && messages[state.currentLang][key]) || (messages._common && messages._common[key]) || messages.en[key] || key;
@@ -57,6 +58,7 @@ const elements = {
     importBtn: document.getElementById('import-btn'),
     exportBtn: document.getElementById('export-btn'),
     applyBtn: document.getElementById('apply-btn'),
+    closeBtn: document.getElementById('close-btn'),
     clearAllBtn: document.getElementById('clear-all-btn'),
     globalTagListEl: document.getElementById('global-tag-list'),
     langSelect: document.getElementById('lang-select-editor'),
@@ -89,6 +91,7 @@ async function init() {
         await initDB(false);
         if (elements.importBtn) elements.importBtn.classList.add('hidden');
         if (elements.exportBtn) elements.exportBtn.classList.add('hidden');
+        if (elements.closeBtn) elements.closeBtn.classList.remove('hidden');
         if (elements.applyBtn) elements.applyBtn.classList.remove('hidden');
     }
 
@@ -269,19 +272,45 @@ function setupEventListeners() {
         elements.applyBtn.onclick = async () => {
             try {
                 await commitCategoryChanges();
-                // Show toast for 5 seconds as requested
-                const toast = document.getElementById('toast');
-                if (toast) {
-                    toast.textContent = state.t('btn-apply') + 'しました';
-                    toast.classList.remove('hidden');
-                    setTimeout(() => toast.classList.add('hidden'), 5000);
-                }
+                state.isDirty = false;
+                updateButtonStates();
+                window.close();
             } catch (e) {
                 console.error(e);
                 state.showToast('Error applying changes');
             }
         };
     }
+
+    if (elements.closeBtn) {
+        elements.closeBtn.onclick = async () => {
+            if (!state.isDirty) {
+                window.close();
+            } else {
+                const msg = state.t('confirm-discard-changes') || '変更が保存されていません。変更を破棄して閉じますか？';
+                if (await showConfirm(msg)) {
+                    window.close();
+                }
+            }
+        };
+    }
+}
+
+function updateButtonStates() {
+    if (elements.applyBtn) {
+        elements.applyBtn.disabled = !state.isDirty;
+    }
+}
+window.updateButtonStates = updateButtonStates;
+
+function showConfirm(msg) {
+    return new Promise(resolve => {
+        const modal = document.getElementById('confirm-modal');
+        document.getElementById('confirm-message').textContent = msg;
+        modal.classList.remove('hidden');
+        document.getElementById('confirm-ok-btn').onclick = () => { modal.classList.add('hidden'); resolve(true); };
+        document.getElementById('confirm-cancel-btn').onclick = () => { modal.classList.add('hidden'); resolve(false); };
+    });
 }
 
 function loadDefaultCategories() {
