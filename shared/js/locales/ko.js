@@ -188,6 +188,7 @@ export default {
     'btn-split': '분할',
     'btn-delete': '삭제',
     'confirm-cancel': '취소',
+    'confirm-discard-changes': '変更が保存されていません。変更を破棄して閉じますか？',
     'confirm-delete-category': '"{name}" 카테고리를 삭제하시겠습니까?\n(이전 작업 기록의 카테고리 색상이 사라집니다)',
     'confirm-delete-selected': '선택한 {count}개 항목을 삭제하시겠습니까?',
     'confirm-import-overwrite': '기존 카테고리를 모두 삭제하고 덮어쓰시겠습니까?',
