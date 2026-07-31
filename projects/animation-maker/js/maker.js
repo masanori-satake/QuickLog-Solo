@@ -591,6 +591,7 @@ function showM3CreateDialog() {
         await saveAnimationBlob(newId, null, map[newId].payload.renderSpec, map[newId].config);
 
         state.selectedId = newId;
+        state.isDirty = true;
         syncApplyButtonState();
         await loadAnimationsList();
         hideM3Dialog();
@@ -738,6 +739,7 @@ function showM3ImportCollisionDialog(data, blob, existingId, existingMeta) {
         await setCustomAnimationMetadataMap(map);
 
         state.selectedId = existingId;
+        state.isDirty = true;
         syncApplyButtonState();
         await loadAnimationsList();
         hideM3Dialog();
@@ -843,6 +845,7 @@ async function proceedWithImport(data, blob, finalName) {
     await setCustomAnimationMetadataMap(map);
 
     state.selectedId = newId;
+    state.isDirty = true;
     syncApplyButtonState();
     await loadAnimationsList();
     showToast(state.getMsg('toast-custom-anim-imported') || 'Imported successfully!');
