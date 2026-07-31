@@ -1817,7 +1817,7 @@ body.theme-dark button:active {
     font-size: 0.75rem;
     font-weight: bold;
     border-radius: 50%;
-    border: 1px solid transparent;
+    border: 1px solid var(--md-sys-color-outline) !important;
     background-color: transparent;
     color: var(--md-sys-color-on-surface-variant);
     transition: all 0.2s;

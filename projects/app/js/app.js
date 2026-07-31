@@ -722,7 +722,7 @@ async function renderCategories() {
     const currentRenderData = JSON.stringify({
         page: currentCategoryPage,
         activeTask: activeTaskCatName,
-        categories: pageCategories.map((c) => ({ name: c.name, color: c.color })),
+        categories: pageCategories.map((c) => ({ name: c.name, color: c.color, animation: c.animation })),
     });
 
     if (lastCategoryRenderData === currentRenderData) {
@@ -1102,7 +1102,10 @@ async function syncState() {
         if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
             await renderBusinessDays();
             // Skip re-rendering alarms list if user is actively interacting with an input/select inside it
-            if (!activeEl || !alarmsTab.contains(activeEl)) {
+            const alarmList = getEl(ID_ALARM_LIST);
+            const businessDaysContainer = getEl(ID_BUSINESS_DAYS_CONTAINER);
+            const isEditing = activeEl && (alarmList?.contains(activeEl) || businessDaysContainer?.contains(activeEl));
+            if (!isEditing) {
                 await renderAlarmList();
             }
         }
@@ -1110,7 +1113,11 @@ async function syncState() {
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
             const hasOpenColorDropdown = categoriesTab.querySelector('.color-dropdown-menu:not(.hidden)');
             // Skip re-rendering categories list if user is actively interacting or color dropdown is open
-            if ((!activeEl || !categoriesTab.contains(activeEl)) && !hasOpenColorDropdown) {
+            const categoryEditorList = getEl(ID_CATEGORY_EDITOR_LIST);
+            const addCategoryBox = getEl('add-category-box-settings');
+            const isEditing =
+                activeEl && (categoryEditorList?.contains(activeEl) || addCategoryBox?.contains(activeEl));
+            if (!isEditing && !hasOpenColorDropdown) {
                 await renderCategoryEditor();
             }
         }
@@ -1824,7 +1831,7 @@ async function renderAlarmList() {
         (c) => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
     );
     const alarms = await dbGetAll(STORE_ALARMS);
-    alarms.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+    alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0));
 
     // Re-check activeElement immediately before destructive update
     const activeEl = document.activeElement;
