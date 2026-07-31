@@ -1,7 +1,7 @@
 import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
 import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
 import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
-import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, saveLanguage, exportAlarms, importAlarms } from './data-io.js';
+import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, saveLanguage, exportAlarms, importAlarms, commitChanges } from './data-io.js';
 import { initUI } from './ui.js';
 import { initHistory } from './history.js';
 
@@ -39,6 +39,7 @@ const elements = {
     businessDaysContainer: document.getElementById('business-days-container'),
     exportBtn: document.getElementById('export-btn'),
     importBtn: document.getElementById('import-btn'),
+    applyBtn: document.getElementById('apply-btn'),
     undoBtn: document.getElementById('undo-btn'),
     redoBtn: document.getElementById('redo-btn'),
     themeToggle: document.getElementById('theme-toggle'),
@@ -66,7 +67,18 @@ function getDefaultAlarm(id, index, order) {
 }
 
 async function init() {
-    setDatabaseName('QuickLogSoloAlarmEditorDB');
+    const urlParams = new URLSearchParams(window.location.search);
+    state.fromApp = (urlParams.get('from') === 'app');
+    window.state = state;
+
+    if (state.fromApp) {
+        setDatabaseName('QuickLogSoloDB');
+        if (elements.importBtn) elements.importBtn.classList.add('hidden');
+        if (elements.exportBtn) elements.exportBtn.classList.add('hidden');
+        if (elements.applyBtn) elements.applyBtn.classList.remove('hidden');
+    } else {
+        setDatabaseName('QuickLogSoloAlarmEditorDB');
+    }
 
     await initData(state);
 
@@ -80,7 +92,6 @@ async function init() {
     }
 
     // Language normalization and persistence
-    const urlParams = new URLSearchParams(window.location.search);
     const langParam = urlParams.get('lang');
 
     setLanguage(langParam || state.language || 'auto');
@@ -93,8 +104,14 @@ async function init() {
     applyLanguage();
 
     // Theme handling
-    const savedTheme = localStorage.getItem('quicklog-theme') || 'light';
-    state.theme = savedTheme;
+    const themeParam = urlParams.get('theme');
+    const savedTheme = localStorage.getItem('quicklog-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    state.theme = (themeParam && (themeParam === 'light' || themeParam === 'dark'))
+        ? themeParam
+        : (savedTheme || (prefersDark ? 'dark' : 'light'));
+
     document.body.className = `theme-${state.theme}`;
     elements.themeToggle.checked = (state.theme === 'dark');
 
@@ -225,12 +242,45 @@ async function init() {
     // Reset button
     elements.resetBtn.onclick = async () => {
         if (await showConfirm(t('confirm-reset-all'))) {
-            await dbClear(STORE_ALARMS);
-            await dbClear(STORE_SETTINGS);
-            await dbClear(STORE_CATEGORIES);
-            location.reload();
+            if (state.fromApp) {
+                // Reset in-memory state to defaults
+                state.businessDays = [1, 2, 3, 4, 5];
+                state.alarms = [];
+                for (let i = 0; i < 10; i++) {
+                    state.alarms.push(getDefaultAlarm(null, i, i));
+                }
+                state.recordAction();
+                ui.renderBusinessDays();
+                ui.renderAlarmList();
+                ui.renderDetail();
+                state.showToast(t('btn-reset') + 'しました');
+            } else {
+                await dbClear(STORE_ALARMS);
+                await dbClear(STORE_SETTINGS);
+                await dbClear(STORE_CATEGORIES);
+                location.reload();
+            }
         }
     };
+
+    // Apply button
+    if (elements.applyBtn) {
+        elements.applyBtn.onclick = async () => {
+            try {
+                await commitChanges(state);
+                // Show toast for 5 seconds as requested
+                const toast = document.getElementById('toast');
+                if (toast) {
+                    toast.textContent = (t('btn-apply') || '適用') + 'しました';
+                    toast.classList.remove('hidden');
+                    setTimeout(() => toast.classList.add('hidden'), 5000);
+                }
+            } catch (e) {
+                console.error(e);
+                state.showToast('Error applying changes');
+            }
+        };
+    }
 
     // Export/Import buttons
     elements.exportBtn.onclick = async () => {

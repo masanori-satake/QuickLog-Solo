@@ -6,6 +6,7 @@ import { AnimationEngine } from '../shared/js/animations.js';
 import { animations as animationRegistry } from '../shared/js/animation_registry.js';
 import { messages } from '../shared/js/messages.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
+import { setDatabaseName, initDB, dbGetAll, dbClear, dbAddMultiple, STORE_CATEGORIES } from '../shared/js/db.js';
 
 import { initHistory } from './history.js';
 import { initUI } from './ui.js';
@@ -50,15 +51,12 @@ const elements = {
     animInfoEl: document.getElementById('animation-info'),
     animDescEl: document.getElementById('anim-desc'),
     animAuthorEl: document.getElementById('anim-author'),
-    codeViewEl: document.getElementById('code-view'),
-    codeModalEl: document.getElementById('code-modal'),
-    btnShowCode: document.getElementById('btn-show-code'),
     addCategoryBtn: document.getElementById('add-category-btn'),
     deleteSelectedBtn: document.getElementById('delete-selected-btn'),
     addPageBreakBtn: document.getElementById('add-page-break-btn'),
     importBtn: document.getElementById('import-btn'),
     exportBtn: document.getElementById('export-btn'),
-    newStartBtn: document.getElementById('new-start-btn'),
+    applyBtn: document.getElementById('apply-btn'),
     clearAllBtn: document.getElementById('clear-all-btn'),
     globalTagListEl: document.getElementById('global-tag-list'),
     langSelect: document.getElementById('lang-select-editor'),
@@ -79,10 +77,20 @@ let historyMod, uiMod;
 
 async function init() {
     const urlParams = new URLSearchParams(window.location.search);
+    state.fromApp = (urlParams.get('from') === 'app');
+
     setupLanguage(urlParams);
     setupAppMode(urlParams);
     setupTheme();
     setupAnimationEngine();
+
+    if (state.fromApp) {
+        setDatabaseName('QuickLogSoloDB');
+        await initDB(false);
+        if (elements.importBtn) elements.importBtn.classList.add('hidden');
+        if (elements.exportBtn) elements.exportBtn.classList.add('hidden');
+        if (elements.applyBtn) elements.applyBtn.classList.remove('hidden');
+    }
 
     // Module initialization
     window.state = state;
@@ -105,8 +113,6 @@ async function init() {
     state.populateAnimationOptions = uiMod.populateAnimationOptions;
     state.updateListItem = uiMod.updateListItem;
 
-    state.updateCodeView = dataIoMod.updateCodeView;
-
     state.updatePreview = updatePreview;
     state.loadDefaultCategories = loadDefaultCategories;
     state.refreshUIAfterHistoryChange = refreshUIAfterHistoryChange;
@@ -115,15 +121,25 @@ async function init() {
 
     uiMod.renderColorPalette();
     await uiMod.populateAnimationOptions();
-    loadDefaultCategories();
+    if (state.fromApp) {
+        await loadAppCategories();
+    } else {
+        loadDefaultCategories();
+    }
     uiMod.renderGlobalTagBox();
     state.clearHistory();
 }
 
 function setupTheme() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const themeParam = urlParams.get('theme');
     const savedTheme = localStorage.getItem('category-editor-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    state.currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+
+    state.currentTheme = (themeParam && (themeParam === 'light' || themeParam === 'dark'))
+        ? themeParam
+        : (savedTheme || (prefersDark ? 'dark' : 'light'));
+
     elements.themeToggle.checked = (state.currentTheme === 'dark');
     applyTheme();
 }
@@ -218,10 +234,6 @@ function setupEventListeners() {
         state.renderDetail();
     });
 
-    elements.btnShowCode.addEventListener('click', () => {
-        elements.codeModalEl.classList.remove('hidden');
-    });
-
     if (elements.openTagReplaceBtn) {
         elements.openTagReplaceBtn.addEventListener('click', () => {
             if (uiMod.renderTagReplaceModal) uiMod.renderTagReplaceModal();
@@ -247,14 +259,29 @@ function setupEventListeners() {
     });
 
     window.addEventListener('click', (e) => {
-        if (e.target === elements.codeModalEl) {
-            elements.codeModalEl.classList.add('hidden');
-        }
         const menu = document.querySelector('.category-menu');
         if (menu && !menu.contains(e.target)) {
             menu.remove();
         }
     });
+
+    if (elements.applyBtn) {
+        elements.applyBtn.onclick = async () => {
+            try {
+                await commitCategoryChanges();
+                // Show toast for 5 seconds as requested
+                const toast = document.getElementById('toast');
+                if (toast) {
+                    toast.textContent = state.t('btn-apply') + 'しました';
+                    toast.classList.remove('hidden');
+                    setTimeout(() => toast.classList.add('hidden'), 5000);
+                }
+            } catch (e) {
+                console.error(e);
+                state.showToast('Error applying changes');
+            }
+        };
+    }
 }
 
 function loadDefaultCategories() {
@@ -272,7 +299,6 @@ function loadDefaultCategories() {
     state.renderCategoryList();
     state.renderDetail();
     state.renderGlobalTagBox();
-    state.updateCodeView();
 }
 
 function refreshUIAfterHistoryChange() {
@@ -291,7 +317,6 @@ function refreshUIAfterHistoryChange() {
     state.renderCategoryList();
     state.renderDetail();
     state.renderGlobalTagBox();
-    state.updateCodeView();
     historyMod.updateHistoryButtons();
     if (uiMod.updateModalHistoryButtons) uiMod.updateModalHistoryButtons();
 }
@@ -343,6 +368,62 @@ function updatePreview() {
 
     state.animationEngine.setExclusionAreas(exclusionAreas);
     state.animationEngine.start(animation === 'default' ? 'digital_rain' : animation, Date.now(), color);
+}
+
+async function loadAppCategories() {
+    try {
+        let allCategories = await dbGetAll(STORE_CATEGORIES);
+        allCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        // Filter out SYSTEM_CATEGORY_IDLE (usually __idle__) to avoid showing it in category list
+        allCategories = allCategories.filter(c => c.name !== '__idle__');
+
+        state.categories = allCategories.map(c => ({
+            name: c.name,
+            color: c.color || 'primary',
+            tags: c.tags || '',
+            animation: c.animation || 'default'
+        }));
+    } catch (e) {
+        console.error('Failed to load categories from app database, falling back to defaults:', e);
+        // fallback to standard defaults if loading fails
+        const defaultSet = [
+            { name: state.t('init-cat-dev'), color: 'primary', tags: state.t('init-tag-dev'), animation: 'digital_rain' },
+            { name: state.t('init-cat-meeting'), color: 'secondary', tags: state.t('init-tag-meeting'), animation: 'migrating_birds' },
+            { name: state.t('init-cat-research'), color: 'tertiary', tags: state.t('init-tag-research'), animation: 'ripple' },
+            { name: state.t('init-cat-admin'), color: 'neutral', tags: state.t('init-tag-admin'), animation: 'dot_typing' },
+            { name: state.t('init-cat-break'), color: 'outline', tags: state.t('init-tag-break'), animation: 'coffee_drip' }
+        ];
+        state.categories = defaultSet;
+    }
+
+    state.selectedIndices = state.categories.length > 0 ? [0] : [];
+    state.lastSelectedIndex = state.categories.length > 0 ? 0 : -1;
+    state.renderCategoryList();
+    state.renderDetail();
+    state.renderGlobalTagBox();
+}
+
+async function commitCategoryChanges() {
+    // Write directly to QuickLogSoloDB's STORE_CATEGORIES
+    // First clear existing categories
+    await dbClear(STORE_CATEGORIES);
+
+    // Prepare category records with orders
+    const records = state.categories.map((cat, i) => ({
+        name: cat.name,
+        color: cat.color || 'primary',
+        tags: cat.tags || '',
+        animation: cat.animation || 'default',
+        order: i
+    }));
+
+    // Add multiple
+    await dbAddMultiple(STORE_CATEGORIES, records);
+
+    // Post message to BroadcastChannel to notify main app!
+    const bc = new BroadcastChannel('quicklog_solo_sync_QuickLogSoloDB');
+    bc.postMessage({ type: 'sync' });
 }
 
 init();

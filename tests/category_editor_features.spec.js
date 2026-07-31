@@ -24,8 +24,8 @@ test.describe('Category Editor Features', () => {
     // Check list-pane width (using approximate check due to potential border/padding)
     const listPane = page.locator('.list-pane');
     const box = await listPane.boundingBox();
-    expect(Math.round(box.width)).toBeGreaterThanOrEqual(600);
-    expect(Math.round(box.width)).toBeLessThanOrEqual(601);
+    expect(Math.round(box.width)).toBeGreaterThanOrEqual(360);
+    expect(Math.round(box.width)).toBeLessThanOrEqual(361);
   });
 
   test('Multi-selection with Ctrl and Shift keys', async ({ page }) => {
@@ -108,13 +108,10 @@ test.describe('Category Editor Features', () => {
     // Change animation to 'ripple'
     await page.selectOption('#edit-animation', 'ripple');
 
-    // Verify via NDJSON view (internal state check)
-    await page.click('#btn-show-code');
-    const codeView = await page.textContent('#code-view');
-    const lines = codeView.trim().split('\n');
+    // Verify via internal state check
+    const categories = await page.evaluate(() => window.state.categories);
     for (let i = 0; i < 3; i++) {
-      const data = JSON.parse(lines[i]);
-      expect(data.animation).toBe('ripple');
+      expect(categories[i].animation).toBe('ripple');
     }
   });
 
@@ -164,10 +161,9 @@ test.describe('Category Editor Features', () => {
     const listItemName = items.nth(0).locator('.cat-name');
     await expect(listItemName).toHaveText(newName);
 
-    // 3. Verify internal state/NDJSON view updates
-    await page.click('#btn-show-code');
-    const codeView = await page.textContent('#code-view');
-    expect(codeView).toContain(`"name":"${newName}"`);
-    expect(codeView).not.toContain(`"name":"${originalName}"`);
+    // 3. Verify internal state updates
+    const categories = await page.evaluate(() => window.state.categories);
+    expect(categories[0].name).toBe(newName);
+    expect(categories[0].name).not.toBe(originalName);
   });
 });

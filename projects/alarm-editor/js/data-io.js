@@ -11,18 +11,28 @@ export async function initData(state) {
 }
 
 export async function saveAlarm(alarm) {
+    if (window.state && window.state.fromApp) return;
     await dbPut(STORE_ALARMS, alarm);
     notifySync();
 }
 
 export async function saveAllAlarms(alarms) {
+    if (window.state && window.state.fromApp) return;
     await dbClear(STORE_ALARMS);
     await dbAddMultiple(STORE_ALARMS, alarms);
     notifySync();
 }
 
 export async function saveBusinessDays(days) {
+    if (window.state && window.state.fromApp) return;
     await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: days });
+    notifySync();
+}
+
+export async function commitChanges(state) {
+    await dbClear(STORE_ALARMS);
+    await dbAddMultiple(STORE_ALARMS, state.alarms);
+    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: state.businessDays });
     notifySync();
 }
 

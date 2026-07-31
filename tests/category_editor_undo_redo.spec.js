@@ -95,20 +95,13 @@ test.describe('Category Editor Undo/Redo', () => {
 
     // Undo animation change
     await page.click('#undo-btn');
-    await page.click('#btn-show-code');
-    let codeView = await page.textContent('#code-view');
-    let firstLine = JSON.parse(codeView.trim().split('\n')[0]);
-    expect(firstLine.animation).toBe('digital_rain'); // Default for first item
-
-    // Close modal before clicking other buttons
-    await page.click('#code-modal .icon-btn');
-    await expect(page.locator('#code-modal')).toHaveClass(/hidden/);
+    let categories = await page.evaluate(() => window.state.categories);
+    expect(categories[0].animation).toBe('digital_rain'); // Default for first item
 
     // Redo animation change
     await page.click('#redo-btn');
-    codeView = await page.textContent('#code-view');
-    firstLine = JSON.parse(codeView.trim().split('\n')[0]);
-    expect(firstLine.animation).toBe('ripple');
+    categories = await page.evaluate(() => window.state.categories);
+    expect(categories[0].animation).toBe('ripple');
   });
 
   test('Keyboard shortcuts support (Ctrl+Z, Ctrl+Y/Ctrl+Shift+Z)', async ({ page }) => {

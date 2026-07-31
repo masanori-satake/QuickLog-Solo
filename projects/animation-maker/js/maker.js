@@ -161,7 +161,18 @@ const elements = {
     alertModal: document.getElementById('alert-modal'),
     alertModalText: document.getElementById('alert-modal-text'),
     alertModalCloseBtn: document.getElementById('alert-modal-close-btn'),
+
+    applyBtn: document.getElementById('apply-btn'),
 };
+
+/**
+ * Syncs the apply button's disabled state based on whether an animation is selected.
+ */
+function syncApplyButtonState() {
+    if (elements.applyBtn) {
+        elements.applyBtn.disabled = !state.selectedId;
+    }
+}
 
 // Debounce timer for input-driven saves
 let saveDebounceTimer = null;
@@ -290,13 +301,14 @@ async function init() {
 function setupTheme() {
     const urlParams = new URLSearchParams(window.location.search);
     const themeParam = urlParams.get('theme');
-    if (themeParam && (themeParam === 'light' || themeParam === 'dark')) {
-        localStorage.setItem('maker-theme', themeParam);
-    }
-
     const savedTheme = localStorage.getItem('maker-theme') || localStorage.getItem('studio-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    state.currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+
+    state.currentTheme =
+        themeParam && (themeParam === 'light' || themeParam === 'dark')
+            ? themeParam
+            : savedTheme || (prefersDark ? 'dark' : 'light');
+
     elements.themeToggle.checked = state.currentTheme === 'dark';
     applyTheme();
 }
@@ -429,6 +441,7 @@ async function loadAnimationsList() {
     if (sortedKeys.length === 0) {
         state.selectedId = null;
         state.loadedId = null;
+        syncApplyButtonState();
         elements.noSelectionCard.classList.remove('hidden');
         elements.editorWorkspace.classList.add('hidden');
         if (state.animationEngine) {
@@ -576,6 +589,7 @@ function showM3CreateDialog() {
         await saveAnimationBlob(newId, null, map[newId].payload.renderSpec, map[newId].config);
 
         state.selectedId = newId;
+        syncApplyButtonState();
         await loadAnimationsList();
         hideM3Dialog();
     };
@@ -722,6 +736,7 @@ function showM3ImportCollisionDialog(data, blob, existingId, existingMeta) {
         await setCustomAnimationMetadataMap(map);
 
         state.selectedId = existingId;
+        syncApplyButtonState();
         await loadAnimationsList();
         hideM3Dialog();
         showToast(state.getMsg('toast-custom-anim-imported') || 'Imported successfully!');
@@ -826,6 +841,7 @@ async function proceedWithImport(data, blob, finalName) {
     await setCustomAnimationMetadataMap(map);
 
     state.selectedId = newId;
+    syncApplyButtonState();
     await loadAnimationsList();
     showToast(state.getMsg('toast-custom-anim-imported') || 'Imported successfully!');
 }
@@ -967,6 +983,7 @@ async function duplicateAnimation(id) {
     await saveAnimationBlob(newId, sourceBlob, map[newId].payload.renderSpec, map[newId].config);
 
     state.selectedId = newId;
+    syncApplyButtonState();
     await loadAnimationsList();
 }
 
@@ -990,6 +1007,7 @@ async function deleteAnimation(id) {
 
     if (state.selectedId === id) {
         state.selectedId = null;
+        syncApplyButtonState();
     }
     if (state.loadedId === id) {
         state.loadedId = null;
@@ -1057,6 +1075,7 @@ async function selectAnimation(id) {
 
     state.selectedId = id;
     state.loadedId = id;
+    syncApplyButtonState();
     const meta = state.customAnimations[id];
     if (!meta) return;
 
@@ -2025,9 +2044,8 @@ function setupEventListeners() {
         }
     });
 
-    const applyBtn = document.getElementById('apply-btn');
-    if (applyBtn) {
-        applyBtn.addEventListener('click', async () => {
+    if (elements.applyBtn) {
+        elements.applyBtn.addEventListener('click', async () => {
             const saved = await saveCurrentChanges(true);
             if (saved) {
                 showToast(state.getMsg('toast-done-with-reopen-msg') || 'Applied successfully!');

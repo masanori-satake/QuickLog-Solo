@@ -635,6 +635,10 @@ body.theme-light .hl-bracket { color: #af00db; }
     height: 48px;
 }
 
+#clear-console {
+    color: var(--md-sys-color-error) !important;
+}
+
 .console-section.collapsed #clear-console {
     display: none;
 }

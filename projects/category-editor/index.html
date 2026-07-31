@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QL-Category Editor</title>
+    <title>業務カテゴリ・エディタ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Fira+Code:wght@400;500&family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -15,9 +15,25 @@
 <body class="theme-dark">
     <script>
         (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const themeParam = urlParams.get('theme');
             const savedTheme = localStorage.getItem('category-editor-theme');
-            if (savedTheme === 'light') document.body.classList.replace('theme-dark', 'theme-light');
-            else if (!savedTheme && window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.classList.replace('theme-dark', 'theme-light');
+            const prefersLight = window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            let resolvedTheme = 'dark'; // body default is theme-dark
+            if (themeParam === 'light' || themeParam === 'dark') {
+                resolvedTheme = themeParam;
+            } else if (savedTheme) {
+                resolvedTheme = savedTheme;
+            } else if (prefersLight) {
+                resolvedTheme = 'light';
+            }
+
+            if (resolvedTheme === 'light') {
+                document.body.classList.replace('theme-dark', 'theme-light');
+            } else {
+                document.body.classList.replace('theme-light', 'theme-dark');
+            }
         })();
     </script>
     <div id="editor-app">
@@ -27,7 +43,7 @@
                     <a href="../web/" class="back-link" data-i18n-title="back-to-landing">
                         <span class="material-symbols-outlined">arrow_back</span>
                     </a>
-                    <h1 id="editor-title-heading"><span class="material-symbols-outlined">edit_note</span> <span data-i18n="category-editor-title">QL-Category Editor</span></h1>
+                    <h1 id="editor-title-heading"><span class="material-symbols-outlined title-icon">edit_note</span> <span data-i18n="category-editor-title">業務カテゴリ・エディタ</span></h1>
                     <div class="history-controls">
                         <button id="undo-btn" class="icon-btn" data-i18n-title="undo" disabled><span class="material-symbols-outlined">undo</span></button>
                         <button id="redo-btn" class="icon-btn" data-i18n-title="redo" disabled><span class="material-symbols-outlined">redo</span></button>
@@ -158,20 +174,12 @@
         <footer class="editor-footer">
             <div class="footer-content-wrapper">
                 <div class="footer-left">
-                    <button id="new-start-btn" class="tertiary-btn">
-                        <span class="material-symbols-outlined">auto_awesome</span>
-                        <span data-i18n="btn-new-start">Start from Default</span>
-                    </button>
                     <button id="clear-all-btn" class="tertiary-btn">
                         <span class="material-symbols-outlined">delete_sweep</span>
                         <span data-i18n="btn-clear-all">Clear All</span>
                     </button>
                 </div>
                 <div class="footer-right">
-                    <button id="btn-show-code" class="tertiary-btn" style="margin-right: 16px;">
-                        <span class="material-symbols-outlined">code</span>
-                        <span data-i18n="section-code-view">NDJSON View</span>
-                    </button>
                     <button id="import-btn" class="secondary-btn">
                         <span class="material-symbols-outlined">content_paste</span>
                         <span data-i18n="btn-import-json">貼り付け (Import)</span>
@@ -180,25 +188,15 @@
                         <span class="material-symbols-outlined">content_copy</span>
                         <span data-i18n="btn-export-json">コピー (Export)</span>
                     </button>
+                    <button id="apply-btn" class="apply-btn hidden">
+                        <span data-i18n="btn-apply">適用</span>
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
                 </div>
             </div>
         </footer>
     </div>
 
-    <div id="code-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="section-title"><span class="material-symbols-outlined">code</span> <span data-i18n="section-code-view">NDJSON View</span></h3>
-                <button class="icon-btn" onclick="document.getElementById('code-modal').classList.add('hidden')"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            <div class="modal-body">
-                <pre id="code-view" class="code-view"></pre>
-            </div>
-            <div class="modal-footer">
-                <button class="primary-btn" onclick="document.getElementById('code-modal').classList.add('hidden')" data-i18n="btn-close">Close</button>
-            </div>
-        </div>
-    </div>
 
     <div id="tag-replace-modal" class="modal hidden">
         <div class="modal-content">

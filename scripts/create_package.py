@@ -77,8 +77,8 @@ def create_zip(zip_filepath, manifest_src, temp_dir, is_dev=False, version=""):
             if 'VERCEL' in env: del env['VERCEL']
             subprocess.run(["python3", "scripts/generate_png_icons.py", dev_assets_dir, "#ea580c"], check=True, env=env)
 
-        # 1.5 Copy Subprojects (animation-maker & category-editor)
-        for subproj in ["animation-maker", "category-editor"]:
+        # 1.5 Copy Subprojects (animation-maker, category-editor & alarm-editor)
+        for subproj in ["animation-maker", "category-editor", "alarm-editor"]:
             subproj_src = os.path.join("projects", subproj)
             subproj_dest = os.path.join(temp_dir, "projects", subproj)
             os.makedirs(subproj_dest, exist_ok=True)

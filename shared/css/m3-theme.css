@@ -386,3 +386,176 @@ body.theme-dark {
 .cat-indigo-full { background-color: var(--custom-cat-indigo) !important; }
 .cat-brown-full { background-color: var(--custom-cat-brown) !important; }
 .cat-cyan-full { background-color: var(--custom-cat-cyan) !important; }
+
+/* ==========================================================================
+   Shared Editor/Subproject Common Representations (Consolidated Styles)
+   ========================================================================== */
+
+/* Centered Content Wrappers */
+.header-content-wrapper,
+.main-content-wrapper,
+.footer-content-wrapper {
+    max-width: 1800px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Cards & Section Cards */
+.card {
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    box-shadow: var(--md-sys-elevation-1);
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.section-card {
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    box-shadow: var(--md-sys-elevation-1);
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* Privacy Badge */
+.privacy-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 16px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-primary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: help;
+    border: 1px solid var(--md-sys-color-primary-container);
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.privacy-badge:hover {
+    background-color: var(--md-sys-color-primary-container);
+}
+
+.privacy-badge .material-symbols-outlined {
+    font-size: 16px;
+}
+
+@media (width <= 900px) {
+    .privacy-text {
+        display: none;
+    }
+
+    .privacy-badge {
+        padding: 4px;
+    }
+}
+
+/* Language Selection Dropdown */
+.lang-select,
+.lang-switcher select {
+    background-color: var(--md-sys-color-surface-container-highest) !important;
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-extra-small, 4px);
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+/* Theme / Toggle Switches (Unified standard M3 representation) */
+.switch,
+.theme-switch {
+    display: inline-block;
+    height: 24px;
+    position: relative;
+    width: 48px;
+    flex-shrink: 0;
+}
+
+.switch input,
+.theme-switch input {
+    display: none !important;
+}
+
+.switch .slider,
+.theme-switch .slider {
+    background-color: var(--md-sys-color-outline-variant);
+    cursor: pointer;
+    inset: 0;
+    position: absolute;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.switch .slider::before,
+.theme-switch .slider::before {
+    background-color: #fff;
+    bottom: 4px;
+    content: "";
+    height: 16px;
+    left: 4px;
+    position: absolute;
+    transition: 0.4s;
+    width: 16px;
+    border-radius: 50%;
+}
+
+.switch input:checked + .slider,
+.theme-switch input:checked + .slider {
+    background-color: var(--md-sys-color-primary);
+}
+
+.switch input:checked + .slider::before,
+.theme-switch input:checked + .slider::before {
+    transform: translateX(24px);
+}
+
+/* Undo/Redo History Controls */
+.history-controls {
+    display: flex;
+    gap: 4px;
+    margin-left: 12px;
+}
+
+/* Title icon color matching */
+.title-icon {
+    font-size: 1.5rem !important;
+    color: var(--md-sys-color-primary) !important;
+}
+
+/* Apply button style */
+.apply-btn {
+    width: auto;
+    padding: 10px 24px;
+    border-radius: var(--md-sys-shape-medium, 12px);
+    background: linear-gradient(135deg, #0d47a1 0%, #4a148c 100%);
+    color: #fff !important;
+    font-size: 0.95rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+}
+
+.apply-btn:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.apply-btn:active {
+    transform: translateY(0);
+}

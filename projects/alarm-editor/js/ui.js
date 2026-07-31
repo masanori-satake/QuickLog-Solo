@@ -79,6 +79,7 @@ export function initUI(state, elements) {
                 unnamedCounter++;
             }
             msg.textContent = alarmName;
+            item.title = alarmName;
 
             const statusIcon = document.createElement('span');
             statusIcon.className = 'material-symbols-outlined alarm-status-icon';
