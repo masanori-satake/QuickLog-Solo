@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist_web/
+releases/
+test-results/
+tests/screenshots/
+*.zip
+.vercelignore
+package-lock.json

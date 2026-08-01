@@ -12,28 +12,28 @@ export default class RpgGrid extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Retro RPG Grid Transition",
-            ja: "戦闘突入グリッド",
-            de: "Retro-RPG-Grid-Übergang",
-            es: "Transición de cuadrícula RPG retro",
-            fr: "Transition de grille RPG rétro",
-            pt: "Transição de grade RPG retrô",
-            ko: "레트로 RPG 그리드 트랜지션",
-            zh: "复古RPG网格转换"
+            en: 'Retro RPG Grid Transition',
+            ja: '戦闘突入グリッド',
+            de: 'Retro-RPG-Grid-Übergang',
+            es: 'Transición de cuadrícula RPG retro',
+            fr: 'Transition de grille RPG rétro',
+            pt: 'Transição de grade RPG retrô',
+            ko: '레트로 RPG 그리드 트랜지션',
+            zh: '复古RPG网格转换',
         },
         description: {
-            en: "The screen flashes twice, then fills with dark spiral blocks from edges to center. Upon completion, it clears instantly.",
-            ja: "携帯ゲームの戦闘開始時のように画面が2回点滅し、外側から四角いブロックが螺旋状に埋め尽くしたあと瞬時に晴れます。",
-            de: "Der Bildschirm blinkt zweimal und füllt sich dann von den Rändern zur Mitte mit dunklen Spiralblöcken. Nach Fertigstellung wird er sofort gelöscht.",
-            es: "La pantalla parpadea dos veces y luego se llena de bloques en espiral oscuros desde los bordes hacia el centro. Al completarse, se limpia instantáneamente.",
+            en: 'The screen flashes twice, then fills with dark spiral blocks from edges to center. Upon completion, it clears instantly.',
+            ja: '携帯ゲームの戦闘開始時のように画面が2回点滅し、外側から四角いブロックが螺旋状に埋め尽くしたあと瞬時に晴れます。',
+            de: 'Der Bildschirm blinkt zweimal und füllt sich dann von den Rändern zur Mitte mit dunklen Spiralblöcken. Nach Fertigstellung wird er sofort gelöscht.',
+            es: 'La pantalla parpadea dos veces y luego se llena de bloques en espiral oscuros desde los bordes hacia el centro. Al completarse, se limpia instantáneamente.',
             fr: "L'écran clignote deux fois, puis se remplit de blocs de spirales sombres des bords vers le centre. Une fois terminé, il s'efface instantanément.",
-            pt: "Tela pisca duas vezes e, em seguida, enche-se de blocos de espirais escuras das bordas para o centro. Ao terminar, limpa-se instantaneamente.",
-            ko: "화면이 두 번 깜박인 다음, 가장자리부터 중앙까지 어두운 나선형 블록으로 채워집니다. 완료되면 즉시 지워집니다.",
-            zh: "屏幕闪烁两次，然后从边缘到中心填充深色螺旋块。完成后，立即清除。"
+            pt: 'Tela pisca duas vezes e, em seguida, enche-se de blocos de espirais escuras das bordas para o centro. Ao terminar, limpa-se instantaneamente.',
+            ko: '화면이 두 번 깜박인 다음, 가장자리부터 중앙까지 어두운 나선형 블록으로 채워집니다. 완료되면 즉시 지워집니다.',
+            zh: '屏幕闪烁两次，然后从边缘到中心填充深色螺旋块。完成后，立即清除。',
         },
-        author: "QuickLog-Solo",
+        author: 'QuickLog-Solo',
         devOnly: true,
-        rewindable: true
+        rewindable: true,
     };
 
     config = { mode: 'matrix', exclusionStrategy: 'jump' };

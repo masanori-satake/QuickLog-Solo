@@ -68,8 +68,8 @@ export class AnimationEngine {
         if (!this.exclusionAreas || this.exclusionAreas.length === 0) {
             return { left: 0, width: 0, totalWidth: this.canvas.width };
         }
-        const minX = Math.min(...this.exclusionAreas.map(a => a.x));
-        const maxX = Math.max(...this.exclusionAreas.map(a => a.x + a.width));
+        const minX = Math.min(...this.exclusionAreas.map((a) => a.x));
+        const maxX = Math.max(...this.exclusionAreas.map((a) => a.x + a.width));
         const left = Math.floor(minX / CELL_SIZE) * CELL_SIZE;
         const right = Math.ceil(maxX / CELL_SIZE) * CELL_SIZE;
         const width = right - left;
@@ -88,31 +88,33 @@ export class AnimationEngine {
         const offsetY = this.simulatedHeight ? (this.canvas.height - this.simulatedHeight) / 2 : 0;
         let adjustedAreas = this.exclusionAreas;
         if (offsetY !== 0) {
-            adjustedAreas = this.exclusionAreas.map(area => ({
+            adjustedAreas = this.exclusionAreas.map((area) => ({
                 ...area,
-                y: area.y - offsetY
+                y: area.y - offsetY,
             }));
         }
 
         if (this.config.exclusionStrategy !== 'jump') return adjustedAreas;
         const info = this._getPseudoInfo();
-        return adjustedAreas.map(area => {
-            const vX = this._mapToVirtualX(area.x);
-            let vWidth = area.width;
-            const areaRight = area.x + area.width;
-            const gapLeft = info.left;
-            const gapRight = info.left + info.width;
+        return adjustedAreas
+            .map((area) => {
+                const vX = this._mapToVirtualX(area.x);
+                let vWidth = area.width;
+                const areaRight = area.x + area.width;
+                const gapLeft = info.left;
+                const gapRight = info.left + info.width;
 
-            if (area.x < gapLeft && areaRight > gapRight) {
-                vWidth -= info.width;
-            } else if (area.x >= gapLeft && area.x < gapRight) {
-                const overlap = gapRight - area.x;
-                vWidth = Math.max(0, area.width - overlap);
-            } else if (areaRight > gapLeft && areaRight <= gapRight) {
-                vWidth = gapLeft - area.x;
-            }
-            return { ...area, x: vX, width: vWidth };
-        }).filter(a => a.width > 0);
+                if (area.x < gapLeft && areaRight > gapRight) {
+                    vWidth -= info.width;
+                } else if (area.x >= gapLeft && area.x < gapRight) {
+                    const overlap = gapRight - area.x;
+                    vWidth = Math.max(0, area.width - overlap);
+                } else if (areaRight > gapLeft && areaRight <= gapRight) {
+                    vWidth = gapLeft - area.x;
+                }
+                return { ...area, x: vX, width: vWidth };
+            })
+            .filter((a) => a.width > 0);
     }
 
     register(name, animationClass, id) {
@@ -181,7 +183,9 @@ export class AnimationEngine {
                 if (this.warmupFrames >= this.WARMUP_LIMIT) {
                     this.perfViolations++;
                     if (this.perfViolations > this.maxViolations) {
-                        console.warn(`QuickLog-Solo: Animation performance below threshold (${this.perfThreshold}ms, latency: ${Math.round(latency)}ms). Auto-stopping to save resources.`);
+                        console.warn(
+                            `QuickLog-Solo: Animation performance below threshold (${this.perfThreshold}ms, latency: ${Math.round(latency)}ms). Auto-stopping to save resources.`
+                        );
                         this.stop();
                         if (typeof this.onStop === 'function') {
                             this.onStop();
@@ -209,10 +213,14 @@ export class AnimationEngine {
     _renderDots(dots) {
         if (!dots) return;
         const colLower = this.color?.toLowerCase();
-        const mode = (colLower === 'retro-lcd' || colLower === '#9bbc0f') ? 'retro-lcd' :
-                     (colLower === 'retro-crt' || colLower === '#33ff33') ? 'retro-crt' :
-                     (colLower === 'retro-nixie' || colLower === '#ff5500') ? 'retro-nixie' :
-                     (this.displayMode || 'normal');
+        const mode =
+            colLower === 'retro-lcd' || colLower === '#9bbc0f'
+                ? 'retro-lcd'
+                : colLower === 'retro-crt' || colLower === '#33ff33'
+                  ? 'retro-crt'
+                  : colLower === 'retro-nixie' || colLower === '#ff5500'
+                    ? 'retro-nixie'
+                    : this.displayMode || 'normal';
 
         // 1. Clear background (transparent canvas for CSS-level backgrounds and drop-shadows)
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -232,7 +240,7 @@ export class AnimationEngine {
         // 2. Render STN LCD Ghosting (Slow latency simulation)
         if (mode === 'retro-lcd' && this.lastDots) {
             this.ctx.fillStyle = 'rgba(48, 98, 48, 0.25)'; // Legacy persistent shade
-            this.lastDots.forEach(dot => {
+            this.lastDots.forEach((dot) => {
                 const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
                 const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + offsetY;
                 this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
@@ -242,7 +250,7 @@ export class AnimationEngine {
         // 3. Render STN LCD 3D Shadow projection
         if (mode === 'retro-lcd') {
             this.ctx.fillStyle = 'rgba(15, 56, 15, 0.22)'; // Offset shadow under dots
-            dots.forEach(dot => {
+            dots.forEach((dot) => {
                 const dotX = dot.x + (CELL_SIZE - dot.size) / 2 + 1;
                 const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + 1 + offsetY;
                 this.ctx.fillRect(dotX, dotY, dot.size, dot.size);
@@ -250,13 +258,15 @@ export class AnimationEngine {
         }
 
         // 4. Render Main dots
-        dots.forEach(dot => {
+        dots.forEach((dot) => {
             const dotX = dot.x + (CELL_SIZE - dot.size) / 2;
             const dotY = dot.y + (CELL_SIZE - dot.size) / 2 + offsetY;
 
             if (mode === 'retro-lcd') {
-                if (dot.size === 4) this.ctx.fillStyle = '#0f380f'; // Darkest
-                else if (dot.size === 3) this.ctx.fillStyle = '#306230'; // Dark mid
+                if (dot.size === 4)
+                    this.ctx.fillStyle = '#0f380f'; // Darkest
+                else if (dot.size === 3)
+                    this.ctx.fillStyle = '#306230'; // Dark mid
                 else this.ctx.fillStyle = '#8bac0f'; // Light mid
             } else if (mode === 'retro-crt') {
                 this.ctx.fillStyle = '#33ff33'; // Neon phosphor green
@@ -330,9 +340,9 @@ export class AnimationEngine {
         const offsetY = this.simulatedHeight ? (this.canvas.height - this.simulatedHeight) / 2 : 0;
         let adjustedRealExclusionAreas = this.exclusionAreas;
         if (offsetY !== 0) {
-            adjustedRealExclusionAreas = this.exclusionAreas.map(area => ({
+            adjustedRealExclusionAreas = this.exclusionAreas.map((area) => ({
                 ...area,
-                y: area.y - offsetY
+                y: area.y - offsetY,
             }));
         }
 
@@ -348,7 +358,7 @@ export class AnimationEngine {
             requestRawBitmap: this.requestRawBitmap,
             customAnimationId: this.customAnimationId,
             color: this.color,
-            isDraft: this.isDraft || false
+            isDraft: this.isDraft || false,
         };
 
         this.lastDrawRequestTime = performance.now();

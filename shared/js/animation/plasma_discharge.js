@@ -21,37 +21,37 @@ export default class PlasmaDischarge extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Plasma Discharge (DLA)",
-            ja: "プラズマ・放電（DLA）"
+            en: 'Plasma Discharge (DLA)',
+            ja: 'プラズマ・放電（DLA）',
         },
         description: {
-            en: "Simulates the growth of electric discharges or coral-like fractal structures through particle aggregation.",
-            ja: "粒子の凝集によって、放電の跡やサンゴのようなフラクタル構造が成長していく様子をシミュレートします。"
+            en: 'Simulates the growth of electric discharges or coral-like fractal structures through particle aggregation.',
+            ja: '粒子の凝集によって、放電の跡やサンゴのようなフラクタル構造が成長していく様子をシミュレートします。',
         },
-        author: "QuickLog-Solo",
+        author: 'QuickLog-Solo',
         devOnly: true,
-        rewindable: true
+        rewindable: true,
     };
 
     config = {
         mode: 'canvas',
-        exclusionStrategy: 'freedom'
+        exclusionStrategy: 'freedom',
     };
 
     // --- Simulation Constants ---
     GRID_SIZE = 4;
-    MAX_PARTICLES = 1200;       // Number of random walkers active at once
-    STUCK_PROBABILITY = 0.9;    // Chance to stick when touching a neighbor
+    MAX_PARTICLES = 1200; // Number of random walkers active at once
+    STUCK_PROBABILITY = 0.9; // Chance to stick when touching a neighbor
 
     // --- Advanced Tuning & Visuals ---
-    STEPS_PER_FRAME = 6;        // Number of simulation steps per draw call to accelerate growth
-    SHADOW_BLUR_RADIUS = 4;     // Blur radius for the electric glow effect
-    WALKER_ALPHA = 0.25;        // Opacity of the background random walkers
-    CELL_GAP = 0.5;             // Gap between cells for a sharper look
+    STEPS_PER_FRAME = 6; // Number of simulation steps per draw call to accelerate growth
+    SHADOW_BLUR_RADIUS = 4; // Blur radius for the electric glow effect
+    WALKER_ALPHA = 0.25; // Opacity of the background random walkers
+    CELL_GAP = 0.5; // Gap between cells for a sharper look
 
     constructor() {
         super();
-        this.stuck = new Uint8Array(0);   // Uint8Array: 1 if occupied, 0 if free
+        this.stuck = new Uint8Array(0); // Uint8Array: 1 if occupied, 0 if free
         this.particles = []; // Random walkers
         this.cols = 0;
         this.rows = 0;
@@ -87,20 +87,36 @@ export default class PlasmaDischarge extends AnimationBase {
 
         // Pre-calculate neighbor offsets (8-way connectivity)
         this.neighborOffsets = [
-            { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
-            { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
-            { dx: -1, dy: -1 }, { dx: 1, dy: 1 },
-            { dx: -1, dy: 1 }, { dx: 1, dy: -1 }
+            { dx: -1, dy: 0 },
+            { dx: 1, dy: 0 },
+            { dx: 0, dy: -1 },
+            { dx: 0, dy: 1 },
+            { dx: -1, dy: -1 },
+            { dx: 1, dy: 1 },
+            { dx: -1, dy: 1 },
+            { dx: 1, dy: -1 },
         ];
     }
 
     createParticleAtEdge() {
         const edge = Math.floor(Math.random() * 4);
         let gx, gy;
-        if (edge === 0) { gx = 0; gy = Math.floor(Math.random() * this.rows); } // Left
-        else if (edge === 1) { gx = this.cols - 1; gy = Math.floor(Math.random() * this.rows); } // Right
-        else if (edge === 2) { gx = Math.floor(Math.random() * this.cols); gy = 0; } // Top
-        else { gx = Math.floor(Math.random() * this.cols); gy = this.rows - 1; } // Bottom
+        if (edge === 0) {
+            gx = 0;
+            gy = Math.floor(Math.random() * this.rows);
+        } // Left
+        else if (edge === 1) {
+            gx = this.cols - 1;
+            gy = Math.floor(Math.random() * this.rows);
+        } // Right
+        else if (edge === 2) {
+            gx = Math.floor(Math.random() * this.cols);
+            gy = 0;
+        } // Top
+        else {
+            gx = Math.floor(Math.random() * this.cols);
+            gy = this.rows - 1;
+        } // Bottom
 
         return { gx, gy };
     }
@@ -132,10 +148,13 @@ export default class PlasmaDischarge extends AnimationBase {
             // Boundary and exclusion area handling
             const px = p.gx * this.GRID_SIZE;
             const py = p.gy * this.GRID_SIZE;
-            const isBlocked = (p.gx < 0 || p.gx >= this.cols || p.gy < 0 || p.gy >= this.rows) ||
-                exclusionAreas.some(area =>
-                    px >= area.x && px <= area.x + area.width &&
-                    py >= area.y && py <= area.y + area.height
+            const isBlocked =
+                p.gx < 0 ||
+                p.gx >= this.cols ||
+                p.gy < 0 ||
+                p.gy >= this.rows ||
+                exclusionAreas.some(
+                    (area) => px >= area.x && px <= area.x + area.width && py >= area.y && py <= area.y + area.height
                 );
 
             if (isBlocked) {
@@ -176,7 +195,12 @@ export default class PlasmaDischarge extends AnimationBase {
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.cols; x++) {
                 if (this.stuck[y * this.cols + x]) {
-                    ctx.fillRect(x * this.GRID_SIZE, y * this.GRID_SIZE, this.GRID_SIZE - this.CELL_GAP, this.GRID_SIZE - this.CELL_GAP);
+                    ctx.fillRect(
+                        x * this.GRID_SIZE,
+                        y * this.GRID_SIZE,
+                        this.GRID_SIZE - this.CELL_GAP,
+                        this.GRID_SIZE - this.CELL_GAP
+                    );
                 }
             }
         }

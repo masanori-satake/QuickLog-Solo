@@ -1,4 +1,10 @@
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, DEFAULT_ALARM_MESSAGE_STOP, generateUUID } from './utils.js';
+import {
+    SYSTEM_CATEGORY_IDLE,
+    SYSTEM_CATEGORY_UNKNOWN,
+    SYSTEM_CATEGORY_PAGE_BREAK,
+    DEFAULT_ALARM_MESSAGE_STOP,
+    generateUUID,
+} from './utils.js';
 import { t, setLanguage } from './i18n.js';
 import { validateCategorySchema, SCHEMA_TYPE_PAGE_BREAK } from './schema.js';
 
@@ -160,11 +166,11 @@ export async function dbImportCategories(items, importMode) {
                 if (item.type === SCHEMA_TYPE_PAGE_BREAK) {
                     store.add({
                         name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                        order: ++maxOrderInDB
+                        order: ++maxOrderInDB,
                     });
                 } else {
                     if (importMode === 'append') {
-                        const existing = currentCategories.find(c => c.name === item.name);
+                        const existing = currentCategories.find((c) => c.name === item.name);
                         if (existing) continue;
                     }
                     store.add({
@@ -172,7 +178,7 @@ export async function dbImportCategories(items, importMode) {
                         color: item.color,
                         order: ++maxOrderInDB,
                         tags: Array.isArray(item.tags) ? item.tags.join(',') : '',
-                        animation: item.animation || 'default'
+                        animation: item.animation || 'default',
                     });
                 }
             }
@@ -283,7 +289,8 @@ export async function dbGetManualStopsAt(ts) {
             if (cursor) {
                 const log = cursor.value;
                 // If we've gone too far back in time, we can stop (heuristically, logs are roughly ID-ordered by time)
-                if (log.startTime < ts - 3600000) { // 1 hour buffer
+                if (log.startTime < ts - 3600000) {
+                    // 1 hour buffer
                     resolve(results);
                     return;
                 }
@@ -420,20 +427,36 @@ export async function getCurrentAppState() {
         sessionSync: (await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC))?.value || false,
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
         alarms: alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0)),
-        activeTask
+        activeTask,
     };
 }
 
 async function setupInitialData(languageSetting) {
     setLanguage(languageSetting);
 
-
     const animationOrder = [
-        'none', 'default', 'digital_rain', 'migrating_birds', 'ripple',
-        'dot_typing', 'spectrum', 'coffee_drip', 'car_drive', 'left_to_right',
-        'contour_lines', 'tetris_building', 'night_sky', 'open_reel', 'sand_clock',
-        'clock', 'cats', 'hero_pot', 'right_to_left', 'smoke',
-        'heart_beat', 'newtons_cradle'
+        'none',
+        'default',
+        'digital_rain',
+        'migrating_birds',
+        'ripple',
+        'dot_typing',
+        'spectrum',
+        'coffee_drip',
+        'car_drive',
+        'left_to_right',
+        'contour_lines',
+        'tetris_building',
+        'night_sky',
+        'open_reel',
+        'sand_clock',
+        'clock',
+        'cats',
+        'hero_pot',
+        'right_to_left',
+        'smoke',
+        'heart_beat',
+        'newtons_cradle',
     ];
 
     const categoryDefs = [
@@ -460,13 +483,13 @@ async function setupInitialData(languageSetting) {
         { name: t('init-cat-sec'), color: 'error', tags: t('init-tag-sec') },
         { name: t('init-cat-data'), color: 'teal', tags: t('init-tag-data') },
         { name: t('init-cat-wfh'), color: 'neutral', tags: '' },
-        { name: t('init-cat-move'), color: 'outline', tags: t('init-tag-move') }
+        { name: t('init-cat-move'), color: 'outline', tags: t('init-tag-move') },
     ];
 
     const initialCategories = categoryDefs.map((def, i) => ({
         ...def,
         animation: animationOrder[i],
-        tags: def.tags || ''
+        tags: def.tags || '',
     }));
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
@@ -480,7 +503,7 @@ async function setupInitialData(languageSetting) {
 
     const allLogs = await dbGetAll(STORE_LOGS);
 
-    let openTasks = allLogs.filter(log => !log.endTime).sort((a, b) => b.startTime - a.startTime);
+    let openTasks = allLogs.filter((log) => !log.endTime).sort((a, b) => b.startTime - a.startTime);
 
     const activeTaskFromLogs = openTasks[0];
 
@@ -491,7 +514,7 @@ async function setupInitialData(languageSetting) {
             category: SYSTEM_CATEGORY_IDLE,
             startTime: activeTaskFromLogs.startTime,
             resumableCategory: activeTaskFromLogs.resumableCategory,
-            isPaused: true
+            isPaused: true,
         };
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
     }
@@ -505,14 +528,22 @@ async function setupInitialData(languageSetting) {
         const orphanedTasks = [];
         for (let i = startIndex; i < openTasks.length; i++) {
             const orphaned = openTasks[i];
-            if (hasPauseState && orphaned.category === SYSTEM_CATEGORY_IDLE && orphaned.startTime === activeTask.startTime) continue;
+            if (
+                hasPauseState &&
+                orphaned.category === SYSTEM_CATEGORY_IDLE &&
+                orphaned.startTime === activeTask.startTime
+            )
+                continue;
 
             orphaned.endTime = orphaned.startTime + ORPHANED_TASK_MIN_DURATION_MS;
             orphanedTasks.push(orphaned);
         }
         if (orphanedTasks.length > 0) {
             await new Promise((resolve, reject) => {
-                if (!db) { reject(new Error('DB not initialized')); return; }
+                if (!db) {
+                    reject(new Error('DB not initialized'));
+                    return;
+                }
                 const tx = db.transaction(STORE_LOGS, 'readwrite');
                 const store = tx.objectStore(STORE_LOGS);
                 tx.oncomplete = () => resolve();
@@ -532,17 +563,17 @@ async function setupInitialData(languageSetting) {
             const isLast = i === 9;
             defaultAlarms.push({
                 enabled: isLast,
-                time: isLast ? "23:59" : "09:00",
-                message: isLast ? DEFAULT_ALARM_MESSAGE_STOP : "",
-                action: isLast ? "stop" : "none", // none, stop, pause, start
-                actionCategory: "",
+                time: isLast ? '23:59' : '09:00',
+                message: isLast ? DEFAULT_ALARM_MESSAGE_STOP : '',
+                action: isLast ? 'stop' : 'none', // none, stop, pause, start
+                actionCategory: '',
                 requireConfirmation: false,
                 type: 'daily_business',
                 daysOfWeek: [1, 2, 3, 4, 5],
                 dayOfMonth: 1,
                 daysBeforeEnd: 0,
                 holidayAdjustment: 'none',
-                order: i
+                order: i,
             });
         }
         await dbAddMultiple(STORE_ALARMS, defaultAlarms);
@@ -597,7 +628,10 @@ async function migrateLogsWithSyncId() {
     if (logsToUpdate.length > 0) {
         console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing syncId.`);
         await new Promise((resolve, reject) => {
-            if (!db) { reject(new Error('DB not initialized')); return; }
+            if (!db) {
+                reject(new Error('DB not initialized'));
+                return;
+            }
             const tx = db.transaction(STORE_LOGS, 'readwrite');
             const store = tx.objectStore(STORE_LOGS);
             tx.oncomplete = () => resolve();
@@ -633,7 +667,10 @@ async function migrateLogsWithUpdatedAt() {
     if (logsToUpdate.length > 0) {
         console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing updatedAt.`);
         await new Promise((resolve, reject) => {
-            if (!db) { reject(new Error('DB not initialized')); return; }
+            if (!db) {
+                reject(new Error('DB not initialized'));
+                return;
+            }
             const tx = db.transaction(STORE_LOGS, 'readwrite');
             const store = tx.objectStore(STORE_LOGS);
             tx.oncomplete = () => resolve();
@@ -654,21 +691,27 @@ async function migrateLogsWithMissingData() {
 
     const logs = await dbGetAll(STORE_LOGS);
     const categories = await dbGetAll(STORE_CATEGORIES);
-    const categoryMap = new Map(categories.map(c => [c.name, c]));
+    const categoryMap = new Map(categories.map((c) => [c.name, c]));
 
     const logsToUpdate = [];
     for (const log of logs) {
-        if (log.category === SYSTEM_CATEGORY_IDLE || log.category === SYSTEM_CATEGORY_UNKNOWN || log.isManualStop || (log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) continue;
+        if (
+            log.category === SYSTEM_CATEGORY_IDLE ||
+            log.category === SYSTEM_CATEGORY_UNKNOWN ||
+            log.isManualStop ||
+            (log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+        )
+            continue;
 
         let changed = false;
         if (log.tags === undefined || log.tags === null) {
             const cat = categoryMap.get(log.category);
-            log.tags = cat ? (cat.tags || '') : '';
+            log.tags = cat ? cat.tags || '' : '';
             changed = true;
         }
         if (!log.color) {
             const cat = categoryMap.get(log.category);
-            log.color = cat ? (cat.color || 'primary') : 'primary';
+            log.color = cat ? cat.color || 'primary' : 'primary';
             changed = true;
         }
 
@@ -680,7 +723,10 @@ async function migrateLogsWithMissingData() {
     if (logsToUpdate.length > 0) {
         console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing tags or colors.`);
         await new Promise((resolve, reject) => {
-            if (!db) { reject(new Error('DB not initialized')); return; }
+            if (!db) {
+                reject(new Error('DB not initialized'));
+                return;
+            }
             const tx = db.transaction(STORE_LOGS, 'readwrite');
             const store = tx.objectStore(STORE_LOGS);
             tx.oncomplete = () => resolve();
@@ -717,11 +763,14 @@ async function generateDummyHistory() {
     };
 
     const categories = await dbGetAll(STORE_CATEGORIES);
-    const workCategories = categories.filter(c => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+    const workCategories = categories.filter(
+        (c) => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+    );
 
     if (workCategories.length === 0) return;
 
-    const createJitter = (min, max) => (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * (max - min + 1)) + min);
+    const createJitter = (min, max) =>
+        (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * (max - min + 1)) + min);
     const toMillis = (h, m) => (h * 60 + m) * 60 * 1000;
 
     const allNewLogs = [];
@@ -743,7 +792,9 @@ async function generateDummyHistory() {
         const lunchStart = baseTime + toMillis(CONFIG.LUNCH_START_H, CONFIG.LUNCH_START_M) + lunchJitter * 60 * 1000;
         const lunchEnd = lunchStart + CONFIG.LUNCH_DURATION_MINS * 60 * 1000;
 
-        const numTasks = Math.floor(Math.random() * (CONFIG.TASKS_PER_DAY_MAX - CONFIG.TASKS_PER_DAY_MIN + 1)) + CONFIG.TASKS_PER_DAY_MIN;
+        const numTasks =
+            Math.floor(Math.random() * (CONFIG.TASKS_PER_DAY_MAX - CONFIG.TASKS_PER_DAY_MIN + 1)) +
+            CONFIG.TASKS_PER_DAY_MIN;
         const morningCount = CONFIG.MORNING_TASK_COUNT;
         const afternoonCount = numTasks - morningCount;
 
@@ -762,7 +813,7 @@ async function generateDummyHistory() {
                 if (isFirstOfDay) {
                     cat = { name: t('demo-warning'), color: 'error' };
                 } else {
-                    const candidates = workCategories.filter(c => c.name !== lastCategoryName);
+                    const candidates = workCategories.filter((c) => c.name !== lastCategoryName);
                     cat = candidates[Math.floor(Math.random() * candidates.length)];
                 }
                 lastCategoryName = cat.name;
@@ -773,7 +824,7 @@ async function generateDummyHistory() {
                     startTime: Math.floor(current),
                     endTime: Math.floor(taskEnd),
                     color: cat.color || 'primary',
-                    tags: cat.tags || ''
+                    tags: cat.tags || '',
                 });
                 current = taskEnd;
             }
@@ -787,7 +838,7 @@ async function generateDummyHistory() {
             syncId: generateUUID(),
             category: SYSTEM_CATEGORY_IDLE,
             startTime: Math.floor(lunchStart),
-            endTime: Math.floor(lunchEnd)
+            endTime: Math.floor(lunchEnd),
         });
 
         // Afternoon Tasks
@@ -799,7 +850,7 @@ async function generateDummyHistory() {
             category: SYSTEM_CATEGORY_IDLE,
             startTime: Math.floor(endTime),
             endTime: Math.floor(endTime),
-            isManualStop: true
+            isManualStop: true,
         });
     }
     await dbAddMultiple(STORE_LOGS, allNewLogs);
@@ -808,12 +859,15 @@ async function generateDummyHistory() {
 async function cleanupOldLogs() {
     const cleanupThresholdTime = Date.now() - LOG_CLEANUP_THRESHOLD_MS;
     const allLogs = await dbGetAll(STORE_LOGS);
-    const logsToDelete = allLogs.filter(log => log.startTime < cleanupThresholdTime);
+    const logsToDelete = allLogs.filter((log) => log.startTime < cleanupThresholdTime);
 
     if (logsToDelete.length === 0) return;
 
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
+        if (!db) {
+            reject(new Error('DB not initialized'));
+            return;
+        }
         const tx = db.transaction(STORE_LOGS, 'readwrite');
         const store = tx.objectStore(STORE_LOGS);
 

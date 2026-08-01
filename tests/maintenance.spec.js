@@ -58,7 +58,7 @@ test.describe('Maintenance and Initialization', () => {
     });
 
     test('should reset categories and settings', async ({ page }) => {
-         // 1. Add a custom category
+        // 1. Add a custom category
         await page.click('#settings-toggle');
         await page.click('button[data-tab="categories"]');
         await page.locator('#new-category-name-settings').fill('DeleteMe');
@@ -70,7 +70,7 @@ test.describe('Maintenance and Initialization', () => {
         await page.click('#confirm-ok-btn');
 
         // Page reloads
-        await page.waitForURL(url => !url.href.includes('DeleteMe')); // Ensure navigation happened
+        await page.waitForURL((url) => !url.href.includes('DeleteMe')); // Ensure navigation happened
         await page.waitForSelector('.category-btn', { state: 'visible' });
 
         // 3. Verify custom category is gone

@@ -1,22 +1,22 @@
 export default {
     // UI Header & Sections
-    'title': 'QuickLog-Solo',
+    title: 'QuickLog-Solo',
     'copy-report-btn': '日報コピー',
     'copy-report-title': '日報コピー',
     'tag-aggregation-title': 'タグ集計',
     'copy-aggregation-btn': '集計コピー',
-    'tags': 'タグ',
+    tags: 'タグ',
     'no-tags': '(タグ無し)',
     'total-work-time': '作業時間',
-    'settings': '設定',
-    'delete': '削除',
-    'duplicate': '複製',
+    settings: '設定',
+    delete: '削除',
+    duplicate: '複製',
     'btn-copy': 'コピー',
 
     // Controls
-    'pause': '一時停止',
-    'resume': '再開',
-    'stop': '終了',
+    pause: '一時停止',
+    resume: '再開',
+    stop: '終了',
 
     // Settings Modal
     'tab-general': '一般',
@@ -50,8 +50,10 @@ export default {
     'label-before-end-1': '月末から',
     'label-before-end-2': '日前 (0は月末日)',
     'back-to-app': 'アプリに戻る',
-    'alarm-setting-description': '指定した時刻にメッセージを表示し、必要に応じて作業を自動的に「終了」「一時停止」「開始」します。',
-    'alarm-note-extension-only': '※ アラーム機能はブラウザ拡張機能としてインストールされている場合のみ動作します。プレビュー版では通知や自動動作は実行されません。',
+    'alarm-setting-description':
+        '指定した時刻にメッセージを表示し、必要に応じて作業を自動的に「終了」「一時停止」「開始」します。',
+    'alarm-note-extension-only':
+        '※ アラーム機能はブラウザ拡張機能としてインストールされている場合のみ動作します。プレビュー版では通知や自動動作は実行されません。',
     'alarm-label-enabled': '有効',
     'alarm-label-time': '時刻',
     'alarm-label-message': 'メッセージ',
@@ -118,12 +120,14 @@ export default {
     'import-overwrite': '上書き',
 
     // About Tab
-    'version': 'バージョン',
-    'developer': '開発者',
+    version: 'バージョン',
+    developer: '開発者',
     'about-stats-logs': '作業履歴件数',
     'about-stats-categories': 'カテゴリ数',
-    'about-description': 'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB に保存され（バックアップを実行した際にはローカルファイルシステムにも保存されます）、外部送信は一切行われません。GitHub Actions による依存関係の検証と Google OSV-Scanner による継続的な監査により、高い透明性と安全性を維持しています。',
-    'about-disclaimer': '【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。',
+    'about-description':
+        'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB に保存され（バックアップを実行した際にはローカルファイルシステムにも保存されます）、外部送信は一切行われません。GitHub Actions による依存関係の検証と Google OSV-Scanner による継続的な監査により、高い透明性と安全性を維持しています。',
+    'about-disclaimer':
+        '【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。',
 
     // Auto Stop & Page Break
     'page-break': '改ページ',
@@ -175,7 +179,8 @@ export default {
     'backup-directory': '保存先',
     'backup-file-count': 'ファイル数',
     'backup-file-count-unit': '日分',
-    'backup-description-new': 'ブラウザのキャッシュクリアなどで IndexedDB のデータが消えてしまうのを防ぐため、定期的なバックアップを推奨します。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。',
+    'backup-description-new':
+        'ブラウザのキャッシュクリアなどで IndexedDB のデータが消えてしまうのを防ぐため、定期的なバックアップを推奨します。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。',
     'toast-backup-completed': 'バックアップが完了しました',
 
     // Messages & Dialogs
@@ -199,13 +204,19 @@ export default {
     'confirm-delete-category': 'カテゴリ「{name}」を削除しますか？\n（過去の作業履歴からはカテゴリ色が消えます）',
     'confirm-delete-selected': '選択した {count} 件を削除しますか？',
     'confirm-import-overwrite': '既存のカテゴリをすべて削除して上書きしますか？',
-    'confirm-export-csv': '作業履歴データをCSVとしてエクスポートします。実行中の作業がある場合は終了されます。よろしいですか？',
-    'confirm-import-csv': 'CSVファイルから作業履歴データをインポートします。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？',
+    'confirm-export-csv':
+        '作業履歴データをCSVとしてエクスポートします。実行中の作業がある場合は終了されます。よろしいですか？',
+    'confirm-import-csv':
+        'CSVファイルから作業履歴データをインポートします。既存のデータに追記されます。実行中の作業がある場合は終了されます。よろしいですか？',
     'confirm-clear-logs': '全ての作業履歴を削除します。実行中の作業がある場合は終了されます。よろしいですか？',
-    'confirm-sync-pull': 'ローカルの作業履歴を削除し、他端末と共有されている履歴データで再取得します。実行中の作業がある場合は終了されます。よろしいですか？',
-    'confirm-sync-clear-cloud': 'この端末だけでなく、同期しているすべてのデバイスから作業履歴を削除します。実行中の作業がある場合は終了されます。よろしいですか？',
-    'confirm-reset-all': 'カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（作業履歴は維持されます）',
-    'confirm-reset-settings': '各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（作業履歴とカテゴリは維持されます）',
+    'confirm-sync-pull':
+        'ローカルの作業履歴を削除し、他端末と共有されている履歴データで再取得します。実行中の作業がある場合は終了されます。よろしいですか？',
+    'confirm-sync-clear-cloud':
+        'この端末だけでなく、同期しているすべてのデバイスから作業履歴を削除します。実行中の作業がある場合は終了されます。よろしいですか？',
+    'confirm-reset-all':
+        'カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（作業履歴は維持されます）',
+    'confirm-reset-settings':
+        '各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（作業履歴とカテゴリは維持されます）',
 
     'alert-invalid-category': '無効なカテゴリ名です。（50文字以内、「{idle}」は使用不可）',
     'alert-duplicate-category': '同名のカテゴリが既に存在します。',
@@ -214,7 +225,8 @@ export default {
 
     'toast-copied': 'コピーしました！',
     'toast-done': '完了しました！',
-    'toast-done-with-reopen-msg': '完了しました！設定パネルを開いている場合は、新しいアニメーションを適用するため、一度閉じてから再度開き直してください。',
+    'toast-done-with-reopen-msg':
+        '完了しました！設定パネルを開いている場合は、新しいアニメーションを適用するため、一度閉じてから再度開き直してください。',
     'toast-imported': 'インポートが完了しました。',
     'toast-cat-imported': 'カテゴリをインポートしました',
     'toast-deleted': '削除が完了しました',
@@ -225,17 +237,20 @@ export default {
 
     'import-err-fatal': 'ファイル形式が正しくありません。インポートを中止します。',
     'import-err-partial': '全{total}行中{errorCount}行が破損しています。正常な{validCount}行のみを取り込みますか？',
-    'import-err-field': '一部のデータに不備（例：無効な色）があります。デフォルト値を適用して全て取り込みますか？それとも不備のある行を除外しますか？',
+    'import-err-field':
+        '一部のデータに不備（例：無効な色）があります。デフォルト値を適用して全て取り込みますか？それとも不備のある行を除外しますか？',
     'import-btn-import-valid': '正常分のみ取り込む',
     'import-btn-apply-fallback': 'デフォルト値を適用',
     'import-btn-skip-invalid': '不備のある行を除外',
     'import-btn-abort': '中止',
 
-    'backup-err-0byte': '中身が空のバックアップファイル（{name}）が見つかりました。これは異常な状態の可能性があります。このファイルを無視して続行しますか？',
+    'backup-err-0byte':
+        '中身が空のバックアップファイル（{name}）が見つかりました。これは異常な状態の可能性があります。このファイルを無視して続行しますか？',
     'backup-btn-ignore-continue': '無視して続行',
     'backup-btn-abort-investigate': '中断して調査',
 
-    'backup-err-locked': 'ファイルが他のプログラムでロックされているか、アクセス権限がありません。他のアプリを閉じてから再試行してください。',
+    'backup-err-locked':
+        'ファイルが他のプログラムでロックされているか、アクセス権限がありません。他のアプリを閉じてから再試行してください。',
     'backup-err-not-found': 'バックアップ先フォルダが見つかりません。再度フォルダを選択してください。',
     'backup-err-unknown': '予期せぬエラーが発生しました: {message}',
     'toast-backup-failed-detail': 'バックアップに失敗しました。詳細：{reason}',
@@ -381,7 +396,8 @@ export default {
     'btn-close': '閉じる',
     'pr-guide-title': 'Pull Request の準備',
     'pr-step-1': '作成したアニメーションを <code>.js</code> ファイルとしてダウンロードします。',
-    'pr-step-2': '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> のリポジトリをフォークします。',
+    'pr-step-2':
+        '<a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a> のリポジトリをフォークします。',
     'pr-step-3': 'ダウンロードしたファイルを <code>shared/js/animation/</code> に配置します。',
     'pr-step-4': '変更をコミットして、Pull Request を作成してください！',
     'pr-note': 'あなたの貢献が、このツールをより楽しくします！',
@@ -417,20 +433,23 @@ export default {
     'toast-export-success': 'コピーに成功しました',
     'toast-no-categories': 'コピーするカテゴリがありません',
     'page-break-label': '改ページ',
-    'undo': '元に戻す',
-    'redo': 'やり直し',
+    undo: '元に戻す',
+    redo: 'やり直し',
     'tag-box-title': 'タグボックス',
     'tag-replace-title': 'タグの置換',
     'tag-replace-before': '置換前',
     'tag-replace-after': '置換後',
     'tooltip-replace-tags': 'タグの置換',
-    'privacy-policy-local-only': '全てブラウザ内で処理が完結しており、外部のサーバとは連携していません。入力した情報が外に漏れることはありません。',
+    'privacy-policy-local-only':
+        '全てブラウザ内で処理が完結しており、外部のサーバとは連携していません。入力した情報が外に漏れることはありません。',
     'privacy-policy-local-only-short': 'ローカル完結',
     'setting-session-sync': '端末間同期 (Sync) (β)',
     'setting-session-sync-desc': 'ブラウザの同期機能を利用して、設定・カテゴリ・直近の履歴を他端末と共有します。',
     'setting-session-sync-note': '※ ChromeとEdgeの間など、異なるブラウザ間での同期はできません。',
-    'confirm-enable-session-sync': '端末間同期を有効にしますか？現在のデータがブラウザの同期ストレージにアップロードされます。',
-    'confirm-disable-session-sync': '端末間同期を無効にしますか？この端末での同期は停止しますが、他端末と共有されているデータは保持されます。',
+    'confirm-enable-session-sync':
+        '端末間同期を有効にしますか？現在のデータがブラウザの同期ストレージにアップロードされます。',
+    'confirm-disable-session-sync':
+        '端末間同期を無効にしますか？この端末での同期は停止しますが、他端末と共有されているデータは保持されます。',
     'session-sync-active': '同期有効',
     'local-only-active': 'ローカル完結',
 
@@ -457,7 +476,8 @@ export default {
     'btn-delete-selected-anim': '選択したアニメーションを消去',
     'toast-custom-anim-imported': 'カスタムアニメーションをインポートしました',
     'toast-custom-anim-exported': 'カスタムアニメーションをクリップボードにコピーしました',
-    'confirm-delete-custom-anim': 'カスタムアニメーション「{name}」を消去しますか？\n（このアニメーションが割り当てられている全てのカテゴリ設定は「無し」に変更されます）',
+    'confirm-delete-custom-anim':
+        'カスタムアニメーション「{name}」を消去しますか？\n（このアニメーションが割り当てられている全てのカテゴリ設定は「無し」に変更されます）',
     'alert-invalid-qlanim': '無効な .qlanim 形式です。ファイルの構造を確認してください。',
     'btn-launch-maker': 'アニメーション・メーカーを起動',
     'maker-title': 'アニメーション・メーカー',
@@ -484,7 +504,8 @@ export default {
     'maker-playback-zoom': '再生とズーム',
     'maker-data-transfer': 'データの入出力',
     'maker-warning-title': '警告',
-    'maker-note-extension-only': '※ アニメーション・メーカーはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
+    'maker-note-extension-only':
+        '※ アニメーション・メーカーはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
     'maker-error-name-empty': '名前を入力してください',
     'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
     'maker-select-prompt': 'カスタムアニメーションを追加してください',

@@ -1,5 +1,11 @@
 import {
-    escapeHtml, escapeCsv, escapeTsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName
+    escapeHtml,
+    escapeCsv,
+    escapeTsv,
+    parseCsvLine,
+    isValidCategoryName,
+    isValidColor,
+    generateDuplicateName,
 } from '../shared/js/utils.js';
 
 describe('Utils Module', () => {
@@ -124,5 +130,4 @@ describe('Utils Module', () => {
             expect(generateDuplicateName('Task', ['Task (999)'])).toBe('Task (1000)');
         });
     });
-
 });

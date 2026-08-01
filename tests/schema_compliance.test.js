@@ -14,7 +14,6 @@ const ajvValidateHistory = ajv.compile(historySchema);
 const ajvValidateSettings = ajv.compile(settingsSchema);
 
 describe('Schema Compliance Tests', () => {
-
     describe('Category Schema Compliance', () => {
         test('should validate a correct category entry', () => {
             const data = {
@@ -22,7 +21,7 @@ describe('Schema Compliance Tests', () => {
                 version: '1.0',
                 type: 'category',
                 name: 'Test Category',
-                color: 'primary'
+                color: 'primary',
             };
             expect(validateCategorySchema(data)).toBe(true);
             expect(ajvValidateCategory(data)).toBe(true);
@@ -32,7 +31,7 @@ describe('Schema Compliance Tests', () => {
             const data = {
                 kind: 'QuickLogSolo/Category',
                 version: '1.0',
-                type: 'page-break'
+                type: 'page-break',
             };
             expect(validateCategorySchema(data)).toBe(true);
             expect(ajvValidateCategory(data)).toBe(true);
@@ -42,7 +41,7 @@ describe('Schema Compliance Tests', () => {
             const data = {
                 kind: 'QuickLogSolo/Category',
                 version: '1.0',
-                type: 'category'
+                type: 'category',
                 // Missing name and color
             };
             expect(validateCategorySchema(data)).toBe(false);
@@ -55,7 +54,7 @@ describe('Schema Compliance Tests', () => {
                 version: '1.0',
                 type: 'category',
                 name: 'Bad Color',
-                color: 'not-a-color'
+                color: 'not-a-color',
             };
             expect(validateCategorySchema(data)).toBe(false);
             expect(ajvValidateCategory(data)).toBe(false);
@@ -66,7 +65,7 @@ describe('Schema Compliance Tests', () => {
                 kind: 'QuickLogSolo/Category',
                 version: '1.0',
                 type: 'page-break',
-                name: 'I should not have a name'
+                name: 'I should not have a name',
             };
             expect(validateCategorySchema(data)).toBe(false);
             expect(ajvValidateCategory(data)).toBe(false);
@@ -78,7 +77,7 @@ describe('Schema Compliance Tests', () => {
                 version: '1.0',
                 type: 'category',
                 name: 'Test',
-                color: 'primary'
+                color: 'primary',
             };
             // Non-string tag
             expect(validateCategorySchema({ ...base, tags: [123] })).toBe(false);
@@ -99,7 +98,7 @@ describe('Schema Compliance Tests', () => {
                 type: 'category',
                 name: 'Test',
                 color: 'primary',
-                animation: 'a'.repeat(51)
+                animation: 'a'.repeat(51),
             };
             expect(validateCategorySchema(data)).toBe(false);
         });
@@ -113,7 +112,7 @@ describe('Schema Compliance Tests', () => {
                 type: 'task',
                 startTime: Date.now(),
                 category: 'Dev',
-                color: 'teal'
+                color: 'teal',
             };
             expect(validateHistorySchema(data)).toBe(true);
             expect(ajvValidateHistory(data)).toBe(true);
@@ -125,7 +124,7 @@ describe('Schema Compliance Tests', () => {
                 version: '1.0',
                 type: 'task',
                 startTime: Date.now(),
-                category: 'Dev'
+                category: 'Dev',
             };
             expect(validateHistorySchema(data)).toBe(true);
             expect(ajvValidateHistory(data)).toBe(true);
@@ -136,7 +135,7 @@ describe('Schema Compliance Tests', () => {
                 kind: 'QuickLogSolo/History',
                 version: '1.0',
                 type: 'idle',
-                startTime: Date.now()
+                startTime: Date.now(),
             };
             expect(validateHistorySchema(data)).toBe(true);
             expect(ajvValidateHistory(data)).toBe(true);
@@ -147,7 +146,7 @@ describe('Schema Compliance Tests', () => {
                 kind: 'QuickLogSolo/History',
                 version: '1.0',
                 type: 'idle',
-                startTime: Date.now()
+                startTime: Date.now(),
             };
 
             // Exactly 100 chars - should be accepted
@@ -178,7 +177,7 @@ describe('Schema Compliance Tests', () => {
                 type: 'stop',
                 startTime: Date.now(),
                 endTime: Date.now() + 1000,
-                isManualStop: true
+                isManualStop: true,
             };
             expect(validateHistorySchema(data)).toBe(true);
             expect(ajvValidateHistory(data)).toBe(true);
@@ -189,7 +188,7 @@ describe('Schema Compliance Tests', () => {
                 kind: 'QuickLogSolo/History',
                 version: '1.0',
                 type: 'task',
-                startTime: Date.now()
+                startTime: Date.now(),
             };
             expect(validateHistorySchema(data)).toBe(false);
             expect(ajvValidateHistory(data)).toBe(false);
@@ -201,7 +200,7 @@ describe('Schema Compliance Tests', () => {
                 version: '1.0',
                 type: 'stop',
                 startTime: Date.now(),
-                endTime: Date.now() + 1000
+                endTime: Date.now() + 1000,
             };
             expect(validateHistorySchema(data)).toBe(false);
             expect(ajvValidateHistory(data)).toBe(false);
@@ -218,8 +217,8 @@ describe('Schema Compliance Tests', () => {
                     { key: 'theme', value: 'dark' },
                     { key: 'defaultAnimation', value: 'ripple' },
                     { key: 'font', value: 'Arial' },
-                    { key: 'language', value: 'ja' }
-                ]
+                    { key: 'language', value: 'ja' },
+                ],
             };
             expect(validateSettingsSchema(data)).toBe(true);
             expect(ajvValidateSettings(data)).toBe(true);
@@ -229,7 +228,7 @@ describe('Schema Compliance Tests', () => {
             const base = {
                 app: 'QuickLog-Solo',
                 kind: 'QuickLogSolo/Settings',
-                version: '1.0'
+                version: '1.0',
             };
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'theme', value: 'blue' }] })).toBe(false);
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'language', value: 'jp' }] })).toBe(false);
@@ -239,7 +238,7 @@ describe('Schema Compliance Tests', () => {
             const base = {
                 app: 'QuickLog-Solo',
                 kind: 'QuickLogSolo/Settings',
-                version: '1.0'
+                version: '1.0',
             };
             // Not an array
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'businessDays', value: '1,2,3' }] })).toBe(false);
@@ -248,17 +247,21 @@ describe('Schema Compliance Tests', () => {
             // Invalid day number
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'businessDays', value: [1, 7] }] })).toBe(false);
             // Too many items
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'businessDays', value: [0, 1, 2, 3, 4, 5, 6, 0] }] })).toBe(false);
+            expect(
+                validateSettingsSchema({ ...base, entries: [{ key: 'businessDays', value: [0, 1, 2, 3, 4, 5, 6, 0] }] })
+            ).toBe(false);
         });
 
         test('should reject invalid font or animation length', () => {
             const base = {
                 app: 'QuickLog-Solo',
                 kind: 'QuickLogSolo/Settings',
-                version: '1.0'
+                version: '1.0',
             };
             expect(validateSettingsSchema({ ...base, entries: [{ key: 'font', value: 'a'.repeat(201) }] })).toBe(false);
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'defaultAnimation', value: 'a'.repeat(51) }] })).toBe(false);
+            expect(
+                validateSettingsSchema({ ...base, entries: [{ key: 'defaultAnimation', value: 'a'.repeat(51) }] })
+            ).toBe(false);
         });
 
         test('should reject settings with invalid app name', () => {
@@ -266,7 +269,7 @@ describe('Schema Compliance Tests', () => {
                 app: 'WrongApp',
                 kind: 'QuickLogSolo/Settings',
                 version: '1.0',
-                entries: []
+                entries: [],
             };
             expect(validateSettingsSchema(data)).toBe(false);
             expect(ajvValidateSettings(data)).toBe(false);
@@ -276,7 +279,7 @@ describe('Schema Compliance Tests', () => {
             const base = {
                 app: 'QuickLog-Solo',
                 kind: 'QuickLogSolo/Settings',
-                version: '1.0'
+                version: '1.0',
             };
 
             // Missing required fields
@@ -301,10 +304,10 @@ describe('Schema Compliance Tests', () => {
                             emoji: 'keep',
                             endTime: 'show',
                             duration: 'right',
-                            adjust: 'none'
-                        }
-                    }
-                ]
+                            adjust: 'none',
+                        },
+                    },
+                ],
             };
             expect(validateSettingsSchema(dataInvalidFormat)).toBe(false);
             expect(ajvValidateSettings(dataInvalidFormat)).toBe(false);
@@ -331,11 +334,11 @@ describe('Schema Compliance Tests', () => {
                                 daysOfWeek: [1, 2, 3, 4, 5],
                                 dayOfMonth: 1,
                                 daysBeforeEnd: 0,
-                                holidayAdjustment: 'none'
-                            }
-                        ]
-                    }
-                ]
+                                holidayAdjustment: 'none',
+                            },
+                        ],
+                    },
+                ],
             };
             expect(validateSettingsSchema(data)).toBe(true);
             expect(ajvValidateSettings(data)).toBe(true);
@@ -356,12 +359,12 @@ describe('Schema Compliance Tests', () => {
                                 time: '09:00',
                                 message: 'Good morning',
                                 action: 'none',
-                                actionCategory: ''
+                                actionCategory: '',
                                 // missing requireConfirmation
-                            }
-                        ]
-                    }
-                ]
+                            },
+                        ],
+                    },
+                ],
             };
             expect(validateSettingsSchema(data)).toBe(false);
             expect(ajvValidateSettings(data)).toBe(false);
@@ -379,29 +382,94 @@ describe('Schema Compliance Tests', () => {
                 daysOfWeek: [1, 2, 3, 4, 5],
                 dayOfMonth: 1,
                 daysBeforeEnd: 0,
-                holidayAdjustment: 'none'
+                holidayAdjustment: 'none',
             };
             const base = { app: 'QuickLog-Solo', kind: 'QuickLogSolo/Settings', version: '1.0' };
 
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, enabled: 'yes' }] }] })).toBe(false);
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, time: '9:00' }] }] })).toBe(false);
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, message: 'a'.repeat(201) }] }] })).toBe(false);
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, action: 'jump' }] }] })).toBe(false);
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, actionCategory: 123 }] }] })).toBe(false);
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, requireConfirmation: 'no' }] }] })).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, enabled: 'yes' }] }],
+                })
+            ).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, time: '9:00' }] }],
+                })
+            ).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, message: 'a'.repeat(201) }] }],
+                })
+            ).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, action: 'jump' }] }],
+                })
+            ).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, actionCategory: 123 }] }],
+                })
+            ).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, requireConfirmation: 'no' }] }],
+                })
+            ).toBe(false);
 
             // Invalid alarm type
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, type: 'hourly' }] }] })).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, type: 'hourly' }] }],
+                })
+            ).toBe(false);
             // Invalid holidayAdjustment
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, holidayAdjustment: 'yes' }] }] })).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, holidayAdjustment: 'yes' }] }],
+                })
+            ).toBe(false);
             // Invalid daysOfWeek elements
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, daysOfWeek: [1, 8] }] }] })).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, daysOfWeek: [1, 8] }] }],
+                })
+            ).toBe(false);
             // Invalid dayOfMonth range
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, dayOfMonth: 32 }] }] })).toBe(false);
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, dayOfMonth: 0 }] }] })).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, dayOfMonth: 32 }] }],
+                })
+            ).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, dayOfMonth: 0 }] }],
+                })
+            ).toBe(false);
             // Invalid daysBeforeEnd range
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, daysBeforeEnd: 32 }] }] })).toBe(false);
-            expect(validateSettingsSchema({ ...base, entries: [{ key: 'alarms', value: [{ ...baseAlarm, daysBeforeEnd: -1 }] }] })).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, daysBeforeEnd: 32 }] }],
+                })
+            ).toBe(false);
+            expect(
+                validateSettingsSchema({
+                    ...base,
+                    entries: [{ key: 'alarms', value: [{ ...baseAlarm, daysBeforeEnd: -1 }] }],
+                })
+            ).toBe(false);
         });
     });
 

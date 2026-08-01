@@ -86,7 +86,7 @@ test.describe('UI and General Settings', () => {
 
         await enabledCheckbox.check();
         await timeInput.fill('12:34');
-        await confirmCheckbox.evaluate(node => {
+        await confirmCheckbox.evaluate((node) => {
             node.checked = true;
             node.dispatchEvent(new Event('change', { bubbles: true }));
         });

@@ -21,48 +21,48 @@ export default class PhysarumMold extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Slime Mold (Physarum)",
-            ja: "粘菌の探索アルゴリズム"
+            en: 'Slime Mold (Physarum)',
+            ja: '粘菌の探索アルゴリズム',
         },
         description: {
-            en: "A biological simulation of slime mold searching for food and forming optimized network paths.",
-            ja: "餌を探して最適なネットワーク経路を形成する、粘菌の生物学的シミュレーションです。"
+            en: 'A biological simulation of slime mold searching for food and forming optimized network paths.',
+            ja: '餌を探して最適なネットワーク経路を形成する、粘菌の生物学的シミュレーションです。',
         },
-        author: "QuickLog-Solo",
+        author: 'QuickLog-Solo',
         devOnly: true,
-        rewindable: true
+        rewindable: true,
     };
 
     config = {
         mode: 'canvas',
-        exclusionStrategy: 'freedom'
+        exclusionStrategy: 'freedom',
     };
 
     // --- Simulation Constants ---
-    MAX_AGENTS = 1800;          // Number of slime mold agents
+    MAX_AGENTS = 1800; // Number of slime mold agents
     SENSOR_ANGLE = Math.PI / 4; // Angle to look for pheromones (45 degrees)
-    SENSOR_DIST = 10;           // Distance to sense ahead
-    TURN_SPEED = 0.45;          // How fast agents can turn (radians)
-    MOVE_SPEED = 1.0;           // How fast agents move (pixels per frame)
-    EVAPORATION_RATE = 0.94;    // Pheromone decay rate
-    DIFFUSION_RATE = 0.12;      // Pheromone spread rate
-    GRID_SIZE = 4;              // Resolution of the pheromone map
+    SENSOR_DIST = 10; // Distance to sense ahead
+    TURN_SPEED = 0.45; // How fast agents can turn (radians)
+    MOVE_SPEED = 1.0; // How fast agents move (pixels per frame)
+    EVAPORATION_RATE = 0.94; // Pheromone decay rate
+    DIFFUSION_RATE = 0.12; // Pheromone spread rate
+    GRID_SIZE = 4; // Resolution of the pheromone map
 
     // --- Advanced Behavior & Visual Tuning ---
     PHEROMONE_DEPOSIT_RATE = 0.4; // Amount of pheromone dropped by an agent per frame
-    MAX_PHEROMONE_LEVEL = 2.5;    // Cap for pheromone concentration in a cell
-    FOOD_ATTRACTION_FORCE = 6.0;  // Multiplier for food intensity during sensing
-    FOOD_DECAY_RATE = 0.999;      // Speed at which placed food disappears
+    MAX_PHEROMONE_LEVEL = 2.5; // Cap for pheromone concentration in a cell
+    FOOD_ATTRACTION_FORCE = 6.0; // Multiplier for food intensity during sensing
+    FOOD_DECAY_RATE = 0.999; // Speed at which placed food disappears
     TRAIL_VISIBILITY_THRESHOLD = 0.05; // Pheromone level to start drawing
-    FOOD_VISIBILITY_THRESHOLD = 0.1;   // Food level to start drawing
-    MAX_TRAIL_ALPHA = 0.7;        // Maximum opacity for the slime network
+    FOOD_VISIBILITY_THRESHOLD = 0.1; // Food level to start drawing
+    MAX_TRAIL_ALPHA = 0.7; // Maximum opacity for the slime network
 
     constructor() {
         super();
         this.agents = [];
-        this.trailMap = new Float32Array(0);       // Pheromone levels (Float32Array)
+        this.trailMap = new Float32Array(0); // Pheromone levels (Float32Array)
         this.trailMapBuffer = new Float32Array(0); // Buffer for diffusion
-        this.foodMap = new Float32Array(0);        // Food availability (Float32Array)
+        this.foodMap = new Float32Array(0); // Food availability (Float32Array)
         this.cols = 0;
         this.rows = 0;
         this.width = 0;
@@ -90,7 +90,7 @@ export default class PhysarumMold extends AnimationBase {
             this.agents.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
-                angle: Math.random() * Math.PI * 2
+                angle: Math.random() * Math.PI * 2,
             });
         }
     }
@@ -126,10 +126,14 @@ export default class PhysarumMold extends AnimationBase {
             a.y += Math.sin(a.angle) * this.MOVE_SPEED * dt;
 
             // Handle Boundaries and UI Obstacles
-            const isHitObstacle = (a.x < 0 || a.x > this.width || a.y < 0 || a.y > this.height) ||
-                exclusionAreas.some(area =>
-                    a.x >= area.x && a.x <= area.x + area.width &&
-                    a.y >= area.y && a.y <= area.y + area.height
+            const isHitObstacle =
+                a.x < 0 ||
+                a.x > this.width ||
+                a.y < 0 ||
+                a.y > this.height ||
+                exclusionAreas.some(
+                    (area) =>
+                        a.x >= area.x && a.x <= area.x + area.width && a.y >= area.y && a.y <= area.y + area.height
                 );
 
             if (isHitObstacle) {
@@ -143,7 +147,10 @@ export default class PhysarumMold extends AnimationBase {
             const gy = Math.floor(a.y / this.GRID_SIZE);
             if (gx >= 0 && gx < this.cols && gy >= 0 && gy < this.rows) {
                 const idx = gy * this.cols + gx;
-                this.trailMap[idx] = Math.min(this.MAX_PHEROMONE_LEVEL, this.trailMap[idx] + this.PHEROMONE_DEPOSIT_RATE * dt);
+                this.trailMap[idx] = Math.min(
+                    this.MAX_PHEROMONE_LEVEL,
+                    this.trailMap[idx] + this.PHEROMONE_DEPOSIT_RATE * dt
+                );
             }
         }
 
@@ -174,8 +181,11 @@ export default class PhysarumMold extends AnimationBase {
         for (let y = 1; y < this.rows - 1; y++) {
             for (let x = 1; x < this.cols - 1; x++) {
                 const idx = y * this.cols + x;
-                const sum = this.trailMap[idx - this.cols] + this.trailMap[idx + this.cols] +
-                            this.trailMap[idx - 1] + this.trailMap[idx + 1];
+                const sum =
+                    this.trailMap[idx - this.cols] +
+                    this.trailMap[idx + this.cols] +
+                    this.trailMap[idx - 1] +
+                    this.trailMap[idx + 1];
                 const avg = sum * 0.25;
                 this.trailMapBuffer[idx] = this.trailMap[idx] + (avg - this.trailMap[idx]) * this.DIFFUSION_RATE;
             }
@@ -231,7 +241,7 @@ export default class PhysarumMold extends AnimationBase {
                 const nx = gx + i;
                 const ny = gy + j;
                 if (nx >= 0 && nx < this.cols && ny >= 0 && ny < this.rows) {
-                    if (Math.sqrt(i*i + j*j) < radius) {
+                    if (Math.sqrt(i * i + j * j) < radius) {
                         this.foodMap[ny * this.cols + nx] = 1.0;
                     }
                 }

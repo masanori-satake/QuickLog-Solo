@@ -21,44 +21,44 @@ export default class Suminagashi extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Suminagashi (Marbling)",
-            ja: "墨流し（マーブリング）"
+            en: 'Suminagashi (Marbling)',
+            ja: '墨流し（マーブリング）',
         },
         description: {
             en: "A fluid simulation where you can stir 'ink' dots with your mouse to create beautiful swirls.",
-            ja: "水面のインクをマウスでかき混ぜて、美しい渦巻き模様を作る流体シミュレーションです。"
+            ja: '水面のインクをマウスでかき混ぜて、美しい渦巻き模様を作る流体シミュレーションです。',
         },
-        author: "QuickLog-Solo",
+        author: 'QuickLog-Solo',
         devOnly: true,
-        rewindable: true
+        rewindable: true,
     };
 
     config = {
         mode: 'canvas',
-        exclusionStrategy: 'freedom'
+        exclusionStrategy: 'freedom',
     };
 
     // --- Simulation Constants ---
-    GRID_SIZE = 12;             // Resolution of the vector field
-    VISCOSITY = 0.97;           // How much velocity is retained (0-1)
-    DIFFUSION = 0.15;           // How much velocity spreads to neighbors
-    MAX_PARTICLES = 2500;       // Total number of ink dots
-    MOUSE_FORCE = 2.0;          // Strength of mouse stirring
+    GRID_SIZE = 12; // Resolution of the vector field
+    VISCOSITY = 0.97; // How much velocity is retained (0-1)
+    DIFFUSION = 0.15; // How much velocity spreads to neighbors
+    MAX_PARTICLES = 2500; // Total number of ink dots
+    MOUSE_FORCE = 2.0; // Strength of mouse stirring
 
     // --- Advanced Behavior Tuning ---
-    OBSTACLE_JITTER = 6.0;      // Random push when a particle hits an obstacle
-    INK_SPLASH_COUNT = 150;     // Number of particles added on click
-    INK_SPLASH_RADIUS = 30;     // Maximum radius of a splash
+    OBSTACLE_JITTER = 6.0; // Random push when a particle hits an obstacle
+    INK_SPLASH_COUNT = 150; // Number of particles added on click
+    INK_SPLASH_RADIUS = 30; // Maximum radius of a splash
     ABSOLUTE_MAX_PARTICLES = 5000; // Hard limit for memory safety
     INITIAL_CIRCLE_SCALE = 0.35; // Size of the initial ink distribution
 
     constructor() {
         super();
         this.particles = [];
-        this.fieldU = new Float32Array(0);     // Horizontal velocity component
-        this.fieldV = new Float32Array(0);     // Vertical velocity component
-        this.bufferU = new Float32Array(0);    // Buffer for velocity diffusion
-        this.bufferV = new Float32Array(0);    // Buffer for velocity diffusion
+        this.fieldU = new Float32Array(0); // Horizontal velocity component
+        this.fieldV = new Float32Array(0); // Vertical velocity component
+        this.bufferU = new Float32Array(0); // Buffer for velocity diffusion
+        this.bufferV = new Float32Array(0); // Buffer for velocity diffusion
         this.cols = 0;
         this.rows = 0;
         this.width = 0;
@@ -93,7 +93,7 @@ export default class Suminagashi extends AnimationBase {
             this.particles.push({
                 x: centerX + Math.cos(angle) * radius,
                 y: centerY + Math.sin(angle) * radius,
-                color: Math.random() > 0.6 ? '#222' : '#555'
+                color: Math.random() > 0.6 ? '#222' : '#555',
             });
         }
     }
@@ -120,9 +120,8 @@ export default class Suminagashi extends AnimationBase {
             }
 
             // Boundary wrap-around and interaction with exclusion areas
-            const isInside = exclusionAreas.some(area =>
-                p.x >= area.x && p.x <= area.x + area.width &&
-                p.y >= area.y && p.y <= area.y + area.height
+            const isInside = exclusionAreas.some(
+                (area) => p.x >= area.x && p.x <= area.x + area.width && p.y >= area.y && p.y <= area.y + area.height
             );
 
             if (isInside || p.x < 0 || p.x > this.width || p.y < 0 || p.y > this.height) {
@@ -151,10 +150,18 @@ export default class Suminagashi extends AnimationBase {
                 const idx = y * this.cols + x;
 
                 // Average neighbors
-                const avgU = (this.fieldU[idx - this.cols] + this.fieldU[idx + this.cols] +
-                              this.fieldU[idx - 1] + this.fieldU[idx + 1]) * 0.25;
-                const avgV = (this.fieldV[idx - this.cols] + this.fieldV[idx + this.cols] +
-                              this.fieldV[idx - 1] + this.fieldV[idx + 1]) * 0.25;
+                const avgU =
+                    (this.fieldU[idx - this.cols] +
+                        this.fieldU[idx + this.cols] +
+                        this.fieldU[idx - 1] +
+                        this.fieldU[idx + 1]) *
+                    0.25;
+                const avgV =
+                    (this.fieldV[idx - this.cols] +
+                        this.fieldV[idx + this.cols] +
+                        this.fieldV[idx - 1] +
+                        this.fieldV[idx + 1]) *
+                    0.25;
 
                 this.bufferU[idx] = this.fieldU[idx] + (avgU - this.fieldU[idx]) * this.DIFFUSION * dt;
                 this.bufferV[idx] = this.fieldV[idx] + (avgV - this.fieldV[idx]) * this.DIFFUSION * dt;
@@ -168,7 +175,7 @@ export default class Suminagashi extends AnimationBase {
         }
 
         // Apply exclusion areas as obstacles in the field
-        exclusionAreas.forEach(area => {
+        exclusionAreas.forEach((area) => {
             const gx1 = Math.floor(area.x / this.GRID_SIZE);
             const gy1 = Math.floor(area.y / this.GRID_SIZE);
             const gx2 = Math.ceil((area.x + area.width) / this.GRID_SIZE);
@@ -221,7 +228,7 @@ export default class Suminagashi extends AnimationBase {
             this.particles.push({
                 x: x + Math.cos(angle) * dist,
                 y: y + Math.sin(angle) * dist,
-                color: '#000'
+                color: '#000',
             });
         }
         if (this.particles.length > this.ABSOLUTE_MAX_PARTICLES) {

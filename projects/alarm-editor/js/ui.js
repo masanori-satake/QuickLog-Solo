@@ -3,19 +3,36 @@ import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 
 export function initUI(state, elements) {
     const {
-        alarmListEl, emptyStateEl, detailFormEl,
-        alarmIdEl, enabledToggle, timeInput, confirmToggle,
-        messageInput, actionSelect, catGroupEl, categorySelect,
-        typeSelect, weeklyContainer, monthlyDateContainer, monthlyEndContainer,
-        weeklyChipsEl, dayOfMonthInput, daysBeforeEndInput,
-        holidayAdjSelect, adjDescEl, businessDaysContainer,
-        undoBtn, redoBtn, alarmResetBtn
+        alarmListEl,
+        emptyStateEl,
+        detailFormEl,
+        alarmIdEl,
+        enabledToggle,
+        timeInput,
+        confirmToggle,
+        messageInput,
+        actionSelect,
+        catGroupEl,
+        categorySelect,
+        typeSelect,
+        weeklyContainer,
+        monthlyDateContainer,
+        monthlyEndContainer,
+        weeklyChipsEl,
+        dayOfMonthInput,
+        daysBeforeEndInput,
+        holidayAdjSelect,
+        adjDescEl,
+        businessDaysContainer,
+        undoBtn,
+        redoBtn,
+        alarmResetBtn,
     } = elements;
 
     function renderBusinessDays() {
         businessDaysContainer.replaceChildren();
         // Sunday-start: 0,1,2,3,4,5,6
-        [0, 1, 2, 3, 4, 5, 6].forEach(day => {
+        [0, 1, 2, 3, 4, 5, 6].forEach((day) => {
             const label = t('day-' + day);
 
             const chip = document.createElement('button');
@@ -27,7 +44,7 @@ export function initUI(state, elements) {
             chip.onclick = () => {
                 if (state.businessDays.includes(day)) {
                     if (state.businessDays.length > 1) {
-                        state.businessDays = state.businessDays.filter(d => d !== day);
+                        state.businessDays = state.businessDays.filter((d) => d !== day);
                     } else {
                         if (state.showToast) state.showToast(t('alert-business-days-min'));
                         return;
@@ -148,17 +165,23 @@ export function initUI(state, elements) {
 
     function getAlarmTypeIcon(type) {
         switch (type) {
-            case 'daily': return 'today';
-            case 'daily_business': return 'work';
-            case 'weekly': return 'calendar_view_week';
-            case 'monthly_date': return 'calendar_month';
-            case 'monthly_end_relative': return 'event_repeat';
-            default: return 'notifications';
+            case 'daily':
+                return 'today';
+            case 'daily_business':
+                return 'work';
+            case 'weekly':
+                return 'calendar_view_week';
+            case 'monthly_date':
+                return 'calendar_month';
+            case 'monthly_end_relative':
+                return 'event_repeat';
+            default:
+                return 'notifications';
         }
     }
 
     function renderDetail() {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (!alarm) {
             emptyStateEl.classList.remove('hidden');
             detailFormEl.classList.add('hidden');
@@ -189,16 +212,23 @@ export function initUI(state, elements) {
         catGroupEl.classList.toggle('hidden', alarm.action !== 'start');
         if (alarm.action === 'start') {
             categorySelect.replaceChildren();
-            state.categories.filter(c => !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat.name;
-                opt.textContent = cat.name;
-                if (alarm.actionCategory === cat.name) opt.selected = true;
-                categorySelect.appendChild(opt);
-            });
+            state.categories
+                .filter((c) => !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
+                .forEach((cat) => {
+                    const opt = document.createElement('option');
+                    opt.value = cat.name;
+                    opt.textContent = cat.name;
+                    if (alarm.actionCategory === cat.name) opt.selected = true;
+                    categorySelect.appendChild(opt);
+                });
         }
 
-        populateSelect(typeSelect, ['daily', 'daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'], 'alarm-type-', alarm.type);
+        populateSelect(
+            typeSelect,
+            ['daily', 'daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'],
+            'alarm-type-',
+            alarm.type
+        );
 
         weeklyContainer.classList.toggle('hidden', alarm.type !== 'weekly');
         monthlyDateContainer.classList.toggle('hidden', alarm.type !== 'monthly_date');
@@ -213,7 +243,7 @@ export function initUI(state, elements) {
 
     function populateSelect(select, values, prefix, current) {
         select.replaceChildren();
-        values.forEach(val => {
+        values.forEach((val) => {
             const opt = document.createElement('option');
             opt.value = val;
             opt.textContent = t(prefix + val);
@@ -228,7 +258,7 @@ export function initUI(state, elements) {
         holidayAdjSelect.disabled = isDaily;
 
         const options = ['none', 'prev_business_day', 'next_business_day', 'skip'];
-        options.forEach(val => {
+        options.forEach((val) => {
             // Guardrails
             if (val === 'prev_business_day' && alarm.type === 'monthly_date' && alarm.dayOfMonth === 1) return;
             if (val === 'next_business_day' && alarm.type === 'monthly_end_relative') return;
@@ -245,7 +275,7 @@ export function initUI(state, elements) {
 
     // Set up listeners
     enabledToggle.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.enabled = enabledToggle.checked;
             renderAlarmList();
@@ -254,13 +284,13 @@ export function initUI(state, elements) {
     };
 
     alarmResetBtn.onclick = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm && state.onAlarmReset) {
             state.onAlarmReset(alarm);
         }
     };
     timeInput.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.time = timeInput.value;
             renderAlarmList();
@@ -268,14 +298,14 @@ export function initUI(state, elements) {
         }
     };
     confirmToggle.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.requireConfirmation = confirmToggle.checked;
             if (state.onAlarmChange) state.onAlarmChange(alarm);
         }
     };
     messageInput.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.message = messageInput.value.trim();
             renderAlarmList();
@@ -296,7 +326,7 @@ export function initUI(state, elements) {
         }
     };
     actionSelect.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.action = actionSelect.value;
             renderDetail();
@@ -304,18 +334,22 @@ export function initUI(state, elements) {
         }
     };
     categorySelect.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.actionCategory = categorySelect.value;
             if (state.onAlarmChange) state.onAlarmChange(alarm);
         }
     };
     typeSelect.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.type = typeSelect.value;
             // Apply guardrails to holiday adjustment
-            if (alarm.type === 'monthly_date' && alarm.dayOfMonth === 1 && alarm.holidayAdjustment === 'prev_business_day') {
+            if (
+                alarm.type === 'monthly_date' &&
+                alarm.dayOfMonth === 1 &&
+                alarm.holidayAdjustment === 'prev_business_day'
+            ) {
                 alarm.holidayAdjustment = 'none';
             }
             if (alarm.type === 'monthly_end_relative' && alarm.holidayAdjustment === 'next_business_day') {
@@ -330,10 +364,14 @@ export function initUI(state, elements) {
         }
     };
     dayOfMonthInput.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.dayOfMonth = parseInt(dayOfMonthInput.value) || 1;
-            if (alarm.type === 'monthly_date' && alarm.dayOfMonth === 1 && alarm.holidayAdjustment === 'prev_business_day') {
+            if (
+                alarm.type === 'monthly_date' &&
+                alarm.dayOfMonth === 1 &&
+                alarm.holidayAdjustment === 'prev_business_day'
+            ) {
                 alarm.holidayAdjustment = 'none';
             }
             renderDetail();
@@ -341,7 +379,7 @@ export function initUI(state, elements) {
         }
     };
     daysBeforeEndInput.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.daysBeforeEnd = parseInt(daysBeforeEndInput.value) || 0;
             renderDetail();
@@ -349,7 +387,7 @@ export function initUI(state, elements) {
         }
     };
     holidayAdjSelect.onchange = () => {
-        const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
+        const alarm = state.alarms.find((a) => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.holidayAdjustment = holidayAdjSelect.value;
             renderDetail();
@@ -359,7 +397,7 @@ export function initUI(state, elements) {
 
     function renderWeeklyChips(alarm) {
         weeklyChipsEl.replaceChildren();
-        [0, 1, 2, 3, 4, 5, 6].forEach(day => {
+        [0, 1, 2, 3, 4, 5, 6].forEach((day) => {
             const label = t('day-' + day);
             const chip = document.createElement('button');
             chip.className = 'filter-chip' + (alarm.daysOfWeek.includes(day) ? ' active' : '');
@@ -368,7 +406,7 @@ export function initUI(state, elements) {
             chip.textContent = label;
             chip.onclick = () => {
                 if (alarm.daysOfWeek.includes(day)) {
-                    alarm.daysOfWeek = alarm.daysOfWeek.filter(d => d !== day);
+                    alarm.daysOfWeek = alarm.daysOfWeek.filter((d) => d !== day);
                 } else {
                     alarm.daysOfWeek.push(day);
                     alarm.daysOfWeek.sort((a, b) => a - b);
@@ -399,6 +437,6 @@ export function initUI(state, elements) {
         renderBusinessDays,
         renderAlarmList,
         renderDetail,
-        updateHistoryButtons
+        updateHistoryButtons,
     };
 }

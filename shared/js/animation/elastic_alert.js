@@ -11,28 +11,28 @@ export default class ElasticAlert extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Elastic Alert Pop-Up",
-            ja: "発見アラート",
-            de: "Elastischer Alarm-Pop-up",
-            es: "Ventana emergente de alerta elástica",
+            en: 'Elastic Alert Pop-Up',
+            ja: '発見アラート',
+            de: 'Elastischer Alarm-Pop-up',
+            es: 'Ventana emergente de alerta elástica',
             fr: "Pop-up d'alerte élastique",
-            pt: "Pop-up de alerta elástico",
-            ko: "탄력 있는 발견 경고 팝업",
-            zh: "弹性警报弹出窗口"
+            pt: 'Pop-up de alerta elástico',
+            ko: '탄력 있는 발견 경고 팝업',
+            zh: '弹性警报弹出窗口',
         },
         description: {
             en: "A red pixel exclamation mark '!' pops up with a spring-like dampening motion, hovering gently.",
-            ja: "赤い「！」マークが弾むように現れ、上下にふわふわと浮遊するループを繰り返します。",
+            ja: '赤い「！」マークが弾むように現れ、上下にふわふわと浮遊するループを繰り返します。',
             de: "Ein rotes Pixel-Ausrufezeichen '!' erscheint mit einer federartigen Dämpfungsbewegung und schwebt sanft.",
             es: "Un signo de exclamación de píxeles rojos '!' aparece con un movimiento de amortiguación similar a un resorte, flotando suavemente.",
             fr: "Un point d'exclamation rouge en pixel '!' apparaît avec un mouvement d'amortissement de type ressort, planant doucement.",
             pt: "Um ponto de exclamação de pixel vermelho '!' aparece com um movimento de amortecimento elástico, flutuando suavemente.",
             ko: "빨간색 픽셀 느낌의 느낌표('!')가 용수철처럼 탄력 있게 튀어나온 뒤, 공중에 부드럽게 둥둥 떠다닙니다.",
-            zh: "一个红色的像素感叹号“！”伴随着弹簧般的阻尼运动弹出，并在空中轻轻漂浮。"
+            zh: '一个红色的像素感叹号“！”伴随着弹簧般的阻尼运动弹出，并在空中轻轻漂浮。',
         },
-        author: "QuickLog-Solo",
+        author: 'QuickLog-Solo',
         devOnly: true,
-        rewindable: true
+        rewindable: true,
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };

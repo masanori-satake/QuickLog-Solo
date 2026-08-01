@@ -13,3 +13,6 @@ verify_*.py
 
 # Built extension packages
 releases/*.zip
+
+# Vite build output
+dist/

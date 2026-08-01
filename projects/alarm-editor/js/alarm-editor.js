@@ -1,7 +1,16 @@
 import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
 import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
 import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
-import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, saveLanguage, exportAlarms, importAlarms, commitChanges } from './data-io.js';
+import {
+    initData,
+    saveAlarm,
+    saveAllAlarms,
+    saveBusinessDays,
+    saveLanguage,
+    exportAlarms,
+    importAlarms,
+    commitChanges,
+} from './data-io.js';
 import { initUI } from './ui.js';
 import { initHistory } from './history.js';
 
@@ -13,7 +22,7 @@ const state = {
     language: 'ja',
     theme: 'light',
     isDirty: false,
-    initialSnapshot: null
+    initialSnapshot: null,
 };
 
 const elements = {
@@ -48,7 +57,7 @@ const elements = {
     themeToggle: document.getElementById('theme-toggle'),
     langSelect: document.getElementById('lang-select-editor'),
     resetBtn: document.getElementById('reset-btn'),
-    alarmResetBtn: document.getElementById('alarm-reset-btn')
+    alarmResetBtn: document.getElementById('alarm-reset-btn'),
 };
 
 function getDefaultAlarm(id, index, order) {
@@ -65,13 +74,13 @@ function getDefaultAlarm(id, index, order) {
         daysBeforeEnd: 0,
         holidayAdjustment: 'none',
         requireConfirmation: false,
-        order: order !== undefined ? order : index
+        order: order !== undefined ? order : index,
     };
 }
 
 async function init() {
     const urlParams = new URLSearchParams(window.location.search);
-    state.fromApp = (urlParams.get('from') === 'app');
+    state.fromApp = urlParams.get('from') === 'app';
     window.state = state;
 
     if (state.fromApp) {
@@ -112,12 +121,13 @@ async function init() {
     const savedTheme = localStorage.getItem('quicklog-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    state.theme = (themeParam && (themeParam === 'light' || themeParam === 'dark'))
-        ? themeParam
-        : (savedTheme || (prefersDark ? 'dark' : 'light'));
+    state.theme =
+        themeParam && (themeParam === 'light' || themeParam === 'dark')
+            ? themeParam
+            : savedTheme || (prefersDark ? 'dark' : 'light');
 
     document.body.className = `theme-${state.theme}`;
-    elements.themeToggle.checked = (state.theme === 'dark');
+    elements.themeToggle.checked = state.theme === 'dark';
 
     const history = initHistory(state);
     const ui = initUI(state, elements);
@@ -130,7 +140,7 @@ async function init() {
         ui.renderDetail();
         ui.updateHistoryButtons(history);
         elements.langSelect.value = state.language;
-        elements.themeToggle.checked = (state.theme === 'dark');
+        elements.themeToggle.checked = state.theme === 'dark';
         document.body.className = `theme-${state.theme}`;
         applyLanguage();
 
@@ -174,7 +184,7 @@ async function init() {
     if (state.fromApp) {
         state.initialSnapshot = {
             alarms: JSON.parse(JSON.stringify(state.alarms)),
-            businessDays: [...state.businessDays]
+            businessDays: [...state.businessDays],
         };
     }
 
@@ -364,12 +374,18 @@ async function init() {
 }
 
 function showConfirm(msg) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         const modal = document.getElementById('confirm-modal');
         document.getElementById('confirm-message').textContent = msg;
         modal.classList.remove('hidden');
-        document.getElementById('confirm-ok-btn').onclick = () => { modal.classList.add('hidden'); resolve(true); };
-        document.getElementById('confirm-cancel-btn').onclick = () => { modal.classList.add('hidden'); resolve(false); };
+        document.getElementById('confirm-ok-btn').onclick = () => {
+            modal.classList.add('hidden');
+            resolve(true);
+        };
+        document.getElementById('confirm-cancel-btn').onclick = () => {
+            modal.classList.add('hidden');
+            resolve(false);
+        };
     });
 }
 

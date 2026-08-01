@@ -3,7 +3,9 @@ import fs from 'fs';
 import path from 'path';
 
 test.describe('Custom Animation Non-Extension Fallback E2E', () => {
-    test('should import, assign, and persist custom animation using localStorage fallback when chrome is undefined', async ({ page }) => {
+    test('should import, assign, and persist custom animation using localStorage fallback when chrome is undefined', async ({
+        page,
+    }) => {
         const dbName = `AnimNonExtDB_${Date.now()}`;
         await page.goto(`?db=${dbName}`);
 
@@ -16,7 +18,8 @@ test.describe('Custom Animation Non-Extension Fallback E2E', () => {
 
         // Parse and replace 1x1 transparent base64 GIF with a 1x1 solid white base64 GIF
         const qlanimObj = JSON.parse(qlanimText);
-        qlanimObj.payload.imageData = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+        qlanimObj.payload.imageData =
+            'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
         qlanimObj.payload.renderSpec.overflowBehavior = 'categoryColor';
         const updatedQlanimText = JSON.stringify(qlanimObj);
 
@@ -67,7 +70,7 @@ test.describe('Custom Animation Non-Extension Fallback E2E', () => {
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
             let nonZero = 0;
             for (let i = 0; i < imgData.length; i += 4) {
-                if (imgData[i] + imgData[i+1] + imgData[i+2] > 0) {
+                if (imgData[i] + imgData[i + 1] + imgData[i + 2] > 0) {
                     nonZero++;
                 }
             }
@@ -89,7 +92,11 @@ test.describe('Custom Animation Non-Extension Fallback E2E', () => {
         await page.waitForSelector('.category-editor-item');
 
         // Verify the option is still populated and selected
-        const selectedValue = await page.locator('.category-editor-item:not(.page-break-item)').first().locator('.category-edit-animation').inputValue();
+        const selectedValue = await page
+            .locator('.category-editor-item:not(.page-break-item)')
+            .first()
+            .locator('.category-edit-animation')
+            .inputValue();
         expect(selectedValue).toBe('custom_uuid_001');
     });
 });

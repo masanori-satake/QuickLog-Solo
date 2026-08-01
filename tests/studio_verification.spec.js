@@ -19,9 +19,12 @@ test.describe('Animation Studio Verification', () => {
 
         // Wait for code to be loaded into draw editor
         const drawTextarea = page.locator('#input-draw');
-        await page.waitForFunction((el) => {
-            return el.value && el.value.includes('draw(ctx,');
-        }, await drawTextarea.elementHandle());
+        await page.waitForFunction(
+            (el) => {
+                return el.value && el.value.includes('draw(ctx,');
+            },
+            await drawTextarea.elementHandle()
+        );
 
         // Click play button
         await page.click('#play-btn');
@@ -39,7 +42,7 @@ test.describe('Animation Studio Verification', () => {
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
             let nonZero = 0;
             for (let i = 0; i < imgData.length; i += 4) {
-                if (imgData[i] + imgData[i+1] + imgData[i+2] > 0) {
+                if (imgData[i] + imgData[i + 1] + imgData[i + 2] > 0) {
                     nonZero++;
                 }
             }

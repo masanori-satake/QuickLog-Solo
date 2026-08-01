@@ -1,4 +1,11 @@
-import { getCurrentAppState, dbGetByName, STORE_CATEGORIES, DB_NAME, initDB, SYNC_CHANNEL_NAME } from '../shared/js/db.js';
+import {
+    getCurrentAppState,
+    dbGetByName,
+    STORE_CATEGORIES,
+    DB_NAME,
+    initDB,
+    SYNC_CHANNEL_NAME,
+} from '../shared/js/db.js';
 import { stopTaskLogic, pauseTaskLogic, startTaskLogic, calculateNextAlarmTime } from '../shared/js/logic.js';
 import { t, setLanguage } from '../shared/js/i18n.js';
 import { isSessionSyncEnabled, pullFromCloud, pushToCloud } from '../shared/js/session_sync.js';
@@ -71,7 +78,7 @@ function setupBroadcastChannel() {
     syncChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
     syncChannel.onmessage = (event) => {
         if (event.data.type === 'alarms-updated') {
-            setupAlarms().catch(err => console.error('QuickLog-Solo: setupAlarms failed on sync', err));
+            setupAlarms().catch((err) => console.error('QuickLog-Solo: setupAlarms failed on sync', err));
         }
     };
 }
@@ -79,7 +86,7 @@ function setupBroadcastChannel() {
 // Support chrome.runtime.sendMessage as well for better reliability
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
     if (message.type === 'alarms-updated') {
-        setupAlarms().catch(err => console.error('QuickLog-Solo: setupAlarms failed on message', err));
+        setupAlarms().catch((err) => console.error('QuickLog-Solo: setupAlarms failed on message', err));
     } else if (message.type === 'sync') {
         // Just acknowledging sync
     }
@@ -147,7 +154,7 @@ async function setupAlarms() {
                 const nextTime = calculateNextAlarmTime(alarm, state.businessDays, now);
                 if (nextTime) {
                     chrome.alarms.create(`ql_alarm_${alarm.id}`, {
-                        when: nextTime
+                        when: nextTime,
                     });
                 }
             }
@@ -214,7 +221,7 @@ chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIn
 
     const alarmId = parseInt(notificationId.split('_')[1]);
     const state = await getCurrentAppState();
-    const alarmData = state.alarms.find(a => a.id === alarmId);
+    const alarmData = state.alarms.find((a) => a.id === alarmId);
 
     if (alarmData) {
         const hasAction = alarmData.action && alarmData.action !== 'none';
@@ -249,14 +256,14 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         if (alarm.name.startsWith('ql_alarm_')) {
             const alarmId = parseInt(alarm.name.replace('ql_alarm_', ''));
             state = await getCurrentAppState();
-            alarmData = state.alarms.find(a => a.id === alarmId);
+            alarmData = state.alarms.find((a) => a.id === alarmId);
 
             // Reschedule for next time
             if (alarmData && alarmData.enabled) {
                 const nextTime = calculateNextAlarmTime(alarmData, state.businessDays, Date.now());
                 if (nextTime) {
                     chrome.alarms.create(`ql_alarm_${alarmData.id}`, {
-                        when: nextTime
+                        when: nextTime,
                     });
                 }
             }
@@ -264,8 +271,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             alarmData = {
                 id: 999,
                 enabled: true,
-                message: "TEST ALARM: " + t('test-notification-message') + " (Flow OK)",
-                action: 'none'
+                message: 'TEST ALARM: ' + t('test-notification-message') + ' (Flow OK)',
+                action: 'none',
             };
         }
 
@@ -276,7 +283,11 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             // Check if action will change the state
             const isRedundantStop = alarmData.action === 'stop' && !activeTask;
             const isRedundantPause = alarmData.action === 'pause' && (!activeTask || activeTask.isPaused);
-            const isRedundantStart = alarmData.action === 'start' && activeTask && !activeTask.isPaused && activeTask.category === alarmData.actionCategory;
+            const isRedundantStart =
+                alarmData.action === 'start' &&
+                activeTask &&
+                !activeTask.isPaused &&
+                activeTask.category === alarmData.actionCategory;
 
             if (isRedundantStop || isRedundantPause || isRedundantStart) {
                 return;
@@ -292,7 +303,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
                 title: t('title'),
                 message: alarmData.message || t('alarm-action-none'),
                 priority: 2,
-                requireInteraction: requireConfirmation
+                requireInteraction: requireConfirmation,
             };
 
             if (requireConfirmation) {

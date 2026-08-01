@@ -9,27 +9,27 @@ export default class HeartBeat extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Heart Beat",
-            ja: "ハート・ビート",
-            de: "Herzschlag",
-            es: "Latido del Corazón",
-            fr: "Battement de Cœur",
-            pt: "Batimento Cardíaco",
-            ko: "심장 박동",
-            zh: "心跳"
+            en: 'Heart Beat',
+            ja: 'ハート・ビート',
+            de: 'Herzschlag',
+            es: 'Latido del Corazón',
+            fr: 'Battement de Cœur',
+            pt: 'Batimento Cardíaco',
+            ko: '심장 박동',
+            zh: '心跳',
         },
         description: {
-            en: "A rhythmic ECG waveform with a glowing trail. Rhythm may fluctuate occasionally after a minute.",
-            ja: "画面を流れるリズム正しい心電図の波形です。光の軌跡が残り、1分ほど経つと時折リズムが乱れます。",
-            de: "Eine rhythmische EKG-Wellenform mit einer leuchtenden Spur. Der Rhythmus kann nach einer Minute gelegentlich schwanken.",
-            es: "Una forma de onda de ECG rítmica con un rastro brillante. El ritmo puede fluctuar ocasionalmente después de un minuto.",
+            en: 'A rhythmic ECG waveform with a glowing trail. Rhythm may fluctuate occasionally after a minute.',
+            ja: '画面を流れるリズム正しい心電図の波形です。光の軌跡が残り、1分ほど経つと時折リズムが乱れます。',
+            de: 'Eine rhythmische EKG-Wellenform mit einer leuchtenden Spur. Der Rhythmus kann nach einer Minute gelegentlich schwanken.',
+            es: 'Una forma de onda de ECG rítmica con un rastro brillante. El ritmo puede fluctuar ocasionalmente después de un minuto.',
             fr: "Une forme d'onde ECG rythmique avec une trace lumineuse. Le rythme peut fluctuer occasionnellement après une minute.",
-            pt: "Uma forma de onda de ECG rítmica con um rastro brillante. O ritmo pode flutuar ocasionalmente após um minuto.",
-            ko: "화면을 따라 흐르는 리드미컬한 ECG 파형입니다. 빛의 궤적이 남으며 1分 정도 지나면 때때로 리듬이 불규칙해집니다。",
-            zh: "屏幕上律动的心电图波形，带有发光轨迹。一分钟后节奏可能会偶尔波动。"
+            pt: 'Uma forma de onda de ECG rítmica con um rastro brillante. O ritmo pode flutuar ocasionalmente após um minuto.',
+            ko: '화면을 따라 흐르는 리드미컬한 ECG 파형입니다. 빛의 궤적이 남으며 1分 정도 지나면 때때로 리듬이 불규칙해집니다。',
+            zh: '屏幕上律动的心电图波形，带有发光轨迹。一分钟后节奏可能会偶尔波动。',
         },
-        author: "QuickLog-Solo",
-        rewindable: true
+        author: 'QuickLog-Solo',
+        rewindable: true,
     };
 
     config = { mode: 'sprite', exclusionStrategy: 'jump' };
@@ -95,15 +95,15 @@ export default class HeartBeat extends AnimationBase {
                     yOffset = 0; // PR interval
                 } else if (localT < 0.17) {
                     yOffset = ((localT - 0.15) / 0.02) * (4 * hScale); // Q wave
-                } else if (localT < 0.20) {
-                    yOffset = (4 * hScale) - ((localT - 0.17) / 0.03) * (44 * hScale); // R wave (peak)
+                } else if (localT < 0.2) {
+                    yOffset = 4 * hScale - ((localT - 0.17) / 0.03) * (44 * hScale); // R wave (peak)
                 } else if (localT < 0.24) {
-                    yOffset = (-40 * hScale) + ((localT - 0.20) / 0.04) * (48 * hScale); // S wave
+                    yOffset = -40 * hScale + ((localT - 0.2) / 0.04) * (48 * hScale); // S wave
                 } else if (localT < 0.27) {
-                    yOffset = (8 * hScale) - ((localT - 0.24) / 0.03) * (8 * hScale); // Baseline return
+                    yOffset = 8 * hScale - ((localT - 0.24) / 0.03) * (8 * hScale); // Baseline return
                 } else if (localT < 0.35) {
                     yOffset = 0; // ST segment
-                } else if (localT < 0.50) {
+                } else if (localT < 0.5) {
                     yOffset = -Math.sin(((localT - 0.35) / 0.15) * Math.PI) * (6 * hScale); // T wave
                 }
             }
@@ -111,7 +111,7 @@ export default class HeartBeat extends AnimationBase {
             const age = elapsedMs - t;
             // Trail effect: newer dots are larger
             // 軌跡効果：新しいドットほど大きく表示
-            const size = age < 100 ? 3 : (age < 400 ? 2 : 1);
+            const size = age < 100 ? 3 : age < 400 ? 2 : 1;
 
             // X position: current time at the right edge
             // X座標：現在時刻が右端、過去ほど左になるように計算

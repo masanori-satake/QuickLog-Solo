@@ -125,8 +125,8 @@ QuickLog-Solo リポジトリに蓄積された軽微な不整合・重複・設
 2. THE Cleanup_System SHALL remove `'shared/js/schema.js'` from the `ignores` list in `eslint.config.js`
 3. THE Cleanup_System SHALL remove `'shared/js/i18n.js'` from the `ignores` list in `eslint.config.js`
 4. WHEN each file is removed from `ignores`, THE Cleanup_System SHALL fix all resulting ESLint errors in that file according to the following rules:
-   - `no-unused-vars`: 未使用変数を削除するか `_` プレフィックスを付与する
-   - `prettier/prettier`: `npm run format` の対象に当該ファイルを追加してフォーマットを修正する
+    - `no-unused-vars`: 未使用変数を削除するか `_` プレフィックスを付与する
+    - `prettier/prettier`: `npm run format` の対象に当該ファイルを追加してフォーマットを修正する
 5. WHEN `shared/js/*.js` files are modified, THE Cleanup_System SHALL execute a patch version bump via `npm run version:bump`
 6. IF any of the three files remain in the `ignores` list after the change, THEN THE Cleanup_System SHALL be considered non-compliant for this requirement
 
