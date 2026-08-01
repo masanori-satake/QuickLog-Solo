@@ -48,7 +48,7 @@ export function setupBroadcastChannel(onMessage) {
  * Broadcasts a synchronization message to other tabs and pushes to cloud if needed.
  * @param {string} type 'sync', 'categories-updated', 'reload', or 'alarms-updated'
  */
-export async function broadcastSync(type = 'categories-updated') {
+export async function broadcastSync(type = 'sync') {
     if (syncChannel) {
         syncChannel.postMessage({ type });
     }

@@ -110,6 +110,6 @@ test.describe('Maintenance and Initialization', () => {
         await page.click('#settings-toggle');
         await page.waitForSelector('#settings-popup', { state: 'visible' });
         await page.click('button[data-tab="categories"]');
-        await expect(page.locator('.category-readonly-name').filter({ hasText: 'DeleteMe' })).not.toBeVisible();
+        await expect(page.locator('.category-readonly-name').filter({ hasText: 'DeleteMe' })).toHaveCount(0);
     });
 });

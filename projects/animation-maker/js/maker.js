@@ -23,7 +23,7 @@ import {
 
 const broadcastChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
 
-function broadcastSync(type = 'categories-updated') {
+function broadcastSync(type = 'sync') {
     broadcastChannel.postMessage({ type });
 }
 

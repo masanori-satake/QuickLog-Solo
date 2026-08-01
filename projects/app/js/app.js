@@ -1762,6 +1762,22 @@ function getLaunchProjectUrl(extensionPath, webPath, params) {
     return urlObj.toString();
 }
 
+/**
+ * Helper to launch editor with standard parameters (language, theme, from: 'app').
+ * @param {string} localPath - Path inside Chrome Extension.
+ * @param {string} fallbackUrl - Relative/absolute path on standard web.
+ */
+function launchEditor(localPath, fallbackUrl) {
+    const lang = getLanguage();
+    const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
+    const url = getLaunchProjectUrl(localPath, fallbackUrl, {
+        lang,
+        theme: resolvedTheme,
+        from: 'app',
+    });
+    window.open(url, '_blank', 'noopener');
+}
+
 async function renderBusinessDays() {
     const container = getEl(ID_BUSINESS_DAYS_CONTAINER);
     if (!container) return;
@@ -1787,6 +1803,9 @@ async function renderBusinessDays() {
         if (day === 6) chip.classList.add('saturday');
         chip.textContent = label;
         chip.disabled = true;
+        chip.setAttribute('aria-disabled', 'true');
+        const isActive = businessDays.includes(day);
+        chip.setAttribute('aria-label', `${label} (${isActive ? 'active' : 'inactive'})`);
         chip.style.cursor = 'default';
         container.appendChild(chip);
     });
@@ -1808,14 +1827,7 @@ async function renderBusinessDays() {
         editBtn.appendChild(editIcon);
 
         editBtn.onclick = () => {
-            const lang = getLanguage();
-            const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
-            const url = getLaunchProjectUrl('projects/alarm-editor/index.html', ALARM_EDITOR_URL, {
-                lang,
-                theme: resolvedTheme,
-                from: 'app',
-            });
-            window.open(url, '_blank', 'noopener');
+            launchEditor('projects/alarm-editor/index.html', ALARM_EDITOR_URL);
         };
 
         const parent = container.parentElement;
@@ -1857,7 +1869,7 @@ async function renderAlarmList() {
     alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0));
 
     const activeEl = document.activeElement;
-    if (activeEl && list.contains(activeEl) && activeEl.className !== 'alarm-enabled') {
+    if (activeEl && list.contains(activeEl) && !activeEl.classList.contains('alarm-enabled')) {
         return;
     }
 
@@ -1940,8 +1952,12 @@ async function renderAlarmList() {
             chip.className = 'filter-chip' + ((alarm.daysOfWeek || []).includes(day) ? ' active' : '');
             if (day === 0) chip.classList.add('sunday');
             if (day === 6) chip.classList.add('saturday');
-            chip.textContent = formatter.format(d);
+            const label = formatter.format(d);
+            chip.textContent = label;
             chip.disabled = true;
+            chip.setAttribute('aria-disabled', 'true');
+            const isActive = (alarm.daysOfWeek || []).includes(day);
+            chip.setAttribute('aria-label', `${label} (${isActive ? 'active' : 'inactive'})`);
             chip.style.cursor = 'default';
             weeklyContainer.appendChild(chip);
         });
@@ -2624,14 +2640,7 @@ function setupEventListeners() {
 
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
-        const lang = getLanguage();
-        const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
-        const url = getLaunchProjectUrl('projects/category-editor/index.html', CATEGORY_EDITOR_URL, {
-            lang,
-            theme: resolvedTheme,
-            from: 'app',
-        });
-        window.open(url, '_blank', 'noopener');
+        launchEditor('projects/category-editor/index.html', CATEGORY_EDITOR_URL);
     });
 
     getEl('launch-maker-btn')?.addEventListener('click', (e) => {
@@ -2651,14 +2660,7 @@ function setupEventListeners() {
 
     getEl('alarm-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
-        const lang = getLanguage();
-        const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
-        const url = getLaunchProjectUrl('projects/alarm-editor/index.html', ALARM_EDITOR_URL, {
-            lang,
-            theme: resolvedTheme,
-            from: 'app',
-        });
-        window.open(url, '_blank', 'noopener');
+        launchEditor('projects/alarm-editor/index.html', ALARM_EDITOR_URL);
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
