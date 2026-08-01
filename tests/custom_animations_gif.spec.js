@@ -68,30 +68,40 @@ test.describe('Custom Animation (GIF) E2E rendering', () => {
         qlanimObj.payload.renderSpec.overflowBehavior = 'categoryColor';
         const updatedQlanimText = JSON.stringify(qlanimObj);
 
-        // Programmatically import the custom animation using window-exposed importCustomAnimation
+        const firstCategoryBtn = page.locator('.category-btn').first();
+        const catName = (await firstCategoryBtn.textContent()).trim();
+        expect(catName).toBeTruthy();
+
+        // Programmatically update the category's animation mapping in IndexedDB first
+        await page.evaluate(async (name) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dbName = urlParams.get('db') || 'QuickLogSoloDB';
+            const req = indexedDB.open(dbName);
+            await new Promise((resolve, reject) => {
+                req.onsuccess = (e) => {
+                    const db = e.target.result;
+                    const tx = db.transaction('categories', 'readwrite');
+                    const store = tx.objectStore('categories');
+                    const getReq = store.getAll();
+                    getReq.onsuccess = () => {
+                        const categories = getReq.result;
+                        const target = categories.find(c => c.name === name);
+                        if (target) {
+                            target.animation = 'custom_uuid_001';
+                            store.put(target);
+                        }
+                        tx.oncomplete = () => resolve();
+                    };
+                    tx.onerror = () => reject(tx.error);
+                };
+                req.onerror = () => reject(req.error);
+            });
+        }, catName);
+
+        // Programmatically import the custom animation, which triggers updateUI() and loads animation
         await page.evaluate(async (text) => {
             await window.importCustomAnimation(text);
         }, updatedQlanimText);
-
-        // Open settings modal
-        await page.click('#settings-toggle');
-
-        // Switch to Categories tab to configure the category animation mapping
-        await page.click('.tab-btn[data-tab="categories"]');
-
-        // Wait for category editor list items to load
-        await page.waitForSelector('.category-editor-item');
-
-        // Locate the first business category item in the editor
-        const firstCategoryItem = page.locator('.category-editor-item:not(.page-break-item)').first();
-        const catName = await firstCategoryItem.getAttribute('data-name');
-        expect(catName).toBeTruthy();
-
-        // Map the custom animation 'custom_uuid_001' to this category
-        await firstCategoryItem.locator('.category-edit-animation').selectOption('custom_uuid_001');
-
-        // Close the settings modal
-        await page.click('.settings-close-btn');
 
         // Start task for the configured category
         await page.click(`.category-btn:has-text("${catName}")`);

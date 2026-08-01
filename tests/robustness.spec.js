@@ -53,19 +53,27 @@ test.describe('Robustness and Persistence', () => {
     await page.goto(`?db=${dbName}`);
     await page.waitForSelector('.category-btn');
 
-    // Add long category via settings
-    await page.click('#settings-toggle');
-    await page.click('[data-tab="categories"]');
-    await page.locator('#new-category-name-settings').fill(longName);
-    await page.click('#add-category-btn-settings');
-
-    // Check if added in settings list
-    await page.waitForFunction((val) => {
-      return Array.from(document.querySelectorAll('.category-edit-name')).some(i => i.value === val);
+    // Programmatically add a category with the long name via IndexedDB
+    await page.evaluate(async (name) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dbName = urlParams.get('db') || 'QuickLogSoloDB';
+        const req = indexedDB.open(dbName);
+        await new Promise((resolve, reject) => {
+            req.onsuccess = (e) => {
+                const db = e.target.result;
+                const tx = db.transaction('categories', 'readwrite');
+                const store = tx.objectStore('categories');
+                store.put({ id: 'long-cat-id', name: name, color: 'primary', order: 100, tags: '' });
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            };
+            req.onerror = () => reject(req.error);
+        });
     }, longName);
 
-    // Wait for the new category to appear in the list (main panel)
-    await page.click('.settings-close-btn');
+    // Reload page to load the new category
+    await page.reload();
+    await page.waitForSelector('.category-btn');
 
     // The category might be on the second page if many exist. fresh DB starts with ~24 default cats.
     const longCatBtn = page.locator('.category-btn').filter({ hasText: longName });

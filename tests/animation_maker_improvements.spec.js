@@ -184,17 +184,11 @@ test.describe('QL-Animation Maker Improvements', () => {
     // Open Settings to trigger rendering of dropdowns
     await page.click('#settings-toggle');
 
-    // Open Categories tab
-    await page.click('button.tab-btn[data-tab="categories"]');
+    // Find the animation select element on the general tab
+    const animSelect = page.locator('#animation-select');
+    await expect(animSelect).toBeVisible();
 
-    // Find the animation select element for categories
-    const animSelects = page.locator('.category-editor-item select');
-    // Ensure at least one select is rendered
-    expect(await animSelects.count()).toBeGreaterThan(0);
-
-    // Let's get options text contents of the first visible select
-    const firstSelect = animSelects.first();
-    const options = await firstSelect.locator('option').allTextContents();
+    const options = await animSelect.locator('option').allTextContents();
 
     // Index of "My Anim 1" should be less than "My Anim 2"
     const index1 = options.indexOf("My Anim 1");
