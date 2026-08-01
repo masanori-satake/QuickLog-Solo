@@ -31,11 +31,27 @@ test.describe('Maintenance and Initialization', () => {
         await page.selectOption('#theme-select', 'dark');
         await expect(page.locator('body')).toHaveClass(/theme-dark/);
 
-        // 2. Add a custom category to ensure it's NOT deleted
+        // 2. Add a custom category via IndexedDB (since settings categories is readonly)
+        await page.evaluate(async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dbName = urlParams.get('db') || 'QuickLogSoloDB';
+            const req = indexedDB.open(dbName);
+            await new Promise((resolve, reject) => {
+                req.onsuccess = (e) => {
+                    const db = e.target.result;
+                    const tx = db.transaction('categories', 'readwrite');
+                    const store = tx.objectStore('categories');
+                    store.put({ id: 'KeepMeId', name: 'KeepMe', color: 'primary', order: 100, tags: '' });
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                };
+                req.onerror = () => reject(req.error);
+            });
+        });
+
+        // Open categories tab to verify the custom category is displayed
         await page.click('button[data-tab="categories"]');
-        await page.locator('#new-category-name-settings').fill('KeepMe');
-        await page.click('#add-category-btn-settings');
-        await expect(page.locator('.category-edit-name[value="KeepMe"]')).toBeVisible();
+        await expect(page.locator('.category-readonly-name').filter({ hasText: 'KeepMe' })).toBeVisible();
 
         // 3. Reset settings
         await page.click('button[data-tab="maintenance"]');
@@ -49,20 +65,36 @@ test.describe('Maintenance and Initialization', () => {
         await expect(page.locator('body')).not.toHaveClass(/theme-dark/);
 
         // 5. Verify custom category still exists
-        // Use a small delay to ensure event listeners are attached after reload
         await page.waitForTimeout(500);
         await page.click('#settings-toggle');
         await page.waitForSelector('#settings-popup', { state: 'visible' });
         await page.click('button[data-tab="categories"]');
-        await expect(page.locator('.category-edit-name[value="KeepMe"]')).toBeVisible();
+        await expect(page.locator('.category-readonly-name').filter({ hasText: 'KeepMe' })).toBeVisible();
     });
 
     test('should reset categories and settings', async ({ page }) => {
-         // 1. Add a custom category
+        // 1. Add a custom category via IndexedDB
+        await page.evaluate(async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dbName = urlParams.get('db') || 'QuickLogSoloDB';
+            const req = indexedDB.open(dbName);
+            await new Promise((resolve, reject) => {
+                req.onsuccess = (e) => {
+                    const db = e.target.result;
+                    const tx = db.transaction('categories', 'readwrite');
+                    const store = tx.objectStore('categories');
+                    store.put({ id: 'DeleteMeId', name: 'DeleteMe', color: 'primary', order: 100, tags: '' });
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                };
+                req.onerror = () => reject(req.error);
+            });
+        });
+
+        // Open categories tab to verify it's there
         await page.click('#settings-toggle');
         await page.click('button[data-tab="categories"]');
-        await page.locator('#new-category-name-settings').fill('DeleteMe');
-        await page.click('#add-category-btn-settings');
+        await expect(page.locator('.category-readonly-name').filter({ hasText: 'DeleteMe' })).toBeVisible();
 
         // 2. Reset all
         await page.click('button[data-tab="maintenance"]');
@@ -74,11 +106,10 @@ test.describe('Maintenance and Initialization', () => {
         await page.waitForSelector('.category-btn', { state: 'visible' });
 
         // 3. Verify custom category is gone
-        // Use a small delay to ensure event listeners are attached after reload
         await page.waitForTimeout(500);
         await page.click('#settings-toggle');
         await page.waitForSelector('#settings-popup', { state: 'visible' });
         await page.click('button[data-tab="categories"]');
-        await expect(page.locator('.category-edit-name[value="DeleteMe"]')).not.toBeVisible();
+        await expect(page.locator('.category-readonly-name').filter({ hasText: 'DeleteMe' })).not.toBeVisible();
     });
 });

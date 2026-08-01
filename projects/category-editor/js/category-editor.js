@@ -452,7 +452,7 @@ async function commitCategoryChanges() {
 
     // Post message to BroadcastChannel to notify main app!
     const bc = new BroadcastChannel('quicklog_solo_sync_QuickLogSoloDB');
-    bc.postMessage({ type: 'sync' });
+    bc.postMessage({ type: 'categories-updated' });
 }
 
 init();

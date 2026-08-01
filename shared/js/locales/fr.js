@@ -48,9 +48,9 @@ export default {
 
     // Alarms Tab
     'business-days': 'Jours ouvrables',
-    'alarm-io-title': 'E/S des alarmes (presse-papiers)',
+    'tooltip-edit-business-days': 'Modifier',
     'alarm-editor-title': 'Éditeur d\'alarmes',
-    'btn-launch-alarm-editor': 'Lancer l\'éditeur d\'alarmes',
+    'btn-launch-alarm-editor': 'Modifier',
     'alarm-label-type': 'Moment du déclenchement',
     'alarm-type-daily': 'Quotidien',
     'alarm-type-daily_business': 'Quotidien (jours ouvrables uniquement)',
@@ -114,11 +114,8 @@ export default {
     'btn-import-csv': 'Importer',
     'placeholder-new-category': 'Nouvelle catégorie...',
     'placeholder-tags': 'Tags (séparés par des virgules)',
-    'category-backup': 'Import/Export de Catégories (Presse-papiers)',
     'btn-export-json': 'Copier (Exporter)',
     'btn-import-json': 'Coller (Importer)',
-    'import-setting': 'Mode d\'importation :',
-    'import-append': 'Ajouter',
     'import-overwrite': 'Écraser',
     'version': 'Version',
     'developer': 'Développeur',
@@ -364,7 +361,7 @@ export default {
 
     // Category Editor
     'category-editor-title': 'Éditeur de catégories professionnelles',
-    'btn-launch-category-editor': 'Lancer l\'éditeur de catégories',
+    'btn-launch-category-editor': 'Modifier',
     'category-detail': 'Détails de la catégorie',
     'tags-common': 'Tags (Commun)',
     'setting-theme-common': 'Thème (Commun)',

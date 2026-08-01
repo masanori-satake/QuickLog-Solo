@@ -46,9 +46,9 @@ export function setupBroadcastChannel(onMessage) {
 
 /**
  * Broadcasts a synchronization message to other tabs and pushes to cloud if needed.
- * @param {string} type 'sync', 'reload', or 'alarms-updated'
+ * @param {string} type 'sync', 'categories-updated', 'reload', or 'alarms-updated'
  */
-export async function broadcastSync(type = 'sync') {
+export async function broadcastSync(type = 'categories-updated') {
     if (syncChannel) {
         syncChannel.postMessage({ type });
     }
@@ -61,7 +61,7 @@ export async function broadcastSync(type = 'sync') {
         }
     }
 
-    if (type === 'sync' || type === 'alarms-updated') {
+    if (type === 'sync' || type === 'categories-updated' || type === 'alarms-updated') {
         try {
             const state = await getCurrentAppState();
             await pushToCloud(state);

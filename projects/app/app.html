@@ -420,25 +420,14 @@
                     </div>
 
                     <div id="alarms-fixed-footer">
-                        <div class="category-maintenance-box">
-                            <div class="setting-item">
-                                <label data-i18n="alarm-io-title">アラームの入出力 (クリップボード)</label>
-                                <div class="maintenance-btns">
-                                    <button id="export-alarms-btn" class="secondary-btn">
-                                        <span class="material-symbols-outlined">content_copy</span>
-                                        <span data-i18n="btn-export-json">コピー (Export)</span>
-                                    </button>
-                                    <button id="import-alarms-btn" class="secondary-btn">
-                                        <span class="material-symbols-outlined">content_paste</span>
-                                        <span data-i18n="btn-import-json">貼り付け (Import)</span>
-                                    </button>
-                                </div>
-                                <button id="alarm-editor-link" class="secondary-btn">
-                                    <span class="material-symbols-outlined">edit_notifications</span>
-                                    <span data-i18n="btn-launch-alarm-editor">アラーム・エディタを起動</span>
-                                </button>
-                            </div>
+                        <div class="setting-item">
+                            <button id="alarm-editor-link" class="secondary-btn" style="width: 100%;">
+                                <span class="material-symbols-outlined">edit_notifications</span>
+                                <span data-i18n="btn-launch-alarm-editor">編集</span>
+                            </button>
                         </div>
+
+                        <hr class="settings-divider">
 
                         <div class="setting-item">
                             <button id="test-notification-btn" class="secondary-btn" style="width: 100%;">
@@ -458,45 +447,15 @@
                             <div class="spinner"></div>
                         </div>
                     </div>
-                    <div id="add-category-box-settings">
-                        <div class="add-cat-left">
-                            <input type="text" id="new-category-name-settings" data-i18n-placeholder="placeholder-new-category" placeholder="新しいカテゴリ...">
-                            <button id="add-category-btn-settings" class="icon-btn" data-i18n-title="btn-add-category">
-                                <span class="material-symbols-outlined">add</span>
-                            </button>
-                        </div>
-                        <button id="add-page-break-btn" class="icon-btn" data-i18n-title="btn-add-page-break">
-                            <span class="material-symbols-outlined">insert_page_break</span>
-                        </button>
-                    </div>
 
                     <div id="category-maintenance-box-settings" class="category-maintenance-box">
                         <div class="setting-item">
-                            <label data-i18n="category-backup">カテゴリの入出力 (クリップボード)</label>
-                            <div class="maintenance-btns">
-                                <button id="export-categories-btn" class="secondary-btn">
-                                    <span class="material-symbols-outlined">content_copy</span>
-                                    <span data-i18n="btn-export-json">コピー (Export)</span>
-                                </button>
-                                <button id="import-categories-btn" class="secondary-btn">
-                                    <span class="material-symbols-outlined">content_paste</span>
-                                    <span data-i18n="btn-import-json">貼り付け (Import)</span>
-                                </button>
-                            </div>
-                            <div class="import-mode-selector">
-                                <span data-i18n="import-setting">インポート設定:</span>
-                                <label>
-                                    <input type="radio" name="import-mode" value="append" checked> <span data-i18n="import-append">追記</span>
-                                </label>
-                                <label>
-                                    <input type="radio" name="import-mode" value="overwrite"> <span data-i18n="import-overwrite">上書き</span>
-                                </label>
-                            </div>
-                            <button id="advanced-editor-link" class="secondary-btn">
+                            <button id="advanced-editor-link" class="secondary-btn" style="width: 100%;">
                                 <span class="material-symbols-outlined">edit_note</span>
-                                <span data-i18n="btn-launch-category-editor">業務カテゴリ・エディタを起動</span>
+                                <span data-i18n="btn-launch-category-editor">編集</span>
                             </button>
-                            <div style="border-top: 1px solid var(--md-sys-color-outline-variant); margin: 16px 0; padding-top: 16px; width: 100%;"></div>
+
+                            <hr class="settings-divider">
 
                             <div id="maker-extension-notice" class="setting-item hidden" style="background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); padding: 12px; border-radius: 8px; margin-bottom: 16px; width: 100%;">
                                 <p class="note" data-i18n="maker-note-extension-only" style="font-weight: 500; margin: 0; font-size: 0.75rem;">

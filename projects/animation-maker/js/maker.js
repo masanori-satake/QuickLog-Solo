@@ -23,7 +23,7 @@ import {
 
 const broadcastChannel = new BroadcastChannel(`${SYNC_CHANNEL_NAME}_${DB_NAME}`);
 
-function broadcastSync(type = 'sync') {
+function broadcastSync(type = 'categories-updated') {
     broadcastChannel.postMessage({ type });
 }
 
@@ -1331,7 +1331,7 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
 
         await saveProductionMetadataMap(productionMap);
 
-        broadcastSync('sync');
+        broadcastSync('categories-updated');
         state.isDirty = false;
         syncApplyButtonState();
     }
