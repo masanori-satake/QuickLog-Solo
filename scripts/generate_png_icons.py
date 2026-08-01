@@ -49,42 +49,64 @@ def generate_icons(output_dir=None, bg_color=None):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    with sync_playwright() as p:
-        try:
-            browser = p.chromium.launch()
-        except Exception as e:
-            print(f"Error: Failed to launch browser: {e}")
-            return False
+    try:
+        with sync_playwright() as p:
+            try:
+                browser = p.chromium.launch()
+            except Exception as e:
+                print(f"Error: Failed to launch browser: {e}")
+                raise
 
-        context = browser.new_context(
-            viewport={'width': 512, 'height': 512},
-            device_scale_factor=1
-        )
-        page = context.new_page()
-
-        page.set_content(f"""
-            <style>
-              body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }}
-              svg {{ width: 100%; height: 100%; display: block; }}
-            </style>
-            {svg_content}
-        """)
-
-        for size in [16, 32, 48, 128]:
-            output_path = os.path.join(output_dir, f"icon{size}.png")
-            print(f"Generating {size}x{size} icon: {output_path}")
-
-            page.set_viewport_size({'width': size, 'height': size})
-            page.screenshot(
-                path=output_path,
-                omit_background=True,
-                clip={'x': 0, 'y': 0, 'width': size, 'height': size}
+            context = browser.new_context(
+                viewport={'width': 512, 'height': 512},
+                device_scale_factor=1
             )
+            page = context.new_page()
 
-        browser.close()
+            page.set_content(f"""
+                <style>
+                  body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }}
+                  svg {{ width: 100%; height: 100%; display: block; }}
+                </style>
+                {svg_content}
+            """)
 
-    print(f"Icon generation complete in {output_dir}")
-    return True
+            for size in [16, 32, 48, 128]:
+                output_path = os.path.join(output_dir, f"icon{size}.png")
+                print(f"Generating {size}x{size} icon: {output_path}")
+
+                page.set_viewport_size({'width': size, 'height': size})
+                page.screenshot(
+                    path=output_path,
+                    omit_background=True,
+                    clip={'x': 0, 'y': 0, 'width': size, 'height': size}
+                )
+
+            browser.close()
+
+        print(f"Icon generation complete in {output_dir}")
+        return True
+
+    except Exception as e:
+        print(f"Warning: Playwright icon generation failed: {e}")
+        # Check if required icons already exist in output_dir
+        required_icons = [os.path.join(output_dir, f"icon{size}.png") for size in [16, 32, 48, 128]]
+        if all(os.path.exists(icon) for icon in required_icons):
+            print("Required PNG icons already exist in output directory. Skipping regeneration.")
+            return True
+
+        # Fallback to copy from master shared/assets if output_dir doesn't have them
+        master_dir = os.path.join(os.getcwd(), 'shared/assets')
+        master_icons = [os.path.join(master_dir, f"icon{size}.png") for size in [16, 32, 48, 128]]
+        if all(os.path.exists(m_icon) for m_icon in master_icons):
+            print("Playwright generation failed, falling back to copying master non-branded PNG icons...")
+            import shutil
+            for size in [16, 32, 48, 128]:
+                shutil.copy2(os.path.join(master_dir, f"icon{size}.png"), os.path.join(output_dir, f"icon{size}.png"))
+            return True
+
+        print("Error: Playwright failed and no fallback icons are available.")
+        return False
 
 if __name__ == "__main__":
     # Support optional command line arguments: [output_dir] [bg_color]
