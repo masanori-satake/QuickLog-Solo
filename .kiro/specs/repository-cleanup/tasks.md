@@ -58,7 +58,7 @@ Phase 0 の 7 タスクは互いに独立しており並行実行可能。Phase 
 
 - [ ] 3. Phase 1: 段階的改善
 
-  - [-] 3.1 IF-01a: shared/js/utils.js の ESLint 除外解除と修正
+  - [ ] 3.1 IF-01a: shared/js/utils.js の ESLint 除外解除と修正
     - `eslint.config.js` の `ignores` リストから `'shared/js/utils.js'` を削除する
     - `npx eslint shared/js/utils.js` を実行して発生したエラーをすべて修正する:
       - `no-unused-vars`: 未使用変数を削除するか変数名の先頭に `_` を付与する
@@ -66,23 +66,23 @@ Phase 0 の 7 タスクは互いに独立しており並行実行可能。Phase 
       - その他のエラーは動作変更を最小限にして個別対応する
     - _Requirements: 8.1, 8.4_
 
-  - [-] 3.2 IF-01b: shared/js/schema.js の ESLint 除外解除と修正
+  - [ ] 3.2 IF-01b: shared/js/schema.js の ESLint 除外解除と修正
     - `eslint.config.js` の `ignores` リストから `'shared/js/schema.js'` を削除する
     - `npx eslint shared/js/schema.js` を実行して発生したエラーをすべて修正する（方針は 3.1 と同じ）
     - _Requirements: 8.2, 8.4_
 
-  - [-] 3.3 IF-01c: shared/js/i18n.js の ESLint 除外解除と修正
+  - [ ] 3.3 IF-01c: shared/js/i18n.js の ESLint 除外解除と修正
     - `eslint.config.js` の `ignores` リストから `'shared/js/i18n.js'` を削除する
     - `npx eslint shared/js/i18n.js` を実行して発生したエラーをすべて修正する（方針は 3.1 と同じ）
     - _Requirements: 8.3, 8.4_
 
-  - [~] 3.4 IF-01d: ESLint 除外解除後のバージョンバンプ（パッチ）
+  - [ ] 3.4 IF-01d: ESLint 除外解除後のバージョンバンプ（パッチ）
     - タスク 3.1, 3.2, 3.3 がすべて完了し、`npm run lint` がエラーなしで通ることを確認する
     - `npm run version:bump` を実行してパッチバージョンをインクリメントする
     - `npm test` を実行してユニットテストがすべてパスすることを確認する
     - _Requirements: 8.5_
 
-  - [-] 3.5 AM-02: ESLint 除外理由のコメント追記
+  - [ ] 3.5 AM-02: ESLint 除外理由のコメント追記
     - `eslint.config.js` の `export default [` の直後、最初の `{` ブロック（`ignores` を含む）の直前に、以下のコメントブロックを追加する:
       ```javascript
       // TODO: 以下は段階的に除外解除予定。現在除外している理由:
@@ -95,19 +95,19 @@ Phase 0 の 7 タスクは互いに独立しており並行実行可能。Phase 
     - 既存の `ignores` エントリはすべて保持する
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
-  - [-] 3.6 RD-04: pre-commit の jest フックをJS変更時のみ実行に変更
+  - [ ] 3.6 RD-04: pre-commit の jest フックをJS変更時のみ実行に変更
     - `.pre-commit-config.yaml` の `jest` フック設定を以下のように変更する:
       - `always_run: true` → `always_run: false`
       - `files: \.(js|cjs)$` を追加する
     - 他のフックの設定は変更しない
     - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-  - [-] 3.7 OD-04: release_web_deploy.yml のトリガー修正
+  - [ ] 3.7 OD-04: release_web_deploy.yml のトリガー修正
     - `.github/workflows/release_web_deploy.yml` の `on.push.paths` リストから `- 'releases/**'` の行を削除する
     - 他の `paths` エントリは変更しない
     - _Requirements: 11.1, 11.2, 11.3_
 
-- [~] 4. 最終チェックポイント
+- [ ] 4. 最終チェックポイント
   - すべてのタスクが完了したことを確認する。`npm run lint` と `npm test` を実行してエラーがないことを確認する。問題があればユーザーに報告する。
 
 ---
