@@ -31,9 +31,10 @@ ALLOWED_ROOT_ITEMS = {
     ".vercelignore",
     "node_modules",
     ".pr_agent.toml",
-    ".qodo_merge.toml",
     "requirements.txt",
     ".kiro",
+    ".kilo",
+    ".prettierignore",
     ".markdownlintignore",
 }
 
