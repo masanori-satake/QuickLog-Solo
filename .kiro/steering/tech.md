@@ -15,6 +15,7 @@
 ### 主要コマンド
 ```bash
 # ユニットテスト（Jest + jsdom + fake-indexeddb）
+# generate_animation_registry.py → verify_animations.py → Jest の順で実行
 npm test
 
 # E2Eテスト（Playwright）— 事前に Vite 開発サーバー（port 8080）が必要
@@ -32,22 +33,29 @@ npm run format
 # バージョンバンプ（patch / minor）
 npm run version:bump
 
-# 拡張機能パッケージビルド（アイコン生成・レジストリ生成・バージョン確認・ZIP作成）
+# 拡張機能パッケージビルド（アイコン生成・レジストリ生成・バージョン確認・ZIP作成・Viteビルド）
 npm run build
 ```
 
-### Python スクリプト（`scripts/`）
+### Python / Node スクリプト（`scripts/`）
 
 | スクリプト | 用途 |
 |-----------|------|
 | `bump_version.py` | `package.json` / マニフェスト等のバージョンを一括同期 |
 | `generate_animation_registry.py` | アニメーションモジュールのレジストリを自動生成（`test` / `test:e2e` 前に必須） |
+| `verify_animations.py` | アニメーションモジュールの整合性を検証（`test` 前に実行） |
+| `animation_utils.py` | アニメーション関連スクリプト共通ユーティリティ |
 | `generate_png_icons.py` | SVG から PNG アイコンを生成 |
 | `create_package.py` | Chrome / Edge 用拡張機能 ZIP を作成 |
 | `check_version.py` | バージョン整合性を確認 |
 | `verify_version_impact.py` | CI でバージョンバンプ漏れを検出 |
 | `verify_project_policies.py` | `innerHTML` 例外・`Local Only` 文言・無保証表記などのポリシーを自動検証 |
+| `check_root_files.py` | ルートディレクトリへの一時スクリプト混入を検出 |
+| `audit_production_dependencies.py` | プロダクション依存関係ゼロを確認 |
+| `audit_localization_mixing.py` | 言語ファイルへの異言語文字混入を検出 |
 | `language_check.py` | PR タイトル・説明文に日本語が含まれているか確認 |
+| `generate_guide_screenshots.js` | ガイド用スクリーンショットを生成（Node.js） |
+| `update_guide_images.js` | ガイド画像を更新（`npm run update-guide-images` で呼び出し） |
 
 ## テスト構成
 

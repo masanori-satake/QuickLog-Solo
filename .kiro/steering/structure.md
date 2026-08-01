@@ -15,7 +15,7 @@ QuickLog-Solo/
 │   │   ├── manifest.chrome.json
 │   │   ├── version.json
 │   │   ├── samples/           # サンプルアニメーションファイル (.qlanim)
-│   │   └── _locales/          # 拡張機能向け i18n (en/ja/de/es/fr/pt/ko/zh)
+│   │   └── _locales/          # 拡張機能向け i18n (en/ja)
 │   ├── studio/                # QL-Animation Studio（アニメーション開発ツール）
 │   ├── category-editor/       # QL-Category Editor（カテゴリ一括管理）
 │   ├── alarm-editor/          # Alarm Editor（アラーム設定ツール）
@@ -39,8 +39,8 @@ QuickLog-Solo/
 │   │   ├── animation/         # 各アニメーションモジュール (.js)
 │   │   ├── locales/           # 言語別翻訳ファイル (en.js / ja.js / ...)
 │   │   └── utils/             # ユーティリティサブモジュール
-│   ├── css/                   # 共通 CSS（variables.css 等）
-│   └── assets/                # 共通アセット
+│   ├── css/                   # 共通 CSS（m3-theme.css・variables.css）
+│   └── assets/                # 共通アセット（SVG/PNG アイコン・バッジ・ガイド画像）
 │
 ├── tests/                     # E2E テスト（Playwright）
 │   └── *.spec.js
