@@ -1049,6 +1049,13 @@ body.timer-mini #elapsed-time {
     margin-bottom: 1rem;
 }
 
+.settings-divider {
+    border: none;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    margin: 16px 0;
+    width: 100%;
+}
+
 .stats-row-compact {
     display: flex;
     gap: 24px;

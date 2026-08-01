@@ -13,10 +13,10 @@ test.describe('Data Import and Export Consistency', () => {
     });
 
     test('should export categories as NDJSON and match schema', async ({ page }) => {
-        await page.click('#settings-toggle');
-        await page.click('button[data-tab="categories"]');
+        await page.goto('/projects/category-editor/index.html?lang=en');
+        await page.waitForSelector('.category-item');
 
-        await page.click('#export-categories-btn');
+        await page.click('#export-btn');
 
         const clipboardText = await page.evaluate(async () => {
             // Wait for clipboard update
@@ -99,9 +99,8 @@ test.describe('Data Import and Export Consistency', () => {
     });
 
     test('should handle Category Import Overwrite mode correctly', async ({ page }) => {
-        await page.click('#settings-toggle');
-        await page.click('button[data-tab="categories"]');
-        await page.click('input[name="import-mode"][value="overwrite"]');
+        await page.goto('/projects/category-editor/index.html?lang=en');
+        await page.waitForSelector('.category-item');
 
         const importData = JSON.stringify({
             kind: 'QuickLogSolo/Category',
@@ -112,19 +111,16 @@ test.describe('Data Import and Export Consistency', () => {
         });
 
         await page.evaluate((text) => navigator.clipboard.writeText(text), importData);
-        await page.click('#import-categories-btn');
-        await page.click('#confirm-ok-btn');
+        await page.click('#import-btn');
 
-        await page.click('.settings-close-btn');
-
-        const catBtn = page.locator('.category-btn').first();
-        await expect(catBtn).toHaveText('ImportedTestCat');
-        await expect(page.locator('.category-btn')).toHaveCount(1);
+        const catItem = page.locator('.category-item').first();
+        await expect(catItem).toContainText('ImportedTestCat');
+        await expect(page.locator('.category-item')).toHaveCount(1);
     });
 
     test('should handle partial errors during category import', async ({ page }) => {
-        await page.click('#settings-toggle');
-        await page.click('button[data-tab="categories"]');
+        await page.goto('/projects/category-editor/index.html?lang=en');
+        await page.waitForSelector('.category-item');
 
         const mixedData = 'Not JSON\n' + JSON.stringify({
             kind: 'QuickLogSolo/Category',
@@ -135,27 +131,20 @@ test.describe('Data Import and Export Consistency', () => {
         });
         await page.evaluate((text) => navigator.clipboard.writeText(text), mixedData);
 
-        await page.click('#import-categories-btn');
+        page.once('dialog', async dialog => {
+            expect(dialog.message()).toContain('1 out of 2 rows are corrupted');
+            await dialog.accept();
+        });
 
-        const confirmMsg = page.locator('#confirm-message');
-        await expect(confirmMsg).toContainText(/1 out of 2 rows are corrupted/);
-        await page.click('#confirm-ok-btn');
+        await page.click('#import-btn');
 
-        await page.click('.settings-close-btn');
-        const validItem = page.locator('.category-btn').filter({ hasText: 'ValidItem' });
-
-        const dots = page.locator('.pagination-dot');
-        const count = await dots.count();
-        for(let i=0; i<count; i++) {
-            if (await validItem.isVisible()) break;
-            await dots.nth(i).click();
-        }
+        const validItem = page.locator('.category-item').filter({ hasText: 'ValidItem' });
         await expect(validItem).toBeVisible();
     });
 
     test('should reject category data with missing kind/version (Legacy Data)', async ({ page }) => {
-        await page.click('#settings-toggle');
-        await page.click('button[data-tab="categories"]');
+        await page.goto('/projects/category-editor/index.html?lang=en');
+        await page.waitForSelector('.category-item');
 
         const legacyData = JSON.stringify({
             type: 'category',
@@ -165,11 +154,10 @@ test.describe('Data Import and Export Consistency', () => {
 
         await page.evaluate((text) => navigator.clipboard.writeText(text), legacyData);
 
-        page.once('dialog', async dialog => {
-            expect(dialog.message()).toContain('Invalid file format');
-            await dialog.dismiss();
-        });
+        await page.click('#import-btn');
 
-        await page.click('#import-categories-btn');
+        const toast = page.locator('#toast');
+        await expect(toast).not.toHaveClass(/hidden/);
+        await expect(toast).toContainText(/Paste failed|Import failed/);
     });
 });

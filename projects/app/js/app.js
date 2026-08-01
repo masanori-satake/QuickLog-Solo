@@ -9,7 +9,6 @@ import {
     dbAddMultiple,
     dbDelete,
     dbClear,
-    dbImportCategories,
     setDatabaseName,
     SETTING_KEY_SESSION_SYNC,
     STORE_LOGS,
@@ -22,7 +21,6 @@ import {
     SETTING_KEY_ANIMATION,
     SETTING_KEY_LANGUAGE,
     SETTING_KEY_REPORT_SETTINGS,
-    SETTING_KEY_BUSINESS_DAYS,
     SETTING_KEY_TIMER_HEIGHT,
     SETTING_KEY_PAUSE_STATE,
 } from '../shared/js/db.js';
@@ -43,7 +41,6 @@ import {
 import {
     escapeCsv,
     parseCsvLine,
-    isValidCategoryName,
     SYSTEM_CATEGORY_IDLE,
     SYSTEM_CATEGORY_UNKNOWN,
     SYSTEM_CATEGORY_PAGE_BREAK,
@@ -60,13 +57,6 @@ import {
     setupBroadcastChannel,
 } from '../shared/js/session_sync.js';
 import { animations } from '../shared/js/animation_registry.js';
-import {
-    validateCategorySchema,
-    SCHEMA_KIND_CATEGORY,
-    SCHEMA_VERSION_1_0,
-    SCHEMA_TYPE_CATEGORY,
-    SCHEMA_TYPE_PAGE_BREAK,
-} from '../shared/js/schema.js';
 import { getCustomAnimationMetadataMap, setCustomAnimationMetadataMap } from '../shared/js/utils/storage.js';
 
 // QuickLog-Solo: Main Application Entry
@@ -80,7 +70,6 @@ const URL_PARAM_TEST_RESUMABLE = 'test_resumable';
 
 const MAX_LOGS_DISPLAY = 100;
 const TOAST_DURATION_MS = 2000;
-const IMPORT_FEEDBACK_DELAY_MS = 500;
 const ITEMS_PER_PAGE = 16;
 
 const EXCLUSION_PADDING_X = 4;
@@ -126,16 +115,12 @@ const ID_STATS_CATEGORY_COUNT = 'stats-category-count';
 const ID_ALARM_LIST = 'alarm-list';
 const ID_BUSINESS_DAYS_CONTAINER = 'business-days-container';
 const ID_CATEGORY_EDITOR_LIST = 'category-editor-list';
-const ID_NEW_CATEGORY_NAME_SETTINGS = 'new-category-name-settings';
 const ID_COPY_REPORT_BTN = 'copy-report-btn';
 const ID_COPY_AGGREGATION_BTN = 'copy-aggregation-btn';
 const ID_CATEGORY_SECTION = 'category-section';
-const ID_ADD_CATEGORY_BTN_SETTINGS = 'add-category-btn-settings';
 const ID_EXPORT_CSV_BTN = 'export-csv-btn';
 const ID_IMPORT_CSV_BTN = 'import-csv-btn';
 const ID_CSV_FILE_INPUT = 'csv-file-input';
-const ID_EXPORT_CATEGORIES_BTN = 'export-categories-btn';
-const ID_IMPORT_CATEGORIES_BTN = 'import-categories-btn';
 const ID_CLEAR_LOGS_BTN = 'clear-logs-btn';
 const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
 const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
@@ -959,8 +944,13 @@ function handleSyncMessage(data) {
         const alarmsTab = getEl('alarms-tab');
         if (alarmsTab && !alarmsTab.classList.contains('hidden')) {
             renderAlarmList();
+            renderBusinessDays();
         }
-    } else if (data.type === 'sync') {
+    } else if (data.type === 'categories-updated' || data.type === 'sync') {
+        const categoriesTab = getEl('categories-tab');
+        if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
+            renderCategoryList();
+        }
         // Only sync if visible to reduce CPU load as requested
         if (document.visibilityState === 'visible') {
             syncState();
@@ -1111,15 +1101,7 @@ async function syncState() {
         }
         const categoriesTab = getEl('categories-tab');
         if (categoriesTab && !categoriesTab.classList.contains('hidden')) {
-            const hasOpenColorDropdown = categoriesTab.querySelector('.color-dropdown-menu:not(.hidden)');
-            // Skip re-rendering categories list if user is actively interacting or color dropdown is open
-            const categoryEditorList = getEl(ID_CATEGORY_EDITOR_LIST);
-            const addCategoryBox = getEl('add-category-box-settings');
-            const isEditing =
-                activeEl && (categoryEditorList?.contains(activeEl) || addCategoryBox?.contains(activeEl));
-            if (!isEditing && !hasOpenColorDropdown) {
-                await renderCategoryEditor();
-            }
+            await renderCategoryList();
         }
         const aboutTab = getEl('about-tab');
         if (aboutTab && !aboutTab.classList.contains('hidden')) {
@@ -1762,18 +1744,46 @@ function showSyncSetupModal() {
 
 // --- Alarms ---
 
+/**
+ * Shared helper to construct launch URLs for local/remote subprojects.
+ *
+ * @param {string} extensionPath - Path inside Chrome Extension.
+ * @param {string} webPath - Relative/absolute path on standard web.
+ * @param {Record<string, string>} params - Query parameters to append.
+ * @returns {string} The constructed project URL.
+ */
+function getLaunchProjectUrl(extensionPath, webPath, params) {
+    const isExtension = window.location.protocol === 'chrome-extension:';
+    const baseUrl = isExtension ? chrome.runtime.getURL(extensionPath) : webPath;
+    const urlObj = new URL(baseUrl, window.location.href);
+    for (const [key, value] of Object.entries(params)) {
+        urlObj.searchParams.set(key, value);
+    }
+    return urlObj.toString();
+}
+
+/**
+ * Helper to launch editor with standard parameters (language, theme, from: 'app').
+ * @param {string} localPath - Path inside Chrome Extension.
+ * @param {string} fallbackUrl - Relative/absolute path on standard web.
+ */
+function launchEditor(localPath, fallbackUrl) {
+    const lang = getLanguage();
+    const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
+    const url = getLaunchProjectUrl(localPath, fallbackUrl, {
+        lang,
+        theme: resolvedTheme,
+        from: 'app',
+    });
+    window.open(url, '_blank', 'noopener');
+}
+
 async function renderBusinessDays() {
     const container = getEl(ID_BUSINESS_DAYS_CONTAINER);
     if (!container) return;
 
     const state = await getCurrentAppState();
     const businessDays = state.businessDays || [1, 2, 3, 4, 5];
-
-    // Re-check activeElement immediately before destructive update
-    const activeEl = document.activeElement;
-    if (activeEl && container.contains(activeEl)) {
-        return; // Skip update if user is interacting with a control in this container
-    }
 
     container.replaceChildren();
 
@@ -1792,25 +1802,54 @@ async function renderBusinessDays() {
         if (day === 0) chip.classList.add('sunday');
         if (day === 6) chip.classList.add('saturday');
         chip.textContent = label;
-
-        chip.onclick = async () => {
-            let newDays = [...businessDays];
-            if (newDays.includes(day)) {
-                if (newDays.length > 1) {
-                    newDays = newDays.filter((d) => d !== day);
-                } else {
-                    alert(t('alert-business-days-min'));
-                    return;
-                }
-            } else {
-                newDays.push(day);
-            }
-            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: newDays });
-            renderBusinessDays();
-            broadcastSync('alarms-updated');
-        };
+        chip.disabled = true;
+        chip.setAttribute('aria-disabled', 'true');
+        const isActive = businessDays.includes(day);
+        chip.setAttribute('aria-label', `${label} (${isActive ? 'active' : 'inactive'})`);
+        chip.style.cursor = 'default';
         container.appendChild(chip);
     });
+
+    // Check if the edit button is already added. If not, add it right after the container.
+    let editBtn = getEl('business-days-edit-btn');
+    if (!editBtn) {
+        editBtn = createEl('button');
+        editBtn.id = 'business-days-edit-btn';
+        editBtn.className = 'icon-btn';
+        editBtn.title = t('tooltip-edit-business-days');
+        editBtn.setAttribute('data-i18n-title', 'tooltip-edit-business-days');
+        editBtn.style.marginLeft = '8px';
+        editBtn.style.verticalAlign = 'middle';
+
+        const editIcon = createEl('span');
+        editIcon.className = 'material-symbols-outlined';
+        editIcon.textContent = 'edit';
+        editBtn.appendChild(editIcon);
+
+        editBtn.onclick = () => {
+            launchEditor('projects/alarm-editor/index.html', ALARM_EDITOR_URL);
+        };
+
+        const parent = container.parentElement;
+        if (parent) {
+            let wrapper = parent.querySelector('.business-days-wrapper');
+            if (!wrapper) {
+                wrapper = createEl('div');
+                wrapper.className = 'business-days-wrapper';
+                wrapper.style.display = 'flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.gap = '8px';
+
+                // insert wrapper before container
+                parent.insertBefore(wrapper, container);
+                wrapper.appendChild(container);
+            }
+            wrapper.appendChild(editBtn);
+        }
+    } else {
+        editBtn.title = t('tooltip-edit-business-days');
+        editBtn.setAttribute('data-i18n-title', 'tooltip-edit-business-days');
+    }
 }
 
 async function renderAlarmList() {
@@ -1826,17 +1865,12 @@ async function renderAlarmList() {
         }
     }
 
-    const categories = await dbGetAll(STORE_CATEGORIES);
-    const workCategories = categories.filter(
-        (c) => c.name !== SYSTEM_CATEGORY_IDLE && !(c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
-    );
     const alarms = await dbGetAll(STORE_ALARMS);
     alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0));
 
-    // Re-check activeElement immediately before destructive update
     const activeEl = document.activeElement;
-    if (activeEl && list.contains(activeEl)) {
-        return; // Skip update if user is actively interacting with an input/select in the list
+    if (activeEl && list.contains(activeEl) && !activeEl.classList.contains('alarm-enabled')) {
+        return;
     }
 
     list.replaceChildren();
@@ -1844,18 +1878,6 @@ async function renderAlarmList() {
     alarms.forEach((alarm) => {
         const item = createEl('div');
         item.className = 'alarm-item';
-
-        // Helper to update visibility of conditional rows
-        const updateVisibility = () => {
-            const type = typeSelect.value;
-            const action = actionSelect.value;
-
-            rowWeekly.classList.toggle('hidden', type !== 'weekly');
-            rowMonthlyDate.classList.toggle('hidden', type !== 'monthly_date');
-            rowMonthlyEnd.classList.toggle('hidden', type !== 'monthly_end_relative');
-            rowHoliday.classList.toggle('hidden', type === 'none');
-            rowCategory.classList.toggle('hidden', action !== 'start');
-        };
 
         // Row 1: Enabled, Time, Confirmation
         const row1 = createEl('div');
@@ -1873,27 +1895,29 @@ async function renderAlarmList() {
         enabledLabel.appendChild(enabledCheck);
         enabledLabel.appendChild(enabledText);
 
-        const timeInput = createEl('input');
-        timeInput.type = 'time';
-        timeInput.className = 'alarm-time';
-        timeInput.value = alarm.time || '09:00';
+        const timeText = createEl('span');
+        timeText.className = 'alarm-field-value alarm-time';
+        timeText.textContent = alarm.time || '09:00';
+        timeText.style.cursor = 'default';
+        timeText.style.fontWeight = 'bold';
+        timeText.style.fontSize = '1.1rem';
 
-        const confirmLabel = createEl('label');
-        confirmLabel.className = 'alarm-confirm-label';
-        confirmLabel.title = t('alarm-tooltip-confirmation');
         const confirmIcon = createEl('span');
         confirmIcon.className = 'material-symbols-outlined';
         confirmIcon.textContent = 'task_alt';
-        const confirmCheck = createEl('input');
-        confirmCheck.type = 'checkbox';
-        confirmCheck.className = 'alarm-confirm';
-        confirmCheck.checked = alarm.requireConfirmation;
-        confirmLabel.appendChild(confirmIcon);
-        confirmLabel.appendChild(confirmCheck);
+
+        const confirmValue = createEl('span');
+        confirmValue.className = 'alarm-field-value alarm-confirm';
+        confirmValue.style.cursor = 'default';
+        if (alarm.requireConfirmation) {
+            confirmValue.appendChild(confirmIcon);
+        } else {
+            confirmValue.textContent = '-';
+        }
 
         row1.appendChild(enabledLabel);
-        row1.appendChild(timeInput);
-        row1.appendChild(confirmLabel);
+        row1.appendChild(timeText);
+        row1.appendChild(confirmValue);
 
         // Row 2: Type Selection
         const rowType = createEl('div');
@@ -1902,25 +1926,19 @@ async function renderAlarmList() {
         typeLabel.className = 'alarm-label';
         typeLabel.setAttribute('data-i18n', 'alarm-label-type');
         typeLabel.textContent = t('alarm-label-type');
-        const typeSelect = createEl('select');
-        typeSelect.className = 'alarm-type';
-        ['daily', 'daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'].forEach((val) => {
-            const opt = createEl('option');
-            opt.value = val;
-            opt.textContent = t(`alarm-type-${val}`);
-            opt.setAttribute('data-i18n', `alarm-type-${val}`);
-            if (alarm.type === val) opt.selected = true;
-            typeSelect.appendChild(opt);
-        });
+        const typeText = createEl('span');
+        typeText.className = 'alarm-field-value alarm-type';
+        typeText.textContent = t(`alarm-type-${alarm.type || 'daily'}`);
+        typeText.style.cursor = 'default';
         rowType.appendChild(typeLabel);
-        rowType.appendChild(typeSelect);
+        rowType.appendChild(typeText);
 
         // Row Weekly: Days Selection
         const rowWeekly = createEl('div');
-        rowWeekly.className = 'alarm-row hidden';
+        rowWeekly.className = 'alarm-row' + (alarm.type !== 'weekly' ? ' hidden' : '');
         const weeklyLabel = createEl('span');
         weeklyLabel.className = 'alarm-label';
-        weeklyLabel.setAttribute('data-i18n', 'tab-alarms'); // Reuse "Alarms" or similar
+        weeklyLabel.setAttribute('data-i18n', 'tab-alarms');
         weeklyLabel.textContent = t('tab-alarms');
         const weeklyContainer = createEl('div');
         weeklyContainer.className = 'filter-chips';
@@ -1934,18 +1952,13 @@ async function renderAlarmList() {
             chip.className = 'filter-chip' + ((alarm.daysOfWeek || []).includes(day) ? ' active' : '');
             if (day === 0) chip.classList.add('sunday');
             if (day === 6) chip.classList.add('saturday');
-            chip.textContent = formatter.format(d);
-            chip.onclick = () => {
-                let days = [...(alarm.daysOfWeek || [])];
-                if (days.includes(day)) {
-                    days = days.filter((d) => d !== day);
-                } else {
-                    days.push(day);
-                }
-                alarm.daysOfWeek = days;
-                chip.classList.toggle('active');
-                updateAlarm();
-            };
+            const label = formatter.format(d);
+            chip.textContent = label;
+            chip.disabled = true;
+            chip.setAttribute('aria-disabled', 'true');
+            const isActive = (alarm.daysOfWeek || []).includes(day);
+            chip.setAttribute('aria-label', `${label} (${isActive ? 'active' : 'inactive'})`);
+            chip.style.cursor = 'default';
             weeklyContainer.appendChild(chip);
         });
         rowWeekly.appendChild(weeklyLabel);
@@ -1953,74 +1966,49 @@ async function renderAlarmList() {
 
         // Row Monthly Date
         const rowMonthlyDate = createEl('div');
-        rowMonthlyDate.className = 'alarm-row hidden';
+        rowMonthlyDate.className = 'alarm-row' + (alarm.type !== 'monthly_date' ? ' hidden' : '');
         const mDateLabel = createEl('span');
         mDateLabel.className = 'alarm-label';
         mDateLabel.setAttribute('data-i18n', 'label-day');
         mDateLabel.textContent = t('label-day');
-        const mDateInput = createEl('input');
-        mDateInput.type = 'number';
-        mDateInput.min = 1;
-        mDateInput.max = 31;
-        mDateInput.className = 'alarm-day-of-month';
-        mDateInput.value = alarm.dayOfMonth || 1;
+        const mDateText = createEl('span');
+        mDateText.className = 'alarm-field-value alarm-day-of-month';
+        mDateText.textContent = alarm.dayOfMonth || 1;
+        mDateText.style.cursor = 'default';
         rowMonthlyDate.appendChild(mDateLabel);
-        rowMonthlyDate.appendChild(mDateInput);
+        rowMonthlyDate.appendChild(mDateText);
 
         // Row Monthly End
         const rowMonthlyEnd = createEl('div');
-        rowMonthlyEnd.className = 'alarm-row hidden';
+        rowMonthlyEnd.className = 'alarm-row' + (alarm.type !== 'monthly_end_relative' ? ' hidden' : '');
         const mEndPreLabel = createEl('span');
         mEndPreLabel.className = 'alarm-label';
         mEndPreLabel.setAttribute('data-i18n', 'label-before-end-1');
         mEndPreLabel.textContent = t('label-before-end-1');
-        const mEndInput = createEl('input');
-        mEndInput.type = 'number';
-        mEndInput.min = 0;
-        mEndInput.max = 30;
-        mEndInput.className = 'alarm-days-before-end';
-        mEndInput.value = alarm.daysBeforeEnd || 0;
+        const mEndText = createEl('span');
+        mEndText.className = 'alarm-field-value alarm-days-before-end';
+        mEndText.textContent = alarm.daysBeforeEnd || 0;
+        mEndText.style.cursor = 'default';
         const mEndPostLabel = createEl('span');
         mEndPostLabel.setAttribute('data-i18n', 'label-before-end-2');
         mEndPostLabel.textContent = t('label-before-end-2');
         rowMonthlyEnd.appendChild(mEndPreLabel);
-        rowMonthlyEnd.appendChild(mEndInput);
+        rowMonthlyEnd.appendChild(mEndText);
         rowMonthlyEnd.appendChild(mEndPostLabel);
 
         // Row Holiday Adjustment
         const rowHoliday = createEl('div');
-        rowHoliday.className = 'alarm-row hidden';
+        rowHoliday.className = 'alarm-row' + (alarm.type === 'none' ? ' hidden' : '');
         const holidayLabel = createEl('span');
         holidayLabel.className = 'alarm-label';
         holidayLabel.setAttribute('data-i18n', 'alarm-label-holiday-adjustment');
         holidayLabel.textContent = t('alarm-label-holiday-adjustment');
-        const holidaySelect = createEl('select');
-        holidaySelect.className = 'alarm-holiday-adj';
-
-        const updateHolidayOptions = () => {
-            const type = typeSelect.value;
-            const day = parseInt(mDateInput.value) || 1;
-            const adjOptions = ['none', 'prev_business_day', 'next_business_day', 'skip'];
-
-            holidaySelect.replaceChildren();
-            adjOptions.forEach((val) => {
-                const opt = createEl('option');
-                opt.value = val;
-                opt.textContent = t(`alarm-adj-${val}`);
-                opt.setAttribute('data-i18n', `alarm-adj-${val}`);
-                if (alarm.holidayAdjustment === val) opt.selected = true;
-
-                // Guardrails
-                if (val === 'prev_business_day' && type === 'monthly_date' && day === 1) opt.disabled = true;
-                if (val === 'next_business_day' && type === 'monthly_end_relative') opt.disabled = true;
-                if ((type === 'daily' || type === 'daily_business') && val !== 'none') opt.disabled = true;
-
-                holidaySelect.appendChild(opt);
-            });
-            holidaySelect.disabled = type === 'daily' || type === 'daily_business';
-        };
+        const holidayText = createEl('span');
+        holidayText.className = 'alarm-field-value alarm-holiday-adj';
+        holidayText.textContent = t(`alarm-adj-${alarm.holidayAdjustment || 'none'}`);
+        holidayText.style.cursor = 'default';
         rowHoliday.appendChild(holidayLabel);
-        rowHoliday.appendChild(holidaySelect);
+        rowHoliday.appendChild(holidayText);
 
         // Row Message
         const rowMsg = createEl('div');
@@ -2029,13 +2017,12 @@ async function renderAlarmList() {
         msgLabel.className = 'alarm-label';
         msgLabel.setAttribute('data-i18n', 'alarm-label-message');
         msgLabel.textContent = t('alarm-label-message');
-        const msgInput = createEl('input');
-        msgInput.type = 'text';
-        msgInput.className = 'alarm-message';
-        msgInput.value = alarm.message || '';
-        msgInput.placeholder = t('alarm-placeholder-message');
+        const msgText = createEl('span');
+        msgText.className = 'alarm-field-value alarm-message';
+        msgText.textContent = alarm.message || '';
+        msgText.style.cursor = 'default';
         rowMsg.appendChild(msgLabel);
-        rowMsg.appendChild(msgInput);
+        rowMsg.appendChild(msgText);
 
         // Row Action
         const rowAction = createEl('div');
@@ -2044,37 +2031,26 @@ async function renderAlarmList() {
         actionLabel.className = 'alarm-label';
         actionLabel.setAttribute('data-i18n', 'alarm-label-action');
         actionLabel.textContent = t('alarm-label-action');
-        const actionSelect = createEl('select');
-        actionSelect.className = 'alarm-action';
-        ['none', 'stop', 'pause', 'start'].forEach((val) => {
-            const opt = createEl('option');
-            opt.value = val;
-            opt.textContent = t(`alarm-action-${val}`);
-            opt.setAttribute('data-i18n', `alarm-action-${val}`);
-            if (alarm.action === val) opt.selected = true;
-            actionSelect.appendChild(opt);
-        });
+        const actionText = createEl('span');
+        actionText.className = 'alarm-field-value alarm-action';
+        actionText.textContent = t(`alarm-action-${alarm.action || 'none'}`);
+        actionText.style.cursor = 'default';
         rowAction.appendChild(actionLabel);
-        rowAction.appendChild(actionSelect);
+        rowAction.appendChild(actionText);
 
         // Row Category
         const rowCategory = createEl('div');
-        rowCategory.className = 'alarm-row hidden';
+        rowCategory.className = 'alarm-row' + (alarm.action !== 'start' ? ' hidden' : '');
         const catLabel = createEl('span');
         catLabel.className = 'alarm-label';
         catLabel.setAttribute('data-i18n', 'alarm-label-action-category');
         catLabel.textContent = t('alarm-label-action-category');
-        const catSelect = createEl('select');
-        catSelect.className = 'alarm-category';
-        workCategories.forEach((c) => {
-            const opt = createEl('option');
-            opt.value = c.name;
-            opt.textContent = c.name;
-            if (alarm.actionCategory === c.name) opt.selected = true;
-            catSelect.appendChild(opt);
-        });
+        const catText = createEl('span');
+        catText.className = 'alarm-field-value alarm-category';
+        catText.textContent = alarm.actionCategory || '';
+        catText.style.cursor = 'default';
         rowCategory.appendChild(catLabel);
-        rowCategory.appendChild(catSelect);
+        rowCategory.appendChild(catText);
 
         item.appendChild(row1);
         item.appendChild(rowType);
@@ -2086,53 +2062,12 @@ async function renderAlarmList() {
         item.appendChild(rowAction);
         item.appendChild(rowCategory);
 
-        const updateAlarm = async () => {
+        enabledCheck.onchange = async () => {
             alarm.enabled = enabledCheck.checked;
-            alarm.time = timeInput.value;
-            alarm.requireConfirmation = confirmCheck.checked;
-            alarm.type = typeSelect.value;
-            alarm.dayOfMonth = parseInt(mDateInput.value) || 1;
-            alarm.daysBeforeEnd = parseInt(mEndInput.value) || 0;
-            alarm.holidayAdjustment = holidaySelect.value;
-            alarm.message = msgInput.value.trim();
-            alarm.action = actionSelect.value;
-            alarm.actionCategory = catSelect.value;
-
-            // Apply guardrails
-            if (
-                alarm.type === 'monthly_date' &&
-                alarm.dayOfMonth === 1 &&
-                alarm.holidayAdjustment === 'prev_business_day'
-            ) {
-                alarm.holidayAdjustment = 'none';
-            }
-            if (alarm.type === 'monthly_end_relative' && alarm.holidayAdjustment === 'next_business_day') {
-                alarm.holidayAdjustment = 'none';
-            }
-            if ((alarm.type === 'daily' || alarm.type === 'daily_business') && alarm.holidayAdjustment !== 'none') {
-                alarm.holidayAdjustment = 'none';
-            }
-            updateHolidayOptions();
-
             await dbPut(STORE_ALARMS, alarm);
-            updateVisibility();
             broadcastSync('alarms-updated');
         };
 
-        enabledCheck.onchange = updateAlarm;
-        timeInput.onchange = updateAlarm;
-        confirmCheck.onchange = updateAlarm;
-        typeSelect.onchange = updateAlarm;
-        mDateInput.onchange = updateAlarm;
-        mEndInput.onchange = updateAlarm;
-        holidaySelect.onchange = updateAlarm;
-
-        updateHolidayOptions();
-        msgInput.onchange = updateAlarm;
-        actionSelect.onchange = updateAlarm;
-        catSelect.onchange = updateAlarm;
-
-        updateVisibility();
         list.appendChild(item);
     });
 }
@@ -2205,7 +2140,7 @@ async function updateBackupUI() {
     });
 }
 
-async function renderCategoryEditor() {
+async function renderCategoryList() {
     const makerExtensionNotice = getEl('maker-extension-notice');
     const launchMakerBtn = getEl('launch-maker-btn');
     if (makerExtensionNotice) {
@@ -2233,367 +2168,134 @@ async function renderCategoryEditor() {
         .filter((c) => c.name !== SYSTEM_CATEGORY_IDLE)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-    // Re-check activeElement and color-dropdown immediately before destructive update
-    const activeEl = document.activeElement;
-    const hasOpenColorDropdown = list.querySelector('.color-dropdown-menu:not(.hidden)');
-    if ((activeEl && list.contains(activeEl)) || hasOpenColorDropdown) {
-        return; // Skip update if user is actively interacting or color dropdown is open
-    }
-
     list.replaceChildren();
 
-    const colors = [
-        'primary',
-        'secondary',
-        'tertiary',
-        'error',
-        'neutral',
-        'outline',
-        'teal',
-        'green',
-        'yellow',
-        'orange',
-        'pink',
-        'indigo',
-        'brown',
-        'cyan',
-        'retro-lcd',
-        'retro-crt',
-        'retro-nixie',
-    ];
-
     const lang = getLanguage();
-
-    // Load custom animations
     const customAnims = await getCustomAnimationMetadataMap();
 
-    categories.forEach((cat, idx) => {
+    categories.forEach((cat) => {
         const item = createEl('div');
         const isPageBreak = (cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
-        item.className = 'category-editor-item' + (isPageBreak ? ' page-break-item' : '');
-        item.draggable = true;
-        item.dataset.name = cat.name;
+        item.className = 'category-editor-item category-readonly-item' + (isPageBreak ? ' page-break-item' : '');
+        item.style.cursor = 'default';
         item.dataset.id = cat.id;
-        item.dataset.index = idx;
-
-        const getAnimLabel = (anim) => {
-            if (typeof anim.metadata.name === 'object') {
-                return anim.metadata.name[lang] || anim.metadata.name['en'] || anim.id;
-            }
-            return anim.metadata.name;
-        };
 
         if (isPageBreak) {
-            const row1 = createEl('div');
-            row1.className = 'cat-editor-row row-1';
-            const dragHandle = createEl('span');
-            dragHandle.className = 'material-symbols-outlined drag-handle';
-            dragHandle.style.cursor = 'grab';
-            dragHandle.textContent = 'drag_indicator';
-            dragHandle.title = t('tooltip-drag-handle');
+            const row = createEl('div');
+            row.className = 'cat-editor-row row-1';
+
             const pbLabel = createEl('span');
             pbLabel.className = 'page-break-label';
             const pbIcon = createEl('span');
             pbIcon.className = 'material-symbols-outlined';
+            pbIcon.style.verticalAlign = 'middle';
+            pbIcon.style.marginRight = '4px';
             pbIcon.textContent = 'insert_page_break';
             const pbText = createEl('span');
+            pbText.style.verticalAlign = 'middle';
             pbText.textContent = t('page-break');
             pbLabel.appendChild(pbIcon);
-            pbLabel.appendChild(document.createTextNode(' '));
             pbLabel.appendChild(pbText);
-            const deleteBtn = createEl('button');
-            deleteBtn.className = 'delete-cat-btn';
-            deleteBtn.title = t('tooltip-delete-category');
-            const deleteIcon = createEl('span');
-            deleteIcon.className = 'material-symbols-outlined';
-            deleteIcon.textContent = 'delete';
-            deleteBtn.appendChild(deleteIcon);
-            row1.appendChild(dragHandle);
-            row1.appendChild(pbLabel);
-            row1.appendChild(deleteBtn);
-            item.appendChild(row1);
+            row.appendChild(pbLabel);
+            item.appendChild(row);
         } else {
-            const animOptions = [
-                { value: 'none', label: t('anim-none'), tooltip: '' },
-                { value: 'default', label: t('anim-default'), tooltip: '' },
-                ...animations.map((anim) => {
-                    return {
-                        value: anim.id,
-                        label: getAnimLabel(anim),
-                        tooltip: getAnimationTooltip(anim.metadata, lang),
-                    };
-                }),
-                ...Object.keys(customAnims)
-                    .sort((a, b) => {
-                        const orderA = customAnims[a].order ?? 0;
-                        const orderB = customAnims[b].order ?? 0;
-                        return orderA - orderB;
-                    })
-                    .map((id) => {
-                        return {
-                            value: id,
-                            label: customAnims[id].name,
-                            tooltip: customAnims[id].description || '',
-                        };
-                    }),
-            ];
-
+            // Row 1: Color swatch + Name
             const row1 = createEl('div');
             row1.className = 'cat-editor-row row-1';
-            const dragHandle = createEl('span');
-            dragHandle.className = 'material-symbols-outlined drag-handle';
-            dragHandle.style.cursor = 'grab';
-            dragHandle.textContent = 'drag_indicator';
-            dragHandle.title = t('tooltip-drag-handle');
-            const nameInput = createEl('input');
-            nameInput.type = 'text';
-            nameInput.className = 'category-edit-name';
-            nameInput.value = cat.name;
-            // Also set value attribute for test compatibility (tests/maintenance.spec.js)
-            nameInput.setAttribute('value', cat.name);
-            const deleteBtn = createEl('button');
-            deleteBtn.className = 'delete-cat-btn';
-            deleteBtn.title = t('tooltip-delete-category');
-            const deleteIcon = createEl('span');
-            deleteIcon.className = 'material-symbols-outlined';
-            deleteIcon.textContent = 'delete';
-            deleteBtn.appendChild(deleteIcon);
-            row1.appendChild(dragHandle);
-            row1.appendChild(nameInput);
-            row1.appendChild(deleteBtn);
+            row1.style.display = 'flex';
+            row1.style.alignItems = 'center';
+            row1.style.gap = '8px';
 
+            const swatch = createEl('span');
+            swatch.className = 'category-readonly-swatch';
+            swatch.style.display = 'inline-block';
+            swatch.style.width = '16px';
+            swatch.style.height = '16px';
+            swatch.style.borderRadius = '50%';
+            swatch.style.backgroundColor = getColorCode(cat.color);
+
+            const nameSpan = createEl('span');
+            nameSpan.className = 'category-readonly-name';
+            nameSpan.textContent = cat.name;
+
+            row1.appendChild(swatch);
+            row1.appendChild(nameSpan);
+
+            // Row 2: Tags & Animation details (if set)
             const row2 = createEl('div');
             row2.className = 'cat-editor-row row-2';
-            const colorDropdown = createEl('div');
-            colorDropdown.className = 'custom-color-dropdown';
-            const colorTrigger = createEl('div');
-            colorTrigger.className = 'color-dropdown-trigger';
-            colorTrigger.style.backgroundColor = getColorCode(cat.color);
-            colorTrigger.dataset.color = cat.color;
-            const colorMenu = createEl('div');
-            colorMenu.className = 'color-dropdown-menu hidden';
-            colors.forEach((color) => {
-                const colorItem = createEl('div');
-                colorItem.className = 'color-dropdown-item' + (color === cat.color ? ' selected' : '');
-                colorItem.dataset.color = color;
-                colorItem.style.backgroundColor = getColorCode(color);
-                colorMenu.appendChild(colorItem);
-            });
-            colorDropdown.appendChild(colorTrigger);
-            colorDropdown.appendChild(colorMenu);
+            row2.style.display = 'flex';
+            row2.style.flexDirection = 'column';
+            row2.style.gap = '4px';
+            row2.style.marginTop = '4px';
+            row2.style.fontSize = '0.85rem';
+            row2.style.color = 'var(--md-sys-color-on-surface-variant)';
 
-            const animSelect = createEl('select');
-            animSelect.className = 'category-edit-animation';
-            animOptions.forEach((opt) => {
-                const optEl = createEl('option');
-                optEl.value = opt.value;
-                optEl.textContent = opt.label;
-                optEl.title = opt.tooltip || '';
-                if (cat.animation === opt.value) optEl.selected = true;
-                animSelect.appendChild(optEl);
-            });
-            row2.appendChild(colorDropdown);
-            row2.appendChild(animSelect);
+            // Tags
+            const tagStr = cat.tags || '';
+            const tags = tagStr
+                ? tagStr
+                      .split(',')
+                      .map((t) => t.trim())
+                      .filter(Boolean)
+                : [];
+            if (tags.length > 0) {
+                const tagsWrapper = createEl('div');
+                tagsWrapper.style.display = 'flex';
+                tagsWrapper.style.flexWrap = 'wrap';
+                tagsWrapper.style.gap = '4px';
+                tagsWrapper.style.alignItems = 'center';
 
-            const row3 = createEl('div');
-            row3.className = 'cat-editor-row row-3';
-            const tagContainer = createEl('div');
-            tagContainer.className = 'tag-container';
-            const tagList = createEl('div');
-            tagList.className = 'tag-list';
-            const tagInput = createEl('input');
-            tagInput.type = 'text';
-            tagInput.className = 'tag-input';
-            tagInput.placeholder = t('placeholder-tags');
-            tagContainer.appendChild(tagList);
-            tagContainer.appendChild(tagInput);
-            row3.appendChild(tagContainer);
+                const tagLabel = createEl('span');
+                tagLabel.textContent = t('tags') + ': ';
+                tagsWrapper.appendChild(tagLabel);
 
-            item.appendChild(row1);
-            item.appendChild(row2);
-            item.appendChild(row3);
-            item.dataset.name = cat.name;
-        }
-
-        if (!isPageBreak) {
-            // --- Row 1 Events ---
-            const input = item.querySelector('.category-edit-name');
-            input.onchange = async () => {
-                const newName = input.value.trim();
-                if (newName && newName !== cat.name) {
-                    if (!isValidCategoryName(newName)) {
-                        alert(t('alert-invalid-category', { idle: t('idle-category') }));
-                        input.value = cat.name;
-                        return;
-                    }
-                    const oldName = cat.name;
-                    const existing = await dbGetByName(STORE_CATEGORIES, newName);
-                    if (existing) {
-                        alert(t('alert-duplicate-category'));
-                        input.value = oldName;
-                        return;
-                    }
-                    const updatedCat = { ...cat, name: newName };
-                    await dbPut(STORE_CATEGORIES, updatedCat);
-
-                    // If the renamed category is the active task, update it immediately
-                    if (activeTask && activeTask.category === oldName) {
-                        activeTask.category = newName;
-                    }
-
-                    await updateUI();
-                    renderCategoryEditor();
-                    broadcastSync();
-                }
-            };
-
-            // --- Row 2 Events (Custom Color Dropdown) ---
-            const colorTrigger = item.querySelector('.color-dropdown-trigger');
-            const colorMenu = item.querySelector('.color-dropdown-menu');
-            colorTrigger.onclick = (e) => {
-                e.stopPropagation();
-                queryAll('.color-dropdown-menu').forEach((m) => {
-                    if (m !== colorMenu) m.classList.add('hidden');
-                });
-                colorMenu.classList.toggle('hidden');
-            };
-            colorMenu.querySelectorAll('.color-dropdown-item').forEach((btn) => {
-                btn.onclick = async (e) => {
-                    e.stopPropagation();
-                    cat.color = btn.dataset.color;
-                    await dbPut(STORE_CATEGORIES, cat);
-                    colorMenu.classList.add('hidden');
-                    renderCategoryEditor();
-                    renderCategories();
-                    await updateUI();
-                    broadcastSync();
-                };
-            });
-
-            const animSelect = item.querySelector('.category-edit-animation');
-            animSelect.onchange = async () => {
-                cat.animation = animSelect.value;
-                await dbPut(STORE_CATEGORIES, cat);
-                await updateUI();
-                broadcastSync();
-            };
-
-            // --- Row 3 Events (Tags) ---
-            const tagListEl = item.querySelector('.tag-list');
-            const tagInput = item.querySelector('.tag-input');
-
-            const renderTags = () => {
-                tagListEl.replaceChildren();
-                const tagStr = cat.tags || '';
-                const tags = tagStr
-                    ? tagStr
-                          .split(',')
-                          .map((t) => t.trim())
-                          .filter(Boolean)
-                    : [];
-                tags.forEach((tag, idx) => {
+                tags.forEach((tag) => {
                     const pill = createEl('span');
                     pill.className = 'tag-pill';
-                    const tagText = createEl('span');
-                    tagText.className = 'tag-text';
-                    tagText.textContent = tag;
-                    const tagRemove = createEl('span');
-                    tagRemove.className = 'tag-remove material-symbols-outlined';
-                    tagRemove.textContent = 'close';
-                    tagRemove.dataset.index = idx;
-                    pill.appendChild(tagText);
-                    pill.appendChild(tagRemove);
-
-                    tagRemove.onclick = async () => {
-                        tags.splice(idx, 1);
-                        cat.tags = tags.join(',');
-                        await dbPut(STORE_CATEGORIES, cat);
-                        renderTags();
-                        broadcastSync();
-                    };
-                    tagListEl.appendChild(pill);
+                    pill.style.padding = '2px 8px';
+                    pill.style.borderRadius = '12px';
+                    pill.style.backgroundColor = 'var(--md-sys-color-surface-variant)';
+                    pill.style.fontSize = '0.75rem';
+                    pill.textContent = tag;
+                    tagsWrapper.appendChild(pill);
                 });
-            };
+                row2.appendChild(tagsWrapper);
+            }
 
-            tagInput.onkeydown = async (e) => {
-                if (e.key === 'Enter' || e.key === ',') {
-                    e.preventDefault();
-                    const newTag = tagInput.value.trim().replace(/,/g, '');
-                    if (newTag) {
-                        const tagStr = cat.tags || '';
-                        const tags = tagStr
-                            ? tagStr
-                                  .split(',')
-                                  .map((t) => t.trim())
-                                  .filter(Boolean)
-                            : [];
-                        if (!tags.includes(newTag)) {
-                            tags.push(newTag);
-                            cat.tags = tags.join(',');
-                            await dbPut(STORE_CATEGORIES, cat);
-                            tagInput.value = '';
-                            renderTags();
-                            await updateUI();
-                            broadcastSync();
+            // Animation
+            const anim = cat.animation || 'default';
+            if (anim !== 'none') {
+                const animWrapper = createEl('div');
+                let animLabel = anim;
+                if (anim === 'default') {
+                    animLabel = t('anim-default');
+                } else {
+                    const stdAnim = animations.find((a) => a.id === anim);
+                    if (stdAnim) {
+                        if (typeof stdAnim.metadata.name === 'object') {
+                            animLabel = stdAnim.metadata.name[lang] || stdAnim.metadata.name['en'] || stdAnim.id;
+                        } else {
+                            animLabel = stdAnim.metadata.name;
                         }
+                    } else if (customAnims[anim]) {
+                        animLabel = customAnims[anim].name;
                     }
                 }
-            };
-
-            renderTags();
-        }
-
-        item.querySelector('.delete-cat-btn').onclick = async () => {
-            const confirmMsg = isPageBreak
-                ? t('confirm-delete-page-break')
-                : t('confirm-delete-category', { name: cat.name });
-            if (await showConfirm(confirmMsg)) {
-                await dbDelete(STORE_CATEGORIES, cat.id);
-                updateUI();
-                renderCategoryEditor();
-                broadcastSync();
+                const animLabelSpan = createEl('span');
+                animLabelSpan.textContent = t('setting-animation-by-category-common') + ': ' + animLabel;
+                animWrapper.appendChild(animLabelSpan);
+                row2.appendChild(animWrapper);
             }
-        };
 
-        item.ondragstart = (e) => {
-            e.dataTransfer.setData('text/plain', cat.id);
-            item.classList.add('dragging');
-        };
-        item.ondragend = () => item.classList.remove('dragging');
+            item.appendChild(row1);
+            if (tags.length > 0 || anim !== 'none') {
+                item.appendChild(row2);
+            }
+        }
 
         list.appendChild(item);
     });
-
-    list.ondragover = (e) => {
-        e.preventDefault();
-        const draggingItem = list.querySelector('.dragging');
-        if (!draggingItem) return;
-        const siblings = [...list.querySelectorAll('.category-editor-item:not(.dragging)')];
-        let nextSibling = siblings.find((sibling) => {
-            return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
-        });
-        list.insertBefore(draggingItem, nextSibling);
-    };
-
-    list.ondrop = async (e) => {
-        e.preventDefault();
-        const items = [...list.querySelectorAll('.category-editor-item')];
-        const currentCategories = await dbGetAll(STORE_CATEGORIES);
-        // Map current categories by ID for easy lookup
-        const catMap = new Map(currentCategories.map((c) => [c.id.toString(), c]));
-
-        for (let i = 0; i < items.length; i++) {
-            const id = items[i].dataset.id;
-            const cat = catMap.get(id);
-            if (cat) {
-                cat.order = i;
-                await dbPut(STORE_CATEGORIES, cat);
-            }
-        }
-        renderCategories();
-        renderCategoryEditor();
-        broadcastSync();
-    };
 }
 
 // --- Initialization & Event Listeners ---
@@ -2705,7 +2407,7 @@ async function importCustomAnimation(text) {
 
     await renderCustomAnimationsTab();
     await updateAnimationSelect();
-    await renderCategoryEditor();
+    await renderCategoryList();
     await updateUI();
     broadcastSync();
 }
@@ -2766,7 +2468,7 @@ function setupEventListeners() {
         popups.settings?.classList.remove('hidden');
         try {
             await updateAnimationSelect();
-            await renderCategoryEditor();
+            await renderCategoryList();
         } catch (err) {
             console.error('Failed to update settings UI:', err);
             showToast(t('alert-error') || 'Operation failed');
@@ -2902,7 +2604,7 @@ function setupEventListeners() {
                 renderBusinessDays();
                 renderAlarmList();
             }
-            if (tabName === 'categories') renderCategoryEditor();
+            if (tabName === 'categories') renderCategoryList();
             if (tabName === 'backup') updateBackupUI();
             if (tabName === 'about') {
                 updateAboutStats();
@@ -2936,34 +2638,9 @@ function setupEventListeners() {
         broadcastSync();
     });
 
-    /**
-     * Shared helper to construct launch URLs for local/remote subprojects.
-     *
-     * @param {string} extensionPath - Path inside Chrome Extension.
-     * @param {string} webPath - Relative/absolute path on standard web.
-     * @param {Record<string, string>} params - Query parameters to append.
-     * @returns {string} The constructed project URL.
-     */
-    function getLaunchProjectUrl(extensionPath, webPath, params) {
-        const isExtension = window.location.protocol === 'chrome-extension:';
-        const baseUrl = isExtension ? chrome.runtime.getURL(extensionPath) : webPath;
-        const urlObj = new URL(baseUrl, window.location.href);
-        for (const [key, value] of Object.entries(params)) {
-            urlObj.searchParams.set(key, value);
-        }
-        return urlObj.toString();
-    }
-
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
-        const lang = getLanguage();
-        const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
-        const url = getLaunchProjectUrl('projects/category-editor/index.html', CATEGORY_EDITOR_URL, {
-            lang,
-            theme: resolvedTheme,
-            from: 'app',
-        });
-        window.open(url, '_blank', 'noopener');
+        launchEditor('projects/category-editor/index.html', CATEGORY_EDITOR_URL);
     });
 
     getEl('launch-maker-btn')?.addEventListener('click', (e) => {
@@ -2983,14 +2660,7 @@ function setupEventListeners() {
 
     getEl('alarm-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
-        const lang = getLanguage();
-        const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
-        const url = getLaunchProjectUrl('projects/alarm-editor/index.html', ALARM_EDITOR_URL, {
-            lang,
-            theme: resolvedTheme,
-            from: 'app',
-        });
-        window.open(url, '_blank', 'noopener');
+        launchEditor('projects/alarm-editor/index.html', ALARM_EDITOR_URL);
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
@@ -3133,243 +2803,6 @@ function setupEventListeners() {
             } else {
                 e.target.checked = true;
             }
-        }
-    });
-
-    // Category additions
-    getEl(ID_ADD_CATEGORY_BTN_SETTINGS)?.addEventListener('click', async () => {
-        const input = getEl(ID_NEW_CATEGORY_NAME_SETTINGS);
-        const name = input?.value.trim();
-        if (name) {
-            if (!isValidCategoryName(name)) {
-                alert(t('alert-invalid-category', { idle: t('idle-category') }));
-                return;
-            }
-            const categories = await dbGetAll(STORE_CATEGORIES);
-            await dbPut(STORE_CATEGORIES, {
-                name,
-                color: 'primary',
-                order: categories.length,
-                tags: '',
-            });
-            if (input) input.value = '';
-            renderCategories();
-            renderCategoryEditor();
-            broadcastSync();
-        }
-    });
-
-    getEl('add-page-break-btn')?.addEventListener('click', async () => {
-        const categories = await dbGetAll(STORE_CATEGORIES);
-        // Ensure unique name for each page break to work with current keyPath:'name'
-        const pbName = `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}`;
-        await dbPut(STORE_CATEGORIES, {
-            name: pbName,
-            order: categories.length,
-        });
-        renderCategories();
-        renderCategoryEditor();
-        broadcastSync();
-    });
-
-    // Alarm Import/Export
-    getEl('export-alarms-btn')?.addEventListener('click', async () => {
-        const state = await getCurrentAppState();
-        const alarms = state.alarms;
-        const businessDays = state.businessDays;
-        const categories = state.categories;
-
-        const exportData = {
-            app: 'QuickLog-Solo',
-            kind: 'QuickLogSolo/Alarms',
-            version: '1.0',
-            businessDays,
-            categories,
-            alarms: alarms.map((a) => {
-                const rest = { ...a };
-                delete rest.id;
-                return rest;
-            }),
-        };
-
-        try {
-            await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
-            showToast(t('toast-export-success'));
-        } catch (err) {
-            console.error('Failed to copy alarms:', err);
-        }
-    });
-
-    getEl('import-alarms-btn')?.addEventListener('click', async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            if (!text) return;
-            const data = JSON.parse(text);
-
-            if (data.kind !== 'QuickLogSolo/Alarms' || data.version !== '1.0') {
-                throw new Error('Invalid format');
-            }
-
-            if (await showConfirm(t('confirm-import-overwrite'))) {
-                if (data.businessDays) {
-                    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: data.businessDays });
-                }
-                if (Array.isArray(data.alarms)) {
-                    await dbClear(STORE_ALARMS);
-                    await dbAddMultiple(STORE_ALARMS, data.alarms);
-                }
-                showToast(t('toast-done'));
-                renderBusinessDays();
-                renderAlarmList();
-                broadcastSync('alarms-updated');
-            }
-        } catch (err) {
-            console.error('Failed to import alarms:', err);
-            alert(t('alert-import-error'));
-        }
-    });
-
-    // Category Import/Export (Clipboard)
-    getEl(ID_EXPORT_CATEGORIES_BTN)?.addEventListener('click', async () => {
-        const categories = await dbGetAll(STORE_CATEGORIES);
-        categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        const exportData = categories.filter((c) => c.name !== SYSTEM_CATEGORY_IDLE);
-
-        // Convert to NDJSON according to schema
-        const ndjson = exportData
-            .map((c) => {
-                const isPageBreak = (c.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
-                const entry = {
-                    kind: SCHEMA_KIND_CATEGORY,
-                    version: SCHEMA_VERSION_1_0,
-                    type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY,
-                };
-                if (!isPageBreak) {
-                    entry.name = c.name;
-                    entry.color = c.color;
-                    entry.tags = c.tags
-                        ? c.tags
-                              .split(',')
-                              .map((t) => t.trim())
-                              .filter(Boolean)
-                        : [];
-                    entry.animation = c.animation || 'default';
-                }
-                return JSON.stringify(entry);
-            })
-            .join('\n');
-
-        try {
-            await navigator.clipboard.writeText(ndjson);
-            showToast(t('toast-export-success'));
-        } catch (err) {
-            console.error('Failed to copy categories:', err);
-        }
-    });
-
-    getEl(ID_IMPORT_CATEGORIES_BTN)?.addEventListener('click', async () => {
-        const overlay = getEl('category-list-overlay');
-        const list = getEl(ID_CATEGORY_EDITOR_LIST);
-        const addBox = getEl('add-category-box-settings');
-        const maintenanceBox = getEl('category-maintenance-box-settings');
-
-        const setImporting = (isImporting) => {
-            if (isImporting) {
-                overlay?.classList.remove('hidden');
-                list?.classList.add('disabled-group');
-                addBox?.classList.add('disabled-group');
-                maintenanceBox?.classList.add('disabled-group');
-            } else {
-                overlay?.classList.add('hidden');
-                list?.classList.remove('disabled-group');
-                addBox?.classList.remove('disabled-group');
-                maintenanceBox?.classList.remove('disabled-group');
-            }
-        };
-
-        try {
-            const text = await navigator.clipboard.readText();
-            if (!text) return;
-
-            // Security: Limit clipboard text size (e.g., 1MB)
-            if (text.length > 1024 * 1024) {
-                alert(t('alert-import-error') + '\n(Data too large)');
-                return;
-            }
-
-            const lines = text.split(/\r?\n/).filter((line) => line.trim());
-
-            // Security: Limit number of lines
-            if (lines.length > 1000) {
-                alert(t('alert-import-error') + '\n(Too many items)');
-                return;
-            }
-            const total = lines.length;
-            let errorCount = 0;
-
-            const validItems = [];
-            for (const line of lines) {
-                try {
-                    const item = JSON.parse(line);
-                    if (validateCategorySchema(item)) {
-                        validItems.push(item);
-                    } else {
-                        console.warn(`QuickLog-Solo: Schema validation failed for line: "${line}"`);
-                        errorCount++;
-                    }
-                } catch (e) {
-                    console.warn(`QuickLog-Solo: Failed to parse line during import: "${line}"`, e);
-                    errorCount++;
-                }
-            }
-
-            // Level 1: Fatal Error (Empty file or all lines failed)
-            if (total === 0 || (validItems.length === 0 && total > 0)) {
-                throw new Error('FATAL_IMPORT_ERROR');
-            }
-
-            // Level 2: Partial Error (Some lines failed)
-            if (errorCount > 0) {
-                const proceed = await showConfirm(
-                    t('import-err-partial', { total, errorCount, validCount: validItems.length })
-                );
-                if (!proceed) {
-                    return;
-                }
-            }
-
-            const finalItems = validItems;
-
-            const importMode = document.querySelector('input[name="import-mode"]:checked')?.value || 'append';
-
-            if (importMode === 'overwrite') {
-                if (!(await showConfirm(t('confirm-import-overwrite')))) {
-                    return;
-                }
-            }
-
-            setImporting(true);
-            await dbImportCategories(finalItems, importMode);
-
-            // Artificial delay to ensure visual feedback as per UI standards
-            await new Promise((resolve) => setTimeout(resolve, IMPORT_FEEDBACK_DELAY_MS));
-
-            showToast(t('toast-cat-imported'));
-            renderCategories();
-            renderCategoryEditor();
-            broadcastSync();
-        } catch (err) {
-            if (err.message === 'FATAL_IMPORT_ERROR') {
-                alert(t('import-err-fatal'));
-            } else if (err.name === 'NotAllowedError') {
-                console.warn('Clipboard access denied');
-                alert(t('alert-import-error') + '\n(Clipboard access denied)');
-            } else {
-                console.error('Failed to import categories:', err);
-                alert(t('alert-import-error'));
-            }
-        } finally {
-            setImporting(false);
         }
     });
 
@@ -3690,7 +3123,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Direct background message detection
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
         chrome.runtime.onMessage.addListener((message) => {
-            if (message?.type === 'sync' || message?.type === 'alarms-updated') {
+            if (
+                message?.type === 'sync' ||
+                message?.type === 'categories-updated' ||
+                message?.type === 'alarms-updated'
+            ) {
                 delayedSync();
             }
         });

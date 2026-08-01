@@ -28,9 +28,9 @@ export default {
 
     // Alarms Tab
     'business-days': 'Business Days',
-    'alarm-io-title': 'Alarm I/O (Clipboard)',
+    'tooltip-edit-business-days': 'Edit',
     'alarm-editor-title': 'Alarm Editor',
-    'btn-launch-alarm-editor': 'Launch Alarm Editor',
+    'btn-launch-alarm-editor': 'Edit',
     'alarm-label-type': 'Trigger Timing',
     'alarm-type-daily': 'Daily',
     'alarm-type-daily_business': 'Daily (Business days only)',
@@ -110,11 +110,8 @@ export default {
     // Categories Tab
     'placeholder-new-category': 'New category...',
     'placeholder-tags': 'Tags (comma separated)',
-    'category-backup': 'Category Import/Export (Clipboard)',
     'btn-export-json': 'Copy (Export)',
     'btn-import-json': 'Paste (Import)',
-    'import-setting': 'Import Mode:',
-    'import-append': 'Append',
     'import-overwrite': 'Overwrite',
 
     // About Tab
@@ -402,7 +399,7 @@ export default {
 
     // Category Editor
     'category-editor-title': 'Business Category Editor',
-    'btn-launch-category-editor': 'Launch Category Editor',
+    'btn-launch-category-editor': 'Edit',
     'category-detail': 'Category Detail',
     'tags-common': 'Tags (Common)',
     'setting-theme-common': 'Theme (Common)',

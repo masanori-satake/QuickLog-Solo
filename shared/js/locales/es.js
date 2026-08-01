@@ -48,9 +48,9 @@ export default {
 
     // Alarms Tab
     'business-days': 'Días laborables',
-    'alarm-io-title': 'E/S de alarmas (portapapeles)',
+    'tooltip-edit-business-days': 'Editar',
     'alarm-editor-title': 'Editor de alarmas',
-    'btn-launch-alarm-editor': 'Iniciar el editor de alarmas',
+    'btn-launch-alarm-editor': 'Editar',
     'alarm-label-type': 'Momento de activación',
     'alarm-type-daily': 'Diario',
     'alarm-type-daily_business': 'Diario (solo días laborables)',
@@ -114,11 +114,8 @@ export default {
     'btn-import-csv': 'Importar',
     'placeholder-new-category': 'Nueva categoría...',
     'placeholder-tags': 'Etiquetas (separadas por comas)',
-    'category-backup': 'Importar/Exportar Categorías (Portapapeles)',
     'btn-export-json': 'Copiar (Exportar)',
     'btn-import-json': 'Pegar (Importar)',
-    'import-setting': 'Modo de importación:',
-    'import-append': 'Añadir',
     'import-overwrite': 'Sobrescribir',
     'version': 'Versión',
     'developer': 'Desarrollador',
@@ -364,7 +361,7 @@ export default {
 
     // Category Editor
     'category-editor-title': 'Editor de categorías de negocio',
-    'btn-launch-category-editor': 'Iniciar el editor de categorías',
+    'btn-launch-category-editor': 'Editar',
     'category-detail': 'Detalle de Categoría',
     'tags-common': 'Etiquetas (Común)',
     'setting-theme-common': 'Tema (Común)',

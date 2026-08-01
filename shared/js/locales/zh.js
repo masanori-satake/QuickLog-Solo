@@ -48,9 +48,9 @@ export default {
 
     // Alarms Tab
     'business-days': '工作日',
-    'alarm-io-title': '闹钟导入/导出 (剪贴板)',
+    'tooltip-edit-business-days': '编辑',
     'alarm-editor-title': '闹钟编辑器',
-    'btn-launch-alarm-editor': '启动闹钟编辑器',
+    'btn-launch-alarm-editor': '编辑',
     'alarm-label-type': '执行时机',
     'alarm-type-daily': '每天',
     'alarm-type-daily_business': '每天 (仅工作日)',
@@ -114,11 +114,8 @@ export default {
     'btn-import-csv': '导入',
     'placeholder-new-category': '新分类...',
     'placeholder-tags': '标签 (逗号分隔)',
-    'category-backup': '分类导入/导出 (剪贴板)',
     'btn-export-json': '复制 (导出)',
     'btn-import-json': '粘贴 (导入)',
-    'import-setting': '导入设置:',
-    'import-append': '追加',
     'import-overwrite': '覆盖',
     'version': '版本',
     'developer': '开发者',
@@ -364,7 +361,7 @@ export default {
 
     // Category Editor
     'category-editor-title': '业务分类编辑器',
-    'btn-launch-category-editor': '启动业务分类编辑器',
+    'btn-launch-category-editor': '编辑',
     'category-detail': '分类详情',
     'tags-common': '标签(共通)',
     'setting-theme-common': '主题(共通)',

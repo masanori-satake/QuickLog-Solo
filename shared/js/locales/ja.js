@@ -28,9 +28,9 @@ export default {
 
     // Alarms Tab
     'business-days': '稼働曜日',
-    'alarm-io-title': 'アラームの入出力 (クリップボード)',
+    'tooltip-edit-business-days': '編集',
     'alarm-editor-title': 'アラーム・エディタ',
-    'btn-launch-alarm-editor': 'アラーム・エディタを起動',
+    'btn-launch-alarm-editor': '編集',
     'alarm-label-type': '実行タイミング',
     'alarm-type-daily': '毎日',
     'alarm-type-daily_business': '毎日 (稼働日のみ)',
@@ -110,11 +110,8 @@ export default {
     // Categories Tab
     'placeholder-new-category': '新しいカテゴリ...',
     'placeholder-tags': 'タグ (カンマ区切り)',
-    'category-backup': 'カテゴリの入出力 (クリップボード)',
     'btn-export-json': 'コピー (Export)',
     'btn-import-json': '貼り付け (Import)',
-    'import-setting': 'インポート設定:',
-    'import-append': '追記',
     'import-overwrite': '上書き',
 
     // About Tab
@@ -402,7 +399,7 @@ export default {
 
     // Category Editor
     'category-editor-title': '業務カテゴリ・エディタ',
-    'btn-launch-category-editor': '業務カテゴリ・エディタを起動',
+    'btn-launch-category-editor': '編集',
     'category-detail': 'カテゴリ詳細',
     'tags-common': 'タグ(共通)',
     'setting-theme-common': 'テーマ(共通)',

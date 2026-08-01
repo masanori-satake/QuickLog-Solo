@@ -1331,7 +1331,7 @@ async function saveCurrentChanges(isApply = false, targetId = null) {
 
         await saveProductionMetadataMap(productionMap);
 
-        broadcastSync('sync');
+        broadcastSync('categories-updated');
         state.isDirty = false;
         syncApplyButtonState();
     }
