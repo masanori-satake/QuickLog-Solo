@@ -22,7 +22,7 @@ describe('Custom Animations Storage & Rendering fallback', () => {
             targetHeight: 120,
             maxWidth: 240,
             scaleWithHeight: true,
-            overflowBehavior: 'repeat',
+            overflowBehavior: 'repeat'
         };
 
         // Save
@@ -80,12 +80,12 @@ describe('Custom Animations Storage & Rendering fallback', () => {
             targetHeight: 120,
             maxWidth: 240,
             scaleWithHeight: true,
-            overflowBehavior: 'repeat',
+            overflowBehavior: 'repeat'
         };
 
         // Ensure Blob.prototype.arrayBuffer exists in this JSDOM/Node environment
         const originalArrayBuffer = global.Blob.prototype.arrayBuffer;
-        global.Blob.prototype.arrayBuffer = async function () {
+        global.Blob.prototype.arrayBuffer = async function() {
             return new ArrayBuffer(8);
         };
 
@@ -96,7 +96,7 @@ describe('Custom Animations Storage & Rendering fallback', () => {
             if (val && typeof val === 'object' && val.blob instanceof Blob) {
                 return {
                     ...val,
-                    blob: val.blob,
+                    blob: val.blob
                 };
             }
             return originalStructuredClone ? originalStructuredClone(val) : JSON.parse(JSON.stringify(val));
@@ -129,8 +129,8 @@ describe('Custom Animations Storage & Rendering fallback', () => {
                 return {
                     image: {
                         duration: 150000, // 150ms in microseconds
-                        close: mockClose,
-                    },
+                        close: mockClose
+                    }
                 };
             }
         };
@@ -169,7 +169,7 @@ describe('Custom Animations Storage & Rendering fallback', () => {
 
         // Ensure Blob.prototype.arrayBuffer exists in this JSDOM/Node environment
         const originalArrayBuffer = global.Blob.prototype.arrayBuffer;
-        global.Blob.prototype.arrayBuffer = async function () {
+        global.Blob.prototype.arrayBuffer = async function() {
             return new ArrayBuffer(8);
         };
 
@@ -180,7 +180,7 @@ describe('Custom Animations Storage & Rendering fallback', () => {
             if (val && typeof val === 'object' && val.blob instanceof Blob) {
                 return {
                     ...val,
-                    blob: val.blob,
+                    blob: val.blob
                 };
             }
             return originalStructuredClone ? originalStructuredClone(val) : JSON.parse(JSON.stringify(val));

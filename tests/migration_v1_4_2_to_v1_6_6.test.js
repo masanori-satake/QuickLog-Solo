@@ -1,14 +1,7 @@
 import {
-    initDB,
-    dbGetAll,
-    closeDatabase,
-    setDatabaseName,
-    STORE_LOGS,
-    STORE_CATEGORIES,
-    STORE_SETTINGS,
-    STORE_ALARMS,
-    SETTING_KEY_LANGUAGE,
-    openDatabase,
+    initDB, dbGetAll, closeDatabase, setDatabaseName,
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
+    SETTING_KEY_LANGUAGE, openDatabase
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 
@@ -39,12 +32,7 @@ describe('Migration Verification: v1.4.2 to v1.6.6', () => {
         const now = Date.now();
         const logStore = tx.objectStore(STORE_LOGS);
         logStore.add({ category: 'Work', startTime: now - 3000, endTime: now - 2000 });
-        logStore.add({
-            category: SYSTEM_CATEGORY_IDLE,
-            startTime: now - 2000,
-            endTime: now - 2000,
-            isManualStop: true,
-        });
+        logStore.add({ category: SYSTEM_CATEGORY_IDLE, startTime: now - 2000, endTime: now - 2000, isManualStop: true });
         logStore.add({ category: 'Work', startTime: now - 1000, endTime: null });
 
         const settingStore = tx.objectStore(STORE_SETTINGS);
@@ -53,9 +41,9 @@ describe('Migration Verification: v1.4.2 to v1.6.6', () => {
         const alarmStore = tx.objectStore(STORE_ALARMS);
         alarmStore.add({
             enabled: true,
-            time: '09:00',
-            message: 'Morning Alarm',
-            action: 'none',
+            time: "09:00",
+            message: "Morning Alarm",
+            action: "none"
         });
 
         await new Promise((resolve, reject) => {
@@ -86,7 +74,7 @@ describe('Migration Verification: v1.4.2 to v1.6.6', () => {
         }
 
         const alarms = await dbGetAll(STORE_ALARMS);
-        const morningAlarm = alarms.find((a) => a.message === 'Morning Alarm');
+        const morningAlarm = alarms.find(a => a.message === "Morning Alarm");
         expect(morningAlarm).toBeDefined();
         expect(morningAlarm.type).toBe('daily_business');
 
@@ -112,11 +100,11 @@ describe('Migration Verification: v1.4.2 to v1.6.6', () => {
         await initDB();
 
         const logs = await dbGetAll(STORE_LOGS);
-        const openTasks = logs.filter((l) => !l.endTime);
+        const openTasks = logs.filter(l => !l.endTime);
         expect(openTasks.length).toBe(1);
         expect(openTasks[0].category).toBe('Task 2');
 
-        const closedTask = logs.find((l) => l.category === 'Task 1');
+        const closedTask = logs.find(l => l.category === 'Task 1');
         expect(closedTask.endTime).toBe(closedTask.startTime + 1000);
     });
 });

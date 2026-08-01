@@ -4,8 +4,6 @@
 
 ```
 QuickLog-Solo/
-├── .kiro/                     # Kiro エージェント設定・指示書
-├── .kilo/                     # Kilo エージェントのツール設定
 ├── projects/                  # サブプロジェクト群
 │   ├── app/                   # メインアプリ（Chrome拡張機能本体）★主要
 │   │   ├── app.html
@@ -90,28 +88,22 @@ UI層          projects/app/js/app.js       DOM操作・イベント・UI同期
 ## 重要な規約
 
 ### 変更時のバージョンバンプ
-
 `projects/app/` または `shared/` を変更した場合、CI 通過のために `npm run version:bump` によるバンプが必須。
 
 ### ルートディレクトリのクリーンネス
-
 ルートに一時スクリプト（`reproduce_*.py`, `verify_*.py` 等）を置いてはならない。検証スクリプトは `scripts/` に配置する。
 
 ### 仕様書の優先順位
-
 `docs/spec.md` がすべての設計判断の正典（Source of Truth）。実装の根拠が不明な場合は必ず参照する。
 
 ### セキュリティ
-
 - `innerHTML` は原則禁止。テキスト出力は `textContent` を使用する
 - 例外は QL-Animation Studio の PR ガイド表示（`data-i18n-html` + 信頼済み翻訳文字列のみ）
 
 ### CSS 変数の定義場所
-
 テーマ変数は `:root` ではなく `body` に定義する（テーマ切り替え時の確実な伝播のため）。
 
 ### i18n
-
 - 日本語（`shared/js/locales/ja.js`）が翻訳の正典（Source of Truth）
 - 技術用語・固有名詞（IndexedDB 等）は原文を維持する
 - UI 言語の標準順序: English → 日本語 → Deutsch → Español → Français → Português → 한국어 → 简体中文

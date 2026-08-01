@@ -41,7 +41,7 @@ test.describe('Verification Pattern (TestPattern) Rendering', () => {
             const canvas = document.getElementById('animation-canvas');
             const ctx = canvas.getContext('2d');
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-            return imgData.some((p) => p !== 0);
+            return imgData.some(p => p !== 0);
         });
         expect(hasContent).toBe(true);
 
@@ -70,7 +70,7 @@ test.describe('Verification Pattern (TestPattern) Rendering', () => {
                 displayBg: displayStyle.backgroundColor,
                 displayAlpha: getAlpha(displayStyle.backgroundColor),
                 baseBg: baseStyle.backgroundColor,
-                baseAlpha: getAlpha(baseStyle.backgroundColor),
+                baseAlpha: getAlpha(baseStyle.backgroundColor)
             };
         });
 

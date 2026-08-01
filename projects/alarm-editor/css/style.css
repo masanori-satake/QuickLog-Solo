@@ -10,9 +10,7 @@
     --color-on-saturday: var(--md-sys-color-on-primary);
 }
 
-*,
-*::before,
-*::after {
+*, *::before, *::after {
     box-sizing: border-box;
 }
 
@@ -106,9 +104,9 @@ body {
 }
 
 /* Generic Inputs */
-input[type='time'],
-input[type='text'],
-input[type='number'],
+input[type="time"],
+input[type="text"],
+input[type="number"],
 select {
     padding: 10px 14px;
     border-radius: 8px;
@@ -118,11 +116,11 @@ select {
     font-size: 0.95rem;
 }
 
-input[type='time'] {
+input[type="time"] {
     width: fit-content;
 }
 
-input[type='number'] {
+input[type="number"] {
     width: 80px;
 }
 
@@ -200,6 +198,7 @@ select:focus {
     background: var(--md-sys-color-outline-variant);
     margin: 8px 0;
 }
+
 
 .alarm-list-section {
     flex: 1;
@@ -374,6 +373,7 @@ select:focus {
     margin: 0;
     font-size: 1.5rem;
 }
+
 
 .section-title {
     font-size: 0.9rem;

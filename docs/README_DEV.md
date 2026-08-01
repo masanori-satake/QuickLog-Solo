@@ -4,16 +4,15 @@
 設計思想や判断の背景については [spec.md](spec.md) および [AGENTS.md](../AGENTS.md) を参照してください。
 
 ## 0. 技術スタック
-
 - **言語:** Vanilla JS (ES Modules)
 - **スタイル:** CSS3 (Material 3 Design Tokens)
 - **マークアップ:** HTML5
 - **ブラウザ API:**
-    - Chrome Extension Manifest V3 (Side Panel API)
-    - IndexedDB (Data Storage)
-    - Web Workers (Animation logic isolation)
-    - BroadcastChannel (State synchronization)
-    - File System Access API (Local Backup)
+  - Chrome Extension Manifest V3 (Side Panel API)
+  - IndexedDB (Data Storage)
+  - Web Workers (Animation logic isolation)
+  - BroadcastChannel (State synchronization)
+  - File System Access API (Local Backup)
 
 ## 1. アーキテクチャ概要
 
@@ -76,29 +75,29 @@ graph TD
 
 ### 各モジュールの役割
 
-- **js/app.js (UI層):**
-    - DOM要素の取得と操作、イベントリスナーの設定。
-    - UI状態の同期（`updateUI`, `syncState`）。
-    - カテゴリの描画、ページネーション、履歴表示。
-    - 設定パネル（テーマ、フォント、アニメーション、アラーム設定、バックアップ管理）の制御。
-    - URLパラメータによる状態インジェクション（テスト用）。
-- **js/logic.js (ロジック層 / 共通):**
-    - タスクの開始・終了・一時停止の純粋な状態遷移ロジック。
-    - 時間のフォーマット計算、レポート生成ロジック、タグ集計。
-    - `formatDuration` は `HH:MM:SS` 文字列を直接返す（100時間以上にも対応）。
-    - DOMに依存せず、純粋なデータ処理に特化。
-- **js/db.js (データ層 / 共通):**
-    - IndexedDB (Raw API) のカプセル化。
-    - CRUD操作、初期化、マイグレーション、クリーンアップ、自動修復。
-    - 複数ストア（logs, categories, settings, alarms）の管理。
-- **js/animations.js (描画エンジン / 共通):**
-    - Canvas 描画の統括、Web Worker (`animation_worker.js`) との通信。
-- **js/backup.js (バックアップ層):**
-    - File System Access API を使用したローカルファイルへの同期。
-    - 履歴ログ・カテゴリ情報は NDJSON形式、設定情報は JSON形式で保存。
-- **js/utils.js (共通):** 共通定数、バリデーション、HTMLエスケープ、時刻計算補助。
-- **js/i18n.js / messages.js (共通):** 多言語対応ロジックと、各言語ごとの翻訳リソース。
-- **shared/js/locales/\*.js:** 各言語固有の翻訳定義。`common.js` を除き、すべて `export default` を使用してメッセージオブジェクトを公開します。
+-   **js/app.js (UI層):**
+    -   DOM要素の取得と操作、イベントリスナーの設定。
+    -   UI状態の同期（`updateUI`, `syncState`）。
+    -   カテゴリの描画、ページネーション、履歴表示。
+    -   設定パネル（テーマ、フォント、アニメーション、アラーム設定、バックアップ管理）の制御。
+    -   URLパラメータによる状態インジェクション（テスト用）。
+-   **js/logic.js (ロジック層 / 共通):**
+    -   タスクの開始・終了・一時停止の純粋な状態遷移ロジック。
+    -   時間のフォーマット計算、レポート生成ロジック、タグ集計。
+    -   `formatDuration` は `HH:MM:SS` 文字列を直接返す（100時間以上にも対応）。
+    -   DOMに依存せず、純粋なデータ処理に特化。
+-   **js/db.js (データ層 / 共通):**
+    -   IndexedDB (Raw API) のカプセル化。
+    -   CRUD操作、初期化、マイグレーション、クリーンアップ、自動修復。
+    -   複数ストア（logs, categories, settings, alarms）の管理。
+-   **js/animations.js (描画エンジン / 共通):**
+    -   Canvas 描画の統括、Web Worker (`animation_worker.js`) との通信。
+-   **js/backup.js (バックアップ層):**
+    -   File System Access API を使用したローカルファイルへの同期。
+    -   履歴ログ・カテゴリ情報は NDJSON形式、設定情報は JSON形式で保存。
+-   **js/utils.js (共通):** 共通定数、バリデーション、HTMLエスケープ、時刻計算補助。
+-   **js/i18n.js / messages.js (共通):** 多言語対応ロジックと、各言語ごとの翻訳リソース。
+- **shared/js/locales/*.js:** 各言語固有の翻訳定義。`common.js` を除き、すべて `export default` を使用してメッセージオブジェクトを公開します。
 
 ---
 
@@ -165,7 +164,6 @@ stateDiagram-v2
 ```
 
 #### 状態の説明とアクション
-
 - **IDLE (待機):**
     - 計測が行われていない状態です。
     - **手動停止アクション:** ユーザーが「終了」ボタンを押してこの状態に遷移する際、`logic.js` は現在のログをクローズし、さらに「停止マーカー」（開始・終了時刻が同一で `isManualStop: true` のレコード）を IndexedDB に記録します。これは、PCの再起動やブラウザの切断後でも「どこで意図的に止めたか」を判別するために使用されます。
@@ -180,7 +178,6 @@ stateDiagram-v2
 ### カテゴリのページネーション
 
 カテゴリ数が増えた場合（17個以上）、1ページあたり16個のボタンを表示するページネーションが自動的に適用されます。
-
 - **実装方法:** `js/app.js` 内の `currentCategoryPage` 変数で現在のページを管理。
 - **操作:** `category-section` 上でのマウスホイール操作を検知し、ページを切り替え。
 - **UI:** 下部に非活性なページインジケーター（ドット）を表示。
@@ -192,14 +189,13 @@ stateDiagram-v2
 - **LCD スタイル:** 全てのアニメーションは 4 段階のドットサイズを持つ LCD ドットマトリクススタイルで描画されます。
 - **自動遮蔽 (Exclusion Areas):** 前面のテキスト（カテゴリ名、タイマー）が隠れないよう、エンジン側で描画を回避します。
 - **動的制御:** `app.js` は定期的に UI 要素の `getBoundingClientRect()` を計測し、Worker へ遮蔽領域を通知します。
-  詳細な仕様は [animation_module_spec.md](animation_module_spec.md) を参照してください。
+詳細な仕様は [animation_module_spec.md](animation_module_spec.md) を参照してください。
 
 ### ローカルファイルバックアップ
 
 ブラウザのキャッシュクリア等によるデータ消失を防ぐため、File System Access API を利用してローカルディレクトリにデータを同期します。
 
 #### 同期メカズム
-
 - **形式:** データの性質に合わせて最適な形式を採用。
     - **NDJSON (Newline Delimited JSON):** 履歴（ログ）およびカテゴリ設定で使用。1行1レコードの形式で、データ量が増えても追記が容易で、一部が破損しても他の行への影響を最小限に抑えます。
     - **JSON:** アプリケーション設定（`settings.json`）で使用。構造化されたデータの保存に適しています。
@@ -213,15 +209,12 @@ stateDiagram-v2
     - IndexedDB のクリーンアップ（40日以前のデータ削除）に連動し、バックアップ実行時にバックアップフォルダ内の古い `.ndjson` ファイルも削除されます。
 
 #### ステータス表示
-
 バックアップの状態は、設定画面の「バックアップ」タブ内で確認できます。
-
 - **最終バックアップ時刻:** 前回のバックアップ実行日時が表示されます。
 - **ファイル数:** バックアップフォルダ内に保存されているログファイル（日分）の数が表示されます。韓国語表示では一貫して 「일치」（～日分）単位を使用します。
 - **実行ボタン:** 権限が必要な場合は「保存先にアクセスしてバックアップを実行」と表示され、クリックすることで再認証と実行を同時に行えます。
 
 #### セキュリティと制限
-
 - ブラウザのセキュリティ仕様により、ブラウザの再起動後はユーザーが明示的に「アクセスを許可する」ボタン（設定パネル内の再接続ボタン）を押すまで、フォルダへのアクセス権限が一時的に失われます。
 
 ---
@@ -235,15 +228,14 @@ stateDiagram-v2
 アラーム機能は、UI スレッド (`app.js`) とバックグラウンドスレッド (`background.js`) が連携して動作します。
 
 - **利用 API:**
-    - **chrome.alarms**: スケジューリング（バックグラウンドでの定時実行）。
-    - **chrome.notifications**: ユーザーへのプッシュ通知。
-    - **BroadcastChannel**: 同一オリジン内のウィンドウ/タブ間および Service Worker との同期。
-    - **chrome.runtime.sendMessage**: `BroadcastChannel` が利用できない、または不安定な環境での予備的な通信手段。
+  - **chrome.alarms**: スケジューリング（バックグラウンドでの定時実行）。
+  - **chrome.notifications**: ユーザーへのプッシュ通知。
+  - **BroadcastChannel**: 同一オリジン内のウィンドウ/タブ間および Service Worker との同期。
+  - **chrome.runtime.sendMessage**: `BroadcastChannel` が利用できない、または不安定な環境での予備的な通信手段。
 
 ### 処理フロー
 
 #### 1. アラームの設定・更新フロー
-
 ユーザーが UI でアラーム設定を変更した際のフローです。
 
 ```mermaid
@@ -264,7 +256,6 @@ sequenceDiagram
 ```
 
 #### 2. アラーム発火時の処理フロー
-
 設定時刻になり、`chrome.alarms` が発火した際のフローです。
 
 ```mermaid
@@ -342,7 +333,6 @@ graph TD
 ```
 
 ### 主な振る舞い
-
 - **ライブプレビュー:** 共通の `AnimationEngine` を使用し、製品版と全く同じ描画ロジックで色の組み合わせやアニメーションの挙動を確認できます。
 - **NDJSON インポート/エクスポート:** クリップボードを介して、メインアプリの設定と互換性のある NDJSON 形式でカテゴリ設定を一括操作できます。
 - **ドラッグ＆ドロップ:** カテゴリの並べ替えを直感的に行い、その結果を `order` 属性に反映させます。
@@ -382,7 +372,6 @@ graph TD
 ```
 
 ### ランディングページ (index.html)
-
 - **「ブラウザで試す」機能:**
     - `iframe` 内で `app.html` を起動します。
     - 本番のデータを破壊しないよう、URLパラメータ（`?db=QuickLogSoloDB_Preview`）を使用して一時的なデータベース（Mock DB）を割り当て、環境を分離しています。
@@ -391,7 +380,6 @@ graph TD
 - **匿名バグ報告ボタン:** 日本語設定時のみ表示される Google フォームへのボタン（`#7248B9`）を設置。`.hidden` クラスで言語による表示制御を実施。
 
 ### クイックスタートガイド (guide.html)
-
 - **印刷最適化:** A4 1枚程度に収まるよう CSS `media print` を調整しており、PDF 保存や物理的な印刷に対応したレイアウトを提供します。
 - **自動化された資産生成:** ガイド内で使用されるスクリーンショットは、Playwright を使用したスクリプト（`scripts/generate_guide_screenshots.js`）によって、各言語・各状態で自動的に撮影されます。これにより、UI の変更に伴うドキュメントの鮮度低下を防いでいます。
 
@@ -469,7 +457,6 @@ stateDiagram-v2
 #### 特徴的な機能の実装詳細
 
 ##### 1. サンドボックス実行 (Dynamic Sandboxing)
-
 エディタで記述された生のコードを、安全かつ即座に実行するための仕組みです。
 
 ```mermaid
@@ -494,7 +481,6 @@ sequenceDiagram
 - **メリット:** サーバーへのアップロードや再ビルドを介さず、ブラウザ内だけでモジュールの動的読み込みと隔離実行が可能です。
 
 ##### 2. パフォーマンス・スロットリング (Throttling)
-
 描画品質と開発環境のレスポンスを両立するための流量制御です。
 
 ```mermaid
@@ -512,7 +498,6 @@ flowchart TD
 - **仮想時間による制御:** Studio では `engine.draw` をオーバーライドし、実時間 (`performance.now()`) ではなく `virtualElapsedMs` に基づいて描画をリクエストします。これにより、低速な環境でもコマ落ちせずにアニメーションの「内容」を正確に検証できます。
 
 ##### 3. スクラブ操作 (Scrubbing / Virtual Time)
-
 「カセットテープ」の操作感を実現するための時間軸操作です。
 
 ```mermaid
@@ -533,7 +518,6 @@ flowchart LR
 - **実装:** `rewindable: true` が設定されたモジュールでは、`elapsedMs` に完全に依存した設計を要求することで、時間を巻き戻しても描画が破綻しないようにしています。
 
 ##### 4. メトリクス計測 (Real-time Metrics)
-
 `AnimationEngine` から得られる描画結果を統計的に分析します。
 
 ```mermaid
@@ -593,12 +577,11 @@ engine.stop();
 ```
 
 #### 2. 動的モジュール読み込み (Blob URL の応用)
-
 Studio 等で、未登録のコードを即座にプレビューするために、Blob URL を使用してモジュールを動的にロードできます。
 
 ```javascript
 // studio.js での応用例
-const fullCode = 'export default class CustomAnimation extends AnimationBase { ... }';
+const fullCode = "export default class CustomAnimation extends AnimationBase { ... }";
 const blob = new Blob([fullCode], { type: 'application/javascript' });
 const blobUrl = URL.createObjectURL(blob);
 
@@ -608,7 +591,6 @@ engine.worker.postMessage({ type: 'init', payload: { modulePath: blobUrl } });
 ```
 
 #### 3. 主要なAPI仕様
-
 - **`constructor(canvas)`**: 描画対象の Canvas 要素を指定して初期化します。
 - **`register(name, class, id)`**: モジュール名、クラス、および一意識別子（ファイル名に対応）を登録します。
 - **`start(name, startTime, color)`**: 指定したモジュールでアニメーションを開始します。内部で Web Worker を生成し、モジュールをロードします。
@@ -627,13 +609,11 @@ engine.worker.postMessage({ type: 'init', payload: { modulePath: blobUrl } });
 ## 9. 開発ワークフロー
 
 ### コーディング・スタイル規約 (CSS & Linting)
-
 - **CSS 継承と詳細度**: `landing.css` 等において、不必要な重複セレクタを避け、ベースとなるスタイルから派生するセレクタへと正しく降順の詳細度（descending specificity）を維持してください。
 - **色の指定**: 6桁の 16進数カラーコード（例: `#FFFFFF`）を一貫して使用してください。
 - **表示制御**: 要素の表示・非表示の切り替えには、標準化された `.hidden { display: none !important; }` ユーティリティクラスを使用してください。
 
 ### ディレクトリ構成
-
 - `projects/app/`: メインプロジェクト（ブラウザ拡張機能）のソースコード一式。
 - `projects/studio/`, `projects/category-editor/`, `projects/web/`: 各サブプロジェクトのルート。
 - `shared/`: 各プロジェクト間で共有されるロジック、JSモジュール、CSS、資産。
@@ -642,31 +622,24 @@ engine.worker.postMessage({ type: 'init', payload: { modulePath: blobUrl } });
 - `docs/`: 技術仕様書、各種ガイド。
 
 ### バージョン管理
-
 `npm run version:bump` コマンドにより、`projects/app/version.json`, `package.json`, `projects/app/manifest.*.json` を一括更新します。
 
 ### ブランチ同期とマージ
-
 `main` ブランチからのプルやマージを行う際、意図せずマージされた場合や同期が必要な場合は、自作ロジックを優先してコンフリクトを解消します。特に Python スクリプト等でマージマーカーによる構文エラーが発生していないか、提出前に手動で確認してください。
 
 ### ビルドとパッケージング
-
 `npm run build` により、以下の処理を自動実行します：
-
 1. **PNGアイコン生成**: `shared/assets/icon.svg` から各サイズ（16/32/48/128）の `icon.png` を生成します (`scripts/generate_png_icons.py`)。
 2. **アニメーションレジストリ生成**: `shared/js/animation/` 内の全モジュールをスキャンし、`shared/js/animation_registry.js` を自動生成します (`scripts/generate_animation_registry.py`)。
 3. **バージョン整合性チェック**: `package.json`, `projects/app/version.json`, マニフェストファイル間でのバージョン番号の一致を確認します (`scripts/check_version.py`)。
 4. **ZIPパッケージ作成**: Chrome 用のマニフェストを適用し、`releases/` ディレクトリに配布用 ZIP パッケージを作成します (`scripts/create_package.py`)。
 
 ### フロントエンド開発用サーバー
-
 ローカル環境で表示確認を行うためのサーバーを起動できます。
-
 - **実行コマンド**: `npm run dev`
 - **代替コマンド**: `npm run dev` スクリプトが定義されていない場合は、直接 Vite を使用して起動します： `npx vite --port 8080`
 
 ### その他の管理スクリプト
-
 - **スクリプト命名規則:** `.gitignore` により `verify_*.py` および `reproduce_*.py` は一時的なスクリプトとして除外されます。リポジトリで永続的に管理する監査・検証スクリプトは、これらの接頭辞を避け（例: `audit_*.py`）、Git の管理対象となるようにします。
 - **scripts/bump_version.py**: バージョン番号をインクリメントし、関連ファイルすべてを同期更新します。
 - **scripts/verify_animations.py**: アニメーションモジュールのメタデータや安全性を検証します（`npm test` 内で実行）。
@@ -704,7 +677,6 @@ graph TD
 ```
 
 #### 仮想化の詳細
-
 - **IndexedDB の仮想化 (`fake-indexeddb`):** 実際のデータベースを使用せず、メモリ上で IndexedDB をエミュレートします。テストごとにデータベースをリセットでき、高速でクリーンなテスト環境を提供します。
 - **DOM 仮想化 (`jsdom`):** `app.js` など UI に密接なモジュールをテストする際、ブラウザの DOM 構造をメモリ上に再現します。`document.querySelector` やイベントリスナーの動作検証が可能です。DOM 操作やブラウザのグローバル変数（`applyLanguage` を使用する `i18n.js` 等）を伴う単体テストでは、`/** @jest-environment jsdom */` コメントを使用して Jest 環境を `jsdom` に設定します。`window.location` や `window.navigator` は、`window.history.replaceState` や `Object.defineProperty` を使用してモック化し、特定の URL パラメータやブラウザ言語設定を再現します。
 - **API のモック化 (Mocking):**
@@ -718,7 +690,6 @@ graph TD
 ## 11. 運用・トラブルシューティング
 
 ### PR ブランチの整合性と復旧
-
 依存関係の更新（Dependabot 等）や並行開発によって、`main` ブランチに存在するファイルが PR ブランチで消失したり、古い状態にリバートされたりすることがあります。
 このような不整合を解消し、PR に必要な変更のみを正しく含めるには、以下の手順で `main` のファイル状態を PR ブランチに同期してください。
 
@@ -736,11 +707,9 @@ git stash pop
 
 # この後、PRで意図していた変更（package.json の更新等）を再度適用し、コミットします。
 ```
-
 これにより、`unrelated histories` エラーや意図しないファイルの削除を確実に防ぐことができます。
 
 ### CodeQL: "3 configurations not found" 警告の解消
-
 GitHub のプルリクエストにおいて、CodeQL スキャンの結果に以下のような警告が表示されることがあります。
 `Warning: Code scanning cannot determine the alerts introduced by this pull request, because 3 configurations present on refs/heads/main were not found: Default setup / language:actions / language:javascript-typescript / language:python`
 
@@ -748,7 +717,6 @@ GitHub のプルリクエストにおいて、CodeQL スキャンの結果に以
 GitHub の「Default setup」設定と `main` ブランチの状態に不整合が生じている場合に発生します。特にリポジトリの設定変更やブランチの乖離が原因となることが多いです。
 
 **解決策:**
-
 1. リポジトリの **Settings > Code security and analysis** を開く。
 2. **CodeQL analysis** の横にある「...」ボタンをクリックし、一度 **Disable CodeQL** を選択する。
 3. 数分待った後、再度同じ場所から **Set up > Default** を選択して有効化する。
@@ -767,7 +735,6 @@ GitHub の「Default setup」設定と `main` ブランチの状態に不整合�
 ---
 
 ## 免責事項 (Disclaimer)
-
 本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
 利用に際して生じたいかなる損害（データの消失、業務の中断、PCの不具合など、本ツールやドキュメントを利用したことによるすべての損害）について、開発者は一切の責任を負いません。
 MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。

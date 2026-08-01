@@ -105,6 +105,6 @@ export function initHistory(state, elements) {
         redo,
         updateHistoryButtons,
         startInputRecording,
-        commitInput,
+        commitInput
     };
 }

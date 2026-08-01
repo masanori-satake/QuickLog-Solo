@@ -9,26 +9,26 @@ export default class HeroPot extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Hero Pot',
-            ja: '勇者と壺',
-            de: 'Helden-Topf',
-            es: 'Héroe y vasija',
-            fr: 'Le héros et le pot',
-            pt: 'Herói e o vaso',
-            ko: '용사와 항아리',
-            zh: '勇者与壶',
+            en: "Hero Pot",
+            ja: "勇者と壺",
+            de: "Helden-Topf",
+            es: "Héroe y vasija",
+            fr: "Le héros et le pot",
+            pt: "Herói e o vaso",
+            ko: "용사와 항아리",
+            zh: "勇者与壶"
         },
         description: {
-            en: 'An RPG hero lifts pots and throws them to break them, avoiding UI elements.',
-            ja: 'RPGの勇者が壺を持ち上げて、UIを避けながら投げ壊します。',
-            de: 'Ein RPG-Held hebt Töpfe hoch und wirft sie, um sie zu zerbrechen, wobei er UI-Elemente vermeidet.',
-            es: 'Un héroe de RPG levanta vasijas y las lanza para romperlas, evitando los elementos de la interfaz.',
+            en: "An RPG hero lifts pots and throws them to break them, avoiding UI elements.",
+            ja: "RPGの勇者が壺を持ち上げて、UIを避けながら投げ壊します。",
+            de: "Ein RPG-Held hebt Töpfe hoch und wirft sie, um sie zu zerbrechen, wobei er UI-Elemente vermeidet.",
+            es: "Un héroe de RPG levanta vasijas y las lanza para romperlas, evitando los elementos de la interfaz.",
             fr: "Un héros de RPG soulève des pots et les lance pour les briser, en évitant les éléments de l'interface.",
-            pt: 'Um herói de RPG levanta vasos e os joga para quebrá-los, evitando os elementos da interface.',
-            ko: 'RPG 용사가 항아리를 들어 올려 UI 요소를 피하면서 던져서 깨뜨립니다。',
-            zh: '一位RPG英雄举起壶并扔向它们以打破它们，同时避开UI元素。',
+            pt: "Um herói de RPG levanta vasos e os joga para quebrá-los, evitando os elementos da interface.",
+            ko: "RPG 용사가 항아리를 들어 올려 UI 요소를 피하면서 던져서 깨뜨립니다。",
+            zh: "一位RPG英雄举起壶并扔向它们以打破它们，同时避开UI元素。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo"
     };
 
     config = { mode: 'canvas', exclusionStrategy: 'jump' };
@@ -58,7 +58,7 @@ export default class HeroPot extends AnimationBase {
             state: 'walking',
             potX: 0,
             potY: 0,
-            shards: [],
+            shards: []
         };
 
         // Initialize with one pot
@@ -93,16 +93,12 @@ export default class HeroPot extends AnimationBase {
 
             // Check if spawn location overlaps with UI text
             // 出現場所がUIテキストと重なっていないか確認
-            const isOverlap = exclusionAreas.some((area) => {
-                return (
-                    rx > area.x + 10 &&
-                    rx < area.x + area.width - 10 &&
-                    ry > area.y + 5 &&
-                    ry < area.y + area.height - 5
-                );
+            const isOverlap = exclusionAreas.some(area => {
+                return rx > area.x + 10 && rx < area.x + area.width - 10 &&
+                       ry > area.y + 5 && ry < area.y + area.height - 5;
             });
 
-            if (!isOverlap && !this.pots.some((p) => Math.abs(p.x - rx) < 20)) {
+            if (!isOverlap && !this.pots.some(p => Math.abs(p.x - rx) < 20)) {
                 this.pots.push({ x: rx, y: ry, state: 'idle' });
             }
         }
@@ -112,14 +108,14 @@ export default class HeroPot extends AnimationBase {
         if (this.hero.state === 'walking') {
             // Find an idle pot to pick up
             // 落ちている壺を探す
-            const targetPot = this.pots.find((p) => p.state === 'idle');
+            const targetPot = this.pots.find(p => p.state === 'idle');
             if (targetPot) {
                 const speed = 2.0;
                 // Move towards pot / 壺に向かって移動
                 if (Math.abs(this.hero.x - targetPot.x) > speed) {
-                    this.hero.x += this.hero.x < targetPot.x ? speed : -speed;
+                    this.hero.x += (this.hero.x < targetPot.x ? speed : -speed);
                 } else if (Math.abs(this.hero.y - targetPot.y) > speed) {
-                    this.hero.y += this.hero.y < targetPot.y ? speed : -speed;
+                    this.hero.y += (this.hero.y < targetPot.y ? speed : -speed);
                 } else {
                     // Start lifting / 持ち上げ開始
                     this.hero.state = 'lifting';
@@ -132,9 +128,9 @@ export default class HeroPot extends AnimationBase {
                 const ty = groundY;
                 const speed = 1.0;
                 if (Math.abs(this.hero.x - tx) > speed) {
-                    this.hero.x += this.hero.x < tx ? speed : -speed;
+                    this.hero.x += (this.hero.x < tx ? speed : -speed);
                 } else if (Math.abs(this.hero.y - ty) > speed) {
-                    this.hero.y += this.hero.y < ty ? speed : -speed;
+                    this.hero.y += (this.hero.y < ty ? speed : -speed);
                 }
             }
         } else if (this.hero.state === 'lifting') {
@@ -150,15 +146,12 @@ export default class HeroPot extends AnimationBase {
             // Move to throw target / 投げる場所まで移動
             const speed = 1.5;
             if (Math.abs(this.hero.x - this.hero.targetX) > speed) {
-                this.hero.x += this.hero.x < this.hero.targetX ? speed : -speed;
+                this.hero.x += (this.hero.x < this.hero.targetX ? speed : -speed);
             } else if (Math.abs(this.hero.y - this.hero.targetY) > speed) {
-                this.hero.y += this.hero.y < this.hero.targetY ? speed : -speed;
+                this.hero.y += (this.hero.y < this.hero.targetY ? speed : -speed);
             }
 
-            if (
-                Math.abs(this.hero.x - this.hero.targetX) <= speed &&
-                Math.abs(this.hero.y - this.hero.targetY) <= speed
-            ) {
+            if (Math.abs(this.hero.x - this.hero.targetX) <= speed && Math.abs(this.hero.y - this.hero.targetY) <= speed) {
                 this.hero.state = 'throwing';
                 this.hero.timer = 10;
             }
@@ -166,19 +159,17 @@ export default class HeroPot extends AnimationBase {
             this.hero.timer--;
             if (this.hero.timer <= 0) {
                 // Break the pot / 壺を割る
-                const pot = this.pots.find((p) => p.state === 'held');
+                const pot = this.pots.find(p => p.state === 'held');
                 if (pot) {
                     pot.state = 'broken';
                     for (let i = 0; i < 6; i++) {
                         this.hero.shards.push({
-                            x: pot.x,
-                            y: pot.y,
-                            vx: (Math.random() - 0.5) * 4,
-                            vy: -Math.random() * 4,
-                            life: 60,
+                            x: pot.x, y: pot.y,
+                            vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 4,
+                            life: 60
                         });
                     }
-                    this.pots = this.pots.filter((p) => p.state !== 'broken');
+                    this.pots = this.pots.filter(p => p.state !== 'broken');
                 }
                 this.hero.state = 'walking';
             }
@@ -190,24 +181,21 @@ export default class HeroPot extends AnimationBase {
 
         // Draw shards
         // 破片の描画
-        this.hero.shards.forEach((s) => {
-            s.x += s.vx;
-            s.y += s.vy;
-            s.vy += 0.2;
-            s.life--;
+        this.hero.shards.forEach(s => {
+            s.x += s.vx; s.y += s.vy; s.vy += 0.2; s.life--;
             ctx.fillRect(s.x, s.y, 2, 2);
         });
-        this.hero.shards = this.hero.shards.filter((s) => s.life > 0);
+        this.hero.shards = this.hero.shards.filter(s => s.life > 0);
 
         // Draw pots
         // 壺の描画
         const potSize = Math.max(6, height * 0.125);
-        this.pots.forEach((p) => {
+        this.pots.forEach(p => {
             if (p.state === 'idle') {
                 ctx.fillRect(p.x - potSize / 2, p.y - potSize, potSize, potSize);
             } else if (p.state === 'held') {
                 p.x = this.hero.x;
-                p.y = this.hero.y - potSize * 1.5;
+                p.y = this.hero.y - (potSize * 1.5);
                 ctx.fillRect(p.x - potSize / 2, p.y - potSize, potSize, potSize);
             }
         });
@@ -226,10 +214,8 @@ export default class HeroPot extends AnimationBase {
      * UIと重ならない安全な投下座標を探す
      */
     findSafeThrowTarget(width, height, exclusionAreas) {
-        const minX = 15,
-            maxX = width - 15;
-        const minY = 25,
-            maxY = height - 5;
+        const minX = 15, maxX = width - 15;
+        const minY = 25, maxY = height - 5;
         let tx = minX + Math.random() * (maxX - minX);
         let ty = minY + Math.random() * (maxY - minY);
 
@@ -237,13 +223,9 @@ export default class HeroPot extends AnimationBase {
         while (attempts < 20) {
             const candidateX = minX + Math.random() * (maxX - minX);
             const candidateY = minY + Math.random() * (maxY - minY);
-            const overlap = exclusionAreas.some((area) => {
-                return (
-                    candidateX > area.x - 20 &&
-                    candidateX < area.x + area.width + 20 &&
-                    candidateY > area.y - 20 &&
-                    candidateY < area.y + area.height + 20
-                );
+            const overlap = exclusionAreas.some(area => {
+                return candidateX > area.x - 20 && candidateX < area.x + area.width + 20 &&
+                       candidateY > area.y - 20 && candidateY < area.y + area.height + 20;
             });
             if (!overlap) {
                 tx = candidateX;
@@ -262,7 +244,7 @@ export default class HeroPot extends AnimationBase {
     drawHero(ctx, hx, hy) {
         const h = Math.max(10, this.height * 0.2);
         ctx.fillRect(hx - 2, hy - h, 4, h); // Body
-        ctx.fillRect(hx - 4, hy - h - 3, 8, 4); // Head
+        ctx.fillRect(hx - 4, hy - h - 3, 8, 4);  // Head
 
         // Arms based on state / 状態に合わせた腕の位置
         if (this.hero.state === 'lifting' || this.hero.state === 'walking_with_pot' || this.hero.state === 'throwing') {

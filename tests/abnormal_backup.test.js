@@ -27,7 +27,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     SETTING_KEY_PAUSE_STATE: 'pauseState',
     SETTING_KEY_CLIENT_ID: 'clientId',
     SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds',
-    LOG_CLEANUP_THRESHOLD_MS: 40 * 24 * 60 * 60 * 1000,
+    LOG_CLEANUP_THRESHOLD_MS: 40 * 24 * 60 * 60 * 1000
 }));
 
 const { backupManager, BACKUP_STATUS } = await import('../projects/app/js/backup.js');
@@ -54,7 +54,7 @@ describe('BackupManager Abnormal Cases', () => {
             values: jest.fn(),
             getFileHandle: jest.fn(),
             removeEntry: jest.fn(),
-            queryPermission: jest.fn().mockResolvedValue('granted'),
+            queryPermission: jest.fn().mockResolvedValue("granted")
         };
 
         jest.clearAllMocks();
@@ -65,11 +65,10 @@ describe('BackupManager Abnormal Cases', () => {
         error.name = 'NotReadableError';
 
         // Mock getFileHandle to avoid restoreFromFiles failing before it gets to values()
-        mockDirectoryHandle.getFileHandle.mockImplementation(() => {
-            throw error;
-        });
+        mockDirectoryHandle.getFileHandle.mockImplementation(() => { throw error; });
 
         backupManager.directoryHandle = mockDirectoryHandle;
+
 
         await backupManager.sync();
 
@@ -80,9 +79,7 @@ describe('BackupManager Abnormal Cases', () => {
         const error = new Error('The directory is Locked by another process');
         error.name = 'UnknownError';
 
-        mockDirectoryHandle.getFileHandle.mockImplementation(() => {
-            throw error;
-        });
+        mockDirectoryHandle.getFileHandle.mockImplementation(() => { throw error; });
         backupManager.directoryHandle = mockDirectoryHandle;
 
         await backupManager.sync();
@@ -136,11 +133,10 @@ describe('BackupManager Abnormal Cases', () => {
 
     test('sync handles general unknown errors', async () => {
         const error = new Error('Some random error');
-        mockDirectoryHandle.getFileHandle.mockImplementation(() => {
-            throw error;
-        });
+        mockDirectoryHandle.getFileHandle.mockImplementation(() => { throw error; });
 
         backupManager.directoryHandle = mockDirectoryHandle;
+
 
         await backupManager.sync();
 
@@ -153,23 +149,11 @@ describe('BackupManager Abnormal Cases', () => {
         expect(backupManager._validateCategory(invalid1)).toBeNull();
 
         // Invalid color
-        const invalid2 = {
-            kind: 'QuickLogSolo/Category',
-            version: '1.0',
-            type: 'category',
-            name: 'Test',
-            color: 'malicious',
-        };
+        const invalid2 = { kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'Test', color: 'malicious' };
         expect(backupManager._validateCategory(invalid2)).toBeNull();
 
         // Valid
-        const valid = {
-            kind: 'QuickLogSolo/Category',
-            version: '1.0',
-            type: 'category',
-            name: 'Test',
-            color: 'primary',
-        };
+        const valid = { kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'Test', color: 'primary' };
         const result = backupManager._validateCategory(valid);
         expect(result.name).toBe('Test');
         expect(result.color).toBe('primary');

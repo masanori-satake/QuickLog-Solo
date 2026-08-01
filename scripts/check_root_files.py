@@ -34,6 +34,7 @@ ALLOWED_ROOT_ITEMS = {
     "requirements.txt",
     ".kiro",
     ".kilo",
+    ".prettierignore",
     ".markdownlintignore",
 }
 

@@ -1,15 +1,15 @@
 export default {
-    title: 'QuickLog-Solo',
+    'title': 'QuickLog-Solo',
     'copy-report-btn': 'Copiar relatório diário',
     'copy-report-title': 'Copiar relatório diário',
     'tag-aggregation-title': 'Agregação de tags',
     'copy-aggregation-btn': 'Copiar estatísticas',
-    tags: 'Tags',
+    'tags': 'Tags',
     'no-tags': '(Sem tags)',
     'total-work-time': 'Tempo de trabalho',
-    settings: 'Configurações',
-    delete: 'Excluir',
-    duplicate: 'Duplicar',
+    'settings': 'Configurações',
+    'delete': 'Excluir',
+    'duplicate': 'Duplicar',
     'btn-copy': 'Copiar',
 
     // Auto Stop & Page Break
@@ -36,9 +36,9 @@ export default {
     'tooltip-status-paused': 'Pausado',
     'tooltip-status-stopped': 'Concluído',
     'tooltip-calendar': 'Selecionar data',
-    pause: 'Pausar',
-    resume: 'Retomar',
-    stop: 'Parar',
+    'pause': 'Pausar',
+    'resume': 'Retomar',
+    'stop': 'Parar',
     'tab-general': 'Geral',
     'tab-categories': 'Categorias',
     'tab-maintenance': 'Manutenção',
@@ -70,10 +70,8 @@ export default {
     'label-before-end-1': '',
     'label-before-end-2': 'dias antes do fim (0 é o último dia)',
     'back-to-app': 'Voltar para o aplicativo',
-    'alarm-setting-description':
-        'Exibe uma mensagem em um horário especificado e executa automaticamente ações como "Terminar", "Pausar" ou "Iniciar", se necessário.',
-    'alarm-note-extension-only':
-        '* O recurso de alarme só funciona quando instalado como uma extensão do navegador. Notificações e ações automáticas não são executadas na versão de visualização.',
+    'alarm-setting-description': 'Exibe uma mensagem em um horário especificado e executa automaticamente ações como "Terminar", "Pausar" ou "Iniciar", se necessário.',
+    'alarm-note-extension-only': '* O recurso de alarme só funciona quando instalado como uma extensão do navegador. Notificações e ações automáticas não são executadas na versão de visualização.',
     'alarm-label-enabled': 'Ativado',
     'alarm-label-time': 'Hora',
     'alarm-label-message': 'Mensagem',
@@ -122,14 +120,12 @@ export default {
     'import-setting': 'Modo de importação:',
     'import-append': 'Adicionar',
     'import-overwrite': 'Sobrescrever',
-    version: 'Versão',
-    developer: 'Desenvolvedor',
+    'version': 'Versão',
+    'developer': 'Desenvolvedor',
     'about-stats-logs': 'Número de históricos de trabalho',
     'about-stats-categories': 'Número de categorias',
-    'about-description':
-        'QuickLog-Solo é uma ferramenta de notas de trabalho minimalista focada na privacidade. Os dados são salvos no IndexedDB do seu navegador (e também no sistema de arquivos local quando o backup for executado) e nunca são enviados externamente. Mantém alta transparência e segurança por meio da verificação rigorosa de dependências via GitHub Actions e auditoria contínua com o Google OSV-Scanner.',
-    'about-disclaimer':
-        '[Aviso Legal] Este é um projeto pessoal de código aberto e é fornecido "COMO ESTÁ" sem qualquer garantia. O desenvolvedor não será responsável por quaisquer danos decorrentes do seu uso. Use por sua conta e risco.',
+    'about-description': 'QuickLog-Solo é uma ferramenta de notas de trabalho minimalista focada na privacidade. Os dados são salvos no IndexedDB do seu navegador (e também no sistema de arquivos local quando o backup for executado) e nunca são enviados externamente. Mantém alta transparência e segurança por meio da verificação rigorosa de dependências via GitHub Actions e auditoria contínua com o Google OSV-Scanner.',
+    'about-disclaimer': '[Aviso Legal] Este é um projeto pessoal de código aberto e é fornecido "COMO ESTÁ" sem qualquer garantia. O desenvolvedor não será responsável por quaisquer danos decorrentes do seu uso. Use por sua conta e risco.',
     'maintenance-clear-logs': 'Limpar histórico de trabalho',
     'btn-clear-logs': 'Excluir todos os históricos de trabalho',
     'maintenance-sync-pull': 'Sincronizar histórico novamente',
@@ -153,8 +149,7 @@ export default {
     'backup-directory': 'Diretório',
     'backup-file-count': 'Arquivos',
     'backup-file-count-unit': 'dias',
-    'backup-description-new':
-        'Backups regulares são recomendados para evitar a perda de dados no IndexedDB devido à limpeza do cache do navegador. Com os dados de backup, você também pode transitar suavemente para outros navegadores.',
+    'backup-description-new': 'Backups regulares são recomendados para evitar a perda de dados no IndexedDB devido à limpeza do cache do navegador. Com os dados de backup, você também pode transitar suavemente para outros navegadores.',
     'toast-backup-completed': 'Backup concluído',
 
     'confirm-end-task': 'Deseja realmente finalizar a tarefa?',
@@ -180,22 +175,17 @@ export default {
     'confirm-export-csv': 'O histórico de trabalho será exportado em CSV. A tarefa atual será finalizada. Continuar?',
     'confirm-import-csv': 'O histórico de trabalho será importado do CSV. A tarefa atual será finalizada. Continuar?',
     'confirm-clear-logs': 'Todos os históricos de trabalho serão excluídos. A tarefa atual será finalizada. Continuar?',
-    'confirm-sync-pull':
-        'O histórico de trabalho local será excluído e readquirido de outros dispositivos. A tarefa atual será finalizada. Continuar?',
-    'confirm-sync-clear-cloud':
-        'O histórico de trabalho será excluído de todos os dispositivos sincronizados, não apenas deste. A tarefa atual será finalizada. Continuar?',
-    'confirm-reset-all':
-        'Categorias e ajustes serão redefinidos. Continuar? (Os históricos de trabalho serão mantidos)',
-    'confirm-reset-settings':
-        'Ajustes serão redefinidos. Continuar? (Os históricos de trabalho e categorias serão mantidos)',
+    'confirm-sync-pull': 'O histórico de trabalho local será excluído e readquirido de outros dispositivos. A tarefa atual será finalizada. Continuar?',
+    'confirm-sync-clear-cloud': 'O histórico de trabalho será excluído de todos os dispositivos sincronizados, não apenas deste. A tarefa atual será finalizada. Continuar?',
+    'confirm-reset-all': 'Categorias e ajustes serão redefinidos. Continuar? (Os históricos de trabalho serão mantidos)',
+    'confirm-reset-settings': 'Ajustes serão redefinidos. Continuar? (Os históricos de trabalho e categorias serão mantidos)',
     'alert-invalid-category': 'Nome inválido. (Máx 50 car., "{idle}" reservado)',
     'alert-duplicate-category': 'Já existe uma categoria com este nome.',
     'alert-import-error': 'Falha na importação.',
     'alert-init-error': 'Falha na inicialização.',
     'toast-copied': 'Copiado!',
     'toast-done': 'Concluído!',
-    'toast-done-with-reopen-msg':
-        'Aplicado com sucesso! Se o painel de configurações estiver aberto, feche-o e abra-o novamente para aplicar a nova animação.',
+    'toast-done-with-reopen-msg': 'Aplicado com sucesso! Se o painel de configurações estiver aberto, feche-o e abra-o novamente para aplicar a nova animação.',
     'toast-imported': 'Importação concluída.',
     'toast-cat-imported': 'Categorias importadas',
     'toast-deleted': 'Exclusão concluída',
@@ -205,34 +195,24 @@ export default {
     'notification-btn-close': 'Fechar',
 
     'import-err-fatal': 'Formato de arquivo inválido. Importação abortada.',
-    'import-err-partial':
-        '{errorCount} de {total} linhas estão corrompidas. Deseja importar apenas as {validCount} linhas válidas?',
-    'import-err-field':
-        'Alguns dados estão incompletos (ex: cor inválida). Deseja aplicar valores padrão e importar tudo, ou pular as linhas inválidas?',
+    'import-err-partial': '{errorCount} de {total} linhas estão corrompidas. Deseja importar apenas as {validCount} linhas válidas?',
+    'import-err-field': 'Alguns dados estão incompletos (ex: cor inválida). Deseja aplicar valores padrão e importar tudo, ou pular as linhas inválidas?',
     'import-btn-import-valid': 'Importar apenas válidos',
     'import-btn-apply-fallback': 'Aplicar padrões',
     'import-btn-skip-invalid': 'Pular linhas inválidas',
     'import-btn-abort': 'Abortar',
 
-    'backup-err-0byte':
-        'Um arquivo de backup vazio ({name}) foi encontrado. Isso pode indicar um erro. Deseja ignorar este arquivo e continuar?',
+    'backup-err-0byte': 'Um arquivo de backup vazio ({name}) foi encontrado. Isso pode indicar um erro. Deseja ignorar este arquivo e continuar?',
     'backup-btn-ignore-continue': 'Ignorar e continuar',
     'backup-btn-abort-investigate': 'Abortar e investigar',
 
-    'backup-err-locked':
-        'O arquivo está bloqueado por outro programa ou você não tem permissão. Feche outros aplicativos e tente novamente.',
+    'backup-err-locked': 'O arquivo está bloqueado por outro programa ou você não tem permissão. Feche outros aplicativos e tente novamente.',
     'backup-err-not-found': 'Diretório de backup não encontrado. Selecione o diretório novamente.',
     'backup-err-unknown': 'Ocorreu um erro inesperado: {message}',
     'toast-backup-failed-detail': 'Falha no backup. Motivo: {reason}',
 
     'day-names': ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
-    'day-0': 'S',
-    'day-1': 'M',
-    'day-2': 'T',
-    'day-3': 'W',
-    'day-4': 'T',
-    'day-5': 'F',
-    'day-6': 'S',
+    'day-0': 'S', 'day-1': 'M', 'day-2': 'T', 'day-3': 'W', 'day-4': 'T', 'day-5': 'F', 'day-6': 'S',
     'idle-category': '(Inativo)',
     'idle-category-log': '(Inativo)',
     'category-unknown': 'Desconhecido',
@@ -363,8 +343,7 @@ export default {
     'btn-close': 'Fechar',
     'pr-guide-title': 'Guia de Pull Request',
     'pr-step-1': 'Baixe sua animação como um arquivo <code>.js</code>.',
-    'pr-step-2':
-        'Faça um fork do repositório <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
+    'pr-step-2': 'Faça um fork do repositório <a href="https://github.com/masanori-satake/QuickLog-Solo" target="_blank">QuickLog-Solo</a>.',
     'pr-step-3': 'Coloque seu arquivo em <code>shared/js/animation/</code>.',
     'pr-step-4': 'Envie um Pull Request!',
     'pr-note': 'Sua contribuição torna esta ferramenta melhor para todos!',
@@ -400,31 +379,25 @@ export default {
     'toast-export-success': 'Cópia bem-sucedida',
     'toast-no-categories': 'Nenhuma categoria para copiar',
     'page-break-label': 'Quebra de página',
-    undo: 'Desfazer',
-    redo: 'Refazer',
+    'undo': 'Desfazer',
+    'redo': 'Refazer',
     'tag-box-title': 'Caixa de tags',
     'tag-replace-title': 'Substituir tags',
     'tag-replace-before': 'Antes',
     'tag-replace-after': 'Depois',
     'tooltip-replace-tags': 'Substituir tags',
-    'privacy-policy-local-only':
-        'Todo o processamento é concluído no navegador e não há coordenação com servidores externos. Suas informações nunca serão vazadas para o exterior.',
+    'privacy-policy-local-only': 'Todo o processamento é concluído no navegador e não há coordenação com servidores externos. Suas informações nunca serão vazadas para o exterior.',
     'privacy-policy-local-only-short': 'Apenas local',
     'setting-session-sync': 'Sincronização entre dispositivos (Sync) (β)',
-    'setting-session-sync-desc':
-        'Sincronize configurações, categorias e histórico recente entre dispositivos usando a sincronização do navegador.',
-    'setting-session-sync-note':
-        '* Nota: A sincronização entre navegadores diferentes (por exemplo, Chrome e Edge) não é suportada.',
-    'confirm-enable-session-sync':
-        'Ativar a sincronização entre dispositivos? Seus dados atuais serão enviados para o armazenamento em nuvem do seu navegador.',
-    'confirm-disable-session-sync':
-        'Desativar a sincronização entre dispositivos? Este dispositivo parará de sincronizar, mas os dados compartilhados com outros dispositivos serão mantidos.',
+    'setting-session-sync-desc': 'Sincronize configurações, categorias e histórico recente entre dispositivos usando a sincronização do navegador.',
+    'setting-session-sync-note': '* Nota: A sincronização entre navegadores diferentes (por exemplo, Chrome e Edge) não é suportada.',
+    'confirm-enable-session-sync': 'Ativar a sincronização entre dispositivos? Seus dados atuais serão enviados para o armazenamento em nuvem do seu navegador.',
+    'confirm-disable-session-sync': 'Desativar a sincronização entre dispositivos? Este dispositivo parará de sincronizar, mas os dados compartilhados com outros dispositivos serão mantidos.',
     'session-sync-active': 'Sincronização ativa',
     'local-only-active': 'Apenas local',
 
     'sync-setup-title': 'Configuração de Sincronização entre Dispositivos',
-    'sync-setup-desc':
-        'Para iniciar a sincronização, escolha a prioridade entre os dados existentes e os dados de outros dispositivos.',
+    'sync-setup-desc': 'Para iniciar a sincronização, escolha a prioridade entre os dados existentes e os dados de outros dispositivos.',
     'sync-setup-settings-title': 'Sincronização de Ajustes e Categorias',
     'sync-setup-history-title': 'Sincronização de Histórico',
     'sync-setup-cloud-to-local': 'Substituir por dados de outros dispositivos',
@@ -459,8 +432,7 @@ export default {
     'btn-delete-selected-anim': 'Excluir animação selecionada',
     'toast-custom-anim-imported': 'Animação personalizada importada com sucesso',
     'toast-custom-anim-exported': 'Animação personalizada copiada para a área de transferência',
-    'confirm-delete-custom-anim':
-        'Deseja excluir a animação personalizada "{name}"?\n(As categorias atribuídas a esta animação serão redefinidas para "Nenhuma")',
+    'confirm-delete-custom-anim': 'Deseja excluir a animação personalizada "{name}"?\n(As categorias atribuídas a esta animação serão redefinidas para "Nenhuma")',
     'alert-invalid-qlanim': 'Formato .qlanim inválido. Por favor, verifique a estrutura do arquivo.',
     'btn-launch-maker': 'Iniciar o criador de animações',
     'maker-title': 'Criador de animações',
@@ -487,10 +459,8 @@ export default {
     'maker-playback-zoom': 'Reprodução e Zoom',
     'maker-data-transfer': 'Transferência de dados',
     'maker-warning-title': 'Aviso',
-    'maker-note-extension-only':
-        '* O criador de animações só está disponível quando instalado como uma extensão do navegador. Não pode ser iniciado na versão de visualização.',
+    'maker-note-extension-only': '* O criador de animações só está disponível quando instalado como uma extensão do navegador. Não pode ser iniciado na versão de visualização.',
     'maker-error-name-empty': 'O nome não pode estar vazio',
-    'maker-error-name-duplicate':
-        'Já existe uma animação personalizada com o mesmo nome. Por favor, insira um nome diferente.',
+    'maker-error-name-duplicate': 'Já existe uma animação personalizada com o mesmo nome. Por favor, insira um nome diferente.',
     'maker-select-prompt': 'Por favor, adicione uma animação personalizada',
 };

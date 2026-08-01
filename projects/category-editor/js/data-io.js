@@ -4,11 +4,8 @@
 
 import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 import {
-    validateCategorySchema,
-    SCHEMA_KIND_CATEGORY,
-    SCHEMA_VERSION_1_0,
-    SCHEMA_TYPE_CATEGORY,
-    SCHEMA_TYPE_PAGE_BREAK,
+    validateCategorySchema, SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0,
+    SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK
 } from '../shared/js/schema.js';
 
 export function initDataIO(state, elements) {
@@ -25,10 +22,7 @@ export function initDataIO(state, elements) {
 
     function getCategoryTags(cat) {
         if (!cat || !cat.tags) return [];
-        return cat.tags
-            .split(',')
-            .map((t) => t.trim())
-            .filter(Boolean);
+        return cat.tags.split(',').map(t => t.trim()).filter(Boolean);
     }
 
     async function handleImport() {
@@ -42,7 +36,7 @@ export function initDataIO(state, elements) {
                 return;
             }
 
-            const lines = text.split('\n').filter((l) => l.trim());
+            const lines = text.split('\n').filter(l => l.trim());
 
             // Security: Limit number of lines
             if (lines.length > 1000) {
@@ -57,15 +51,13 @@ export function initDataIO(state, elements) {
                     const data = JSON.parse(line);
                     if (validateCategorySchema(data)) {
                         if (data.type === SCHEMA_TYPE_PAGE_BREAK) {
-                            validItems.push({
-                                name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                            });
+                            validItems.push({ name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` });
                         } else {
                             validItems.push({
                                 name: data.name,
                                 color: data.color,
                                 tags: Array.isArray(data.tags) ? data.tags.join(', ') : '',
-                                animation: data.animation || 'default',
+                                animation: data.animation || 'default'
                             });
                         }
                     } else {
@@ -82,11 +74,7 @@ export function initDataIO(state, elements) {
             }
 
             if (errorCount > 0) {
-                if (
-                    !confirm(
-                        t('import-err-partial', { total: lines.length, errorCount, validCount: validItems.length })
-                    )
-                ) {
+                if (!confirm(t('import-err-partial', { total: lines.length, errorCount, validCount: validItems.length }))) {
                     return;
                 }
             }
@@ -102,9 +90,9 @@ export function initDataIO(state, elements) {
         } catch (err) {
             console.error(err);
             if (err.name === 'NotAllowedError') {
-                console.warn('Clipboard access denied');
+                 console.warn('Clipboard access denied');
             } else {
-                showToast(t('toast-import-failed'));
+                 showToast(t('toast-import-failed'));
             }
         }
     }
@@ -114,28 +102,21 @@ export function initDataIO(state, elements) {
             showToast(t('toast-no-categories'));
             return;
         }
-        const ndjson = state.categories
-            .map((cat) => {
-                const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
-                const entry = {
-                    kind: SCHEMA_KIND_CATEGORY,
-                    version: SCHEMA_VERSION_1_0,
-                    type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY,
-                };
-                if (!isPageBreak) {
-                    entry.name = cat.name;
-                    entry.color = cat.color;
-                    entry.tags = cat.tags
-                        ? cat.tags
-                              .split(',')
-                              .map((t) => t.trim())
-                              .filter(Boolean)
-                        : [];
-                    entry.animation = cat.animation || 'default';
-                }
-                return JSON.stringify(entry);
-            })
-            .join('\n');
+        const ndjson = state.categories.map(cat => {
+            const isPageBreak = cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
+            const entry = {
+                kind: SCHEMA_KIND_CATEGORY,
+                version: SCHEMA_VERSION_1_0,
+                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
+            };
+            if (!isPageBreak) {
+                entry.name = cat.name;
+                entry.color = cat.color;
+                entry.tags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+                entry.animation = cat.animation || 'default';
+            }
+            return JSON.stringify(entry);
+        }).join('\n');
 
         try {
             await navigator.clipboard.writeText(ndjson);

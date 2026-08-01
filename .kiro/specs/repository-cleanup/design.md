@@ -102,11 +102,9 @@ import { ... } from '../shared/js/session_sync.js';
 
 ```markdown
 <!-- 変更前 -->
-
 | 正常系 | `i18n.test_node.js` | i18n ロジック検証 (Node) | ...
 
 <!-- 変更後 -->
-
 | 正常系 | `i18n.test.js` | i18n ロジック検証 (Node) | ...
 ```
 
@@ -150,11 +148,9 @@ import { ... } from '../shared/js/session_sync.js';
 
 **変更内容:** §10 の「実行コマンド」コードブロックと「pre-commit フック」箇条書きを参照リンクに置換する。「テスト環境の仮想化」セクション（mermaid 図と詳細説明）は保持する。
 
-````markdown
+```markdown
 <!-- 変更前（§10 末尾付近） -->
-
 ### 実行コマンド
-
 ```bash
 # 全テストの実行
 npm test
@@ -163,12 +159,9 @@ npm test
 npx eslint .
 npx stylelint "**/*.css"
 ```
-````
 
 ### pre-commit フック
-
 コミット時に以下のチェックが自動的に実行されます。
-
 1. **check-version:** ...
 2. **create-package:** ...
 3. **eslint:** ...
@@ -176,10 +169,8 @@ npx stylelint "**/*.css"
 5. **jest:** ...
 
 <!-- 変更後 -->
-
 詳細は [テスト計画書 (README_TEST.md)](README_TEST.md) を参照してください。
-
-````
+```
 
 **理由:** テスト実行コマンドと pre-commit フック一覧は `README_TEST.md` のセクション 4 にも記載されており、二重管理状態にある。`README_DEV.md` の記述が更新されず古くなるリスクを避けるため、参照リンクに一本化する。
 
@@ -197,7 +188,7 @@ npx stylelint "**/*.css"
 **強制チェック:** `submit` 前に `scripts/language_check.py` を実行し、日本語が含まれていることを確認せよ。
 
 **除外範囲（英語で構わない）:** コード内コメント（JS / Python / YAML / Shell）、CI/CD ワークフローファイル内のコメント、および `scripts/` 配下のスクリプト内コメント。
-````
+```
 
 **理由:** コードコメントについての方針が未定義だったため、エージェントが混乱しやすかった。適用除外を明示することで誤解を防ぐ。
 
@@ -265,21 +256,21 @@ npx stylelint "**/*.css"
 
 ```yaml
 # 変更前
-- id: jest
-  name: jest
-  entry: npm test
-  language: system
-  pass_filenames: false
-  always_run: true
+-   id: jest
+    name: jest
+    entry: npm test
+    language: system
+    pass_filenames: false
+    always_run: true
 
 # 変更後
-- id: jest
-  name: jest
-  entry: npm test
-  language: system
-  pass_filenames: false
-  always_run: false
-  files: \.(js|cjs)$
+-   id: jest
+    name: jest
+    entry: npm test
+    language: system
+    pass_filenames: false
+    always_run: false
+    files: \.(js|cjs)$
 ```
 
 **理由:** ドキュメントや YAML ファイルだけのコミットでも Jest が実行されていたため、コミット時間が不必要に長くなっていた。JS/CJS ファイルが変更されたときのみ実行することで DX を改善する。
@@ -301,7 +292,7 @@ on:
             - 'shared/**'
             - 'scripts/**'
             - 'tests/**'
-            - 'releases/**' # ← 削除
+            - 'releases/**'   # ← 削除
             - 'package.json'
             - 'package-lock.json'
             - 'vercel.json'
@@ -335,12 +326,12 @@ on:
 
 ## エラー処理
 
-| 状況                                                     | 対処方針                                                                               |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| ESLint 解除後に `no-unused-vars` が多数発生する場合      | 変数を削除するか `_` プレフィックスを付与。動作に影響する変数は削除せず `_` を付与する |
-| ESLint 解除後に `prettier/prettier` エラーが発生する場合 | `format` スクリプトの対象に追加して自動修正                                            |
-| ESLint 解除後に上記以外のエラーが発生する場合            | 個別に対応。動作変更を最小限にとどめる                                                 |
-| バージョンバンプ後に CI が失敗する場合                   | `npm run version:bump` を再実行してバージョン整合性を確認                              |
+| 状況 | 対処方針 |
+|------|----------|
+| ESLint 解除後に `no-unused-vars` が多数発生する場合 | 変数を削除するか `_` プレフィックスを付与。動作に影響する変数は削除せず `_` を付与する |
+| ESLint 解除後に `prettier/prettier` エラーが発生する場合 | `format` スクリプトの対象に追加して自動修正 |
+| ESLint 解除後に上記以外のエラーが発生する場合 | 個別に対応。動作変更を最小限にとどめる |
+| バージョンバンプ後に CI が失敗する場合 | `npm run version:bump` を再実行してバージョン整合性を確認 |
 
 ---
 
@@ -349,22 +340,21 @@ on:
 本 spec の変更は設定ファイル・ドキュメント・スクリプトのテキスト修正が中心であり、固有のビジネスロジックを含まない。そのため、プロパティベーステスト（PBT）は適用しない。
 
 **なぜ PBT を適用しないか:**
-
 - 変更内容がテキスト置換・削除・設定値変更であり、「任意の入力に対して普遍的な性質が成り立つ」というPBTの前提が成り立たない
 - 各変更は 1–2 個の具体的な期待値で検証可能（例: ファイルが存在しない、特定文字列が含まれない）
 
 **検証アプローチ:**
 
-| タスク | 検証方法                                                                                                |
-| ------ | ------------------------------------------------------------------------------------------------------- |
-| IF-02  | `check_root_files.py` を実行し終了コード 0 を確認                                                       |
-| IF-03  | `background.js` を目視確認。冒頭 3 行が削除され import 文から始まることを確認                           |
-| IF-04  | `README_TEST.md` の該当セルが `i18n.test.js` であることを確認                                           |
-| IF-05  | `.github/workflows/requirements.txt` が存在しないことを確認                                             |
-| IF-06  | `package.json` の `name` が `quicklog-solo` であることを確認                                            |
-| RD-03  | `README_DEV.md` §10 に `npm test` コードブロックが存在しないことを確認                                  |
-| MS-04  | `AGENTS.md` 3.2 に除外範囲の注記が存在することを確認                                                    |
-| IF-01  | `npm run lint` がエラーなしで完了することを確認                                                         |
-| AM-02  | `eslint.config.js` の `ignores` 直前にコメントブロックが存在することを確認                              |
-| RD-04  | `.pre-commit-config.yaml` の `jest` フックに `always_run: false` と `files:` が設定されていることを確認 |
-| OD-04  | `release_web_deploy.yml` の `on.push.paths` に `releases/**` が含まれないことを確認                     |
+| タスク | 検証方法 |
+|--------|----------|
+| IF-02 | `check_root_files.py` を実行し終了コード 0 を確認 |
+| IF-03 | `background.js` を目視確認。冒頭 3 行が削除され import 文から始まることを確認 |
+| IF-04 | `README_TEST.md` の該当セルが `i18n.test.js` であることを確認 |
+| IF-05 | `.github/workflows/requirements.txt` が存在しないことを確認 |
+| IF-06 | `package.json` の `name` が `quicklog-solo` であることを確認 |
+| RD-03 | `README_DEV.md` §10 に `npm test` コードブロックが存在しないことを確認 |
+| MS-04 | `AGENTS.md` 3.2 に除外範囲の注記が存在することを確認 |
+| IF-01 | `npm run lint` がエラーなしで完了することを確認 |
+| AM-02 | `eslint.config.js` の `ignores` 直前にコメントブロックが存在することを確認 |
+| RD-04 | `.pre-commit-config.yaml` の `jest` フックに `always_run: false` と `files:` が設定されていることを確認 |
+| OD-04 | `release_web_deploy.yml` の `on.push.paths` に `releases/**` が含まれないことを確認 |

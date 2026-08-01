@@ -1,59 +1,50 @@
 import { test, expect } from '@playwright/test';
 
 test('Feedback implementation verification', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
+  await page.setViewportSize({ width: 1280, height: 900 });
 
-    // 1. Check Language Flags
-    await page.goto('/projects/web/index.html');
-    const langOptions = await page.locator('#lang-select-landing option').allTextContents();
-    console.log('Lang Options:', langOptions);
-    expect(langOptions[0]).toContain('🇺🇸');
+  // 1. Check Language Flags
+  await page.goto('/projects/web/index.html');
+  const langOptions = await page.locator('#lang-select-landing option').allTextContents();
+  console.log('Lang Options:', langOptions);
+  expect(langOptions[0]).toContain('🇺🇸');
 
-    // 2. Check Category Editor UI
-    await page.goto('/projects/category-editor/index.html');
-    await page.waitForSelector('.category-item');
+  // 2. Check Category Editor UI
+  await page.goto('/projects/category-editor/index.html');
+  await page.waitForSelector('.category-item');
 
-    // Check pane width (approx) - Allow for border
-    const listPane = page.locator('.list-pane');
-    const box = await listPane.boundingBox();
-    console.log('List pane width:', box.width);
-    expect(box.width).toBeGreaterThanOrEqual(300);
+  // Check pane width (approx) - Allow for border
+  const listPane = page.locator('.list-pane');
+  const box = await listPane.boundingBox();
+  console.log('List pane width:', box.width);
+  expect(box.width).toBeGreaterThanOrEqual(300);
 
-    // Check Page Break Alignment
-    await page.click('#add-page-break-btn');
-    await page.waitForSelector('.category-item.page-break');
-    const pbItem = page.locator('.category-item.page-break').last();
-    const dragHandle = pbItem.locator('.drag-handle');
-    const handleBox = await dragHandle.boundingBox();
-    const itemBox = await pbItem.boundingBox();
-    console.log('Drag handle X:', handleBox.x, 'Item X:', itemBox.x);
-    expect(handleBox.x - itemBox.x).toBeLessThan(20); // Should be on the left
+  // Check Page Break Alignment
+  await page.click('#add-page-break-btn');
+  await page.waitForSelector('.category-item.page-break');
+  const pbItem = page.locator('.category-item.page-break').last();
+  const dragHandle = pbItem.locator('.drag-handle');
+  const handleBox = await dragHandle.boundingBox();
+  const itemBox = await pbItem.boundingBox();
+  console.log('Drag handle X:', handleBox.x, 'Item X:', itemBox.x);
+  expect(handleBox.x - itemBox.x).toBeLessThan(20); // Should be on the left
 
-    // Check "Add Page Break" button alignment
-    const footerActions = page.locator('.list-footer-actions');
-    const addBtn = page.locator('#add-page-break-btn');
-    const footerBox = await footerActions.boundingBox();
-    const btnBox = await addBtn.boundingBox();
-    console.log(
-        'Footer X:',
-        footerBox.x,
-        'Btn X:',
-        btnBox.x,
-        'Footer Width:',
-        footerBox.width,
-        'Btn Width:',
-        btnBox.width
-    );
-    // Btn right edge should be near footer right edge
-    expect(footerBox.x + footerBox.width - (btnBox.x + btnBox.width)).toBeGreaterThanOrEqual(0);
+  // Check "Add Page Break" button alignment
+  const footerActions = page.locator('.list-footer-actions');
+  const addBtn = page.locator('#add-page-break-btn');
+  const footerBox = await footerActions.boundingBox();
+  const btnBox = await addBtn.boundingBox();
+  console.log('Footer X:', footerBox.x, 'Btn X:', btnBox.x, 'Footer Width:', footerBox.width, 'Btn Width:', btnBox.width);
+  // Btn right edge should be near footer right edge
+  expect(footerBox.x + footerBox.width - (btnBox.x + btnBox.width)).toBeGreaterThanOrEqual(0);
 
-    // Check Animation Info
-    await page.click('.category-item:nth-child(1)');
-    await page.selectOption('#edit-animation', 'digital_rain');
-    await expect(page.locator('#animation-info')).toBeVisible();
-    const animDesc = await page.locator('#anim-desc').textContent();
-    console.log('Anim desc:', animDesc);
-    expect(animDesc.length).toBeGreaterThan(0);
+  // Check Animation Info
+  await page.click('.category-item:nth-child(1)');
+  await page.selectOption('#edit-animation', 'digital_rain');
+  await expect(page.locator('#animation-info')).toBeVisible();
+  const animDesc = await page.locator('#anim-desc').textContent();
+  console.log('Anim desc:', animDesc);
+  expect(animDesc.length).toBeGreaterThan(0);
 
-    await page.screenshot({ path: 'tests/screenshots/feedback_refined.png' });
+  await page.screenshot({ path: 'tests/screenshots/feedback_refined.png' });
 });

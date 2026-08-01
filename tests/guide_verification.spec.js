@@ -6,55 +6,57 @@ const LOCALES = ['ja', 'en'];
 const ASSET_DIR = 'shared/assets/guide';
 
 test.describe('Quick Start Guide Verification', () => {
-    test('should have all required screenshots in assets directory', async () => {
-        for (const lang of LOCALES) {
-            const images = [
-                `01_main_${lang}.png`,
-                `02_recording_${lang}.png`,
-                `03_header_actions_${lang}.png`,
-                `04_settings_backup_${lang}.png`,
-            ];
 
-            for (const imgName of images) {
-                const imgPath = path.join(ASSET_DIR, imgName);
-                expect(fs.existsSync(imgPath), `Screenshot missing: ${imgPath}`).toBe(true);
-                const stats = fs.statSync(imgPath);
-                expect(stats.size, `Screenshot is empty: ${imgPath}`).toBeGreaterThan(1000);
-            }
-        }
-    });
+  test('should have all required screenshots in assets directory', async () => {
+    for (const lang of LOCALES) {
+      const images = [
+        `01_main_${lang}.png`,
+        `02_recording_${lang}.png`,
+        `03_header_actions_${lang}.png`,
+        `04_settings_backup_${lang}.png`
+      ];
 
-    test('should display screenshots correctly in Japanese', async ({ page }) => {
-        await page.goto(`/projects/web/guide.html?lang=ja`);
+      for (const imgName of images) {
+        const imgPath = path.join(ASSET_DIR, imgName);
+        expect(fs.existsSync(imgPath), `Screenshot missing: ${imgPath}`).toBe(true);
+        const stats = fs.statSync(imgPath);
+        expect(stats.size, `Screenshot is empty: ${imgPath}`).toBeGreaterThan(1000);
+      }
+    }
+  });
 
-        const imgMain = page.locator('#img-main');
-        await expect(imgMain).toHaveAttribute('src', 'shared/assets/guide/01_main_ja.png');
-        await expect(imgMain).toBeVisible();
+  test('should display screenshots correctly in Japanese', async ({ page }) => {
+    await page.goto(`/projects/web/guide.html?lang=ja`);
 
-        const imgRec = page.locator('#img-recording');
-        await expect(imgRec).toHaveAttribute('src', 'shared/assets/guide/02_recording_ja.png');
+    const imgMain = page.locator('#img-main');
+    await expect(imgMain).toHaveAttribute('src', 'shared/assets/guide/01_main_ja.png');
+    await expect(imgMain).toBeVisible();
 
-        const imgHeader = page.locator('#img-header');
-        await expect(imgHeader).toHaveAttribute('src', 'shared/assets/guide/03_header_actions_ja.png');
+    const imgRec = page.locator('#img-recording');
+    await expect(imgRec).toHaveAttribute('src', 'shared/assets/guide/02_recording_ja.png');
 
-        const imgBackup = page.locator('#img-backup');
-        await expect(imgBackup).toHaveAttribute('src', 'shared/assets/guide/04_settings_backup_ja.png');
-    });
+    const imgHeader = page.locator('#img-header');
+    await expect(imgHeader).toHaveAttribute('src', 'shared/assets/guide/03_header_actions_ja.png');
 
-    test('should display screenshots correctly in English', async ({ page }) => {
-        await page.goto(`/projects/web/guide.html?lang=en`);
+    const imgBackup = page.locator('#img-backup');
+    await expect(imgBackup).toHaveAttribute('src', 'shared/assets/guide/04_settings_backup_ja.png');
+  });
 
-        const imgMain = page.locator('#img-main');
-        await expect(imgMain).toHaveAttribute('src', 'shared/assets/guide/01_main_en.png');
-        await expect(imgMain).toBeVisible();
+  test('should display screenshots correctly in English', async ({ page }) => {
+    await page.goto(`/projects/web/guide.html?lang=en`);
 
-        const imgRec = page.locator('#img-recording');
-        await expect(imgRec).toHaveAttribute('src', 'shared/assets/guide/02_recording_en.png');
+    const imgMain = page.locator('#img-main');
+    await expect(imgMain).toHaveAttribute('src', 'shared/assets/guide/01_main_en.png');
+    await expect(imgMain).toBeVisible();
 
-        const imgHeader = page.locator('#img-header');
-        await expect(imgHeader).toHaveAttribute('src', 'shared/assets/guide/03_header_actions_en.png');
+    const imgRec = page.locator('#img-recording');
+    await expect(imgRec).toHaveAttribute('src', 'shared/assets/guide/02_recording_en.png');
 
-        const imgBackup = page.locator('#img-backup');
-        await expect(imgBackup).toHaveAttribute('src', 'shared/assets/guide/04_settings_backup_en.png');
-    });
+    const imgHeader = page.locator('#img-header');
+    await expect(imgHeader).toHaveAttribute('src', 'shared/assets/guide/03_header_actions_en.png');
+
+    const imgBackup = page.locator('#img-backup');
+    await expect(imgBackup).toHaveAttribute('src', 'shared/assets/guide/04_settings_backup_en.png');
+  });
+
 });

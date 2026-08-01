@@ -1,25 +1,5 @@
-import {
-    dbGet,
-    dbAdd,
-    dbPut,
-    dbDelete,
-    dbGetAll,
-    dbGetManualStopsAt,
-    STORE_LOGS,
-    STORE_SETTINGS,
-    SETTING_KEY_PAUSE_STATE,
-} from './db.js';
-import {
-    SYSTEM_CATEGORY_IDLE,
-    SYSTEM_CATEGORY_UNKNOWN,
-    SYSTEM_CATEGORY_PAGE_BREAK,
-    CONTIGUITY_TOLERANCE_MS,
-    escapeHtml,
-    escapeTsv,
-    escapeCsv,
-    generateUUID,
-    floorToMinute,
-} from './utils.js';
+import { dbGet, dbAdd, dbPut, dbDelete, dbGetAll, dbGetManualStopsAt, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } from './db.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, CONTIGUITY_TOLERANCE_MS, escapeHtml, escapeTsv, escapeCsv, generateUUID, floorToMinute } from './utils.js';
 import { recordDeletedSyncId } from './session_sync.js';
 import { t } from './i18n.js';
 
@@ -63,34 +43,18 @@ export function calculateTagAggregation(logs) {
     let noTagDuration = 0;
     let totalWorkDuration = 0;
 
-    logs.forEach((l) => {
+    logs.forEach(l => {
         const category = l.category || '';
-        if (
-            l.isManualStop ||
-            category === SYSTEM_CATEGORY_IDLE ||
-            category === SYSTEM_CATEGORY_UNKNOWN ||
-            category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) ||
-            !l.endTime
-        )
-            return;
+        if (l.isManualStop || category === SYSTEM_CATEGORY_IDLE || category === SYSTEM_CATEGORY_UNKNOWN || category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) || !l.endTime) return;
         const dur = l.endTime - l.startTime;
         if (dur <= 0) return;
 
         totalWorkDuration += dur;
 
         const tagStr = l.tags || '';
-        const tags = tagStr
-            ? [
-                  ...new Set(
-                      tagStr
-                          .split(',')
-                          .map((t) => t.trim())
-                          .filter(Boolean)
-                  ),
-              ]
-            : [];
+        const tags = tagStr ? [...new Set(tagStr.split(',').map(t => t.trim()).filter(Boolean))] : [];
         if (tags.length > 0) {
-            tags.forEach((tag) => {
+            tags.forEach(tag => {
                 tagAgg[tag] = (tagAgg[tag] || 0) + dur;
             });
         } else {
@@ -107,12 +71,7 @@ export function calculateTagAggregation(logs) {
 export function stripEmojis(str) {
     if (!str) return '';
     // This regex covers most emojis including variations and skin tones
-    return str
-        .replace(
-            /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2300}-\u{23FF}\u{2B50}\u{2B06}\u{2194}\u{21AA}\u{2934}\u{2935}\u{25AA}\u{25AB}\u{25FE}\u{25FD}\u{25FB}\u{25FC}\u{25B6}\u{25C0}\u{1F1E6}-\u{1F1FF}\u{1F004}\u{1F0CF}\u{1F170}-\u{1F171}\u{1F17E}-\u{1F17F}\u{1F18E}\u{1F191}-\u{1F19A}\u{1F201}\u{1F202}\u{1F21A}\u{1F22F}\u{1F232}-\u{1F23A}\u{1F250}-\u{1F251}\u{3030}\u{303D}\u{3297}\u{3299}\u{203C}\u{2049}\u{2122}\u{2139}\u{2194}-\u{2199}\u{21A9}-\u{21AA}\u{231A}-\u{231B}\u{2328}\u{23CF}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{24C2}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}\u{2600}-\u{2604}\u{260E}\u{2611}\u{2614}-\u{2615}\u{2618}\u{261D}\u{2620}\u{2622}-\u{2623}\u{2626}\u{262A}\u{262E}-\u{262F}\u{2638}-\u{263A}\u{2640}\u{2642}\u{2648}-\u{2653}\u{2660}\u{2663}\u{2665}-\u{2666}\u{2668}\u{267B}\u{267F}\u{2692}-\u{2697}\u{2699}\u{269B}-\u{269C}\u{26A0}-\u{26A1}\u{26AA}-\u{26AB}\u{26B0}-\u{26B1}\u{26BD}-\u{26BE}\u{26C4}-\u{26C5}\u{26C8}\u{26CE}-\u{26CF}\u{26D1}\u{26D3}-\u{26D4}\u{26E9}-\u{26EA}\u{26F0}-\u{26F5}\u{26F7}-\u{26FA}\u{26FD}\u{2702}\u{2705}\u{2708}-\u{270D}\u{270F}\u{2712}\u{2714}\u{2716}\u{271D}\u{2721}\u{2728}\u{2733}-\u{2734}\u{2744}\u{2747}\u{274C}\u{274E}\u{2753}-\u{2755}\u{2757}\u{2763}-\u{2764}\u{2795}-\u{2797}\u{27A1}\u{27B0}\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}]/gu,
-            ''
-        )
-        .trim();
+    return str.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2300}-\u{23FF}\u{2B50}\u{2B06}\u{2194}\u{21AA}\u{2934}\u{2935}\u{25AA}\u{25AB}\u{25FE}\u{25FD}\u{25FB}\u{25FC}\u{25B6}\u{25C0}\u{1F1E6}-\u{1F1FF}\u{1F004}\u{1F0CF}\u{1F170}-\u{1F171}\u{1F17E}-\u{1F17F}\u{1F18E}\u{1F191}-\u{1F19A}\u{1F201}\u{1F202}\u{1F21A}\u{1F22F}\u{1F232}-\u{1F23A}\u{1F250}-\u{1F251}\u{3030}\u{303D}\u{3297}\u{3299}\u{203C}\u{2049}\u{2122}\u{2139}\u{2194}-\u{2199}\u{21A9}-\u{21AA}\u{231A}-\u{231B}\u{2328}\u{23CF}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{24C2}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}\u{2600}-\u{2604}\u{260E}\u{2611}\u{2614}-\u{2615}\u{2618}\u{261D}\u{2620}\u{2622}-\u{2623}\u{2626}\u{262A}\u{262E}-\u{262F}\u{2638}-\u{263A}\u{2640}\u{2642}\u{2648}-\u{2653}\u{2660}\u{2663}\u{2665}-\u{2666}\u{2668}\u{267B}\u{267F}\u{2692}-\u{2697}\u{2699}\u{269B}-\u{269C}\u{26A0}-\u{26A1}\u{26AA}-\u{26AB}\u{26B0}-\u{26B1}\u{26BD}-\u{26BE}\u{26C4}-\u{26C5}\u{26C8}\u{26CE}-\u{26CF}\u{26D1}\u{26D3}-\u{26D4}\u{26E9}-\u{26EA}\u{26F0}-\u{26F5}\u{26F7}-\u{26FA}\u{26FD}\u{2702}\u{2705}\u{2708}-\u{270D}\u{270F}\u{2712}\u{2714}\u{2716}\u{271D}\u{2721}\u{2728}\u{2733}-\u{2734}\u{2744}\u{2747}\u{274C}\u{274E}\u{2753}-\u{2755}\u{2757}\u{2763}-\u{2764}\u{2795}-\u{2797}\u{27A1}\u{27B0}\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}]/gu, '').trim();
 }
 
 /**
@@ -177,29 +136,23 @@ export function generateReport(logs, options) {
  */
 function prepareReportItems(logs, options) {
     const { emoji, adjust } = options;
-    const filteredLogs = logs.filter(
-        (log) => !log.isManualStop && !(log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
-    );
+    const filteredLogs = logs.filter(log => !log.isManualStop && !(log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
     if (filteredLogs.length === 0) return [];
 
     const adjustMinutes = parseInt(adjust);
-    const adjustIntervalMs = adjustMinutes && !isNaN(adjustMinutes) ? adjustMinutes * 60 * 1000 : 0;
+    const adjustIntervalMs = (adjustMinutes && !isNaN(adjustMinutes)) ? adjustMinutes * 60 * 1000 : 0;
 
-    let displayLogs = filteredLogs.map((log) => ({
+    let displayLogs = filteredLogs.map(log => ({
         startTime: log.startTime,
         endTime: log.endTime,
-        category:
-            log.category === SYSTEM_CATEGORY_IDLE
-                ? options.idleText || t('idle-category-log')
-                : log.category === SYSTEM_CATEGORY_UNKNOWN
-                  ? t('category-unknown')
-                  : log.category,
-        memo: log.memo,
+        category: log.category === SYSTEM_CATEGORY_IDLE ? (options.idleText || t('idle-category-log')) :
+                  log.category === SYSTEM_CATEGORY_UNKNOWN ? t('category-unknown') : log.category,
+        memo: log.memo
     }));
 
     if (adjustIntervalMs > 0) {
         const allTimestamps = [];
-        displayLogs.forEach((log) => {
+        displayLogs.forEach(log => {
             allTimestamps.push(log.startTime);
             if (log.endTime) allTimestamps.push(log.endTime);
         });
@@ -236,23 +189,21 @@ function prepareReportItems(logs, options) {
             }
 
             // Apply adjusted timestamps to the display log copies.
-            displayLogs.forEach((log) => {
+            displayLogs.forEach(log => {
                 log.startTime = adjustedTimesMap.get(log.startTime);
                 if (log.endTime) log.endTime = adjustedTimesMap.get(log.endTime);
             });
         }
     }
 
-    return displayLogs.map((log) => {
+    return displayLogs.map(log => {
         let category = log.memo || log.category;
         if (emoji === 'remove') {
             category = stripEmojis(category);
         }
 
         const startText = new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const endText = log.endTime
-            ? new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            : '';
+        const endText = log.endTime ? new Date(log.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
         const durationMs = log.endTime ? log.endTime - log.startTime : 0;
         const durationText = log.endTime ? formatLogDuration(durationMs) : '';
 
@@ -268,7 +219,7 @@ function formatAsCsv(items, options) {
     if (duration !== 'none') columns.push('duration');
 
     const header = columns.join(',');
-    const lines = items.map((item) => {
+    const lines = items.map(item => {
         const row = [item.start];
         if (endTime === 'show') row.push(item.end);
         row.push(escapeCsv(item.category));
@@ -286,7 +237,7 @@ function formatAsTsv(items, options) {
     if (duration !== 'none') columns.push('duration');
 
     const header = columns.join('\t');
-    const lines = items.map((item) => {
+    const lines = items.map(item => {
         const row = [item.start];
         if (endTime === 'show') row.push(item.end);
         row.push(escapeTsv(item.category));
@@ -305,7 +256,7 @@ function formatAsHtml(items, options) {
     html += `<th>${headerTime}</th><th>${headerCategory}</th>`;
     html += '</tr>\n  </thead>\n  <tbody>\n';
 
-    items.forEach((item) => {
+    items.forEach(item => {
         let timePart = item.start;
         if (endTime === 'show') timePart += ` - ${item.end}`;
         if (duration === 'right' && item.durText) timePart += ` (${item.durText})`;
@@ -325,21 +276,19 @@ function formatAsHtml(items, options) {
 
 function formatAsList(items, options, bullet) {
     const { endTime, duration } = options;
-    return items
-        .map((item) => {
-            let line = `${bullet} ${item.start}`;
-            if (endTime === 'show') line += ` - ${item.end}`;
+    return items.map(item => {
+        let line = `${bullet} ${item.start}`;
+        if (endTime === 'show') line += ` - ${item.end}`;
 
-            if (duration === 'right' && item.durText) {
-                line += ` (${item.durText})`;
-            } else if (duration === 'bottom' && item.durText) {
-                line += `\n  (${item.durText})`;
-            }
+        if (duration === 'right' && item.durText) {
+            line += ` (${item.durText})`;
+        } else if (duration === 'bottom' && item.durText) {
+            line += `\n  (${item.durText})`;
+        }
 
-            line += ` | ${item.category}`;
-            return line;
-        })
-        .join('\n');
+        line += ` | ${item.category}`;
+        return line;
+    }).join('\n');
 }
 
 function formatAsText(items, options, isTable) {
@@ -350,17 +299,14 @@ function formatAsText(items, options, isTable) {
     const maxTimeLen = Math.max(
         endTime === 'show' ? 15 : 5,
         isTable ? getVisualWidth(headerTime) : 5,
-        ...items.map((i) => {
+        ...items.map(i => {
             let len = getVisualWidth(i.start + (endTime === 'show' ? ` - ${i.end}` : ''));
             if (duration === 'right' && i.durText) len += getVisualWidth(` (${i.durText})`);
             return len;
         }),
-        ...items.map((i) => (duration === 'bottom' && i.durText ? getVisualWidth(`(${i.durText})`) : 0))
+        ...items.map(i => (duration === 'bottom' && i.durText) ? getVisualWidth(`(${i.durText})`) : 0)
     );
-    const maxCatLen = Math.max(
-        ...items.map((i) => getVisualWidth(i.category)),
-        isTable ? getVisualWidth(headerCategory) : 8
-    );
+    const maxCatLen = Math.max(...items.map(i => getVisualWidth(i.category)), isTable ? getVisualWidth(headerCategory) : 8);
 
     if (isTable) {
         const lineSep = '+' + '-'.repeat(maxTimeLen + 2) + '+' + '-'.repeat(maxCatLen + 2) + '+';
@@ -368,7 +314,7 @@ function formatAsText(items, options, isTable) {
         out += `| ${visualPadEnd(headerTime, maxTimeLen)} | ${visualPadEnd(headerCategory, maxCatLen)} |\n`;
         out += lineSep + '\n';
 
-        items.forEach((item) => {
+        items.forEach(item => {
             let timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
             if (duration === 'right' && item.durText) timePart += ` (${item.durText})`;
 
@@ -380,18 +326,16 @@ function formatAsText(items, options, isTable) {
         });
         return out.trim();
     } else {
-        return items
-            .map((item) => {
-                let timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
-                if (duration === 'right' && item.durText) timePart += ` (${item.durText})`;
+        return items.map(item => {
+            let timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
+            if (duration === 'right' && item.durText) timePart += ` (${item.durText})`;
 
-                let line = `${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(item.category, maxCatLen)}`;
-                if (duration === 'bottom' && item.durText) {
-                    line += `\n${visualPadEnd(`(${item.durText})`, maxTimeLen)} | ${visualPadEnd('', maxCatLen)}`;
-                }
-                return line;
-            })
-            .join('\n');
+            let line = `${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(item.category, maxCatLen)}`;
+            if (duration === 'bottom' && item.durText) {
+                line += `\n${visualPadEnd(`(${item.durText})`, maxTimeLen)} | ${visualPadEnd('', maxCatLen)}`;
+            }
+            return line;
+        }).join('\n');
     }
 }
 
@@ -419,15 +363,12 @@ export async function startTaskLogic(categoryName, activeTask, resumableCategory
         resumableCategory: resumableCategory,
         color: color,
         tags: tags,
-        updatedAt: Date.now(),
+        updatedAt: Date.now()
     };
 
     const id = await dbAdd(STORE_LOGS, newLog);
     newLog.id = id;
-    await dbPut(STORE_SETTINGS, {
-        key: SETTING_KEY_PAUSE_STATE,
-        value: { ...newLog, isPaused: categoryName === SYSTEM_CATEGORY_IDLE },
-    });
+    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: { ...newLog, isPaused: categoryName === SYSTEM_CATEGORY_IDLE } });
     return newLog;
 }
 
@@ -442,7 +383,7 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
             category: SYSTEM_CATEGORY_IDLE,
             endTime: endTime,
             isManualStop: false,
-            updatedAt: Date.now(),
+            updatedAt: Date.now()
         };
         delete idleLog.isPaused;
 
@@ -490,7 +431,7 @@ export async function stopTaskLogic(activeTask, isManualStop = false, customEndT
                 startTime: endTime,
                 endTime: endTime,
                 isManualStop: true,
-                updatedAt: Date.now(),
+                updatedAt: Date.now()
             };
             await dbAdd(STORE_LOGS, stopLog);
         }
@@ -510,7 +451,7 @@ export async function pauseTaskLogic(activeTask) {
         startTime: now,
         resumableCategory: lastCategory,
         isPaused: true,
-        updatedAt: Date.now(),
+        updatedAt: Date.now()
     };
     const id = await dbAdd(STORE_LOGS, pauseState);
     pauseState.id = id;
@@ -526,7 +467,7 @@ export async function pauseTaskLogic(activeTask) {
 export async function updateHistoryStartTime(logId, newTs) {
     const allLogs = await dbGetAll(STORE_LOGS);
     const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
-    const index = sortedLogs.findIndex((l) => l.id === logId);
+    const index = sortedLogs.findIndex(l => l.id === logId);
     if (index === -1) return;
 
     let currentLog = sortedLogs[index];
@@ -546,7 +487,7 @@ export async function updateHistoryStartTime(logId, newTs) {
     if (pauseStateSetting?.value?.id === currentLog.id) {
         await dbPut(STORE_SETTINGS, {
             key: SETTING_KEY_PAUSE_STATE,
-            value: { ...currentLog, isPaused: currentLog.category === SYSTEM_CATEGORY_IDLE },
+            value: { ...currentLog, isPaused: currentLog.category === SYSTEM_CATEGORY_IDLE }
         });
     }
 
@@ -589,7 +530,7 @@ export async function splitHistoryItem(logId) {
     const log = await dbGet(STORE_LOGS, logId);
     if (!log || log.isManualStop) return false;
 
-    const durationMs = log.endTime ? log.endTime - log.startTime : Date.now() - log.startTime;
+    const durationMs = log.endTime ? (log.endTime - log.startTime) : (Date.now() - log.startTime);
     const splitIntervalMs = 60000; // 1 minute
     const minDuration = log.endTime ? 120000 : 60000;
 
@@ -613,16 +554,13 @@ export async function splitHistoryItem(logId) {
     // If the splitted log was the active task (unlikely as we usually split confirmed logs,
     // but confirmed logs can be active task if it's paused/running), we might need to update pauseState.
     const pauseStateSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_STATE);
-    if (
-        pauseStateSetting?.value?.id === log.id ||
-        (newLog.endTime == null && pauseStateSetting?.value?.startTime === log.startTime)
-    ) {
+    if (pauseStateSetting?.value?.id === log.id || (newLog.endTime == null && pauseStateSetting?.value?.startTime === log.startTime)) {
         // The original task is now shorter. The rest is in the new log.
         // Usually, splitting a confirmed history implies it's in the past,
         // but if it's the active one, the new part becomes the active one.
         await dbPut(STORE_SETTINGS, {
             key: SETTING_KEY_PAUSE_STATE,
-            value: { ...newLog, isPaused: newLog.category === SYSTEM_CATEGORY_IDLE },
+            value: { ...newLog, isPaused: newLog.category === SYSTEM_CATEGORY_IDLE }
         });
     }
 
@@ -733,7 +671,7 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
 export async function deleteHistoryItem(logId) {
     const allLogs = await dbGetAll(STORE_LOGS);
     const sortedLogs = allLogs.sort((a, b) => a.startTime - b.startTime);
-    const index = sortedLogs.findIndex((l) => l.id === logId);
+    const index = sortedLogs.findIndex(l => l.id === logId);
     if (index === -1) return;
 
     const log = sortedLogs[index];
@@ -777,7 +715,7 @@ export async function deleteHistoryItem(logId) {
         if (pauseStateId === nextLog.id) {
             await dbPut(STORE_SETTINGS, {
                 key: SETTING_KEY_PAUSE_STATE,
-                value: { ...nextLog, isPaused: nextLog.category === SYSTEM_CATEGORY_IDLE },
+                value: { ...nextLog, isPaused: nextLog.category === SYSTEM_CATEGORY_IDLE }
             });
         }
 

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
     test.beforeEach(async ({ page }) => {
         // Log all console messages from browser
-        page.on('console', (msg) => console.log('BROWSER CONSOLE:', msg.text()));
+        page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
 
         // Mock chrome extension storage API so custom animation features are fully enabled in the web preview context
         await page.addInitScript(() => {
@@ -13,20 +13,15 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
                     sendMessage: () => Promise.resolve(),
                     onMessage: {
                         addListener: () => {},
-                        removeListener: () => {},
-                    },
+                        removeListener: () => {}
+                    }
                 },
                 storage: {
                     local: {
                         get: async (keys) => {
                             const result = {};
-                            const keyList =
-                                typeof keys === 'string'
-                                    ? [keys]
-                                    : Array.isArray(keys)
-                                      ? keys
-                                      : Object.keys(keys || {});
-                            keyList.forEach((k) => {
+                            const keyList = typeof keys === 'string' ? [keys] : (Array.isArray(keys) ? keys : Object.keys(keys || {}));
+                            keyList.forEach(k => {
                                 if (storageState[k] !== undefined) {
                                     result[k] = JSON.parse(JSON.stringify(storageState[k]));
                                 }
@@ -35,18 +30,13 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
                         },
                         set: async (obj) => {
                             Object.assign(storageState, JSON.parse(JSON.stringify(obj)));
-                        },
+                        }
                     },
                     sync: {
                         get: async (keys) => {
                             const result = {};
-                            const keyList =
-                                typeof keys === 'string'
-                                    ? [keys]
-                                    : Array.isArray(keys)
-                                      ? keys
-                                      : Object.keys(keys || {});
-                            keyList.forEach((k) => {
+                            const keyList = typeof keys === 'string' ? [keys] : (Array.isArray(keys) ? keys : Object.keys(keys || {}));
+                            keyList.forEach(k => {
                                 if (storageState[k] !== undefined) {
                                     result[k] = JSON.parse(JSON.stringify(storageState[k]));
                                 }
@@ -55,16 +45,14 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
                         },
                         set: async (obj) => {
                             Object.assign(storageState, JSON.parse(JSON.stringify(obj)));
-                        },
-                    },
-                },
+                        }
+                    }
+                }
             };
         });
     });
 
-    test('should NOT write changes to production storage or production IndexedDB until Apply is clicked', async ({
-        page,
-    }) => {
+    test('should NOT write changes to production storage or production IndexedDB until Apply is clicked', async ({ page }) => {
         // 1. Load QL-Animation Maker
         await page.goto('/projects/animation-maker/index.html?lang=en&theme=dark');
         await page.waitForSelector('#maker-app');
@@ -87,7 +75,7 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
             const localStored = localStorage.getItem('custom_animation_metadata_map');
             return {
                 chromeLocal,
-                localStored,
+                localStored
             };
         });
         const initialMetadata = testState.chromeLocal.custom_animation_metadata_map || {};

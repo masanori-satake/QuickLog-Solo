@@ -19,44 +19,44 @@ export default class WindTunnel extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Wind Tunnel',
-            ja: '風洞実験',
+            en: "Wind Tunnel",
+            ja: "風洞実験"
         },
         description: {
-            en: 'Simulates air flow around UI elements. Demonstrates vector fields and collision avoidance.',
-            ja: 'UI要素の周りの空気の流れをシミュレートします。ベクトル場と衝突回避のデモンストレーションです。',
+            en: "Simulates air flow around UI elements. Demonstrates vector fields and collision avoidance.",
+            ja: "UI要素の周りの空気の流れをシミュレートします。ベクトル場と衝突回避のデモンストレーションです。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true, // This is a sample/development module
-        rewindable: true,
+        rewindable: true
     };
 
     // Configuration for the Animation Engine
     // アニメーションエンジン用の設定
     config = {
-        mode: 'sprite', // Returns a list of dots {x, y, size}
-        exclusionStrategy: 'freedom', // We want to know where FG is to interact with it
+        mode: 'sprite',            // Returns a list of dots {x, y, size}
+        exclusionStrategy: 'freedom' // We want to know where FG is to interact with it
     };
 
     // --- Simulation Constants (Avoiding "Magic Numbers") ---
     // --- シミュレーション定数（マジックナンバーを避ける） ---
 
-    BASE_WIND_SPEED = 1.5; // Horizontal speed of the air
-    MIN_WIND_SPEED = 0.8; // Minimum horizontal speed to prevent accumulation
-    EMISSION_RATE = 0.15; // Probability of emitting a particle per frame per injector
-    REPULSION_DISTANCE = 30; // How far away particles start to steer
-    REPULSION_FORCE = 0.6; // Strength of the steering away from obstacles
-    VORTEX_INTENSITY = 0.3; // Strength of the oscillation behind obstacles
-    VORTEX_DISTANCE = 120; // Influence range of the wake
+    BASE_WIND_SPEED = 1.5;      // Horizontal speed of the air
+    MIN_WIND_SPEED = 0.8;       // Minimum horizontal speed to prevent accumulation
+    EMISSION_RATE = 0.15;       // Probability of emitting a particle per frame per injector
+    REPULSION_DISTANCE = 30;    // How far away particles start to steer
+    REPULSION_FORCE = 0.6;      // Strength of the steering away from obstacles
+    VORTEX_INTENSITY = 0.3;     // Strength of the oscillation behind obstacles
+    VORTEX_DISTANCE = 120;      // Influence range of the wake
     VORTEX_PHASE_SPEED = 0.008; // Oscillation frequency factor
-    VORTEX_SPATIAL_FREQ = 0.1; // Wavelength factor in the wake
+    VORTEX_SPATIAL_FREQ = 0.1;  // Wavelength factor in the wake
 
-    DRAG_X = 0.99; // Horizontal friction
-    DRAG_Y = 0.98; // Vertical friction
+    DRAG_X = 0.99;              // Horizontal friction
+    DRAG_Y = 0.98;              // Vertical friction
 
-    MAX_PARTICLES = 400; // Performance ceiling
+    MAX_PARTICLES = 400;        // Performance ceiling
     PARTICLE_LIFE_DECAY = 0.002; // How fast particles fade out
-    OFFSCREEN_MARGIN = 50; // Boundary for removing particles
+    OFFSCREEN_MARGIN = 50;      // Boundary for removing particles
 
     constructor() {
         super();
@@ -80,12 +80,10 @@ export default class WindTunnel extends AnimationBase {
         // 左端に「スモーク・インジェクター」を等間隔に配置します。
         const spacing = 14;
         const count = Math.floor(height / spacing);
-        this.injectors = Array(count)
-            .fill(0)
-            .map((_, i) => ({
-                x: -10,
-                y: (i + 0.5) * (height / count),
-            }));
+        this.injectors = Array(count).fill(0).map((_, i) => ({
+            x: -10,
+            y: (i + 0.5) * (height / count)
+        }));
     }
 
     /**
@@ -100,7 +98,7 @@ export default class WindTunnel extends AnimationBase {
             vx: this.BASE_WIND_SPEED + (Math.random() - 0.5) * 0.4,
             vy: (Math.random() - 0.5) * 0.1,
             life: 1.0 + Math.random() * 0.5,
-            size: 1 + Math.floor(Math.random() * 2), // Dot size 1 or 2
+            size: 1 + Math.floor(Math.random() * 2) // Dot size 1 or 2
         };
     }
 
@@ -116,7 +114,7 @@ export default class WindTunnel extends AnimationBase {
         // 1. Particle Emission
         // 粒子の放出
         if (this.particles.length < this.MAX_PARTICLES) {
-            this.injectors.forEach((injector) => {
+            this.injectors.forEach(injector => {
                 if (Math.random() < this.EMISSION_RATE) {
                     this.particles.push(this.createParticle(injector.x, injector.y));
                 }
@@ -136,12 +134,10 @@ export default class WindTunnel extends AnimationBase {
 
             // Obstacle Interaction Logic
             // 障害物（排他領域）との相互作用ロジック
-            exclusionAreas.forEach((area) => {
+            exclusionAreas.forEach(area => {
                 // Determine if particle is in the influence zone of this area
-                const isNearX =
-                    p.x > area.x - this.REPULSION_DISTANCE && p.x < area.x + area.width + this.VORTEX_DISTANCE;
-                const isNearY =
-                    p.y > area.y - this.REPULSION_DISTANCE && p.y < area.y + area.height + this.REPULSION_DISTANCE;
+                const isNearX = p.x > area.x - this.REPULSION_DISTANCE && p.x < area.x + area.width + this.VORTEX_DISTANCE;
+                const isNearY = p.y > area.y - this.REPULSION_DISTANCE && p.y < area.y + area.height + this.REPULSION_DISTANCE;
 
                 if (isNearX && isNearY) {
                     // 1. Repulsion (Front and sides)
@@ -154,8 +150,7 @@ export default class WindTunnel extends AnimationBase {
                         const pushDir = distToCenterY > 0 ? 1 : -1;
 
                         // Increase push force as it gets closer to the front/sides
-                        const proximity =
-                            1.0 - Math.min(Math.abs(distToCenterY) / (area.height / 2 + this.REPULSION_DISTANCE), 1.0);
+                        const proximity = 1.0 - Math.min(Math.abs(distToCenterY) / (area.height / 2 + this.REPULSION_DISTANCE), 1.0);
                         ay += pushDir * this.REPULSION_FORCE * proximity;
                     }
 
@@ -165,7 +160,7 @@ export default class WindTunnel extends AnimationBase {
                         const distFromBack = p.x - (area.x + area.width);
                         if (distFromBack < this.VORTEX_DISTANCE) {
                             // Alternating vortex phase based on time and vertical position
-                            const phase = elapsedMs * this.VORTEX_PHASE_SPEED + area.y * 0.5;
+                            const phase = (elapsedMs * this.VORTEX_PHASE_SPEED) + (area.y * 0.5);
                             // The oscillation dampens as it moves further away
                             const dampen = Math.max(0, 1.0 - distFromBack / this.VORTEX_DISTANCE);
                             const oscillation = Math.sin(phase - distFromBack * this.VORTEX_SPATIAL_FREQ);
@@ -196,18 +191,18 @@ export default class WindTunnel extends AnimationBase {
             p.life -= this.PARTICLE_LIFE_DECAY * dt;
 
             // Removal conditions
-            const isOffScreen =
-                p.x > this.width + this.OFFSCREEN_MARGIN ||
-                p.y < -this.OFFSCREEN_MARGIN ||
-                p.y > this.height + this.OFFSCREEN_MARGIN;
+            const isOffScreen = p.x > this.width + this.OFFSCREEN_MARGIN ||
+                               p.y < -this.OFFSCREEN_MARGIN ||
+                               p.y > this.height + this.OFFSCREEN_MARGIN;
             if (isOffScreen || p.life <= 0) {
                 this.particles.splice(i, 1);
                 continue;
             }
 
             // Draw: Only if not physically "inside" an obstacle (masking effect)
-            const isInside = exclusionAreas.some(
-                (area) => p.x >= area.x && p.x <= area.x + area.width && p.y >= area.y && p.y <= area.y + area.height
+            const isInside = exclusionAreas.some(area =>
+                p.x >= area.x && p.x <= area.x + area.width &&
+                p.y >= area.y && p.y <= area.y + area.height
             );
 
             if (!isInside) {

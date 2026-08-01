@@ -1,28 +1,28 @@
 name: 'Setup and Install'
 description: 'Set up Node.js, cache dependencies, run npm ci, and optionally install Playwright'
 inputs:
-    node-version:
-        description: 'Node.js version'
-        required: false
-        default: '24'
-    install-playwright:
-        description: 'Whether to install Playwright'
-        required: false
-        default: 'false'
+  node-version:
+    description: 'Node.js version'
+    required: false
+    default: '24'
+  install-playwright:
+    description: 'Whether to install Playwright'
+    required: false
+    default: 'false'
 runs:
-    using: 'composite'
-    steps:
-        - name: Set up Node.js
-          uses: actions/setup-node@v4
-          with:
-              node-version: ${{ inputs.node-version }}
-              cache: 'npm'
+  using: 'composite'
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
 
-        - name: Install dependencies
-          run: npm ci
-          shell: bash
+    - name: Install dependencies
+      run: npm ci
+      shell: bash
 
-        - name: Install Playwright browsers (if requested)
-          if: ${{ inputs.install-playwright == 'true' }}
-          run: npx playwright install --with-deps chromium
-          shell: bash
+    - name: Install Playwright browsers (if requested)
+      if: ${{ inputs.install-playwright == 'true' }}
+      run: npx playwright install --with-deps chromium
+      shell: bash

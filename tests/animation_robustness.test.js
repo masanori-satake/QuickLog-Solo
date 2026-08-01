@@ -16,7 +16,7 @@ describe('Animation Module Robustness', () => {
                 progress: 0.5,
                 step: 120,
                 exclusionAreas: [],
-                speed: 1.0,
+                speed: 1.0
             };
 
             // Mock context for canvas mode animations
@@ -51,7 +51,7 @@ describe('Animation Module Robustness', () => {
                 lineWidth: 1,
                 lineCap: 'butt',
                 lineJoin: 'miter',
-                font: '10px sans-serif',
+                font: '10px sans-serif'
             };
 
             // Should not throw

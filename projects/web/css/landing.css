@@ -1,8 +1,7 @@
 body {
     background-color: var(--md-sys-color-background);
     color: var(--md-sys-color-on-background);
-    font-family:
-        Roboto, 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
+    font-family: Roboto, 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
     margin: 0;
     padding: 0;
     line-height: 1.6;
@@ -323,7 +322,7 @@ h1 {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0,0,0,0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -470,10 +469,7 @@ code {
     font-family: 'Roboto Mono', monospace;
 }
 
-button,
-input,
-select,
-textarea {
+button, input, select, textarea {
     font-family: inherit;
 }
 
@@ -533,8 +529,7 @@ textarea {
         flex-direction: column;
     }
 
-    .btn-primary,
-    .btn-secondary {
+    .btn-primary, .btn-secondary {
         text-align: center;
         width: 100%;
         box-sizing: border-box;

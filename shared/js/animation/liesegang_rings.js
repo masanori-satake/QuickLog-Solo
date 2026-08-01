@@ -21,45 +21,45 @@ export default class LiesegangRings extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: 'Liesegang Rings',
-            ja: 'リーゼガング環',
+            en: "Liesegang Rings",
+            ja: "リーゼガング環"
         },
         description: {
-            en: 'A chemical simulation forming periodic patterns, similar to tree rings or geological layers.',
-            ja: '年輪や地層のような、周期的なパターンを形成する化学シミュレーションです。',
+            en: "A chemical simulation forming periodic patterns, similar to tree rings or geological layers.",
+            ja: "年輪や地層のような、周期的なパターンを形成する化学シミュレーションです。"
         },
-        author: 'QuickLog-Solo',
+        author: "QuickLog-Solo",
         devOnly: true,
-        rewindable: true,
+        rewindable: true
     };
 
     config = {
         mode: 'canvas',
-        exclusionStrategy: 'freedom',
+        exclusionStrategy: 'freedom'
     };
 
     // --- Simulation Constants ---
     GRID_SIZE = 4;
-    DIFFUSION_RATE_A = 0.2; // Diffusion speed of chemical A
-    DIFFUSION_RATE_B = 0.1; // Diffusion speed of chemical B
-    REACTION_RATE = 0.05; // Speed of precipitation reaction
+    DIFFUSION_RATE_A = 0.2;     // Diffusion speed of chemical A
+    DIFFUSION_RATE_B = 0.1;     // Diffusion speed of chemical B
+    REACTION_RATE = 0.05;       // Speed of precipitation reaction
     PRECIPITATION_THRESHOLD = 0.6; // Minimum concentration to form a "ring"
 
     // --- Advanced Tuning Constants (Junior Engineer reference) ---
-    AMBIENT_B_INFLUX = 0.006; // Natural chemical B added to the gel each step
+    AMBIENT_B_INFLUX = 0.006;   // Natural chemical B added to the gel each step
     MIN_REACTION_STRENGTH = 0.01; // Minimum reaction result to trigger changes
-    CONSUMPTION_RATIO = 0.1; // Percentage of concentration remaining after precipitate forms
-    MAX_CONCENTRATION = 2.0; // Cap for concentration levels
-    VISIBLE_THRESHOLD = 0.05; // Concentration level to start drawing background color
-    MAX_BG_ALPHA = 0.2; // Maximum opacity for the background concentration view
+    CONSUMPTION_RATIO = 0.1;    // Percentage of concentration remaining after precipitate forms
+    MAX_CONCENTRATION = 2.0;    // Cap for concentration levels
+    VISIBLE_THRESHOLD = 0.05;   // Concentration level to start drawing background color
+    MAX_BG_ALPHA = 0.2;         // Maximum opacity for the background concentration view
 
     constructor() {
         super();
-        this.gridA = new Float32Array(0); // Concentration of chemical A
-        this.gridB = new Float32Array(0); // Concentration of chemical B
-        this.bufferA = new Float32Array(0); // Buffer for diffusion
-        this.bufferB = new Float32Array(0); // Buffer for diffusion
-        this.precipitate = new Uint8Array(0); // 1 if precipitate exists, 0 otherwise
+        this.gridA = new Float32Array(0);       // Concentration of chemical A
+        this.gridB = new Float32Array(0);       // Concentration of chemical B
+        this.bufferA = new Float32Array(0);     // Buffer for diffusion
+        this.bufferB = new Float32Array(0);     // Buffer for diffusion
+        this.precipitate = new Uint8Array(0);   // 1 if precipitate exists, 0 otherwise
         this.cols = 0;
         this.rows = 0;
         this.width = 0;
@@ -130,18 +130,10 @@ export default class LiesegangRings extends AnimationBase {
                 const idx = y * this.cols + x;
 
                 // Average of 4 neighbors
-                const avgA =
-                    (this.gridA[idx - this.cols] +
-                        this.gridA[idx + this.cols] +
-                        this.gridA[idx - 1] +
-                        this.gridA[idx + 1]) *
-                    0.25;
-                const avgB =
-                    (this.gridB[idx - this.cols] +
-                        this.gridB[idx + this.cols] +
-                        this.gridB[idx - 1] +
-                        this.gridB[idx + 1]) *
-                    0.25;
+                const avgA = (this.gridA[idx - this.cols] + this.gridA[idx + this.cols] +
+                              this.gridA[idx - 1] + this.gridA[idx + 1]) * 0.25;
+                const avgB = (this.gridB[idx - this.cols] + this.gridB[idx + this.cols] +
+                              this.gridB[idx - 1] + this.gridB[idx + 1]) * 0.25;
 
                 this.bufferA[idx] = this.gridA[idx] + (avgA - this.gridA[idx]) * this.DIFFUSION_RATE_A;
                 this.bufferB[idx] = this.gridB[idx] + (avgB - this.gridB[idx]) * this.DIFFUSION_RATE_B;
@@ -156,8 +148,9 @@ export default class LiesegangRings extends AnimationBase {
                 // Handle UI obstacles in exclusion areas
                 const px = x * this.GRID_SIZE;
                 const py = y * this.GRID_SIZE;
-                const isBlocked = exclusionAreas.some(
-                    (area) => px >= area.x && px <= area.x + area.width && py >= area.y && py <= area.y + area.height
+                const isBlocked = exclusionAreas.some(area =>
+                    px >= area.x && px <= area.x + area.width &&
+                    py >= area.y && py <= area.y + area.height
                 );
 
                 if (isBlocked) {
