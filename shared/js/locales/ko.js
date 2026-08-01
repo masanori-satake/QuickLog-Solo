@@ -25,9 +25,9 @@ export default {
     'tab-about': '정보',
     // Alarms Tab
     'business-days': '근무 요일',
-    'alarm-io-title': '알람 입출력(클립보드)',
+    'tooltip-edit-business-days': '編集',
     'alarm-editor-title': 'アラーム・エディタ',
-    'btn-launch-alarm-editor': 'アラーム・エディタを起動',
+    'btn-launch-alarm-editor': '編集',
     'alarm-label-type': '실행 타이밍',
     'alarm-type-daily': '매일',
     'alarm-type-daily_business': '매일(근무일만)',
@@ -106,11 +106,8 @@ export default {
     // Categories Tab
     'placeholder-new-category': '새 카테고리...',
     'placeholder-tags': '태그 (쉼표로 구분)',
-    'category-backup': '카테고리 가져오기/내보내기 (클립보드)',
     'btn-export-json': '복사 (내보내기)',
     'btn-import-json': '붙여넣기 (가져오기)',
-    'import-setting': '가져오기 설정:',
-    'import-append': '추가',
     'import-overwrite': '덮어쓰기',
     // About Tab
     'version': '버전',
@@ -392,7 +389,7 @@ export default {
     'btn-clear-console': '콘솔 지우기',
     // Category Editor
     'category-editor-title': '업무 카테고리 에디터',
-    'btn-launch-category-editor': '業務カテゴリ・エディタを起動',
+    'btn-launch-category-editor': '編集',
     'category-detail': '카테고리 상세',
     'tags-common': '태그(공통)',
     'setting-theme-common': '테마(공통)',
