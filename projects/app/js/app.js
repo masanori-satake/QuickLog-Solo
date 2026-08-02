@@ -1804,16 +1804,38 @@ async function launchOrFocusTab(localPath, fallbackUrl, params, windowName) {
     }
 
     if (windowName && windowName !== '_blank') {
-        try {
-            // Check if window is already open by trying to retrieve its reference
-            const win = window.open('', windowName);
-            if (win && win.location && win.location.href && win.location.href !== 'about:blank') {
-                win.focus();
-                return;
+        const win = window.open('', windowName);
+        if (win) {
+            try {
+                // Try to read the window's location to determine if it's blank or already navigated
+                const href = win.location.href;
+                if (href && href !== 'about:blank') {
+                    // Window exists and has navigated to a URL - just focus it
+                    win.focus();
+                    return;
+                } else {
+                    // Window exists but is blank - navigate it to the target URL
+                    win.location.replace(url);
+                    win.focus();
+                    return;
+                }
+            } catch (error) {
+                // SecurityError means the window navigated to a cross-origin URL (not blank)
+                // Just focus the existing window without navigating it
+                if (error.name === 'SecurityError') {
+                    try {
+                        win.focus();
+                    } catch (focusError) {
+                        console.warn('Failed to focus existing cross-origin window:', focusError);
+                    }
+                    return;
+                } else {
+                    // Unexpected error - log and fall through to fallback
+                    console.warn('Unexpected error checking window location:', error);
+                }
             }
-        } catch (error) {
-            console.warn('Failed to focus existing window without reload:', error);
         }
+        // Fallback: win is null/undefined (popup blocked or window couldn't be obtained)
         window.open(url, windowName);
     } else {
         window.open(url, '_blank', 'noopener');
