@@ -143,9 +143,7 @@ describe('anim_sync - async functions (chrome.storage.sync)', () => {
 
             const onProgress = jest.fn();
 
-            await expect(pushAnimationToSync('test-id', 'short', onProgress)).rejects.toThrow(
-                /after 3 retries/
-            );
+            await expect(pushAnimationToSync('test-id', 'short', onProgress)).rejects.toThrow(/after 3 retries/);
 
             // The chunk 'short' fits in one chunk, so set is called 3 times for that single chunk
             expect(global.chrome.storage.sync.set).toHaveBeenCalledTimes(3);
@@ -159,9 +157,7 @@ describe('anim_sync - async functions (chrome.storage.sync)', () => {
 
             const onProgress = jest.fn();
 
-            await expect(pushAnimationToSync('test-id', 'data', onProgress)).rejects.toThrow(
-                'QUOTA_BYTES_PER_ITEM'
-            );
+            await expect(pushAnimationToSync('test-id', 'data', onProgress)).rejects.toThrow('QUOTA_BYTES_PER_ITEM');
 
             // Called only once — no retry for quota errors
             expect(global.chrome.storage.sync.set).toHaveBeenCalledTimes(1);
