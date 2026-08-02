@@ -459,7 +459,7 @@ export default {
     'maker-invert': 'ネガポジ反転',
     'maker-brightness': '明るさ',
     'maker-gif-import': 'GIF 이미지 가져오기',
-    'maker-drop-hint': '이곳에 GIF 파일을 드래그 앤 드롭하거나, 클릭해서 선택해 주십시오',
+    'maker-drop-hint': 'ここにアニメーションGIFをドロップするか、クリックして選択してください',
     'maker-file-name': '파일명:',
     'maker-dimensions': '해상도:',
     'maker-frames-count': '프레임 수:',
