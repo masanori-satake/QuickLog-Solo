@@ -12,10 +12,12 @@ export default {
     delete: '削除',
     duplicate: '複製',
     'btn-copy': 'コピー',
+
     // Controls
     pause: '一時停止',
     resume: '再開',
     stop: '終了',
+
     // Settings Modal
     'tab-general': '一般',
     'tab-categories': 'カテゴリ',
@@ -23,6 +25,7 @@ export default {
     'tab-backup': 'バックアップ',
     'tab-alarms': 'アラーム',
     'tab-about': 'About',
+
     // Alarms Tab
     'business-days': '稼働曜日',
     'tooltip-edit-business-days': '編集',
@@ -76,9 +79,11 @@ export default {
     'alarm-section-schedule': 'スケジュール設定',
     'btn-test-notification': '通知のテストを実行する',
     'test-notification-message': 'これは通知テストです。正常に表示されています。',
+
     // Common labels
     'setting-enabled': '有効 (ON)',
     'setting-disabled': '無効 (OFF)',
+
     // General Tab
     'setting-language': '表示言語',
     'lang-auto': 'ブラウザの表示言語',
@@ -103,12 +108,14 @@ export default {
     'setting-history-csv': '作業履歴(CSV)',
     'btn-export-csv': 'エクスポート',
     'btn-import-csv': 'インポート',
+
     // Categories Tab
     'placeholder-new-category': '新しいカテゴリ...',
     'placeholder-tags': 'タグ (カンマ区切り)',
     'btn-export-json': 'コピー (Export)',
     'btn-import-json': '貼り付け (Import)',
     'import-overwrite': '上書き',
+
     // About Tab
     version: 'バージョン',
     developer: '開発者',
@@ -118,12 +125,14 @@ export default {
         'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB に保存され（バックアップを実行した際にはローカルファイルシステムにも保存されます）、外部送信は一切行われません。GitHub Actions による依存関係の検証と Google OSV-Scanner による継続的な監査により、高い透明性と安全性を維持しています。',
     'about-disclaimer':
         '【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。',
+
     // Auto Stop & Page Break
     'page-break': '改ページ',
     'btn-add-page-break': '改ページを追加',
     'btn-add-category': 'カテゴリを追加',
     'btn-add-custom-anim': 'カスタムアニメーションを追加',
     'confirm-delete-page-break': 'この改ページを削除しますか？',
+
     // Tooltips
     'tooltip-copy-report': '日報をクリップボードにコピーします',
     'tooltip-copy-aggregation': 'タグ毎の集計結果をクリップボードにコピーします',
@@ -141,6 +150,7 @@ export default {
     'tooltip-status-paused': '一時停止中',
     'tooltip-status-stopped': '終了済み',
     'tooltip-calendar': '日付を選択します',
+
     // Maintenance Tab
     'maintenance-clear-logs': '作業履歴',
     'maintenance-clear-categories': 'カテゴリ',
@@ -161,6 +171,7 @@ export default {
     'maintenance-reset-settings': '設定のみの初期化',
     'maintenance-reset-settings-desc': '作業履歴とカテゴリは維持されます。',
     'btn-reset-settings': '設定のみを初期化',
+
     // Maintenance - バックアップ・復元
     'maintenance-backup-title': 'バックアップ・復元',
     'backup-start': 'バックアップを開始する',
@@ -169,15 +180,18 @@ export default {
     'restore-btn': 'バックアップを復元する',
     'backup-status-success': 'バックアップ完了',
     'backup-status-failed': 'バックアップ失敗',
+
     // Maintenance - 復元ダイアログ
     'confirm-restore': 'データを復元しますか？',
     'confirm-restore-desc':
         '現在のすべてのデータが削除され、バックアップデータで上書きされます。この操作は元に戻せません。',
+
     // Maintenance - 復元メッセージ
     'restore-success': '復元が完了しました',
     'restore-error-invalid-folder': '有効なバックアップフォルダではありません。必須ファイルが見つかりません。',
     'restore-error-write-failed': '復元中にエラーが発生しました。データが不完全な状態の可能性があります。',
     'restore-skipped-records': '{count}件の不正なレコードをスキップしました',
+
     // Maintenance - 削除/初期化
     'maintenance-delete-title': '削除/初期化',
     'maintenance-delete-execute': '削除/初期化する',
@@ -185,6 +199,7 @@ export default {
         '以下のデータを削除/初期化します:\n{items}\n\nこの操作は元に戻せません。本当に実行しますか？',
     'maintenance-delete-success': '選択した項目を削除/初期化しました',
     'maintenance-delete-error': '{item}の削除中にエラーが発生しました',
+
     // Backup Tab
     'btn-backup-start': 'バックアップを開始する',
     'btn-backup-run': 'バックアップを実行する',
@@ -200,6 +215,7 @@ export default {
     'backup-description-new':
         'ブラウザのキャッシュクリアなどで IndexedDB のデータが消えてしまうのを防ぐため、定期的なバックアップを推奨します。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。',
     'toast-backup-completed': 'バックアップが完了しました',
+
     // Messages & Dialogs
     'confirm-end-task': '本当に作業を終了しますか？',
     'history-edit-title': '履歴の編集',
@@ -234,10 +250,12 @@ export default {
         'カテゴリと各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（作業履歴は維持されます）',
     'confirm-reset-settings':
         '各種設定を初期化します。実行中の作業がある場合は終了されます。よろしいですか？（作業履歴とカテゴリは維持されます）',
+
     'alert-invalid-category': '無効なカテゴリ名です。（50文字以内、「{idle}」は使用不可）',
     'alert-duplicate-category': '同名のカテゴリが既に存在します。',
     'alert-import-error': 'カテゴリのインポートに失敗しました。ファイル形式を確認してください。',
     'alert-init-error': 'アプリの初期化に失敗しました。ページを再読み込みしてください。',
+
     'toast-copied': 'コピーしました！',
     'toast-done': '完了しました！',
     'toast-done-with-reopen-msg':
@@ -246,8 +264,10 @@ export default {
     'toast-cat-imported': 'カテゴリをインポートしました',
     'toast-deleted': '削除が完了しました',
     'no-logs-for-day': 'この日の記録はありません',
+
     'notification-btn-ok': '了解',
     'notification-btn-close': '閉じる',
+
     'import-err-fatal': 'ファイル形式が正しくありません。インポートを中止します。',
     'import-err-partial': '全{total}行中{errorCount}行が破損しています。正常な{validCount}行のみを取り込みますか？',
     'import-err-field':
@@ -256,15 +276,18 @@ export default {
     'import-btn-apply-fallback': 'デフォルト値を適用',
     'import-btn-skip-invalid': '不備のある行を除外',
     'import-btn-abort': '中止',
+
     'backup-err-0byte':
         '中身が空のバックアップファイル（{name}）が見つかりました。これは異常な状態の可能性があります。このファイルを無視して続行しますか？',
     'backup-btn-ignore-continue': '無視して続行',
     'backup-btn-abort-investigate': '中断して調査',
+
     'backup-err-locked':
         'ファイルが他のプログラムでロックされているか、アクセス権限がありません。他のアプリを閉じてから再試行してください。',
     'backup-err-not-found': 'バックアップ先フォルダが見つかりません。再度フォルダを選択してください。',
     'backup-err-unknown': '予期せぬエラーが発生しました: {message}',
     'toast-backup-failed-detail': 'バックアップに失敗しました。詳細：{reason}',
+
     // Dynamic Elements
     'day-names': ['日', '月', '火', '水', '木', '金', '土'],
     'day-0': '日',
@@ -283,6 +306,7 @@ export default {
     'anim-none': '無し',
     'anim-author-label': '作者',
     'anim-unknown-author': '不明',
+
     // Report Settings
     'report-emoji-keep': 'あり',
     'report-emoji-remove': 'なし',
@@ -308,6 +332,7 @@ export default {
     'report-adjust-none': 'しない',
     'report-adjust-5m': '5分間隔',
     'report-adjust-10m': '10分間隔',
+
     // Initial Categories
     'init-cat-dev': '💻 開発・プログラミング',
     'init-cat-meeting': '🤝 チームミーティング・定例会',
@@ -334,6 +359,7 @@ export default {
     'init-cat-data': '📊 データ分析・SQL',
     'init-cat-wfh': '🏠 在宅ワーク環境整備',
     'init-cat-move': '🚶 移動・外出',
+
     // Initial Tags
     'init-tag-dev': '開発, 設計',
     'init-tag-meeting': '会議',
@@ -358,6 +384,7 @@ export default {
     'init-tag-sec': 'セキュリティ',
     'init-tag-data': '分析',
     'init-tag-move': '移動',
+
     // QL-Animation Studio
     'studio-title': 'QL-Animation Studio (β版)',
     'sample-select-placeholder': 'サンプルを選択...',
@@ -421,6 +448,7 @@ export default {
     'btn-replace-all': 'すべて置換',
     'section-console': 'コンソール',
     'btn-clear-console': 'コンソールをクリア',
+
     // Category Editor
     'category-editor-title': '業務カテゴリ・エディタ',
     'btn-launch-category-editor': '編集',
@@ -457,6 +485,7 @@ export default {
         '端末間同期を無効にしますか？この端末での同期は停止しますが、他端末と共有されているデータは保持されます。',
     'session-sync-active': '同期有効',
     'local-only-active': 'ローカル完結',
+
     'sync-setup-title': '端末間同期の設定',
     'sync-setup-desc': '同期を開始するにあたり、既存のデータと他端末のデータの優先順位を選択してください。',
     'sync-setup-settings-title': '設定・カテゴリの同期',
@@ -467,6 +496,7 @@ export default {
     'display-mode-retro-lcd': 'レトロ液晶',
     'display-mode-retro-crt': 'ブラウン管',
     'display-mode-retro-nixie': 'ニキシー管',
+
     'tab-custom-anim': 'カスタムアニメーション',
     'custom-anim-select-label': '登録済みカスタムアニメーション',
     'custom-anim-import': 'インポート (追加)',
