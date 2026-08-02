@@ -2713,6 +2713,7 @@ function setupEventListeners() {
 
     getEl(ID_BACKUP_START_BTN)?.addEventListener('click', handleBackupStart);
     getEl(ID_BACKUP_CHANGE_DIR_BTN)?.addEventListener('click', handleBackupChangeDir);
+    getEl('backup-change-dir-btn-init')?.addEventListener('click', handleBackupChangeDir);
 
     getEl(ID_BACKUP_EXECUTE_BTN)?.addEventListener('click', async () => {
         if (!(await backupManager.hasPermission())) {
