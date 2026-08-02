@@ -42,8 +42,7 @@
   --app-color-weekday-active: var(--md-sys-color-tertiary);
   --app-color-on-weekday-active: var(--md-sys-color-on-tertiary);
 
-  /* --- Semantic Destructive Action Colors --- */
-  --app-color-danger: #ba1a1a;
+  /* --- Semantic Close Button Color --- */
   --app-color-close: #ba1a1a;
   --app-color-close-secondary: #b71c1c;
 
@@ -624,5 +623,5 @@ body.theme-dark {
 #clear-all-btn,
 #reset-btn,
 #alarm-reset-btn {
-  color: var(--app-color-danger) !important;
+  color: var(--md-sys-color-error) !important;
 }

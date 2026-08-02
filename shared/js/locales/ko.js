@@ -135,7 +135,6 @@ export default {
     'btn-reset': '초기화',
     'btn-initialize-all': '모두 초기화',
     'btn-initialize': '초기화',
-    'toast-initialize-all': '초기화되었습니다',
     'maintenance-reset-settings': '설정만 초기화',
     'maintenance-reset-settings-desc': '작업 이력과 카테고리는 유지됩니다.',
     'btn-reset-settings': '설정만 초기화',

@@ -119,15 +119,8 @@ async function init() {
     document.body.className = `theme-${state.theme}`;
     elements.themeToggle.checked = (state.theme === 'dark');
 
-    const ui = initUI(state, elements);
-
-    // Normalize alarm action categories before creating history snapshot
-    // This ensures the corrected category is part of the initial state
-    state.alarms.forEach(alarm => {
-        ui.normalizeStartActionCategory(alarm);
-    });
-
     const history = initHistory(state);
+    const ui = initUI(state, elements);
 
     let persistencePromise = Promise.resolve();
 
@@ -292,7 +285,7 @@ async function init() {
                 ui.renderBusinessDays();
                 ui.renderAlarmList();
                 ui.renderDetail();
-                state.showToast(t('toast-initialize-all'));
+                state.showToast(t('btn-initialize') + 'しました');
             } else {
                 await dbClear(STORE_ALARMS);
                 await dbClear(STORE_SETTINGS);
