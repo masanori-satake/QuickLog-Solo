@@ -150,6 +150,8 @@ export default {
     'maintenance-reset-all-desc': '作業履歴は維持されます。',
     'btn-reset-all': '全てリセット',
     'btn-reset': 'リセット',
+    'btn-initialize-all': '全て初期化',
+    'btn-initialize': '初期化',
     'maintenance-reset-settings': '仅重置设置',
     'maintenance-reset-settings-desc': '作業履歴とカテゴリは維持されます。',
     'btn-reset-settings': '仅重置设置',
