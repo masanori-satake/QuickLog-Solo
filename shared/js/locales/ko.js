@@ -152,6 +152,8 @@ export default {
     'maintenance-reset-all-desc': '작업 기록은 유지됩니다.',
     'btn-reset-all': '모두 초기화',
     'btn-reset': '초기화',
+    'btn-initialize-all': '全て初期化',
+    'btn-initialize': '初期化',
     'maintenance-reset-settings': '설정만 초기화',
     'maintenance-reset-settings-desc': '작업 기록과 카테고리는 유지됩니다.',
     'btn-reset-settings': '설정만 초기화',
