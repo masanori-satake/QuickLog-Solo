@@ -1899,7 +1899,6 @@ async function renderBusinessDays() {
         editBtn.className = 'icon-btn';
         editBtn.title = t('tooltip-edit-business-days');
         editBtn.setAttribute('data-i18n-title', 'tooltip-edit-business-days');
-        editBtn.style.marginLeft = '8px';
         editBtn.style.verticalAlign = 'middle';
 
         const editIcon = createEl('span');
