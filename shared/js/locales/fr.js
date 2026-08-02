@@ -463,7 +463,7 @@ export default {
     'maker-invert': 'ネガポジ反転',
     'maker-brightness': '明るさ',
     'maker-gif-import': 'GIF画像の取り込み',
-    'maker-drop-hint': 'ここにGIFファイルをドラッグ＆ドロップするか、クリックして選択してください',
+    'maker-drop-hint': 'ここにアニメーションGIFをドロップするか、クリックして選択してください',
     'maker-file-name': 'ファイル名:',
     'maker-dimensions': '解像度:',
     'maker-frames-count': 'フレーム数:',
