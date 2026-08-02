@@ -18,45 +18,64 @@ jest.unstable_mockModule('../shared/js/utils/storage.js', () => ({
     setCustomAnimationMetadataMap: jest.fn(),
 }));
 
-const { dbClear, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS } = await import(
-    '../shared/js/db.js'
-);
+const { dbClear, STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS } = await import('../shared/js/db.js');
 const { initAnimationDB } = await import('../shared/js/idb_storage.js');
 const { setCustomAnimationMetadataMap } = await import('../shared/js/utils/storage.js');
 
 /**
- * Sets up the DOM structure for the delete/initialize section.
+ * Sets up the DOM structure for the delete/initialize section without innerHTML.
  * Mirrors the HTML in projects/app/app.html.
  */
 function setupDOM() {
-    document.body.innerHTML = `
-        <div class="maintenance-section" id="delete-initialize-section">
-            <h3 data-i18n="maintenance-delete-title"></h3>
-            <div class="checkbox-group">
-                <label class="checkbox-item">
-                    <input type="checkbox" id="clear-logs-checkbox" value="logs">
-                    <span data-i18n="maintenance-clear-logs"></span>
-                </label>
-                <label class="checkbox-item">
-                    <input type="checkbox" id="clear-categories-checkbox" value="categories">
-                    <span data-i18n="maintenance-clear-categories"></span>
-                </label>
-                <label class="checkbox-item">
-                    <input type="checkbox" id="clear-settings-checkbox" value="settings">
-                    <span data-i18n="maintenance-clear-settings"></span>
-                </label>
-                <label class="checkbox-item">
-                    <input type="checkbox" id="clear-alarms-checkbox" value="alarms">
-                    <span data-i18n="maintenance-clear-alarms"></span>
-                </label>
-                <label class="checkbox-item">
-                    <input type="checkbox" id="clear-animations-checkbox" value="animations">
-                    <span data-i18n="maintenance-clear-animations"></span>
-                </label>
-            </div>
-            <button id="delete-initialize-btn" class="btn btn-danger" disabled data-i18n="maintenance-delete-execute"></button>
-        </div>
-    `;
+    // Clear body first using textContent or removing child nodes
+    document.body.textContent = '';
+
+    const container = document.createElement('div');
+    container.className = 'maintenance-section';
+    container.id = 'delete-initialize-section';
+
+    const h3 = document.createElement('h3');
+    h3.setAttribute('data-i18n', 'maintenance-delete-title');
+    container.appendChild(h3);
+
+    const checkboxGroup = document.createElement('div');
+    checkboxGroup.className = 'checkbox-group';
+
+    const items = [
+        { id: 'clear-logs-checkbox', value: 'logs', i18n: 'maintenance-clear-logs' },
+        { id: 'clear-categories-checkbox', value: 'categories', i18n: 'maintenance-clear-categories' },
+        { id: 'clear-settings-checkbox', value: 'settings', i18n: 'maintenance-clear-settings' },
+        { id: 'clear-alarms-checkbox', value: 'alarms', i18n: 'maintenance-clear-alarms' },
+        { id: 'clear-animations-checkbox', value: 'animations', i18n: 'maintenance-clear-animations' },
+    ];
+
+    items.forEach((item) => {
+        const label = document.createElement('label');
+        label.className = 'checkbox-item';
+
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = item.id;
+        input.value = item.value;
+
+        const span = document.createElement('span');
+        span.setAttribute('data-i18n', item.i18n);
+
+        label.appendChild(input);
+        label.appendChild(span);
+        checkboxGroup.appendChild(label);
+    });
+
+    container.appendChild(checkboxGroup);
+
+    const button = document.createElement('button');
+    button.id = 'delete-initialize-btn';
+    button.className = 'btn btn-danger';
+    button.disabled = true;
+    button.setAttribute('data-i18n', 'maintenance-delete-execute');
+
+    container.appendChild(button);
+    document.body.appendChild(container);
 }
 
 /**
@@ -245,9 +264,7 @@ describe('Maintenance UI: 削除/初期化セクション', () => {
                 attachCheckboxListeners();
 
                 // Set checkbox states based on generated selection
-                const checkboxes = document.querySelectorAll(
-                    '#delete-initialize-section input[type="checkbox"]'
-                );
+                const checkboxes = document.querySelectorAll('#delete-initialize-section input[type="checkbox"]');
                 checkboxes.forEach((cb) => {
                     cb.checked = selected.includes(cb.value);
                 });

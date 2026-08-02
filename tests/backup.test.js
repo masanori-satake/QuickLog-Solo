@@ -27,11 +27,21 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     SETTING_KEY_PAUSE_STATE: 'pauseState',
     SETTING_KEY_CLIENT_ID: 'clientId',
     SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds',
-    LOG_CLEANUP_THRESHOLD_MS: 40 * 24 * 60 * 60 * 1000
+    LOG_CLEANUP_THRESHOLD_MS: 40 * 24 * 60 * 60 * 1000,
+}));
+
+jest.unstable_mockModule('../shared/js/idb_storage.js', () => ({
+    getAnimationBlob: jest.fn(),
+}));
+
+jest.unstable_mockModule('../shared/js/utils/storage.js', () => ({
+    getCustomAnimationMetadataMap: jest.fn(),
 }));
 
 const { backupManager, BACKUP_STATUS } = await import('../projects/app/js/backup.js');
 const db = await import('../shared/js/db.js');
+const { getAnimationBlob } = await import('../shared/js/idb_storage.js');
+const { getCustomAnimationMetadataMap } = await import('../shared/js/utils/storage.js');
 
 describe('BackupManager', () => {
     beforeEach(() => {
@@ -41,13 +51,17 @@ describe('BackupManager', () => {
         backupManager.directoryHandle = null;
         backupManager.onStatusChange = null;
 
+        getCustomAnimationMetadataMap.mockResolvedValue({});
+        getAnimationBlob.mockResolvedValue(null);
+
         jest.clearAllMocks();
     });
 
     test('init restores handle and checks permission', async () => {
         const mockHandle = { queryPermission: jest.fn().mockResolvedValue('prompt') };
         db.dbGet.mockImplementation((store, key) => {
-            if (key === db.SETTING_KEY_BACKUP_CONFIG) return Promise.resolve({ value: { lastBackupTime: '2025-01-01' } });
+            if (key === db.SETTING_KEY_BACKUP_CONFIG)
+                return Promise.resolve({ value: { lastBackupTime: '2025-01-01' } });
             if (key === db.SETTING_KEY_BACKUP_DIR_HANDLE) return Promise.resolve({ value: mockHandle });
             return Promise.resolve(null);
         });
@@ -73,16 +87,26 @@ describe('BackupManager', () => {
         const mockFile = { size: 100, text: jest.fn().mockResolvedValue('[]') };
         const mockWritable = {
             write: jest.fn(),
-            close: jest.fn()
+            close: jest.fn(),
         };
         const mockFileHandle = {
             getFile: jest.fn().mockResolvedValue(mockFile),
-            createWritable: jest.fn().mockResolvedValue(mockWritable)
+            createWritable: jest.fn().mockResolvedValue(mockWritable),
+        };
+        const mockSubDirHandle = {
+            getFileHandle: jest.fn().mockResolvedValue(mockFileHandle),
+            getDirectoryHandle: jest.fn(),
+            values: async function* () {
+                yield* [];
+            },
         };
         backupManager.directoryHandle = {
-            values: async function* () { yield* []; },
+            values: async function* () {
+                yield* [];
+            },
             getFileHandle: jest.fn().mockResolvedValue(mockFileHandle),
-            queryPermission: jest.fn().mockResolvedValue('granted')
+            getDirectoryHandle: jest.fn().mockResolvedValue(mockSubDirHandle),
+            queryPermission: jest.fn().mockResolvedValue('granted'),
         };
         db.dbGetAll.mockResolvedValue([]);
         db.dbPut.mockResolvedValue(true);
@@ -91,12 +115,15 @@ describe('BackupManager', () => {
 
         expect(backupManager.status).toBe(BACKUP_STATUS.SUCCESS);
         expect(backupManager.config.lastBackupTime).toBeDefined();
-        expect(db.dbPut).toHaveBeenCalledWith(db.STORE_SETTINGS, expect.objectContaining({ key: db.SETTING_KEY_BACKUP_CONFIG }));
+        expect(db.dbPut).toHaveBeenCalledWith(
+            db.STORE_SETTINGS,
+            expect.objectContaining({ key: db.SETTING_KEY_BACKUP_CONFIG })
+        );
     });
 
     test('sync handles missing permission', async () => {
         backupManager.directoryHandle = {
-            queryPermission: jest.fn().mockResolvedValue('prompt')
+            queryPermission: jest.fn().mockResolvedValue('prompt'),
         };
 
         await backupManager.sync();
