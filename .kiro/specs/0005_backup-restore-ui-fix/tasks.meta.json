@@ -1,0 +1,328 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "`projects/app/css/style.css` に `.outline-btn` クラスを追加する（`.primary-btn` 定義の直後に配置）": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686803035
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686828307
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687008637
+      }
+    ],
+    "`.outline-btn:hover` スタイルを追加する（`background-color: var(--md-sys-color-primary-container)` 等）": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686803942
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687011349
+      }
+    ],
+    "`.outline-btn:disabled` スタイルを追加する（`opacity: 0.5; cursor: not-allowed`）": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686804730
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687013190
+      }
+    ],
+    "`.outline-btn .material-symbols-outlined` スタイルを追加する（`font-size: 20px`）": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686805289
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687015089
+      }
+    ],
+    "`projects/app/app.html` の `#backup-not-configured` 内のボタンを outline-btn スタイルに変更する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686805907
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687026421
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687151247
+      }
+    ],
+    "`#backup-configured` 内のボタンを outline-btn スタイルに変更し、以下の順序で配置する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686806360
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687153996
+      }
+    ],
+    "`#backup-configured` 内のボタン群の直後に情報パネルを追加する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686806969
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687156854
+      }
+    ],
+    "情報パネルの直後、`#backup-configured` の閉じタグ内に `<p class=\"setting-description\" data-i18n=\"backup-description-new\"></p>` を追加する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686807532
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687158527
+      }
+    ],
+    "`projects/app/app.html` の `#backup-restore-section` 終了タグ直後、`#delete-initialize-section` 開始タグ直前に `<hr class=\"settings-divider\">` を挿入する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686808109
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687160311
+      }
+    ],
+    "`projects/app/js/app.js` の `updateBackupUI()` にディレクトリ名表示ロジックを追加する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686808730
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687172247
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687472381
+      }
+    ],
+    "最終バックアップ時刻の表示を `backup-last-time-label` キーのラベルと日時値を組み合わせた形式に変更する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686809590
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687475285
+      }
+    ],
+    "ファイル数表示を `N 日分` 形式に変更する（`backup-file-count-unit` キー使用）": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686810136
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687476830
+      }
+    ],
+    "`shared/js/locales/ja.js` の既存キーのラベルを変更する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686810677
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687488103
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687716788
+      }
+    ],
+    "`shared/js/locales/ja.js` に `backup-last-time-label`（`最終バックアップ時刻`）と `backup-file-count-label`（`ファイル数`）を追加する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686811221
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687721642
+      }
+    ],
+    "`shared/js/locales/en.js` の既存キーのラベルを変更し、`backup-last-time-label`（`Last Backup`）、`backup-file-count-label`（`File Count`）、`backup-change-dir`（`Change Destination`）を追加する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686811873
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687724381
+      }
+    ],
+    "`shared/js/locales/de.js` に対応するキーの変更・追加を行う": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686812494
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687725664
+      }
+    ],
+    "`shared/js/locales/es.js` に対応するキーの変更・追加を行う": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686813121
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687727567
+      }
+    ],
+    "`shared/js/locales/fr.js` に対応するキーの変更・追加を行う": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686813636
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687734776
+      }
+    ],
+    "`shared/js/locales/pt.js` に対応するキーの変更・追加を行う": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686814503
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687736851
+      }
+    ],
+    "`shared/js/locales/ko.js` に対応するキーの変更・追加を行う": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686815036
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687740514
+      }
+    ],
+    "`shared/js/locales/zh.js` に対応するキーの変更・追加を行う": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686815605
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687743269
+      }
+    ],
+    "`npm run version:bump` を実行してパッチバージョンをインクリメントする": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686816159
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687755312
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687947580
+      }
+    ],
+    "`npm run lint` を実行してリント通過を確認する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686816781
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785687952640
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785688180233
+      }
+    ],
+    "`npm test` を実行してユニットテスト通過を確認する": [
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785686817592
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785688186210
+      },
+      {
+        "executionId": "4b82f205-5392-428a-ac32-1ddfa1603d79",
+        "chatSessionId": "sess_e115e599-4526-4d42-98c3-ae69d5180114",
+        "timestamp": 1785688639824
+      }
+    ]
+  }
+}

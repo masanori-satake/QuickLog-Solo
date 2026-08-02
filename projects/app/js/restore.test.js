@@ -35,7 +35,9 @@ jest.unstable_mockModule('../shared/js/idb_storage.js', () => ({
         transaction: jest.fn(() => ({
             objectStore: jest.fn(() => ({
                 clear: jest.fn(() => ({
-                    set onsuccess(fn) { fn(); },
+                    set onsuccess(fn) {
+                        fn();
+                    },
                     set onerror(_fn) {},
                 })),
             })),
@@ -57,6 +59,7 @@ const {
     validateAlarmSchema,
     validateCustomAnimationSchema,
 } = await import('../shared/js/schema.js');
+// eslint-disable-next-line no-unused-vars -- import required to activate jest.unstable_mockModule
 const { initAnimationDB, saveAnimationBlob } = await import('../shared/js/idb_storage.js');
 const { setCustomAnimationMetadataMap } = await import('../shared/js/utils/storage.js');
 const { restoreManager } = await import('./restore.js');
@@ -75,45 +78,6 @@ beforeEach(() => {
 afterEach(() => {
     jest.clearAllMocks();
 });
-
-/**
- * Helper: creates a mock directory handle that simulates File System Access API.
- * @param {Object} files - Map of filename to file content string
- * @param {Object} subdirs - Map of subdirectory name to mock dir handle
- */
-function createMockDirHandle(files = {}, subdirs = {}) {
-    return {
-        getFileHandle: jest.fn(async (name) => {
-            if (files[name] === undefined) {
-                const err = new Error('NotFoundError');
-                err.name = 'NotFoundError';
-                throw err;
-            }
-            return {
-                getFile: async () => ({
-                    text: async () => files[name],
-                    size: files[name].length,
-                }),
-            };
-        }),
-        getDirectoryHandle: jest.fn(async (name) => {
-            if (!subdirs[name]) {
-                const err = new Error('NotFoundError');
-                err.name = 'NotFoundError';
-                throw err;
-            }
-            return subdirs[name];
-        }),
-        values: jest.fn(function () {
-            const entries = Object.entries(files).map(([name, content]) => ({
-                kind: 'file',
-                name,
-                getFile: async () => ({ text: async () => content, size: content.length }),
-            }));
-            return entries[Symbol.iterator]();
-        }),
-    };
-}
 
 /**
  * Creates an async iterable from entries for `for await ... of` support.
@@ -166,9 +130,7 @@ function createAsyncIterableDirHandle(files = {}, subdirs = {}) {
 
 // Helpers for building valid backup files
 function buildCategoriesNdjson(categories) {
-    return categories
-        .map((c) => JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', ...c }))
-        .join('\n');
+    return categories.map((c) => JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', ...c })).join('\n');
 }
 
 function buildSettingsJson(entries) {
@@ -178,21 +140,6 @@ function buildSettingsJson(entries) {
         version: '2.0',
         entries,
     });
-}
-
-function buildAlarmsJson(entries) {
-    return JSON.stringify({
-        app: 'QuickLog-Solo',
-        kind: 'QuickLogSolo/Alarm',
-        version: '2.0',
-        entries,
-    });
-}
-
-function buildHistoryNdjson(records) {
-    return records
-        .map((r) => JSON.stringify({ kind: 'QuickLogSolo/History', version: '1.0', ...r }))
-        .join('\n');
 }
 
 // ============================================================
@@ -297,9 +244,21 @@ describe('RestoreManager - legacy filename fallback', () => {
 describe('RestoreManager - invalid records skipped', () => {
     it('skips invalid records and shows skipped count in toast', async () => {
         const categoriesContent = [
-            JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'Valid', color: '#aabbcc' }),
+            JSON.stringify({
+                kind: 'QuickLogSolo/Category',
+                version: '1.0',
+                type: 'category',
+                name: 'Valid',
+                color: '#aabbcc',
+            }),
             'not valid json{{{',
-            JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', type: 'category', name: 'Also Valid', color: '#ddeeff' }),
+            JSON.stringify({
+                kind: 'QuickLogSolo/Category',
+                version: '1.0',
+                type: 'category',
+                name: 'Also Valid',
+                color: '#ddeeff',
+            }),
         ].join('\n');
         const settingsContent = buildSettingsJson([{ key: 'theme', value: 'dark' }]);
 
@@ -317,10 +276,7 @@ describe('RestoreManager - invalid records skipped', () => {
 
         expect(result).toBe(dirHandle);
         // The toast should show skipped records (1 invalid JSON line)
-        expect(showToast).toHaveBeenCalledWith(
-            expect.stringContaining('restore-skipped-records'),
-            'warning'
-        );
+        expect(showToast).toHaveBeenCalledWith(expect.stringContaining('restore-skipped-records'), 'warning');
     });
 });
 
@@ -387,13 +343,15 @@ describe('Property 5: バックアップ・リストア round-trip', () => {
         type: fc.constant('category'),
         name: fc.string({ minLength: 1, maxLength: 30 }).filter((s) => s.trim().length > 0 && !s.includes('\n')),
         color: fc
-            .tuple(
-                fc.integer({ min: 0, max: 255 }),
-                fc.integer({ min: 0, max: 255 }),
-                fc.integer({ min: 0, max: 255 })
-            )
-            .map(([r, g, b]) => `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`),
-        tags: fc.array(fc.string({ minLength: 1, maxLength: 10 }).filter((s) => !s.includes('\n')), { minLength: 0, maxLength: 3 }),
+            .tuple(fc.integer({ min: 0, max: 255 }), fc.integer({ min: 0, max: 255 }), fc.integer({ min: 0, max: 255 }))
+            .map(
+                ([r, g, b]) =>
+                    `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+            ),
+        tags: fc.array(
+            fc.string({ minLength: 1, maxLength: 10 }).filter((s) => !s.includes('\n')),
+            { minLength: 0, maxLength: 3 }
+        ),
         animation: fc.constantFrom('default', 'wave', 'pulse'),
     });
 
@@ -423,86 +381,83 @@ describe('Property 5: バックアップ・リストア round-trip', () => {
         fc.array(categoryArb, { minLength: 1, maxLength: 5 }),
         fc.array(settingsEntryArb, { minLength: 1, maxLength: 3 }),
         fc.array(alarmEntryArb, { minLength: 0, maxLength: 3 }),
-    ])(
-        'restore produces DB content equivalent to backup data',
-        async (categories, settingsEntries, alarmEntries) => {
-            jest.clearAllMocks();
+    ])('restore produces DB content equivalent to backup data', async (categories, settingsEntries, alarmEntries) => {
+        jest.clearAllMocks();
 
-            // Reset mocks to allow successful operations
-            dbClear.mockResolvedValue(undefined);
-            dbAddMultiple.mockResolvedValue(undefined);
-            dbPut.mockResolvedValue(undefined);
-            validateCategorySchema.mockReturnValue(true);
-            validateSettingsSchema.mockReturnValue(true);
-            validateAlarmSchema.mockReturnValue(true);
-            validateHistorySchema.mockReturnValue(true);
-            validateCustomAnimationSchema.mockReturnValue(true);
-            setCustomAnimationMetadataMap.mockResolvedValue(undefined);
+        // Reset mocks to allow successful operations
+        dbClear.mockResolvedValue(undefined);
+        dbAddMultiple.mockResolvedValue(undefined);
+        dbPut.mockResolvedValue(undefined);
+        validateCategorySchema.mockReturnValue(true);
+        validateSettingsSchema.mockReturnValue(true);
+        validateAlarmSchema.mockReturnValue(true);
+        validateHistorySchema.mockReturnValue(true);
+        validateCustomAnimationSchema.mockReturnValue(true);
+        setCustomAnimationMetadataMap.mockResolvedValue(undefined);
 
-            // Build backup files from the generated data
-            const categoriesNdjson = categories
-                .map((c) => JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', ...c }))
-                .join('\n');
+        // Build backup files from the generated data
+        const categoriesNdjson = categories
+            .map((c) => JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', ...c }))
+            .join('\n');
 
-            const settingsJson = JSON.stringify({
-                app: 'QuickLog-Solo',
-                kind: 'QuickLogSolo/Settings',
-                version: '2.0',
-                entries: settingsEntries,
-            });
+        const settingsJson = JSON.stringify({
+            app: 'QuickLog-Solo',
+            kind: 'QuickLogSolo/Settings',
+            version: '2.0',
+            entries: settingsEntries,
+        });
 
-            const alarmsJson = JSON.stringify({
-                app: 'QuickLog-Solo',
-                kind: 'QuickLogSolo/Alarm',
-                version: '2.0',
-                entries: alarmEntries,
-            });
+        const alarmsJson = JSON.stringify({
+            app: 'QuickLog-Solo',
+            kind: 'QuickLogSolo/Alarm',
+            version: '2.0',
+            entries: alarmEntries,
+        });
 
-            const dirFiles = {
-                'ql_categories.ndjson': categoriesNdjson,
-                'ql_settings.json': settingsJson,
-                'ql_alarms.json': alarmsJson,
-            };
+        const dirFiles = {
+            'ql_categories.ndjson': categoriesNdjson,
+            'ql_settings.json': settingsJson,
+            'ql_alarms.json': alarmsJson,
+        };
 
-            const dirHandle = createAsyncIterableDirHandle(dirFiles);
-            window.showDirectoryPicker.mockResolvedValue(dirHandle);
+        const dirHandle = createAsyncIterableDirHandle(dirFiles);
+        window.showDirectoryPicker.mockResolvedValue(dirHandle);
 
-            const showConfirm = jest.fn().mockResolvedValue(true);
-            const showToast = jest.fn();
-            const t = jest.fn((key) => key);
+        const showConfirm = jest.fn().mockResolvedValue(true);
+        const showToast = jest.fn();
+        const t = jest.fn((key) => key);
 
-            const result = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
+        const result = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
 
-            expect(result).toBe(dirHandle);
+        expect(result).toBe(dirHandle);
 
-            // Verify categories were restored
-            const categoryCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'categories');
-            if (categories.length > 0) {
-                expect(categoryCalls.length).toBeGreaterThan(0);
-                const restoredCategories = categoryCalls[0][1];
-                expect(restoredCategories).toHaveLength(categories.length);
-                for (let i = 0; i < categories.length; i++) {
-                    expect(restoredCategories[i].name).toBe(categories[i].name.trim());
-                    expect(restoredCategories[i].color).toBe(categories[i].color);
-                }
-            }
-
-            // Verify settings were restored
-            const settingsCalls = dbPut.mock.calls.filter(([store]) => store === 'settings');
-            expect(settingsCalls).toHaveLength(settingsEntries.length);
-
-            // Verify alarms were restored (if any)
-            if (alarmEntries.length > 0) {
-                const alarmCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'alarms');
-                expect(alarmCalls.length).toBeGreaterThan(0);
-                const restoredAlarms = alarmCalls[0][1];
-                expect(restoredAlarms).toHaveLength(alarmEntries.length);
-                for (let i = 0; i < alarmEntries.length; i++) {
-                    expect(restoredAlarms[i].enabled).toBe(alarmEntries[i].enabled);
-                    expect(restoredAlarms[i].time).toBe(alarmEntries[i].time);
-                    expect(restoredAlarms[i].action).toBe(alarmEntries[i].action);
-                }
+        // Verify categories were restored
+        const categoryCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'categories');
+        if (categories.length > 0) {
+            expect(categoryCalls.length).toBeGreaterThan(0);
+            const restoredCategories = categoryCalls[0][1];
+            expect(restoredCategories).toHaveLength(categories.length);
+            for (let i = 0; i < categories.length; i++) {
+                expect(restoredCategories[i].name).toBe(categories[i].name.trim());
+                expect(restoredCategories[i].color).toBe(categories[i].color);
             }
         }
-    );
+
+        // Verify settings were restored
+        const settingsCalls = dbPut.mock.calls.filter(([store]) => store === 'settings');
+        expect(settingsCalls).toHaveLength(settingsEntries.length);
+
+        // Verify alarms were restored (if any)
+        if (alarmEntries.length > 0) {
+            const alarmCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'alarms');
+            expect(alarmCalls.length).toBeGreaterThan(0);
+            const restoredAlarms = alarmCalls[0][1];
+            expect(restoredAlarms).toHaveLength(alarmEntries.length);
+            for (let i = 0; i < alarmEntries.length; i++) {
+                expect(restoredAlarms[i].enabled).toBe(alarmEntries[i].enabled);
+                expect(restoredAlarms[i].time).toBe(alarmEntries[i].time);
+                expect(restoredAlarms[i].action).toBe(alarmEntries[i].action);
+            }
+        }
+    });
 });

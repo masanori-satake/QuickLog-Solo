@@ -115,7 +115,6 @@ const ID_COPY_REPORT_BTN = 'copy-report-btn';
 const ID_COPY_AGGREGATION_BTN = 'copy-aggregation-btn';
 const ID_CATEGORY_SECTION = 'category-section';
 
-const ID_DELETE_INITIALIZE_SECTION = 'delete-initialize-section';
 const ID_DELETE_INITIALIZE_BTN = 'delete-initialize-btn';
 const ID_SESSION_SYNC_TOGGLE = 'session-sync-toggle';
 const ID_SYNC_STATUS_BADGE = 'sync-status-badge';
@@ -2184,6 +2183,11 @@ async function updateBackupUI() {
         if (mainContainer) mainContainer.style.display = 'none';
     }
 
+    const dirNameEl = getEl('backup-directory-name');
+    if (dirNameEl) {
+        dirNameEl.textContent = backupManager.directoryHandle ? backupManager.directoryHandle.name : '';
+    }
+
     const lastTimeDisplay = getEl(ID_BACKUP_LAST_TIME_DISPLAY);
     if (lastTimeDisplay) {
         const config = backupManager.config;
@@ -2210,7 +2214,9 @@ async function updateBackupUI() {
 
     backupManager.getFileCount().then((count) => {
         const fileCountDisplay = getEl(ID_BACKUP_FILE_COUNT_DISPLAY);
-        if (fileCountDisplay) fileCountDisplay.textContent = count.toString();
+        if (fileCountDisplay) {
+            fileCountDisplay.textContent = `${count} ${t('backup-file-count-unit')}`;
+        }
     });
 }
 
