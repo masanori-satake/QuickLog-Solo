@@ -1804,6 +1804,16 @@ async function launchOrFocusTab(localPath, fallbackUrl, params, windowName) {
     }
 
     if (windowName && windowName !== '_blank') {
+        try {
+            // Check if window is already open by trying to retrieve its reference
+            const win = window.open('', windowName);
+            if (win && win.location && win.location.href && win.location.href !== 'about:blank') {
+                win.focus();
+                return;
+            }
+        } catch (error) {
+            console.warn('Failed to focus existing window without reload:', error);
+        }
         window.open(url, windowName);
     } else {
         window.open(url, '_blank', 'noopener');
