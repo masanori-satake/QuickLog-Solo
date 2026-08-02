@@ -1,6 +1,29 @@
 import { t } from '../shared/js/i18n.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK } from '../shared/js/utils.js';
 
+/**
+ * Normalizes the actionCategory for an alarm by ensuring it's set to a valid category.
+ * If the current category is invalid or empty, sets it to the first valid category.
+ * @param {Object} alarm - The alarm object to normalize
+ * @param {Array} categories - The available categories
+ * @returns {boolean} - True if the category was changed, false otherwise
+ */
+function normalizeStartActionCategory(alarm, categories) {
+    if (alarm.action !== 'start') {
+        return false;
+    }
+
+    const validCategories = categories.filter(c => !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+    const hasCategory = validCategories.some(c => c.name === alarm.actionCategory);
+
+    if (!hasCategory && validCategories.length > 0) {
+        alarm.actionCategory = validCategories[0].name;
+        return true;
+    }
+
+    return false;
+}
+
 export function initUI(state, elements) {
     const {
         alarmListEl, emptyStateEl, detailFormEl,
@@ -191,12 +214,6 @@ export function initUI(state, elements) {
             categorySelect.replaceChildren();
             const validCategories = state.categories.filter(c => !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
 
-            // Ensure alarm.actionCategory is set to a valid category if it's currently invalid/empty
-            const hasCategory = validCategories.some(c => c.name === alarm.actionCategory);
-            if (!hasCategory && validCategories.length > 0) {
-                alarm.actionCategory = validCategories[0].name;
-            }
-
             validCategories.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat.name;
@@ -307,13 +324,7 @@ export function initUI(state, elements) {
         const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.action = actionSelect.value;
-            if (alarm.action === 'start') {
-                const validCategories = state.categories.filter(c => !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
-                const hasCategory = validCategories.some(c => c.name === alarm.actionCategory);
-                if (!hasCategory && validCategories.length > 0) {
-                    alarm.actionCategory = validCategories[0].name;
-                }
-            }
+            normalizeStartActionCategory(alarm, state.categories);
             renderDetail();
             if (state.onAlarmChange) state.onAlarmChange(alarm);
         }
@@ -414,6 +425,7 @@ export function initUI(state, elements) {
         renderBusinessDays,
         renderAlarmList,
         renderDetail,
-        updateHistoryButtons
+        updateHistoryButtons,
+        normalizeStartActionCategory: (alarm) => normalizeStartActionCategory(alarm, state.categories)
     };
 }

@@ -135,6 +135,7 @@ export default {
     'btn-reset': 'Zurücksetzen',
     'btn-initialize-all': 'Alles initialisieren',
     'btn-initialize': 'Initialisieren',
+    'toast-initialize-all': 'Initialisiert',
     'maintenance-reset-settings': 'Nur Einstellungen zurücksetzen',
     'maintenance-reset-settings-desc': 'Arbeitshistorien und Kategorien bleiben erhalten.',
     'btn-reset-settings': 'Nur Einstellungen zurücksetzen',

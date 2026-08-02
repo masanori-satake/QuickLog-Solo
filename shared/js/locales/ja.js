@@ -160,6 +160,7 @@ export default {
     'btn-reset': 'リセット',
     'btn-initialize-all': '全て初期化',
     'btn-initialize': '初期化',
+    'toast-initialize-all': '初期化しました',
     'maintenance-reset-settings': '設定のみの初期化',
     'maintenance-reset-settings-desc': '作業履歴とカテゴリは維持されます。',
     'btn-reset-settings': '設定のみを初期化',

@@ -160,6 +160,7 @@ export default {
     'btn-reset': 'Reset',
     'btn-initialize-all': 'Initialize All',
     'btn-initialize': 'Initialize',
+    'toast-initialize-all': 'Initialized',
     'maintenance-reset-settings': 'Reset Settings Only',
     'maintenance-reset-settings-desc': 'Work history and categories will be preserved.',
     'btn-reset-settings': 'Reset Settings Only',
