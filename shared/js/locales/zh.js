@@ -140,7 +140,11 @@ export default {
     'tooltip-status-stopped': '已结束',
     'tooltip-calendar': '选择日期',
     // Maintenance Tab
-    'maintenance-clear-logs': '作業履歴の削除',
+    'maintenance-clear-logs': '作業履歴',
+    'maintenance-clear-categories': 'カテゴリ',
+    'maintenance-clear-settings': '設定',
+    'maintenance-clear-alarms': 'アラーム',
+    'maintenance-clear-animations': 'カスタムアニメーション',
     'btn-clear-logs': '作業履歴をすべて削除',
     'maintenance-sync-pull': '同期履歴の再取得',
     'btn-sync-pull': '同期履歴の再取得',
@@ -155,15 +159,39 @@ export default {
     'maintenance-reset-settings': '仅重置设置',
     'maintenance-reset-settings-desc': '作業履歴とカテゴリは維持されます。',
     'btn-reset-settings': '仅重置设置',
+    // Maintenance - バックアップ・復元
+    'maintenance-backup-title': 'バックアップ・復元',
+    'backup-start': 'バックアップを開始する',
+    'backup-execute': 'バックアップを実行する',
+    'backup-change-dir': 'バックアップ先を指定する',
+    'restore-btn': '復元する',
+    'backup-status-success': 'バックアップ完了',
+    'backup-status-failed': 'バックアップ失敗',
+    // Maintenance - 復元ダイアログ
+    'confirm-restore': 'データを復元しますか？',
+    'confirm-restore-desc':
+        '現在のすべてのデータが削除され、バックアップデータで上書きされます。この操作は元に戻せません。',
+    // Maintenance - 復元メッセージ
+    'restore-success': '復元が完了しました',
+    'restore-error-invalid-folder': '有効なバックアップフォルダではありません。必須ファイルが見つかりません。',
+    'restore-error-write-failed': '復元中にエラーが発生しました。データが不完全な状態の可能性があります。',
+    'restore-skipped-records': '{count}件の不正なレコードをスキップしました',
+    // Maintenance - 削除/初期化
+    'maintenance-delete-title': '削除/初期化',
+    'maintenance-delete-execute': '削除/初期化する',
+    'confirm-delete-initialize':
+        '以下のデータを削除/初期化します:\n{items}\n\nこの操作は元に戻せません。本当に実行しますか？',
+    'maintenance-delete-success': '選択した項目を削除/初期化しました',
+    'maintenance-delete-error': '{item}の削除中にエラーが発生しました',
     // Backup Tab
     'btn-backup-start': '开始备份',
     'btn-backup-run': '执行备份',
     'btn-backup-grant-run': '授予权限并备份',
     'btn-backup-change-dir': '更改备份目录',
-    'backup-status-syncing': '同步中...',
-    'backup-last-time': '上次备份时间',
+    'backup-status-syncing': 'バックアップ中...',
+    'backup-last-time': '最終バックアップ: {time}',
     'backup-directory': '保存目录',
-    'backup-file-count': '文件数量',
+    'backup-file-count': 'ファイル数: {count}日分',
     'backup-file-count-unit': '天',
     'backup-description-new':
         '建议定期备份，以防因浏览器缓存清理导致 IndexedDB 数据丢失。有了备份数据，您还可以顺利迁移到其他浏览器。',
