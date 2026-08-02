@@ -23,7 +23,7 @@ test.describe('Duplicate Tab Prevention in Web Browser Mode', () => {
         const firstPopupPromise = context.waitForEvent('page');
         await page.click('#advanced-editor-link');
         const firstPopup = await firstPopupPromise;
-        await firstPopup.waitForLoadState('domcontentloaded');
+        await firstPopup.waitForURL(/category-editor/, { timeout: 10000 });
 
         // Verify the Category Editor is open
         expect(firstPopup.url()).toContain('category-editor');
@@ -64,7 +64,7 @@ test.describe('Duplicate Tab Prevention in Web Browser Mode', () => {
         const firstPopupPromise = context.waitForEvent('page');
         await page.click('#alarm-editor-link');
         const firstPopup = await firstPopupPromise;
-        await firstPopup.waitForLoadState('domcontentloaded');
+        await firstPopup.waitForURL(/alarm-editor/, { timeout: 10000 });
 
         // Verify the Alarm Editor is open
         expect(firstPopup.url()).toContain('alarm-editor');
