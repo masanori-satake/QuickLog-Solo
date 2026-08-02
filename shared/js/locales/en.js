@@ -158,6 +158,8 @@ export default {
     'maintenance-reset-all-desc': 'Work history will be preserved.',
     'btn-reset-all': 'Reset All',
     'btn-reset': 'Reset',
+    'btn-initialize-all': 'Initialize All',
+    'btn-initialize': 'Initialize',
     'maintenance-reset-settings': 'Reset Settings Only',
     'maintenance-reset-settings-desc': 'Work history and categories will be preserved.',
     'btn-reset-settings': 'Reset Settings Only',

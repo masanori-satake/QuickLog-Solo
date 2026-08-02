@@ -133,6 +133,8 @@ export default {
     'maintenance-reset-all-desc': 'L\'historique de travail sera conservé.',
     'btn-reset-all': 'Réinitialiser catégories et paramètres',
     'btn-reset': 'Réinitialiser',
+    'btn-initialize-all': 'Tout initialiser',
+    'btn-initialize': 'Initialiser',
     'maintenance-reset-settings': 'Réinitialiser les paramètres uniquement',
     'maintenance-reset-settings-desc': 'L\'historique de travail et les catégories seront conservés.',
     'btn-reset-settings': 'Réinitialiser les paramètres uniquement',

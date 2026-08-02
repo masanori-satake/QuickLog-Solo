@@ -41,6 +41,7 @@ test.describe('Launch QL-Animation Maker from Settings', () => {
     const popupErrors = [];
     popup.on('pageerror', err => popupErrors.push(err));
 
+    await popup.waitForURL(/.*animation-maker\/index\.html.*/);
     await popup.waitForLoadState('domcontentloaded');
     const url = popup.url();
     console.log(`Opened popup URL (dark): ${url}`);

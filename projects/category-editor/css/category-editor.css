@@ -813,22 +813,12 @@ input[type="text"]:disabled, select:disabled {
     color: var(--md-sys-color-on-secondary-container);
 }
 
-.tertiary-btn {
-    background-color: transparent;
-    color: var(--md-sys-color-primary);
-    border: 1px solid var(--md-sys-color-outline);
-}
-
 .primary-btn:hover {
     filter: brightness(1.2);
 }
 
 .secondary-btn:hover {
     filter: brightness(0.9);
-}
-
-.tertiary-btn:hover {
-    background-color: var(--md-sys-color-surface-container-highest);
 }
 
 body.theme-light .primary-btn:hover {
@@ -1143,9 +1133,5 @@ body.theme-light .secondary-btn:hover {
 
 /* Force Delete/Clear Buttons to display in red */
 #delete-selected-btn {
-    color: var(--md-sys-color-error) !important;
-}
-
-#clear-all-btn {
     color: var(--md-sys-color-error) !important;
 }

@@ -285,7 +285,7 @@ async function init() {
                 ui.renderBusinessDays();
                 ui.renderAlarmList();
                 ui.renderDetail();
-                state.showToast(t('btn-reset') + 'しました');
+                state.showToast(t('btn-initialize') + 'しました');
             } else {
                 await dbClear(STORE_ALARMS);
                 await dbClear(STORE_SETTINGS);
