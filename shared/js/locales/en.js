@@ -467,7 +467,7 @@ export default {
     'maker-invert': 'Invert (Negative/Positive Inversion)',
     'maker-brightness': 'Brightness',
     'maker-gif-import': 'GIF Image Import',
-    'maker-drop-hint': 'Drag & Drop GIF file here, or click to select',
+    'maker-drop-hint': 'Drop an animated GIF here, or click to select',
     'maker-file-name': 'File:',
     'maker-dimensions': 'Dimensions:',
     'maker-frames-count': 'Frames:',

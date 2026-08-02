@@ -442,7 +442,7 @@ export default {
     'maker-invert': '反转（黑白反转）',
     'maker-brightness': '亮度',
     'maker-gif-import': '导入 GIF 图片',
-    'maker-drop-hint': '将 GIF 文件拖放到此处，或点击选择',
+    'maker-drop-hint': '将动态GIF拖放到此处，或点击选择',
     'maker-file-name': '文件:',
     'maker-dimensions': '尺寸:',
     'maker-frames-count': '帧数:',
