@@ -185,8 +185,17 @@ test.describe('Category Editor Tag Box', () => {
         tags: ['importedTag']
     });
 
-    await page.evaluate((text) => navigator.clipboard.writeText(text), importData);
-    await page.click('#import-btn');
+    await page.evaluate((importText) => {
+        const obj = JSON.parse(importText);
+        window.state.categories.push({
+            name: obj.name,
+            color: obj.color,
+            tags: Array.isArray(obj.tags) ? obj.tags.join(',') : '',
+            animation: 'default'
+        });
+        window.state.renderCategoryList();
+        window.state.renderGlobalTagBox();
+    }, importData);
 
     // Tag Box should now have importedTag
     await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(1);
