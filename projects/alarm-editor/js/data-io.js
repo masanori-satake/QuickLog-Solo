@@ -44,4 +44,3 @@ export function notifySync() {
     const bc = new BroadcastChannel('quicklog_solo_sync_QuickLogSoloDB');
     bc.postMessage({ type: 'alarms-updated' });
 }
-

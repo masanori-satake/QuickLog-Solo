@@ -170,4 +170,3 @@ QuickLog-Solo のバックアップ機能を拡張し、リストア（復元）
 5. WHEN 新しい i18n キーを追加する, THE Maintenance_UI SHALL `ja.js` に日本語の正典文字列を最初に定義してから他の 7 言語ファイルに翻訳を追加する
 6. IF i18n キーに対応する翻訳が定義されていない言語で UI を表示する, THEN THE Maintenance_UI SHALL 英語（`en`）の翻訳をフォールバックとして使用する
 7. WHEN 削除/初期化確認ダイアログを表示する, THE Maintenance_UI SHALL 選択されたチェックボックスの項目名を動的にダイアログ本文に列挙する
-
