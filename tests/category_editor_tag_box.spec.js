@@ -167,7 +167,7 @@ test.describe('Category Editor Tag Box', () => {
     await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(0);
   });
 
-  test('Tag Box updates after Import operation', async ({ page }) => {
+  test('Tag Box updates after adding a category directly to state', async ({ page }) => {
     await page.evaluate(() => {
         window.state.categories = [];
         window.state.renderCategoryList();
@@ -176,7 +176,7 @@ test.describe('Category Editor Tag Box', () => {
 
     await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(0);
 
-    const importData = JSON.stringify({
+    const categoryData = JSON.stringify({
         kind: 'QuickLogSolo/Category',
         version: '1.0',
         type: 'category',
@@ -185,8 +185,8 @@ test.describe('Category Editor Tag Box', () => {
         tags: ['importedTag']
     });
 
-    await page.evaluate((importText) => {
-        const obj = JSON.parse(importText);
+    await page.evaluate((categoryDataText) => {
+        const obj = JSON.parse(categoryDataText);
         window.state.categories.push({
             name: obj.name,
             color: obj.color,
@@ -195,7 +195,7 @@ test.describe('Category Editor Tag Box', () => {
         });
         window.state.renderCategoryList();
         window.state.renderGlobalTagBox();
-    }, importData);
+    }, categoryData);
 
     // Tag Box should now have importedTag
     await expect(page.locator('#global-tag-list .tag-pill')).toHaveCount(1);
