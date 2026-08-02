@@ -139,8 +139,8 @@ class BackupManager {
         }
     }
 
-    async _ensureSubDirectory(parentHandle, dirName) {
-        return await parentHandle.getDirectoryHandle(dirName, { create: true });
+    async _ensureSubDirectory(parentHandle, dirName, { create = true } = {}) {
+        return await parentHandle.getDirectoryHandle(dirName, { create });
     }
 
     async _backupAlarms() {
@@ -392,7 +392,7 @@ class BackupManager {
     async cleanupOldFiles() {
         const threshold = Date.now() - LOG_CLEANUP_THRESHOLD_MS;
         try {
-            const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY);
+            const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY, { create: false });
             for await (const entry of historyHandle.values()) {
                 if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
                     const dateStr = entry.name.replace('.ndjson', '');
@@ -401,8 +401,8 @@ class BackupManager {
                     }
                 }
             }
-        } catch {
-            // history/ directory might not exist yet
+        } catch (e) {
+            if (e.name !== 'NotFoundError') throw e;
         }
     }
 
@@ -518,14 +518,14 @@ class BackupManager {
         if (!this.directoryHandle) return 0;
         let count = 0;
         try {
-            const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY);
+            const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY, { create: false });
             for await (const entry of historyHandle.values()) {
                 if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
                     count++;
                 }
             }
         } catch {
-            // Might fail if permission is not granted
+            // history/ directory might not exist or permission not granted
         }
         return count;
     }

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Maintenance Tab', () => {
     test.beforeEach(async ({ page }) => {
-        const dbName = `MaintenanceTestDB_${Math.random().toString(36).substring(7)}`;
+        const dbName = `MaintenanceTestDB_${Date.now().toString(36)}`;
         await page.goto(`?lang=en&db=${dbName}`);
         await page.waitForSelector('.category-btn');
     });

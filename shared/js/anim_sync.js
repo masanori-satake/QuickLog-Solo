@@ -111,8 +111,20 @@ export async function pushAnimationToSync(animationId, base64, onProgress) {
         onProgress(i + 1, totalChunks);
     }
 
-    // Write metadata key with chunk count
+    // Clean up stale chunks from a previous version that had more chunks
     const metaKey = animMetaKey(animationId);
+    const oldMeta = await chrome.storage.sync.get(metaKey);
+    if (oldMeta[metaKey] && oldMeta[metaKey].chunkCount > totalChunks) {
+        const staleKeys = [];
+        for (let i = totalChunks; i < oldMeta[metaKey].chunkCount; i++) {
+            staleKeys.push(animChunkKey(animationId, i));
+        }
+        if (staleKeys.length > 0) {
+            await chrome.storage.sync.remove(staleKeys);
+        }
+    }
+
+    // Write metadata key with chunk count
     let metaSuccess = false;
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -121,6 +133,9 @@ export async function pushAnimationToSync(animationId, base64, onProgress) {
             metaSuccess = true;
             break;
         } catch (err) {
+            if (err && err.message && err.message.includes('QUOTA_BYTES_PER_ITEM')) {
+                throw err;
+            }
             if (attempt < MAX_RETRIES - 1) {
                 await delay(RETRY_DELAY_MS);
             }

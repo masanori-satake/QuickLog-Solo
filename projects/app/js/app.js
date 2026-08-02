@@ -2190,6 +2190,19 @@ async function updateBackupUI() {
         lastTimeDisplay.textContent = config.lastBackupTime ? new Date(config.lastBackupTime).toLocaleString() : '-';
     }
 
+    const statusIndicator = getEl(ID_BACKUP_STATUS_INDICATOR);
+    if (statusIndicator) {
+        if (backupManager.status === 'success') {
+            statusIndicator.textContent = t('backup-status-success');
+        } else if (backupManager.status === 'failed') {
+            statusIndicator.textContent = t('backup-status-failed');
+        } else if (backupManager.status === 'syncing') {
+            statusIndicator.textContent = t('backup-status-syncing');
+        } else {
+            statusIndicator.textContent = '';
+        }
+    }
+
     const executeBtn = getEl(ID_BACKUP_EXECUTE_BTN);
     if (executeBtn) {
         executeBtn.disabled = backupManager.isSyncing;
@@ -2783,6 +2796,12 @@ function setupEventListeners() {
         } catch (err) {
             console.error('QuickLog-Solo: Delete/Initialize failed:', err);
             showToast(t('alert-error') || 'Operation failed');
+        } finally {
+            // Re-evaluate button state based on current checkbox selection
+            if (deleteInitBtn) {
+                const anyChecked = [...deleteInitCheckboxes].some((c) => c.checked);
+                deleteInitBtn.disabled = !anyChecked;
+            }
         }
     });
 
@@ -2796,6 +2815,7 @@ function setupEventListeners() {
         const dirHandle = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
         if (dirHandle) {
             await backupManager.setDirectory(dirHandle);
+            location.reload();
         }
     };
     getEl('restore-btn')?.addEventListener('click', handleRestore);

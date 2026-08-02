@@ -59,7 +59,7 @@ class RestoreManager {
         }
 
         // Step 3: Show confirmation dialog (full data wipe warning)
-        const confirmed = await showConfirm('confirm-restore', {});
+        const confirmed = await showConfirm(t('confirm-restore') + '\n\n' + t('confirm-restore-desc'));
         if (!confirmed) return null;
 
         // Step 4: Execute full restore
@@ -97,8 +97,7 @@ class RestoreManager {
             showToast(t('restore-success'), 'success');
         }
 
-        // Step 6: Reload to apply restored data
-        location.reload();
+        // Step 6: Return directory handle
         return dirHandle;
     }
 
@@ -117,7 +116,7 @@ class RestoreManager {
         const settingsFile = await this._resolveFileWithFallback(dirHandle, FILE_NAME_QL_SETTINGS, FILE_NAME_SETTINGS);
 
         // Both must exist for a valid backup
-        if (!categoriesFile && !settingsFile) {
+        if (!categoriesFile || !settingsFile) {
             return { valid: false };
         }
 
@@ -266,7 +265,7 @@ class RestoreManager {
 
     /**
      * Restores work logs from backup.
-     * Searches both history/ subdirectory and root directory for YYYY-MM-DD.ndjson files.
+     * Searches history/ subdirectory first; only falls back to root directory if history/ was not found.
      * @param {FileSystemDirectoryHandle} dirHandle
      * @returns {Promise<number>} Number of skipped records
      */
@@ -274,10 +273,12 @@ class RestoreManager {
         const datePattern = /^\d{4}-\d{2}-\d{2}\.ndjson$/;
         const allLogs = [];
         let skipped = 0;
+        let historyFound = false;
 
         // Search history/ subdirectory first
         try {
             const historyDir = await dirHandle.getDirectoryHandle(DIR_NAME_HISTORY);
+            historyFound = true;
             for await (const entry of historyDir.values()) {
                 if (entry.kind === 'file' && datePattern.test(entry.name)) {
                     const result = await this._readAndValidateLogFile(entry);
@@ -286,16 +287,17 @@ class RestoreManager {
                 }
             }
         } catch (e) {
-            // history/ directory might not exist (v1.x backup)
             if (e.name !== 'NotFoundError') throw e;
         }
 
-        // Also search root directory for v1.x compatibility
-        for await (const entry of dirHandle.values()) {
-            if (entry.kind === 'file' && datePattern.test(entry.name)) {
-                const result = await this._readAndValidateLogFile(entry);
-                allLogs.push(...result.logs);
-                skipped += result.skipped;
+        // Only search root directory if history/ was not found (v1.x compatibility)
+        if (!historyFound) {
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file' && datePattern.test(entry.name)) {
+                    const result = await this._readAndValidateLogFile(entry);
+                    allLogs.push(...result.logs);
+                    skipped += result.skipped;
+                }
             }
         }
 
