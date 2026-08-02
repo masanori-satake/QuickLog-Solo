@@ -22,8 +22,8 @@ test.describe('Maintenance Tab', () => {
         // Verify backup/restore section exists
         await expect(page.locator('#backup-restore-section')).toBeVisible();
 
-        // Verify restore button exists (in not-configured state, which is default for fresh DB)
-        await expect(page.locator('#restore-btn')).toBeVisible();
+        // Verify backup directory selection button exists (in not-configured state, which is default for fresh DB)
+        await expect(page.locator('#backup-change-dir-btn-init')).toBeVisible();
 
         // Verify backup start button exists (not-configured state)
         await expect(page.locator('#backup-start-btn')).toBeVisible();
