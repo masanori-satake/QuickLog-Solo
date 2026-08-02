@@ -1754,7 +1754,15 @@ function showSyncSetupModal() {
  */
 function getLaunchProjectUrl(extensionPath, webPath, params) {
     const isExtension = window.location.protocol === 'chrome-extension:';
-    const baseUrl = isExtension ? chrome.runtime.getURL(extensionPath) : webPath;
+    let baseUrl = isExtension ? chrome.runtime.getURL(extensionPath) : webPath;
+
+    // For local development or testing on web, resolve absolute production URLs to local relative paths
+    if (!isExtension && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        if (webPath.startsWith('https://quick-log-solo.vercel.app/')) {
+            baseUrl = webPath.replace('https://quick-log-solo.vercel.app/', '../');
+        }
+    }
+
     const urlObj = new URL(baseUrl, window.location.href);
     for (const [key, value] of Object.entries(params)) {
         urlObj.searchParams.set(key, value);
@@ -1763,19 +1771,60 @@ function getLaunchProjectUrl(extensionPath, webPath, params) {
 }
 
 /**
+ * Helper to launch or focus an existing editor tab.
+ * @param {string} localPath - Path inside Chrome Extension.
+ * @param {string} fallbackUrl - Relative/absolute path on standard web.
+ * @param {Record<string, string>} params - Query parameters to append.
+ * @param {string} windowName - Target window name for non-extension duplicate prevention.
+ */
+async function launchOrFocusTab(localPath, fallbackUrl, params, windowName) {
+    const isExtension = window.location.protocol === 'chrome-extension:';
+    const url = getLaunchProjectUrl(localPath, fallbackUrl, params);
+
+    if (isExtension && typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
+        const extensionUrlBase = chrome.runtime.getURL(localPath);
+        const queryUrlPattern = `${extensionUrlBase}*`;
+
+        try {
+            const tabs = await new Promise((resolve) => {
+                chrome.tabs.query({ url: queryUrlPattern }, resolve);
+            });
+
+            if (tabs && tabs.length > 0) {
+                const tab = tabs[0];
+                chrome.tabs.update(tab.id, { active: true });
+                if (tab.windowId) {
+                    chrome.windows.update(tab.windowId, { focused: true });
+                }
+                return;
+            }
+        } catch (error) {
+            console.error('Failed to query or update existing tab:', error);
+        }
+    }
+
+    if (windowName && windowName !== '_blank') {
+        window.open(url, windowName);
+    } else {
+        window.open(url, '_blank', 'noopener');
+    }
+}
+
+/**
  * Helper to launch editor with standard parameters (language, theme, from: 'app').
  * @param {string} localPath - Path inside Chrome Extension.
  * @param {string} fallbackUrl - Relative/absolute path on standard web.
+ * @param {string} windowName - Target window name.
  */
-function launchEditor(localPath, fallbackUrl) {
+function launchEditor(localPath, fallbackUrl, windowName) {
     const lang = getLanguage();
     const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
-    const url = getLaunchProjectUrl(localPath, fallbackUrl, {
+    const params = {
         lang,
         theme: resolvedTheme,
         from: 'app',
-    });
-    window.open(url, '_blank', 'noopener');
+    };
+    launchOrFocusTab(localPath, fallbackUrl, params, windowName);
 }
 
 async function renderBusinessDays() {
@@ -1827,7 +1876,7 @@ async function renderBusinessDays() {
         editBtn.appendChild(editIcon);
 
         editBtn.onclick = () => {
-            launchEditor('projects/alarm-editor/index.html', ALARM_EDITOR_URL);
+            launchEditor('projects/alarm-editor/index.html', ALARM_EDITOR_URL, 'quicklog_alarm_editor');
         };
 
         const parent = container.parentElement;
@@ -2635,7 +2684,7 @@ function setupEventListeners() {
 
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
-        launchEditor('projects/category-editor/index.html', CATEGORY_EDITOR_URL);
+        launchEditor('projects/category-editor/index.html', CATEGORY_EDITOR_URL, 'quicklog_category_editor');
     });
 
     getEl('launch-maker-btn')?.addEventListener('click', (e) => {
@@ -2646,16 +2695,17 @@ function setupEventListeners() {
         const lang = getLanguage();
         const resolvedTheme = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
 
-        const url = getLaunchProjectUrl('projects/animation-maker/index.html', '../animation-maker/index.html', {
-            lang,
-            theme: resolvedTheme,
-        });
-        window.open(url, '_blank', 'noopener');
+        launchOrFocusTab(
+            'projects/animation-maker/index.html',
+            '../animation-maker/index.html',
+            { lang, theme: resolvedTheme },
+            'quicklog_animation_maker'
+        );
     });
 
     getEl('alarm-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
-        launchEditor('projects/alarm-editor/index.html', ALARM_EDITOR_URL);
+        launchEditor('projects/alarm-editor/index.html', ALARM_EDITOR_URL, 'quicklog_alarm_editor');
     });
 
     getEl('test-notification-btn')?.addEventListener('click', async () => {
