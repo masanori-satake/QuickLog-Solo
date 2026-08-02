@@ -2208,11 +2208,14 @@ async function renderCategoryList() {
 
             const swatch = createEl('span');
             swatch.className = 'category-readonly-swatch';
-            swatch.style.display = 'inline-block';
-            swatch.style.width = '16px';
-            swatch.style.height = '16px';
-            swatch.style.borderRadius = '50%';
             swatch.style.backgroundColor = getColorCode(cat.color);
+
+            const retroMap = { 'retro-lcd': 'L', 'retro-crt': 'C', 'retro-nixie': 'N' };
+            const retroTextColor = { 'retro-lcd': '#0f380f', 'retro-crt': '#030c04', 'retro-nixie': '#1a0800' };
+            if (retroMap[cat.color]) {
+                swatch.textContent = retroMap[cat.color];
+                swatch.style.color = retroTextColor[cat.color];
+            }
 
             const nameSpan = createEl('span');
             nameSpan.className = 'category-readonly-name';
@@ -2221,77 +2224,69 @@ async function renderCategoryList() {
             row1.appendChild(swatch);
             row1.appendChild(nameSpan);
 
-            // Row 2: Tags & Animation details (if set)
-            const row2 = createEl('div');
-            row2.className = 'cat-editor-row row-2';
-            row2.style.display = 'flex';
-            row2.style.flexDirection = 'column';
-            row2.style.gap = '4px';
-            row2.style.marginTop = '4px';
-            row2.style.fontSize = '0.85rem';
-            row2.style.color = 'var(--md-sys-color-on-surface-variant)';
+            // Row 2: Tags
+            const tagsRow = createEl('div');
+            tagsRow.className = 'cat-detail-row row-2';
+            tagsRow.style.paddingLeft = '32px'; // Swatch 24px + gap 8px
 
-            // Tags
+            const tagIcon = createEl('span');
+            tagIcon.className = 'material-symbols-outlined';
+            tagIcon.textContent = 'sell';
+
+            const tagValue = createEl('span');
+            tagValue.className = 'category-readonly-detail-value';
             const tagStr = cat.tags || '';
-            const tags = tagStr
+            const tagList = tagStr
                 ? tagStr
                       .split(',')
                       .map((t) => t.trim())
                       .filter(Boolean)
-                : [];
-            if (tags.length > 0) {
-                const tagsWrapper = createEl('div');
-                tagsWrapper.style.display = 'flex';
-                tagsWrapper.style.flexWrap = 'wrap';
-                tagsWrapper.style.gap = '4px';
-                tagsWrapper.style.alignItems = 'center';
+                      .join(', ')
+                : '';
+            tagValue.textContent = tagList;
 
-                const tagLabel = createEl('span');
-                tagLabel.textContent = t('tags') + ': ';
-                tagsWrapper.appendChild(tagLabel);
+            tagsRow.appendChild(tagIcon);
+            tagsRow.appendChild(tagValue);
 
-                tags.forEach((tag) => {
-                    const pill = createEl('span');
-                    pill.className = 'tag-pill';
-                    pill.style.padding = '2px 8px';
-                    pill.style.borderRadius = '12px';
-                    pill.style.backgroundColor = 'var(--md-sys-color-surface-variant)';
-                    pill.style.fontSize = '0.75rem';
-                    pill.textContent = tag;
-                    tagsWrapper.appendChild(pill);
-                });
-                row2.appendChild(tagsWrapper);
-            }
+            // Row 3: Animation
+            const animRow = createEl('div');
+            animRow.className = 'cat-detail-row row-3';
+            animRow.style.paddingLeft = '32px'; // Swatch 24px + gap 8px
 
-            // Animation
-            const anim = cat.animation || 'default';
-            if (anim !== 'none') {
-                const animWrapper = createEl('div');
-                let animLabel = anim;
-                if (anim === 'default') {
-                    animLabel = t('anim-default');
-                } else {
-                    const stdAnim = animations.find((a) => a.id === anim);
-                    if (stdAnim) {
-                        if (typeof stdAnim.metadata.name === 'object') {
-                            animLabel = stdAnim.metadata.name[lang] || stdAnim.metadata.name['en'] || stdAnim.id;
-                        } else {
-                            animLabel = stdAnim.metadata.name;
-                        }
-                    } else if (customAnims[anim]) {
-                        animLabel = customAnims[anim].name;
+            const animIcon = createEl('span');
+            animIcon.className = 'material-symbols-outlined';
+            animIcon.textContent = 'animation';
+
+            const animValue = createEl('span');
+            animValue.className = 'category-readonly-detail-value';
+
+            const anim = cat.animation || 'none';
+            if (anim === 'none') {
+                animValue.textContent = t('anim-none');
+            } else if (anim === 'default') {
+                animValue.textContent = t('anim-default');
+            } else {
+                const stdAnim = animations.find((a) => a.id === anim);
+                if (stdAnim) {
+                    if (typeof stdAnim.metadata.name === 'object') {
+                        animValue.textContent =
+                            stdAnim.metadata.name[lang] || stdAnim.metadata.name['en'] || stdAnim.id;
+                    } else {
+                        animValue.textContent = stdAnim.metadata.name;
                     }
+                } else if (customAnims[anim]) {
+                    animValue.textContent = customAnims[anim].name;
+                } else {
+                    animValue.textContent = anim;
                 }
-                const animLabelSpan = createEl('span');
-                animLabelSpan.textContent = t('setting-animation-by-category-common') + ': ' + animLabel;
-                animWrapper.appendChild(animLabelSpan);
-                row2.appendChild(animWrapper);
             }
+
+            animRow.appendChild(animIcon);
+            animRow.appendChild(animValue);
 
             item.appendChild(row1);
-            if (tags.length > 0 || anim !== 'none') {
-                item.appendChild(row2);
-            }
+            item.appendChild(tagsRow);
+            item.appendChild(animRow);
         }
 
         list.appendChild(item);

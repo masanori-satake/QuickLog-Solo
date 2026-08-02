@@ -250,8 +250,14 @@ async function init() {
         setTimeout(() => toast.classList.add('hidden'), 2000);
     };
 
+    // Spec: Select first alarm on initial load if present
+    if (state.alarms.length > 0 && !state.selectedAlarmId) {
+        state.selectedAlarmId = state.alarms[0].id;
+    }
+
     ui.renderBusinessDays();
     ui.renderAlarmList();
+    ui.renderDetail();
     ui.updateHistoryButtons(history);
 
     // Header interaction
