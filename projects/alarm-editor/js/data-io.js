@@ -1,5 +1,5 @@
 import {
-    initDB, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS, STORE_CATEGORIES, SETTING_KEY_LANGUAGE
+    initDB, dbPut, dbClear, dbAddMultiple, STORE_ALARMS, STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS, SETTING_KEY_LANGUAGE
 } from '../shared/js/db.js';
 
 export async function initData(state) {
@@ -43,36 +43,4 @@ export async function saveLanguage(lang) {
 export function notifySync() {
     const bc = new BroadcastChannel('quicklog_solo_sync_QuickLogSoloDB');
     bc.postMessage({ type: 'alarms-updated' });
-}
-
-export async function exportAlarms(state) {
-    const exportData = {
-        app: 'QuickLog-Solo',
-        kind: 'QuickLogSolo/Alarms',
-        version: '1.0',
-        businessDays: state.businessDays,
-        categories: state.categories,
-        alarms: state.alarms.map(a => {
-            const rest = { ...a };
-            delete rest.id;
-            return rest;
-        })
-    };
-    await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
-}
-
-export async function importAlarms() {
-    const text = await navigator.clipboard.readText();
-    const data = JSON.parse(text);
-    if (data.kind !== 'QuickLogSolo/Alarms') throw new Error('Invalid format');
-
-    if (data.businessDays) {
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_BUSINESS_DAYS, value: data.businessDays });
-    }
-    if (data.categories) {
-        await dbClear(STORE_CATEGORIES);
-        await dbAddMultiple(STORE_CATEGORIES, data.categories);
-    }
-    await dbClear(STORE_ALARMS);
-    await dbAddMultiple(STORE_ALARMS, data.alarms);
 }

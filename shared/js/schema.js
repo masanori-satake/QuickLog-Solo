@@ -6,10 +6,13 @@
 import { isValidCategoryName, isValidColor } from './utils.js';
 
 export const SCHEMA_VERSION_1_0 = '1.0';
+export const SCHEMA_VERSION_2_0 = '2.0';
 
 export const SCHEMA_KIND_CATEGORY = 'QuickLogSolo/Category';
 export const SCHEMA_KIND_HISTORY = 'QuickLogSolo/History';
 export const SCHEMA_KIND_SETTINGS = 'QuickLogSolo/Settings';
+export const SCHEMA_KIND_ALARM = 'QuickLogSolo/Alarm';
+export const SCHEMA_KIND_CUSTOM_ANIMATION = 'QuickLogSolo/CustomAnimation';
 
 export const SCHEMA_TYPE_CATEGORY = 'category';
 export const SCHEMA_TYPE_PAGE_BREAK = 'page-break';
@@ -115,7 +118,11 @@ export function validateHistorySchema(data) {
  */
 export function validateSettingsSchema(data) {
     if (!data || typeof data !== 'object') return false;
-    if (data.app !== 'QuickLog-Solo' || data.kind !== SCHEMA_KIND_SETTINGS || data.version !== SCHEMA_VERSION_1_0)
+    if (
+        data.app !== 'QuickLog-Solo' ||
+        data.kind !== SCHEMA_KIND_SETTINGS ||
+        (data.version !== SCHEMA_VERSION_1_0 && data.version !== SCHEMA_VERSION_2_0)
+    )
         return false;
     if (!Array.isArray(data.entries)) return false;
 
@@ -205,6 +212,71 @@ export function validateSettingsSchema(data) {
                 break;
             }
         }
+    }
+
+    return true;
+}
+
+/**
+ * Validates an object against the Alarm Schema (v2.0).
+ * Validates the full alarm backup object including kind, version, and entries.
+ * @param {any} data
+ * @returns {boolean}
+ */
+export function validateAlarmSchema(data) {
+    if (!data || typeof data !== 'object') return false;
+    if (data.kind !== SCHEMA_KIND_ALARM || data.version !== SCHEMA_VERSION_2_0) return false;
+    if (!Array.isArray(data.entries)) return false;
+
+    for (const entry of data.entries) {
+        if (!entry || typeof entry !== 'object') return false;
+
+        if (typeof entry.enabled !== 'boolean') return false;
+        if (typeof entry.time !== 'string' || !entry.time.match(/^([01]\d|2[0-3]):([0-5]\d)$/)) return false;
+        if (typeof entry.message !== 'string' || entry.message.length > 200) return false;
+        if (!['none', 'stop', 'pause', 'start'].includes(entry.action)) return false;
+        if (typeof entry.actionCategory !== 'string' || entry.actionCategory.length > 100) return false;
+        if (typeof entry.requireConfirmation !== 'boolean') return false;
+
+        if (!['daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'].includes(entry.type)) return false;
+        if (!Array.isArray(entry.daysOfWeek)) return false;
+        for (const d of entry.daysOfWeek) {
+            if (typeof d !== 'number' || d < 0 || d > 6) return false;
+        }
+        if (typeof entry.dayOfMonth !== 'number' || entry.dayOfMonth < 1 || entry.dayOfMonth > 31) return false;
+        if (typeof entry.daysBeforeEnd !== 'number' || entry.daysBeforeEnd < 0 || entry.daysBeforeEnd > 31)
+            return false;
+        if (!['none', 'prev_business_day', 'next_business_day', 'skip'].includes(entry.holidayAdjustment)) return false;
+    }
+
+    return true;
+}
+
+/**
+ * Validates an object against the Custom Animation Schema (v2.0).
+ * Validates the full custom animation backup object including kind, version, and entries.
+ * @param {any} data
+ * @returns {boolean}
+ */
+export function validateCustomAnimationSchema(data) {
+    if (!data || typeof data !== 'object') return false;
+    if (data.kind !== SCHEMA_KIND_CUSTOM_ANIMATION || data.version !== SCHEMA_VERSION_2_0) return false;
+    if (!Array.isArray(data.entries)) return false;
+
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    for (const entry of data.entries) {
+        if (!entry || typeof entry !== 'object') return false;
+
+        if (typeof entry.id !== 'string' || entry.id.length < 1 || entry.id.length > 50) return false;
+        if (!uuidPattern.test(entry.id)) return false;
+        if (typeof entry.name !== 'string' || entry.name.length < 1 || entry.name.length > 100) return false;
+        if (entry.description !== undefined) {
+            if (typeof entry.description !== 'string' || entry.description.length > 500) return false;
+        }
+        if (typeof entry.config !== 'object' || entry.config === null || Array.isArray(entry.config)) return false;
+        if (typeof entry.renderSpec !== 'object' || entry.renderSpec === null || Array.isArray(entry.renderSpec))
+            return false;
     }
 
     return true;

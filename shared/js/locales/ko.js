@@ -123,7 +123,37 @@ export default {
     'about-stats-categories': '카테고리 수',
     'about-description': 'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 메모 도구입니다. 데이터는 브라우저의 IndexedDB에 저장되며(백업을 실행했을 때는 로컬 파일 시스템에도 저장됩니다) 외부로 전송되지 않습니다. GitHub Actions를 통한 엄격한 의존성 검증과 Google OSV-Scanner의 지속적인 감사를 통해 높은 투명성과 보안성을 유지합니다.',
     'about-disclaimer': '[면책 조항] 이 프로젝트는 개인 오픈 소스 프로젝트이며 어떠한 보증도 제공하지 않습니다. 개발자는 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 사용자의 책임 하에 이용해 주십시오.',
-    'maintenance-clear-logs': '작업 이력 삭제',
+    // Maintenance - Backup & Restore
+    'maintenance-backup-title': '백업 및 복원',
+    'backup-start': '백업 시작하기',
+    'backup-execute': '백업 실행하기',
+    'backup-change-dir': '백업 위치 지정',
+    'restore-btn': '복원하기',
+    'backup-status-success': '백업 완료',
+    'backup-status-failed': '백업 실패',
+
+    // Maintenance - Restore Dialog
+    'confirm-restore': '데이터를 복원하시겠습니까?',
+    'confirm-restore-desc': '현재의 모든 데이터가 삭제되고 백업 데이터로 덮어쓰여집니다. 이 작업은 되돌릴 수 없습니다.',
+
+    // Maintenance - Restore Messages
+    'restore-success': '복원이 완료되었습니다',
+    'restore-error-invalid-folder': '유효한 백업 폴더가 아닙니다. 필수 파일이 없습니다.',
+    'restore-error-write-failed': '복원 중 오류가 발생했습니다. 데이터가 불완전한 상태일 수 있습니다.',
+    'restore-skipped-records': '{count}건의 잘못된 레코드를 건너뛰었습니다',
+
+    // Maintenance - Delete/Initialize
+    'maintenance-delete-title': '삭제/초기화',
+    'maintenance-clear-logs': '작업 이력',
+    'maintenance-clear-categories': '카테고리',
+    'maintenance-clear-settings': '설정',
+    'maintenance-clear-alarms': '알람',
+    'maintenance-clear-animations': '사용자 정의 애니메이션',
+    'maintenance-delete-execute': '삭제/초기화 실행',
+    'confirm-delete-initialize': '다음 데이터가 삭제/초기화됩니다:\n{items}\n\n이 작업은 되돌릴 수 없습니다. 정말 실행하시겠습니까?',
+    'maintenance-delete-success': '선택한 항목을 삭제/초기화했습니다',
+    'maintenance-delete-error': '{item} 삭제 중 오류가 발생했습니다',
+
     'btn-clear-logs': '모든 작업 이력 삭제',
     'maintenance-sync-pull': '동기화 이력 다시 가져오기',
     'btn-sync-pull': '동기화 이력 다시 가져오기',

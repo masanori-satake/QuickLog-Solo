@@ -123,7 +123,37 @@ export default {
     'about-stats-categories': 'Número de categorias',
     'about-description': 'QuickLog-Solo é uma ferramenta de notas de trabalho minimalista focada na privacidade. Os dados são salvos no IndexedDB do seu navegador (e também no sistema de arquivos local quando o backup for executado) e nunca são enviados externamente. Mantém alta transparência e segurança por meio da verificação rigorosa de dependências via GitHub Actions e auditoria contínua com o Google OSV-Scanner.',
     'about-disclaimer': '[Aviso Legal] Este é um projeto pessoal de código aberto e é fornecido "COMO ESTÁ" sem qualquer garantia. O desenvolvedor não será responsável por quaisquer danos decorrentes do seu uso. Use por sua conta e risco.',
-    'maintenance-clear-logs': 'Limpar histórico de trabalho',
+    // Maintenance - Backup & Restore
+    'maintenance-backup-title': 'Backup e restauração',
+    'backup-start': 'Iniciar backup',
+    'backup-execute': 'Executar backup',
+    'backup-change-dir': 'Alterar destino do backup',
+    'restore-btn': 'Restaurar',
+    'backup-status-success': 'Backup concluído',
+    'backup-status-failed': 'Falha no backup',
+
+    // Maintenance - Restore Dialog
+    'confirm-restore': 'Restaurar dados?',
+    'confirm-restore-desc': 'Todos os dados atuais serão excluídos e substituídos pelos dados de backup. Esta ação não pode ser desfeita.',
+
+    // Maintenance - Restore Messages
+    'restore-success': 'Restauração concluída',
+    'restore-error-invalid-folder': 'Não é uma pasta de backup válida. Arquivos necessários estão ausentes.',
+    'restore-error-write-failed': 'Ocorreu um erro durante a restauração. Os dados podem estar em um estado incompleto.',
+    'restore-skipped-records': '{count} registros inválidos foram ignorados',
+
+    // Maintenance - Delete/Initialize
+    'maintenance-delete-title': 'Excluir/Inicializar',
+    'maintenance-clear-logs': 'Histórico de trabalho',
+    'maintenance-clear-categories': 'Categorias',
+    'maintenance-clear-settings': 'Configurações',
+    'maintenance-clear-alarms': 'Alarmes',
+    'maintenance-clear-animations': 'Animações personalizadas',
+    'maintenance-delete-execute': 'Excluir/Inicializar',
+    'confirm-delete-initialize': 'Os seguintes dados serão excluídos/inicializados:\n{items}\n\nEsta ação não pode ser desfeita. Tem certeza?',
+    'maintenance-delete-success': 'Os itens selecionados foram excluídos/inicializados',
+    'maintenance-delete-error': 'Erro ao excluir {item}',
+
     'btn-clear-logs': 'Excluir todos os históricos de trabalho',
     'maintenance-sync-pull': 'Sincronizar histórico novamente',
     'btn-sync-pull': 'Sincronizar histórico novamente',

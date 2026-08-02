@@ -123,7 +123,37 @@ export default {
     'about-stats-categories': '分类数量',
     'about-description': 'QuickLog-Solo 是一款注重隐私的极简工作笔记工具。数据保存在您浏览器的 IndexedDB 中（执行备份时也会保存到本地文件系统），且绝不上传服务器。通过 GitHub Actions 的严格依赖校验和 Google OSV-Scanner 的持续审计，确保高度的透明性与安全性。',
     'about-disclaimer': '[免责声明] 这是一个个人开源项目，按“原样”提供，不附带任何形式的保证。开发者不对因使用本软件而产生的任何损害承担责任。请自行承担使用风险。',
-    'maintenance-clear-logs': '清空工作历史',
+    // Maintenance - Backup & Restore
+    'maintenance-backup-title': '备份与恢复',
+    'backup-start': '开始备份',
+    'backup-execute': '执行备份',
+    'backup-change-dir': '指定备份目录',
+    'restore-btn': '恢复',
+    'backup-status-success': '备份完成',
+    'backup-status-failed': '备份失败',
+
+    // Maintenance - Restore Dialog
+    'confirm-restore': '是否恢复数据？',
+    'confirm-restore-desc': '所有当前数据将被删除并用备份数据覆盖。此操作无法撤销。',
+
+    // Maintenance - Restore Messages
+    'restore-success': '恢复已完成',
+    'restore-error-invalid-folder': '不是有效的备份文件夹。缺少必需文件。',
+    'restore-error-write-failed': '恢复过程中发生错误。数据可能处于不完整状态。',
+    'restore-skipped-records': '跳过了 {count} 条无效记录',
+
+    // Maintenance - Delete/Initialize
+    'maintenance-delete-title': '删除/初始化',
+    'maintenance-clear-logs': '工作历史',
+    'maintenance-clear-categories': '分类',
+    'maintenance-clear-settings': '设置',
+    'maintenance-clear-alarms': '闹钟',
+    'maintenance-clear-animations': '自定义动画',
+    'maintenance-delete-execute': '删除/初始化',
+    'confirm-delete-initialize': '以下数据将被删除/初始化：\n{items}\n\n此操作无法撤销。确定要执行吗？',
+    'maintenance-delete-success': '已删除/初始化所选项目',
+    'maintenance-delete-error': '删除 {item} 时发生错误',
+
     'btn-clear-logs': '删除所有工作历史',
     'maintenance-sync-pull': '重新同步历史记录',
     'btn-sync-pull': '重新同步历史记录',

@@ -148,7 +148,11 @@ export default {
     'tooltip-calendar': '日付を選択します',
 
     // Maintenance Tab
-    'maintenance-clear-logs': '作業履歴の削除',
+    'maintenance-clear-logs': '作業履歴',
+    'maintenance-clear-categories': 'カテゴリ',
+    'maintenance-clear-settings': '設定',
+    'maintenance-clear-alarms': 'アラーム',
+    'maintenance-clear-animations': 'カスタムアニメーション',
     'btn-clear-logs': '作業履歴をすべて削除',
     'maintenance-sync-pull': '同期履歴の再取得',
     'btn-sync-pull': '同期履歴の再取得',
@@ -164,15 +168,41 @@ export default {
     'maintenance-reset-settings-desc': '作業履歴とカテゴリは維持されます。',
     'btn-reset-settings': '設定のみを初期化',
 
+    // Maintenance - バックアップ・復元
+    'maintenance-backup-title': 'バックアップ・復元',
+    'backup-start': 'バックアップを開始する',
+    'backup-execute': 'バックアップを実行する',
+    'backup-change-dir': 'バックアップ先を指定する',
+    'restore-btn': '復元する',
+    'backup-status-success': 'バックアップ完了',
+    'backup-status-failed': 'バックアップ失敗',
+
+    // Maintenance - 復元ダイアログ
+    'confirm-restore': 'データを復元しますか？',
+    'confirm-restore-desc': '現在のすべてのデータが削除され、バックアップデータで上書きされます。この操作は元に戻せません。',
+
+    // Maintenance - 復元メッセージ
+    'restore-success': '復元が完了しました',
+    'restore-error-invalid-folder': '有効なバックアップフォルダではありません。必須ファイルが見つかりません。',
+    'restore-error-write-failed': '復元中にエラーが発生しました。データが不完全な状態の可能性があります。',
+    'restore-skipped-records': '{count}件の不正なレコードをスキップしました',
+
+    // Maintenance - 削除/初期化
+    'maintenance-delete-title': '削除/初期化',
+    'maintenance-delete-execute': '削除/初期化する',
+    'confirm-delete-initialize': '以下のデータを削除/初期化します:\n{items}\n\nこの操作は元に戻せません。本当に実行しますか？',
+    'maintenance-delete-success': '選択した項目を削除/初期化しました',
+    'maintenance-delete-error': '{item}の削除中にエラーが発生しました',
+
     // Backup Tab
     'btn-backup-start': 'バックアップを開始する',
     'btn-backup-run': 'バックアップを実行する',
     'btn-backup-grant-run': '保存先にアクセスしてバックアップを実行',
     'btn-backup-change-dir': 'バックアップ先を指定する',
-    'backup-status-syncing': '同期中...',
-    'backup-last-time': '最終バックアップ時刻',
+    'backup-status-syncing': 'バックアップ中...',
+    'backup-last-time': '最終バックアップ: {time}',
     'backup-directory': '保存先',
-    'backup-file-count': 'ファイル数',
+    'backup-file-count': 'ファイル数: {count}日分',
     'backup-file-count-unit': '日分',
     'backup-description-new': 'ブラウザのキャッシュクリアなどで IndexedDB のデータが消えてしまうのを防ぐため、定期的なバックアップを推奨します。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。',
     'toast-backup-completed': 'バックアップが完了しました',

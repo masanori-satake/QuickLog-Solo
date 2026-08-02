@@ -148,7 +148,36 @@ export default {
     'tooltip-calendar': 'Select date',
 
     // Maintenance Tab
-    'maintenance-clear-logs': 'Clear Work History',
+    'maintenance-backup-title': 'Backup & Restore',
+    'backup-start': 'Start Backup',
+    'backup-execute': 'Execute Backup',
+    'backup-change-dir': 'Change Backup Destination',
+    'restore-btn': 'Restore',
+    'backup-status-success': 'Backup Completed',
+    'backup-status-failed': 'Backup Failed',
+
+    // Maintenance - Restore Dialog
+    'confirm-restore': 'Restore data?',
+    'confirm-restore-desc': 'All current data will be deleted and overwritten with backup data. This action cannot be undone.',
+
+    // Maintenance - Restore Messages
+    'restore-success': 'Restore completed',
+    'restore-error-invalid-folder': 'Not a valid backup folder. Required files are missing.',
+    'restore-error-write-failed': 'An error occurred during restore. Data may be in an incomplete state.',
+    'restore-skipped-records': 'Skipped {count} invalid records',
+
+    // Maintenance - Delete/Initialize
+    'maintenance-delete-title': 'Delete/Initialize',
+    'maintenance-clear-logs': 'Work History',
+    'maintenance-clear-categories': 'Categories',
+    'maintenance-clear-settings': 'Settings',
+    'maintenance-clear-alarms': 'Alarms',
+    'maintenance-clear-animations': 'Custom Animations',
+    'maintenance-delete-execute': 'Delete/Initialize',
+    'confirm-delete-initialize': 'The following data will be deleted/initialized:\n{items}\n\nThis action cannot be undone. Are you sure?',
+    'maintenance-delete-success': 'Selected items have been deleted/initialized',
+    'maintenance-delete-error': 'An error occurred while deleting {item}',
+
     'btn-clear-logs': 'Delete All Work History',
     'maintenance-sync-pull': 'Re-sync Work History',
     'btn-sync-pull': 'Re-sync Work History',
@@ -170,9 +199,9 @@ export default {
     'btn-backup-grant-run': 'Grant Access & Backup',
     'btn-backup-change-dir': 'Change Destination',
     'backup-status-syncing': 'Syncing...',
-    'backup-last-time': 'Last Backup Time',
+    'backup-last-time': 'Last backup: {time}',
     'backup-directory': 'Directory',
-    'backup-file-count': 'File Count',
+    'backup-file-count': 'Files: {count} days',
     'backup-file-count-unit': 'days',
     'backup-description-new': 'Regular backups are recommended to prevent data loss in IndexedDB due to browser cache clearing. With backup data, you can also smoothly transition to other browsers.',
     'toast-backup-completed': 'Backup completed',

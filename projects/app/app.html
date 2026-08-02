@@ -310,7 +310,6 @@
                     <button class="tab-btn" data-tab="categories" data-i18n-title="tab-categories"><span class="material-symbols-outlined">category</span></button>
                     <button class="tab-btn" data-tab="alarms" data-i18n-title="tab-alarms"><span class="material-symbols-outlined">notifications</span></button>
                     <button class="tab-btn" data-tab="maintenance" data-i18n-title="tab-maintenance"><span class="material-symbols-outlined">build</span></button>
-                    <button class="tab-btn" data-tab="backup" data-i18n-title="tab-backup"><span class="material-symbols-outlined">hard_drive</span></button>
                     <button class="tab-btn" data-tab="about" data-i18n-title="tab-about"><span class="material-symbols-outlined">info</span></button>
                 </div>
 
@@ -386,14 +385,7 @@
                             ※ ChromeとEdgeの間など、異なるブラウザ間での同期はできません。
                         </p>
                     </div>
-                    <div class="setting-item">
-                        <label data-i18n="setting-history-csv">履歴(CSV)</label>
-                        <div class="csv-btns">
-                            <button id="export-csv-btn" data-i18n="btn-export-csv">エクスポート</button>
-                            <button id="import-csv-btn" data-i18n="btn-import-csv">インポート</button>
-                        </div>
-                        <input type="file" id="csv-file-input" style="display:none" accept=".csv">
-                    </div>
+
                 </div>
 
                 <div id="alarms-tab" class="tab-content hidden">
@@ -505,15 +497,35 @@
                 </div>
 
                 <div id="maintenance-tab" class="tab-content hidden">
-                    <!-- Standard clear history (visible when sync is OFF) -->
-                    <div id="maintenance-clear-logs-section" class="setting-item">
-                        <label data-i18n="maintenance-clear-logs">作業履歴の削除</label>
-                        <button id="clear-logs-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-clear-logs">作業履歴をすべて削除</button>
+                    <!-- バックアップ・復元セクション -->
+                    <div class="maintenance-section" id="backup-restore-section">
+                        <h3 data-i18n="maintenance-backup-title"></h3>
+
+                        <!-- 保存先未設定時 -->
+                        <div id="backup-not-configured" class="backup-state">
+                            <button id="backup-start-btn" class="primary-btn" data-i18n="backup-start"></button>
+                            <button id="restore-btn" class="secondary-btn" data-i18n="restore-btn"></button>
+                        </div>
+
+                        <!-- 保存先設定済み時 -->
+                        <div id="backup-configured" class="backup-state" style="display: none;">
+                            <div class="backup-status-row">
+                                <span id="backup-status-indicator" class="backup-status"></span>
+                                <span id="backup-last-time" class="backup-info"></span>
+                                <span id="backup-file-count" class="backup-info"></span>
+                            </div>
+                            <div class="backup-actions">
+                                <button id="backup-execute-btn" class="primary-btn" data-i18n="backup-execute"></button>
+                                <button id="backup-change-dir-btn" class="secondary-btn" data-i18n="backup-change-dir"></button>
+                                <button id="restore-configured-btn" class="secondary-btn" data-i18n="restore-btn"></button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Sync maintenance (visible when sync is ON) -->
                     <div id="maintenance-sync-pull-section" class="setting-item hidden">
                         <label data-i18n="maintenance-sync-pull">同期履歴の再取得</label>
+                        <span id="anim-sync-progress" class="backup-info" style="display: none;"></span>
                         <button id="sync-pull-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-pull">同期履歴の再取得</button>
                     </div>
                     <div id="maintenance-sync-clear-cloud-section" class="setting-item hidden">
@@ -521,65 +533,36 @@
                         <button id="sync-clear-cloud-btn" class="danger-btn" style="width: 100%;" data-i18n="btn-sync-clear-cloud">全同期デバイスから履歴をすべて削除</button>
                     </div>
 
-                    <div class="setting-item">
-                        <label data-i18n="maintenance-reset-all">設定とカテゴリの初期化</label>
-                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);" data-i18n="maintenance-reset-all-desc">
-                            作業履歴は維持されます。
-                        </p>
-                        <button id="reset-cat-settings-btn" style="width: 100%;" data-i18n="btn-reset-all">カテゴリ・設定を初期化</button>
-                    </div>
-                    <div class="setting-item">
-                        <label data-i18n="maintenance-reset-settings">設定のみの初期化</label>
-                        <p style="font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--muted-color);" data-i18n="maintenance-reset-settings-desc">
-                            作業履歴とカテゴリは維持されます。
-                        </p>
-                        <button id="reset-settings-btn" style="width: 100%;" data-i18n="btn-reset-settings">設定のみを初期化</button>
+                    <!-- 削除/初期化セクション -->
+                    <div class="maintenance-section" id="delete-initialize-section">
+                        <h3 data-i18n="maintenance-delete-title"></h3>
+                        <div class="checkbox-group">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="clear-logs-checkbox" value="logs">
+                                <span data-i18n="maintenance-clear-logs"></span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="clear-categories-checkbox" value="categories">
+                                <span data-i18n="maintenance-clear-categories"></span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="clear-settings-checkbox" value="settings">
+                                <span data-i18n="maintenance-clear-settings"></span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="clear-alarms-checkbox" value="alarms">
+                                <span data-i18n="maintenance-clear-alarms"></span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="clear-animations-checkbox" value="animations">
+                                <span data-i18n="maintenance-clear-animations"></span>
+                            </label>
+                        </div>
+                        <button id="delete-initialize-btn" class="danger-btn" disabled data-i18n="maintenance-delete-execute"></button>
                     </div>
                 </div>
 
-                <div id="backup-tab" class="tab-content hidden">
-                    <div id="backup-init-container" class="setting-item">
-                        <button id="backup-run-init-btn" class="primary-btn" style="width: 100%;">
-                            <span class="material-symbols-outlined">hard_drive</span>
-                            <span data-i18n="btn-backup-start">バックアップを開始する</span>
-                        </button>
-                    </div>
 
-                    <div id="backup-main-container" class="hidden">
-                        <div class="setting-item">
-                            <button id="backup-run-btn" class="primary-btn" style="width: 100%;">
-                                <span class="material-symbols-outlined">hard_drive</span>
-                                <span id="backup-run-btn-text" data-i18n="btn-backup-run">バックアップを実行する</span>
-                            </button>
-                        </div>
-                        <div class="setting-item">
-                            <button id="backup-change-dir-btn" class="secondary-btn" style="width: 100%;">
-                                <span class="material-symbols-outlined">folder_open</span>
-                                <span data-i18n="btn-backup-change-dir">バックアップ先を指定する</span>
-                            </button>
-                        </div>
-
-                        <div class="setting-item">
-                            <label data-i18n="backup-directory">現在の保存先</label>
-                            <p id="backup-dir-path" class="path-display">-</p>
-                        </div>
-
-                        <div class="backup-status-panel">
-                            <div class="status-row">
-                                <span data-i18n="backup-last-time">最終バックアップ時刻</span>
-                                <span id="backup-last-time-display">-</span>
-                            </div>
-                            <div class="status-row">
-                                <span data-i18n="backup-file-count">ファイル数</span>
-                                <span><span id="backup-file-count-display">0</span> <span data-i18n="backup-file-count-unit">日分</span></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <p class="setting-description" data-i18n="backup-description-new">
-                        ブラウザのキャッシュクリアなどで IndexedDB のデータが消えてしまうのを防ぐため、定期的なバックアップを推奨します。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。
-                    </p>
-                </div>
 
             </div>
         </div>

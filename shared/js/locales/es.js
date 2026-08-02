@@ -123,7 +123,37 @@ export default {
     'about-stats-categories': 'Número de categorías',
     'about-description': 'QuickLog-Solo es una herramienta de notas de trabajo minimalista centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (y también en el sistema de archivos local cuando se realiza el respaldo) y nunca se envían al exterior. Mantiene una alta transparencia y seguridad mediante la verificación estricta de dependencias vía GitHub Actions y auditorías continuas con Google OSV-Scanner.',
     'about-disclaimer': '[Descargo de responsabilidad] Este es un proyecto personal de código abierto y se proporciona "TAL CUAL" sin garantía de ningún tipo. El desarrollador no será responsable de ningún daño derivado de su uso. Úselo bajo su propio riesgo.',
-    'maintenance-clear-logs': 'Borrar historial de trabajo',
+    // Maintenance - Backup & Restore
+    'maintenance-backup-title': 'Respaldo y restauración',
+    'backup-start': 'Iniciar respaldo',
+    'backup-execute': 'Ejecutar respaldo',
+    'backup-change-dir': 'Cambiar destino de respaldo',
+    'restore-btn': 'Restaurar',
+    'backup-status-success': 'Respaldo completado',
+    'backup-status-failed': 'Respaldo fallido',
+
+    // Maintenance - Restore Dialog
+    'confirm-restore': '¿Restaurar datos?',
+    'confirm-restore-desc': 'Todos los datos actuales se eliminarán y se sobrescribirán con los datos de respaldo. Esta acción no se puede deshacer.',
+
+    // Maintenance - Restore Messages
+    'restore-success': 'Restauración completada',
+    'restore-error-invalid-folder': 'No es una carpeta de respaldo válida. Faltan archivos requeridos.',
+    'restore-error-write-failed': 'Se produjo un error durante la restauración. Los datos pueden estar en un estado incompleto.',
+    'restore-skipped-records': 'Se omitieron {count} registros no válidos',
+
+    // Maintenance - Delete/Initialize
+    'maintenance-delete-title': 'Eliminar/Inicializar',
+    'maintenance-clear-logs': 'Historial de trabajo',
+    'maintenance-clear-categories': 'Categorías',
+    'maintenance-clear-settings': 'Ajustes',
+    'maintenance-clear-alarms': 'Alarmas',
+    'maintenance-clear-animations': 'Animaciones personalizadas',
+    'maintenance-delete-execute': 'Eliminar/Inicializar',
+    'confirm-delete-initialize': 'Se eliminarán/inicializarán los siguientes datos:\n{items}\n\nEsta acción no se puede deshacer. ¿Está seguro?',
+    'maintenance-delete-success': 'Los elementos seleccionados han sido eliminados/inicializados',
+    'maintenance-delete-error': 'Error al eliminar {item}',
+
     'btn-clear-logs': 'Eliminar todos los historiales de trabajo',
     'maintenance-sync-pull': 'Volver a sincronizar el historial',
     'btn-sync-pull': 'Volver a sincronizar el historial',
@@ -144,9 +174,9 @@ export default {
     'btn-backup-grant-run': 'Permitir acceso y respaldar',
     'btn-backup-change-dir': 'Cambiar destino',
     'backup-status-syncing': 'Sincronizando...',
-    'backup-last-time': 'Última sincronización',
+    'backup-last-time': 'Última copia: {time}',
     'backup-directory': 'Directorio',
-    'backup-file-count': 'Archivos',
+    'backup-file-count': 'Archivos: {count} días',
     'backup-file-count-unit': 'días',
     'backup-description-new': 'Se recomiendan respaldos periódicos para evitar la pérdida de datos en IndexedDB debido a la limpieza del caché del navegador. Con los datos de respaldo, también puede realizar la transición sin problemas a otros navegadores.',
     'toast-backup-completed': 'Respaldo completado',

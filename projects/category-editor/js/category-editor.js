@@ -10,7 +10,6 @@ import { setDatabaseName, initDB, dbGetAll, dbClear, dbAddMultiple, STORE_CATEGO
 
 import { initHistory } from './history.js';
 import { initUI } from './ui.js';
-import { initDataIO } from './data-io.js';
 
 const state = {
     currentLang: 'en',
@@ -55,8 +54,7 @@ const elements = {
     addCategoryBtn: document.getElementById('add-category-btn'),
     deleteSelectedBtn: document.getElementById('delete-selected-btn'),
     addPageBreakBtn: document.getElementById('add-page-break-btn'),
-    importBtn: document.getElementById('import-btn'),
-    exportBtn: document.getElementById('export-btn'),
+
     applyBtn: document.getElementById('apply-btn'),
     closeBtn: document.getElementById('close-btn'),
     clearAllBtn: document.getElementById('clear-all-btn'),
@@ -89,8 +87,6 @@ async function init() {
     if (state.fromApp) {
         setDatabaseName('QuickLogSoloDB');
         await initDB(false);
-        if (elements.importBtn) elements.importBtn.classList.add('hidden');
-        if (elements.exportBtn) elements.exportBtn.classList.add('hidden');
         if (elements.closeBtn) elements.closeBtn.classList.remove('hidden');
         if (elements.applyBtn) elements.applyBtn.classList.remove('hidden');
     }
@@ -99,7 +95,6 @@ async function init() {
     window.state = state;
     historyMod = initHistory(state, elements);
     uiMod = initUI(state, elements);
-    const dataIoMod = initDataIO(state, elements);
 
     // Cross-module state bridge
     state.recordAction = historyMod.recordAction;

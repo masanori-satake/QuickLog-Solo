@@ -70,7 +70,8 @@ test.describe('Multi-tab Synchronization', () => {
     await page1.bringToFront();
     await page1.click('#settings-toggle');
     await page1.click('button[data-tab="maintenance"]');
-    await page1.click('#clear-logs-btn');
+    await page1.check('#clear-logs-checkbox');
+    await page1.click('#delete-initialize-btn');
     await page1.click('#confirm-ok-btn');
 
     // page 2 should reload and have dummy logs again (since logs were cleared, it regenerates)

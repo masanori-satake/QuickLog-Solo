@@ -55,12 +55,25 @@ test.describe('Category Editor Multi-selection Tags', () => {
         JSON.stringify({ kind: "QuickLogSolo/Category", version: "1.0", type: "category", name: "CatB", color: "secondary", tags: ["tagC", "tagD", "tagB"] })
     ].join('\n');
 
-    // Use evaluate to set the data in a global variable and call handleImport if possible,
-    // or just mock the clipboard read.
-    await page.evaluate((text) => {
-        navigator.clipboard.readText = () => Promise.resolve(text);
+    await page.evaluate((ndjsonText) => {
+        const lines = ndjsonText.split('\n').filter(l => l.trim());
+        const categories = lines.map(line => {
+            const obj = JSON.parse(line);
+            return {
+                name: obj.name,
+                color: obj.color,
+                tags: Array.isArray(obj.tags) ? obj.tags.join(',') : '',
+                animation: 'default'
+            };
+        });
+        window.state.categories = categories;
+        window.state.selectedIndices = [];
+        window.state.lastSelectedIndex = -1;
+        window.state.isDirty = true;
+        window.state.renderCategoryList();
+        window.state.renderGlobalTagBox();
     }, ndjson);
-    await page.click('#import-btn');
+    await page.waitForSelector('.category-item');
 
     const items = page.locator('.category-item');
     await items.nth(0).click();
@@ -80,10 +93,25 @@ test.describe('Category Editor Multi-selection Tags', () => {
         JSON.stringify({ kind: "QuickLogSolo/Category", version: "1.0", type: "category", name: "CatB", color: "secondary", tags: ["tagB", "tagC"] })
     ].join('\n');
 
-    await page.evaluate((text) => {
-        navigator.clipboard.readText = () => Promise.resolve(text);
+    await page.evaluate((ndjsonText) => {
+        const lines = ndjsonText.split('\n').filter(l => l.trim());
+        const categories = lines.map(line => {
+            const obj = JSON.parse(line);
+            return {
+                name: obj.name,
+                color: obj.color,
+                tags: Array.isArray(obj.tags) ? obj.tags.join(',') : '',
+                animation: 'default'
+            };
+        });
+        window.state.categories = categories;
+        window.state.selectedIndices = [];
+        window.state.lastSelectedIndex = -1;
+        window.state.isDirty = true;
+        window.state.renderCategoryList();
+        window.state.renderGlobalTagBox();
     }, ndjson);
-    await page.click('#import-btn');
+    await page.waitForSelector('.category-item');
 
     const items = page.locator('.category-item');
     await items.nth(0).click();

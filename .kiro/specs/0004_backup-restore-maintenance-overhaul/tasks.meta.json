@@ -1,0 +1,606 @@
+{
+  "pbtResults": {
+    "2.2 チャンク分割 round-trip のプロパティベーステストを作成": {
+      "status": "not_run",
+      "lastRunTimestamp": 1785668812511
+    },
+    "1.2 スキーマバリデーションのユニットテストを作成": {
+      "status": "not_run",
+      "lastRunTimestamp": 1785670524882
+    },
+    "4.4 BackupManager 拡張のユニットテストを作成": {
+      "status": "passed",
+      "lastRunTimestamp": 1785672880514
+    },
+    "5.2 RestoreManager のユニットテストを作成": {
+      "status": "passed",
+      "lastRunTimestamp": 1785675064992
+    },
+    "7.4 削除/初期化 UI のユニットテストを作成": {
+      "status": "not_run",
+      "lastRunTimestamp": 1785676094156
+    }
+  },
+  "executionHistory": {
+    "1.1 `shared/js/schema.js` にスキーマ v2.0 定数とバリデーション関数を追加": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668069871
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668114678
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668491181
+      }
+    ],
+    "1.2 スキーマバリデーションのユニットテストを作成": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668071273
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668504878
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785670547381
+      }
+    ],
+    "2.1 `shared/js/anim_sync.js` にチャンク分割・結合の純粋関数を実装": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668072101
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668116423
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668493598
+      }
+    ],
+    "2.2 チャンク分割 round-trip のプロパティベーステストを作成": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668073343
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668506657
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785670549846
+      }
+    ],
+    "2.3 `shared/js/anim_sync.js` に sync 書き込み・読み込み・削除関数を実装": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668074220
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668508126
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785670550705
+      }
+    ],
+    "2.4 AnimationSyncManager のユニットテストを作成": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668074940
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785670564148
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785671544105
+      }
+    ],
+    "3. Checkpoint - スキーマ・同期モジュールの確認": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668076419
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677168858
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677174795
+      }
+    ],
+    "4.1 `projects/app/js/backup.js` にアラームバックアップ機能を追加": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668077753
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785670565592
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785671548989
+      }
+    ],
+    "4.2 `projects/app/js/backup.js` にカスタムアニメーションバックアップ機能を追加": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668078656
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785670566513
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785671549795
+      }
+    ],
+    "4.3 `BackupManager.sync()` のフローを修正": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668080325
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785671561345
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785674352686
+      }
+    ],
+    "4.4 BackupManager 拡張のユニットテストを作成": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668082375
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785671563774
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785674355548
+      }
+    ],
+    "5.1 `projects/app/js/restore.js` に RestoreManager を実装": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668084274
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785671564992
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785674356522
+      }
+    ],
+    "5.2 RestoreManager のユニットテストを作成": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668085539
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785674369109
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675090789
+      }
+    ],
+    "6. Checkpoint - バックアップ・リストアロジックの確認": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668086604
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677181025
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677188111
+      }
+    ],
+    "7.1 `projects/app/app.html` のタブ構成を変更": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668087575
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785674370154
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675094229
+      }
+    ],
+    "7.2 `projects/app/app.html` の削除/初期化セクションをチェックボックス方式に変更": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668088540
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785674370940
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675095279
+      }
+    ],
+    "7.3 `projects/app/js/app.js` にメンテナンスタブの UI ロジックを実装": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668089626
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675109576
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676127667
+      }
+    ],
+    "7.4 削除/初期化 UI のユニットテストを作成": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668090426
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675110612
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676128506
+      }
+    ],
+    "8.1 `projects/app/js/app.js` に復元ボタンのイベントハンドラを追加": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668091827
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675111699
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676122951
+      }
+    ],
+    "9.1 「一般」タブから CSV エクスポート/インポート UI を削除": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668094027
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675113483
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676118423
+      }
+    ],
+    "9.2 カテゴリ・エディタのエクスポート/インポート機能の UI を廃止": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668095289
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675114649
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676123756
+      }
+    ],
+    "9.3 アラーム・エディタのエクスポート/インポート機能の UI を廃止": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668096076
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676134658
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676527025
+      }
+    ],
+    "10. Checkpoint - UI 変更の確認": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668097494
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677194298
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677200689
+      }
+    ],
+    "11.1 `shared/js/session_sync.js` にアニメーション同期の統合ロジックを追加": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668098235
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676541181
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676902083
+      }
+    ],
+    "11.2 `projects/app/js/app.js` にアニメーション同期の進捗 UI を追加": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668099222
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676908698
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677152015
+      }
+    ],
+    "12.1 `shared/js/locales/ja.js` に新規 i18n キーを追加（正典）": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668100493
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785674371667
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675096394
+      }
+    ],
+    "12.2 残り 7 言語ファイルに翻訳を追加": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668101427
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676135607
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676526104
+      }
+    ],
+    "13. Checkpoint - 全機能の統合確認": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668102209
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677206130
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677212351
+      }
+    ],
+    "14.1 E2E テストの作成（`tests/maintenance.spec.js`）": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668103422
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676909582
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677151081
+      }
+    ],
+    "15. Final checkpoint - 全テスト通過の確認": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785668104424
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677218481
+      },
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677224629
+      }
+    ],
+    "1. スキーマ v2.0 定義と新バリデーション関数の追加": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785670548647
+      }
+    ],
+    "2. AnimationSyncManager の実装": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785671547295
+      }
+    ],
+    "4. BackupManager の拡張（アラーム・カスタムアニメーションのバックアップ）": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785674357698
+      }
+    ],
+    "5. RestoreManager の新規実装": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785675092382
+      }
+    ],
+    "8. UI 変更: 復元ボタンと RestoreManager の接続": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676126752
+      }
+    ],
+    "12. i18n キーの追加（8言語）": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676527927
+      }
+    ],
+    "9. UI 変更: エクスポート/インポート機能の廃止": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785676528704
+      }
+    ],
+    "14. E2E テスト": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677153626
+      }
+    ],
+    "11. chrome.storage.sync へのカスタムアニメーション同期の統合": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677155065
+      }
+    ],
+    "7. UI 変更: タブ統合とメンテナンスタブの刷新": [
+      {
+        "executionId": "e9c2942d-72e6-4ae5-b77c-811dcc9cd8bc",
+        "chatSessionId": "sess_129a3e82-0c57-43d5-9f82-a94066102871",
+        "timestamp": 1785677242196
+      }
+    ]
+  }
+}

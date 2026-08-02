@@ -1,20 +1,29 @@
 import {
     dbGetAll, dbGet, dbPut, dbAddMultiple,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS,
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
     SETTING_KEY_ANIMATION, SETTING_KEY_BACKUP_CONFIG, SETTING_KEY_BACKUP_DIR_HANDLE,
     LOG_CLEANUP_THRESHOLD_MS
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 import {
-    SCHEMA_VERSION_1_0,
+    SCHEMA_VERSION_1_0, SCHEMA_VERSION_2_0,
     SCHEMA_KIND_CATEGORY, SCHEMA_KIND_HISTORY, SCHEMA_KIND_SETTINGS,
+    SCHEMA_KIND_ALARM, SCHEMA_KIND_CUSTOM_ANIMATION,
     SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK,
     SCHEMA_TYPE_HISTORY_TASK, SCHEMA_TYPE_HISTORY_IDLE, SCHEMA_TYPE_HISTORY_STOP,
     validateCategorySchema, validateHistorySchema, validateSettingsSchema
 } from '../shared/js/schema.js';
+import { getAnimationBlob } from '../shared/js/idb_storage.js';
+import { getCustomAnimationMetadataMap } from '../shared/js/utils/storage.js';
 
 const FILE_NAME_CATEGORIES = 'categories.ndjson';
 const FILE_NAME_SETTINGS = 'settings.json';
+const FILE_NAME_QL_CATEGORIES = 'ql_categories.ndjson';
+const FILE_NAME_QL_SETTINGS = 'ql_settings.json';
+const FILE_NAME_QL_ALARMS = 'ql_alarms.json';
+const FILE_NAME_QL_CUSTOM_ANIMATIONS = 'ql_custom_animations.json';
+const DIR_NAME_HISTORY = 'history';
+const DIR_NAME_ANIMATIONS = 'animations';
 
 export const BACKUP_STATUS = {
     DISABLED: 'disabled', // No directory handle
@@ -111,13 +120,7 @@ class BackupManager {
         if (this.onStatusChange) this.onStatusChange(this.status);
 
         try {
-            // 1. Restore from files to DB (Merge)
-            await this.restoreFromFiles();
-
-            // 2. Backup from DB to files
             await this.backupToFiles();
-
-            // 3. Cleanup old files
             await this.cleanupOldFiles();
 
             this.config.lastBackupTime = Date.now();
@@ -134,6 +137,87 @@ class BackupManager {
             this.isSyncing = false;
             if (this.onStatusChange) this.onStatusChange(this.status);
         }
+    }
+
+    async _ensureSubDirectory(parentHandle, dirName, { create = true } = {}) {
+        return await parentHandle.getDirectoryHandle(dirName, { create });
+    }
+
+    async _backupAlarms() {
+        let alarms;
+        try {
+            alarms = await dbGetAll(STORE_ALARMS);
+        } catch (e) {
+            this.status = BACKUP_STATUS.FAILED;
+            if (this.onStatusChange) this.onStatusChange(this.status);
+            throw e;
+        }
+
+        const data = {
+            app: 'QuickLog-Solo',
+            kind: SCHEMA_KIND_ALARM,
+            version: SCHEMA_VERSION_2_0,
+            entries: alarms.map(alarm => ({
+                enabled: alarm.enabled,
+                time: alarm.time,
+                message: alarm.message,
+                action: alarm.action,
+                actionCategory: alarm.actionCategory,
+                requireConfirmation: alarm.requireConfirmation,
+                type: alarm.type,
+                daysOfWeek: alarm.daysOfWeek,
+                dayOfMonth: alarm.dayOfMonth,
+                daysBeforeEnd: alarm.daysBeforeEnd,
+                holidayAdjustment: alarm.holidayAdjustment,
+                order: alarm.order
+            }))
+        };
+
+        await this.writeJson(FILE_NAME_QL_ALARMS, data);
+    }
+
+    async _backupCustomAnimations() {
+        const metadataMap = await getCustomAnimationMetadataMap();
+        const entries = Object.entries(metadataMap).map(([id, meta]) => ({
+            id,
+            name: meta.name,
+            description: meta.description || '',
+            config: meta.config || {},
+            renderSpec: meta.renderSpec || {},
+            createdAt: meta.createdAt || null
+        }));
+
+        const data = {
+            app: 'QuickLog-Solo',
+            kind: SCHEMA_KIND_CUSTOM_ANIMATION,
+            version: SCHEMA_VERSION_2_0,
+            entries
+        };
+
+        await this.writeJson(FILE_NAME_QL_CUSTOM_ANIMATIONS, data);
+
+        // Write animation Blobs to animations/ subdirectory
+        const animDir = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_ANIMATIONS);
+        for (const entry of entries) {
+            let blob;
+            try {
+                blob = await getAnimationBlob(entry.id);
+            } catch (e) {
+                this.status = BACKUP_STATUS.FAILED;
+                if (this.onStatusChange) this.onStatusChange(this.status);
+                throw e;
+            }
+            if (blob) {
+                await this._writeCustomAnimationBlob(animDir, entry.id, blob);
+            }
+        }
+    }
+
+    async _writeCustomAnimationBlob(animDir, id, blob) {
+        const fileHandle = await animDir.getFileHandle(`${id}.gif`, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
     }
 
     async backupToFiles() {
@@ -156,7 +240,7 @@ class BackupManager {
             }
             return entry;
         });
-        await this.writeNdjson(FILE_NAME_CATEGORIES, categoryData);
+        await this.writeNdjson(FILE_NAME_QL_CATEGORIES, categoryData);
 
         // Backup Settings (JSON) - excluding backup-specific ones to avoid loops
         const allSettings = await dbGetAll(STORE_SETTINGS);
@@ -164,7 +248,7 @@ class BackupManager {
         const settingsData = {
             app: 'QuickLog-Solo',
             kind: SCHEMA_KIND_SETTINGS,
-            version: SCHEMA_VERSION_1_0,
+            version: SCHEMA_VERSION_2_0,
             entries: filteredSettings.map(s => {
                 // Map application keys to schema keys
                 let key = s.key;
@@ -172,9 +256,10 @@ class BackupManager {
                 return { key, value: s.value };
             })
         };
-        await this.writeJson(FILE_NAME_SETTINGS, settingsData);
+        await this.writeJson(FILE_NAME_QL_SETTINGS, settingsData);
 
-        // Backup Logs
+        // Backup Logs into history/ subdirectory
+        const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY);
         const logs = await dbGetAll(STORE_LOGS);
         const logsByDate = {};
         logs.forEach(log => {
@@ -207,8 +292,14 @@ class BackupManager {
         });
 
         for (const [date, dayLogs] of Object.entries(logsByDate)) {
-            await this.writeNdjson(`${date}.ndjson`, dayLogs);
+            await this.writeNdjsonToDir(historyHandle, `${date}.ndjson`, dayLogs);
         }
+
+        // Backup Alarms
+        await this._backupAlarms();
+
+        // Backup Custom Animations
+        await this._backupCustomAnimations();
     }
 
     async restoreFromFiles() {
@@ -300,18 +391,31 @@ class BackupManager {
 
     async cleanupOldFiles() {
         const threshold = Date.now() - LOG_CLEANUP_THRESHOLD_MS;
-        for await (const entry of this.directoryHandle.values()) {
-            if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
-                const dateStr = entry.name.replace('.ndjson', '');
-                if (new Date(dateStr).getTime() < threshold - 86400000) {
-                    await this.directoryHandle.removeEntry(entry.name);
+        try {
+            const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY, { create: false });
+            for await (const entry of historyHandle.values()) {
+                if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
+                    const dateStr = entry.name.replace('.ndjson', '');
+                    if (new Date(dateStr).getTime() < threshold - 86400000) {
+                        await historyHandle.removeEntry(entry.name);
+                    }
                 }
             }
+        } catch (e) {
+            if (e.name !== 'NotFoundError') throw e;
         }
     }
 
     async writeNdjson(fileName, data) {
         const fileHandle = await this.directoryHandle.getFileHandle(fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        const content = data.map(item => JSON.stringify(item)).join('\n');
+        await writable.write(content);
+        await writable.close();
+    }
+
+    async writeNdjsonToDir(dirHandle, fileName, data) {
+        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
         const writable = await fileHandle.createWritable();
         const content = data.map(item => JSON.stringify(item)).join('\n');
         await writable.write(content);
@@ -414,13 +518,14 @@ class BackupManager {
         if (!this.directoryHandle) return 0;
         let count = 0;
         try {
-            for await (const entry of this.directoryHandle.values()) {
+            const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY, { create: false });
+            for await (const entry of historyHandle.values()) {
                 if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
                     count++;
                 }
             }
         } catch {
-            // Might fail if permission is not granted
+            // history/ directory might not exist or permission not granted
         }
         return count;
     }
