@@ -123,7 +123,37 @@ export default {
     'about-stats-categories': 'Nombre de catégories',
     'about-description': 'QuickLog-Solo est un outil de notes de travail minimaliste axé sur la confidentialité. Les données sont enregistrées dans IndexedDB sur votre navigateur (et également sur le système de fichiers local lorsque la sauvegarde est effectuée) et ne sont jamais envoyées à l\'extérieur. Il maintient une transparence et une sécurité élevées grâce à une vérification stricte des dépendances via GitHub Actions et un audit continu avec Google OSV-Scanner.',
     'about-disclaimer': '[Clause de non-responsabilité] Ceci est un projet personnel open-source et est fourni "EN L\'ÉTAT" sans aucune garantie. Le développeur ne sera pas responsable des dommages résultant de son utilisation. À utiliser à vos propres risques.',
-    'maintenance-clear-logs': 'Effacer l\'historique de travail',
+    // Maintenance - Backup & Restore
+    'maintenance-backup-title': 'Sauvegarde et restauration',
+    'backup-start': 'Démarrer la sauvegarde',
+    'backup-execute': 'Exécuter la sauvegarde',
+    'backup-change-dir': 'Changer la destination de sauvegarde',
+    'restore-btn': 'Restaurer',
+    'backup-status-success': 'Sauvegarde terminée',
+    'backup-status-failed': 'Échec de la sauvegarde',
+
+    // Maintenance - Restore Dialog
+    'confirm-restore': 'Restaurer les données ?',
+    'confirm-restore-desc': 'Toutes les données actuelles seront supprimées et remplacées par les données de sauvegarde. Cette action est irréversible.',
+
+    // Maintenance - Restore Messages
+    'restore-success': 'Restauration terminée',
+    'restore-error-invalid-folder': 'Ce n\'est pas un dossier de sauvegarde valide. Les fichiers requis sont manquants.',
+    'restore-error-write-failed': 'Une erreur est survenue pendant la restauration. Les données peuvent être dans un état incomplet.',
+    'restore-skipped-records': '{count} enregistrements invalides ont été ignorés',
+
+    // Maintenance - Delete/Initialize
+    'maintenance-delete-title': 'Supprimer/Initialiser',
+    'maintenance-clear-logs': 'Historique de travail',
+    'maintenance-clear-categories': 'Catégories',
+    'maintenance-clear-settings': 'Paramètres',
+    'maintenance-clear-alarms': 'Alarmes',
+    'maintenance-clear-animations': 'Animations personnalisées',
+    'maintenance-delete-execute': 'Supprimer/Initialiser',
+    'confirm-delete-initialize': 'Les données suivantes seront supprimées/initialisées :\n{items}\n\nCette action est irréversible. Êtes-vous sûr ?',
+    'maintenance-delete-success': 'Les éléments sélectionnés ont été supprimés/initialisés',
+    'maintenance-delete-error': 'Erreur lors de la suppression de {item}',
+
     'btn-clear-logs': 'Supprimer tout l\'historique de travail',
     'maintenance-sync-pull': 'Resynchroniser l\'historique',
     'btn-sync-pull': 'Resynchroniser l\'historique',

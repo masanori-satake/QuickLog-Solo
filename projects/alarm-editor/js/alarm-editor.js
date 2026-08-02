@@ -1,7 +1,7 @@
 import { setLanguage, getLanguage, applyLanguage, t } from '../shared/js/i18n.js';
 import { setDatabaseName, dbClear, STORE_ALARMS, STORE_SETTINGS, STORE_CATEGORIES } from '../shared/js/db.js';
 import { DEFAULT_ALARM_MESSAGE_STOP } from '../shared/js/utils.js';
-import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, saveLanguage, exportAlarms, importAlarms, commitChanges } from './data-io.js';
+import { initData, saveAlarm, saveAllAlarms, saveBusinessDays, saveLanguage, commitChanges } from './data-io.js';
 import { initUI } from './ui.js';
 import { initHistory } from './history.js';
 
@@ -39,8 +39,6 @@ const elements = {
     holidayAdjSelect: document.getElementById('alarm-holiday-adj-select'),
     adjDescEl: document.getElementById('alarm-adj-desc'),
     businessDaysContainer: document.getElementById('business-days-container'),
-    exportBtn: document.getElementById('export-btn'),
-    importBtn: document.getElementById('import-btn'),
     applyBtn: document.getElementById('apply-btn'),
     closeBtn: document.getElementById('close-btn'),
     undoBtn: document.getElementById('undo-btn'),
@@ -76,8 +74,6 @@ async function init() {
 
     if (state.fromApp) {
         setDatabaseName('QuickLogSoloDB');
-        if (elements.importBtn) elements.importBtn.classList.add('hidden');
-        if (elements.exportBtn) elements.exportBtn.classList.add('hidden');
         if (elements.closeBtn) elements.closeBtn.classList.remove('hidden');
         if (elements.applyBtn) elements.applyBtn.classList.remove('hidden');
     } else {
@@ -328,24 +324,6 @@ async function init() {
             }
         };
     }
-
-    // Export/Import buttons
-    elements.exportBtn.onclick = async () => {
-        await exportAlarms(state);
-        state.showToast(t('toast-export-success'));
-    };
-
-    elements.importBtn.onclick = async () => {
-        try {
-            if (await showConfirm(t('confirm-import-overwrite'))) {
-                await importAlarms();
-                location.reload();
-            }
-        } catch (e) {
-            console.error(e);
-            alert(t('alert-import-error'));
-        }
-    };
 
     // Keyboard shortcuts for Undo/Redo
     window.addEventListener('keydown', (e) => {

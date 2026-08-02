@@ -24,7 +24,6 @@ export default [
             'projects/app/js/background.js',
             'projects/app/js/backup.js',
             'projects/category-editor/js/history.js',
-            'projects/category-editor/js/data-io.js',
             'projects/category-editor/js/category-editor.js',
             'shared/js/animation/',
             'shared/js/locales/',

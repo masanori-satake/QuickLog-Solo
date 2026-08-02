@@ -9,6 +9,9 @@ import {
     SETTING_KEY_DELETED_SYNC_IDS, SETTING_KEY_GLOBAL_CLEAR_TIME
 } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, generateUUID } from './utils.js';
+import { pushAnimationToSync, pullAnimationsFromSync, removeAnimationFromSync, clearAllAnimationChunksFromSync } from './anim_sync.js';
+import { saveAnimationBlob } from './idb_storage.js';
+import { getCustomAnimationMetadataMap, setCustomAnimationMetadataMap } from './utils/storage.js';
 
 const SYNC_KEYS = {
     CATEGORIES: 'sync_categories',
@@ -31,6 +34,12 @@ let isInternalUpdate = false;
 let activePullPromise = null;
 /** @type {BroadcastChannel|null} */
 let syncChannel = null;
+
+// Callback for animation sync progress notification
+let onAnimSyncProgress = null;
+export function setAnimSyncProgressCallback(callback) {
+    onAnimSyncProgress = callback;
+}
 
 /**
  * Initializes the BroadcastChannel for cross-tab state synchronization.
@@ -75,6 +84,52 @@ export async function isSessionSyncEnabled() {
     if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync) return false;
     const setting = await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC);
     return !!(setting && setting.value);
+}
+
+/**
+ * Pushes a custom animation to chrome.storage.sync in chunks.
+ * Called when a custom animation is added or changed.
+ * @param {string} animationId
+ * @param {string} base64
+ */
+export async function syncAnimationToRemote(animationId, base64) {
+    try {
+        await pushAnimationToSync(animationId, base64, (completed, total) => {
+            if (onAnimSyncProgress) onAnimSyncProgress(completed, total);
+        });
+    } catch (err) {
+        if (err.message && err.message.includes('QUOTA_BYTES_PER_ITEM')) {
+            console.warn('QuickLog-Solo: Animation sync quota exceeded for', animationId);
+            // Notify UI of quota error but don't throw — other animations can still sync
+        } else {
+            console.error('QuickLog-Solo: Animation sync failed for', animationId, err);
+        }
+    }
+}
+
+/**
+ * Removes a custom animation's chunks from chrome.storage.sync.
+ * Called when a custom animation is deleted.
+ * @param {string} animationId
+ */
+export async function removeAnimationFromRemote(animationId) {
+    try {
+        await removeAnimationFromSync(animationId);
+    } catch (err) {
+        console.error('QuickLog-Solo: Remove animation from sync failed', err);
+    }
+}
+
+/**
+ * Clears all animation chunks from chrome.storage.sync.
+ * Called when device sync is disabled.
+ */
+export async function clearAnimationSyncData() {
+    try {
+        await clearAllAnimationChunksFromSync();
+    } catch (err) {
+        console.error('QuickLog-Solo: Clear animation sync data failed', err);
+    }
 }
 
 /**
@@ -219,6 +274,54 @@ async function applyRemotePauseState(data) {
 }
 
 /**
+ * Applies animation chunks from sync data.
+ * Reconstructs Base64 from anim_chunk_ keys, converts to Blob, and saves to QuickLogAnimationDB.
+ * Also updates the custom animation metadata map.
+ * @param {Object} data - The full sync data object.
+ */
+async function applyAnimationChunks(data) {
+    const animations = pullAnimationsFromSync(data);
+    if (animations.length === 0) return;
+
+    const metadataMap = await getCustomAnimationMetadataMap();
+    let updated = false;
+
+    for (const { id, base64 } of animations) {
+        try {
+            // Convert Base64 to Blob
+            const byteString = atob(base64);
+            const bytes = new Uint8Array(byteString.length);
+            for (let i = 0; i < byteString.length; i++) {
+                bytes[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: 'image/gif' });
+
+            // Save Blob to QuickLogAnimationDB
+            const renderSpec = metadataMap[id]?.payload?.renderSpec || {};
+            const config = metadataMap[id]?.payload?.config || undefined;
+            await saveAnimationBlob(id, blob, renderSpec, config);
+
+            // Ensure metadata entry exists
+            if (!metadataMap[id]) {
+                metadataMap[id] = {
+                    name: id,
+                    description: '',
+                    createdAt: Date.now(),
+                    payload: { renderSpec: {}, config: undefined }
+                };
+                updated = true;
+            }
+        } catch (err) {
+            console.error('QuickLog-Solo: Failed to apply animation chunk for', id, err);
+        }
+    }
+
+    if (updated) {
+        await setCustomAnimationMetadataMap(metadataMap);
+    }
+}
+
+/**
  * Extracts and combines logs from the sync data object.
  * @param {Object} data
  * @returns {Array} Combined logs
@@ -288,6 +391,8 @@ export async function pullFromCloud() {
                     resolve(false);
                     return;
                 }
+
+                await applyAnimationChunks(data);
 
                 await applyRemoteSettings(data);
 

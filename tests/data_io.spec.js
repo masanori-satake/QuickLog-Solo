@@ -12,33 +12,6 @@ test.describe('Data Import and Export Consistency', () => {
         await page.waitForSelector('.category-btn');
     });
 
-    test('should export categories as NDJSON and match schema', async ({ page }) => {
-        await page.goto('/projects/category-editor/index.html?lang=en');
-        await page.waitForSelector('.category-item');
-
-        await page.click('#export-btn');
-
-        const clipboardText = await page.evaluate(async () => {
-            // Wait for clipboard update
-            for(let i=0; i<10; i++) {
-                const text = await navigator.clipboard.readText();
-                if (text && text.includes('QuickLogSolo/Category')) return text;
-                await new Promise(r => setTimeout(r, 100));
-            }
-            return navigator.clipboard.readText();
-        });
-        const lines = clipboardText.split('\n').filter(l => l.trim());
-
-        expect(lines.length).toBeGreaterThan(0);
-
-        for (const line of lines) {
-            const data = JSON.parse(line);
-            expect(data.kind).toBe('QuickLogSolo/Category');
-            expect(data.version).toBe('1.0');
-            expect(data.type).toMatch(/category|page-break/);
-        }
-    });
-
     test('should export history as CSV and match DB content', async ({ page }) => {
         await page.click('#settings-toggle');
         await page.click('button[data-tab="maintenance"]');
@@ -98,66 +71,4 @@ test.describe('Data Import and Export Consistency', () => {
         expect(lines[1]).toContain(catName.replace(/[^\x00-\x7F]/g, ""));
     });
 
-    test('should handle Category Import Overwrite mode correctly', async ({ page }) => {
-        await page.goto('/projects/category-editor/index.html?lang=en');
-        await page.waitForSelector('.category-item');
-
-        const importData = JSON.stringify({
-            kind: 'QuickLogSolo/Category',
-            version: '1.0',
-            type: 'category',
-            name: 'ImportedTestCat',
-            color: 'teal'
-        });
-
-        await page.evaluate((text) => navigator.clipboard.writeText(text), importData);
-        await page.click('#import-btn');
-
-        const catItem = page.locator('.category-item').first();
-        await expect(catItem).toContainText('ImportedTestCat');
-        await expect(page.locator('.category-item')).toHaveCount(1);
-    });
-
-    test('should handle partial errors during category import', async ({ page }) => {
-        await page.goto('/projects/category-editor/index.html?lang=en');
-        await page.waitForSelector('.category-item');
-
-        const mixedData = 'Not JSON\n' + JSON.stringify({
-            kind: 'QuickLogSolo/Category',
-            version: '1.0',
-            type: 'category',
-            name: 'ValidItem',
-            color: 'orange'
-        });
-        await page.evaluate((text) => navigator.clipboard.writeText(text), mixedData);
-
-        page.once('dialog', async dialog => {
-            expect(dialog.message()).toContain('1 out of 2 rows are corrupted');
-            await dialog.accept();
-        });
-
-        await page.click('#import-btn');
-
-        const validItem = page.locator('.category-item').filter({ hasText: 'ValidItem' });
-        await expect(validItem).toBeVisible();
-    });
-
-    test('should reject category data with missing kind/version (Legacy Data)', async ({ page }) => {
-        await page.goto('/projects/category-editor/index.html?lang=en');
-        await page.waitForSelector('.category-item');
-
-        const legacyData = JSON.stringify({
-            type: 'category',
-            name: 'LegacyCat',
-            color: 'orange'
-        });
-
-        await page.evaluate((text) => navigator.clipboard.writeText(text), legacyData);
-
-        await page.click('#import-btn');
-
-        const toast = page.locator('#toast');
-        await expect(toast).not.toHaveClass(/hidden/);
-        await expect(toast).toContainText(/Paste failed|Import failed/);
-    });
 });

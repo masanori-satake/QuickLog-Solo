@@ -123,7 +123,37 @@ export default {
     'about-stats-categories': 'Anzahl der Kategorien',
     'about-description': 'QuickLog-Solo ist ein datenschutzorientiertes minimalistisches Arbeitsnotiz-Tool. Die Daten werden in der IndexedDB Ihres Browsers gespeichert (wenn das Backup ausgeführt wird, auch im lokalen Dateisystem) und niemals extern übertragen. Es gewährleistet hohe Transparenz und Sicherheit durch strikte Abhängigkeitsprüfung via GitHub Actions und kontinuierliche Prüfungen mit Google OSV-Scanner.',
     'about-disclaimer': '[Haftungsausschluss] Dies ist ein persönliches Open-Source-Projekt und wird ohne jegliche Gewährleistung zur Verfügung gestellt. Der Entwickler haftet nicht für Schäden, die aus der Nutzung resultieren. Nutzung auf eigene Gefahr.',
-    'maintenance-clear-logs': 'Arbeitshistorie löschen',
+    // Maintenance - Backup & Restore
+    'maintenance-backup-title': 'Sicherung & Wiederherstellung',
+    'backup-start': 'Sicherung starten',
+    'backup-execute': 'Sicherung durchführen',
+    'backup-change-dir': 'Sicherungsziel ändern',
+    'restore-btn': 'Wiederherstellen',
+    'backup-status-success': 'Sicherung abgeschlossen',
+    'backup-status-failed': 'Sicherung fehlgeschlagen',
+
+    // Maintenance - Restore Dialog
+    'confirm-restore': 'Daten wiederherstellen?',
+    'confirm-restore-desc': 'Alle aktuellen Daten werden gelöscht und mit Sicherungsdaten überschrieben. Diese Aktion kann nicht rückgängig gemacht werden.',
+
+    // Maintenance - Restore Messages
+    'restore-success': 'Wiederherstellung abgeschlossen',
+    'restore-error-invalid-folder': 'Kein gültiger Sicherungsordner. Erforderliche Dateien fehlen.',
+    'restore-error-write-failed': 'Fehler bei der Wiederherstellung. Daten könnten sich in einem unvollständigen Zustand befinden.',
+    'restore-skipped-records': '{count} ungültige Datensätze übersprungen',
+
+    // Maintenance - Delete/Initialize
+    'maintenance-delete-title': 'Löschen/Initialisieren',
+    'maintenance-clear-logs': 'Arbeitshistorie',
+    'maintenance-clear-categories': 'Kategorien',
+    'maintenance-clear-settings': 'Einstellungen',
+    'maintenance-clear-alarms': 'Alarme',
+    'maintenance-clear-animations': 'Benutzerdefinierte Animationen',
+    'maintenance-delete-execute': 'Löschen/Initialisieren',
+    'confirm-delete-initialize': 'Die folgenden Daten werden gelöscht/initialisiert:\n{items}\n\nDiese Aktion kann nicht rückgängig gemacht werden. Sind Sie sicher?',
+    'maintenance-delete-success': 'Ausgewählte Elemente wurden gelöscht/initialisiert',
+    'maintenance-delete-error': 'Fehler beim Löschen von {item}',
+
     'btn-clear-logs': 'Alle Arbeitshistorien löschen',
     'maintenance-sync-pull': 'Synchronisierungshistorie erneut abrufen',
     'btn-sync-pull': 'Synchronisierungshistorie erneut abrufen',

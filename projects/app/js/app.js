@@ -6,7 +6,6 @@ import {
     dbCount,
     dbPut,
     dbAdd,
-    dbAddMultiple,
     dbDelete,
     dbClear,
     setDatabaseName,
@@ -25,6 +24,7 @@ import {
     SETTING_KEY_PAUSE_STATE,
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
+import { restoreManager } from './restore.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
 import {
     formatDuration,
@@ -39,15 +39,13 @@ import {
     splitHistoryItem,
 } from '../shared/js/logic.js';
 import {
-    escapeCsv,
-    parseCsvLine,
     SYSTEM_CATEGORY_IDLE,
     SYSTEM_CATEGORY_UNKNOWN,
     SYSTEM_CATEGORY_PAGE_BREAK,
     generateUUID,
 } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
-import { saveAnimationBlob } from '../shared/js/idb_storage.js';
+import { saveAnimationBlob, initAnimationDB } from '../shared/js/idb_storage.js';
 import {
     isSessionSyncEnabled,
     pullFromCloud,
@@ -55,6 +53,7 @@ import {
     clearCloudHistory,
     broadcastSync,
     setupBroadcastChannel,
+    setAnimSyncProgressCallback,
 } from '../shared/js/session_sync.js';
 import { animations } from '../shared/js/animation_registry.js';
 import { getCustomAnimationMetadataMap, setCustomAnimationMetadataMap } from '../shared/js/utils/storage.js';
@@ -75,8 +74,6 @@ const ITEMS_PER_PAGE = 16;
 const EXCLUSION_PADDING_X = 4;
 const EXCLUSION_PADDING_Y = 2;
 
-const CSV_HEADER = 'id,category,startTime,endTime,tags\n';
-
 const ID_SETTINGS_POPUP = 'settings-popup';
 const ID_SETTINGS_TOGGLE = 'settings-toggle';
 const ID_THEME_SELECT = 'theme-select';
@@ -95,15 +92,14 @@ const ID_END_BTN = 'end-btn';
 const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
 const ID_TOAST = 'toast';
 
-const ID_BACKUP_INIT_CONTAINER = 'backup-init-container';
-const ID_BACKUP_RUN_INIT_BTN = 'backup-run-init-btn';
-const ID_BACKUP_MAIN_CONTAINER = 'backup-main-container';
-const ID_BACKUP_RUN_BTN = 'backup-run-btn';
-const ID_BACKUP_RUN_BTN_TEXT = 'backup-run-btn-text';
+const ID_BACKUP_INIT_CONTAINER = 'backup-not-configured';
+const ID_BACKUP_START_BTN = 'backup-start-btn';
+const ID_BACKUP_MAIN_CONTAINER = 'backup-configured';
+const ID_BACKUP_EXECUTE_BTN = 'backup-execute-btn';
 const ID_BACKUP_CHANGE_DIR_BTN = 'backup-change-dir-btn';
-const ID_BACKUP_LAST_TIME_DISPLAY = 'backup-last-time-display';
-const ID_BACKUP_FILE_COUNT_DISPLAY = 'backup-file-count-display';
-const ID_BACKUP_DIR_PATH = 'backup-dir-path';
+const ID_BACKUP_LAST_TIME_DISPLAY = 'backup-last-time';
+const ID_BACKUP_FILE_COUNT_DISPLAY = 'backup-file-count';
+const ID_BACKUP_STATUS_INDICATOR = 'backup-status-indicator';
 
 const ID_CONFIRM_MODAL = 'confirm-modal';
 const ID_CONFIRM_MESSAGE = 'confirm-message';
@@ -118,12 +114,9 @@ const ID_CATEGORY_EDITOR_LIST = 'category-editor-list';
 const ID_COPY_REPORT_BTN = 'copy-report-btn';
 const ID_COPY_AGGREGATION_BTN = 'copy-aggregation-btn';
 const ID_CATEGORY_SECTION = 'category-section';
-const ID_EXPORT_CSV_BTN = 'export-csv-btn';
-const ID_IMPORT_CSV_BTN = 'import-csv-btn';
-const ID_CSV_FILE_INPUT = 'csv-file-input';
-const ID_CLEAR_LOGS_BTN = 'clear-logs-btn';
-const ID_RESET_CAT_SETTINGS_BTN = 'reset-cat-settings-btn';
-const ID_RESET_SETTINGS_BTN = 'reset-settings-btn';
+
+const ID_DELETE_INITIALIZE_SECTION = 'delete-initialize-section';
+const ID_DELETE_INITIALIZE_BTN = 'delete-initialize-btn';
 const ID_SESSION_SYNC_TOGGLE = 'session-sync-toggle';
 const ID_SYNC_STATUS_BADGE = 'sync-status-badge';
 
@@ -1009,7 +1002,6 @@ async function syncState() {
     }
 
     // Toggle Maintenance sections based on Sync state
-    getEl('maintenance-clear-logs-section')?.classList.toggle('hidden', syncEnabled);
     getEl('maintenance-sync-pull-section')?.classList.toggle('hidden', !syncEnabled);
     getEl('maintenance-sync-clear-cloud-section')?.classList.toggle('hidden', !syncEnabled);
 
@@ -2179,39 +2171,28 @@ function getColorCode(color) {
 }
 
 async function updateBackupUI() {
-    const config = backupManager.config;
     const hasHandle = !!backupManager.directoryHandle;
 
     const initContainer = getEl(ID_BACKUP_INIT_CONTAINER);
     const mainContainer = getEl(ID_BACKUP_MAIN_CONTAINER);
 
     if (hasHandle) {
-        initContainer?.classList.add('hidden');
-        mainContainer?.classList.remove('hidden');
+        if (initContainer) initContainer.style.display = 'none';
+        if (mainContainer) mainContainer.style.display = '';
     } else {
-        initContainer?.classList.remove('hidden');
-        mainContainer?.classList.add('hidden');
+        if (initContainer) initContainer.style.display = '';
+        if (mainContainer) mainContainer.style.display = 'none';
     }
-
-    const dirPath = getEl(ID_BACKUP_DIR_PATH);
-    if (dirPath) dirPath.textContent = backupManager.directoryHandle ? backupManager.directoryHandle.name : '-';
 
     const lastTimeDisplay = getEl(ID_BACKUP_LAST_TIME_DISPLAY);
     if (lastTimeDisplay) {
+        const config = backupManager.config;
         lastTimeDisplay.textContent = config.lastBackupTime ? new Date(config.lastBackupTime).toLocaleString() : '-';
     }
 
-    const runBtn = getEl(ID_BACKUP_RUN_BTN);
-    const runBtnText = getEl(ID_BACKUP_RUN_BTN_TEXT);
-    if (runBtn && runBtnText) {
-        if (backupManager.isSyncing) {
-            runBtn.disabled = true;
-            runBtnText.textContent = t('backup-status-syncing');
-        } else {
-            runBtn.disabled = false;
-            const hasPermission = await backupManager.hasPermission();
-            runBtnText.textContent = hasPermission ? t('btn-backup-run') : t('btn-backup-grant-run');
-        }
+    const executeBtn = getEl(ID_BACKUP_EXECUTE_BTN);
+    if (executeBtn) {
+        executeBtn.disabled = backupManager.isSyncing;
     }
 
     backupManager.getFileCount().then((count) => {
@@ -2680,15 +2661,15 @@ function setupEventListeners() {
                 renderAlarmList();
             }
             if (tabName === 'categories') renderCategoryList();
-            if (tabName === 'backup') updateBackupUI();
+            if (tabName === 'maintenance') updateBackupUI();
             if (tabName === 'about') {
                 updateAboutStats();
             }
         };
     });
 
-    // Backup tab listeners
-    const handleDirectorySelection = async () => {
+    // Backup & Maintenance tab listeners
+    const handleBackupStart = async () => {
         try {
             const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
             await backupManager.setDirectory(handle);
@@ -2700,10 +2681,21 @@ function setupEventListeners() {
         }
     };
 
-    getEl(ID_BACKUP_RUN_INIT_BTN)?.addEventListener('click', handleDirectorySelection);
-    getEl(ID_BACKUP_CHANGE_DIR_BTN)?.addEventListener('click', handleDirectorySelection);
+    const handleBackupChangeDir = async () => {
+        try {
+            const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+            await backupManager.setDirectory(handle);
+            updateBackupUI();
+            broadcastSync();
+        } catch (err) {
+            console.warn('QuickLog-Solo: Directory selection cancelled or failed', err);
+        }
+    };
 
-    getEl(ID_BACKUP_RUN_BTN)?.addEventListener('click', async () => {
+    getEl(ID_BACKUP_START_BTN)?.addEventListener('click', handleBackupStart);
+    getEl(ID_BACKUP_CHANGE_DIR_BTN)?.addEventListener('click', handleBackupChangeDir);
+
+    getEl(ID_BACKUP_EXECUTE_BTN)?.addEventListener('click', async () => {
         if (!(await backupManager.hasPermission())) {
             const granted = await backupManager.requestPermission();
             if (!granted) return;
@@ -2712,6 +2704,102 @@ function setupEventListeners() {
         updateBackupUI();
         broadcastSync();
     });
+
+    // Delete/Initialize checkbox handler
+    const deleteInitCheckboxes = queryAll('#delete-initialize-section input[type="checkbox"]');
+    const deleteInitBtn = getEl(ID_DELETE_INITIALIZE_BTN);
+    deleteInitCheckboxes.forEach((cb) => {
+        cb.addEventListener('change', () => {
+            const anyChecked = [...deleteInitCheckboxes].some((c) => c.checked);
+            if (deleteInitBtn) deleteInitBtn.disabled = !anyChecked;
+        });
+    });
+
+    // Delete/Initialize execute handler
+    getEl(ID_DELETE_INITIALIZE_BTN)?.addEventListener('click', async () => {
+        const checked = [...deleteInitCheckboxes].filter((c) => c.checked);
+        if (checked.length === 0) return;
+
+        const itemNameMap = {
+            logs: t('maintenance-clear-logs'),
+            categories: t('maintenance-clear-categories'),
+            settings: t('maintenance-clear-settings'),
+            alarms: t('maintenance-clear-alarms'),
+            animations: t('maintenance-clear-animations'),
+        };
+
+        const selectedItems = checked.map((c) => itemNameMap[c.value] || c.value);
+        const confirmMsg = t('confirm-delete-initialize').replace('{items}', selectedItems.join('\n'));
+
+        if (!(await showConfirm(confirmMsg))) return;
+
+        if (activeTask) {
+            await stopTask();
+            updateUI();
+        }
+
+        if (deleteInitBtn) deleteInitBtn.disabled = true;
+
+        try {
+            for (const cb of checked) {
+                const itemKey = cb.value;
+                const itemName = itemNameMap[itemKey] || itemKey;
+                try {
+                    if (itemKey === 'logs') {
+                        await dbClear(STORE_LOGS);
+                    } else if (itemKey === 'categories') {
+                        await dbClear(STORE_CATEGORIES);
+                    } else if (itemKey === 'settings') {
+                        await dbClear(STORE_SETTINGS);
+                    } else if (itemKey === 'alarms') {
+                        await dbClear(STORE_ALARMS);
+                    } else if (itemKey === 'animations') {
+                        const animDb = await initAnimationDB();
+                        await new Promise((resolve, reject) => {
+                            const tx = animDb.transaction('blobs', 'readwrite');
+                            const store = tx.objectStore('blobs');
+                            const request = store.clear();
+                            request.onsuccess = () => resolve();
+                            request.onerror = () => reject(request.error);
+                        });
+                        await setCustomAnimationMetadataMap({});
+                    }
+                } catch (err) {
+                    console.error(`QuickLog-Solo: Failed to clear ${itemKey}:`, err);
+                    showToast(t('maintenance-delete-error').replace('{item}', itemName));
+                    return;
+                }
+            }
+
+            // Reset all checkboxes and disable button
+            deleteInitCheckboxes.forEach((c) => {
+                c.checked = false;
+            });
+            if (deleteInitBtn) deleteInitBtn.disabled = true;
+
+            showToast(t('maintenance-delete-success'));
+            await updateUI();
+            broadcastSync('reload');
+        } catch (err) {
+            console.error('QuickLog-Solo: Delete/Initialize failed:', err);
+            showToast(t('alert-error') || 'Operation failed');
+        }
+    });
+
+    // Status update callback
+    backupManager.onStatusChange = () => {
+        updateBackupUI();
+    };
+
+    // Restore buttons (both "not configured" and "configured" states)
+    const handleRestore = async () => {
+        const dirHandle = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
+        if (dirHandle) {
+            await backupManager.setDirectory(dirHandle);
+        }
+    };
+    getEl('restore-btn')?.addEventListener('click', handleRestore);
+    getEl('restore-configured-btn')?.addEventListener('click', handleRestore);
 
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
         e.preventDefault();
@@ -2882,7 +2970,7 @@ function setupEventListeners() {
         }
     });
 
-    // CSV and Maintenance helpers
+    // Maintenance helpers
     async function performMaintenanceAction(confirmMessage, action) {
         if (await showConfirm(confirmMessage)) {
             if (activeTask) {
@@ -2892,174 +2980,6 @@ function setupEventListeners() {
             await action();
         }
     }
-
-    getEl(ID_EXPORT_CSV_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction(t('confirm-export-csv'), async () => {
-            const logs = await dbGetAll(STORE_LOGS);
-            let csv = CSV_HEADER;
-            logs.forEach((l) => {
-                csv += `${l.id},${escapeCsv(l.category)},${l.startTime},${l.endTime},${escapeCsv(l.tags || '')}\n`;
-            });
-            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-            const a = createEl('a');
-            a.href = url;
-            a.download = `quicklog_backup_${new Date().toISOString().slice(0, 10)}.csv`;
-            a.click();
-        });
-    });
-
-    const csvInput = getEl(ID_CSV_FILE_INPUT);
-    getEl(ID_IMPORT_CSV_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction(t('confirm-import-csv'), async () => {
-            csvInput?.click();
-        });
-    });
-
-    csvInput?.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        try {
-            const categories = await dbGetAll(STORE_CATEGORIES);
-            const categoryMap = new Map(categories.map((c) => [c.name, c]));
-
-            // Security: Limit file size (e.g., 5MB for CSV history)
-            if (file.size > 5 * 1024 * 1024) {
-                alert(t('alert-import-error') + '\n(File too large)');
-                return;
-            }
-
-            const text = await file.text();
-            const lines = text
-                .split(/\r?\n/)
-                .filter((line) => line.trim() !== '')
-                .slice(1);
-
-            // Security: Limit number of lines
-            if (lines.length > 50000) {
-                alert(t('alert-import-error') + '\n(Too many lines)');
-                return;
-            }
-            if (lines.length === 0) return;
-
-            const existingLogs = await dbGetAll(STORE_LOGS);
-            // Optimization: Create a Set of keys for O(1) duplicate lookup
-            const existingKeys = new Set(existingLogs.map((l) => `${l.category}|${l.startTime}`));
-            const importedKeys = new Set(); // To prevent duplicates within the same CSV
-
-            const now = Date.now();
-            const FUTURE_BUFFER = 5 * 60 * 1000; // 5 minutes allowance
-
-            const validRows = [];
-            let errorCount = 0;
-            let duplicateCount = 0;
-
-            for (const line of lines) {
-                const parts = parseCsvLine(line);
-                if (parts.length < 3) {
-                    errorCount++;
-                    continue;
-                }
-                const [, category, startStr, endStr, tags] = parts;
-                const startTime = parseInt(startStr, 10);
-                const rawEndTime = endStr ? parseInt(endStr, 10) : null;
-                const endTime = isNaN(rawEndTime) ? null : rawEndTime;
-
-                // 1. Basic Validation
-                if (!category || isNaN(startTime)) {
-                    errorCount++;
-                    continue;
-                }
-
-                // 2. Logical Range Validation
-                if (endTime !== null && endTime < startTime) {
-                    errorCount++;
-                    continue;
-                }
-
-                // 3. Future Timestamp Validation
-                if (startTime > now + FUTURE_BUFFER) {
-                    errorCount++;
-                    continue;
-                }
-
-                // 4. Duplicate Check (exact match of category and startTime)
-                const recordKey = `${category}|${startTime}`;
-                if (existingKeys.has(recordKey) || importedKeys.has(recordKey)) {
-                    duplicateCount++;
-                    continue;
-                }
-
-                const cat = categoryMap ? categoryMap.get(category) : null;
-                validRows.push({
-                    category,
-                    startTime,
-                    endTime: endTime,
-                    tags: tags || (cat ? cat.tags || '' : ''),
-                    color: cat ? cat.color || 'primary' : 'primary',
-                });
-                importedKeys.add(recordKey);
-            }
-
-            if (validRows.length === 0) {
-                if (duplicateCount > 0 && errorCount === 0) {
-                    alert(t('toast-imported') + ` (${duplicateCount} duplicates skipped)`);
-                } else {
-                    alert(t('import-err-fatal'));
-                }
-                return;
-            }
-
-            if (errorCount > 0) {
-                const proceed = await showConfirm(
-                    t('import-err-partial', {
-                        total: lines.length,
-                        errorCount,
-                        validCount: validRows.length,
-                    })
-                );
-                if (!proceed) return;
-            }
-
-            // Optimization: Batch insertion in a single transaction
-            await dbAddMultiple(STORE_LOGS, validRows);
-
-            updateUI();
-            broadcastSync('reload');
-            showToast(t('toast-imported'));
-        } catch (err) {
-            console.error('QuickLog-Solo: History import failed', err);
-            alert(t('alert-import-error'));
-        } finally {
-            e.target.value = '';
-        }
-    });
-
-    getEl(ID_CLEAR_LOGS_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction(t('confirm-clear-logs'), async () => {
-            await dbClear(STORE_LOGS);
-            updateUI();
-            broadcastSync('reload');
-            showToast(t('toast-deleted'));
-        });
-    });
-
-    getEl(ID_RESET_CAT_SETTINGS_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction(t('confirm-reset-all'), async () => {
-            await dbClear(STORE_CATEGORIES);
-            await dbClear(STORE_SETTINGS);
-            broadcastSync('reload');
-            location.reload();
-        });
-    });
-
-    getEl(ID_RESET_SETTINGS_BTN)?.addEventListener('click', () => {
-        performMaintenanceAction(t('confirm-reset-settings'), async () => {
-            await dbClear(STORE_SETTINGS);
-            broadcastSync('reload');
-            location.reload();
-        });
-    });
 
     getEl('sync-pull-btn')?.addEventListener('click', () => {
         performMaintenanceAction(t('confirm-sync-pull'), async () => {
@@ -3126,6 +3046,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         await initDB();
+
+        // Set up animation sync progress callback (non-blocking UI update)
+        setAnimSyncProgressCallback((completed, total) => {
+            const indicator = getEl('anim-sync-progress');
+            if (indicator) {
+                if (completed >= total) {
+                    indicator.textContent = '';
+                    indicator.style.display = 'none';
+                } else {
+                    indicator.textContent = `${completed} / ${total}`;
+                    indicator.style.display = '';
+                }
+            }
+        });
 
         if (await isSessionSyncEnabled()) {
             await pullFromCloud().catch((err) =>
