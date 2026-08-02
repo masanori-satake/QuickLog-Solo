@@ -246,8 +246,7 @@ export function validateAlarmSchema(data) {
         if (typeof entry.dayOfMonth !== 'number' || entry.dayOfMonth < 1 || entry.dayOfMonth > 31) return false;
         if (typeof entry.daysBeforeEnd !== 'number' || entry.daysBeforeEnd < 0 || entry.daysBeforeEnd > 31)
             return false;
-        if (!['none', 'prev_business_day', 'next_business_day', 'skip'].includes(entry.holidayAdjustment))
-            return false;
+        if (!['none', 'prev_business_day', 'next_business_day', 'skip'].includes(entry.holidayAdjustment)) return false;
     }
 
     return true;
