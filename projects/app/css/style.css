@@ -1219,6 +1219,7 @@ body.theme-dark button:active {
 #category-editor-list {
     flex: 1;
     overflow-y: auto;
+    scrollbar-gutter: stable;
     padding-right: 4px;
 }
 
@@ -1752,6 +1753,7 @@ body.theme-dark button:active {
 #alarms-scroll-container {
     flex: 1;
     overflow-y: auto;
+    scrollbar-gutter: stable;
     padding-right: 4px;
 }
 
@@ -1848,7 +1850,7 @@ body.theme-dark button:active {
     min-width: 80px;
 }
 
-.alarm-message, .alarm-action, .alarm-category {
+.alarm-message, .alarm-action, .alarm-category, .alarm-type, .alarm-holiday-adj, .alarm-day-of-month, .alarm-days-before-end {
     flex: 1;
     font-size: 0.85rem;
     padding: 4px 8px !important;
@@ -1857,10 +1859,23 @@ body.theme-dark button:active {
     background-color: var(--md-sys-color-surface-container-highest);
     color: var(--md-sys-color-on-surface);
     height: 32px;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: 22px; /* standard centering inside 32px height */
 }
 
 .alarm-category-row.hidden {
     display: none;
+}
+
+.business-days-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
 }
 
 /* Business Days (Filter Chips) */
