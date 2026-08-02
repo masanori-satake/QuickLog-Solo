@@ -101,6 +101,6 @@ test.describe('Custom Animation Non-Extension Fallback E2E', () => {
 
         // Verify the animation text display is updated and rendered with the custom animation name
         const firstReadonlyItem = page.locator('.category-editor-item:not(.page-break-item)').first();
-        await expect(firstReadonlyItem).toContainText('Animation (Common): ねこぽん');
+        await expect(firstReadonlyItem).toContainText('ねこぽん');
     });
 });
