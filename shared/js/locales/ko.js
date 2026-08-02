@@ -142,7 +142,11 @@ export default {
     'tooltip-status-stopped': '종료됨',
     'tooltip-calendar': '날짜 선택',
     // Maintenance Tab
-    'maintenance-clear-logs': '작업 기록 삭제',
+    'maintenance-clear-logs': '作業履歴',
+    'maintenance-clear-categories': 'カテゴリ',
+    'maintenance-clear-settings': '設定',
+    'maintenance-clear-alarms': 'アラーム',
+    'maintenance-clear-animations': 'カスタムアニメーション',
     'btn-clear-logs': '작업 기록 전부 삭제',
     'maintenance-sync-pull': '동기화 기록 다시 로딩',
     'btn-sync-pull': '동기화 기록 다시 로딩',
@@ -157,15 +161,39 @@ export default {
     'maintenance-reset-settings': '설정만 초기화',
     'maintenance-reset-settings-desc': '작업 기록과 카테고리는 유지됩니다.',
     'btn-reset-settings': '설정만 초기화',
+    // Maintenance - バックアップ・復元
+    'maintenance-backup-title': 'バックアップ・復元',
+    'backup-start': 'バックアップを開始する',
+    'backup-execute': 'バックアップを実行する',
+    'backup-change-dir': 'バックアップ先を指定する',
+    'restore-btn': '復元する',
+    'backup-status-success': 'バックアップ完了',
+    'backup-status-failed': 'バックアップ失敗',
+    // Maintenance - 復元ダイアログ
+    'confirm-restore': 'データを復元しますか？',
+    'confirm-restore-desc':
+        '現在のすべてのデータが削除され、バックアップデータで上書きされます。この操作は元に戻せません。',
+    // Maintenance - 復元メッセージ
+    'restore-success': '復元が完了しました',
+    'restore-error-invalid-folder': '有効なバックアップフォルダではありません。必須ファイルが見つかりません。',
+    'restore-error-write-failed': '復元中にエラーが発生しました。データが不完全な状態の可能性があります。',
+    'restore-skipped-records': '{count}件の不正なレコードをスキップしました',
+    // Maintenance - 削除/初期化
+    'maintenance-delete-title': '削除/初期化',
+    'maintenance-delete-execute': '削除/初期化する',
+    'confirm-delete-initialize':
+        '以下のデータを削除/初期化します:\n{items}\n\nこの操作は元に戻せません。本当に実行しますか？',
+    'maintenance-delete-success': '選択した項目を削除/初期化しました',
+    'maintenance-delete-error': '{item}の削除中にエラーが発生しました',
     // Backup Tab
     'btn-backup-start': '백업 시작하기',
     'btn-backup-run': '백업 실행하기',
     'btn-backup-grant-run': '권한 허용 및 백업',
     'btn-backup-change-dir': '백업 위치 변경',
-    'backup-status-syncing': '동기화 중...',
-    'backup-last-time': '마지막 백업',
+    'backup-status-syncing': 'バックアップ中...',
+    'backup-last-time': '最終バックアップ: {time}',
     'backup-directory': '디렉토리',
-    'backup-file-count': '파일 수',
+    'backup-file-count': 'ファイル数: {count}日分',
     'backup-file-count-unit': '일치',
     'backup-description-new':
         '브라우저 캐시 삭제 등으로 IndexedDB 데이터가 사라지는 것을 방지하기 위해 정기적인 백업을 권장합니다. 백업 데이터가 있으면 다른 브라우저로의 이동도 원활하게 할 수 있습니다.',
