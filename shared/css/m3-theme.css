@@ -599,3 +599,29 @@ body.theme-dark {
 .close-btn:active {
     transform: translateY(0);
 }
+
+/* --- Shared Tertiary Button Styles --- */
+.tertiary-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 100px;
+  border: 1px solid var(--md-sys-color-outline);
+  background-color: transparent;
+  color: var(--md-sys-color-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tertiary-btn:hover {
+  background-color: var(--md-sys-color-surface-container-highest);
+}
+
+/* --- Shared Danger-themed Clear/Reset Buttons --- */
+#clear-all-btn,
+#reset-btn,
+#alarm-reset-btn {
+  color: var(--md-sys-color-error) !important;
+}

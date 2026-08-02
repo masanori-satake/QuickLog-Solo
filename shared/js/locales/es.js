@@ -133,6 +133,8 @@ export default {
     'maintenance-reset-all-desc': 'Los historiales de trabajo se mantendrán.',
     'btn-reset-all': 'Restablecer categorías y ajustes',
     'btn-reset': 'Restablecer',
+    'btn-initialize-all': 'Inicializar todo',
+    'btn-initialize': 'Inicializar',
     'maintenance-reset-settings': 'Solo restablecer ajustes',
     'maintenance-reset-settings-desc': 'Los historiales de trabajo y categorías se mantendrán.',
     'btn-reset-settings': 'Solo restablecer ajustes',

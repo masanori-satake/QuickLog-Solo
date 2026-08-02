@@ -189,7 +189,15 @@ export function initUI(state, elements) {
         catGroupEl.classList.toggle('hidden', alarm.action !== 'start');
         if (alarm.action === 'start') {
             categorySelect.replaceChildren();
-            state.categories.filter(c => !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).forEach(cat => {
+            const validCategories = state.categories.filter(c => !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+
+            // Ensure alarm.actionCategory is set to a valid category if it's currently invalid/empty
+            const hasCategory = validCategories.some(c => c.name === alarm.actionCategory);
+            if (!hasCategory && validCategories.length > 0) {
+                alarm.actionCategory = validCategories[0].name;
+            }
+
+            validCategories.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat.name;
                 opt.textContent = cat.name;
@@ -299,6 +307,13 @@ export function initUI(state, elements) {
         const alarm = state.alarms.find(a => a.id === state.selectedAlarmId);
         if (alarm) {
             alarm.action = actionSelect.value;
+            if (alarm.action === 'start') {
+                const validCategories = state.categories.filter(c => !c.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
+                const hasCategory = validCategories.some(c => c.name === alarm.actionCategory);
+                if (!hasCategory && validCategories.length > 0) {
+                    alarm.actionCategory = validCategories[0].name;
+                }
+            }
             renderDetail();
             if (state.onAlarmChange) state.onAlarmChange(alarm);
         }

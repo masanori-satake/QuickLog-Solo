@@ -133,6 +133,8 @@ export default {
     'maintenance-reset-all-desc': '工作历史将被保留。',
     'btn-reset-all': '重置分类与设置',
     'btn-reset': '重置',
+    'btn-initialize-all': '全部初始化',
+    'btn-initialize': '初始化',
     'maintenance-reset-settings': '仅重置设置',
     'maintenance-reset-settings-desc': '工作历史与分类将被保留。',
     'btn-reset-settings': '仅重置设置',
