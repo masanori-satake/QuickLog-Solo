@@ -2201,9 +2201,14 @@ async function updateBackupUI() {
         executeBtn.disabled = !hasHandle || backupManager.isSyncing;
     }
 
+    const changeDirBtn = getEl(ID_BACKUP_CHANGE_DIR_BTN);
+    if (changeDirBtn) {
+        changeDirBtn.disabled = backupManager.isSyncing;
+    }
+
     const restoreBtn = getEl('restore-configured-btn');
     if (restoreBtn) {
-        restoreBtn.disabled = !hasHandle;
+        restoreBtn.disabled = !hasHandle || backupManager.isSyncing;
     }
 
     backupManager.getFileCount().then((count) => {
@@ -2683,6 +2688,7 @@ function setupEventListeners() {
 
     // Backup & Maintenance tab listeners
     const handleBackupChangeDir = async () => {
+        if (backupManager.isSyncing) return;
         try {
             const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
             await backupManager.setDirectory(handle);
@@ -2799,6 +2805,7 @@ function setupEventListeners() {
 
     // Restore button
     const handleRestore = async () => {
+        if (backupManager.isSyncing) return;
         const dirHandle = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
         if (dirHandle) {
             await backupManager.setDirectory(dirHandle);
