@@ -181,6 +181,7 @@ export default {
     'backup-status-syncing': '동기화 중...',
     'backup-last-time': '마지막 백업',
     'backup-directory': '디렉토리',
+    'backup-not-selected': '(선택되지 않음)',
     'backup-file-count': '파일 수',
     'backup-file-count-unit': '일치',
     'backup-last-time-label': '마지막 백업',

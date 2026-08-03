@@ -184,6 +184,7 @@ export default {
     'backup-status-syncing': 'Synchronisation...',
     'backup-last-time': 'Dernière sauvegarde: {time}',
     'backup-directory': 'Répertoire',
+    'backup-not-selected': '(Non sélectionné)',
     'backup-file-count': 'Fichiers: {count} jours',
     'backup-file-count-unit': 'jours',
     'backup-last-time-label': 'Dernière sauvegarde',

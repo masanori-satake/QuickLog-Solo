@@ -2185,7 +2185,9 @@ async function updateBackupUI() {
 
     const dirNameEl = getEl('backup-directory-name');
     if (dirNameEl) {
-        dirNameEl.textContent = backupManager.directoryHandle ? backupManager.directoryHandle.name : '';
+        dirNameEl.textContent = backupManager.directoryHandle
+            ? backupManager.directoryHandle.name
+            : t('backup-not-selected');
     }
 
     const lastTimeDisplay = getEl(ID_BACKUP_LAST_TIME_DISPLAY);
