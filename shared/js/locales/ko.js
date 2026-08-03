@@ -164,9 +164,9 @@ export default {
     // Maintenance - バックアップ・復元
     'maintenance-backup-title': 'バックアップ・復元',
     'backup-start': 'バックアップを開始する',
-    'backup-execute': 'バックアップを保存する',
+    'backup-execute': 'バックアップ',
     'backup-change-dir': 'バックアップ先を変更する',
-    'restore-btn': 'バックアップを復元する',
+    'restore-btn': 'リストア',
     'backup-status-success': 'バックアップ完了',
     'backup-status-failed': 'バックアップ失敗',
     // Maintenance - 復元ダイアログ
