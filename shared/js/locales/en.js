@@ -193,6 +193,7 @@ export default {
     'backup-status-syncing': 'バックアップ中...',
     'backup-last-time': '最終バックアップ: {time}',
     'backup-directory': 'Directory',
+    'backup-not-selected': '(未選択)',
     'backup-file-count': 'ファイル数: {count}日分',
     'backup-file-count-unit': 'days',
     'backup-last-time-label': '最終バックアップ時刻',
