@@ -133,13 +133,15 @@ jobs:
 
             - name: 1. ESLint
               if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+              env:
+                  ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
               run: |
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
                     npx eslint .
                   else
-                    JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
-                    if [ -n "$JS_FILES" ]; then
-                      npx eslint $JS_FILES
+                    mapfile -t JS_FILES < <(echo "$ALL_CHANGED_FILES" | jq -r '.[]' | grep -E '\.(js|cjs)$' || true)
+                    if [ ${`#JS_FILES`[@]} -gt 0 ]; then
+                      npx eslint "${JS_FILES[@]}"
                     else
                       echo "No JS files changed, skipping ESLint."
                     fi
@@ -147,14 +149,16 @@ jobs:
 
             - name: 2. Stylelint
               if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+              env:
+                  ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
               run: |
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
                     npx stylelint "**/*.css"
                   else
-                    CSS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep '\.css$' || true)
-                    if [ -n "$CSS_FILES" ]; then
-                      npx stylelint $CSS_FILES
-                    else
+                    mapfile -t CSS_FILES < <(echo "$ALL_CHANGED_FILES" | jq -r '.[]' | grep '\.css$' || true)
+                    if [ ${`#CSS_FILES`[@]} -gt 0 ]; then
+                      npx stylelint "${CSS_FILES[@]}"
+                  else
                       echo "No CSS files changed, skipping Stylelint."
                     fi
                   fi
@@ -186,14 +190,16 @@ jobs:
 
             - name: Run Jest tests
               if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+              env:
+                  ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
               run: |
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
                     npm test -- --coverage --runInBand
                   else
-                    JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
-                    if [ -n "$JS_FILES" ]; then
-                      npm test -- --coverage --runInBand --findRelatedTests $JS_FILES --passWithNoTests
-                    else
+                    mapfile -t JS_FILES < <(echo "$ALL_CHANGED_FILES" | jq -r '.[]' | grep -E '\.(js|cjs)$' || true)
+                    if [ ${`#JS_FILES`[@]} -gt 0 ]; then
+                      npm test -- --coverage --runInBand --findRelatedTests "${JS_FILES[@]}" --passWithNoTests
+                  else
                       echo "No JS files changed, running all tests as fallback."
                       npm test -- --coverage --runInBand
                     fi
