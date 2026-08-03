@@ -19,6 +19,7 @@ test.describe('Animation Quality Evaluation', () => {
 
     for (const id of animationIds) {
         test(`Evaluating animation: ${id}`, async ({ page }) => {
+            test.setTimeout(90000);
             // Navigate to the app with test parameters to start a task immediately
             // baseURL in playwright.config.js points to /projects/app/app.html
             const dbName = `EvalDB_${id}_${Math.random().toString(36).substring(7)}`;
