@@ -69,14 +69,7 @@ jobs:
               uses: actions/setup-python@v5
               with:
                   python-version: '3.x'
-
-            - name: Cache Python dependencies
-              uses: actions/cache@v4
-              with:
-                  path: ~/.cache/pip
-                  key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-                  restore-keys: |
-                      ${{ runner.os }}-pip-
+                  cache: 'pip'
 
             - name: Install Python dependencies
               run: pip install -r requirements.txt
@@ -195,14 +188,14 @@ jobs:
               if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
               run: |
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-                    npm test -- --coverage
+                    npm test -- --coverage --runInBand
                   else
                     JS_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|cjs)$' || true)
                     if [ -n "$JS_FILES" ]; then
-                      npm test -- --coverage --findRelatedTests $JS_FILES --passWithNoTests
+                      npm test -- --coverage --runInBand --findRelatedTests $JS_FILES --passWithNoTests
                     else
                       echo "No JS files changed, running all tests as fallback."
-                      npm test -- --coverage
+                      npm test -- --coverage --runInBand
                     fi
                   fi
 
@@ -211,7 +204,7 @@ jobs:
               uses: ArtiomTr/jest-coverage-report-action@v2
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
-                  test-script: npm test
+                  test-script: npm test -- --runInBand
 
     e2e-tests:
         name: E2Eテスト (E2E Tests)
