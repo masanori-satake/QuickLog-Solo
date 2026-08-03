@@ -131,9 +131,9 @@ export default {
     // Maintenance - Backup & Restore
     'maintenance-backup-title': 'Sauvegarde et restauration',
     'backup-start': 'Démarrer la sauvegarde',
-    'backup-execute': 'Sauvegarder',
+    'backup-execute': 'Sauvegarde',
     'backup-change-dir': 'Changer la destination',
-    'restore-btn': 'Restaurer la sauvegarde',
+    'restore-btn': 'Restaurer',
     'backup-status-success': 'Sauvegarde terminée',
     'backup-status-failed': 'Échec de la sauvegarde',
 

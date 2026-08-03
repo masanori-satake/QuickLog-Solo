@@ -2258,16 +2258,28 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
 }
 
 /* Backup and Restore UI Fixes */
-#backup-configured #restore-configured-btn {
-    margin-top: 4px;
+.backup-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1rem;
 }
 
-#backup-configured #backup-change-dir-btn {
-    margin-top: 8px;
+.backup-btn-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
 }
 
-#backup-not-configured #backup-change-dir-btn-init {
-    margin-top: 8px;
+.backup-btn-row .outline-btn {
+    flex: 1 1 50%;
+    width: auto;
+    margin: 0 !important;
+}
+
+.backup-controls #backup-change-dir-btn {
+    width: 100%;
+    margin: 0 !important;
 }
 
 /* Delete / Initialize Checkbox Group Styles */

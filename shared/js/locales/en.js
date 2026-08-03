@@ -154,9 +154,9 @@ export default {
     // Maintenance Tab
     'maintenance-backup-title': 'Backup & Restore',
     'backup-start': 'Start Backup',
-    'backup-execute': 'Save Backup',
+    'backup-execute': 'Backup',
     'backup-change-dir': 'Change Destination',
-    'restore-btn': 'Restore Backup',
+    'restore-btn': 'Restore',
     'backup-status-success': 'Backup Completed',
     'backup-status-failed': 'Backup Failed',
 

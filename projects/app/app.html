@@ -620,28 +620,17 @@
                         <div class="maintenance-section" id="backup-restore-section">
                             <h3 data-i18n="maintenance-backup-title"></h3>
 
-                            <!-- 保存先未設定時 -->
-                            <div id="backup-not-configured" class="backup-state">
-                                <button id="backup-start-btn" class="outline-btn">
-                                    <span class="material-symbols-outlined">backup</span>
-                                    <span data-i18n="btn-backup-grant-run"></span>
-                                </button>
-                                <button id="backup-change-dir-btn-init" class="outline-btn">
-                                    <span class="material-symbols-outlined">folder_open</span>
-                                    <span data-i18n="btn-backup-change-dir"></span>
-                                </button>
-                            </div>
-
-                            <!-- 保存先設定済み時 -->
-                            <div id="backup-configured" class="backup-state" style="display: none">
-                                <button id="backup-execute-btn" class="outline-btn">
-                                    <span class="material-symbols-outlined">backup</span>
-                                    <span data-i18n="backup-execute"></span>
-                                </button>
-                                <button id="restore-configured-btn" class="outline-btn">
-                                    <span class="material-symbols-outlined">restore</span>
-                                    <span data-i18n="restore-btn"></span>
-                                </button>
+                            <div class="backup-controls">
+                                <div class="backup-btn-row">
+                                    <button id="backup-execute-btn" class="outline-btn" disabled>
+                                        <span class="material-symbols-outlined">archive</span>
+                                        <span data-i18n="backup-execute"></span>
+                                    </button>
+                                    <button id="restore-configured-btn" class="outline-btn" disabled>
+                                        <span class="material-symbols-outlined">unarchive</span>
+                                        <span data-i18n="restore-btn"></span>
+                                    </button>
+                                </div>
                                 <button id="backup-change-dir-btn" class="outline-btn">
                                     <span class="material-symbols-outlined">folder_open</span>
                                     <span data-i18n="backup-change-dir"></span>

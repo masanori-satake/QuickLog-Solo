@@ -128,9 +128,9 @@ export default {
     // Maintenance - Backup & Restore
     'maintenance-backup-title': '备份与恢复',
     'backup-start': '开始备份',
-    'backup-execute': '保存备份',
+    'backup-execute': '备份',
     'backup-change-dir': '更改目标位置',
-    'restore-btn': '恢复备份',
+    'restore-btn': '恢复',
     'backup-status-success': '备份完成',
     'backup-status-failed': '备份失败',
 
