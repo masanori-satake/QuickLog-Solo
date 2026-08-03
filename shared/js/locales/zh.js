@@ -178,6 +178,7 @@ export default {
     'backup-status-syncing': '同步中...',
     'backup-last-time': '上次备份时间',
     'backup-directory': '保存目录',
+    'backup-not-selected': '(未选择)',
     'backup-file-count': '文件数量',
     'backup-file-count-unit': '天',
     'backup-last-time-label': '上次备份',

@@ -183,6 +183,7 @@ export default {
     'backup-status-syncing': 'Sincronizando...',
     'backup-last-time': 'Última copia: {time}',
     'backup-directory': 'Directorio',
+    'backup-not-selected': '(No seleccionado)',
     'backup-file-count': 'Archivos: {count} días',
     'backup-file-count-unit': 'días',
     'backup-last-time-label': 'Última copia',

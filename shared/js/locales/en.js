@@ -207,6 +207,7 @@ export default {
     'backup-status-syncing': 'Syncing...',
     'backup-last-time': 'Last backup: {time}',
     'backup-directory': 'Directory',
+    'backup-not-selected': '(Not selected)',
     'backup-file-count': 'Files: {count} days',
     'backup-file-count-unit': 'days',
     'backup-last-time-label': 'Last Backup',

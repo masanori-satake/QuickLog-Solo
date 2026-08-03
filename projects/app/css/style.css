@@ -262,36 +262,47 @@ main {
 .dot-primary {
     background-color: var(--custom-cat-primary);
 }
+
 .dot-secondary {
     background-color: var(--custom-cat-secondary);
 }
+
 .dot-tertiary {
     background-color: var(--custom-cat-tertiary);
 }
+
 .dot-error {
     background-color: var(--custom-cat-error);
 }
+
 .dot-neutral {
     background-color: var(--custom-cat-neutral);
 }
+
 .dot-outline {
     background-color: var(--custom-cat-outline);
 }
+
 .dot-teal {
     background-color: var(--custom-cat-teal);
 }
+
 .dot-green {
     background-color: var(--custom-cat-green);
 }
+
 .dot-yellow {
     background-color: var(--custom-cat-yellow);
 }
+
 .dot-orange {
     background-color: var(--custom-cat-orange);
 }
+
 .dot-pink {
     background-color: var(--custom-cat-pink);
 }
+
 .dot-indigo {
     background-color: var(--custom-cat-indigo);
 }
@@ -417,9 +428,11 @@ body.timer-mini #elapsed-time {
 .status-running {
     color: var(--status-running-color);
 }
+
 .status-paused {
     color: var(--status-paused-color);
 }
+
 .status-stopped {
     color: var(--status-stopped-color);
 }
@@ -433,6 +446,7 @@ body.timer-mini #elapsed-time {
     100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.3;
     }
@@ -441,6 +455,7 @@ body.timer-mini #elapsed-time {
 #pause-btn.anim-active {
     background-color: color-mix(in srgb, var(--md-sys-color-secondary-container), transparent 40%);
 }
+
 #end-btn.anim-active {
     background-color: color-mix(in srgb, var(--md-sys-color-error-container), transparent 40%);
 }
@@ -1267,15 +1282,19 @@ body.theme-dark button:active {
 .dot-brown {
     background-color: var(--custom-cat-brown);
 }
+
 .dot-cyan {
     background-color: var(--custom-cat-cyan);
 }
+
 .dot-retro-lcd {
     background-color: #9bbc0f;
 }
+
 .dot-retro-crt {
     background-color: #3f3;
 }
+
 .dot-retro-nixie {
     background-color: #f50;
 }
@@ -1338,6 +1357,7 @@ body.theme-dark button:active {
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -1734,12 +1754,15 @@ body.theme-dark button:active {
     #category-section {
         height: var(--category-section-height-compact);
     }
+
     #current-task-display {
         height: var(--timer-display-height-compact);
     }
+
     #current-task-name {
         font-size: 0.9rem;
     }
+
     #elapsed-time {
         font-size: 1.5rem;
     }
@@ -1749,9 +1772,11 @@ body.theme-dark button:active {
     #category-section {
         height: var(--category-section-height-mini);
     }
+
     header {
         min-height: 40px;
     }
+
     #current-task-display {
         height: var(--timer-display-height-mini);
     }
@@ -1802,6 +1827,7 @@ body.theme-dark button:active {
     border: 1px solid var(--md-sys-color-outline-variant);
     border-radius: var(--md-sys-shape-small);
     padding: 12px;
+    margin-top: 4px;
     margin-bottom: 1rem;
 }
 
@@ -2035,6 +2061,7 @@ body.theme-dark button:active {
 .filter-chip.sunday:not(.active) {
     color: var(--app-color-sunday);
 }
+
 .filter-chip.saturday:not(.active) {
     color: var(--app-color-saturday);
 }
@@ -2135,6 +2162,7 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
     100% {
         opacity: 0.992;
     }
+
     50% {
         opacity: 1;
     }
@@ -2227,6 +2255,53 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
     color: #0f380f;
     font-weight: bold;
     font-size: 11px;
+}
+
+/* Backup and Restore UI Fixes */
+#backup-configured #restore-configured-btn {
+    margin-top: 4px;
+}
+
+#backup-configured #backup-change-dir-btn {
+    margin-top: 8px;
+}
+
+#backup-not-configured #backup-change-dir-btn-init {
+    margin-top: 8px;
+}
+
+/* Delete / Initialize Checkbox Group Styles */
+#delete-initialize-section .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-small);
+    padding: 12px;
+    margin-bottom: 1rem;
+    background-color: var(--md-sys-color-surface-container-low);
+}
+
+#delete-initialize-section .checkbox-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    width: fit-content;
+}
+
+#delete-initialize-section .checkbox-item input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+#delete-initialize-section .checkbox-item span {
+    line-height: 1;
 }
 
 .color-dropdown-trigger[data-color='retro-crt'],
