@@ -22,7 +22,22 @@ runs:
       run: npm ci
       shell: bash
 
-    - name: Install Playwright browsers (if requested)
+    - name: Cache Playwright browsers
       if: ${{ inputs.install-playwright == 'true' }}
+      id: playwright-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-
+
+    - name: Install Playwright browsers (cache miss)
+      if: ${{ inputs.install-playwright == 'true' && steps.playwright-cache.outputs.cache-hit != 'true' }}
       run: npx playwright install --with-deps chromium
+      shell: bash
+
+    - name: Install Playwright system dependencies only (cache hit)
+      if: ${{ inputs.install-playwright == 'true' && steps.playwright-cache.outputs.cache-hit == 'true' }}
+      run: npx playwright install-deps chromium
       shell: bash
