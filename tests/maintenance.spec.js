@@ -22,11 +22,17 @@ test.describe('Maintenance Tab', () => {
         // Verify backup/restore section exists
         await expect(page.locator('#backup-restore-section')).toBeVisible();
 
-        // Verify backup directory selection button exists (in not-configured state, which is default for fresh DB)
-        await expect(page.locator('#backup-change-dir-btn-init')).toBeVisible();
+        // Verify unified backup/restore controls are visible
+        await expect(page.locator('#backup-execute-btn')).toBeVisible();
+        await expect(page.locator('#restore-configured-btn')).toBeVisible();
+        await expect(page.locator('#backup-change-dir-btn')).toBeVisible();
 
-        // Verify backup start button exists (not-configured state)
-        await expect(page.locator('#backup-start-btn')).toBeVisible();
+        // Verify backup and restore are initially disabled
+        await expect(page.locator('#backup-execute-btn')).toBeDisabled();
+        await expect(page.locator('#restore-configured-btn')).toBeDisabled();
+
+        // Verify directory configuration button is enabled
+        await expect(page.locator('#backup-change-dir-btn')).toBeEnabled();
 
         // Verify delete/initialize section exists
         await expect(page.locator('#delete-initialize-section')).toBeVisible();

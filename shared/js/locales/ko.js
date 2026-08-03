@@ -130,9 +130,9 @@ export default {
     // Maintenance - Backup & Restore
     'maintenance-backup-title': '백업 및 복원',
     'backup-start': '백업 시작하기',
-    'backup-execute': '백업 저장하기',
+    'backup-execute': '백업',
     'backup-change-dir': '백업 위치 변경',
-    'restore-btn': '백업 복원하기',
+    'restore-btn': '복원',
     'backup-status-success': '백업 완료',
     'backup-status-failed': '백업 실패',
 

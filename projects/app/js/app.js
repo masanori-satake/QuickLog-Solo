@@ -92,9 +92,6 @@ const ID_END_BTN = 'end-btn';
 const ID_CURRENT_TASK_DISPLAY = 'current-task-display';
 const ID_TOAST = 'toast';
 
-const ID_BACKUP_INIT_CONTAINER = 'backup-not-configured';
-const ID_BACKUP_START_BTN = 'backup-start-btn';
-const ID_BACKUP_MAIN_CONTAINER = 'backup-configured';
 const ID_BACKUP_EXECUTE_BTN = 'backup-execute-btn';
 const ID_BACKUP_CHANGE_DIR_BTN = 'backup-change-dir-btn';
 const ID_BACKUP_LAST_TIME_DISPLAY = 'backup-last-time';
@@ -2173,17 +2170,6 @@ function getColorCode(color) {
 async function updateBackupUI() {
     const hasHandle = !!backupManager.directoryHandle;
 
-    const initContainer = getEl(ID_BACKUP_INIT_CONTAINER);
-    const mainContainer = getEl(ID_BACKUP_MAIN_CONTAINER);
-
-    if (hasHandle) {
-        if (initContainer) initContainer.style.display = 'none';
-        if (mainContainer) mainContainer.style.display = '';
-    } else {
-        if (initContainer) initContainer.style.display = '';
-        if (mainContainer) mainContainer.style.display = 'none';
-    }
-
     const dirNameEl = getEl('backup-directory-name');
     if (dirNameEl) {
         dirNameEl.textContent = backupManager.directoryHandle
@@ -2212,7 +2198,17 @@ async function updateBackupUI() {
 
     const executeBtn = getEl(ID_BACKUP_EXECUTE_BTN);
     if (executeBtn) {
-        executeBtn.disabled = backupManager.isSyncing;
+        executeBtn.disabled = !hasHandle || backupManager.isSyncing;
+    }
+
+    const changeDirBtn = getEl(ID_BACKUP_CHANGE_DIR_BTN);
+    if (changeDirBtn) {
+        changeDirBtn.disabled = backupManager.isSyncing;
+    }
+
+    const restoreBtn = getEl('restore-configured-btn');
+    if (restoreBtn) {
+        restoreBtn.disabled = !hasHandle || backupManager.isSyncing;
     }
 
     backupManager.getFileCount().then((count) => {
@@ -2691,19 +2687,8 @@ function setupEventListeners() {
     });
 
     // Backup & Maintenance tab listeners
-    const handleBackupStart = async () => {
-        try {
-            const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-            await backupManager.setDirectory(handle);
-            await backupManager.sync();
-            updateBackupUI();
-            broadcastSync();
-        } catch (err) {
-            console.warn('QuickLog-Solo: Directory selection cancelled or failed', err);
-        }
-    };
-
     const handleBackupChangeDir = async () => {
+        if (backupManager.isSyncing) return;
         try {
             const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
             await backupManager.setDirectory(handle);
@@ -2714,9 +2699,7 @@ function setupEventListeners() {
         }
     };
 
-    getEl(ID_BACKUP_START_BTN)?.addEventListener('click', handleBackupStart);
     getEl(ID_BACKUP_CHANGE_DIR_BTN)?.addEventListener('click', handleBackupChangeDir);
-    getEl('backup-change-dir-btn-init')?.addEventListener('click', handleBackupChangeDir);
 
     getEl(ID_BACKUP_EXECUTE_BTN)?.addEventListener('click', async () => {
         if (!(await backupManager.hasPermission())) {
@@ -2820,15 +2803,15 @@ function setupEventListeners() {
         updateBackupUI();
     };
 
-    // Restore buttons (both "not configured" and "configured" states)
+    // Restore button
     const handleRestore = async () => {
+        if (backupManager.isSyncing) return;
         const dirHandle = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
         if (dirHandle) {
             await backupManager.setDirectory(dirHandle);
             location.reload();
         }
     };
-    getEl('restore-btn')?.addEventListener('click', handleRestore);
     getEl('restore-configured-btn')?.addEventListener('click', handleRestore);
 
     getEl('advanced-editor-link')?.addEventListener('click', (e) => {
