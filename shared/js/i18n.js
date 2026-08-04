@@ -38,9 +38,10 @@ export function setLanguage(lang) {
         currentLanguage = 'en';
         return;
     }
+    const supported = ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
     if (lang === 'auto') {
         currentLanguage = detectBrowserLanguage();
-    } else if (messages[lang]) {
+    } else if (supported.includes(lang)) {
         currentLanguage = lang;
     } else {
         currentLanguage = 'en'; // Fallback

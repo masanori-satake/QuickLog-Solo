@@ -51,7 +51,7 @@ export function initAnimationDB() {
  */
 export async function saveAnimationBlob(id, blob, renderSpec, config) {
     if (typeof id !== 'string' || !id) return;
-    if (!(blob instanceof Blob)) return;
+    if (blob !== undefined && blob !== null && !(blob instanceof Blob)) return;
     const db = await initAnimationDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -129,7 +129,7 @@ export function initAnimationDraftDB() {
  */
 export async function saveAnimationDraftBlob(id, blob, renderSpec, config) {
     if (typeof id !== 'string' || !id) return;
-    if (!(blob instanceof Blob)) return;
+    if (blob !== undefined && blob !== null && !(blob instanceof Blob)) return;
     const db = await initAnimationDraftDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
