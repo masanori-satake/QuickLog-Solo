@@ -125,17 +125,45 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
 
         // 6. Verify that Production IndexedDB is UNCHANGED
         const currentProductionIDB = await page.evaluate(async (id) => {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
+                let settled = false;
                 const req = indexedDB.open('QuickLogAnimationDB', 1);
+                req.onblocked = () => {
+                    if (!settled) {
+                        settled = true;
+                        reject(new Error('Database open blocked'));
+                    }
+                };
                 req.onsuccess = (e) => {
                     const db = e.target.result;
+                    if (settled) {
+                        db.close();
+                        return;
+                    }
                     const tx = db.transaction('blobs', 'readonly');
                     const store = tx.objectStore('blobs');
                     const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
+                    getReq.onsuccess = () => {
+                        if (!settled) {
+                            settled = true;
+                            resolve(getReq.result || null);
+                        }
+                        db.close();
+                    };
+                    getReq.onerror = () => {
+                        if (!settled) {
+                            settled = true;
+                            resolve(null);
+                        }
+                        db.close();
+                    };
                 };
-                req.onerror = () => resolve(null);
+                req.onerror = () => {
+                    if (!settled) {
+                        settled = true;
+                        resolve(null);
+                    }
+                };
             });
         }, animId);
         expect(currentProductionIDB.config.exclusionStrategy).toBe('freedom');
@@ -145,17 +173,45 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
 
         // 7. Verify that Draft IndexedDB DOES contain the updated changes
         const currentDraftIDB = await page.evaluate(async (id) => {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
+                let settled = false;
                 const req = indexedDB.open('QuickLogAnimationDraftDB', 1);
+                req.onblocked = () => {
+                    if (!settled) {
+                        settled = true;
+                        reject(new Error('Database open blocked'));
+                    }
+                };
                 req.onsuccess = (e) => {
                     const db = e.target.result;
+                    if (settled) {
+                        db.close();
+                        return;
+                    }
                     const tx = db.transaction('blobs', 'readonly');
                     const store = tx.objectStore('blobs');
                     const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
+                    getReq.onsuccess = () => {
+                        if (!settled) {
+                            settled = true;
+                            resolve(getReq.result || null);
+                        }
+                        db.close();
+                    };
+                    getReq.onerror = () => {
+                        if (!settled) {
+                            settled = true;
+                            resolve(null);
+                        }
+                        db.close();
+                    };
                 };
-                req.onerror = () => resolve(null);
+                req.onerror = () => {
+                    if (!settled) {
+                        settled = true;
+                        resolve(null);
+                    }
+                };
             });
         }, animId);
         expect(currentDraftIDB.config.exclusionStrategy).toBe('mask');
@@ -178,17 +234,45 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
         expect(finalProductionMetadata[animId].payload.renderSpec.invert).toBe(true);
 
         const finalProductionIDB = await page.evaluate(async (id) => {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
+                let settled = false;
                 const req = indexedDB.open('QuickLogAnimationDB', 1);
+                req.onblocked = () => {
+                    if (!settled) {
+                        settled = true;
+                        reject(new Error('Database open blocked'));
+                    }
+                };
                 req.onsuccess = (e) => {
                     const db = e.target.result;
+                    if (settled) {
+                        db.close();
+                        return;
+                    }
                     const tx = db.transaction('blobs', 'readonly');
                     const store = tx.objectStore('blobs');
                     const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
+                    getReq.onsuccess = () => {
+                        if (!settled) {
+                            settled = true;
+                            resolve(getReq.result || null);
+                        }
+                        db.close();
+                    };
+                    getReq.onerror = () => {
+                        if (!settled) {
+                            settled = true;
+                            resolve(null);
+                        }
+                        db.close();
+                    };
                 };
-                req.onerror = () => resolve(null);
+                req.onerror = () => {
+                    if (!settled) {
+                        settled = true;
+                        resolve(null);
+                    }
+                };
             });
         }, animId);
         expect(finalProductionIDB.config.exclusionStrategy).toBe('mask');

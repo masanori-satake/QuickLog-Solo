@@ -139,8 +139,8 @@ jobs:
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
                     npx eslint .
                   else
-                    mapfile -t JS_FILES < <(echo "$ALL_CHANGED_FILES" | jq -r '.[]' | grep -E '\.(js|cjs)$' || true)
-                    if [ ${`#JS_FILES`[@]} -gt 0 ]; then
+                    mapfile -t JS_FILES < <(echo "$ALL_CHANGED_FILES" | sed 's/\\"/"/g' | jq -r '.[]' | grep -E '\.(js|cjs)$' || true)
+                    if [ ${#JS_FILES[@]} -gt 0 ]; then
                       npx eslint "${JS_FILES[@]}"
                     else
                       echo "No JS files changed, skipping ESLint."
@@ -155,10 +155,10 @@ jobs:
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
                     npx stylelint "**/*.css"
                   else
-                    mapfile -t CSS_FILES < <(echo "$ALL_CHANGED_FILES" | jq -r '.[]' | grep '\.css$' || true)
-                    if [ ${`#CSS_FILES`[@]} -gt 0 ]; then
+                    mapfile -t CSS_FILES < <(echo "$ALL_CHANGED_FILES" | sed 's/\\"/"/g' | jq -r '.[]' | grep '\.css$' || true)
+                    if [ ${#CSS_FILES[@]} -gt 0 ]; then
                       npx stylelint "${CSS_FILES[@]}"
-                  else
+                    else
                       echo "No CSS files changed, skipping Stylelint."
                     fi
                   fi
@@ -196,10 +196,10 @@ jobs:
                   if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
                     npm test -- --coverage --runInBand
                   else
-                    mapfile -t JS_FILES < <(echo "$ALL_CHANGED_FILES" | jq -r '.[]' | grep -E '\.(js|cjs)$' || true)
-                    if [ ${`#JS_FILES`[@]} -gt 0 ]; then
+                    mapfile -t JS_FILES < <(echo "$ALL_CHANGED_FILES" | sed 's/\\"/"/g' | jq -r '.[]' | grep -E '\.(js|cjs)$' || true)
+                    if [ ${#JS_FILES[@]} -gt 0 ]; then
                       npm test -- --coverage --runInBand --findRelatedTests "${JS_FILES[@]}" --passWithNoTests
-                  else
+                    else
                       echo "No JS files changed, running all tests as fallback."
                       npm test -- --coverage --runInBand
                     fi

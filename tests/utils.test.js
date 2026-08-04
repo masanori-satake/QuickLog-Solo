@@ -1,5 +1,5 @@
 import {
-    escapeHtml, escapeCsv, escapeTsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName
+    escapeHtml, escapeCsv, escapeTsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName, generateUUID, floorToMinute
 } from '../shared/js/utils.js';
 
 describe('Utils Module', () => {
@@ -10,6 +10,8 @@ describe('Utils Module', () => {
         test('returns non-string values as is', () => {
             expect(escapeHtml(123)).toBe(123);
             expect(escapeHtml(null)).toBe(null);
+            expect(escapeHtml(undefined)).toBe(undefined);
+            expect(escapeHtml({ a: 1 })).toEqual({ a: 1 });
         });
     });
 
@@ -28,6 +30,9 @@ describe('Utils Module', () => {
         });
         test('returns non-string values as is', () => {
             expect(escapeCsv(123)).toBe(123);
+            expect(escapeCsv(null)).toBe(null);
+            expect(escapeCsv(undefined)).toBe(undefined);
+            expect(escapeCsv({ a: 1 })).toEqual({ a: 1 });
         });
     });
 
@@ -49,6 +54,9 @@ describe('Utils Module', () => {
         });
         test('returns non-string values as is', () => {
             expect(escapeTsv(123)).toBe(123);
+            expect(escapeTsv(null)).toBe(null);
+            expect(escapeTsv(undefined)).toBe(undefined);
+            expect(escapeTsv({ a: 1 })).toEqual({ a: 1 });
         });
     });
 
@@ -75,6 +83,8 @@ describe('Utils Module', () => {
             expect(isValidCategoryName('__PAGE_BREAK___123')).toBe(false);
             expect(isValidCategoryName(123)).toBe(false);
             expect(isValidCategoryName(null)).toBe(false);
+            expect(isValidCategoryName(undefined)).toBe(false);
+            expect(isValidCategoryName({})).toBe(false);
         });
     });
 
@@ -125,4 +135,99 @@ describe('Utils Module', () => {
         });
     });
 
+    describe('generateUUID and floorToMinute', () => {
+        test('generateUUID fallback when crypto.randomUUID is not available', () => {
+            const originalCrypto = globalThis.crypto;
+            try {
+                // Mock crypto to lack randomUUID or be undefined
+                delete globalThis.crypto;
+                const uuid = generateUUID();
+                expect(uuid).toMatch(/^uuid-\d+-[a-z0-9]+$/);
+            } finally {
+                globalThis.crypto = originalCrypto;
+            }
+        });
+
+        test('floorToMinute edge cases', () => {
+            expect(floorToMinute(0)).toBe(0);
+            expect(floorToMinute(-60000)).toBe(-60000);
+            expect(floorToMinute(-30000)).toBe(-60000);
+            expect(floorToMinute(59999)).toBe(0);
+            expect(floorToMinute(60000)).toBe(60000);
+        });
+    });
+
+    // =============================================================================
+    // Property-Based Tests (Deterministic)
+    // =============================================================================
+
+    describe('Property 1: Escape 関数の型ガード恒等性 (Deterministic)', () => {
+        test('escape functions return non-string inputs unchanged', () => {
+            const inputs = [123, 4.56, true, false, null, undefined, { a: 1 }, [1, 2, 3]];
+            inputs.forEach(val => {
+                expect(escapeHtml(val)).toEqual(val);
+                expect(escapeCsv(val)).toEqual(val);
+                expect(escapeTsv(val)).toEqual(val);
+            });
+        });
+    });
+
+    describe('Property 2: 無効なカテゴリ名の拒否 (Deterministic)', () => {
+        test('isValidCategoryName returns false for invalid inputs', () => {
+            const inputs = [
+                '', '   ', 'a'.repeat(51), '__IDLE__', '__UNKNOWN__', '__PAGE_BREAK__', '__PAGE_BREAK__123',
+                123, null, undefined, { a: 1 }
+            ];
+            inputs.forEach(val => {
+                expect(isValidCategoryName(val)).toBe(false);
+            });
+        });
+    });
+
+    describe('Property 3: CSV ラウンドトリップ (Deterministic)', () => {
+        test('joining with escapeCsv and comma then parsing with parseCsvLine matches original (trimmed)', () => {
+            const inputs = [
+                ['a', 'b', 'c'],
+                ['hello', 'world', '  spaces  '],
+                ['quotes "here"', 'commas, here', 'both "quotes", and commas, here']
+            ];
+            inputs.forEach(arr => {
+                const line = arr.map(s => escapeCsv(s)).join(',');
+                const parsed = parseCsvLine(line);
+                const expected = arr.map(s => s.trim());
+                expect(parsed).toEqual(expected);
+            });
+        });
+    });
+
+    describe('Property 4: generateDuplicateName のサフィックス増分 (Deterministic)', () => {
+        test('generateDuplicateName returns max_suffix + 1', () => {
+            const testCases = [
+                { baseName: 'Task', suffixes: [1, 2, 5], expected: 'Task (6)' },
+                { baseName: 'Work', suffixes: [], expected: 'Work (1)' },
+                { baseName: 'Research', suffixes: [10], expected: 'Research (11)' }
+            ];
+            testCases.forEach(({ baseName, suffixes, expected }) => {
+                const existing = suffixes.map(n => `${baseName} (${n})`);
+                const next = generateDuplicateName(baseName, existing);
+                expect(next).toBe(expected);
+            });
+        });
+    });
+
+    describe('Property 5: floorToMinute の分境界プロパティ (Deterministic)', () => {
+        test('floorToMinute(ms) is a multiple of 60000 and floorToMinute(ms) <= ms', () => {
+            const inputs = [0, 1, 59999, 60000, 60001, 120000, 179999, 10000000, NaN, Infinity, -Infinity, 'invalid'];
+            inputs.forEach(ms => {
+                const floored = floorToMinute(ms);
+                expect(floored % 60000).toBe(0);
+                if (typeof ms === 'number' && Number.isFinite(ms)) {
+                    expect(floored).toBeLessThanOrEqual(ms);
+                    expect(ms - floored).toBeLessThan(60000);
+                } else {
+                    expect(floored).toBe(0);
+                }
+            });
+        });
+    });
 });

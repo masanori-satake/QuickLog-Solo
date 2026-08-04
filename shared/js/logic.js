@@ -4,6 +4,7 @@ import { recordDeletedSyncId } from './session_sync.js';
 import { t } from './i18n.js';
 
 export function formatDuration(ms) {
+    if (typeof ms !== 'number' || !Number.isFinite(ms)) return '00:00:00';
     const hours = Math.floor(ms / 3600000);
     const minutes = Math.floor((ms % 3600000) / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
@@ -11,6 +12,7 @@ export function formatDuration(ms) {
 }
 
 export function formatLogDuration(ms) {
+    if (typeof ms !== 'number' || !Number.isFinite(ms)) return '0s';
     const totalSeconds = Math.round(ms / 1000);
     if (totalSeconds < 60) {
         return `${totalSeconds}s`;
@@ -39,11 +41,18 @@ export function formatLogDuration(ms) {
  * @returns {Object} { tagAgg, noTagDuration, totalWorkDuration }
  */
 export function calculateTagAggregation(logs) {
+    if (!Array.isArray(logs)) return { tagAgg: {}, noTagDuration: 0, totalWorkDuration: 0 };
     const tagAgg = {};
     let noTagDuration = 0;
     let totalWorkDuration = 0;
 
     logs.forEach(l => {
+        if (!l || typeof l !== 'object') return;
+        if (l.category !== undefined && l.category !== null && typeof l.category !== 'string') return;
+        if (l.tags !== undefined && l.tags !== null && typeof l.tags !== 'string') return;
+        if (typeof l.startTime !== 'number' || !Number.isFinite(l.startTime)) return;
+        if (l.endTime !== undefined && l.endTime !== null && (typeof l.endTime !== 'number' || !Number.isFinite(l.endTime))) return;
+
         const category = l.category || '';
         if (l.isManualStop || category === SYSTEM_CATEGORY_IDLE || category === SYSTEM_CATEGORY_UNKNOWN || category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) || !l.endTime) return;
         const dur = l.endTime - l.startTime;
@@ -69,7 +78,7 @@ export function calculateTagAggregation(logs) {
  * Strips all emojis from a string.
  */
 export function stripEmojis(str) {
-    if (!str) return '';
+    if (typeof str !== 'string') return '';
     // This regex covers most emojis including variations and skin tones
     return str.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2300}-\u{23FF}\u{2B50}\u{2B06}\u{2194}\u{21AA}\u{2934}\u{2935}\u{25AA}\u{25AB}\u{25FE}\u{25FD}\u{25FB}\u{25FC}\u{25B6}\u{25C0}\u{1F1E6}-\u{1F1FF}\u{1F004}\u{1F0CF}\u{1F170}-\u{1F171}\u{1F17E}-\u{1F17F}\u{1F18E}\u{1F191}-\u{1F19A}\u{1F201}\u{1F202}\u{1F21A}\u{1F22F}\u{1F232}-\u{1F23A}\u{1F250}-\u{1F251}\u{3030}\u{303D}\u{3297}\u{3299}\u{203C}\u{2049}\u{2122}\u{2139}\u{2194}-\u{2199}\u{21A9}-\u{21AA}\u{231A}-\u{231B}\u{2328}\u{23CF}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{24C2}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}\u{2600}-\u{2604}\u{260E}\u{2611}\u{2614}-\u{2615}\u{2618}\u{261D}\u{2620}\u{2622}-\u{2623}\u{2626}\u{262A}\u{262E}-\u{262F}\u{2638}-\u{263A}\u{2640}\u{2642}\u{2648}-\u{2653}\u{2660}\u{2663}\u{2665}-\u{2666}\u{2668}\u{267B}\u{267F}\u{2692}-\u{2697}\u{2699}\u{269B}-\u{269C}\u{26A0}-\u{26A1}\u{26AA}-\u{26AB}\u{26B0}-\u{26B1}\u{26BD}-\u{26BE}\u{26C4}-\u{26C5}\u{26C8}\u{26CE}-\u{26CF}\u{26D1}\u{26D3}-\u{26D4}\u{26E9}-\u{26EA}\u{26F0}-\u{26F5}\u{26F7}-\u{26FA}\u{26FD}\u{2702}\u{2705}\u{2708}-\u{270D}\u{270F}\u{2712}\u{2714}\u{2716}\u{271D}\u{2721}\u{2728}\u{2733}-\u{2734}\u{2744}\u{2747}\u{274C}\u{274E}\u{2753}-\u{2755}\u{2757}\u{2763}-\u{2764}\u{2795}-\u{2797}\u{27A1}\u{27B0}\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}]/gu, '').trim();
 }
@@ -78,7 +87,7 @@ export function stripEmojis(str) {
  * Calculates the visual width of a string, accounting for multi-byte characters.
  */
 export function getVisualWidth(str) {
-    if (!str) return 0;
+    if (typeof str !== 'string') return 0;
     let width = 0;
     for (let i = 0; i < str.length; i++) {
         const code = str.charCodeAt(i);
@@ -96,17 +105,36 @@ export function getVisualWidth(str) {
  * Pads a string to a target visual width.
  */
 export function visualPadEnd(str, targetWidth, padChar = ' ') {
+    if (typeof str !== 'string') return '';
+    if (typeof targetWidth !== 'number' || !Number.isFinite(targetWidth)) return str;
     let currentWidth = getVisualWidth(str);
     if (currentWidth >= targetWidth) return str;
     return str + padChar.repeat(targetWidth - currentWidth);
 }
 
 /**
+ * Validates a log entry for required fields and data types.
+ * @param {Object} log - The log entry to validate
+ * @returns {boolean} True if log is valid
+ */
+export function isValidLog(log) {
+    if (!log || typeof log !== 'object' || Array.isArray(log)) return false;
+    if (typeof log.category !== 'string') return false;
+    if (typeof log.startTime !== 'number' || !Number.isFinite(log.startTime)) return false;
+    if (log.endTime !== undefined && log.endTime !== null) {
+        if (typeof log.endTime !== 'number' || !Number.isFinite(log.endTime)) return false;
+    }
+    return true;
+}
+
+/**
  * Formats a report based on provided logs and options.
  */
 export function generateReport(logs, options) {
+    if (!Array.isArray(logs) || !options || typeof options !== 'object') return '';
+    const sanitizedLogs = logs.filter(isValidLog);
     const { format } = options;
-    const items = prepareReportItems(logs, options);
+    const items = prepareReportItems(sanitizedLogs, options);
 
     switch (format) {
         case 'csv':
@@ -575,9 +603,24 @@ export async function splitHistoryItem(logId) {
  * @returns {number|null} Next execution timestamp or null
  */
 export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) {
-    if (!alarm.enabled || !alarm.time) return null;
+    if (!alarm || typeof alarm !== 'object' || !Array.isArray(businessDays)) return null;
+    if (!alarm.enabled) return null;
+
+    // Type and structure validation before any parsing or method calls
+    if (typeof alarm.time !== 'string' || !/^[0-9]{2}:[0-9]{2}$/.test(alarm.time)) return null;
+    if (alarm.type === 'weekly' && !Array.isArray(alarm.daysOfWeek)) return null;
+    if (alarm.type === 'monthly_date') {
+        if (typeof alarm.dayOfMonth !== 'number' || !Number.isInteger(alarm.dayOfMonth) || !Number.isFinite(alarm.dayOfMonth)) return null;
+        if (alarm.dayOfMonth < 1 || alarm.dayOfMonth > 31) return null;
+    }
+    if (alarm.type === 'monthly_end_relative') {
+        if (typeof alarm.daysBeforeEnd !== 'number' || !Number.isInteger(alarm.daysBeforeEnd) || !Number.isFinite(alarm.daysBeforeEnd)) return null;
+        if (alarm.daysBeforeEnd < 0) return null;
+    }
 
     const [hours, minutes] = alarm.time.split(':').map(Number);
+    // Validate alarm.time value ranges: hours 00-23, minutes 00-59
+    if (hours > 23 || minutes > 59) return null;
 
     const isWorkingDay = (d) => businessDays.includes(d.getDay());
 

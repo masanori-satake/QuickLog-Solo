@@ -62,6 +62,7 @@ export function escapeCsv(str) {
  * @returns {string[]}
  */
 export function parseCsvLine(line) {
+    if (typeof line !== 'string') return [];
     const parts = [];
     let current = '';
     let inQuotes = false;
@@ -135,6 +136,7 @@ const VALID_COLORS = [
  * @returns {boolean}
  */
 export function isValidColor(color) {
+    if (typeof color !== 'string') return false;
     return VALID_COLORS.includes(color);
 }
 
@@ -146,11 +148,14 @@ export function isValidColor(color) {
  * @returns {string}
  */
 export function generateDuplicateName(baseName, existingNames) {
+    if (typeof baseName !== 'string') return '';
+    if (!Array.isArray(existingNames)) return baseName;
     const cleanBase = baseName.replace(/\s*\(\d+\)$/, '').trim();
     let maxNum = 0;
     const pattern = new RegExp(`^${cleanBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\((\\d+)\\)$`);
 
     existingNames.forEach((name) => {
+        if (typeof name !== 'string') return;
         const match = name.match(pattern);
         if (match) {
             const num = parseInt(match[1], 10);
@@ -181,5 +186,6 @@ export function generateUUID() {
  * @returns {number}
  */
 export function floorToMinute(ms) {
+    if (typeof ms !== 'number' || !Number.isFinite(ms)) return 0;
     return Math.floor(ms / 60000) * 60000;
 }

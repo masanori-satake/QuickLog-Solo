@@ -35,7 +35,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
 
 const {
     formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem,
-    splitHistoryItem
+    splitHistoryItem, calculateNextAlarmTime
 } = await import('../shared/js/logic.js');
 const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
@@ -975,6 +975,157 @@ describe('Logic Module', () => {
             expect(result).toBe(false);
             expect(dbPut).not.toHaveBeenCalled();
             expect(dbAdd).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('calculateNextAlarmTime Additional Cases', () => {
+        const businessDays = [1, 2, 3, 4, 5]; // Mon to Fri
+
+        test('disabled alarm returns null', () => {
+            const alarm = { enabled: false, time: '09:00', type: 'daily' };
+            expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
+        });
+
+        test('empty time returns null', () => {
+            const alarm = { enabled: true, time: '', type: 'daily' };
+            expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
+        });
+
+        test('weekly with no matching daysOfWeek returns null', () => {
+            const alarm = { enabled: true, time: '09:00', type: 'weekly', daysOfWeek: [] };
+            expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
+        });
+
+        test('holiday adjustment skip pattern on holiday returns null (skips)', () => {
+            const alarm = {
+                enabled: true,
+                time: '09:00',
+                type: 'weekly',
+                daysOfWeek: [6], // Saturday
+                holidayAdjustment: 'skip'
+            };
+            const now = new Date('2026-03-05T08:00:00').getTime(); // Thu
+            expect(calculateNextAlarmTime(alarm, businessDays, now)).toBeNull();
+        });
+
+        test('holiday adjustment prev_business_day boundary on monthly day 1 returns null', () => {
+            const alarm = {
+                enabled: true,
+                time: '09:00',
+                type: 'monthly_date',
+                dayOfMonth: 1,
+                holidayAdjustment: 'prev_business_day'
+            };
+            // 2026-03-01 is Sunday. Under 'prev_business_day' with monthly day 1, it must not go back.
+            // Should return next candidate month's 1st (if it is business day or successfully adjusted)
+            // 2026-03-01 is Sunday, so it skips March. Next is 2026-04-01 (Wednesday - business day), which should be returned.
+            const now = new Date('2026-02-28T08:00:00').getTime();
+            const nextTime = calculateNextAlarmTime(alarm, businessDays, now);
+            expect(new Date(nextTime).getDate()).toBe(1);
+            expect(new Date(nextTime).getMonth()).toBe(3); // April
+        });
+
+        test('holiday adjustment next_business_day shifts to next Mon', () => {
+            const alarm = {
+                enabled: true,
+                time: '09:00',
+                type: 'weekly',
+                daysOfWeek: [6], // Sat
+                holidayAdjustment: 'next_business_day'
+            };
+            // Saturday 2026-03-07 should shift to Monday 2026-03-09
+            const now = new Date('2026-03-05T08:00:00').getTime();
+            const nextTime = calculateNextAlarmTime(alarm, businessDays, now);
+            expect(new Date(nextTime).getDate()).toBe(9);
+            expect(new Date(nextTime).getMonth()).toBe(2); // March
+        });
+    });
+
+    // =============================================================================
+    // Property-Based Tests (Deterministic)
+    // =============================================================================
+
+    describe('Property 6: formatDuration のフォーマット不変量 (Deterministic)', () => {
+        test('formatDuration is always HH:MM:SS', () => {
+            const inputs = [0, 1000, 59000, 60000, 3599000, 3600000, 36000000, NaN, Infinity, -Infinity, 'invalid'];
+            inputs.forEach(ms => {
+                const formatted = formatDuration(ms);
+                expect(formatted).toMatch(/^\d{2,}:\d{2}:\d{2}$/);
+            });
+        });
+    });
+
+    describe('Property 7: calculateTagAggregation のスキップ条件 (Deterministic)', () => {
+        test('skipped elements do not contribute to totalWorkDuration', () => {
+            const logs = [
+                { category: 'Work', startTime: 1000, endTime: 2000 }, // Valid: +1000
+                { category: '__IDLE__', startTime: 2000, endTime: 3000 }, // Skipped
+                { category: 'Work', startTime: 3000, endTime: 4000, isManualStop: true }, // Skipped
+                { category: '__PAGE_BREAK__', startTime: 4000, endTime: 5000 }, // Skipped
+                { category: 'Work', startTime: 5000, endTime: null }, // Skipped
+                { category: 'Work', startTime: 6000, endTime: 5000 } // Skipped (dur <= 0)
+            ];
+            const { totalWorkDuration } = calculateTagAggregation(logs);
+            expect(totalWorkDuration).toBe(1000);
+        });
+    });
+
+    describe('Property 8: stripEmojis の ASCII 恒等性 (Deterministic)', () => {
+        test('stripEmojis leaves pure ASCII alphanumeric unchanged and handles falsy/non-string inputs', () => {
+            const inputs = ['hello', 'world', 'Work123', '  strip  ', null, undefined, 123, { a: 1 }];
+            inputs.forEach(val => {
+                if (typeof val === 'string') {
+                    expect(stripEmojis(val)).toBe(val.trim());
+                } else {
+                    expect(stripEmojis(val)).toBe('');
+                }
+            });
+        });
+    });
+
+    describe('Property 9: getVisualWidth の下限プロパティ (Deterministic)', () => {
+        test('getVisualWidth(str) >= str.length', () => {
+            const inputs = ['hello', 'あいうえお', 'halfカタカナ', '', null, undefined, 123];
+            inputs.forEach(val => {
+                const width = getVisualWidth(val);
+                expect(width).toBeGreaterThanOrEqual(0);
+                if (typeof val === 'string' && val.length > 0) {
+                    expect(width).toBeGreaterThanOrEqual(val.length);
+                }
+            });
+        });
+    });
+
+    describe('Property 10: generateReport の未知フォーマット拒否 (Deterministic)', () => {
+        test('generateReport with unknown format returns empty string', () => {
+            const logs = [{ startTime: 1000, endTime: 2000, category: 'Work' }];
+            const options = {
+                format: 'invalid-format',
+                emoji: 'keep',
+                endTime: 'none',
+                duration: 'none',
+                idleText: '(待機)',
+                headerTime: 'Time',
+                headerCategory: 'Category'
+            };
+            expect(generateReport(logs, options)).toBe('');
+        });
+    });
+
+    describe('Property 11: calculateNextAlarmTime の無効アラーム null 保証 (Deterministic)', () => {
+        test('inactive or untimed alarm returns null', () => {
+            const businessDays = [1, 2, 3, 4, 5];
+            const invalidAlarms = [
+                { enabled: false, time: '09:00', type: 'daily' },
+                { enabled: true, time: '', type: 'daily' },
+                { enabled: true, time: 'invalid-time', type: 'daily' },
+                { enabled: true, time: '24:00', type: 'daily' },
+                { enabled: true, time: '09:60', type: 'daily' },
+                null, undefined, 123
+            ];
+            invalidAlarms.forEach(alarm => {
+                expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
+            });
         });
     });
 });

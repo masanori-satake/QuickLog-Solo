@@ -6,6 +6,8 @@ import { messages } from './messages.js';
 
 let currentLanguage = 'en';
 
+const SUPPORTED_LOCALES = Object.keys(messages).filter((key) => key !== '_common');
+
 /**
  * Detects the browser language and returns the best matching language code.
  * Supports 'lang' query parameter as a hint.
@@ -13,16 +15,16 @@ let currentLanguage = 'en';
  */
 export function detectBrowserLanguage() {
     if (typeof window !== 'undefined' && window.location) {
-        const urlParams = new URLSearchParams(window.location.search);
+        const search = window.location.search || '';
+        const urlParams = new URLSearchParams(search);
         const langParam = urlParams.get('lang');
-        if (langParam && messages[langParam]) {
+        if (langParam && SUPPORTED_LOCALES.includes(langParam)) {
             return langParam;
         }
     }
 
-    const lang = typeof navigator !== 'undefined' ? navigator.language || navigator.userLanguage : 'en';
-    const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
-    for (const prefix of prefixes) {
+    const lang = typeof navigator !== 'undefined' ? navigator.language || navigator.userLanguage || 'en' : 'en';
+    for (const prefix of SUPPORTED_LOCALES) {
         if (lang.startsWith(prefix)) return prefix;
     }
     return 'en';
@@ -34,8 +36,9 @@ export function detectBrowserLanguage() {
  */
 export function setLanguage(lang) {
     if (lang === 'auto') {
-        currentLanguage = detectBrowserLanguage();
-    } else if (messages[lang]) {
+        const detected = detectBrowserLanguage();
+        currentLanguage = SUPPORTED_LOCALES.includes(detected) ? detected : 'en';
+    } else if (typeof lang === 'string' && SUPPORTED_LOCALES.includes(lang)) {
         currentLanguage = lang;
     } else {
         currentLanguage = 'en'; // Fallback
@@ -57,11 +60,45 @@ export function getLanguage() {
  * @returns {string}
  */
 export function t(key, params = {}) {
-    let message = messages[currentLanguage][key] || messages['_common']?.[key] || messages['en'][key] || key;
+    if (typeof key !== 'string') return '';
+    const safeParams = params && typeof params === 'object' ? params : {};
+
+    let message = '';
+    const lookupInDict = (dict) => {
+        if (dict && Object.prototype.hasOwnProperty.call(dict, key)) {
+            const val = dict[key];
+            if (typeof val === 'string') {
+                return val;
+            }
+        }
+        return null;
+    };
+
+    const currentDict = messages[currentLanguage];
+    const commonDict = messages['_common'];
+    const enDict = messages['en'];
+
+    const foundInCurrent = lookupInDict(currentDict);
+    if (foundInCurrent !== null) {
+        message = foundInCurrent;
+    } else {
+        const foundInCommon = lookupInDict(commonDict);
+        if (foundInCommon !== null) {
+            message = foundInCommon;
+        } else {
+            const foundInEn = lookupInDict(enDict);
+            if (foundInEn !== null) {
+                message = foundInEn;
+            } else {
+                message = key;
+            }
+        }
+    }
 
     // Simple placeholder replacement
-    Object.keys(params).forEach((param) => {
-        message = message.replace(new RegExp(`\\{${param}\\}`, 'g'), params[param]);
+    Object.keys(safeParams).forEach((param) => {
+        const replacement = String(safeParams[param]);
+        message = message.split(`{${param}}`).join(replacement);
     });
 
     return message;
@@ -72,7 +109,7 @@ export function t(key, params = {}) {
  * Exported for testing purposes only.
  */
 export function applyLanguage() {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || !document.querySelectorAll) return;
 
     document.querySelectorAll('[data-i18n]').forEach((el) => {
         const key = el.getAttribute('data-i18n');

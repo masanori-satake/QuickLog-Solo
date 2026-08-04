@@ -8,7 +8,6 @@ import {
     validateCustomAnimationSchema,
     validateSettingsSchema,
 } from '../shared/js/schema.js';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 describe('Schema v2.0 Constants', () => {
     test('SCHEMA_VERSION_2_0 is "2.0"', () => {
@@ -190,6 +189,171 @@ describe('validateAlarmSchema', () => {
     });
 });
 
+import {
+    validateCategorySchema,
+    validateHistorySchema
+} from '../shared/js/schema.js';
+
+describe('validateCategorySchema and validateHistorySchema', () => {
+    test('validateCategorySchema null / non-object', () => {
+        expect(validateCategorySchema(null)).toBe(false);
+        expect(validateCategorySchema(undefined)).toBe(false);
+        expect(validateCategorySchema(123)).toBe(false);
+        expect(validateCategorySchema('string')).toBe(false);
+    });
+
+    test('validateCategorySchema incorrect kind/version', () => {
+        expect(validateCategorySchema({ kind: 'WrongKind', version: '1.0' })).toBe(false);
+        expect(validateCategorySchema({ kind: 'QuickLogSolo/Category', version: '2.0' })).toBe(false);
+    });
+
+    test('validateCategorySchema type=category valid', () => {
+        const cat = {
+            kind: 'QuickLogSolo/Category',
+            version: '1.0',
+            type: 'category',
+            name: 'Work',
+            color: 'teal',
+            tags: ['tag1', 'tag2'],
+            animation: 'aura_charge'
+        };
+        expect(validateCategorySchema(cat)).toBe(true);
+    });
+
+    test('validateCategorySchema type=category invalid tags over 20', () => {
+        const cat = {
+            kind: 'QuickLogSolo/Category',
+            version: '1.0',
+            type: 'category',
+            name: 'Work',
+            color: 'teal',
+            tags: Array(21).fill('tag'),
+            animation: 'aura_charge'
+        };
+        expect(validateCategorySchema(cat)).toBe(false);
+    });
+
+    test('validateCategorySchema type=category invalid tags with empty/non-string', () => {
+        const cat1 = {
+            kind: 'QuickLogSolo/Category',
+            version: '1.0',
+            type: 'category',
+            name: 'Work',
+            color: 'teal',
+            tags: [''],
+            animation: 'aura_charge'
+        };
+        expect(validateCategorySchema(cat1)).toBe(false);
+
+        const cat2 = {
+            kind: 'QuickLogSolo/Category',
+            version: '1.0',
+            type: 'category',
+            name: 'Work',
+            color: 'teal',
+            tags: [123],
+            animation: 'aura_charge'
+        };
+        expect(validateCategorySchema(cat2)).toBe(false);
+    });
+
+    test('validateCategorySchema type=category invalid animation', () => {
+        const cat = {
+            kind: 'QuickLogSolo/Category',
+            version: '1.0',
+            type: 'category',
+            name: 'Work',
+            color: 'teal',
+            animation: 'a'.repeat(51)
+        };
+        expect(validateCategorySchema(cat)).toBe(false);
+    });
+
+    test('validateCategorySchema type=page-break invalid properties', () => {
+        const pb1 = {
+            kind: 'QuickLogSolo/Category',
+            version: '1.0',
+            type: 'page-break'
+        };
+        expect(validateCategorySchema(pb1)).toBe(true);
+
+        const pb2 = {
+            kind: 'QuickLogSolo/Category',
+            version: '1.0',
+            type: 'page-break',
+            name: 'Page Break'
+        };
+        expect(validateCategorySchema(pb2)).toBe(false);
+    });
+
+    test('validateHistorySchema null / non-object / incorrect kind', () => {
+        expect(validateHistorySchema(null)).toBe(false);
+        expect(validateHistorySchema(undefined)).toBe(false);
+        expect(validateHistorySchema(123)).toBe(false);
+        expect(validateHistorySchema({ kind: 'Wrong', version: '1.0', startTime: 1000 })).toBe(false);
+        expect(validateHistorySchema({ kind: 'QuickLogSolo/History', version: '2.0', startTime: 1000 })).toBe(false);
+        expect(validateHistorySchema({ kind: 'QuickLogSolo/History', version: '1.0', startTime: 'invalid' })).toBe(false);
+    });
+
+    test('validateHistorySchema type=task', () => {
+        const task = {
+            kind: 'QuickLogSolo/History',
+            version: '1.0',
+            type: 'task',
+            startTime: 1000,
+            category: 'Work',
+            color: 'teal',
+            tags: ['tag1'],
+            memo: 'some memo'
+        };
+        expect(validateHistorySchema(task)).toBe(true);
+
+        const invalidTask = { ...task, category: '' };
+        expect(validateHistorySchema(invalidTask)).toBe(false);
+
+        const invalidTaskTags = { ...task, tags: Array(21).fill('t') };
+        expect(validateHistorySchema(invalidTaskTags)).toBe(false);
+
+        const invalidTaskForbidden = { ...task, isManualStop: true };
+        expect(validateHistorySchema(invalidTaskForbidden)).toBe(false);
+    });
+
+    test('validateHistorySchema type=idle', () => {
+        const idle = {
+            kind: 'QuickLogSolo/History',
+            version: '1.0',
+            type: 'idle',
+            startTime: 1000,
+            resumableCategory: 'Work'
+        };
+        expect(validateHistorySchema(idle)).toBe(true);
+
+        const invalidIdle = { ...idle, category: 'SomeCategory' };
+        expect(validateHistorySchema(invalidIdle)).toBe(false);
+
+        const invalidIdleResumable = { ...idle, resumableCategory: 'a'.repeat(101) };
+        expect(validateHistorySchema(invalidIdleResumable)).toBe(false);
+    });
+
+    test('validateHistorySchema type=stop', () => {
+        const stop = {
+            kind: 'QuickLogSolo/History',
+            version: '1.0',
+            type: 'stop',
+            startTime: 1000,
+            endTime: 2000,
+            isManualStop: true
+        };
+        expect(validateHistorySchema(stop)).toBe(true);
+
+        const invalidStop = { ...stop, category: 'Work' };
+        expect(validateHistorySchema(invalidStop)).toBe(false);
+
+        const invalidStopEndTime = { ...stop, endTime: undefined };
+        expect(validateHistorySchema(invalidStopEndTime)).toBe(false);
+    });
+});
+
 describe('validateCustomAnimationSchema', () => {
     const validAnimationData = {
         kind: 'QuickLogSolo/CustomAnimation',
@@ -364,13 +528,13 @@ describe('validateSettingsSchema v2.0 support', () => {
 });
 
 // =============================================================================
-// Property-Based Tests (fast-check)
+// Property-Based Tests (Deterministic)
 // Feature: backup-restore-maintenance-overhaul
 // Property 4: アラーム・カスタムアニメーションスキーマバリデーションの正確性
 // Validates: Requirements 2.2, 2.3, 2.6
 // =============================================================================
 
-describe('Property 4: アラーム・カスタムアニメーションスキーマバリデーションの正確性', () => {
+describe('Property 4: アラーム・カスタムアニメーションスキーマバリデーションの正確性 (Deterministic)', () => {
     const validEntry = {
         enabled: true,
         time: '23:59',
@@ -393,33 +557,36 @@ describe('Property 4: アラーム・カスタムアニメーションスキー�
         renderSpec: { type: 'gif', fps: 30 },
     };
 
-    // **Validates: Requirements 2.2, 2.6**
-    fcTest.prop([
-        fc.oneof(
-            fc.constant(null),
-            fc.constant(undefined),
-            fc.constant(''),
-            fc.constant('3.0'),
-            fc.constant('1.0'),
-            fc.string().filter((s) => s !== '2.0')
-        ),
-    ])('validateAlarmSchema rejects invalid versions', (version) => {
-        const obj = { kind: 'QuickLogSolo/Alarm', version, entries: [validEntry] };
-        expect(validateAlarmSchema(obj)).toBe(false);
+    test('validateAlarmSchema rejects invalid versions', () => {
+        const invalidVersions = [null, undefined, '', '3.0', '1.0', 'invalid'];
+        invalidVersions.forEach(version => {
+            const obj = { kind: 'QuickLogSolo/Alarm', version, entries: [validEntry] };
+            expect(validateAlarmSchema(obj)).toBe(false);
+        });
     });
 
-    // **Validates: Requirements 2.3, 2.6**
-    fcTest.prop([
-        fc.oneof(
-            fc.constant(null),
-            fc.constant(undefined),
-            fc.constant(''),
-            fc.constant('3.0'),
-            fc.constant('1.0'),
-            fc.string().filter((s) => s !== '2.0')
-        ),
-    ])('validateCustomAnimationSchema rejects invalid versions', (version) => {
-        const obj = { kind: 'QuickLogSolo/CustomAnimation', version, entries: [validAnimationEntry] };
-        expect(validateCustomAnimationSchema(obj)).toBe(false);
+    test('validateCustomAnimationSchema rejects invalid versions', () => {
+        const invalidVersions = [null, undefined, '', '3.0', '1.0', 'invalid'];
+        invalidVersions.forEach(version => {
+            const obj = { kind: 'QuickLogSolo/CustomAnimation', version, entries: [validAnimationEntry] };
+            expect(validateCustomAnimationSchema(obj)).toBe(false);
+        });
+    });
+
+    // =============================================================================
+    // Property 12: スキーマバリデーションの null/非オブジェクト拒否
+    // =============================================================================
+
+    describe('Property 12: スキーマバリデーションの null/非オブジェクト拒否 (Deterministic)', () => {
+        test('all schema validations return false for non-object/null inputs', () => {
+            const inputs = [null, undefined, 123, 4.56, true, false, 'string'];
+            inputs.forEach(val => {
+                expect(validateCategorySchema(val)).toBe(false);
+                expect(validateHistorySchema(val)).toBe(false);
+                expect(validateSettingsSchema(val)).toBe(false);
+                expect(validateAlarmSchema(val)).toBe(false);
+                expect(validateCustomAnimationSchema(val)).toBe(false);
+            });
+        });
     });
 });

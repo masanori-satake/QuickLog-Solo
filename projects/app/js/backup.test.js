@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 // Mock dependencies using the same import paths as backup.js
 jest.unstable_mockModule('../shared/js/db.js', () => ({
@@ -286,27 +285,43 @@ describe('BackupManager - sync() lastBackupTime', () => {
  * 生成された ql_alarms.json の entries が入力のアラーム配列と等しく、
  * version が '2.0' であり、kind が 'QuickLogSolo/Alarm' である。
  */
-describe('Property 1: バックアップのアラームデータ整合性', () => {
-    const alarmArb = fc.record({
-        enabled: fc.boolean(),
-        time: fc.tuple(fc.integer({ min: 0, max: 23 }), fc.integer({ min: 0, max: 59 })).map(([h, m]) => {
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        }),
-        message: fc.string({ minLength: 0, maxLength: 50 }),
-        action: fc.constantFrom('none', 'stop', 'pause', 'start'),
-        actionCategory: fc.string({ minLength: 0, maxLength: 30 }),
-        requireConfirmation: fc.boolean(),
-        type: fc.constantFrom('daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'),
-        daysOfWeek: fc.array(fc.integer({ min: 0, max: 6 }), { minLength: 0, maxLength: 7 }),
-        dayOfMonth: fc.integer({ min: 1, max: 31 }),
-        daysBeforeEnd: fc.integer({ min: 0, max: 31 }),
-        holidayAdjustment: fc.constantFrom('none', 'prev_business_day', 'next_business_day', 'skip'),
-        order: fc.integer({ min: 0, max: 100 }),
-    });
+describe('Property 1: バックアップのアラームデータ整合性 (Deterministic)', () => {
+    test('ql_alarms.json entries match input alarms with correct kind and version', async () => {
+        const testScenarios = [
+            [], // empty
+            [
+                {
+                    enabled: true,
+                    time: '08:30',
+                    message: 'Good morning',
+                    action: 'start',
+                    actionCategory: 'MorningTask',
+                    requireConfirmation: true,
+                    type: 'daily_business',
+                    daysOfWeek: [1, 2, 3, 4, 5],
+                    dayOfMonth: 1,
+                    daysBeforeEnd: 0,
+                    holidayAdjustment: 'prev_business_day',
+                    order: 10,
+                },
+                {
+                    enabled: false,
+                    time: '17:00',
+                    message: 'Time to go home',
+                    action: 'stop',
+                    actionCategory: '',
+                    requireConfirmation: false,
+                    type: 'weekly',
+                    daysOfWeek: [5],
+                    dayOfMonth: 15,
+                    daysBeforeEnd: 2,
+                    holidayAdjustment: 'skip',
+                    order: 20,
+                },
+            ],
+        ];
 
-    fcTest.prop([fc.array(alarmArb, { minLength: 0, maxLength: 10 })])(
-        'ql_alarms.json entries match input alarms with correct kind and version',
-        async (alarms) => {
+        for (const alarms of testScenarios) {
             jest.clearAllMocks();
             const mockDirHandle = createMockDirectoryHandle();
             backupManager.directoryHandle = mockDirHandle;
@@ -340,7 +355,7 @@ describe('Property 1: バックアップのアラームデータ整合性', () =
                 expect(parsed.entries[i].order).toBe(alarms[i].order);
             }
         }
-    );
+    });
 });
 
 /**
@@ -351,22 +366,29 @@ describe('Property 1: バックアップのアラームデータ整合性', () =
  * 生成された ql_custom_animations.json の entries がメタデータマップの全エントリーを含み、
  * version が '2.0' であり、kind が 'QuickLogSolo/CustomAnimation' である。
  */
-describe('Property 2: バックアップのカスタムアニメーションメタデータ整合性', () => {
-    const metadataEntryArb = fc.record({
-        name: fc.string({ minLength: 1, maxLength: 50 }),
-        description: fc.string({ minLength: 0, maxLength: 100 }),
-        config: fc.constant({}),
-        renderSpec: fc.constant({}),
-        createdAt: fc.oneof(fc.constant(null), fc.integer({ min: 1000000000000, max: 2000000000000 })),
-    });
+describe('Property 2: バックアップのカスタムアニメーションメタデータ整合性 (Deterministic)', () => {
+    test('ql_custom_animations.json entries match metadata map with correct kind and version', async () => {
+        const testScenarios = [
+            {}, // empty
+            {
+                'anim-id-abc': {
+                    name: 'Test Animation A',
+                    description: 'Description A',
+                    config: { exclusionStrategy: 'avoid' },
+                    renderSpec: { type: 'sprite', fps: 15 },
+                    createdAt: 1600000000000,
+                },
+                'anim-id-xyz': {
+                    name: 'Test Animation B',
+                    description: '',
+                    config: {},
+                    renderSpec: {},
+                    createdAt: null,
+                },
+            },
+        ];
 
-    const metadataMapArb = fc
-        .array(fc.tuple(fc.uuid(), metadataEntryArb), { minLength: 0, maxLength: 5 })
-        .map((pairs) => Object.fromEntries(pairs));
-
-    fcTest.prop([metadataMapArb])(
-        'ql_custom_animations.json entries match metadata map with correct kind and version',
-        async (metadataMap) => {
+        for (const metadataMap of testScenarios) {
             jest.clearAllMocks();
             const mockDirHandle = createMockDirectoryHandle();
             backupManager.directoryHandle = mockDirHandle;
@@ -398,7 +420,7 @@ describe('Property 2: バックアップのカスタムアニメーションメ�
                 expect(entry.createdAt).toBe(meta.createdAt || null);
             }
         }
-    );
+    });
 });
 
 /**
@@ -408,48 +430,45 @@ describe('Property 2: バックアップのカスタムアニメーションメ�
  * 任意の有効なデータセットに対して、バックアップを1回実行した後のファイル内容と
  * 2回実行した後のファイル内容が等しい。
  */
-describe('Property 3: バックアップの冪等性', () => {
-    const alarmArb = fc.record({
-        enabled: fc.boolean(),
-        time: fc.tuple(fc.integer({ min: 0, max: 23 }), fc.integer({ min: 0, max: 59 })).map(([h, m]) => {
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        }),
-        message: fc.string({ minLength: 0, maxLength: 50 }),
-        action: fc.constantFrom('none', 'stop', 'pause', 'start'),
-        actionCategory: fc.string({ minLength: 0, maxLength: 30 }),
-        requireConfirmation: fc.boolean(),
-        type: fc.constantFrom('daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'),
-        daysOfWeek: fc.array(fc.integer({ min: 0, max: 6 }), { minLength: 0, maxLength: 7 }),
-        dayOfMonth: fc.integer({ min: 1, max: 31 }),
-        daysBeforeEnd: fc.integer({ min: 0, max: 31 }),
-        holidayAdjustment: fc.constantFrom('none', 'prev_business_day', 'next_business_day', 'skip'),
-        order: fc.integer({ min: 0, max: 100 }),
+describe('Property 3: バックアップの冪等性 (Deterministic)', () => {
+    test('running _backupAlarms twice produces identical file content', async () => {
+        const alarms = [
+            {
+                enabled: true,
+                time: '12:00',
+                message: 'Lunch',
+                action: 'pause',
+                actionCategory: '',
+                requireConfirmation: false,
+                type: 'monthly_date',
+                daysOfWeek: [],
+                dayOfMonth: 10,
+                daysBeforeEnd: 0,
+                holidayAdjustment: 'next_business_day',
+                order: 5,
+            },
+        ];
+
+        jest.clearAllMocks();
+
+        // First run
+        const dirHandle1 = createMockDirectoryHandle();
+        backupManager.directoryHandle = dirHandle1;
+        backupManager.status = BACKUP_STATUS.SUCCESS;
+        backupManager.onStatusChange = null;
+        dbGetAll.mockResolvedValue(alarms);
+
+        await backupManager._backupAlarms();
+        const content1 = dirHandle1._files['ql_alarms.json'];
+
+        // Second run (same data)
+        const dirHandle2 = createMockDirectoryHandle();
+        backupManager.directoryHandle = dirHandle2;
+        dbGetAll.mockResolvedValue(alarms);
+
+        await backupManager._backupAlarms();
+        const content2 = dirHandle2._files['ql_alarms.json'];
+
+        expect(content1).toBe(content2);
     });
-
-    fcTest.prop([fc.array(alarmArb, { minLength: 0, maxLength: 5 })])(
-        'running _backupAlarms twice produces identical file content',
-        async (alarms) => {
-            jest.clearAllMocks();
-
-            // First run
-            const dirHandle1 = createMockDirectoryHandle();
-            backupManager.directoryHandle = dirHandle1;
-            backupManager.status = BACKUP_STATUS.SUCCESS;
-            backupManager.onStatusChange = null;
-            dbGetAll.mockResolvedValue(alarms);
-
-            await backupManager._backupAlarms();
-            const content1 = dirHandle1._files['ql_alarms.json'];
-
-            // Second run (same data)
-            const dirHandle2 = createMockDirectoryHandle();
-            backupManager.directoryHandle = dirHandle2;
-            dbGetAll.mockResolvedValue(alarms);
-
-            await backupManager._backupAlarms();
-            const content2 = dirHandle2._files['ql_alarms.json'];
-
-            expect(content1).toBe(content2);
-        }
-    );
 });

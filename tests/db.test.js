@@ -326,4 +326,59 @@ describe('DB Module', () => {
         });
     });
 
+    describe('dbGet and dbGetByName Edge Cases', () => {
+        test('dbGet returns undefined for non-existent key', async () => {
+            await openDatabase();
+            const result = await dbGet(STORE_LOGS, 99999);
+            expect(result).toBeUndefined();
+        });
+
+        test('dbGetByName returns undefined for non-existent name', async () => {
+            await openDatabase();
+            const result = await dbGetByName(STORE_CATEGORIES, 'Non-Existent-Category');
+            expect(result).toBeUndefined();
+        });
+
+        test('dbCount returns 0 for empty store', async () => {
+            await openDatabase();
+            const count = await dbCount(STORE_LOGS);
+            expect(count).toBe(0);
+        });
+    });
+
+    // =============================================================================
+    // Property-Based Tests (Deterministic)
+    // =============================================================================
+
+    describe('Property 15: dbImportCategories overwrite モードの冪等性 (Deterministic)', () => {
+        test('dbImportCategories overwrite mode leaves exactly imported categories and does not duplicate on second import', async () => {
+            await openDatabase();
+
+            // Pre-fill categories with old data
+            await dbClear(STORE_CATEGORIES);
+            await dbAdd(STORE_CATEGORIES, { name: 'Old Category 1', color: 'primary', order: 0 });
+
+            const items = [
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'Imported Cat 1', color: 'teal' },
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'Imported Cat 2', color: 'teal' }
+            ];
+
+            // First import in overwrite mode
+            await dbImportCategories(items, 'overwrite');
+
+            let stored = await dbGetAll(STORE_CATEGORIES);
+            expect(stored.length).toBe(2);
+            expect(stored.some(c => c.name === 'Imported Cat 1')).toBe(true);
+            expect(stored.some(c => c.name === 'Imported Cat 2')).toBe(true);
+
+            // Invoke dbImportCategories with the same items a second time
+            await dbImportCategories(items, 'overwrite');
+
+            // Re-read and verify count and names remain correct
+            stored = await dbGetAll(STORE_CATEGORIES);
+            expect(stored.length).toBe(2);
+            expect(stored.some(c => c.name === 'Imported Cat 1')).toBe(true);
+            expect(stored.some(c => c.name === 'Imported Cat 2')).toBe(true);
+        });
+    });
 });

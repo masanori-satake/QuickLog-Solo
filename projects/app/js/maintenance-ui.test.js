@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 // Mock dependencies
 jest.unstable_mockModule('../shared/js/db.js', () => ({
@@ -256,10 +255,19 @@ describe('Maintenance UI: 削除/初期化セクション', () => {
     /**
      * **Validates: Requirements 5.2, 5.4, 5.5, 5.7**
      */
-    describe('Property 6: チェックボックス選択状態と実行ボタンの有効状態の一致', () => {
-        fcTest.prop([fc.subarray(['logs', 'categories', 'settings', 'alarms', 'animations'])])(
-            'execute button enabled iff at least one checkbox selected',
-            (selected) => {
+    describe('Property 6: チェックボックス選択状態と実行ボタンの有効状態の一致 (Deterministic)', () => {
+        test('execute button enabled iff at least one checkbox selected', () => {
+            const list = ['logs', 'categories', 'settings', 'alarms', 'animations'];
+            // Generate all 32 combinations
+            const combinations = [[]];
+            for (const item of list) {
+                const currentLength = combinations.length;
+                for (let i = 0; i < currentLength; i++) {
+                    combinations.push([...combinations[i], item]);
+                }
+            }
+
+            combinations.forEach((selected) => {
                 setupDOM();
                 attachCheckboxListeners();
 
@@ -278,7 +286,7 @@ describe('Maintenance UI: 削除/初期化セクション', () => {
                 } else {
                     expect(btn.disabled).toBe(false);
                 }
-            }
-        );
+            });
+        });
     });
 });
