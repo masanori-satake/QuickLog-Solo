@@ -127,13 +127,20 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
         const currentProductionIDB = await page.evaluate(async (id) => {
             return new Promise((resolve) => {
                 const req = indexedDB.open('QuickLogAnimationDB', 1);
+                req.onblocked = () => resolve(null);
                 req.onsuccess = (e) => {
                     const db = e.target.result;
                     const tx = db.transaction('blobs', 'readonly');
                     const store = tx.objectStore('blobs');
                     const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
+                    getReq.onsuccess = () => {
+                        resolve(getReq.result || null);
+                        db.close();
+                    };
+                    getReq.onerror = () => {
+                        resolve(null);
+                        db.close();
+                    };
                 };
                 req.onerror = () => resolve(null);
             });
@@ -147,13 +154,20 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
         const currentDraftIDB = await page.evaluate(async (id) => {
             return new Promise((resolve) => {
                 const req = indexedDB.open('QuickLogAnimationDraftDB', 1);
+                req.onblocked = () => resolve(null);
                 req.onsuccess = (e) => {
                     const db = e.target.result;
                     const tx = db.transaction('blobs', 'readonly');
                     const store = tx.objectStore('blobs');
                     const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
+                    getReq.onsuccess = () => {
+                        resolve(getReq.result || null);
+                        db.close();
+                    };
+                    getReq.onerror = () => {
+                        resolve(null);
+                        db.close();
+                    };
                 };
                 req.onerror = () => resolve(null);
             });
@@ -180,13 +194,20 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
         const finalProductionIDB = await page.evaluate(async (id) => {
             return new Promise((resolve) => {
                 const req = indexedDB.open('QuickLogAnimationDB', 1);
+                req.onblocked = () => resolve(null);
                 req.onsuccess = (e) => {
                     const db = e.target.result;
                     const tx = db.transaction('blobs', 'readonly');
                     const store = tx.objectStore('blobs');
                     const getReq = store.get(id);
-                    getReq.onsuccess = () => resolve(getReq.result || null);
-                    getReq.onerror = () => resolve(null);
+                    getReq.onsuccess = () => {
+                        resolve(getReq.result || null);
+                        db.close();
+                    };
+                    getReq.onerror = () => {
+                        resolve(null);
+                        db.close();
+                    };
                 };
                 req.onerror = () => resolve(null);
             });
