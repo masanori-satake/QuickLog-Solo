@@ -26,21 +26,21 @@ test.describe('Animation Height and Scale Consistency', () => {
 
         // 1. Change to Compact (2/3)
         await page.selectOption('#timer-height-select', 'compact');
-        await page.waitForTimeout(500);
+        await page.waitForFunction(() => window.animationEngine && window.animationEngine.simulatedHeight === 66);
 
         let simulatedHeight = await page.evaluate(() => window.animationEngine ? window.animationEngine.simulatedHeight : null);
         expect(simulatedHeight).toBe(66);
 
         // 2. Change to Mini (1/2)
         await page.selectOption('#timer-height-select', 'mini');
-        await page.waitForTimeout(500);
+        await page.waitForFunction(() => window.animationEngine && window.animationEngine.simulatedHeight === 50);
 
         simulatedHeight = await page.evaluate(() => window.animationEngine ? window.animationEngine.simulatedHeight : null);
         expect(simulatedHeight).toBe(50);
 
         // 3. Change to Normal (100%)
         await page.selectOption('#timer-height-select', 'normal');
-        await page.waitForTimeout(500);
+        await page.waitForFunction(() => window.animationEngine && window.animationEngine.simulatedHeight === 100);
 
         simulatedHeight = await page.evaluate(() => window.animationEngine ? window.animationEngine.simulatedHeight : null);
         expect(simulatedHeight).toBe(100);
