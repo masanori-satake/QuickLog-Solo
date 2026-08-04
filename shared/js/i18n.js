@@ -63,11 +63,11 @@ export function t(key, params = {}) {
     if (typeof key !== 'string') return '';
     const safeParams = params && typeof params === 'object' ? params : {};
 
-    let message = '';
+    let message;
     const lookupInDict = (dict) => {
         if (dict && Object.prototype.hasOwnProperty.call(dict, key)) {
             const val = dict[key];
-            if (typeof val === 'string') {
+            if (typeof val === 'string' || Array.isArray(val)) {
                 return val;
             }
         }
@@ -95,13 +95,26 @@ export function t(key, params = {}) {
         }
     }
 
+    if (Array.isArray(message)) {
+        return message.map((item) => {
+            if (typeof item !== 'string') return item;
+            let itemStr = item;
+            Object.keys(safeParams).forEach((param) => {
+                const replacement = String(safeParams[param]);
+                itemStr = itemStr.split(`{${param}}`).join(replacement);
+            });
+            return itemStr;
+        });
+    }
+
     // Simple placeholder replacement
+    let msgStr = String(message);
     Object.keys(safeParams).forEach((param) => {
         const replacement = String(safeParams[param]);
-        message = message.split(`{${param}}`).join(replacement);
+        msgStr = msgStr.split(`{${param}}`).join(replacement);
     });
 
-    return message;
+    return msgStr;
 }
 
 /**
