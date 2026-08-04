@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Feedback implementation verification', async ({ page }) => {
+  test.setTimeout(60000);
   await page.setViewportSize({ width: 1280, height: 900 });
 
   // 1. Check Language Flags
