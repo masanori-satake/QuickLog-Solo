@@ -38,17 +38,20 @@ class RestoreManager {
      * @param {Function} showConfirm - Callback to display confirmation dialog
      * @param {Function} showToast - Callback to display toast notification
      * @param {Function} t - i18n translation function
+     * @param {FileSystemDirectoryHandle} [existingDirHandle] - Optional existing directory handle to restore from without showing picker
      * @returns {Promise<FileSystemDirectoryHandle|null>} The selected directory handle, or null if aborted
      */
-    async restoreFromDirectory(showConfirm, showToast, t) {
-        // Step 1: Show folder selection dialog
-        let dirHandle;
-        try {
-            dirHandle = await window.showDirectoryPicker({ mode: 'read' });
-        } catch (e) {
-            // User cancelled the dialog (AbortError) — do nothing
-            if (e.name === 'AbortError') return null;
-            throw e;
+    async restoreFromDirectory(showConfirm, showToast, t, existingDirHandle = null) {
+        // Step 1: Show folder selection dialog if no existing handle is provided
+        let dirHandle = existingDirHandle;
+        if (!dirHandle) {
+            try {
+                dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+            } catch (e) {
+                // User cancelled the dialog (AbortError) — do nothing
+                if (e.name === 'AbortError') return null;
+                throw e;
+            }
         }
 
         // Step 2: Validate backup folder contains required files
@@ -510,6 +513,9 @@ class RestoreManager {
                 description: entry.description || '',
                 config: entry.config || {},
                 renderSpec: entry.renderSpec || {},
+                payload: {
+                    renderSpec: entry.renderSpec || {},
+                },
                 createdAt: entry.createdAt || null,
             };
         }

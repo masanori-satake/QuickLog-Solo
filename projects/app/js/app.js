@@ -2816,9 +2816,28 @@ function setupEventListeners() {
     // Restore button
     const handleRestore = async () => {
         if (backupManager.isSyncing) return;
-        const dirHandle = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
+
+        let dirHandle = backupManager.directoryHandle;
         if (dirHandle) {
-            await backupManager.setDirectory(dirHandle);
+            try {
+                // If we have a backup directory, make sure we have read permission
+                const permission = await dirHandle.queryPermission({ mode: 'read' });
+                if (permission !== 'granted') {
+                    const reqResult = await dirHandle.requestPermission({ mode: 'read' });
+                    if (reqResult !== 'granted') {
+                        // If user denies permission, fallback to showing directory picker
+                        dirHandle = null;
+                    }
+                }
+            } catch (err) {
+                console.warn('QuickLog-Solo: Failed to query/request read permission, falling back to picker', err);
+                dirHandle = null;
+            }
+        }
+
+        const restoredHandle = await restoreManager.restoreFromDirectory(showConfirm, showToast, t, dirHandle);
+        if (restoredHandle) {
+            await backupManager.setDirectory(restoredHandle);
             location.reload();
         }
     };

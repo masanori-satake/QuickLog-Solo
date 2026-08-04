@@ -4,7 +4,7 @@ export default defineConfig({
     testDir: './tests',
     testMatch: /.*\.spec\.js/,
     fullyParallel: true,
-    workers: process.env.CI ? 2 : undefined,
+    workers: process.env.CI ? 1 : undefined,
     use: {
         baseURL: 'http://localhost:8080/projects/app/app.html',
         trace: 'on-first-retry',

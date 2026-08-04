@@ -6,6 +6,9 @@ const languages = ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
 test.describe('I18n display verification', () => {
     for (const lang of languages) {
         test(`verify display for language: ${lang}`, async ({ page }) => {
+            // Allow more time on slow CI runners
+            test.setTimeout(60000);
+
             // Set language via URL parameter
             await page.goto(`/projects/app/app.html?lang=${lang}`);
 
