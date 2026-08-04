@@ -149,6 +149,27 @@ describe('i18n Module', () => {
             const result = t('backup-err-unknown', { message: 'Failed' });
             expect(result).toContain('Failed');
         });
+
+        test('handles translation arrays correctly (e.g. day-names)', () => {
+            setLanguage('ja');
+            const jaDays = t('day-names');
+            expect(Array.isArray(jaDays)).toBe(true);
+            expect(jaDays).toEqual(['日', '月', '火', '水', '木', '金', '土']);
+
+            setLanguage('en');
+            const enDays = t('day-names');
+            expect(Array.isArray(enDays)).toBe(true);
+            expect(enDays).toEqual(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
+        });
+
+        test('handles translation arrays with placeholder replacements robustly', () => {
+            // Mock an array with placeholders
+            messages.en['test-array-placeholder'] = ['Hello {name}', 'Goodbye {name}'];
+            setLanguage('en');
+            const result = t('test-array-placeholder', { name: 'Jules' });
+            expect(result).toEqual(['Hello Jules', 'Goodbye Jules']);
+            delete messages.en['test-array-placeholder'];
+        });
     });
 
     // =============================================================================
