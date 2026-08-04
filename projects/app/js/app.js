@@ -540,6 +540,15 @@ function applyTimerHeight(height) {
     const select = getEl(ID_TIMER_HEIGHT_SELECT);
     if (select) select.value = height;
 
+    const simulatedHeights = {
+        normal: 100,
+        compact: 66,
+        mini: 50,
+    };
+    if (animationEngine) {
+        animationEngine.simulatedHeight = simulatedHeights[height] || 100;
+    }
+
     if (body.classList.contains(`timer-${height}`)) return;
 
     body.classList.remove('timer-normal', 'timer-compact', 'timer-mini');
@@ -951,6 +960,7 @@ function initAnimationEngine() {
     const canvas = getEl('animation-canvas');
     if (canvas) {
         animationEngine = new AnimationEngine(canvas);
+        window.animationEngine = animationEngine; // Expose for testing/debugging
         animationEngine.onStop = () => {
             currentActiveAnimation = null;
         };
