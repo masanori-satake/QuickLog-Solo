@@ -95,11 +95,11 @@ describe('IDB Storage Module', () => {
 
     test('write APIs handle invalid non-Blob value cases', async () => {
         // saveAnimationBlob with non-Blob should return/do nothing
-        await expect(saveAnimationBlob('anim-1', 'not-a-blob', {}, {})).resolves.not.toThrow();
+        await expect(saveAnimationBlob('anim-1', 'not-a-blob', {}, {})).resolves.toBeUndefined();
         expect(await getAnimationBlob('anim-1')).toBeNull();
 
         // saveAnimationDraftBlob with non-Blob should return/do nothing
-        await expect(saveAnimationDraftBlob('draft-1', 'not-a-blob', {}, {})).resolves.not.toThrow();
+        await expect(saveAnimationDraftBlob('draft-1', 'not-a-blob', {}, {})).resolves.toBeUndefined();
         expect(await getAnimationDraftBlob('draft-1')).toBeNull();
     });
 

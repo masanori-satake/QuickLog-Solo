@@ -113,11 +113,26 @@ export function visualPadEnd(str, targetWidth, padChar = ' ') {
 }
 
 /**
+ * Validates a log entry for required fields and data types.
+ * @param {Object} log - The log entry to validate
+ * @returns {boolean} True if log is valid
+ */
+export function isValidLog(log) {
+    if (!log || typeof log !== 'object' || Array.isArray(log)) return false;
+    if (typeof log.category !== 'string') return false;
+    if (typeof log.startTime !== 'number' || !Number.isFinite(log.startTime)) return false;
+    if (log.endTime !== undefined && log.endTime !== null) {
+        if (typeof log.endTime !== 'number' || !Number.isFinite(log.endTime)) return false;
+    }
+    return true;
+}
+
+/**
  * Formats a report based on provided logs and options.
  */
 export function generateReport(logs, options) {
     if (!Array.isArray(logs) || !options || typeof options !== 'object') return '';
-    const sanitizedLogs = logs.filter(log => log && typeof log === 'object' && typeof log.category === 'string');
+    const sanitizedLogs = logs.filter(isValidLog);
     const { format } = options;
     const items = prepareReportItems(sanitizedLogs, options);
 
@@ -596,12 +611,16 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
     if (alarm.type === 'weekly' && !Array.isArray(alarm.daysOfWeek)) return null;
     if (alarm.type === 'monthly_date') {
         if (typeof alarm.dayOfMonth !== 'number' || !Number.isInteger(alarm.dayOfMonth) || !Number.isFinite(alarm.dayOfMonth)) return null;
+        if (alarm.dayOfMonth < 1 || alarm.dayOfMonth > 31) return null;
     }
     if (alarm.type === 'monthly_end_relative') {
         if (typeof alarm.daysBeforeEnd !== 'number' || !Number.isInteger(alarm.daysBeforeEnd) || !Number.isFinite(alarm.daysBeforeEnd)) return null;
+        if (alarm.daysBeforeEnd < 0) return null;
     }
 
     const [hours, minutes] = alarm.time.split(':').map(Number);
+    // Validate alarm.time value ranges: hours 00-23, minutes 00-59
+    if (hours > 23 || minutes > 59) return null;
 
     const isWorkingDay = (d) => businessDays.includes(d.getDay());
 

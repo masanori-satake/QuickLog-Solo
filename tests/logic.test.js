@@ -1119,6 +1119,8 @@ describe('Logic Module', () => {
                 { enabled: false, time: '09:00', type: 'daily' },
                 { enabled: true, time: '', type: 'daily' },
                 { enabled: true, time: 'invalid-time', type: 'daily' },
+                { enabled: true, time: '24:00', type: 'daily' },
+                { enabled: true, time: '09:60', type: 'daily' },
                 null, undefined, 123
             ];
             invalidAlarms.forEach(alarm => {

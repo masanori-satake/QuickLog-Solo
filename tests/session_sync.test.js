@@ -238,12 +238,12 @@ describe('Session Sync Logic', () => {
 
             // Valid chunks
             const data = {
-                'sync_logs_v2_0': [{ id: 1, category: 'A' }],
-                'sync_logs_v2_1': [{ id: 2, category: 'B' }]
+                'sync_logs_v2_0': [{ id: 1, category: 'A', startTime: 1000 }],
+                'sync_logs_v2_1': [{ id: 2, category: 'B', startTime: 2000 }]
             };
             expect(extract(data)).toEqual([
-                { id: 1, category: 'A' },
-                { id: 2, category: 'B' }
+                { id: 1, category: 'A', startTime: 1000 },
+                { id: 2, category: 'B', startTime: 2000 }
             ]);
         });
 

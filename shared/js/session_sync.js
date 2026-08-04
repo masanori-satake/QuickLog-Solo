@@ -12,6 +12,7 @@ import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BRE
 import { pushAnimationToSync, pullAnimationsFromSync, removeAnimationFromSync, clearAllAnimationChunksFromSync } from './anim_sync.js';
 import { saveAnimationBlob } from './idb_storage.js';
 import { getCustomAnimationMetadataMap, setCustomAnimationMetadataMap } from './utils/storage.js';
+import { isValidLog } from './logic.js';
 
 const SYNC_KEYS = {
     CATEGORIES: 'sync_categories',
@@ -329,16 +330,21 @@ async function applyAnimationChunks(data) {
 export function extractLogsFromData(data) {
     if (!data || typeof data !== 'object') return [];
     const combinedLogs = [];
+    let newFormatKeyExists = false;
     for (let i = 0; i < LOG_CHUNKS; i++) {
-        const chunk = data[`${SYNC_KEYS.LOGS_PREFIX}${i}`];
-        if (Array.isArray(chunk)) {
-            const validLogs = chunk.filter(log => log && typeof log === 'object' && !Array.isArray(log));
-            combinedLogs.push(...validLogs);
+        const chunkKey = `${SYNC_KEYS.LOGS_PREFIX}${i}`;
+        if (chunkKey in data) {
+            newFormatKeyExists = true;
+            const chunk = data[chunkKey];
+            if (Array.isArray(chunk)) {
+                const validLogs = chunk.filter(isValidLog);
+                combinedLogs.push(...validLogs);
+            }
         }
     }
-    // Fallback to old key if new format is not present (migration)
-    if (combinedLogs.length === 0 && Array.isArray(data['sync_logs'])) {
-        const validLogs = data['sync_logs'].filter(log => log && typeof log === 'object' && !Array.isArray(log));
+    // Fallback to old key only if new format key is absent
+    if (!newFormatKeyExists && Array.isArray(data['sync_logs'])) {
+        const validLogs = data['sync_logs'].filter(isValidLog);
         combinedLogs.push(...validLogs);
     }
     return combinedLogs;
@@ -585,7 +591,7 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
  */
 export function reconstructTimeline(allLogs, fillGaps = true) {
     if (!Array.isArray(allLogs) || allLogs.length === 0) return [];
-    const validLogsInput = allLogs.filter(log => log && typeof log === 'object' && !Array.isArray(log));
+    const validLogsInput = allLogs.filter(isValidLog);
     if (validLogsInput.length === 0) return [];
 
     // 1. Resolve conflicts and deduplicate
