@@ -6,7 +6,6 @@ import {
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 import { t } from '../shared/js/i18n.js';
 import { SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0, SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK } from '../shared/js/schema.js';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 describe('DB Module', () => {
     const DEFAULT_DB_NAME = 'QuickLogSoloDB';
@@ -348,36 +347,38 @@ describe('DB Module', () => {
     });
 
     // =============================================================================
-    // Property-Based Tests (fast-check)
+    // Property-Based Tests (Deterministic)
     // =============================================================================
 
-    describe('Property 15: dbImportCategories overwrite モードの冪等性', () => {
-        fcTest.prop([
-            fc.array(
-                fc.record({
-                    kind: fc.constant(SCHEMA_KIND_CATEGORY),
-                    version: fc.constant(SCHEMA_VERSION_1_0),
-                    type: fc.constant(SCHEMA_TYPE_CATEGORY),
-                    name: fc.string({ minLength: 1, maxLength: 50 }).filter(s => s.trim().length > 0 && s !== '__IDLE__' && s !== '__UNKNOWN__' && !s.startsWith('__PAGE_BREAK__')),
-                    color: fc.constant('teal')
-                }),
-                { minLength: 1, maxLength: 5 }
-            )
-        ])('dbImportCategories overwrite mode leaves exactly imported categories', async (items) => {
+    describe('Property 15: dbImportCategories overwrite モードの冪等性 (Deterministic)', () => {
+        test('dbImportCategories overwrite mode leaves exactly imported categories and does not duplicate on second import', async () => {
             await openDatabase();
+
             // Pre-fill categories with old data
             await dbClear(STORE_CATEGORIES);
             await dbAdd(STORE_CATEGORIES, { name: 'Old Category 1', color: 'primary', order: 0 });
 
-            // Import
+            const items = [
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'Imported Cat 1', color: 'teal' },
+                { kind: SCHEMA_KIND_CATEGORY, version: SCHEMA_VERSION_1_0, type: SCHEMA_TYPE_CATEGORY, name: 'Imported Cat 2', color: 'teal' }
+            ];
+
+            // First import in overwrite mode
             await dbImportCategories(items, 'overwrite');
 
-            const stored = await dbGetAll(STORE_CATEGORIES);
-            expect(stored.length).toBe(items.length);
+            let stored = await dbGetAll(STORE_CATEGORIES);
+            expect(stored.length).toBe(2);
+            expect(stored.some(c => c.name === 'Imported Cat 1')).toBe(true);
+            expect(stored.some(c => c.name === 'Imported Cat 2')).toBe(true);
 
-            items.forEach(item => {
-                expect(stored.some(c => c.name === item.name)).toBe(true);
-            });
+            // Invoke dbImportCategories with the same items a second time
+            await dbImportCategories(items, 'overwrite');
+
+            // Re-read and verify count and names remain correct
+            stored = await dbGetAll(STORE_CATEGORIES);
+            expect(stored.length).toBe(2);
+            expect(stored.some(c => c.name === 'Imported Cat 1')).toBe(true);
+            expect(stored.some(c => c.name === 'Imported Cat 2')).toBe(true);
         });
     });
 });

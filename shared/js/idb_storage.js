@@ -9,6 +9,7 @@ const STORE_NAME = 'blobs';
 
 let dbInstance = null;
 let dbPromise = null;
+let dbOpenGeneration = 0;
 
 /**
  * Opens and initializes the IndexedDB connection.
@@ -17,6 +18,8 @@ let dbPromise = null;
 export function initAnimationDB() {
     if (dbPromise) return dbPromise;
     if (dbInstance) return Promise.resolve(dbInstance);
+
+    const currentGeneration = ++dbOpenGeneration;
 
     dbPromise = new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -29,11 +32,23 @@ export function initAnimationDB() {
         };
 
         request.onsuccess = (event) => {
+            if (currentGeneration !== dbOpenGeneration) {
+                const db = event.target.result;
+                if (db) {
+                    db.close();
+                }
+                reject(new Error('indexedDB.open operation cancelled'));
+                return;
+            }
             dbInstance = event.target.result;
             resolve(dbInstance);
         };
 
         request.onerror = (event) => {
+            if (currentGeneration !== dbOpenGeneration) {
+                reject(new Error('indexedDB.open operation cancelled'));
+                return;
+            }
             dbPromise = null;
             reject(event.target.error);
         };
@@ -67,6 +82,7 @@ export async function saveAnimationBlob(id, blob, renderSpec, config) {
  * Closes the animation database.
  */
 export function closeAnimationDB() {
+    dbOpenGeneration++;
     if (dbInstance) {
         dbInstance.close();
         dbInstance = null;
@@ -78,6 +94,7 @@ export function closeAnimationDB() {
  * Closes the animation draft database.
  */
 export function closeAnimationDraftDB() {
+    draftDbOpenGeneration++;
     if (draftDbInstance) {
         draftDbInstance.close();
         draftDbInstance = null;
@@ -91,6 +108,7 @@ const DRAFT_STORE_NAME = 'blobs';
 
 let draftDbInstance = null;
 let draftDbPromise = null;
+let draftDbOpenGeneration = 0;
 
 /**
  * Opens and initializes the IndexedDB connection used for animation drafts.
@@ -99,6 +117,8 @@ let draftDbPromise = null;
 export function initAnimationDraftDB() {
     if (draftDbPromise) return draftDbPromise;
     if (draftDbInstance) return Promise.resolve(draftDbInstance);
+
+    const currentGeneration = ++draftDbOpenGeneration;
 
     draftDbPromise = new Promise((resolve, reject) => {
         const request = indexedDB.open(DRAFT_DB_NAME, DRAFT_DB_VERSION);
@@ -111,11 +131,23 @@ export function initAnimationDraftDB() {
         };
 
         request.onsuccess = (event) => {
+            if (currentGeneration !== draftDbOpenGeneration) {
+                const db = event.target.result;
+                if (db) {
+                    db.close();
+                }
+                reject(new Error('indexedDB.open operation cancelled'));
+                return;
+            }
             draftDbInstance = event.target.result;
             resolve(draftDbInstance);
         };
 
         request.onerror = (event) => {
+            if (currentGeneration !== draftDbOpenGeneration) {
+                reject(new Error('indexedDB.open operation cancelled'));
+                return;
+            }
             draftDbPromise = null;
             reject(event.target.error);
         };

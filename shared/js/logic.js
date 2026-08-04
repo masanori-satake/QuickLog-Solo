@@ -4,7 +4,7 @@ import { recordDeletedSyncId } from './session_sync.js';
 import { t } from './i18n.js';
 
 export function formatDuration(ms) {
-    if (typeof ms !== 'number' || isNaN(ms)) return '00:00:00';
+    if (typeof ms !== 'number' || !Number.isFinite(ms)) return '00:00:00';
     const hours = Math.floor(ms / 3600000);
     const minutes = Math.floor((ms % 3600000) / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
@@ -12,7 +12,7 @@ export function formatDuration(ms) {
 }
 
 export function formatLogDuration(ms) {
-    if (typeof ms !== 'number' || isNaN(ms)) return '0s';
+    if (typeof ms !== 'number' || !Number.isFinite(ms)) return '0s';
     const totalSeconds = Math.round(ms / 1000);
     if (totalSeconds < 60) {
         return `${totalSeconds}s`;
@@ -48,6 +48,11 @@ export function calculateTagAggregation(logs) {
 
     logs.forEach(l => {
         if (!l || typeof l !== 'object') return;
+        if (l.category !== undefined && l.category !== null && typeof l.category !== 'string') return;
+        if (l.tags !== undefined && l.tags !== null && typeof l.tags !== 'string') return;
+        if (typeof l.startTime !== 'number' || !Number.isFinite(l.startTime)) return;
+        if (l.endTime !== undefined && l.endTime !== null && (typeof l.endTime !== 'number' || !Number.isFinite(l.endTime))) return;
+
         const category = l.category || '';
         if (l.isManualStop || category === SYSTEM_CATEGORY_IDLE || category === SYSTEM_CATEGORY_UNKNOWN || category.startsWith(SYSTEM_CATEGORY_PAGE_BREAK) || !l.endTime) return;
         const dur = l.endTime - l.startTime;
@@ -101,7 +106,7 @@ export function getVisualWidth(str) {
  */
 export function visualPadEnd(str, targetWidth, padChar = ' ') {
     if (typeof str !== 'string') return '';
-    if (typeof targetWidth !== 'number' || isNaN(targetWidth)) return str;
+    if (typeof targetWidth !== 'number' || !Number.isFinite(targetWidth)) return str;
     let currentWidth = getVisualWidth(str);
     if (currentWidth >= targetWidth) return str;
     return str + padChar.repeat(targetWidth - currentWidth);
@@ -112,8 +117,9 @@ export function visualPadEnd(str, targetWidth, padChar = ' ') {
  */
 export function generateReport(logs, options) {
     if (!Array.isArray(logs) || !options || typeof options !== 'object') return '';
+    const sanitizedLogs = logs.filter(log => log && typeof log === 'object' && typeof log.category === 'string');
     const { format } = options;
-    const items = prepareReportItems(logs, options);
+    const items = prepareReportItems(sanitizedLogs, options);
 
     switch (format) {
         case 'csv':
@@ -583,7 +589,17 @@ export async function splitHistoryItem(logId) {
  */
 export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) {
     if (!alarm || typeof alarm !== 'object' || !Array.isArray(businessDays)) return null;
-    if (!alarm.enabled || !alarm.time) return null;
+    if (!alarm.enabled) return null;
+
+    // Type and structure validation before any parsing or method calls
+    if (typeof alarm.time !== 'string' || !/^[0-9]{2}:[0-9]{2}$/.test(alarm.time)) return null;
+    if (alarm.type === 'weekly' && !Array.isArray(alarm.daysOfWeek)) return null;
+    if (alarm.type === 'monthly_date') {
+        if (typeof alarm.dayOfMonth !== 'number' || !Number.isInteger(alarm.dayOfMonth) || !Number.isFinite(alarm.dayOfMonth)) return null;
+    }
+    if (alarm.type === 'monthly_end_relative') {
+        if (typeof alarm.daysBeforeEnd !== 'number' || !Number.isInteger(alarm.daysBeforeEnd) || !Number.isFinite(alarm.daysBeforeEnd)) return null;
+    }
 
     const [hours, minutes] = alarm.time.split(':').map(Number);
 

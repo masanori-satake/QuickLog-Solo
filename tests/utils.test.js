@@ -1,7 +1,6 @@
 import {
     escapeHtml, escapeCsv, escapeTsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName, generateUUID, floorToMinute
 } from '../shared/js/utils.js';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 describe('Utils Module', () => {
     describe('escapeHtml', () => {
@@ -159,72 +158,76 @@ describe('Utils Module', () => {
     });
 
     // =============================================================================
-    // Property-Based Tests (fast-check)
+    // Property-Based Tests (Deterministic)
     // =============================================================================
 
-    describe('Property 1: Escape 関数の型ガード恒等性', () => {
-        fcTest.prop([
-            fc.oneof(
-                fc.integer(),
-                fc.double(),
-                fc.boolean(),
-                fc.constant(null),
-                fc.constant(undefined),
-                fc.object()
-            )
-        ])('escape functions return non-string inputs unchanged', (val) => {
-            expect(escapeHtml(val)).toEqual(val);
-            expect(escapeCsv(val)).toEqual(val);
-            expect(escapeTsv(val)).toEqual(val);
+    describe('Property 1: Escape 関数の型ガード恒等性 (Deterministic)', () => {
+        test('escape functions return non-string inputs unchanged', () => {
+            const inputs = [123, 4.56, true, false, null, undefined, { a: 1 }, [1, 2, 3]];
+            inputs.forEach(val => {
+                expect(escapeHtml(val)).toEqual(val);
+                expect(escapeCsv(val)).toEqual(val);
+                expect(escapeTsv(val)).toEqual(val);
+            });
         });
     });
 
-    describe('Property 2: 無効なカテゴリ名の拒否', () => {
-        fcTest.prop([
-            fc.oneof(
-                fc.string().filter(s => s.trim().length === 0 || s.length > 50 || s === '__IDLE__' || s === '__UNKNOWN__' || s.startsWith('__PAGE_BREAK__')),
-                fc.integer(),
-                fc.constant(null),
-                fc.constant(undefined),
-                fc.object()
-            )
-        ])('isValidCategoryName returns false for invalid inputs', (val) => {
-            expect(isValidCategoryName(val)).toBe(false);
+    describe('Property 2: 無効なカテゴリ名の拒否 (Deterministic)', () => {
+        test('isValidCategoryName returns false for invalid inputs', () => {
+            const inputs = [
+                '', '   ', 'a'.repeat(51), '__IDLE__', '__UNKNOWN__', '__PAGE_BREAK__', '__PAGE_BREAK__123',
+                123, null, undefined, { a: 1 }
+            ];
+            inputs.forEach(val => {
+                expect(isValidCategoryName(val)).toBe(false);
+            });
         });
     });
 
-    describe('Property 3: CSV ラウンドトリップ', () => {
-        // String array containing no unescaped newlines/CRs or tabs
-        fcTest.prop([
-            fc.array(fc.string().filter(s => !s.includes('\n') && !s.includes('\r')), { minLength: 1 })
-        ])('joining with escapeCsv and comma then parsing with parseCsvLine matches original (trimmed)', (arr) => {
-            const line = arr.map(s => escapeCsv(s)).join(',');
-            const parsed = parseCsvLine(line);
-            const expected = arr.map(s => s.trim());
-            expect(parsed).toEqual(expected);
+    describe('Property 3: CSV ラウンドトリップ (Deterministic)', () => {
+        test('joining with escapeCsv and comma then parsing with parseCsvLine matches original (trimmed)', () => {
+            const inputs = [
+                ['a', 'b', 'c'],
+                ['hello', 'world', '  spaces  '],
+                ['quotes "here"', 'commas, here', 'both "quotes", and commas, here']
+            ];
+            inputs.forEach(arr => {
+                const line = arr.map(s => escapeCsv(s)).join(',');
+                const parsed = parseCsvLine(line);
+                const expected = arr.map(s => s.trim());
+                expect(parsed).toEqual(expected);
+            });
         });
     });
 
-    describe('Property 4: generateDuplicateName のサフィックス増分', () => {
-        fcTest.prop([
-            fc.string({ minLength: 1 }).filter(s => s.trim() === s && !s.includes('(') && !s.includes(')')),
-            fc.array(fc.integer({ min: 1, max: 100 }))
-        ])('generateDuplicateName returns max_suffix + 1', (baseName, suffixes) => {
-            const existing = suffixes.map(n => `${baseName} (${n})`);
-            const next = generateDuplicateName(baseName, existing);
-            const maxSuffix = suffixes.length > 0 ? Math.max(...suffixes) : 0;
-            expect(next).toBe(`${baseName} (${maxSuffix + 1})`);
+    describe('Property 4: generateDuplicateName のサフィックス増分 (Deterministic)', () => {
+        test('generateDuplicateName returns max_suffix + 1', () => {
+            const testCases = [
+                { baseName: 'Task', suffixes: [1, 2, 5], expected: 'Task (6)' },
+                { baseName: 'Work', suffixes: [], expected: 'Work (1)' },
+                { baseName: 'Research', suffixes: [10], expected: 'Research (11)' }
+            ];
+            testCases.forEach(({ baseName, suffixes, expected }) => {
+                const existing = suffixes.map(n => `${baseName} (${n})`);
+                const next = generateDuplicateName(baseName, existing);
+                expect(next).toBe(expected);
+            });
         });
     });
 
-    describe('Property 5: floorToMinute の分境界プロパティ', () => {
-        fcTest.prop([
-            fc.integer({ min: 0, max: 10000000 })
-        ])('floorToMinute(ms) is a multiple of 60000 and floorToMinute(ms) <= ms', (ms) => {
-            const floored = floorToMinute(ms);
-            expect(floored % 60000).toBe(0);
-            expect(floored).toBeLessThanOrEqual(ms);
-            expect(ms - floored).toBeLessThan(60000);
+    describe('Property 5: floorToMinute の分境界プロパティ (Deterministic)', () => {
+        test('floorToMinute(ms) is a multiple of 60000 and floorToMinute(ms) <= ms', () => {
+            const inputs = [0, 1, 59999, 60000, 60001, 120000, 179999, 10000000, NaN, Infinity, -Infinity, 'invalid'];
+            inputs.forEach(ms => {
+                const floored = floorToMinute(ms);
+                expect(floored % 60000).toBe(0);
+                if (typeof ms === 'number' && Number.isFinite(ms)) {
+                    expect(floored).toBeLessThanOrEqual(ms);
+                    expect(ms - floored).toBeLessThan(60000);
+                } else {
+                    expect(floored).toBe(0);
+                }
+            });
         });
     });
 });

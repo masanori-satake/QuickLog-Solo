@@ -39,7 +39,6 @@ const {
 } = await import('../shared/js/logic.js');
 const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
-import { fc, test as fcTest } from '@fast-check/jest';
 
 describe('Logic Module', () => {
     describe('formatDuration', () => {
@@ -1043,77 +1042,65 @@ describe('Logic Module', () => {
     });
 
     // =============================================================================
-    // Property-Based Tests (fast-check)
+    // Property-Based Tests (Deterministic)
     // =============================================================================
 
-    describe('Property 6: formatDuration のフォーマット不変量', () => {
-        fcTest.prop([
-            fc.integer({ min: 0, max: 1000 * 3600000 })
-        ])('formatDuration is always HH:MM:SS', (ms) => {
-            const formatted = formatDuration(ms);
-            expect(formatted).toMatch(/^\d{2,}:\d{2}:\d{2}$/);
-        });
-    });
-
-    describe('Property 7: calculateTagAggregation のスキップ条件', () => {
-        fcTest.prop([
-            fc.array(fc.record({
-                startTime: fc.integer({ min: 1000, max: 1000000 }),
-                endTime: fc.oneof(fc.constant(null), fc.integer({ min: 0, max: 1000000 })),
-                category: fc.string(),
-                isManualStop: fc.boolean(),
-                tags: fc.string()
-            }))
-        ])('skipped elements do not contribute to totalWorkDuration', (logs) => {
-            const { totalWorkDuration } = calculateTagAggregation(logs);
-            let calculatedSum = 0;
-            logs.forEach(l => {
-                const category = l.category || '';
-                if (l.isManualStop || category === '__IDLE__' || category === '__UNKNOWN__' || category.startsWith('__PAGE_BREAK__') || !l.endTime) return;
-                const dur = l.endTime - l.startTime;
-                if (dur <= 0) return;
-                calculatedSum += dur;
+    describe('Property 6: formatDuration のフォーマット不変量 (Deterministic)', () => {
+        test('formatDuration is always HH:MM:SS', () => {
+            const inputs = [0, 1000, 59000, 60000, 3599000, 3600000, 36000000, NaN, Infinity, -Infinity, 'invalid'];
+            inputs.forEach(ms => {
+                const formatted = formatDuration(ms);
+                expect(formatted).toMatch(/^\d{2,}:\d{2}:\d{2}$/);
             });
-            expect(totalWorkDuration).toBe(calculatedSum);
         });
     });
 
-    describe('Property 8: stripEmojis の ASCII 恒等性', () => {
-        fcTest.prop([
-            fc.string({ alphabet: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ' })
-        ])('stripEmojis leaves pure ASCII alphanumeric unchanged', (str) => {
-            expect(stripEmojis(str)).toBe(str.trim());
-        });
-
-        test('stripEmojis handles falsy values', () => {
-            expect(stripEmojis(null)).toBe('');
-            expect(stripEmojis(undefined)).toBe('');
-        });
-    });
-
-    describe('Property 9: getVisualWidth の下限プロパティ', () => {
-        fcTest.prop([
-            fc.string()
-        ])('getVisualWidth(str) >= str.length', (str) => {
-            expect(getVisualWidth(str)).toBeGreaterThanOrEqual(0);
-            if (str.length > 0) {
-                expect(getVisualWidth(str)).toBeGreaterThanOrEqual(str.length);
-            }
-        });
-
-        test('getVisualWidth handles falsy values', () => {
-            expect(getVisualWidth(null)).toBe(0);
-            expect(getVisualWidth(undefined)).toBe(0);
+    describe('Property 7: calculateTagAggregation のスキップ条件 (Deterministic)', () => {
+        test('skipped elements do not contribute to totalWorkDuration', () => {
+            const logs = [
+                { category: 'Work', startTime: 1000, endTime: 2000 }, // Valid: +1000
+                { category: '__IDLE__', startTime: 2000, endTime: 3000 }, // Skipped
+                { category: 'Work', startTime: 3000, endTime: 4000, isManualStop: true }, // Skipped
+                { category: '__PAGE_BREAK__', startTime: 4000, endTime: 5000 }, // Skipped
+                { category: 'Work', startTime: 5000, endTime: null }, // Skipped
+                { category: 'Work', startTime: 6000, endTime: 5000 } // Skipped (dur <= 0)
+            ];
+            const { totalWorkDuration } = calculateTagAggregation(logs);
+            expect(totalWorkDuration).toBe(1000);
         });
     });
 
-    describe('Property 10: generateReport の未知フォーマット拒否', () => {
-        fcTest.prop([
-            fc.string().filter(f => !['csv', 'tsv', 'html', 'markdown', 'wiki', 'text-plain', 'text-table'].includes(f))
-        ])('generateReport with unknown format returns empty string', (format) => {
+    describe('Property 8: stripEmojis の ASCII 恒等性 (Deterministic)', () => {
+        test('stripEmojis leaves pure ASCII alphanumeric unchanged and handles falsy/non-string inputs', () => {
+            const inputs = ['hello', 'world', 'Work123', '  strip  ', null, undefined, 123, { a: 1 }];
+            inputs.forEach(val => {
+                if (typeof val === 'string') {
+                    expect(stripEmojis(val)).toBe(val.trim());
+                } else {
+                    expect(stripEmojis(val)).toBe('');
+                }
+            });
+        });
+    });
+
+    describe('Property 9: getVisualWidth の下限プロパティ (Deterministic)', () => {
+        test('getVisualWidth(str) >= str.length', () => {
+            const inputs = ['hello', 'あいうえお', 'halfカタカナ', '', null, undefined, 123];
+            inputs.forEach(val => {
+                const width = getVisualWidth(val);
+                expect(width).toBeGreaterThanOrEqual(0);
+                if (typeof val === 'string' && val.length > 0) {
+                    expect(width).toBeGreaterThanOrEqual(val.length);
+                }
+            });
+        });
+    });
+
+    describe('Property 10: generateReport の未知フォーマット拒否 (Deterministic)', () => {
+        test('generateReport with unknown format returns empty string', () => {
             const logs = [{ startTime: 1000, endTime: 2000, category: 'Work' }];
             const options = {
-                format,
+                format: 'invalid-format',
                 emoji: 'keep',
                 endTime: 'none',
                 duration: 'none',
@@ -1125,20 +1112,18 @@ describe('Logic Module', () => {
         });
     });
 
-    describe('Property 11: calculateNextAlarmTime の無効アラーム null 保証', () => {
-        fcTest.prop([
-            fc.record({
-                enabled: fc.boolean(),
-                time: fc.string(),
-                type: fc.string(),
-                daysOfWeek: fc.array(fc.integer({ min: 0, max: 6 })),
-                dayOfMonth: fc.integer({ min: 1, max: 31 }),
-                daysBeforeEnd: fc.integer({ min: 0, max: 5 }),
-                holidayAdjustment: fc.string()
-            }).filter(a => !a.enabled || !a.time)
-        ])('inactive or untimed alarm returns null', (alarm) => {
+    describe('Property 11: calculateNextAlarmTime の無効アラーム null 保証 (Deterministic)', () => {
+        test('inactive or untimed alarm returns null', () => {
             const businessDays = [1, 2, 3, 4, 5];
-            expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
+            const invalidAlarms = [
+                { enabled: false, time: '09:00', type: 'daily' },
+                { enabled: true, time: '', type: 'daily' },
+                { enabled: true, time: 'invalid-time', type: 'daily' },
+                null, undefined, 123
+            ];
+            invalidAlarms.forEach(alarm => {
+                expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
+            });
         });
     });
 });

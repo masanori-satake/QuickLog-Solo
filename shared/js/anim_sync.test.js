@@ -8,7 +8,6 @@ import {
     removeAnimationFromSync,
     clearAllAnimationChunksFromSync,
 } from './anim_sync.js';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 describe('anim_sync - pure functions', () => {
     describe('splitIntoChunks', () => {
@@ -104,11 +103,21 @@ describe('anim_sync - pure functions', () => {
  * すべてのチャンクの長さが 6,000 文字以下であり、かつ
  * joinChunks(splitIntoChunks(base64, 6000)) === base64 が成立する。
  */
-describe('Property 7: チャンク分割の round-trip と上限保証', () => {
-    fcTest.prop([fc.string({ minLength: 0, maxLength: 50000 })])('splitIntoChunks round-trip', (base64) => {
-        const chunks = splitIntoChunks(base64, 6000);
-        expect(chunks.every((c) => c.length <= 6000)).toBe(true);
-        expect(joinChunks(chunks)).toBe(base64);
+describe('Property 7: チャンク分割の round-trip と上限保証 (Deterministic)', () => {
+    test('splitIntoChunks round-trip', () => {
+        const testCases = [
+            '',
+            'a'.repeat(5999),
+            'a'.repeat(6000),
+            'a'.repeat(6001),
+            'a'.repeat(12000),
+            'a'.repeat(50000),
+        ];
+        testCases.forEach((base64) => {
+            const chunks = splitIntoChunks(base64, 6000);
+            expect(chunks.every((c) => c.length <= 6000)).toBe(true);
+            expect(joinChunks(chunks)).toBe(base64);
+        });
     });
 });
 

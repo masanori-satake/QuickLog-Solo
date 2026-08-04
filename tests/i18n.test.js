@@ -1,6 +1,5 @@
 import { detectBrowserLanguage, setLanguage, getLanguage, t, applyLanguage } from '../shared/js/i18n.js';
 import { messages } from '../shared/js/messages.js';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 /**
  * @jest-environment jsdom
@@ -133,6 +132,16 @@ describe('i18n Module', () => {
             // Test fallback to _common
             // If there's a common key that is missing in specific lang, it falls back to _common
             expect(t('lang-ja-native')).toBe('🇯🇵 日本語');
+
+            // Test fallback to en when key is absent in ja and _common but present in en
+            messages.en['test-en-only-key'] = 'English Fallback Message';
+            if (messages.ja) {
+                delete messages.ja['test-en-only-key'];
+            }
+            if (messages._common) {
+                delete messages._common['test-en-only-key'];
+            }
+            expect(t('test-en-only-key')).toBe('English Fallback Message');
         });
 
         test('replaces placeholders correctly', () => {
@@ -143,35 +152,33 @@ describe('i18n Module', () => {
     });
 
     // =============================================================================
-    // Property-Based Tests (fast-check)
+    // Property-Based Tests (Deterministic)
     // =============================================================================
 
-    describe('Property 13: setLanguage の未知言語フォールバック', () => {
-        fcTest.prop([
-            fc.string().filter(l => !['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh', 'auto'].includes(l))
-        ])('setLanguage with invalid language falls back to en', (lang) => {
-            setLanguage(lang);
-            expect(getLanguage()).toBe('en');
+    describe('Property 13: setLanguage の未知言語フォールバック (Deterministic)', () => {
+        test('setLanguage with invalid language or non-string inputs falls back to en', () => {
+            const invalidInputs = [
+                'invalid-lang', 'fr-FR', 'valueOf', 'toString', '__proto__',
+                undefined, null, 123, 4.56, { a: 1 }, [1, 2, 3]
+            ];
+            invalidInputs.forEach(input => {
+                setLanguage('ja'); // Reset language first
+                expect(getLanguage()).toBe('ja'); // Verify it is reset
+                setLanguage(input); // Try to set invalid/non-string input
+                expect(getLanguage()).toBe('en'); // Verify it falls back to en
+            });
         });
     });
 
-    describe('Property 14: detectBrowserLanguage の lang パラメータ優先', () => {
-        fcTest.prop([
-            fc.oneof(
-                fc.constant('ja'),
-                fc.constant('en'),
-                fc.constant('de'),
-                fc.constant('es'),
-                fc.constant('fr'),
-                fc.constant('pt'),
-                fc.constant('ko'),
-                fc.constant('zh')
-            )
-        ])('lang parameter takes precedence', (lang) => {
-            const url = new URL(window.location.href);
-            url.search = `?lang=${lang}`;
-            window.history.replaceState({}, '', url.toString());
-            expect(detectBrowserLanguage()).toBe(lang);
+    describe('Property 14: detectBrowserLanguage の lang パラメータ優先 (Deterministic)', () => {
+        test('lang parameter takes precedence', () => {
+            const supported = ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
+            supported.forEach(lang => {
+                const url = new URL(window.location.href);
+                url.search = `?lang=${lang}`;
+                window.history.replaceState({}, '', url.toString());
+                expect(detectBrowserLanguage()).toBe(lang);
+            });
         });
     });
 });

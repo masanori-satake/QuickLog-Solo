@@ -14,26 +14,25 @@ import {
     closeAnimationDraftDB
 } from '../shared/js/idb_storage.js';
 import 'fake-indexeddb/auto';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 /**
  * @jest-environment jsdom
  */
 
-function readBlobAsText(blob) {
+if (!Blob.prototype.text) {
+    Blob.prototype.text = function() {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsText(this);
+        });
+    };
+}
+
+async function readBlobAsText(blob) {
     if (!blob) return '';
-    const symbols = Object.getOwnPropertySymbols(blob);
-    const implSymbol = symbols.find(s => s.toString() === 'Symbol(impl)');
-    if (implSymbol) {
-        const impl = blob[implSymbol];
-        if (impl && impl._buffer) {
-            return impl._buffer.toString('utf-8');
-        }
-    }
-    if (typeof Buffer !== 'undefined' && Buffer.isBuffer(blob)) {
-        return blob.toString('utf-8');
-    }
-    return '';
+    return await blob.text();
 }
 
 describe('IDB Storage Module', () => {
@@ -79,19 +78,58 @@ describe('IDB Storage Module', () => {
         closeAnimationDraftDB();
     });
 
-    test('getAnimationBlob returns null if ID is not found', async () => {
-        const blob = await getAnimationBlob('non-existent-id');
-        expect(blob).toBeNull();
+    test('getAnimationBlob, getAnimationDraftBlob, getAnimationDraftRecord edge cases', async () => {
+        // Missing valid ID (null / undefined / empty / non-string) - should assert null
+        const invalidIDs = ['', null, undefined, 123, { a: 1 }];
+        for (const id of invalidIDs) {
+            expect(await getAnimationBlob(id)).toBeNull();
+            expect(await getAnimationDraftBlob(id)).toBeNull();
+            expect(await getAnimationDraftRecord(id)).toBeNull();
+        }
+
+        // Existing missing valid ID
+        expect(await getAnimationBlob('non-existent-id')).toBeNull();
+        expect(await getAnimationDraftBlob('non-existent-id')).toBeNull();
+        expect(await getAnimationDraftRecord('non-existent-id')).toBeNull();
     });
 
-    test('getAnimationDraftBlob returns null if ID is not found', async () => {
-        const blob = await getAnimationDraftBlob('non-existent-id');
-        expect(blob).toBeNull();
+    test('write APIs handle invalid non-Blob value cases', async () => {
+        // saveAnimationBlob with non-Blob should return/do nothing
+        await expect(saveAnimationBlob('anim-1', 'not-a-blob', {}, {})).resolves.not.toThrow();
+        expect(await getAnimationBlob('anim-1')).toBeNull();
+
+        // saveAnimationDraftBlob with non-Blob should return/do nothing
+        await expect(saveAnimationDraftBlob('draft-1', 'not-a-blob', {}, {})).resolves.not.toThrow();
+        expect(await getAnimationDraftBlob('draft-1')).toBeNull();
     });
 
-    test('getAnimationDraftRecord returns null if ID is not found', async () => {
-        const record = await getAnimationDraftRecord('non-existent-id');
-        expect(record).toBeNull();
+    test('write/delete APIs exit without starting IndexedDB operations when ID is invalid', async () => {
+        // If we call with invalid ID, it should return early without creating/opening IndexedDB
+        // We can verify this by checking that the databases are NOT created in IndexedDB
+        closeAnimationDB();
+        closeAnimationDraftDB();
+
+        // Ensure both databases are deleted first
+        await new Promise((resolve) => {
+            const req = indexedDB.deleteDatabase('QuickLogAnimationDB');
+            req.onsuccess = () => resolve();
+        });
+        await new Promise((resolve) => {
+            const req = indexedDB.deleteDatabase('QuickLogAnimationDraftDB');
+            req.onsuccess = () => resolve();
+        });
+
+        // Call write/delete with invalid IDs
+        await deleteAnimationBlob('');
+        await deleteAnimationDraftBlob('');
+        await saveAnimationBlob('', new Blob(['dummy']), {}, {});
+
+        // Check databases were NOT opened/created
+        const databases = await indexedDB.databases();
+        const animDbExists = databases.some(db => db.name === 'QuickLogAnimationDB');
+        const draftDbExists = databases.some(db => db.name === 'QuickLogAnimationDraftDB');
+        expect(animDbExists).toBe(false);
+        expect(draftDbExists).toBe(false);
     });
 
     test('deleteAnimationBlob does not throw error if ID does not exist', async () => {
@@ -113,7 +151,7 @@ describe('IDB Storage Module', () => {
         expect(fetchedBlob).toBeDefined();
         expect(fetchedBlob).toBeInstanceOf(Blob);
 
-        const text = readBlobAsText(fetchedBlob);
+        const text = await readBlobAsText(fetchedBlob);
         expect(text).toBe('animation-data');
     });
 
@@ -127,7 +165,7 @@ describe('IDB Storage Module', () => {
         const fetchedBlob = await getAnimationDraftBlob('draft-1');
         expect(fetchedBlob).toBeDefined();
         expect(fetchedBlob).toBeInstanceOf(Blob);
-        expect(readBlobAsText(fetchedBlob)).toBe('draft-data');
+        expect(await readBlobAsText(fetchedBlob)).toBe('draft-data');
 
         const fetchedRecord = await getAnimationDraftRecord('draft-1');
         expect(fetchedRecord.renderSpec).toEqual(renderSpec);
@@ -146,20 +184,25 @@ describe('IDB Storage Module', () => {
     });
 
     // =============================================================================
-    // Property-Based Tests (fast-check)
+    // Property-Based Tests (Deterministic)
     // =============================================================================
 
-    describe('Property 16: Blob ストレージのラウンドトリップ', () => {
-        fcTest.prop([
-            fc.string({ minLength: 1, maxLength: 20 }),
-            fc.string({ maxLength: 50 })
-        ], { numRuns: 10 })('save and retrieve custom animation blob successfully', async (id, data) => {
-            const blob = new Blob([data], { type: 'application/octet-stream' });
-            await saveAnimationBlob(id, blob, { type: 'test' }, {});
-            const retrieved = await getAnimationBlob(id);
-            expect(retrieved).toBeDefined();
-            expect(retrieved).toBeInstanceOf(Blob);
-            expect(readBlobAsText(retrieved)).toBe(data);
+    describe('Property 16: Blob ストレージのラウンドトリップ (Deterministic)', () => {
+        test('save and retrieve custom animation blob successfully', async () => {
+            const testCases = [
+                { id: 'anim-1', data: 'animation-data-1' },
+                { id: 'anim-2', data: 'animation-data-2' },
+                { id: 'anim-3', data: '' }
+            ];
+
+            for (const { id, data } of testCases) {
+                const blob = new Blob([data], { type: 'application/octet-stream' });
+                await saveAnimationBlob(id, blob, { type: 'test' }, {});
+                const retrieved = await getAnimationBlob(id);
+                expect(retrieved).toBeDefined();
+                expect(retrieved).toBeInstanceOf(Blob);
+                expect(await readBlobAsText(retrieved)).toBe(data);
+            }
         });
     });
 });

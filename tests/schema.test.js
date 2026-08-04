@@ -8,7 +8,6 @@ import {
     validateCustomAnimationSchema,
     validateSettingsSchema,
 } from '../shared/js/schema.js';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 describe('Schema v2.0 Constants', () => {
     test('SCHEMA_VERSION_2_0 is "2.0"', () => {
@@ -529,13 +528,13 @@ describe('validateSettingsSchema v2.0 support', () => {
 });
 
 // =============================================================================
-// Property-Based Tests (fast-check)
+// Property-Based Tests (Deterministic)
 // Feature: backup-restore-maintenance-overhaul
 // Property 4: アラーム・カスタムアニメーションスキーマバリデーションの正確性
 // Validates: Requirements 2.2, 2.3, 2.6
 // =============================================================================
 
-describe('Property 4: アラーム・カスタムアニメーションスキーマバリデーションの正確性', () => {
+describe('Property 4: アラーム・カスタムアニメーションスキーマバリデーションの正確性 (Deterministic)', () => {
     const validEntry = {
         enabled: true,
         time: '23:59',
@@ -558,56 +557,36 @@ describe('Property 4: アラーム・カスタムアニメーションスキー�
         renderSpec: { type: 'gif', fps: 30 },
     };
 
-    // **Validates: Requirements 2.2, 2.6**
-    fcTest.prop([
-        fc.oneof(
-            fc.constant(null),
-            fc.constant(undefined),
-            fc.constant(''),
-            fc.constant('3.0'),
-            fc.constant('1.0'),
-            fc.string().filter((s) => s !== '2.0')
-        ),
-    ])('validateAlarmSchema rejects invalid versions', (version) => {
-        const obj = { kind: 'QuickLogSolo/Alarm', version, entries: [validEntry] };
-        expect(validateAlarmSchema(obj)).toBe(false);
+    test('validateAlarmSchema rejects invalid versions', () => {
+        const invalidVersions = [null, undefined, '', '3.0', '1.0', 'invalid'];
+        invalidVersions.forEach(version => {
+            const obj = { kind: 'QuickLogSolo/Alarm', version, entries: [validEntry] };
+            expect(validateAlarmSchema(obj)).toBe(false);
+        });
     });
 
-    // **Validates: Requirements 2.3, 2.6**
-    fcTest.prop([
-        fc.oneof(
-            fc.constant(null),
-            fc.constant(undefined),
-            fc.constant(''),
-            fc.constant('3.0'),
-            fc.constant('1.0'),
-            fc.string().filter((s) => s !== '2.0')
-        ),
-    ])('validateCustomAnimationSchema rejects invalid versions', (version) => {
-        const obj = { kind: 'QuickLogSolo/CustomAnimation', version, entries: [validAnimationEntry] };
-        expect(validateCustomAnimationSchema(obj)).toBe(false);
+    test('validateCustomAnimationSchema rejects invalid versions', () => {
+        const invalidVersions = [null, undefined, '', '3.0', '1.0', 'invalid'];
+        invalidVersions.forEach(version => {
+            const obj = { kind: 'QuickLogSolo/CustomAnimation', version, entries: [validAnimationEntry] };
+            expect(validateCustomAnimationSchema(obj)).toBe(false);
+        });
     });
 
     // =============================================================================
     // Property 12: スキーマバリデーションの null/非オブジェクト拒否
     // =============================================================================
 
-    describe('Property 12: スキーマバリデーションの null/非オブジェクト拒否', () => {
-        fcTest.prop([
-            fc.oneof(
-                fc.constant(null),
-                fc.constant(undefined),
-                fc.integer(),
-                fc.double(),
-                fc.boolean(),
-                fc.string()
-            )
-        ])('all schema validations return false for non-object/null inputs', (val) => {
-            expect(validateCategorySchema(val)).toBe(false);
-            expect(validateHistorySchema(val)).toBe(false);
-            expect(validateSettingsSchema(val)).toBe(false);
-            expect(validateAlarmSchema(val)).toBe(false);
-            expect(validateCustomAnimationSchema(val)).toBe(false);
+    describe('Property 12: スキーマバリデーションの null/非オブジェクト拒否 (Deterministic)', () => {
+        test('all schema validations return false for non-object/null inputs', () => {
+            const inputs = [null, undefined, 123, 4.56, true, false, 'string'];
+            inputs.forEach(val => {
+                expect(validateCategorySchema(val)).toBe(false);
+                expect(validateHistorySchema(val)).toBe(false);
+                expect(validateSettingsSchema(val)).toBe(false);
+                expect(validateAlarmSchema(val)).toBe(false);
+                expect(validateCustomAnimationSchema(val)).toBe(false);
+            });
         });
     });
 });

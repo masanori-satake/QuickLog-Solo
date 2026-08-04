@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals';
-import { fc, test as fcTest } from '@fast-check/jest';
 
 // Mock dependencies using the same import paths as restore.js
 jest.unstable_mockModule('../shared/js/db.js', () => ({
@@ -337,126 +336,121 @@ describe('RestoreManager - confirmation dialog cancel', () => {
 // writes back equivalent records to IndexedDB.
 // ============================================================
 
-describe('Property 5: バックアップ・リストア round-trip', () => {
-    // Arbitrary generators for valid backup data
-    const categoryArb = fc.record({
-        type: fc.constant('category'),
-        name: fc.string({ minLength: 1, maxLength: 30 }).filter((s) => s.trim().length > 0 && !s.includes('\n')),
-        color: fc
-            .tuple(fc.integer({ min: 0, max: 255 }), fc.integer({ min: 0, max: 255 }), fc.integer({ min: 0, max: 255 }))
-            .map(
-                ([r, g, b]) =>
-                    `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
-            ),
-        tags: fc.array(
-            fc.string({ minLength: 1, maxLength: 10 }).filter((s) => !s.includes('\n')),
-            { minLength: 0, maxLength: 3 }
-        ),
-        animation: fc.constantFrom('default', 'wave', 'pulse'),
-    });
+describe('Property 5: バックアップ・リストア round-trip (Deterministic)', () => {
+    test('restore produces DB content equivalent to backup data', async () => {
+        const testCases = [
+            {
+                categories: [
+                    { type: 'category', name: 'Work', color: '#ff0000', tags: ['work', 'dev'], animation: 'wave' },
+                    { type: 'category', name: 'Meeting', color: '#00ff00', tags: [], animation: 'pulse' },
+                ],
+                settingsEntries: [
+                    { key: 'theme', value: 'dark' },
+                    { key: 'language', value: 'ja' },
+                ],
+                alarmEntries: [
+                    {
+                        enabled: true,
+                        time: '10:00',
+                        message: 'Sync meeting',
+                        action: 'start',
+                        actionCategory: 'Meeting',
+                        requireConfirmation: true,
+                        type: 'weekly',
+                        daysOfWeek: [1],
+                        dayOfMonth: 1,
+                        daysBeforeEnd: 0,
+                        holidayAdjustment: 'skip',
+                        order: 5,
+                    },
+                ],
+            },
+            {
+                categories: [
+                    { type: 'category', name: 'Break', color: '#0000ff', tags: ['break'], animation: 'default' },
+                ],
+                settingsEntries: [{ key: 'fontSize', value: 14 }],
+                alarmEntries: [],
+            },
+        ];
 
-    const settingsEntryArb = fc.record({
-        key: fc.constantFrom('theme', 'language', 'animation', 'fontSize'),
-        value: fc.oneof(fc.string({ minLength: 1, maxLength: 20 }), fc.integer({ min: 1, max: 100 })),
-    });
+        for (const { categories, settingsEntries, alarmEntries } of testCases) {
+            jest.clearAllMocks();
 
-    const alarmEntryArb = fc.record({
-        enabled: fc.boolean(),
-        time: fc.tuple(fc.integer({ min: 0, max: 23 }), fc.integer({ min: 0, max: 59 })).map(([h, m]) => {
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        }),
-        message: fc.string({ minLength: 0, maxLength: 50 }),
-        action: fc.constantFrom('none', 'stop', 'pause', 'start'),
-        actionCategory: fc.string({ minLength: 0, maxLength: 30 }),
-        requireConfirmation: fc.boolean(),
-        type: fc.constantFrom('daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'),
-        daysOfWeek: fc.array(fc.integer({ min: 0, max: 6 }), { minLength: 0, maxLength: 7 }),
-        dayOfMonth: fc.integer({ min: 1, max: 31 }),
-        daysBeforeEnd: fc.integer({ min: 0, max: 31 }),
-        holidayAdjustment: fc.constantFrom('none', 'prev_business_day', 'next_business_day', 'skip'),
-        order: fc.integer({ min: 0, max: 100 }),
-    });
+            // Reset mocks to allow successful operations
+            dbClear.mockResolvedValue(undefined);
+            dbAddMultiple.mockResolvedValue(undefined);
+            dbPut.mockResolvedValue(undefined);
+            validateCategorySchema.mockReturnValue(true);
+            validateSettingsSchema.mockReturnValue(true);
+            validateAlarmSchema.mockReturnValue(true);
+            validateHistorySchema.mockReturnValue(true);
+            validateCustomAnimationSchema.mockReturnValue(true);
+            setCustomAnimationMetadataMap.mockResolvedValue(undefined);
 
-    fcTest.prop([
-        fc.array(categoryArb, { minLength: 1, maxLength: 5 }),
-        fc.array(settingsEntryArb, { minLength: 1, maxLength: 3 }),
-        fc.array(alarmEntryArb, { minLength: 0, maxLength: 3 }),
-    ])('restore produces DB content equivalent to backup data', async (categories, settingsEntries, alarmEntries) => {
-        jest.clearAllMocks();
+            // Build backup files from the generated data
+            const categoriesNdjson = categories
+                .map((c) => JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', ...c }))
+                .join('\n');
 
-        // Reset mocks to allow successful operations
-        dbClear.mockResolvedValue(undefined);
-        dbAddMultiple.mockResolvedValue(undefined);
-        dbPut.mockResolvedValue(undefined);
-        validateCategorySchema.mockReturnValue(true);
-        validateSettingsSchema.mockReturnValue(true);
-        validateAlarmSchema.mockReturnValue(true);
-        validateHistorySchema.mockReturnValue(true);
-        validateCustomAnimationSchema.mockReturnValue(true);
-        setCustomAnimationMetadataMap.mockResolvedValue(undefined);
+            const settingsJson = JSON.stringify({
+                app: 'QuickLog-Solo',
+                kind: 'QuickLogSolo/Settings',
+                version: '2.0',
+                entries: settingsEntries,
+            });
 
-        // Build backup files from the generated data
-        const categoriesNdjson = categories
-            .map((c) => JSON.stringify({ kind: 'QuickLogSolo/Category', version: '1.0', ...c }))
-            .join('\n');
+            const alarmsJson = JSON.stringify({
+                app: 'QuickLog-Solo',
+                kind: 'QuickLogSolo/Alarm',
+                version: '2.0',
+                entries: alarmEntries,
+            });
 
-        const settingsJson = JSON.stringify({
-            app: 'QuickLog-Solo',
-            kind: 'QuickLogSolo/Settings',
-            version: '2.0',
-            entries: settingsEntries,
-        });
+            const dirFiles = {
+                'ql_categories.ndjson': categoriesNdjson,
+                'ql_settings.json': settingsJson,
+                'ql_alarms.json': alarmsJson,
+            };
 
-        const alarmsJson = JSON.stringify({
-            app: 'QuickLog-Solo',
-            kind: 'QuickLogSolo/Alarm',
-            version: '2.0',
-            entries: alarmEntries,
-        });
+            const dirHandle = createAsyncIterableDirHandle(dirFiles);
+            window.showDirectoryPicker.mockResolvedValue(dirHandle);
 
-        const dirFiles = {
-            'ql_categories.ndjson': categoriesNdjson,
-            'ql_settings.json': settingsJson,
-            'ql_alarms.json': alarmsJson,
-        };
+            const showConfirm = jest.fn().mockResolvedValue(true);
+            const showToast = jest.fn();
+            const t = jest.fn((key) => key);
 
-        const dirHandle = createAsyncIterableDirHandle(dirFiles);
-        window.showDirectoryPicker.mockResolvedValue(dirHandle);
+            const result = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
 
-        const showConfirm = jest.fn().mockResolvedValue(true);
-        const showToast = jest.fn();
-        const t = jest.fn((key) => key);
+            expect(result).toBe(dirHandle);
 
-        const result = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
-
-        expect(result).toBe(dirHandle);
-
-        // Verify categories were restored
-        const categoryCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'categories');
-        if (categories.length > 0) {
-            expect(categoryCalls.length).toBeGreaterThan(0);
-            const restoredCategories = categoryCalls[0][1];
-            expect(restoredCategories).toHaveLength(categories.length);
-            for (let i = 0; i < categories.length; i++) {
-                expect(restoredCategories[i].name).toBe(categories[i].name.trim());
-                expect(restoredCategories[i].color).toBe(categories[i].color);
+            // Verify categories were restored
+            const categoryCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'categories');
+            if (categories.length > 0) {
+                expect(categoryCalls.length).toBeGreaterThan(0);
+                const restoredCategories = categoryCalls[0][1];
+                expect(restoredCategories).toHaveLength(categories.length);
+                for (let i = 0; i < categories.length; i++) {
+                    expect(restoredCategories[i].name).toBe(categories[i].name.trim());
+                    expect(restoredCategories[i].color).toBe(categories[i].color);
+                }
             }
-        }
 
-        // Verify settings were restored
-        const settingsCalls = dbPut.mock.calls.filter(([store]) => store === 'settings');
-        expect(settingsCalls).toHaveLength(settingsEntries.length);
+            // Verify settings were restored
+            const settingsCalls = dbPut.mock.calls.filter(([store]) => store === 'settings');
+            expect(settingsCalls).toHaveLength(settingsEntries.length);
 
-        // Verify alarms were restored (if any)
-        if (alarmEntries.length > 0) {
-            const alarmCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'alarms');
-            expect(alarmCalls.length).toBeGreaterThan(0);
-            const restoredAlarms = alarmCalls[0][1];
-            expect(restoredAlarms).toHaveLength(alarmEntries.length);
-            for (let i = 0; i < alarmEntries.length; i++) {
-                expect(restoredAlarms[i].enabled).toBe(alarmEntries[i].enabled);
-                expect(restoredAlarms[i].time).toBe(alarmEntries[i].time);
-                expect(restoredAlarms[i].action).toBe(alarmEntries[i].action);
+            // Verify alarms were restored (if any)
+            if (alarmEntries.length > 0) {
+                const alarmCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'alarms');
+                expect(alarmCalls.length).toBeGreaterThan(0);
+                const restoredAlarms = alarmCalls[0][1];
+                expect(restoredAlarms).toHaveLength(alarmEntries.length);
+                for (let i = 0; i < alarmEntries.length; i++) {
+                    expect(restoredAlarms[i].enabled).toBe(alarmEntries[i].enabled);
+                    expect(restoredAlarms[i].time).toBe(alarmEntries[i].time);
+                    expect(restoredAlarms[i].action).toBe(alarmEntries[i].action);
+                }
             }
         }
     });

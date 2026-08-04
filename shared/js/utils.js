@@ -186,6 +186,6 @@ export function generateUUID() {
  * @returns {number}
  */
 export function floorToMinute(ms) {
-    if (typeof ms !== 'number' || isNaN(ms)) return 0;
+    if (typeof ms !== 'number' || !Number.isFinite(ms)) return 0;
     return Math.floor(ms / 60000) * 60000;
 }

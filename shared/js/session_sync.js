@@ -332,12 +332,14 @@ export function extractLogsFromData(data) {
     for (let i = 0; i < LOG_CHUNKS; i++) {
         const chunk = data[`${SYNC_KEYS.LOGS_PREFIX}${i}`];
         if (Array.isArray(chunk)) {
-            combinedLogs.push(...chunk);
+            const validLogs = chunk.filter(log => log && typeof log === 'object' && !Array.isArray(log));
+            combinedLogs.push(...validLogs);
         }
     }
     // Fallback to old key if new format is not present (migration)
     if (combinedLogs.length === 0 && Array.isArray(data['sync_logs'])) {
-        combinedLogs.push(...data['sync_logs']);
+        const validLogs = data['sync_logs'].filter(log => log && typeof log === 'object' && !Array.isArray(log));
+        combinedLogs.push(...validLogs);
     }
     return combinedLogs;
 }
@@ -583,11 +585,13 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
  */
 export function reconstructTimeline(allLogs, fillGaps = true) {
     if (!Array.isArray(allLogs) || allLogs.length === 0) return [];
+    const validLogsInput = allLogs.filter(log => log && typeof log === 'object' && !Array.isArray(log));
+    if (validLogsInput.length === 0) return [];
 
     // 1. Resolve conflicts and deduplicate
     // Use syncId if available, otherwise fallback to legacy key (startTime + category)
     const byId = new Map();
-    allLogs.forEach(l => {
+    validLogsInput.forEach(l => {
         const id = l.syncId || `legacy-${l.startTime}-${l.category}`;
         const existing = byId.get(id);
         // Prefer logs with endTime.
@@ -807,7 +811,12 @@ export async function clearCloudHistory() {
  * Exported for testing purposes only.
  */
 export async function syncActiveTask(remoteActiveTask) {
-    if (!remoteActiveTask || typeof remoteActiveTask !== 'object') return;
+    if (!remoteActiveTask || typeof remoteActiveTask !== 'object' || Array.isArray(remoteActiveTask)) return;
+    if (typeof remoteActiveTask.category !== 'string') return;
+    if (typeof remoteActiveTask.startTime !== 'number' || !Number.isFinite(remoteActiveTask.startTime)) return;
+    if (remoteActiveTask.endTime !== undefined && remoteActiveTask.endTime !== null) {
+        if (typeof remoteActiveTask.endTime !== 'number' || !Number.isFinite(remoteActiveTask.endTime)) return;
+    }
     const localLogs = await dbGetAll(STORE_LOGS);
     // Find matching log in local DB (by syncId, or legacy startTime/category)
     const matchingLog = localLogs.find(l => {
