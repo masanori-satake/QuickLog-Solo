@@ -163,12 +163,24 @@ describe('i18n Module', () => {
         });
 
         test('handles translation arrays with placeholder replacements robustly', () => {
-            // Mock an array with placeholders
-            messages.en['test-array-placeholder'] = ['Hello {name}', 'Goodbye {name}'];
-            setLanguage('en');
-            const result = t('test-array-placeholder', { name: 'Jules' });
-            expect(result).toEqual(['Hello Jules', 'Goodbye Jules']);
-            delete messages.en['test-array-placeholder'];
+            // Save original state
+            const hadKey = Object.prototype.hasOwnProperty.call(messages.en, 'test-array-placeholder');
+            const originalValue = hadKey ? messages.en['test-array-placeholder'] : undefined;
+
+            try {
+                // Mock an array with placeholders
+                messages.en['test-array-placeholder'] = ['Hello {name}', 'Goodbye {name}'];
+                setLanguage('en');
+                const result = t('test-array-placeholder', { name: 'Jules' });
+                expect(result).toEqual(['Hello Jules', 'Goodbye Jules']);
+            } finally {
+                // Restore original state
+                if (hadKey) {
+                    messages.en['test-array-placeholder'] = originalValue;
+                } else {
+                    delete messages.en['test-array-placeholder'];
+                }
+            }
         });
     });
 
