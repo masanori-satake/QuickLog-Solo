@@ -455,3 +455,95 @@ describe('Property 5: バックアップ・リストア round-trip (Deterministi
         }
     });
 });
+
+describe('RestoreManager - custom animations and configured directory handles', () => {
+    it('correctly restores custom animations with nested payload.renderSpec metadata', async () => {
+        const categoriesContent = buildCategoriesNdjson([]);
+        const settingsContent = buildSettingsJson([]);
+        const customAnimationsJson = JSON.stringify({
+            app: 'QuickLog-Solo',
+            kind: 'QuickLogSolo/CustomAnimation',
+            version: '2.0',
+            entries: [
+                {
+                    id: '3e5812cb-282c-473d-8d4b-e7b8f9e2b10a',
+                    name: 'Test Anim',
+                    description: 'Test description',
+                    config: { exclusionStrategy: 'freedom' },
+                    renderSpec: { scaleWithHeight: true, targetHeight: 50 },
+                    createdAt: 1700000000000,
+                },
+            ],
+        });
+
+        const mockAnimFile = {
+            getFile: async () => new Blob(['fake gif content']),
+        };
+        const mockAnimDir = {
+            getFileHandle: jest.fn().mockResolvedValue(mockAnimFile),
+        };
+
+        const dirHandle = createAsyncIterableDirHandle(
+            {
+                'ql_categories.ndjson': categoriesContent,
+                'ql_settings.json': settingsContent,
+                'ql_custom_animations.json': customAnimationsJson,
+            },
+            {
+                animations: mockAnimDir,
+            }
+        );
+
+        window.showDirectoryPicker.mockResolvedValue(dirHandle);
+
+        const showConfirm = jest.fn().mockResolvedValue(true);
+        const showToast = jest.fn();
+        const t = jest.fn((key) => key);
+
+        const result = await restoreManager.restoreFromDirectory(showConfirm, showToast, t);
+
+        expect(result).toBe(dirHandle);
+
+        // Verify saveAnimationBlob was called with correct renderSpec
+        expect(saveAnimationBlob).toHaveBeenCalledWith(
+            '3e5812cb-282c-473d-8d4b-e7b8f9e2b10a',
+            expect.any(Blob),
+            { scaleWithHeight: true, targetHeight: 50 },
+            { exclusionStrategy: 'freedom' }
+        );
+
+        // Verify setCustomAnimationMetadataMap was called with nested payload structure
+        expect(setCustomAnimationMetadataMap).toHaveBeenCalledWith({
+            '3e5812cb-282c-473d-8d4b-e7b8f9e2b10a': {
+                name: 'Test Anim',
+                description: 'Test description',
+                config: { exclusionStrategy: 'freedom' },
+                renderSpec: { scaleWithHeight: true, targetHeight: 50 },
+                payload: {
+                    renderSpec: { scaleWithHeight: true, targetHeight: 50 },
+                },
+                createdAt: 1700000000000,
+            },
+        });
+    });
+
+    it('bypasses window.showDirectoryPicker if existingDirHandle is passed', async () => {
+        const categoriesContent = buildCategoriesNdjson([]);
+        const settingsContent = buildSettingsJson([]);
+
+        const dirHandle = createAsyncIterableDirHandle({
+            'ql_categories.ndjson': categoriesContent,
+            'ql_settings.json': settingsContent,
+        });
+
+        const showConfirm = jest.fn().mockResolvedValue(true);
+        const showToast = jest.fn();
+        const t = jest.fn((key) => key);
+
+        const result = await restoreManager.restoreFromDirectory(showConfirm, showToast, t, dirHandle);
+
+        // Check picker was NOT called
+        expect(window.showDirectoryPicker).not.toHaveBeenCalled();
+        expect(result).toBe(dirHandle);
+    });
+});

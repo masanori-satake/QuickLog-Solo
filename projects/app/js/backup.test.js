@@ -198,7 +198,9 @@ describe('BackupManager - _backupCustomAnimations()', () => {
                 name: 'Wave Effect',
                 description: 'Cool wave',
                 config: { exclusionStrategy: 'freedom' },
-                renderSpec: { type: 'gif', fps: 30 },
+                payload: {
+                    renderSpec: { type: 'gif', fps: 30 },
+                },
                 createdAt: 1700000000000,
             },
         };
@@ -214,6 +216,7 @@ describe('BackupManager - _backupCustomAnimations()', () => {
         expect(parsed.entries[0].id).toBe('anim-uuid-1');
         expect(parsed.entries[0].name).toBe('Wave Effect');
         expect(parsed.entries[0].description).toBe('Cool wave');
+        expect(parsed.entries[0].renderSpec).toEqual({ type: 'gif', fps: 30 });
     });
 
     it('sets status to FAILED when getAnimationBlob throws', async () => {
@@ -375,7 +378,9 @@ describe('Property 2: バックアップのカスタムアニメーションメ�
                     name: 'Test Animation A',
                     description: 'Description A',
                     config: { exclusionStrategy: 'avoid' },
-                    renderSpec: { type: 'sprite', fps: 15 },
+                    payload: {
+                        renderSpec: { type: 'sprite', fps: 15 },
+                    },
                     createdAt: 1600000000000,
                 },
                 'anim-id-xyz': {
@@ -416,7 +421,7 @@ describe('Property 2: バックアップのカスタムアニメーションメ�
                 expect(entry.name).toBe(meta.name);
                 expect(entry.description).toBe(meta.description || '');
                 expect(entry.config).toEqual(meta.config || {});
-                expect(entry.renderSpec).toEqual(meta.renderSpec || {});
+                expect(entry.renderSpec).toEqual(meta.payload?.renderSpec || meta.renderSpec || {});
                 expect(entry.createdAt).toBe(meta.createdAt || null);
             }
         }

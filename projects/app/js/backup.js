@@ -183,7 +183,7 @@ class BackupManager {
             name: meta.name,
             description: meta.description || '',
             config: meta.config || {},
-            renderSpec: meta.renderSpec || {},
+            renderSpec: meta.payload?.renderSpec || meta.renderSpec || {},
             createdAt: meta.createdAt || null
         }));
 
