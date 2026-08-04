@@ -326,7 +326,8 @@ async function applyAnimationChunks(data) {
  * @param {Object} data
  * @returns {Array} Combined logs
  */
-function extractLogsFromData(data) {
+export function extractLogsFromData(data) {
+    if (!data || typeof data !== 'object') return [];
     const combinedLogs = [];
     for (let i = 0; i < LOG_CHUNKS; i++) {
         const chunk = data[`${SYNC_KEYS.LOGS_PREFIX}${i}`];
@@ -581,7 +582,7 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
  * Exported for testing purposes only.
  */
 export function reconstructTimeline(allLogs, fillGaps = true) {
-    if (allLogs.length === 0) return [];
+    if (!Array.isArray(allLogs) || allLogs.length === 0) return [];
 
     // 1. Resolve conflicts and deduplicate
     // Use syncId if available, otherwise fallback to legacy key (startTime + category)
@@ -806,6 +807,7 @@ export async function clearCloudHistory() {
  * Exported for testing purposes only.
  */
 export async function syncActiveTask(remoteActiveTask) {
+    if (!remoteActiveTask || typeof remoteActiveTask !== 'object') return;
     const localLogs = await dbGetAll(STORE_LOGS);
     // Find matching log in local DB (by syncId, or legacy startTime/category)
     const matchingLog = localLogs.find(l => {

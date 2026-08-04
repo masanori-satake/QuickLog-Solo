@@ -119,7 +119,8 @@ export async function dbGet(storeName, key) {
 }
 
 export async function dbAddMultiple(storeName, items) {
-    if (!items || items.length === 0) return;
+    if (typeof storeName !== 'string') return;
+    if (!Array.isArray(items) || items.length === 0) return;
     await openDatabase();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(storeName, 'readwrite');
@@ -140,6 +141,7 @@ export async function dbAddMultiple(storeName, items) {
  * @param {string} importMode - 'append' or 'overwrite'
  */
 export async function dbImportCategories(items, importMode) {
+    if (!Array.isArray(items)) return;
     await openDatabase();
     return new Promise((resolve, reject) => {
         const tx = db.transaction([STORE_CATEGORIES], 'readwrite');

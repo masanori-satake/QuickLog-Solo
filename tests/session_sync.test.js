@@ -4,6 +4,7 @@
  */
 
 import { setDatabaseName, dbAdd, STORE_LOGS, dbGetAll, dbClear } from '../shared/js/db.js';
+import { fc, test as fcTest } from '@fast-check/jest';
 
 // Mock chrome API
 let mockSyncData = {};
@@ -224,5 +225,124 @@ describe('Session Sync Logic', () => {
         pauseState = (await db.dbGet(db.STORE_SETTINGS, db.SETTING_KEY_PAUSE_STATE)).value;
         expect(pauseState.category).toBe(SYSTEM_CATEGORY_IDLE);
         expect(pauseState.isPaused).toBe(true);
+    });
+
+    describe('Requirement 7 Edge Cases', () => {
+        test('extractLogsFromData with empty, null or valid chunks', () => {
+            const extract = sessionSync.extractLogsFromData;
+
+            // Empty data
+            expect(extract({})).toEqual([]);
+
+            // Null chunk
+            expect(extract({ 'sync_logs_v2_0': null, 'sync_logs_v2_1': undefined })).toEqual([]);
+
+            // Valid chunks
+            const data = {
+                'sync_logs_v2_0': [{ id: 1, category: 'A' }],
+                'sync_logs_v2_1': [{ id: 2, category: 'B' }]
+            };
+            expect(extract(data)).toEqual([
+                { id: 1, category: 'A' },
+                { id: 2, category: 'B' }
+            ]);
+        });
+
+        test('reconstructTimeline with empty, duplicates, and gaps', () => {
+            const reconstruct = sessionSync.reconstructTimeline;
+
+            // Empty array
+            expect(reconstruct([])).toEqual([]);
+
+            // Duplicate logs with same syncId - prefers newer updatedAt
+            const dupLogs = [
+                { syncId: 's1', startTime: 1000, endTime: 2000, category: 'A', updatedAt: 100 },
+                { syncId: 's1', startTime: 1000, endTime: 2000, category: 'B', updatedAt: 200 }
+            ];
+            const resultDup = reconstruct(dupLogs);
+            expect(resultDup.length).toBe(1);
+            expect(resultDup[0].category).toBe('B');
+
+            // Gaps filled with Unknown
+            const gapLogs = [
+                { startTime: 1000, endTime: 2000, category: 'A' },
+                { startTime: 3000, endTime: 4000, category: 'B' }
+            ];
+            const resultGap = reconstruct(gapLogs, true); // fillGaps=true
+            expect(resultGap.length).toBe(3); // A, Unknown, B
+            expect(resultGap[1].category).toBe('__UNKNOWN__');
+            expect(resultGap[1].startTime).toBe(2000);
+            expect(resultGap[1].endTime).toBe(3000);
+        });
+
+        test('mergeLogs with empty remote logs, overwrite, and remoteDeletedIds', async () => {
+            // Setup some local logs
+            await dbAdd(STORE_LOGS, { id: 1, category: 'LocalA', startTime: 1000, endTime: 2000, syncId: 'l1' });
+            await dbAdd(STORE_LOGS, { id: 2, category: 'LocalB', startTime: 2000, endTime: 3000, syncId: 'l2' });
+
+            // 1. Empty remote logs - merge doesn't delete if overwrite is false
+            await sessionSync.mergeLogs([], false);
+            let logs = await dbGetAll(STORE_LOGS);
+            expect(logs.length).toBeGreaterThanOrEqual(2);
+
+            // 2. Overwrite = true
+            const remoteLogs = [
+                { category: 'Remote', startTime: 4000, endTime: 5000, syncId: 'r1' }
+            ];
+            await sessionSync.mergeLogs(remoteLogs, true);
+            logs = await dbGetAll(STORE_LOGS);
+            expect(logs.some(l => l.category === 'Remote')).toBe(true);
+            expect(logs.some(l => l.category === 'LocalA')).toBe(false);
+
+            // 3. remoteDeletedIds
+            // Reset local logs
+            await dbClear(STORE_LOGS);
+            await dbAdd(STORE_LOGS, { id: 3, category: 'KeepMe', startTime: 1000, endTime: 2000, syncId: 'keep1' });
+            await dbAdd(STORE_LOGS, { id: 4, category: 'DeleteMe', startTime: 2000, endTime: 3000, syncId: 'delete1' });
+
+            await sessionSync.mergeLogs([], false, ['delete1']);
+            logs = await dbGetAll(STORE_LOGS);
+            expect(logs.some(l => l.syncId === 'keep1')).toBe(true);
+            expect(logs.some(l => l.syncId === 'delete1')).toBe(false);
+        });
+    });
+
+    // =============================================================================
+    // Property-Based Tests (fast-check)
+    // =============================================================================
+
+    describe('Property 17: extractLogsFromData の チャンク結合', () => {
+        fcTest.prop([
+            fc.array(fc.array(fc.record({
+                category: fc.string(),
+                startTime: fc.integer()
+            })), { minLength: 5, maxLength: 5 })
+        ])('extractLogsFromData combines all 5 logs chunks correctly', (chunks) => {
+            const data = {};
+            chunks.forEach((chunk, i) => {
+                data[`sync_logs_v2_${i}`] = chunk;
+            });
+            const extracted = sessionSync.extractLogsFromData(data);
+            const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+            expect(extracted.length).toBe(totalLength);
+        });
+    });
+
+    describe('Property 18: reconstructTimeline の順序不変量', () => {
+        fcTest.prop([
+            fc.array(fc.record({
+                category: fc.string({ minLength: 1 }),
+                startTime: fc.integer({ min: 1000, max: 100000 }),
+                endTime: fc.integer({ min: 1000, max: 100000 })
+            })).filter(arr => arr.every(l => l.endTime > l.startTime))
+        ])('reconstructTimeline output is always sorted and non-overlapping', (logs) => {
+            const reconstructed = sessionSync.reconstructTimeline(logs, false); // fillGaps=false
+            for (let i = 0; i < reconstructed.length - 1; i++) {
+                expect(reconstructed[i].startTime).toBeLessThanOrEqual(reconstructed[i + 1].startTime);
+                if (reconstructed[i].endTime) {
+                    expect(reconstructed[i].endTime).toBeLessThanOrEqual(reconstructed[i + 1].startTime);
+                }
+            }
+        });
     });
 });

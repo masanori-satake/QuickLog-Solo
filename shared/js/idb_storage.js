@@ -50,6 +50,8 @@ export function initAnimationDB() {
  * @param {Object} [config] - The optional animation configuration.
  */
 export async function saveAnimationBlob(id, blob, renderSpec, config) {
+    if (typeof id !== 'string' || !id) return;
+    if (!(blob instanceof Blob)) return;
     const db = await initAnimationDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -59,6 +61,28 @@ export async function saveAnimationBlob(id, blob, renderSpec, config) {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
     });
+}
+
+/**
+ * Closes the animation database.
+ */
+export function closeAnimationDB() {
+    if (dbInstance) {
+        dbInstance.close();
+        dbInstance = null;
+    }
+    dbPromise = null;
+}
+
+/**
+ * Closes the animation draft database.
+ */
+export function closeAnimationDraftDB() {
+    if (draftDbInstance) {
+        draftDbInstance.close();
+        draftDbInstance = null;
+    }
+    draftDbPromise = null;
 }
 
 const DRAFT_DB_NAME = 'QuickLogAnimationDraftDB';
@@ -104,6 +128,8 @@ export function initAnimationDraftDB() {
  * Saves a raw Blob, renderSpec, and optional config to the Draft IndexedDB.
  */
 export async function saveAnimationDraftBlob(id, blob, renderSpec, config) {
+    if (typeof id !== 'string' || !id) return;
+    if (!(blob instanceof Blob)) return;
     const db = await initAnimationDraftDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
@@ -121,6 +147,7 @@ export async function saveAnimationDraftBlob(id, blob, renderSpec, config) {
  * @return {Promise<Blob|null>} The stored Blob, or `null` if no record exists.
  */
 export async function getAnimationDraftBlob(id) {
+    if (typeof id !== 'string' || !id) return null;
     const db = await initAnimationDraftDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(DRAFT_STORE_NAME, 'readonly');
@@ -144,6 +171,7 @@ export async function getAnimationDraftBlob(id) {
  * @return {Promise<Object|null>} The matching draft record, or `null` if no record exists.
  */
 export async function getAnimationDraftRecord(id) {
+    if (typeof id !== 'string' || !id) return null;
     const db = await initAnimationDraftDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(DRAFT_STORE_NAME, 'readonly');
@@ -178,6 +206,7 @@ export async function getAllAnimationDraftRecords() {
  * Deletes a record from the Draft IndexedDB by persisting a tombstone.
  */
 export async function deleteAnimationDraftBlob(id) {
+    if (typeof id !== 'string' || !id) return;
     const db = await initAnimationDraftDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
@@ -210,6 +239,7 @@ export async function clearAnimationDraftDB() {
  * @returns {Promise<Blob|null>}
  */
 export async function getAnimationBlob(id) {
+    if (typeof id !== 'string' || !id) return null;
     const db = await initAnimationDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readonly');
@@ -233,6 +263,7 @@ export async function getAnimationBlob(id) {
  * @returns {Promise<void>}
  */
 export async function deleteAnimationBlob(id) {
+    if (typeof id !== 'string' || !id) return;
     const db = await initAnimationDB();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');

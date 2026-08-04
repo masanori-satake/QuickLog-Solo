@@ -1,5 +1,6 @@
 import { detectBrowserLanguage, setLanguage, getLanguage, t, applyLanguage } from '../shared/js/i18n.js';
 import { messages } from '../shared/js/messages.js';
+import { fc, test as fcTest } from '@fast-check/jest';
 
 /**
  * @jest-environment jsdom
@@ -124,16 +125,53 @@ describe('i18n Module', () => {
             expect(t('init-cat-dev')).toBe(messages.ja['init-cat-dev']);
         });
 
-        test('fallbacks to en then key itself', () => {
+        test('fallbacks to _common then en then key itself', () => {
             setLanguage('ja');
             const unknownKey = 'this-key-does-not-exist-anywhere';
             expect(t(unknownKey)).toBe(unknownKey);
+
+            // Test fallback to _common
+            // If there's a common key that is missing in specific lang, it falls back to _common
+            expect(t('lang-ja-native')).toBe('🇯🇵 日本語');
         });
 
         test('replaces placeholders correctly', () => {
             setLanguage('en');
             const result = t('backup-err-unknown', { message: 'Failed' });
             expect(result).toContain('Failed');
+        });
+    });
+
+    // =============================================================================
+    // Property-Based Tests (fast-check)
+    // =============================================================================
+
+    describe('Property 13: setLanguage の未知言語フォールバック', () => {
+        fcTest.prop([
+            fc.string().filter(l => !['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh', 'auto'].includes(l))
+        ])('setLanguage with invalid language falls back to en', (lang) => {
+            setLanguage(lang);
+            expect(getLanguage()).toBe('en');
+        });
+    });
+
+    describe('Property 14: detectBrowserLanguage の lang パラメータ優先', () => {
+        fcTest.prop([
+            fc.oneof(
+                fc.constant('ja'),
+                fc.constant('en'),
+                fc.constant('de'),
+                fc.constant('es'),
+                fc.constant('fr'),
+                fc.constant('pt'),
+                fc.constant('ko'),
+                fc.constant('zh')
+            )
+        ])('lang parameter takes precedence', (lang) => {
+            const url = new URL(window.location.href);
+            url.search = `?lang=${lang}`;
+            window.history.replaceState({}, '', url.toString());
+            expect(detectBrowserLanguage()).toBe(lang);
         });
     });
 });

@@ -6,6 +6,7 @@ import {
 import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 import { t } from '../shared/js/i18n.js';
 import { SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0, SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK } from '../shared/js/schema.js';
+import { fc, test as fcTest } from '@fast-check/jest';
 
 describe('DB Module', () => {
     const DEFAULT_DB_NAME = 'QuickLogSoloDB';
@@ -326,4 +327,57 @@ describe('DB Module', () => {
         });
     });
 
+    describe('dbGet and dbGetByName Edge Cases', () => {
+        test('dbGet returns undefined for non-existent key', async () => {
+            await openDatabase();
+            const result = await dbGet(STORE_LOGS, 99999);
+            expect(result).toBeUndefined();
+        });
+
+        test('dbGetByName returns undefined for non-existent name', async () => {
+            await openDatabase();
+            const result = await dbGetByName(STORE_CATEGORIES, 'Non-Existent-Category');
+            expect(result).toBeUndefined();
+        });
+
+        test('dbCount returns 0 for empty store', async () => {
+            await openDatabase();
+            const count = await dbCount(STORE_LOGS);
+            expect(count).toBe(0);
+        });
+    });
+
+    // =============================================================================
+    // Property-Based Tests (fast-check)
+    // =============================================================================
+
+    describe('Property 15: dbImportCategories overwrite モードの冪等性', () => {
+        fcTest.prop([
+            fc.array(
+                fc.record({
+                    kind: fc.constant(SCHEMA_KIND_CATEGORY),
+                    version: fc.constant(SCHEMA_VERSION_1_0),
+                    type: fc.constant(SCHEMA_TYPE_CATEGORY),
+                    name: fc.string({ minLength: 1, maxLength: 50 }).filter(s => s.trim().length > 0 && s !== '__IDLE__' && s !== '__UNKNOWN__' && !s.startsWith('__PAGE_BREAK__')),
+                    color: fc.constant('teal')
+                }),
+                { minLength: 1, maxLength: 5 }
+            )
+        ])('dbImportCategories overwrite mode leaves exactly imported categories', async (items) => {
+            await openDatabase();
+            // Pre-fill categories with old data
+            await dbClear(STORE_CATEGORIES);
+            await dbAdd(STORE_CATEGORIES, { name: 'Old Category 1', color: 'primary', order: 0 });
+
+            // Import
+            await dbImportCategories(items, 'overwrite');
+
+            const stored = await dbGetAll(STORE_CATEGORIES);
+            expect(stored.length).toBe(items.length);
+
+            items.forEach(item => {
+                expect(stored.some(c => c.name === item.name)).toBe(true);
+            });
+        });
+    });
 });

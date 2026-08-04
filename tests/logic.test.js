@@ -35,10 +35,11 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
 
 const {
     formatDuration, formatLogDuration, startTaskLogic, stopTaskLogic, pauseTaskLogic, stripEmojis, getVisualWidth, visualPadEnd, generateReport, calculateTagAggregation, updateHistoryStartTime, deleteHistoryItem,
-    splitHistoryItem
+    splitHistoryItem, calculateNextAlarmTime
 } = await import('../shared/js/logic.js');
 const { dbAdd, dbPut, dbGet, dbDelete, dbGetAll, STORE_LOGS, STORE_SETTINGS, SETTING_KEY_PAUSE_STATE } = await import('../shared/js/db.js');
 const { SYSTEM_CATEGORY_PAGE_BREAK } = await import('../shared/js/utils.js');
+import { fc, test as fcTest } from '@fast-check/jest';
 
 describe('Logic Module', () => {
     describe('formatDuration', () => {
@@ -975,6 +976,169 @@ describe('Logic Module', () => {
             expect(result).toBe(false);
             expect(dbPut).not.toHaveBeenCalled();
             expect(dbAdd).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('calculateNextAlarmTime Additional Cases', () => {
+        const businessDays = [1, 2, 3, 4, 5]; // Mon to Fri
+
+        test('disabled alarm returns null', () => {
+            const alarm = { enabled: false, time: '09:00', type: 'daily' };
+            expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
+        });
+
+        test('empty time returns null', () => {
+            const alarm = { enabled: true, time: '', type: 'daily' };
+            expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
+        });
+
+        test('weekly with no matching daysOfWeek returns null', () => {
+            const alarm = { enabled: true, time: '09:00', type: 'weekly', daysOfWeek: [] };
+            expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
+        });
+
+        test('holiday adjustment skip pattern on holiday returns null (skips)', () => {
+            const alarm = {
+                enabled: true,
+                time: '09:00',
+                type: 'weekly',
+                daysOfWeek: [6], // Saturday
+                holidayAdjustment: 'skip'
+            };
+            const now = new Date('2026-03-05T08:00:00').getTime(); // Thu
+            expect(calculateNextAlarmTime(alarm, businessDays, now)).toBeNull();
+        });
+
+        test('holiday adjustment prev_business_day boundary on monthly day 1 returns null', () => {
+            const alarm = {
+                enabled: true,
+                time: '09:00',
+                type: 'monthly_date',
+                dayOfMonth: 1,
+                holidayAdjustment: 'prev_business_day'
+            };
+            // 2026-03-01 is Sunday. Under 'prev_business_day' with monthly day 1, it must not go back.
+            // Should return next candidate month's 1st (if it is business day or successfully adjusted)
+            // 2026-03-01 is Sunday, so it skips March. Next is 2026-04-01 (Wednesday - business day), which should be returned.
+            const now = new Date('2026-02-28T08:00:00').getTime();
+            const nextTime = calculateNextAlarmTime(alarm, businessDays, now);
+            expect(new Date(nextTime).getDate()).toBe(1);
+            expect(new Date(nextTime).getMonth()).toBe(3); // April
+        });
+
+        test('holiday adjustment next_business_day shifts to next Mon', () => {
+            const alarm = {
+                enabled: true,
+                time: '09:00',
+                type: 'weekly',
+                daysOfWeek: [6], // Sat
+                holidayAdjustment: 'next_business_day'
+            };
+            // Saturday 2026-03-07 should shift to Monday 2026-03-09
+            const now = new Date('2026-03-05T08:00:00').getTime();
+            const nextTime = calculateNextAlarmTime(alarm, businessDays, now);
+            expect(new Date(nextTime).getDate()).toBe(9);
+            expect(new Date(nextTime).getMonth()).toBe(2); // March
+        });
+    });
+
+    // =============================================================================
+    // Property-Based Tests (fast-check)
+    // =============================================================================
+
+    describe('Property 6: formatDuration のフォーマット不変量', () => {
+        fcTest.prop([
+            fc.integer({ min: 0, max: 1000 * 3600000 })
+        ])('formatDuration is always HH:MM:SS', (ms) => {
+            const formatted = formatDuration(ms);
+            expect(formatted).toMatch(/^\d{2,}:\d{2}:\d{2}$/);
+        });
+    });
+
+    describe('Property 7: calculateTagAggregation のスキップ条件', () => {
+        fcTest.prop([
+            fc.array(fc.record({
+                startTime: fc.integer({ min: 1000, max: 1000000 }),
+                endTime: fc.oneof(fc.constant(null), fc.integer({ min: 0, max: 1000000 })),
+                category: fc.string(),
+                isManualStop: fc.boolean(),
+                tags: fc.string()
+            }))
+        ])('skipped elements do not contribute to totalWorkDuration', (logs) => {
+            const { totalWorkDuration } = calculateTagAggregation(logs);
+            let calculatedSum = 0;
+            logs.forEach(l => {
+                const category = l.category || '';
+                if (l.isManualStop || category === '__IDLE__' || category === '__UNKNOWN__' || category.startsWith('__PAGE_BREAK__') || !l.endTime) return;
+                const dur = l.endTime - l.startTime;
+                if (dur <= 0) return;
+                calculatedSum += dur;
+            });
+            expect(totalWorkDuration).toBe(calculatedSum);
+        });
+    });
+
+    describe('Property 8: stripEmojis の ASCII 恒等性', () => {
+        fcTest.prop([
+            fc.string({ alphabet: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ' })
+        ])('stripEmojis leaves pure ASCII alphanumeric unchanged', (str) => {
+            expect(stripEmojis(str)).toBe(str.trim());
+        });
+
+        test('stripEmojis handles falsy values', () => {
+            expect(stripEmojis(null)).toBe('');
+            expect(stripEmojis(undefined)).toBe('');
+        });
+    });
+
+    describe('Property 9: getVisualWidth の下限プロパティ', () => {
+        fcTest.prop([
+            fc.string()
+        ])('getVisualWidth(str) >= str.length', (str) => {
+            expect(getVisualWidth(str)).toBeGreaterThanOrEqual(0);
+            if (str.length > 0) {
+                expect(getVisualWidth(str)).toBeGreaterThanOrEqual(str.length);
+            }
+        });
+
+        test('getVisualWidth handles falsy values', () => {
+            expect(getVisualWidth(null)).toBe(0);
+            expect(getVisualWidth(undefined)).toBe(0);
+        });
+    });
+
+    describe('Property 10: generateReport の未知フォーマット拒否', () => {
+        fcTest.prop([
+            fc.string().filter(f => !['csv', 'tsv', 'html', 'markdown', 'wiki', 'text-plain', 'text-table'].includes(f))
+        ])('generateReport with unknown format returns empty string', (format) => {
+            const logs = [{ startTime: 1000, endTime: 2000, category: 'Work' }];
+            const options = {
+                format,
+                emoji: 'keep',
+                endTime: 'none',
+                duration: 'none',
+                idleText: '(待機)',
+                headerTime: 'Time',
+                headerCategory: 'Category'
+            };
+            expect(generateReport(logs, options)).toBe('');
+        });
+    });
+
+    describe('Property 11: calculateNextAlarmTime の無効アラーム null 保証', () => {
+        fcTest.prop([
+            fc.record({
+                enabled: fc.boolean(),
+                time: fc.string(),
+                type: fc.string(),
+                daysOfWeek: fc.array(fc.integer({ min: 0, max: 6 })),
+                dayOfMonth: fc.integer({ min: 1, max: 31 }),
+                daysBeforeEnd: fc.integer({ min: 0, max: 5 }),
+                holidayAdjustment: fc.string()
+            }).filter(a => !a.enabled || !a.time)
+        ])('inactive or untimed alarm returns null', (alarm) => {
+            const businessDays = [1, 2, 3, 4, 5];
+            expect(calculateNextAlarmTime(alarm, businessDays)).toBeNull();
         });
     });
 });

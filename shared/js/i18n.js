@@ -13,14 +13,15 @@ let currentLanguage = 'en';
  */
 export function detectBrowserLanguage() {
     if (typeof window !== 'undefined' && window.location) {
-        const urlParams = new URLSearchParams(window.location.search);
+        const search = window.location.search || '';
+        const urlParams = new URLSearchParams(search);
         const langParam = urlParams.get('lang');
         if (langParam && messages[langParam]) {
             return langParam;
         }
     }
 
-    const lang = typeof navigator !== 'undefined' ? navigator.language || navigator.userLanguage : 'en';
+    const lang = typeof navigator !== 'undefined' ? navigator.language || navigator.userLanguage || 'en' : 'en';
     const prefixes = ['ja', 'de', 'es', 'fr', 'pt', 'ko', 'zh'];
     for (const prefix of prefixes) {
         if (lang.startsWith(prefix)) return prefix;
@@ -33,6 +34,10 @@ export function detectBrowserLanguage() {
  * @param {string} lang - 'ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh' or 'auto'
  */
 export function setLanguage(lang) {
+    if (typeof lang !== 'string') {
+        currentLanguage = 'en';
+        return;
+    }
     if (lang === 'auto') {
         currentLanguage = detectBrowserLanguage();
     } else if (messages[lang]) {
@@ -57,11 +62,13 @@ export function getLanguage() {
  * @returns {string}
  */
 export function t(key, params = {}) {
-    let message = messages[currentLanguage][key] || messages['_common']?.[key] || messages['en'][key] || key;
+    if (typeof key !== 'string') return '';
+    const safeParams = params && typeof params === 'object' ? params : {};
+    let message = messages[currentLanguage]?.[key] || messages['_common']?.[key] || messages['en']?.[key] || key;
 
     // Simple placeholder replacement
-    Object.keys(params).forEach((param) => {
-        message = message.replace(new RegExp(`\\{${param}\\}`, 'g'), params[param]);
+    Object.keys(safeParams).forEach((param) => {
+        message = message.replace(new RegExp(`\\{${param}\\}`, 'g'), safeParams[param]);
     });
 
     return message;
@@ -72,7 +79,7 @@ export function t(key, params = {}) {
  * Exported for testing purposes only.
  */
 export function applyLanguage() {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || !document.querySelectorAll) return;
 
     document.querySelectorAll('[data-i18n]').forEach((el) => {
         const key = el.getAttribute('data-i18n');
