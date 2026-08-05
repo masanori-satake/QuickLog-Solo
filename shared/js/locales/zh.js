@@ -182,7 +182,7 @@ export default {
     'backup-file-count': '文件数量',
     'backup-file-count-unit': '天',
     'backup-last-time-label': '上次备份',
-    'backup-file-count-label': '文件数量',
+    'backup-file-count-label': '历史天数',
     'backup-description-new':
         '建议定期备份，以防因浏览器缓存清理导致 IndexedDB 数据丢失。有了备份数据，您还可以顺利迁移到其他浏览器。',
     'toast-backup-completed': '备份完成',

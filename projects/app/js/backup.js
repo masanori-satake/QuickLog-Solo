@@ -1,17 +1,34 @@
 import {
-    dbGetAll, dbGet, dbPut, dbAddMultiple,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
-    SETTING_KEY_ANIMATION, SETTING_KEY_BACKUP_CONFIG, SETTING_KEY_BACKUP_DIR_HANDLE,
-    LOG_CLEANUP_THRESHOLD_MS
+    dbGetAll,
+    dbGet,
+    dbPut,
+    dbAddMultiple,
+    STORE_LOGS,
+    STORE_CATEGORIES,
+    STORE_SETTINGS,
+    STORE_ALARMS,
+    SETTING_KEY_ANIMATION,
+    SETTING_KEY_BACKUP_CONFIG,
+    SETTING_KEY_BACKUP_DIR_HANDLE,
+    LOG_CLEANUP_THRESHOLD_MS,
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
 import {
-    SCHEMA_VERSION_1_0, SCHEMA_VERSION_2_0,
-    SCHEMA_KIND_CATEGORY, SCHEMA_KIND_HISTORY, SCHEMA_KIND_SETTINGS,
-    SCHEMA_KIND_ALARM, SCHEMA_KIND_CUSTOM_ANIMATION,
-    SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK,
-    SCHEMA_TYPE_HISTORY_TASK, SCHEMA_TYPE_HISTORY_IDLE, SCHEMA_TYPE_HISTORY_STOP,
-    validateCategorySchema, validateHistorySchema, validateSettingsSchema
+    SCHEMA_VERSION_1_0,
+    SCHEMA_VERSION_2_0,
+    SCHEMA_KIND_CATEGORY,
+    SCHEMA_KIND_HISTORY,
+    SCHEMA_KIND_SETTINGS,
+    SCHEMA_KIND_ALARM,
+    SCHEMA_KIND_CUSTOM_ANIMATION,
+    SCHEMA_TYPE_CATEGORY,
+    SCHEMA_TYPE_PAGE_BREAK,
+    SCHEMA_TYPE_HISTORY_TASK,
+    SCHEMA_TYPE_HISTORY_IDLE,
+    SCHEMA_TYPE_HISTORY_STOP,
+    validateCategorySchema,
+    validateHistorySchema,
+    validateSettingsSchema,
 } from '../shared/js/schema.js';
 import { getAnimationBlob } from '../shared/js/idb_storage.js';
 import { getCustomAnimationMetadataMap } from '../shared/js/utils/storage.js';
@@ -29,14 +46,14 @@ export const BACKUP_STATUS = {
     DISABLED: 'disabled', // No directory handle
     SYNCING: 'syncing',
     SUCCESS: 'success',
-    FAILED: 'failed'
+    FAILED: 'failed',
 };
 
 class BackupManager {
     constructor() {
         this.directoryHandle = null;
         this.config = {
-            lastBackupTime: null
+            lastBackupTime: null,
         };
         this.status = BACKUP_STATUS.DISABLED;
         this.onStatusChange = null;
@@ -157,7 +174,7 @@ class BackupManager {
             app: 'QuickLog-Solo',
             kind: SCHEMA_KIND_ALARM,
             version: SCHEMA_VERSION_2_0,
-            entries: alarms.map(alarm => ({
+            entries: alarms.map((alarm) => ({
                 enabled: alarm.enabled,
                 time: alarm.time,
                 message: alarm.message,
@@ -169,8 +186,8 @@ class BackupManager {
                 dayOfMonth: alarm.dayOfMonth,
                 daysBeforeEnd: alarm.daysBeforeEnd,
                 holidayAdjustment: alarm.holidayAdjustment,
-                order: alarm.order
-            }))
+                order: alarm.order,
+            })),
         };
 
         await this.writeJson(FILE_NAME_QL_ALARMS, data);
@@ -184,14 +201,14 @@ class BackupManager {
             description: meta.description || '',
             config: meta.config || {},
             renderSpec: meta.payload?.renderSpec || meta.renderSpec || {},
-            createdAt: meta.createdAt || null
+            createdAt: meta.createdAt || null,
         }));
 
         const data = {
             app: 'QuickLog-Solo',
             kind: SCHEMA_KIND_CUSTOM_ANIMATION,
             version: SCHEMA_VERSION_2_0,
-            entries
+            entries,
         };
 
         await this.writeJson(FILE_NAME_QL_CUSTOM_ANIMATIONS, data);
@@ -225,17 +242,22 @@ class BackupManager {
         const categories = await dbGetAll(STORE_CATEGORIES);
         // Sort by display order before exporting to NDJSON
         categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        const categoryData = categories.map(cat => {
+        const categoryData = categories.map((cat) => {
             const isPageBreak = cat.name && cat.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
             const entry = {
                 kind: SCHEMA_KIND_CATEGORY,
                 version: SCHEMA_VERSION_1_0,
-                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY
+                type: isPageBreak ? SCHEMA_TYPE_PAGE_BREAK : SCHEMA_TYPE_CATEGORY,
             };
             if (!isPageBreak) {
                 entry.name = cat.name;
                 entry.color = cat.color;
-                entry.tags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+                entry.tags = cat.tags
+                    ? cat.tags
+                          .split(',')
+                          .map((t) => t.trim())
+                          .filter(Boolean)
+                    : [];
                 entry.animation = cat.animation || 'default';
             }
             return entry;
@@ -244,17 +266,19 @@ class BackupManager {
 
         // Backup Settings (JSON) - excluding backup-specific ones to avoid loops
         const allSettings = await dbGetAll(STORE_SETTINGS);
-        const filteredSettings = allSettings.filter(s => s.key !== SETTING_KEY_BACKUP_DIR_HANDLE && s.key !== SETTING_KEY_BACKUP_CONFIG);
+        const filteredSettings = allSettings.filter(
+            (s) => s.key !== SETTING_KEY_BACKUP_DIR_HANDLE && s.key !== SETTING_KEY_BACKUP_CONFIG
+        );
         const settingsData = {
             app: 'QuickLog-Solo',
             kind: SCHEMA_KIND_SETTINGS,
             version: SCHEMA_VERSION_2_0,
-            entries: filteredSettings.map(s => {
+            entries: filteredSettings.map((s) => {
                 // Map application keys to schema keys
                 let key = s.key;
                 if (key === SETTING_KEY_ANIMATION) key = 'defaultAnimation';
                 return { key, value: s.value };
-            })
+            }),
         };
         await this.writeJson(FILE_NAME_QL_SETTINGS, settingsData);
 
@@ -262,25 +286,33 @@ class BackupManager {
         const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY);
         const logs = await dbGetAll(STORE_LOGS);
         const logsByDate = {};
-        logs.forEach(log => {
+        logs.forEach((log) => {
             const date = this.formatDate(new Date(log.startTime));
             if (!logsByDate[date]) logsByDate[date] = [];
 
-            const type = log.isManualStop ? SCHEMA_TYPE_HISTORY_STOP :
-                         (log.category === SYSTEM_CATEGORY_IDLE ? SCHEMA_TYPE_HISTORY_IDLE : SCHEMA_TYPE_HISTORY_TASK);
+            const type = log.isManualStop
+                ? SCHEMA_TYPE_HISTORY_STOP
+                : log.category === SYSTEM_CATEGORY_IDLE
+                  ? SCHEMA_TYPE_HISTORY_IDLE
+                  : SCHEMA_TYPE_HISTORY_TASK;
 
             const entry = {
                 kind: SCHEMA_KIND_HISTORY,
                 version: SCHEMA_VERSION_1_0,
                 type: type,
                 startTime: log.startTime,
-                endTime: log.endTime || null
+                endTime: log.endTime || null,
             };
 
             if (type === SCHEMA_TYPE_HISTORY_TASK) {
                 entry.category = log.category;
                 if (log.color) entry.color = log.color; // Omit if null/undefined for schema compliance
-                entry.tags = log.tags ? log.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+                entry.tags = log.tags
+                    ? log.tags
+                          .split(',')
+                          .map((t) => t.trim())
+                          .filter(Boolean)
+                    : [];
                 if (log.memo) entry.memo = log.memo;
             } else if (type === SCHEMA_TYPE_HISTORY_IDLE) {
                 if (log.resumableCategory) entry.resumableCategory = log.resumableCategory;
@@ -321,7 +353,7 @@ class BackupManager {
                 if (validated) {
                     // Page breaks need unique names for current DB keyPath
                     const isPageBreak = validated.name.startsWith(SYSTEM_CATEGORY_PAGE_BREAK);
-                    if (isPageBreak || !dbCategories.find(dc => dc.name === validated.name)) {
+                    if (isPageBreak || !dbCategories.find((dc) => dc.name === validated.name)) {
                         validated.order = ++maxOrder;
                         newCategories.push(validated);
                     }
@@ -346,7 +378,7 @@ class BackupManager {
                 let key = fs.key;
                 if (key === 'defaultAnimation') key = SETTING_KEY_ANIMATION;
 
-                if (!dbSettings.find(ds => ds.key === key)) {
+                if (!dbSettings.find((ds) => ds.key === key)) {
                     newSettings.push({ key, value: fs.value });
                 }
             }
@@ -356,7 +388,7 @@ class BackupManager {
         // --- Logs ---
         const threshold = Date.now() - LOG_CLEANUP_THRESHOLD_MS;
         const dbLogs = await dbGetAll(STORE_LOGS);
-        const dbLogKeys = new Set(dbLogs.map(l => `${l.startTime}|${l.category}`));
+        const dbLogKeys = new Set(dbLogs.map((l) => `${l.startTime}|${l.category}`));
         const newLogs = [];
 
         for await (const entry of this.directoryHandle.values()) {
@@ -392,7 +424,9 @@ class BackupManager {
     async cleanupOldFiles() {
         const threshold = Date.now() - LOG_CLEANUP_THRESHOLD_MS;
         try {
-            const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY, { create: false });
+            const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY, {
+                create: false,
+            });
             for await (const entry of historyHandle.values()) {
                 if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
                     const dateStr = entry.name.replace('.ndjson', '');
@@ -409,7 +443,7 @@ class BackupManager {
     async writeNdjson(fileName, data) {
         const fileHandle = await this.directoryHandle.getFileHandle(fileName, { create: true });
         const writable = await fileHandle.createWritable();
-        const content = data.map(item => JSON.stringify(item)).join('\n');
+        const content = data.map((item) => JSON.stringify(item)).join('\n');
         await writable.write(content);
         await writable.close();
     }
@@ -417,7 +451,7 @@ class BackupManager {
     async writeNdjsonToDir(dirHandle, fileName, data) {
         const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
         const writable = await fileHandle.createWritable();
-        const content = data.map(item => JSON.stringify(item)).join('\n');
+        const content = data.map((item) => JSON.stringify(item)).join('\n');
         await writable.write(content);
         await writable.close();
     }
@@ -438,7 +472,10 @@ class BackupManager {
     async readNdjson(fileName) {
         const text = await this._readTextFileWithCheck(fileName);
         if (text === null) return [];
-        return text.split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
+        return text
+            .split('\n')
+            .filter((line) => line.trim())
+            .map((line) => JSON.parse(line));
     }
 
     async writeJson(fileName, data) {
@@ -461,7 +498,7 @@ class BackupManager {
         if (cat.type === SCHEMA_TYPE_PAGE_BREAK) {
             return {
                 name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                order: 0 // Placeholder, will be set during import loop
+                order: 0, // Placeholder, will be set during import loop
             };
         }
 
@@ -470,7 +507,7 @@ class BackupManager {
             color: cat.color,
             tags: Array.isArray(cat.tags) ? cat.tags.join(',') : '',
             animation: cat.animation || 'default',
-            order: 0 // Placeholder, will be set during import loop
+            order: 0, // Placeholder, will be set during import loop
         };
     }
 
@@ -480,7 +517,7 @@ class BackupManager {
         const type = log.type;
         const base = {
             startTime: log.startTime,
-            endTime: log.endTime || null
+            endTime: log.endTime || null,
         };
 
         if (type === SCHEMA_TYPE_HISTORY_TASK) {
@@ -489,19 +526,19 @@ class BackupManager {
                 category: log.category,
                 color: log.color || null,
                 tags: Array.isArray(log.tags) ? log.tags.join(',') : '',
-                memo: log.memo || ''
+                memo: log.memo || '',
             };
         } else if (type === SCHEMA_TYPE_HISTORY_IDLE) {
             return {
                 ...base,
                 category: SYSTEM_CATEGORY_IDLE,
-                resumableCategory: log.resumableCategory || null
+                resumableCategory: log.resumableCategory || null,
             };
         } else if (type === SCHEMA_TYPE_HISTORY_STOP) {
             return {
                 ...base,
                 category: SYSTEM_CATEGORY_IDLE, // Historically IDLE is used for stops too
-                isManualStop: true
+                isManualStop: true,
             };
         }
         return null;
@@ -517,15 +554,32 @@ class BackupManager {
     async getFileCount() {
         if (!this.directoryHandle) return 0;
         let count = 0;
+
+        // 最初に"history"フォルダの存在を判定している理由は、現行仕様において作業履歴は
+        // バックアップ先の "history" サブディレクトリ内に保存される仕組みになっているためです。
+        // まだ履歴のバックアップが実行されていない初期状態（空のフォルダを指定した直後など）や、
+        // 直下に履歴が展開されている旧仕様等のケースに備え、"history"フォルダが未作成であれば
+        // バックアップ先直下（ルート）にある日付形式のndjsonファイル数をカウントするようにフォールバックします。
+        // 二重カウントや不要な加算を防ぐため、両者のファイル数は決して合算しません。
         try {
-            const historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY, { create: false });
-            for await (const entry of historyHandle.values()) {
+            let historyHandle = null;
+            try {
+                historyHandle = await this._ensureSubDirectory(this.directoryHandle, DIR_NAME_HISTORY, {
+                    create: false,
+                });
+            } catch (e) {
+                // history subfolder does not exist or cannot be accessed
+            }
+
+            const targetHandle = historyHandle || this.directoryHandle;
+
+            for await (const entry of targetHandle.values()) {
                 if (entry.kind === 'file' && entry.name.match(/^\d{4}-\d{2}-\d{2}\.ndjson$/)) {
                     count++;
                 }
             }
-        } catch {
-            // history/ directory might not exist or permission not granted
+        } catch (e) {
+            // Permission not granted or other issues
         }
         return count;
     }

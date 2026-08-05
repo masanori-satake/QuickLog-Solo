@@ -187,7 +187,7 @@ export default {
     'backup-file-count': 'Archivos: {count} días',
     'backup-file-count-unit': 'días',
     'backup-last-time-label': 'Última copia',
-    'backup-file-count-label': 'Número de archivos',
+    'backup-file-count-label': 'Días de historial',
     'backup-description-new':
         'Se recomiendan respaldos periódicos para evitar la pérdida de datos en IndexedDB debido a la limpieza del caché del navegador. Con los datos de respaldo, también puede realizar la transición sin problemas a otros navegadores.',
     'toast-backup-completed': 'Respaldo completado',

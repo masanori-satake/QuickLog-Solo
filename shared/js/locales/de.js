@@ -188,7 +188,7 @@ export default {
     'backup-file-count': 'Dateien: {count} Tage',
     'backup-file-count-unit': 'Tage',
     'backup-last-time-label': 'Letzte Sicherung',
-    'backup-file-count-label': 'Dateianzahl',
+    'backup-file-count-label': 'Verlaufstage',
     'backup-description-new':
         'Regelmäßige Sicherungen werden empfohlen, um Datenverlust in IndexedDB durch das Löschen des Browser-Caches zu verhindern. Mit Sicherungsdaten können Sie auch problemlos auf andere Browser umsteigen.',
     'toast-backup-completed': 'Sicherung abgeschlossen',
