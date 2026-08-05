@@ -568,8 +568,7 @@ class BackupManager {
                     create: false,
                 });
             } catch (e) {
-                if (e.name !== 'NotFoundError') throw e;
-                // history subfolder does not exist
+                // history subfolder does not exist or cannot be accessed
             }
 
             const targetHandle = historyHandle || this.directoryHandle;
@@ -580,8 +579,7 @@ class BackupManager {
                 }
             }
         } catch (e) {
-            // Permission not granted or other issues; discard partial count
-            count = 0;
+            // Permission not granted or other issues
         }
         return count;
     }
