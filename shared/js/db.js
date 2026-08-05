@@ -383,6 +383,7 @@ export async function initDB(isLite = false) {
         await setupInitialData(lang);
         await migrateLogsWithSyncId();
         await migrateLogsWithUpdatedAt();
+        await migrateCategoriesWithMissingOrder();
         await cleanupOldLogs();
     }
 
@@ -606,6 +607,42 @@ async function migrateLogsWithSyncId() {
             tx.onerror = (e) => reject(e.target.error);
             for (const log of logsToUpdate) {
                 store.put(log);
+            }
+        });
+    }
+
+    await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
+}
+
+/**
+ * Ensures all categories have an order property populated.
+ */
+async function migrateCategoriesWithMissingOrder() {
+    const migrationKey = 'migration_categories_order_populated';
+    const alreadyMigrated = await dbGet(STORE_SETTINGS, migrationKey);
+    if (alreadyMigrated) return;
+
+    const categories = await dbGetAll(STORE_CATEGORIES);
+    const categoriesToUpdate = [];
+
+    for (let i = 0; i < categories.length; i++) {
+        const cat = categories[i];
+        if (cat.order === undefined || cat.order === null) {
+            cat.order = i;
+            categoriesToUpdate.push(cat);
+        }
+    }
+
+    if (categoriesToUpdate.length > 0) {
+        console.log(`QuickLog-Solo: Migrating ${categoriesToUpdate.length} categories with missing order.`);
+        await new Promise((resolve, reject) => {
+            if (!db) { reject(new Error('DB not initialized')); return; }
+            const tx = db.transaction(STORE_CATEGORIES, 'readwrite');
+            const store = tx.objectStore(STORE_CATEGORIES);
+            tx.oncomplete = () => resolve();
+            tx.onerror = (e) => reject(e.target.error);
+            for (const cat of categoriesToUpdate) {
+                store.put(cat);
             }
         });
     }
