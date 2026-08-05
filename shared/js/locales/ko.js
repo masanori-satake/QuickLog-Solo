@@ -197,7 +197,7 @@ export default {
     'backup-file-count': 'ファイル数: {count}日分',
     'backup-file-count-unit': '일치',
     'backup-last-time-label': '最終バックアップ時刻',
-    'backup-file-count-label': 'ファイル数',
+    'backup-file-count-label': '履歴日数',
     'backup-description-new':
         '브라우저 캐시 삭제 등으로 IndexedDB 데이터가 사라지는 것을 방지하기 위해 정기적인 백업을 권장합니다. 백업 데이터가 있으면 다른 브라우저로의 이동도 원활하게 할 수 있습니다.',
     'toast-backup-completed': '백업이 완료되었습니다',
