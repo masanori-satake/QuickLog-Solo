@@ -212,7 +212,7 @@ export default {
     'backup-file-count': 'ファイル数: {count}日分',
     'backup-file-count-unit': '日分',
     'backup-last-time-label': '最終バックアップ時刻',
-    'backup-file-count-label': 'ファイル数',
+    'backup-file-count-label': '履歴日数',
     'backup-description-new':
         'ブラウザのキャッシュクリアなどで IndexedDB のデータが消えてしまうのを防ぐため、定期的なバックアップを推奨します。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。',
     'toast-backup-completed': 'バックアップが完了しました',

@@ -211,7 +211,7 @@ export default {
     'backup-file-count': 'Files: {count} days',
     'backup-file-count-unit': 'days',
     'backup-last-time-label': 'Last Backup',
-    'backup-file-count-label': 'File Count',
+    'backup-file-count-label': 'History Days',
     'backup-description-new':
         'Regular backups are recommended to prevent data loss in IndexedDB due to browser cache clearing. With backup data, you can also smoothly transition to other browsers.',
     'toast-backup-completed': 'Backup completed',

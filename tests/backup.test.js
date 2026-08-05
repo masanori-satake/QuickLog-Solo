@@ -130,4 +130,67 @@ describe('BackupManager', () => {
 
         expect(backupManager.status).toBe(BACKUP_STATUS.FAILED);
     });
+
+    describe('getFileCount', () => {
+        test('returns 0 when directoryHandle is not set', async () => {
+            backupManager.directoryHandle = null;
+            expect(await backupManager.getFileCount()).toBe(0);
+        });
+
+        test('counts files inside history directory when history exists, and ignores root files', async () => {
+            const mockHistoryHandle = {
+                values: async function* () {
+                    yield { kind: 'file', name: '2025-01-01.ndjson' };
+                    yield { kind: 'file', name: '2025-01-02.ndjson' };
+                    yield { kind: 'file', name: 'categories.ndjson' }; // ignored: wrong pattern
+                    yield { kind: 'directory', name: '2025-01-03.ndjson' }; // ignored: not a file
+                },
+            };
+
+            backupManager.directoryHandle = {
+                getDirectoryHandle: jest.fn().mockImplementation((name, options) => {
+                    if (name === 'history') {
+                        return Promise.resolve(mockHistoryHandle);
+                    }
+                    return Promise.reject(new Error('Not found'));
+                }),
+                values: async function* () {
+                    yield { kind: 'file', name: '2025-01-04.ndjson' }; // ignored: inside root but history exists
+                },
+            };
+
+            const count = await backupManager.getFileCount();
+            expect(count).toBe(2);
+            expect(backupManager.directoryHandle.getDirectoryHandle).toHaveBeenCalledWith('history', { create: false });
+        });
+
+        test('counts files inside root directory when history directory does not exist', async () => {
+            backupManager.directoryHandle = {
+                getDirectoryHandle: jest.fn().mockRejectedValue(new Error('Not found')),
+                values: async function* () {
+                    yield { kind: 'file', name: '2025-02-01.ndjson' };
+                    yield { kind: 'file', name: '2025-02-02.ndjson' };
+                    yield { kind: 'file', name: '2025-02-03.ndjson' };
+                    yield { kind: 'file', name: 'settings.json' }; // ignored: wrong pattern
+                    yield { kind: 'directory', name: '2025-02-04.ndjson' }; // ignored: not a file
+                },
+            };
+
+            const count = await backupManager.getFileCount();
+            expect(count).toBe(3);
+            expect(backupManager.directoryHandle.getDirectoryHandle).toHaveBeenCalledWith('history', { create: false });
+        });
+
+        test('returns 0 when getDirectoryHandle and root values access throws an error', async () => {
+            backupManager.directoryHandle = {
+                getDirectoryHandle: jest.fn().mockRejectedValue(new Error('Permission denied')),
+                values: jest.fn().mockImplementation(() => {
+                    throw new Error('Access denied');
+                }),
+            };
+
+            const count = await backupManager.getFileCount();
+            expect(count).toBe(0);
+        });
+    });
 });

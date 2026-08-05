@@ -188,7 +188,7 @@ export default {
     'backup-file-count': 'Fichiers: {count} jours',
     'backup-file-count-unit': 'jours',
     'backup-last-time-label': 'Dernière sauvegarde',
-    'backup-file-count-label': 'Nombre de fichiers',
+    'backup-file-count-label': "Jours d'historique",
     'backup-description-new':
         'Des sauvegardes régulières sont recommandées pour éviter la perte de données dans IndexedDB suite à l\u0027effacement du cache du navigateur. Avec les données de sauvegarde, vous pouvez également passer facilement à d\u0027autres navigateurs.',
     'toast-backup-completed': 'Sauvegarde terminée',
