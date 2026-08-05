@@ -320,7 +320,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 chrome.runtime.onInstalled.addListener((details) => {
     console.log('QuickLog-Solo: Extension installed/updated. Reason:', details.reason);
     configureSidePanel();
-    guardedInitialize().catch(() => {});
+    return guardedInitialize().catch(() => {});
 });
 
 chrome.runtime.onStartup.addListener(() => {

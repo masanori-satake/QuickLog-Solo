@@ -11,7 +11,7 @@ global.chrome = {
     },
     alarms: {
         onAlarm: { addListener: jest.fn() },
-        getAll: jest.fn().mockResolvedValue([]),
+        getAll: jest.fn().mockResolvedValue([{ name: 'ql_alarm_99' }]),
         clear: jest.fn().mockResolvedValue(true),
         create: jest.fn()
     },
@@ -109,10 +109,8 @@ describe('Background Service Worker Lifecycle (onInstalled / update)', () => {
         expect(initDB).toHaveBeenCalledWith(true);
 
         // Verify old ql_alarm_ alarms are cleared and enabled ones are created
-        // We wait for the microtask queue to clear as the background script runs asynchronously
-        await new Promise(resolve => setTimeout(resolve, 50));
-
         expect(chrome.alarms.getAll).toHaveBeenCalled();
+        expect(chrome.alarms.clear).toHaveBeenCalledWith('ql_alarm_99');
         expect(calculateNextAlarmTime).toHaveBeenCalled();
         expect(chrome.alarms.create).toHaveBeenCalledWith('ql_alarm_1', expect.objectContaining({
             when: expect.any(Number)

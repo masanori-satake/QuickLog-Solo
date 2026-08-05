@@ -21,14 +21,22 @@ describe('Manifest Permissions Compliance (Permissions Delta Verification)', () 
             "unlimitedStorage"
         ];
 
-        // Ensure no new permissions are added which could cause extension to be automatically disabled by Chrome
+        // Verify exact, order-independent equality between approved and manifest permissions
+        // This detects additions, removals, and duplicates
+        const manifestSet = new Set(manifest.permissions);
+        const approvedSet = new Set(APPROVED_PERMISSIONS);
+
+        // Check for permissions in manifest but not approved (additions)
         for (const permission of manifest.permissions) {
-            expect(APPROVED_PERMISSIONS).toContain(permission);
+            expect(approvedSet.has(permission)).toBe(true);
         }
 
-        // Ensure all currently required permissions are defined
-        expect(manifest.permissions).toContain("alarms");
-        expect(manifest.permissions).toContain("notifications");
-        expect(manifest.permissions).toContain("storage");
+        // Check for approved permissions not in manifest (removals)
+        for (const permission of APPROVED_PERMISSIONS) {
+            expect(manifestSet.has(permission)).toBe(true);
+        }
+
+        // Check for duplicates in manifest
+        expect(manifest.permissions.length).toBe(manifestSet.size);
     });
 });

@@ -23,7 +23,29 @@ describe('Migration Verification: Legacy v1.14.2 to Latest', () => {
     });
 
     async function setupV1142State() {
-        const db = await openDatabase();
+        // Create the database with legacy version 1 schema to exercise the upgrade path
+        const db = await new Promise((resolve, reject) => {
+            const request = indexedDB.open(TEST_DB_NAME, 1);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_LOGS)) {
+                    db.createObjectStore(STORE_LOGS, { keyPath: 'id', autoIncrement: true });
+                }
+                if (!db.objectStoreNames.contains(STORE_CATEGORIES)) {
+                    const catStore = db.createObjectStore(STORE_CATEGORIES, { keyPath: 'id', autoIncrement: true });
+                    catStore.createIndex('name', 'name', { unique: false });
+                }
+                if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
+                    db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
+                }
+                if (!db.objectStoreNames.contains(STORE_ALARMS)) {
+                    db.createObjectStore(STORE_ALARMS, { keyPath: 'id', autoIncrement: true });
+                }
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+
         const tx = db.transaction([STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS], 'readwrite');
 
         const catStore = tx.objectStore(STORE_CATEGORIES);
@@ -52,7 +74,9 @@ describe('Migration Verification: Legacy v1.14.2 to Latest', () => {
             tx.oncomplete = resolve;
             tx.onerror = reject;
         });
-        closeDatabase();
+
+        // Close the legacy DB so initDB() can open at the new version and exercise upgrade
+        db.close();
     }
 
     test('successfully migrates legacy v1.14.2 data to latest format', async () => {
@@ -66,6 +90,8 @@ describe('Migration Verification: Legacy v1.14.2 to Latest', () => {
         expect(categories.length).toBeGreaterThanOrEqual(2);
         const workCat = categories.find(c => c.name === 'Work');
         expect(workCat).toBeDefined();
+        expect(workCat.order).toBeDefined();
+        expect(typeof workCat.order).toBe('number');
 
         // 2. Verify logs (migrated with syncId, updatedAt, matching tags, and colors)
         const logs = await dbGetAll(STORE_LOGS);
