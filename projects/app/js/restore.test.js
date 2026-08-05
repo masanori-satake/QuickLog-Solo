@@ -588,4 +588,21 @@ describe('RestoreManager - custom animations and configured directory handles', 
         expect(typeof restoredLogs[0].updatedAt).toBe('number');
         expect(restoredLogs[0].category).toBe('Dev');
     });
+
+    it('preserves and maps retro colors correctly in restored log records', () => {
+        const record = {
+            kind: 'QuickLogSolo/History',
+            version: '1.0',
+            type: 'task',
+            startTime: 1784544120000,
+            endTime: 1784544180000,
+            category: 'Meeting',
+            color: 'retro-lcd',
+            tags: ['meeting'],
+        };
+        const converted = restoreManager._convertLogRecord(record);
+        expect(converted).not.toBeNull();
+        expect(converted.color).toBe('retro-lcd');
+        expect(converted.tags).toBe('meeting');
+    });
 });
