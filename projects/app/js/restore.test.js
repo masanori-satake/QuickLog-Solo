@@ -561,13 +561,13 @@ describe('RestoreManager - custom animations and configured directory handles', 
             category: 'Dev',
             color: 'primary',
             tags: ['tag1'],
-            memo: 'some memo'
+            memo: 'some memo',
         });
 
         const dirHandle = createAsyncIterableDirHandle({
             'ql_categories.ndjson': categoriesContent,
             'ql_settings.json': settingsContent,
-            '2023-11-14.ndjson': logContent
+            '2023-11-14.ndjson': logContent,
         });
 
         const showConfirm = jest.fn().mockResolvedValue(true);
