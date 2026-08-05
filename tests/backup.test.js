@@ -165,8 +165,10 @@ describe('BackupManager', () => {
         });
 
         test('counts files inside root directory when history directory does not exist', async () => {
+            const notFoundError = new Error('Not found');
+            notFoundError.name = 'NotFoundError';
             backupManager.directoryHandle = {
-                getDirectoryHandle: jest.fn().mockRejectedValue(new Error('Not found')),
+                getDirectoryHandle: jest.fn().mockRejectedValue(notFoundError),
                 values: async function* () {
                     yield { kind: 'file', name: '2025-02-01.ndjson' };
                     yield { kind: 'file', name: '2025-02-02.ndjson' };
@@ -182,11 +184,41 @@ describe('BackupManager', () => {
         });
 
         test('returns 0 when getDirectoryHandle and root values access throws an error', async () => {
+            const notFoundError = new Error('Permission denied');
+            notFoundError.name = 'NotFoundError';
             backupManager.directoryHandle = {
-                getDirectoryHandle: jest.fn().mockRejectedValue(new Error('Permission denied')),
+                getDirectoryHandle: jest.fn().mockRejectedValue(notFoundError),
                 values: jest.fn().mockImplementation(() => {
                     throw new Error('Access denied');
                 }),
+            };
+
+            const count = await backupManager.getFileCount();
+            expect(count).toBe(0);
+        });
+
+        test('rethrows non-NotFoundError exceptions from _ensureSubDirectory', async () => {
+            const permissionError = new Error('Permission denied');
+            permissionError.name = 'PermissionDeniedError';
+            backupManager.directoryHandle = {
+                getDirectoryHandle: jest.fn().mockRejectedValue(permissionError),
+                values: async function* () {
+                    yield { kind: 'file', name: '2025-02-01.ndjson' };
+                },
+            };
+
+            await expect(backupManager.getFileCount()).rejects.toThrow('Permission denied');
+        });
+
+        test('returns 0 when directory iteration yields entries then throws', async () => {
+            const notFoundError = new Error('Not found');
+            notFoundError.name = 'NotFoundError';
+            backupManager.directoryHandle = {
+                getDirectoryHandle: jest.fn().mockRejectedValue(notFoundError),
+                values: async function* () {
+                    yield { kind: 'file', name: '2025-02-01.ndjson' };
+                    throw new Error('Iteration failed');
+                },
             };
 
             const count = await backupManager.getFileCount();
