@@ -128,6 +128,9 @@ const VALID_COLORS = [
     'indigo',
     'brown',
     'cyan',
+    'retro-lcd',
+    'retro-crt',
+    'retro-nixie',
 ];
 
 /**

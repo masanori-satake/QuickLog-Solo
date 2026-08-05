@@ -189,10 +189,7 @@ describe('validateAlarmSchema', () => {
     });
 });
 
-import {
-    validateCategorySchema,
-    validateHistorySchema
-} from '../shared/js/schema.js';
+import { validateCategorySchema, validateHistorySchema } from '../shared/js/schema.js';
 
 describe('validateCategorySchema and validateHistorySchema', () => {
     test('validateCategorySchema null / non-object', () => {
@@ -215,9 +212,25 @@ describe('validateCategorySchema and validateHistorySchema', () => {
             name: 'Work',
             color: 'teal',
             tags: ['tag1', 'tag2'],
-            animation: 'aura_charge'
+            animation: 'aura_charge',
         };
         expect(validateCategorySchema(cat)).toBe(true);
+    });
+
+    test('validateCategorySchema type=category accepts retro colors', () => {
+        const retroColors = ['retro-lcd', 'retro-crt', 'retro-nixie'];
+        retroColors.forEach((color) => {
+            const cat = {
+                kind: 'QuickLogSolo/Category',
+                version: '1.0',
+                type: 'category',
+                name: 'Retro Work',
+                color: color,
+                tags: [],
+                animation: 'default',
+            };
+            expect(validateCategorySchema(cat)).toBe(true);
+        });
     });
 
     test('validateCategorySchema type=category invalid tags over 20', () => {
@@ -228,7 +241,7 @@ describe('validateCategorySchema and validateHistorySchema', () => {
             name: 'Work',
             color: 'teal',
             tags: Array(21).fill('tag'),
-            animation: 'aura_charge'
+            animation: 'aura_charge',
         };
         expect(validateCategorySchema(cat)).toBe(false);
     });
@@ -241,7 +254,7 @@ describe('validateCategorySchema and validateHistorySchema', () => {
             name: 'Work',
             color: 'teal',
             tags: [''],
-            animation: 'aura_charge'
+            animation: 'aura_charge',
         };
         expect(validateCategorySchema(cat1)).toBe(false);
 
@@ -252,7 +265,7 @@ describe('validateCategorySchema and validateHistorySchema', () => {
             name: 'Work',
             color: 'teal',
             tags: [123],
-            animation: 'aura_charge'
+            animation: 'aura_charge',
         };
         expect(validateCategorySchema(cat2)).toBe(false);
     });
@@ -264,7 +277,7 @@ describe('validateCategorySchema and validateHistorySchema', () => {
             type: 'category',
             name: 'Work',
             color: 'teal',
-            animation: 'a'.repeat(51)
+            animation: 'a'.repeat(51),
         };
         expect(validateCategorySchema(cat)).toBe(false);
     });
@@ -273,7 +286,7 @@ describe('validateCategorySchema and validateHistorySchema', () => {
         const pb1 = {
             kind: 'QuickLogSolo/Category',
             version: '1.0',
-            type: 'page-break'
+            type: 'page-break',
         };
         expect(validateCategorySchema(pb1)).toBe(true);
 
@@ -281,7 +294,7 @@ describe('validateCategorySchema and validateHistorySchema', () => {
             kind: 'QuickLogSolo/Category',
             version: '1.0',
             type: 'page-break',
-            name: 'Page Break'
+            name: 'Page Break',
         };
         expect(validateCategorySchema(pb2)).toBe(false);
     });
@@ -292,7 +305,9 @@ describe('validateCategorySchema and validateHistorySchema', () => {
         expect(validateHistorySchema(123)).toBe(false);
         expect(validateHistorySchema({ kind: 'Wrong', version: '1.0', startTime: 1000 })).toBe(false);
         expect(validateHistorySchema({ kind: 'QuickLogSolo/History', version: '2.0', startTime: 1000 })).toBe(false);
-        expect(validateHistorySchema({ kind: 'QuickLogSolo/History', version: '1.0', startTime: 'invalid' })).toBe(false);
+        expect(validateHistorySchema({ kind: 'QuickLogSolo/History', version: '1.0', startTime: 'invalid' })).toBe(
+            false
+        );
     });
 
     test('validateHistorySchema type=task', () => {
@@ -304,9 +319,15 @@ describe('validateCategorySchema and validateHistorySchema', () => {
             category: 'Work',
             color: 'teal',
             tags: ['tag1'],
-            memo: 'some memo'
+            memo: 'some memo',
         };
         expect(validateHistorySchema(task)).toBe(true);
+
+        const retroColors = ['retro-lcd', 'retro-crt', 'retro-nixie'];
+        retroColors.forEach((color) => {
+            const retroTask = { ...task, color };
+            expect(validateHistorySchema(retroTask)).toBe(true);
+        });
 
         const invalidTask = { ...task, category: '' };
         expect(validateHistorySchema(invalidTask)).toBe(false);
@@ -324,7 +345,7 @@ describe('validateCategorySchema and validateHistorySchema', () => {
             version: '1.0',
             type: 'idle',
             startTime: 1000,
-            resumableCategory: 'Work'
+            resumableCategory: 'Work',
         };
         expect(validateHistorySchema(idle)).toBe(true);
 
@@ -342,7 +363,7 @@ describe('validateCategorySchema and validateHistorySchema', () => {
             type: 'stop',
             startTime: 1000,
             endTime: 2000,
-            isManualStop: true
+            isManualStop: true,
         };
         expect(validateHistorySchema(stop)).toBe(true);
 
@@ -559,7 +580,7 @@ describe('Property 4: アラーム・カスタムアニメーションスキー�
 
     test('validateAlarmSchema rejects invalid versions', () => {
         const invalidVersions = [null, undefined, '', '3.0', '1.0', 'invalid'];
-        invalidVersions.forEach(version => {
+        invalidVersions.forEach((version) => {
             const obj = { kind: 'QuickLogSolo/Alarm', version, entries: [validEntry] };
             expect(validateAlarmSchema(obj)).toBe(false);
         });
@@ -567,7 +588,7 @@ describe('Property 4: アラーム・カスタムアニメーションスキー�
 
     test('validateCustomAnimationSchema rejects invalid versions', () => {
         const invalidVersions = [null, undefined, '', '3.0', '1.0', 'invalid'];
-        invalidVersions.forEach(version => {
+        invalidVersions.forEach((version) => {
             const obj = { kind: 'QuickLogSolo/CustomAnimation', version, entries: [validAnimationEntry] };
             expect(validateCustomAnimationSchema(obj)).toBe(false);
         });
@@ -580,7 +601,7 @@ describe('Property 4: アラーム・カスタムアニメーションスキー�
     describe('Property 12: スキーマバリデーションの null/非オブジェクト拒否 (Deterministic)', () => {
         test('all schema validations return false for non-object/null inputs', () => {
             const inputs = [null, undefined, 123, 4.56, true, false, 'string'];
-            inputs.forEach(val => {
+            inputs.forEach((val) => {
                 expect(validateCategorySchema(val)).toBe(false);
                 expect(validateHistorySchema(val)).toBe(false);
                 expect(validateSettingsSchema(val)).toBe(false);
