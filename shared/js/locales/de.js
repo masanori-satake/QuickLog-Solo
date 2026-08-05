@@ -197,7 +197,7 @@ export default {
     'backup-file-count': 'ファイル数: {count}日分',
     'backup-file-count-unit': 'Tage',
     'backup-last-time-label': '最終バックアップ時刻',
-    'backup-file-count-label': 'ファイル数',
+    'backup-file-count-label': '履歴日数',
     'backup-description-new':
         'Regelmäßige Sicherungen werden empfohlen, um Datenverlust in IndexedDB durch das Löschen des Browser-Caches zu verhindern. Mit Sicherungsdaten können Sie auch problemlos auf andere Browser umsteigen.',
     'toast-backup-completed': 'Sicherung abgeschlossen',
