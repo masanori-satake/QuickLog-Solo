@@ -19,7 +19,7 @@ import {
     validateAlarmSchema,
     validateCustomAnimationSchema,
 } from '../shared/js/schema.js';
-import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE, generateUUID } from '../shared/js/utils.js';
 import { initAnimationDB, saveAnimationBlob } from '../shared/js/idb_storage.js';
 import { setCustomAnimationMetadataMap } from '../shared/js/utils/storage.js';
 
@@ -360,6 +360,8 @@ class RestoreManager {
         const base = {
             startTime: record.startTime,
             endTime: record.endTime || null,
+            syncId: record.syncId || generateUUID(),
+            updatedAt: record.updatedAt || record.endTime || record.startTime || Date.now(),
         };
 
         if (type === SCHEMA_TYPE_HISTORY_TASK) {

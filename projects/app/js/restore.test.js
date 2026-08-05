@@ -27,6 +27,7 @@ jest.unstable_mockModule('../shared/js/schema.js', () => ({
 jest.unstable_mockModule('../shared/js/utils.js', () => ({
     SYSTEM_CATEGORY_PAGE_BREAK: '__PAGE_BREAK__',
     SYSTEM_CATEGORY_IDLE: '__IDLE__',
+    generateUUID: () => 'mocked-uuid',
 }));
 
 jest.unstable_mockModule('../shared/js/idb_storage.js', () => ({
@@ -545,5 +546,46 @@ describe('RestoreManager - custom animations and configured directory handles', 
         // Check picker was NOT called
         expect(window.showDirectoryPicker).not.toHaveBeenCalled();
         expect(result).toBe(dirHandle);
+    });
+
+    it('generates missing syncId and updatedAt properties for restored logs', async () => {
+        const categoriesContent = buildCategoriesNdjson([]);
+        const settingsContent = buildSettingsJson([]);
+        // Ndjson with a history task log missing syncId and updatedAt
+        const logContent = JSON.stringify({
+            kind: 'QuickLogSolo/History',
+            version: '1.0',
+            type: 'task',
+            startTime: 1700000000000,
+            endTime: 1700000060000,
+            category: 'Dev',
+            color: 'primary',
+            tags: ['tag1'],
+            memo: 'some memo'
+        });
+
+        const dirHandle = createAsyncIterableDirHandle({
+            'ql_categories.ndjson': categoriesContent,
+            'ql_settings.json': settingsContent,
+            '2023-11-14.ndjson': logContent
+        });
+
+        const showConfirm = jest.fn().mockResolvedValue(true);
+        const showToast = jest.fn();
+        const t = jest.fn((key) => key);
+
+        const result = await restoreManager.restoreFromDirectory(showConfirm, showToast, t, dirHandle);
+
+        expect(result).toBe(dirHandle);
+
+        const logCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'logs');
+        expect(logCalls.length).toBeGreaterThan(0);
+        const restoredLogs = logCalls[0][1];
+        expect(restoredLogs).toHaveLength(1);
+        expect(restoredLogs[0].syncId).toBeDefined();
+        expect(typeof restoredLogs[0].syncId).toBe('string');
+        expect(restoredLogs[0].updatedAt).toBeDefined();
+        expect(typeof restoredLogs[0].updatedAt).toBe('number');
+        expect(restoredLogs[0].category).toBe('Dev');
     });
 });
