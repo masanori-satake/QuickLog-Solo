@@ -3,6 +3,40 @@
 このドキュメントでは、QuickLog-Solo の内部構造、開発ワークフロー、および技術的な実装詳細について説明します。
 設計思想や判断の背景については [spec.md](spec.md) および [AGENTS.md](../AGENTS.md) を参照してください。
 
+## 開発環境セットアップ
+
+### 前提ソフトウェア
+- Node.js 24 (LTS)
+- Python 3.x
+- pre-commit
+
+### サポート環境
+- Windows (PowerShell)
+- Linux / Ubuntu (CI)
+
+### 初回セットアップ手順
+
+```bash
+npm ci
+npx playwright install --with-deps chromium
+pip install pre-commit
+pre-commit install
+```
+
+(Optional) PNG アイコン生成用:
+```bash
+pip install -r requirements.txt
+```
+
+### 環境確認
+
+```bash
+python scripts/verify_dev_env.py
+```
+
+### 補足
+- `generate_png_icons.py` は Node.js 版 Playwright とは別に、Python 版 Playwright (`requirements.txt` で定義) を使用します。
+
 ## 0. 技術スタック
 - **言語:** Vanilla JS (ES Modules)
 - **スタイル:** CSS3 (Material 3 Design Tokens)
