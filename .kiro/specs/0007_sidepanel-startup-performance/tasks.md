@@ -8,32 +8,32 @@
 
 - [x] 1. app.html の CSS 非同期読み込みと FOUC 防止
   - [x] 1.1 ローカル CSS を preload パターンに変更し FOUC 防止用インライン style/script を追加する
-    - `shared/css/m3-theme.css` と `css/style.css` の `<link rel="stylesheet">` を `<link rel="preload" href="..." as="style" onload="this.onload=null;this.rel='stylesheet'" />` に置き換える
+    - `shared/css/m3-theme.css` と `css/style.css` の `<link rel="stylesheet">` を `<link rel="preload" href="..." as="style" data-preload-style />` に置き換える
     - Material Symbols Outlined の `<link rel="stylesheet">` は変更しない（同期読み込み維持）
     - `<head>` 内に FOUC 防止用インライン style を追加: `<style>body{opacity:0;transition:opacity 0.15s}</style>`
-    - preload リンクの直後に CSS 読み込み完了検知スクリプトを追加（loaded カウンタ方式で total=2 を検知し `document.body.style.opacity='1'` を設定）
-    - タイムアウト（3秒）による安全フォールバック: `setTimeout(function(){ document.body.style.opacity='1'; }, 3000);`
-    - `<noscript>` 内に従来の同期 `<link rel="stylesheet">` を 2 つ配置（JavaScript 無効時のフォールバック）
-    - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3_
+    - app.js 内の IIFE で `data-preload-style` リンクを `rel="stylesheet"` に切り替え、全読み込み完了で `document.body.style.opacity='1'` を設定（CSP 準拠のためインラインスクリプトは使用しない）
+    - タイムアウト（3秒）による安全フォールバック: `setTimeout(revealBody, 3000);`
+    - `<noscript>` 内に `<style>body{opacity:1}</style>` と従来の同期 `<link rel="stylesheet">` を 2 つ配置（JavaScript 無効時のフォールバック）
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4_
 
 - [x] 2. app.js の DocumentFragment バッチレンダリング化
   - [x] 2.1 renderCategories() を DocumentFragment によるバッチ処理に変更する
-    - `list.replaceChildren()` 後に `const fragment = document.createDocumentFragment()` を作成
+    - `const fragment = document.createDocumentFragment()` を作成
     - ループ内の `list.appendChild(btn)` を `fragment.appendChild(btn)` に変更
-    - ループ後に `list.replaceChildren(fragment)` で一括挿入
+    - ループ完了後に `list.replaceChildren(fragment)` で一括挿入（replaceChildren を一度だけ呼ぶ）
     - 既存の変更検出ロジック（`lastCategoryRenderData` による JSON.stringify 比較）はそのまま維持
     - _Requirements: 3.1, 3.2, 3.3, 7.3_
 
   - [x] 2.2 renderPaginationDots() を DocumentFragment によるバッチ処理に変更する
-    - `container.replaceChildren()` 後に `const fragment = document.createDocumentFragment()` を作成
+    - `const fragment = document.createDocumentFragment()` を作成
     - ループ内の `container.appendChild(dot)` を `fragment.appendChild(dot)` に変更
-    - ループ後に `container.replaceChildren(fragment)` で一括挿入
+    - ループ完了後に `container.replaceChildren(fragment)` で一括挿入（replaceChildren を一度だけ呼ぶ）
     - _Requirements: 5.1, 5.2, 7.5_
 
   - [x] 2.3 renderLogs() を DocumentFragment によるバッチ処理に変更する
-    - `logList.replaceChildren()` 後に `const fragment = document.createDocumentFragment()` を作成
+    - `const fragment = document.createDocumentFragment()` を作成
     - ループ内の `logList.appendChild(header)` と `logList.appendChild(li)` を `fragment.appendChild(header)` と `fragment.appendChild(li)` に変更
-    - ループ後に `logList.replaceChildren(fragment)` で一括挿入
+    - ループ完了後に `logList.replaceChildren(fragment)` で一括挿入（replaceChildren を一度だけ呼ぶ）
     - 既存の変更検出ロジック（`lastLogsRenderData` による JSON.stringify 比較）はそのまま維持
     - _Requirements: 4.1, 4.2, 4.3, 7.4_
 

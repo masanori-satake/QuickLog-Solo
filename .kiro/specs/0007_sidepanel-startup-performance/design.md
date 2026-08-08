@@ -20,7 +20,7 @@
 
 ### 変更の影響範囲
 
-```
+```text
 app.html (CSS loading)
 ├── <style> inline: FOUC防止 (body{opacity:0})
 ├── <link rel="preload"> × 2: m3-theme.css, style.css
@@ -42,13 +42,11 @@ app.js (DOM rendering)
 従来の同期 `<link rel="stylesheet">` を以下のパターンに置き換える:
 
 ```html
-<link rel="preload" href="shared/css/m3-theme.css" as="style"
-      onload="this.onload=null;this.rel='stylesheet'" />
-<link rel="preload" href="css/style.css" as="style"
-      onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" href="shared/css/m3-theme.css" as="style" data-preload-style />
+<link rel="preload" href="css/style.css" as="style" data-preload-style />
 ```
 
-`onload` ハンドラ内で `this.rel='stylesheet'` に切り替えることで、プリロード完了後にスタイルが適用される。`this.onload=null` は無限ループ防止。
+`data-preload-style` 属性はマーカーとして機能し、外部モジュール（app.js）から選択される。app.js 内の IIFE で `rel='stylesheet'` に切り替えることで、プリロード完了後にスタイルが適用される。
 
 #### FOUC 防止メカニズム
 
@@ -56,22 +54,40 @@ app.js (DOM rendering)
 <style>body{opacity:0;transition:opacity 0.15s}</style>
 ```
 
-インライン style で body を初期非表示にし、CSS 読み込み完了後に JavaScript で `opacity:1` に切り替える:
+インライン style で body を初期非表示にし、CSS 読み込み完了後に外部モジュール（app.js）内の IIFE で `data-preload-style` リンクを `rel="stylesheet"` に切り替え、全スタイルシートの読み込み完了時に `opacity:1` にする:
 
-```html
-<script>
-(function(){
-  var loaded = 0;
-  var total = 2;
-  function check() {
-    if (++loaded >= total) document.body.style.opacity = '1';
-  }
-  document.querySelectorAll('link[rel="preload"][as="style"]').forEach(function(link) {
-    if (link.sheet) { check(); }
-    else { link.addEventListener('load', check); }
-  });
+```javascript
+// app.js 内 IIFE（CSP 準拠のためインラインスクリプトは使用しない）
+(function initCssPreload() {
+    const preloadLinks = document.querySelectorAll('link[data-preload-style]');
+    let loaded = 0;
+    const total = preloadLinks.length;
+
+    function revealBody() {
+        if (document.body) document.body.style.opacity = '1';
+    }
+
+    function onStyleLoaded() {
+        if (++loaded >= total) revealBody();
+    }
+
+    preloadLinks.forEach(function (link) {
+        link.onload = null;
+        link.rel = 'stylesheet';
+        if (link.sheet) {
+            onStyleLoaded();
+        } else {
+            link.addEventListener('load', onStyleLoaded);
+            link.addEventListener('error', onStyleLoaded);
+        }
+    });
+
+    if (total === 0) {
+        revealBody();
+    } else {
+        setTimeout(revealBody, 3000);
+    }
 })();
-</script>
 ```
 
 #### noscript フォールバック
@@ -80,6 +96,7 @@ JavaScript が無効な環境でも CSS が読み込まれるよう、`<noscript
 
 ```html
 <noscript>
+  <style>body{opacity:1}</style>
   <link rel="stylesheet" href="shared/css/m3-theme.css" />
   <link rel="stylesheet" href="css/style.css" />
 </noscript>

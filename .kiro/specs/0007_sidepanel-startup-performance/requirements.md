@@ -35,6 +35,7 @@
 1. WHILE ローカル CSS の読み込みが完了していない状態, THE App SHALL body 要素に `opacity: 0` を適用してコンテンツを非表示にする
 2. WHEN すべてのローカル CSS の読み込みが完了した, THE App SHALL body 要素の opacity を 1 に変更してコンテンツをフェードイン表示する
 3. THE App SHALL FOUC 防止用のスタイルをインライン `<style>` 要素で定義する
+4. WHEN JavaScript が無効化されている, THE App SHALL `<noscript>` 内のインラインスタイルにより body 要素の opacity を 1 に設定してコンテンツを表示する
 
 ### Requirement 3: DocumentFragment によるカテゴリレンダリングの最適化
 

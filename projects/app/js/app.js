@@ -60,6 +60,38 @@ import { getCustomAnimationMetadataMap, setCustomAnimationMetadataMap } from '..
 
 // QuickLog-Solo: Main Application Entry
 
+// CSS preload activation and FOUC prevention
+(function initCssPreload() {
+    const preloadLinks = document.querySelectorAll('link[data-preload-style]');
+    let loaded = 0;
+    const total = preloadLinks.length;
+
+    function revealBody() {
+        if (document.body) document.body.style.opacity = '1';
+    }
+
+    function onStyleLoaded() {
+        if (++loaded >= total) revealBody();
+    }
+
+    preloadLinks.forEach(function (link) {
+        link.onload = null;
+        link.rel = 'stylesheet';
+        if (link.sheet) {
+            onStyleLoaded();
+        } else {
+            link.addEventListener('load', onStyleLoaded);
+            link.addEventListener('error', onStyleLoaded);
+        }
+    });
+
+    if (total === 0) {
+        revealBody();
+    } else {
+        setTimeout(revealBody, 3000);
+    }
+})();
+
 // Constants
 const THEME_SYSTEM = 'system';
 
