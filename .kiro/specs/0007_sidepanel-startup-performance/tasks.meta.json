@@ -1,0 +1,155 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 ローカル CSS を preload パターンに変更し FOUC 防止用インライン style/script を追加する": [
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146505199
+      },
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146520330
+      },
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146689781
+      }
+    ],
+    "2.1 renderCategories() を DocumentFragment によるバッチ処理に変更する": [
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146506128
+      },
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146521214
+      },
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146695094
+      }
+    ],
+    "2.2 renderPaginationDots() を DocumentFragment によるバッチ処理に変更する": [
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146507497
+      },
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146701514
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149220682
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149226849
+      }
+    ],
+    "2.3 renderLogs() を DocumentFragment によるバッチ処理に変更する": [
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146508736
+      },
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146703460
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149221798
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149227661
+      }
+    ],
+    "3. Checkpoint - 既存テストの動作確認": [
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146509393
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149244876
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149415813
+      }
+    ],
+    "4.1 パッチバージョンをインクリメントする": [
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146510073
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149421439
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149432577
+      }
+    ],
+    "5. Final Checkpoint - 全テストパス確認": [
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146510431
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149439316
+      },
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149771286
+      }
+    ],
+    "1. app.html の CSS 非同期読み込みと FOUC 防止": [
+      {
+        "executionId": "8d3018c6-11df-4259-b2fc-adb98afa2c83",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786146692341
+      }
+    ],
+    "2. app.js の DocumentFragment バッチレンダリング化": [
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149228213
+      }
+    ],
+    "4. バージョンバンプ": [
+      {
+        "executionId": "59a7119b-e0de-4a5e-b404-9a274228627c",
+        "chatSessionId": "sess_d4d1209e-5ba5-4339-a7c1-e87738cd69b5",
+        "timestamp": 1786149433378
+      }
+    ]
+  }
+}

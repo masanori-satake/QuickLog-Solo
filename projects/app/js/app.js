@@ -60,6 +60,38 @@ import { getCustomAnimationMetadataMap, setCustomAnimationMetadataMap } from '..
 
 // QuickLog-Solo: Main Application Entry
 
+// CSS preload activation and FOUC prevention
+(function initCssPreload() {
+    const preloadLinks = document.querySelectorAll('link[data-preload-style]');
+    let loaded = 0;
+    const total = preloadLinks.length;
+
+    function revealBody() {
+        if (document.body) document.body.style.opacity = '1';
+    }
+
+    function onStyleLoaded() {
+        if (++loaded >= total) revealBody();
+    }
+
+    preloadLinks.forEach(function (link) {
+        link.onload = null;
+        link.rel = 'stylesheet';
+        if (link.sheet) {
+            onStyleLoaded();
+        } else {
+            link.addEventListener('load', onStyleLoaded);
+            link.addEventListener('error', onStyleLoaded);
+        }
+    });
+
+    if (total === 0) {
+        revealBody();
+    } else {
+        setTimeout(revealBody, 3000);
+    }
+})();
+
 // Constants
 const THEME_SYSTEM = 'system';
 
@@ -715,8 +747,8 @@ async function renderCategories() {
 
     const list = getEl(ID_CATEGORY_LIST);
     if (!list) return;
-    list.replaceChildren();
 
+    const fragment = document.createDocumentFragment();
     pageCategories.forEach((cat) => {
         const btn = createEl('button');
         btn.className = `category-btn cat-${cat.color || 'primary'}`;
@@ -728,8 +760,9 @@ async function renderCategories() {
         btn.textContent = cat.name;
         btn.title = cat.name;
         btn.onclick = () => startTask(cat.name);
-        list.appendChild(btn);
+        fragment.appendChild(btn);
     });
+    list.replaceChildren(fragment);
 
     renderPaginationDots(totalPages);
 }
@@ -737,8 +770,8 @@ async function renderCategories() {
 function renderPaginationDots(totalPages) {
     const container = getEl(ID_CATEGORY_PAGINATION);
     if (!container) return;
-    container.replaceChildren();
 
+    const fragment = document.createDocumentFragment();
     for (let i = 0; i < totalPages; i++) {
         const dot = createEl('div');
         dot.className = 'pagination-dot' + (i === currentCategoryPage ? ' active' : '');
@@ -748,8 +781,9 @@ function renderPaginationDots(totalPages) {
                 renderCategories();
             }
         };
-        container.appendChild(dot);
+        fragment.appendChild(dot);
     }
+    container.replaceChildren(fragment);
 }
 
 async function renderLogs() {
@@ -789,8 +823,8 @@ async function renderLogs() {
 
     const logList = getEl(ID_LOG_LIST);
     if (!logList) return;
-    logList.replaceChildren();
 
+    const fragment = document.createDocumentFragment();
     let lastDate = '';
     const days = t('day-names');
 
@@ -802,15 +836,16 @@ async function renderLogs() {
             const header = createEl('li');
             header.className = 'log-date-header';
             header.textContent = dateStr;
-            logList.appendChild(header);
+            fragment.appendChild(header);
             lastDate = dateStr;
         }
 
         const li = createLogElement(log, categoryMap);
         li.style.cursor = 'pointer';
         li.onclick = () => openHistoryActionModal(log);
-        logList.appendChild(li);
+        fragment.appendChild(li);
     });
+    logList.replaceChildren(fragment);
 }
 
 function createLogElement(log, categoryMap) {
