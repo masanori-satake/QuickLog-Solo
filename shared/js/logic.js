@@ -664,8 +664,10 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
         // Try next 400 days
         for (let i = 0; i < 400; i++) {
             let matchesType = false;
-            if (alarm.type === 'daily' || alarm.type === 'daily_business') {
+            if (alarm.type === 'daily') {
                 matchesType = true;
+            } else if (alarm.type === 'daily_business') {
+                matchesType = isWorkingDay(current);
             } else if (alarm.type === 'weekly') {
                 matchesType = alarm.daysOfWeek.includes(current.getDay());
             }

@@ -265,4 +265,48 @@ describe('Background Alarm Logic', () => {
         expect(chrome.sidePanel.open).toHaveBeenCalledWith({ windowId: 1 });
         expect(chrome.notifications.clear).toHaveBeenCalledWith(notificationId);
     });
+
+    test('skips alarm execution if alarm is stale (scheduledTime > 15 mins ago)', async () => {
+        const alarm = {
+            name: 'ql_alarm_1',
+            scheduledTime: Date.now() - 30 * 60 * 1000 // 30 minutes ago
+        };
+        const activeTask = { category: 'Work' };
+        getCurrentAppState.mockResolvedValue({
+            alarms: [{ id: 1, enabled: true, action: 'stop', message: 'Stop it' }],
+            activeTask: activeTask,
+            businessDays: [1, 2, 3, 4, 5]
+        });
+
+        await onAlarmListener(alarm);
+
+        expect(chrome.notifications.create).not.toHaveBeenCalled();
+        expect(stopTaskLogic).not.toHaveBeenCalled();
+    });
+
+    test('skips daily_business alarm execution if triggered on a non-business day', async () => {
+        const fixedNow = new Date(2026, 5, 7, 10, 0, 0).getTime(); // Sunday (day 0) in local time
+        const dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(fixedNow);
+
+        const alarm = {
+            name: 'ql_alarm_1',
+            scheduledTime: fixedNow
+        };
+        const activeTask = { category: 'Work' };
+        // Mon-Fri business days, Sunday is non-business day
+        const businessDays = [1, 2, 3, 4, 5];
+
+        getCurrentAppState.mockResolvedValue({
+            alarms: [{ id: 1, enabled: true, type: 'daily_business', action: 'stop', message: 'Stop it' }],
+            activeTask: activeTask,
+            businessDays: businessDays
+        });
+
+        await onAlarmListener(alarm);
+
+        expect(chrome.notifications.create).not.toHaveBeenCalled();
+        expect(stopTaskLogic).not.toHaveBeenCalled();
+
+        dateNowSpy.mockRestore();
+    });
 });
