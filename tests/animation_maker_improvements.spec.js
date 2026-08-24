@@ -181,12 +181,6 @@ test.describe('QL-Animation Maker Improvements', () => {
       localStorage.setItem('custom_animation_metadata_map', JSON.stringify(map));
     });
 
-    // Handle persistence modal if visible
-    const okBtn = page.locator('#confirm-ok-btn');
-    if (await okBtn.isVisible()) {
-      await okBtn.click();
-    }
-
     // Open Settings to trigger rendering of dropdowns
     await page.click('#settings-toggle');
     await expect(page.locator('#settings-popup')).not.toHaveClass(/hidden/);
