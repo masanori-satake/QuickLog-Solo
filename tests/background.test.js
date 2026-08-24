@@ -285,7 +285,7 @@ describe('Background Alarm Logic', () => {
     });
 
     test('skips daily_business alarm execution if triggered on a non-business day', async () => {
-        const fixedNow = new Date('2026-06-07T10:00:00Z').getTime(); // Sunday (day 0)
+        const fixedNow = new Date(2026, 5, 7, 10, 0, 0).getTime(); // Sunday (day 0) in local time
         const dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(fixedNow);
 
         const alarm = {
