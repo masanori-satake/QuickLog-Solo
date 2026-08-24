@@ -281,9 +281,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
                     return;
                 }
             }
-            if (alarmData.type === 'daily_business' && Array.isArray(state.businessDays)) {
+            const businessDays = Array.isArray(state?.businessDays) ? state.businessDays : [1, 2, 3, 4, 5];
+            if (alarmData.type === 'daily_business') {
                 const currentDay = new Date(now).getDay();
-                if (!state.businessDays.includes(currentDay)) {
+                if (!businessDays.includes(currentDay)) {
                     console.log(`QuickLog-Solo: Skipping daily_business alarm trigger on non-business day for ${alarm.name}.`);
                     return;
                 }

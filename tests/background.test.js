@@ -285,14 +285,16 @@ describe('Background Alarm Logic', () => {
     });
 
     test('skips daily_business alarm execution if triggered on a non-business day', async () => {
+        const fixedNow = new Date('2026-06-07T10:00:00Z').getTime(); // Sunday (day 0)
+        const dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(fixedNow);
+
         const alarm = {
             name: 'ql_alarm_1',
-            scheduledTime: Date.now()
+            scheduledTime: fixedNow
         };
         const activeTask = { category: 'Work' };
-        const currentDay = new Date().getDay();
-        // Set businessDays excluding today's day
-        const businessDays = [0, 1, 2, 3, 4, 5, 6].filter(d => d !== currentDay);
+        // Mon-Fri business days, Sunday is non-business day
+        const businessDays = [1, 2, 3, 4, 5];
 
         getCurrentAppState.mockResolvedValue({
             alarms: [{ id: 1, enabled: true, type: 'daily_business', action: 'stop', message: 'Stop it' }],
@@ -304,5 +306,7 @@ describe('Background Alarm Logic', () => {
 
         expect(chrome.notifications.create).not.toHaveBeenCalled();
         expect(stopTaskLogic).not.toHaveBeenCalled();
+
+        dateNowSpy.mockRestore();
     });
 });
