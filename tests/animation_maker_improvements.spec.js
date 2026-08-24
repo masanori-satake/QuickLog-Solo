@@ -183,6 +183,7 @@ test.describe('QL-Animation Maker Improvements', () => {
 
     // Open Settings to trigger rendering of dropdowns
     await page.click('#settings-toggle');
+    await expect(page.locator('#settings-popup')).not.toHaveClass(/hidden/);
 
     // Find the animation select element on the general tab
     const animSelect = page.locator('#animation-select');
