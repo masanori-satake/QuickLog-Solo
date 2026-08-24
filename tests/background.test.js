@@ -265,4 +265,44 @@ describe('Background Alarm Logic', () => {
         expect(chrome.sidePanel.open).toHaveBeenCalledWith({ windowId: 1 });
         expect(chrome.notifications.clear).toHaveBeenCalledWith(notificationId);
     });
+
+    test('skips alarm execution if alarm is stale (scheduledTime > 15 mins ago)', async () => {
+        const alarm = {
+            name: 'ql_alarm_1',
+            scheduledTime: Date.now() - 30 * 60 * 1000 // 30 minutes ago
+        };
+        const activeTask = { category: 'Work' };
+        getCurrentAppState.mockResolvedValue({
+            alarms: [{ id: 1, enabled: true, action: 'stop', message: 'Stop it' }],
+            activeTask: activeTask,
+            businessDays: [1, 2, 3, 4, 5]
+        });
+
+        await onAlarmListener(alarm);
+
+        expect(chrome.notifications.create).not.toHaveBeenCalled();
+        expect(stopTaskLogic).not.toHaveBeenCalled();
+    });
+
+    test('skips daily_business alarm execution if triggered on a non-business day', async () => {
+        const alarm = {
+            name: 'ql_alarm_1',
+            scheduledTime: Date.now()
+        };
+        const activeTask = { category: 'Work' };
+        const currentDay = new Date().getDay();
+        // Set businessDays excluding today's day
+        const businessDays = [0, 1, 2, 3, 4, 5, 6].filter(d => d !== currentDay);
+
+        getCurrentAppState.mockResolvedValue({
+            alarms: [{ id: 1, enabled: true, type: 'daily_business', action: 'stop', message: 'Stop it' }],
+            activeTask: activeTask,
+            businessDays: businessDays
+        });
+
+        await onAlarmListener(alarm);
+
+        expect(chrome.notifications.create).not.toHaveBeenCalled();
+        expect(stopTaskLogic).not.toHaveBeenCalled();
+    });
 });

@@ -26,6 +26,20 @@ describe('Alarm Calculation Logic', () => {
         expect(new Date(next).toLocaleDateString()).toBe(new Date(2024, 4, 16).toLocaleDateString());
     });
 
+    test('daily_business - friday evening skips weekend to monday', () => {
+        const alarm = {
+            enabled: true,
+            time: "18:00",
+            type: 'daily_business',
+            holidayAdjustment: 'none'
+        };
+        // 2026-06-05 is Friday. 19:00 is after 18:00 alarm.
+        const friEvening = new Date(2026, 5, 5, 19, 0, 0).getTime();
+        const next = calculateNextAlarmTime(alarm, businessDays, friEvening);
+        // Should calculate to Monday 2026-06-08 18:00
+        expect(new Date(next).toLocaleDateString()).toBe(new Date(2026, 5, 8).toLocaleDateString());
+    });
+
     test('daily_business - holiday adjustment (prev_business_day)', () => {
         // May 18 (Sat) -> should move to May 17 (Fri)
         const satNow = new Date(2024, 4, 18, 8, 0, 0).getTime();

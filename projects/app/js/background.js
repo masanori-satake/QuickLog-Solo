@@ -271,6 +271,24 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
         if (alarmData && alarmData.enabled) {
             if (!state) state = await getCurrentAppState();
+
+            // Check if alarm is stale or triggered on non-business day for daily_business
+            const now = Date.now();
+            if (alarm.scheduledTime) {
+                const STALE_THRESHOLD_MS = 15 * 60 * 1000; // 15 minutes
+                if (now - alarm.scheduledTime > STALE_THRESHOLD_MS) {
+                    console.log(`QuickLog-Solo: Skipping stale alarm trigger for ${alarm.name}. Scheduled: ${new Date(alarm.scheduledTime).toISOString()}, Current: ${new Date(now).toISOString()}`);
+                    return;
+                }
+            }
+            if (alarmData.type === 'daily_business' && Array.isArray(state.businessDays)) {
+                const currentDay = new Date(now).getDay();
+                if (!state.businessDays.includes(currentDay)) {
+                    console.log(`QuickLog-Solo: Skipping daily_business alarm trigger on non-business day for ${alarm.name}.`);
+                    return;
+                }
+            }
+
             const activeTask = state.activeTask;
 
             // Check if action will change the state
