@@ -639,7 +639,9 @@ body.timer-mini #elapsed-time {
 
 .settings-close-btn,
 .report-close-btn,
-.tag-aggregation-close-btn {
+.tag-aggregation-close-btn,
+.history-action-close-btn,
+.history-edit-close-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.75rem;
@@ -647,6 +649,11 @@ body.timer-mini #elapsed-time {
     cursor: pointer;
     font-weight: bold;
     z-index: 5;
+    background: transparent;
+    border: none;
+    padding: 0 4px;
+    color: inherit;
+    line-height: 1;
 }
 
 #history-action-modal .modal-content,
@@ -2037,6 +2044,8 @@ body.theme-dark button:active {
 .settings-close-btn:focus-visible,
 .report-close-btn:focus-visible,
 .tag-aggregation-close-btn:focus-visible,
+.modal-header-btns .history-action-close-btn:focus-visible,
+.modal-header-btns .history-edit-close-btn:focus-visible,
 .preview-close-btn:focus-visible {
     outline: 2px solid var(--md-sys-color-primary) !important;
     outline-offset: 2px !important;
