@@ -1,3 +1,5 @@
+@import url('./fonts.css');
+
 :root {
   /* --- Material 3 Color System (Baseline Light) --- */
   --md-sys-color-primary: #0056d2;
@@ -486,7 +488,12 @@ body.theme-dark {
 
 .switch input,
 .theme-switch input {
-    display: none !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    pointer-events: none !important;
 }
 
 .switch .slider,
@@ -497,6 +504,12 @@ body.theme-dark {
     position: absolute;
     transition: 0.4s;
     border-radius: 34px;
+}
+
+.switch:focus-within .slider,
+.theme-switch:focus-within .slider {
+    outline: 2px solid var(--md-sys-color-primary) !important;
+    outline-offset: 2px !important;
 }
 
 .switch .slider::before,
@@ -624,4 +637,29 @@ body.theme-dark {
 #reset-btn,
 #alarm-reset-btn {
   color: var(--md-sys-color-error) !important;
+}
+
+/* --- Shared Accessibility & Keyboard Focus Styles --- */
+:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary) !important;
+  outline-offset: 2px !important;
+}
+
+.switch input:focus-visible + .slider,
+.theme-switch input:focus-visible + .slider {
+  outline: 2px solid var(--md-sys-color-primary) !important;
+  outline-offset: 2px !important;
+}
+
+.filter-chip:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary) !important;
+  outline-offset: 2px !important;
+}
+
+.privacy-badge:focus-visible,
+.preset-circle:focus-visible,
+.color-picker-item:focus-visible,
+.swatch:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary) !important;
+  outline-offset: 2px !important;
 }

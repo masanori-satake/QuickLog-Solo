@@ -16,7 +16,6 @@ describe('Manifest Permissions Compliance (Permissions Delta Verification)', () 
             "sidePanel",
             "alarms",
             "notifications",
-            "clipboardRead",
             "storage",
             "unlimitedStorage"
         ];
