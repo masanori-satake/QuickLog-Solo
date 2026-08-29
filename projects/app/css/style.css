@@ -2029,6 +2029,20 @@ body.theme-dark button:active {
     filter: brightness(0.9);
 }
 
+.filter-chip:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary) !important;
+    outline-offset: 2px !important;
+}
+
+.settings-close-btn:focus-visible,
+.report-close-btn:focus-visible,
+.tag-aggregation-close-btn:focus-visible,
+.preview-close-btn:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary) !important;
+    outline-offset: 2px !important;
+    border-radius: 4px;
+}
+
 #alarms-tab #business-days-container .filter-chip:disabled,
 #alarms-tab #business-days-container .filter-chip[disabled] {
     opacity: 1 !important;

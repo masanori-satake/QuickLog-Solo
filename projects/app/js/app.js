@@ -8,6 +8,8 @@ import {
     dbAdd,
     dbDelete,
     dbClear,
+    dbGetLogsByTimeRange,
+    LOG_CLEANUP_THRESHOLD_MS,
     setDatabaseName,
     SETTING_KEY_SESSION_SYNC,
     STORE_LOGS,
@@ -790,7 +792,7 @@ async function renderLogs() {
     let allLogs;
     let categories;
     try {
-        allLogs = await dbGetAll(STORE_LOGS);
+        allLogs = await dbGetLogsByTimeRange(Date.now() - LOG_CLEANUP_THRESHOLD_MS);
         categories = await dbGetAll(STORE_CATEGORIES);
     } catch (e) {
         console.error('Failed to get data for logs:', e);
@@ -1382,8 +1384,8 @@ async function openReportModal() {
     reportSelectedDate = new Date();
     reportSelectedDate.setHours(0, 0, 0, 0);
 
-    const allLogs = await dbGetAll(STORE_LOGS);
-    reportLogDates = new Set(allLogs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
+    const logs = await dbGetLogsByTimeRange(Date.now() - LOG_CLEANUP_THRESHOLD_MS);
+    reportLogDates = new Set(logs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
 
     const state = await getCurrentAppState();
     if (state.reportSettings) {
@@ -1406,8 +1408,8 @@ async function openTagAggregationModal() {
     tagAggregationSelectedDate = new Date();
     tagAggregationSelectedDate.setHours(0, 0, 0, 0);
 
-    const allLogs = await dbGetAll(STORE_LOGS);
-    reportLogDates = new Set(allLogs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
+    const logs = await dbGetLogsByTimeRange(Date.now() - LOG_CLEANUP_THRESHOLD_MS);
+    reportLogDates = new Set(logs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
 
     await updateTagAggregationUI();
     getEl(ID_TAG_AGGREGATION_MODAL).classList.remove('hidden');
@@ -1451,11 +1453,10 @@ async function updateReportUI() {
     const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} (${days[d.getDay()]})`;
     getEl(ID_REPORT_DATE_TEXT).textContent = dateStr;
 
-    const allLogs = await dbGetAll(STORE_LOGS);
     const startOfDay = d.getTime();
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
-    const dayLogs = allLogs
-        .filter((l) => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime)
+    const dayLogs = (await dbGetLogsByTimeRange(startOfDay, endOfDay))
+        .filter((l) => l.endTime)
         .sort((a, b) => a.startTime - b.startTime);
 
     const reportText = generateReport(dayLogs, {
@@ -1587,10 +1588,9 @@ async function updateTagAggregationUI() {
     const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} (${days[d.getDay()]})`;
     getEl(ID_TAG_AGGREGATION_DATE_TEXT).textContent = dateStr;
 
-    const allLogs = await dbGetAll(STORE_LOGS);
     const startOfDay = d.getTime();
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
-    const dayLogs = allLogs.filter((l) => l.startTime >= startOfDay && l.startTime <= endOfDay && l.endTime);
+    const dayLogs = (await dbGetLogsByTimeRange(startOfDay, endOfDay)).filter((l) => l.endTime);
 
     const { tagAgg, noTagDuration, totalWorkDuration } = calculateTagAggregation(dayLogs);
 

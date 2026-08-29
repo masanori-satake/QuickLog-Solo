@@ -2,19 +2,18 @@
   "manifest_version": 3,
   "default_locale": "en",
   "name": "__MSG_extensionName__",
-  "version": "1.25.3",
+  "version": "1.25.4",
   "description": "__MSG_extensionDescription__",
   "permissions": [
     "tabs",
     "sidePanel",
     "alarms",
     "notifications",
-    "clipboardRead",
     "storage",
     "unlimitedStorage"
   ],
   "content_security_policy": {
-    "extension_pages": "default-src 'self'; connect-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://raw.githubusercontent.com;"
+    "extension_pages": "default-src 'self'; connect-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:;"
   },
   "action": {
     "default_title": "__MSG_actionTitle__",

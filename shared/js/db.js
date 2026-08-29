@@ -7,7 +7,7 @@ export let DB_NAME = 'QuickLogSoloDB';
  * Internal IndexedDB version.
  * This constant is for internal use only and must not be exported.
  */
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 /**
  * Sets the database name for testing or multi-tenant purposes.
@@ -66,9 +66,20 @@ export function openDatabase() {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
+            const transaction = event.target.transaction;
 
+            let logStore;
             if (!db.objectStoreNames.contains(STORE_LOGS)) {
-                db.createObjectStore(STORE_LOGS, { keyPath: 'id', autoIncrement: true });
+                logStore = db.createObjectStore(STORE_LOGS, { keyPath: 'id', autoIncrement: true });
+            } else {
+                logStore = transaction.objectStore(STORE_LOGS);
+            }
+
+            if (!logStore.indexNames.contains('startTime')) {
+                logStore.createIndex('startTime', 'startTime', { unique: false });
+            }
+            if (!logStore.indexNames.contains('category')) {
+                logStore.createIndex('category', 'category', { unique: false });
             }
 
             if (!db.objectStoreNames.contains(STORE_CATEGORIES)) {
@@ -270,33 +281,63 @@ export async function dbGetManualStopsAt(ts) {
     return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_LOGS, 'readonly');
         const store = tx.objectStore(STORE_LOGS);
-        const results = [];
-        // We iterate backwards from the end because manual stops at 'ts' are likely recent.
-        // Even better, we could use an index if we had one, but Cursor iteration with manual filter
-        // is still much better than dbGetAll() + .filter() if we stop early or if TS is recent.
-        // However, since we don't have a startTime index yet, we still have to scan or use a heuristic.
-        // Given LOG_CLEANUP_THRESHOLD_MS (40 days), scanning all logs might still happen with a raw cursor.
-        // But for "Equality at TS", we can't efficiently use a cursor without an index.
-
-        // As a low-risk improvement that avoids full memory loading of all properties:
-        const request = store.openCursor(null, 'prev');
-        request.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                const log = cursor.value;
-                // If we've gone too far back in time, we can stop (heuristically, logs are roughly ID-ordered by time)
-                if (log.startTime < ts - 3600000) { // 1 hour buffer
-                    resolve(results);
-                    return;
-                }
-                if (log.isManualStop && log.startTime === ts) {
-                    results.push(log);
-                }
-                cursor.continue();
-            } else {
-                resolve(results);
-            }
+        const index = store.index('startTime');
+        const request = index.getAll(IDBKeyRange.only(ts));
+        request.onsuccess = () => {
+            const logs = request.result || [];
+            resolve(logs.filter(log => log.isManualStop));
         };
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Retrieves logs within a specified startTime range using the IndexedDB index.
+ * @param {number} startMs - Lower bound timestamp (inclusive)
+ * @param {number} [endMs] - Upper bound timestamp (inclusive, optional)
+ * @returns {Promise<Object[]>}
+ */
+export async function dbGetLogsByTimeRange(startMs, endMs) {
+    await openDatabase();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_LOGS, 'readonly');
+        const store = tx.objectStore(STORE_LOGS);
+        const index = store.index('startTime');
+
+        let range;
+        const validStart = typeof startMs === 'number' && !Number.isNaN(startMs);
+        const validEnd = typeof endMs === 'number' && !Number.isNaN(endMs);
+
+        if (validStart && validEnd) {
+            range = IDBKeyRange.bound(startMs, endMs);
+        } else if (validStart) {
+            range = IDBKeyRange.lowerBound(startMs);
+        } else if (validEnd) {
+            range = IDBKeyRange.upperBound(endMs);
+        } else {
+            range = null;
+        }
+
+        const request = index.getAll(range);
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Retrieves logs belonging to a specific category using the IndexedDB index.
+ * @param {string} categoryName
+ * @returns {Promise<Object[]>}
+ */
+export async function dbGetLogsByCategory(categoryName) {
+    if (typeof categoryName !== 'string') return [];
+    await openDatabase();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_LOGS, 'readonly');
+        const store = tx.objectStore(STORE_LOGS);
+        const index = store.index('category');
+        const request = index.getAll(IDBKeyRange.only(categoryName));
+        request.onsuccess = () => resolve(request.result || []);
         request.onerror = () => reject(request.error);
     });
 }
