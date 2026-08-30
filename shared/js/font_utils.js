@@ -49,13 +49,17 @@ export function ensureGoogleFontLoaded(fontValue) {
                         : encodeURIComponent(f);
                     link.href = `https://fonts.googleapis.com/css2?family=${familyQuery}&display=swap`;
                     link.onload = () => {
+                        const isMulti = multiWeightFonts.includes(f);
                         if (
                             typeof document !== 'undefined' &&
                             document.fonts &&
                             typeof document.fonts.load === 'function'
                         ) {
-                            document.fonts
-                                .load(`1em "${f}"`)
+                            const weights = isMulti ? ['400', '500', '700'] : ['normal'];
+                            const loadPromises = weights.map((w) =>
+                                document.fonts.load(`${w === 'normal' ? '' : w + ' '}1em "${f}"`).catch(() => {})
+                            );
+                            Promise.all(loadPromises)
                                 .then(() => resolve())
                                 .catch(() => resolve());
                         } else {
@@ -71,7 +75,11 @@ export function ensureGoogleFontLoaded(fontValue) {
                 });
                 promises.push(linkPromise);
             } else if (typeof document !== 'undefined' && document.fonts && typeof document.fonts.load === 'function') {
-                promises.push(document.fonts.load(`1em "${f}"`).catch(() => {}));
+                const isMulti = multiWeightFonts.includes(f);
+                const weights = isMulti ? ['400', '500', '700'] : ['normal'];
+                weights.forEach((w) => {
+                    promises.push(document.fonts.load(`${w === 'normal' ? '' : w + ' '}1em "${f}"`).catch(() => {}));
+                });
             }
         }
     });
