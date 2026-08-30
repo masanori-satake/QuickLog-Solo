@@ -15,7 +15,7 @@
 }
 
 body {
-    font-family: Roboto, 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif;
+    font-family: Roboto, 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif;
     height: 100vh;
     overflow: hidden;
     transition: background-color 0.3s, color 0.3s;
