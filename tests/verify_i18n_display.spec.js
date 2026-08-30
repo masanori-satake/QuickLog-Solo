@@ -32,10 +32,15 @@ test.describe('I18n display verification', () => {
             };
             await expect(stopBtnText).toHaveText(expectedStopTexts[lang]);
 
-            // Open settings to see more labels
-            const settingsBtn = page.locator('#settings-toggle');
-            await settingsBtn.click();
+            // Open settings to see more labels if not already open
+            const settingsPopup = page.locator('#settings-popup');
+            if (!(await settingsPopup.isVisible())) {
+                const settingsBtn = page.locator('#settings-toggle');
+                await expect(settingsBtn).toBeVisible();
+                await settingsBtn.click();
+            }
 
+            await expect(settingsPopup).toBeVisible();
             const generalTab = page.locator('.tab-btn[data-tab="general"]');
             await expect(generalTab).toBeVisible();
 

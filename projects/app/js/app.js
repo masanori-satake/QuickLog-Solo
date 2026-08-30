@@ -220,52 +220,52 @@ const createEl = (tag) => document.createElement(tag);
 const FONTS = [
     {
         name: 'Roboto / Noto Sans JP',
-        value: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        value: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt'],
     },
     {
         name: 'Dela Gothic One',
-        value: "'Dela Gothic One', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        value: "'Dela Gothic One', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja'],
     },
     {
         name: 'Yusei Magic',
-        value: "'Yusei Magic', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        value: "'Yusei Magic', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja'],
     },
     {
         name: 'Roboto / Noto Sans KR',
-        value: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        value: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ko'],
     },
     {
         name: 'Roboto / Noto Sans SC',
-        value: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        value: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', sans-serif",
         lang: ['zh'],
     },
     {
         name: 'Inter',
-        value: "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        value: "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
     {
         name: 'Montserrat',
-        value: "'Montserrat', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        value: "'Montserrat', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
     {
         name: 'Open Sans',
-        value: "'Open Sans', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        value: "'Open Sans', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
     {
         name: 'Ubuntu',
-        value: "'Ubuntu', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', 'Noto Color Emoji', sans-serif",
+        value: "'Ubuntu', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
     {
         name: 'font-system',
-        value: 'system-ui, -apple-system, "Noto Sans Symbols", "Noto Color Emoji", sans-serif',
+        value: 'system-ui, -apple-system, "Noto Sans Symbols", sans-serif',
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
 ];
@@ -617,7 +617,42 @@ function applyTheme(theme) {
     if (select) select.value = theme;
 }
 
+function ensureGoogleFontLoaded(fontValue) {
+    if (!fontValue || typeof fontValue !== 'string') return;
+    const fontFamilies = [
+        'Dela Gothic One',
+        'Yusei Magic',
+        'Roboto',
+        'Inter',
+        'Montserrat',
+        'Open Sans',
+        'Ubuntu',
+        'Noto Sans JP',
+        'Noto Sans KR',
+        'Noto Sans SC',
+        'Noto Sans Symbols',
+    ];
+
+    fontFamilies.forEach((f) => {
+        if (fontValue.includes(f)) {
+            const linkId = `google-font-link-${f.replace(/\s+/g, '-').toLowerCase()}`;
+            if (!document.getElementById(linkId)) {
+                const link = document.createElement('link');
+                link.id = linkId;
+                link.rel = 'stylesheet';
+                link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(f)}:wght@400;500;700&display=swap`;
+                link.onerror = () => {
+                    // Silent fallback to local system font if offline or blocked
+                    link.remove();
+                };
+                document.head.appendChild(link);
+            }
+        }
+    });
+}
+
 function applyFont(fontValue) {
+    ensureGoogleFontLoaded(fontValue);
     getBody().style.setProperty('--font-family', fontValue);
     const select = getEl(ID_FONT_SELECT);
     if (select) select.value = fontValue;
@@ -1236,6 +1271,7 @@ function updateFontSelect() {
         const filteredFonts = FONTS.filter((f) => f.lang.includes(currentLang));
 
         filteredFonts.forEach((f) => {
+            ensureGoogleFontLoaded(f.value);
             const opt = createEl('option');
             opt.value = f.value;
             opt.textContent = f.name === 'font-system' ? t('font-system') : f.name;

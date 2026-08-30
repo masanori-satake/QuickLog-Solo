@@ -131,7 +131,7 @@ describe('i18n Module', () => {
 
             // Test fallback to _common
             // If there's a common key that is missing in specific lang, it falls back to _common
-            expect(t('lang-ja-native')).toBe('🇯🇵 日本語');
+            expect(t('lang-ja-native')).toBe('日本語');
 
             // Test fallback to en when key is absent in ja and _common but present in en
             messages.en['test-en-only-key'] = 'English Fallback Message';
