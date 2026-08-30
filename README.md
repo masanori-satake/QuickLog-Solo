@@ -1,4 +1,5 @@
 ![Version](https://img.shields.io/badge/version-1.26.1-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Privacy](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange) [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kllhfalcincleolgoepnailfjendigdh?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh) [![Crowdin](https://badges.crowdin.net/quicklog-solo/localized.svg)](https://crowdin.com/project/quicklog-solo) [![Tests & Lint](https://img.shields.io/github/actions/workflow/status/masanori-satake/QuickLog-Solo/tests-and-lint.yml?branch=main&label=Tests%20%26%20Lint)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/tests-and-lint.yml) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/masanori-satake/QuickLog-Solo/main.svg)](https://results.pre-commit.ci/latest/github/masanori-satake/QuickLog-Solo/main) [![Web Deploy](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml/badge.svg)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/release_web_deploy.yml)
+![Chromebook / ChromeOS Optimized](https://img.shields.io/badge/Chromebook%20%2F%20ChromeOS-Optimized-blue?logo=googlechrome&logoColor=white) ![100% Offline / Local-Only](https://img.shields.io/badge/100%25%20Offline-Local--Only-brightgreen) ![Responsive & Multi-Layout Ready](https://img.shields.io/badge/Responsive-Multi--Layout%20Ready-orange) ![Pure Vanilla JS (Zero Dependencies)](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-yellow?logo=javascript&logoColor=white)
 
 # <img src="shared/assets/icon.svg" width="32" style="vertical-align: middle; margin-right: 8px;"> QuickLog-Solo
 
@@ -21,6 +22,14 @@
     - **外部通信ゼロ:** CSP（Content Security Policy）により技術的に外部通信を遮断しています。
     - **ピュアで長寿命な設計:** 外部ライブラリを一切使用しない Vanilla JS 構成。OSS のライフサイクルやトレンドに左右されないため、10年後も変わらず使い続けられる長期的安心感を提供します。また、依存関係によるブラックボックスを排除し、技術者が安心して利用・検証できる透明性を確保しています。
     - **OSS脆弱性・依存関係監査:** OSSの依存関係および脆弱性を継続的に監視するため、Googleの提供する **OSV-Scanner** による厳格な監査を全開発フローで実施しています。さらに、AI エージェント等による一時的なスクリプトの混入を防ぐため、ルートディレクトリの厳格なクリーンネス・ポリシーを CI で強制しています。
+
+## Chromebook & Offline Environment Friendly
+ローカル完結・高速動作・安心のデータ保護を徹底追及した結果、Windows / macOS はもちろん、画面サイズの多様な Chromebook やネットワーク制限のある環境でも極めて快適に動作する高い親和性を備えています。
+
+- **オフライン完結設計:** Google Fonts 等の外部リソース依存を完全に排除。ネットワークが遮断されたオフライン環境や、帯域制限・セキュリティ制限のある学校・オフィスでも完璧に動作します。
+- **自由度の高いレイアウト選択:** ユーザーが表示要素の高さ（通常 / コンパクト / ミニ）やカテゴリ一覧のグリッド段数（2列×8段 / 2列×4段）を自由に調整可能。1366×768 のコンパクトな Chromebook 画面からマルチモニター環境まで、作業領域に合わせた最適な表示を選択できます。
+- **圧倒的な軽量性:** Vanilla JS と IndexedDB によるシンプルな構成で、エントリースペックの CPU やメモリ制限のある端末でもストレスなく高速・軽快に動作します。
+- **厳格なセキュリティ & 最小権限設計:** 業務記録に必要な最小限の権限のみで動作し、不要な追加権限を要求しないため、組織の管理ポリシー（Chrome Enterprise 等）にも安心して適合・運用できます。
 
 ## インストール方法
 
