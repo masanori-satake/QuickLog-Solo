@@ -10,6 +10,9 @@ export function ensureGoogleFontLoaded(fontValue) {
     const fontFamilies = [
         'Dela Gothic One',
         'Yusei Magic',
+        'M PLUS Rounded 1c',
+        'Zen Maru Gothic',
+        'Sawarabi Gothic',
         'Roboto',
         'Inter',
         'Montserrat',

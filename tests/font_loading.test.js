@@ -52,4 +52,27 @@ describe('ensureGoogleFontLoaded', () => {
             expect(links[0].href).toContain('fonts.googleapis.com');
         });
     });
+
+    test('creates link elements for Japanese web fonts in http context', () => {
+        if (impl && impl._url) {
+            impl._url.scheme = 'http';
+        }
+
+        const japaneseFonts = [
+            "'Dela Gothic One', sans-serif",
+            "'Yusei Magic', sans-serif",
+            "'M PLUS Rounded 1c', sans-serif",
+            "'Zen Maru Gothic', sans-serif",
+            "'Sawarabi Gothic', sans-serif",
+        ];
+
+        japaneseFonts.forEach((font) => {
+            document.head.replaceChildren();
+            ensureGoogleFontLoaded(font);
+
+            const links = document.querySelectorAll('link[id^="google-font-link-"]');
+            expect(links.length).toBeGreaterThan(0);
+            expect(links[0].href).toContain('fonts.googleapis.com');
+        });
+    });
 });
