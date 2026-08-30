@@ -1,38 +1,55 @@
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { ensureGoogleFontLoaded } from '../shared/js/font_utils.js';
 
-describe('ensureGoogleFontLoaded in app.js', () => {
-    const getFnInContext = (protocol) => {
-        const appJsPath = resolve(process.cwd(), 'projects/app/js/app.js');
-        const code = readFileSync(appJsPath, 'utf-8');
-        const fnMatch = code.match(/(function ensureGoogleFontLoaded[\s\S]*?\n\})/);
-        expect(fnMatch).not.toBeNull();
+describe('ensureGoogleFontLoaded', () => {
+    let impl;
+    let originalScheme;
 
-        const mockWindow = {
-            location: { protocol },
-        };
-        // eslint-disable-next-line no-eval
-        return eval(`(function(window, document) { return ${fnMatch[1]}; })(mockWindow, document)`);
-    };
+    beforeAll(() => {
+        const symbols = Object.getOwnPropertySymbols(window.location);
+        const implSymbol = symbols.find((s) => s.description === 'impl');
+        if (implSymbol) {
+            impl = window.location[implSymbol];
+            if (impl && impl._url) {
+                originalScheme = impl._url.scheme;
+            }
+        }
+    });
 
     beforeEach(() => {
         document.head.replaceChildren();
     });
 
-    test('skips creating link elements when protocol is chrome-extension:', () => {
-        const ensureGoogleFontLoaded = getFnInContext('chrome-extension:');
+    afterEach(() => {
+        if (impl && impl._url && originalScheme) {
+            impl._url.scheme = originalScheme;
+        }
+    });
+
+    test('skips creating link elements in chrome-extension: protocol context', () => {
+        if (impl && impl._url) {
+            impl._url.scheme = 'chrome-extension';
+        }
+
         ensureGoogleFontLoaded("'Roboto', sans-serif");
 
         const links = document.querySelectorAll('link[id^="google-font-link-"]');
         expect(links.length).toBe(0);
     });
 
-    test('creates link elements in http: or https: protocol context', () => {
-        const ensureGoogleFontLoaded = getFnInContext('https:');
-        ensureGoogleFontLoaded("'Roboto', sans-serif");
+    test('creates link elements in http: and https: protocol contexts', () => {
+        const protocols = ['http', 'https'];
 
-        const links = document.querySelectorAll('link[id^="google-font-link-"]');
-        expect(links.length).toBeGreaterThan(0);
-        expect(links[0].href).toContain('fonts.googleapis.com');
+        protocols.forEach((scheme) => {
+            document.head.replaceChildren();
+            if (impl && impl._url) {
+                impl._url.scheme = scheme;
+            }
+
+            ensureGoogleFontLoaded("'Roboto', sans-serif");
+
+            const links = document.querySelectorAll('link[id^="google-font-link-"]');
+            expect(links.length).toBeGreaterThan(0);
+            expect(links[0].href).toContain('fonts.googleapis.com');
+        });
     });
 });
