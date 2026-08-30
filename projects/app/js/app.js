@@ -619,24 +619,25 @@ function applyTheme(theme) {
 }
 
 function applyFont(fontValue) {
-    ensureGoogleFontLoaded(fontValue);
     getBody().style.setProperty('--font-family', fontValue);
     const select = getEl(ID_FONT_SELECT);
     if (select) select.value = fontValue;
 
-    if (typeof document !== 'undefined' && document.fonts && typeof document.fonts.ready !== 'undefined') {
-        document.fonts.ready
-            .then(() => {
-                const taskName = getEl('current-task-name');
-                if (taskName) {
-                    const currentDisplay = taskName.style.display;
-                    taskName.style.display = 'none';
-                    void taskName.offsetHeight;
-                    taskName.style.display = currentDisplay;
-                }
-            })
-            .catch(() => {});
-    }
+    ensureGoogleFontLoaded(fontValue)
+        .then(() => {
+            if (typeof document !== 'undefined' && document.fonts && typeof document.fonts.ready !== 'undefined') {
+                return document.fonts.ready.then(() => {
+                    const taskName = getEl('current-task-name');
+                    if (taskName) {
+                        const currentDisplay = taskName.style.display;
+                        taskName.style.display = 'none';
+                        void taskName.offsetHeight;
+                        taskName.style.display = currentDisplay;
+                    }
+                });
+            }
+        })
+        .catch(() => {});
 }
 
 function applyFontWeight(weightValue) {
