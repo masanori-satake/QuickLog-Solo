@@ -570,7 +570,7 @@ body.timer-mini #elapsed-time {
 
 .category-btn {
     padding: 0 8px;
-    font-family: var(--font-family);
+    font-family: var(--standard-ui-font), sans-serif;
     font-size: 0.75rem;
     font-weight: var(--md-sys-typescale-label-large-weight);
     height: 30px;
