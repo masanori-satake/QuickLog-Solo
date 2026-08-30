@@ -1,14 +1,11 @@
 /**
  * Ensures Google Fonts stylesheets are loaded dynamically if needed.
- * Skips loading in Chrome extension contexts to satisfy Content Security Policy (CSP).
+ * Supports online dynamic Web Font loading across web and Chrome extension contexts.
  *
  * @param {string} fontValue - Font family CSS string containing family names.
  */
 export function ensureGoogleFontLoaded(fontValue) {
     if (!fontValue || typeof fontValue !== 'string') return Promise.resolve();
-    if (typeof window !== 'undefined' && window.location && window.location.protocol === 'chrome-extension:') {
-        return Promise.resolve();
-    }
     const fontFamilies = [
         'Dela Gothic One',
         'Yusei Magic',
