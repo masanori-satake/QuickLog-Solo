@@ -83,4 +83,78 @@ describe('Category Layout Setting and Logic', () => {
         expect(pages2x4[1].length).toBe(8);
         expect(pages2x4[2].length).toBe(4);
     });
+
+    test('category section touch flick event handler logic', () => {
+        let currentCategoryPage = 0;
+        const totalPages = 3;
+
+        let touchStartY = 0;
+        let touchStartX = 0;
+        let isFlick = false;
+        const FLICK_THRESHOLD = 30;
+
+        function handleTouchStart(touch) {
+            touchStartY = touch.clientY;
+            touchStartX = touch.clientX;
+            isFlick = false;
+        }
+
+        function handleTouchMove(touch) {
+            const diffY = touchStartY - touch.clientY;
+            const diffX = touchStartX - touch.clientX;
+            if (Math.abs(diffY) > FLICK_THRESHOLD && Math.abs(diffY) > Math.abs(diffX)) {
+                isFlick = true;
+            }
+        }
+
+        function handleTouchEnd(touch) {
+            if (isFlick) {
+                const diffY = touchStartY - touch.clientY;
+                if (Math.abs(diffY) >= FLICK_THRESHOLD) {
+                    if (diffY > 0) {
+                        // Flick up -> next page
+                        if (currentCategoryPage < totalPages - 1) {
+                            currentCategoryPage++;
+                        }
+                    } else {
+                        // Flick down -> prev page
+                        if (currentCategoryPage > 0) {
+                            currentCategoryPage--;
+                        }
+                    }
+                }
+                isFlick = false;
+            }
+        }
+
+        // Test Flick Up -> Next Page
+        handleTouchStart({ clientX: 100, clientY: 200 });
+        handleTouchMove({ clientX: 100, clientY: 150 }); // diffY = 50 (> 30)
+        handleTouchEnd({ clientX: 100, clientY: 150 });
+        expect(currentCategoryPage).toBe(1);
+
+        // Test Flick Up -> Next Page again
+        handleTouchStart({ clientX: 100, clientY: 200 });
+        handleTouchMove({ clientX: 100, clientY: 100 }); // diffY = 100
+        handleTouchEnd({ clientX: 100, clientY: 100 });
+        expect(currentCategoryPage).toBe(2);
+
+        // Test Flick Up at max page -> Remains at max page
+        handleTouchStart({ clientX: 100, clientY: 200 });
+        handleTouchMove({ clientX: 100, clientY: 100 });
+        handleTouchEnd({ clientX: 100, clientY: 100 });
+        expect(currentCategoryPage).toBe(2);
+
+        // Test Flick Down -> Prev Page
+        handleTouchStart({ clientX: 100, clientY: 100 });
+        handleTouchMove({ clientX: 100, clientY: 160 }); // diffY = -60
+        handleTouchEnd({ clientX: 100, clientY: 160 });
+        expect(currentCategoryPage).toBe(1);
+
+        // Test small movement (< threshold) -> No page change
+        handleTouchStart({ clientX: 100, clientY: 100 });
+        handleTouchMove({ clientX: 100, clientY: 110 }); // diffY = -10
+        handleTouchEnd({ clientX: 100, clientY: 110 });
+        expect(currentCategoryPage).toBe(1);
+    });
 });
