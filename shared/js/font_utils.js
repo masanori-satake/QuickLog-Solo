@@ -10,9 +10,6 @@ export function ensureGoogleFontLoaded(fontValue) {
     const fontFamilies = [
         'Dela Gothic One',
         'Yusei Magic',
-        'M PLUS Rounded 1c',
-        'Zen Maru Gothic',
-        'Sawarabi Gothic',
         'Roboto',
         'Inter',
         'Montserrat',
@@ -24,6 +21,17 @@ export function ensureGoogleFontLoaded(fontValue) {
         'Noto Sans Symbols',
     ];
 
+    const multiWeightFonts = [
+        'Noto Sans JP',
+        'Noto Sans KR',
+        'Noto Sans SC',
+        'Roboto',
+        'Inter',
+        'Montserrat',
+        'Open Sans',
+        'Ubuntu',
+    ];
+
     fontFamilies.forEach((f) => {
         if (fontValue.includes(f)) {
             const linkId = `google-font-link-${f.replace(/\s+/g, '-').toLowerCase()}`;
@@ -31,12 +39,26 @@ export function ensureGoogleFontLoaded(fontValue) {
                 const link = document.createElement('link');
                 link.id = linkId;
                 link.rel = 'stylesheet';
-                link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(f)}&display=swap`;
+                const familyQuery = multiWeightFonts.includes(f)
+                    ? `${encodeURIComponent(f)}:wght@400;500;700`
+                    : encodeURIComponent(f);
+                link.href = `https://fonts.googleapis.com/css2?family=${familyQuery}&display=swap`;
+                link.onload = () => {
+                    if (
+                        typeof document !== 'undefined' &&
+                        document.fonts &&
+                        typeof document.fonts.load === 'function'
+                    ) {
+                        document.fonts.load(`1em "${f}"`).catch(() => {});
+                    }
+                };
                 link.onerror = () => {
                     // Silent fallback to local system font if offline or blocked
                     link.remove();
                 };
                 document.head.appendChild(link);
+            } else if (typeof document !== 'undefined' && document.fonts && typeof document.fonts.load === 'function') {
+                document.fonts.load(`1em "${f}"`).catch(() => {});
             }
         }
     });

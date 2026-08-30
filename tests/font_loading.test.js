@@ -61,9 +61,7 @@ describe('ensureGoogleFontLoaded', () => {
         const japaneseFonts = [
             "'Dela Gothic One', sans-serif",
             "'Yusei Magic', sans-serif",
-            "'M PLUS Rounded 1c', sans-serif",
-            "'Zen Maru Gothic', sans-serif",
-            "'Sawarabi Gothic', sans-serif",
+            "'Noto Sans JP', sans-serif",
         ];
 
         japaneseFonts.forEach((font) => {
