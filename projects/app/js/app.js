@@ -23,6 +23,7 @@ import {
     SETTING_KEY_LANGUAGE,
     SETTING_KEY_REPORT_SETTINGS,
     SETTING_KEY_TIMER_HEIGHT,
+    SETTING_KEY_CATEGORY_LAYOUT,
     SETTING_KEY_PAUSE_STATE,
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
@@ -117,6 +118,7 @@ const ID_FONT_WEIGHT_SELECT = 'font-weight-select';
 const ID_ANIMATION_SELECT = 'animation-select';
 const ID_LANGUAGE_SELECT = 'language-select';
 const ID_TIMER_HEIGHT_SELECT = 'timer-height-select';
+const ID_CATEGORY_LAYOUT_SELECT = 'category-layout-select';
 const ID_CATEGORY_LIST = 'category-list';
 const ID_CATEGORY_PAGINATION = 'category-pagination';
 const ID_LOG_LIST = 'log-list';
@@ -184,6 +186,8 @@ let timerInterval = null;
 let syncTimeout = null;
 /** @type {number} Current page index in the category list. */
 let currentCategoryPage = 0;
+/** @type {string} Current category layout ('2x8' or '2x4'). */
+let currentCategoryLayout = '2x8';
 /** @type {string} Current background animation ID. */
 let currentAnimationType = 'digital_rain';
 /** @type {string|null} JSON string of the last rendered category state for change detection. */
@@ -570,6 +574,16 @@ async function updateTimer() {
 
 // --- UI Rendering ---
 
+function applyCategoryLayout(layout) {
+    const body = getBody();
+    const select = getEl(ID_CATEGORY_LAYOUT_SELECT);
+    if (select) select.value = layout;
+
+    body.classList.remove('category-layout-2x8', 'category-layout-2x4');
+    body.classList.add(`category-layout-${layout}`);
+    currentCategoryLayout = layout;
+}
+
 function applyTimerHeight(height) {
     const body = getBody();
     const select = getEl(ID_TIMER_HEIGHT_SELECT);
@@ -707,7 +721,8 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
     }
 }
 
-function splitCategoriesIntoPages(allCategories) {
+function splitCategoriesIntoPages(allCategories, itemsPerPage = ITEMS_PER_PAGE) {
+    const limit = itemsPerPage || (currentCategoryLayout === '2x4' ? 8 : ITEMS_PER_PAGE);
     allCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
     const pages = [[]];
@@ -721,7 +736,7 @@ function splitCategoriesIntoPages(allCategories) {
                 currentPageIdx++;
             }
         } else {
-            if (pages[currentPageIdx].length >= ITEMS_PER_PAGE) {
+            if (pages[currentPageIdx].length >= limit) {
                 pages.push([]);
                 currentPageIdx++;
             }
@@ -744,7 +759,8 @@ async function renderCategories() {
         return;
     }
 
-    const pages = splitCategoriesIntoPages(allCategories);
+    const itemsPerPage = currentCategoryLayout === '2x4' ? 8 : 16;
+    const pages = splitCategoriesIntoPages(allCategories, itemsPerPage);
     const totalPages = pages.length;
     if (currentCategoryPage >= totalPages) currentCategoryPage = totalPages - 1;
 
@@ -755,6 +771,7 @@ async function renderCategories() {
     // Check if we actually need to re-render
     const currentRenderData = JSON.stringify({
         page: currentCategoryPage,
+        layout: currentCategoryLayout,
         activeTask: activeTaskCatName,
         categories: pageCategories.map((c) => ({ name: c.name, color: c.color, animation: c.animation })),
     });
@@ -1079,6 +1096,7 @@ async function syncState() {
 
     applyTheme(state.theme || THEME_SYSTEM);
     applyTimerHeight(state.timerHeight || 'normal');
+    applyCategoryLayout(state.categoryLayout || '2x8');
     applyFontWeight(state.fontWeight || 'normal');
 
     const langSelect = getEl(ID_LANGUAGE_SELECT);
@@ -2570,7 +2588,8 @@ function setupEventListeners() {
         (e) => {
             e.preventDefault();
             dbGetAll(STORE_CATEGORIES).then((categories) => {
-                const pages = splitCategoriesIntoPages(categories);
+                const itemsPerPage = currentCategoryLayout === '2x4' ? 8 : 16;
+                const pages = splitCategoriesIntoPages(categories, itemsPerPage);
                 const totalPages = pages.length;
                 if (e.deltaY > 0) {
                     // Scroll down -> next page
@@ -3021,6 +3040,14 @@ function setupEventListeners() {
         const height = e.target.value;
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_TIMER_HEIGHT, value: height });
         applyTimerHeight(height);
+        broadcastSync();
+    });
+
+    getEl(ID_CATEGORY_LAYOUT_SELECT)?.addEventListener('change', async (e) => {
+        const layout = e.target.value;
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_CATEGORY_LAYOUT, value: layout });
+        applyCategoryLayout(layout);
+        await updateUI();
         broadcastSync();
     });
 
