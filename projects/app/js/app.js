@@ -221,52 +221,52 @@ const createEl = (tag) => document.createElement(tag);
 const FONTS = [
     {
         name: 'Roboto / Noto Sans JP',
-        value: "'Roboto', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
+        value: "'Roboto', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt'],
     },
     {
         name: 'Dela Gothic One',
-        value: "'Dela Gothic One', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Noto Sans Symbols', sans-serif",
+        value: "'Dela Gothic One', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja'],
     },
     {
         name: 'Yusei Magic',
-        value: "'Yusei Magic', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Noto Sans Symbols', sans-serif",
+        value: "'Yusei Magic', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja'],
     },
     {
         name: 'Roboto / Noto Sans KR',
-        value: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
+        value: "'Roboto', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ko'],
     },
     {
         name: 'Roboto / Noto Sans SC',
-        value: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', 'Noto Sans KR', 'Noto Sans Symbols', sans-serif",
+        value: "'Roboto', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Symbols', sans-serif",
         lang: ['zh'],
     },
     {
         name: 'Inter',
-        value: "'Inter', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
+        value: "'Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
     {
         name: 'Montserrat',
-        value: "'Montserrat', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
+        value: "'Montserrat', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
     {
         name: 'Open Sans',
-        value: "'Open Sans', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
+        value: "'Open Sans', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
     {
         name: 'Ubuntu',
-        value: "'Ubuntu', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
+        value: "'Ubuntu', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Symbols', sans-serif",
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
     {
         name: 'font-system',
-        value: 'system-ui, -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", "Noto Sans Symbols", sans-serif',
+        value: 'system-ui, -apple-system, "Noto Sans Symbols", sans-serif',
         lang: ['ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'],
     },
 ];
