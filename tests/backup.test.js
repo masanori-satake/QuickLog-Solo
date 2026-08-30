@@ -24,6 +24,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
     SETTING_KEY_REPORT_SETTINGS: 'reportSettings',
     SETTING_KEY_BUSINESS_DAYS: 'businessDays',
     SETTING_KEY_TIMER_HEIGHT: 'timerHeight',
+    SETTING_KEY_CATEGORY_LAYOUT: 'categoryLayout',
     SETTING_KEY_PAUSE_STATE: 'pauseState',
     SETTING_KEY_CLIENT_ID: 'clientId',
     SETTING_KEY_DELETED_SYNC_IDS: 'deletedSyncIds',

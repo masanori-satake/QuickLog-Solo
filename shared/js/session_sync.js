@@ -5,7 +5,7 @@ import {
     SETTING_KEY_SESSION_SYNC, SETTING_KEY_LAST_PULLED_SYNC_TIME,
     SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION,
     SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
-    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID,
+    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_CATEGORY_LAYOUT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID,
     SETTING_KEY_DELETED_SYNC_IDS, SETTING_KEY_GLOBAL_CLEAR_TIME
 } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, generateUUID } from './utils.js';
@@ -163,7 +163,8 @@ export async function pushToCloud(state) {
             animation: state.animation,
             language: state.language,
             reportSettings: state.reportSettings,
-            timerHeight: state.timerHeight
+            timerHeight: state.timerHeight,
+            categoryLayout: state.categoryLayout
         },
         [SYNC_KEYS.BUSINESS_DAYS]: state.businessDays,
         [SYNC_KEYS.LAST_SYNC]: syncTime,
@@ -209,7 +210,8 @@ async function applyRemoteSettings(data) {
             animation: SETTING_KEY_ANIMATION,
             language: SETTING_KEY_LANGUAGE,
             reportSettings: SETTING_KEY_REPORT_SETTINGS,
-            timerHeight: SETTING_KEY_TIMER_HEIGHT
+            timerHeight: SETTING_KEY_TIMER_HEIGHT,
+            categoryLayout: SETTING_KEY_CATEGORY_LAYOUT
         };
         for (const [sKey, dbKey] of Object.entries(keysMap)) {
             if (settings[sKey] !== undefined) {
