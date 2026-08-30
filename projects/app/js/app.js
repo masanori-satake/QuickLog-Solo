@@ -619,6 +619,7 @@ function applyTheme(theme) {
 
 function ensureGoogleFontLoaded(fontValue) {
     if (!fontValue || typeof fontValue !== 'string') return;
+    if (window.location.protocol === 'chrome-extension:') return;
     const fontFamilies = [
         'Dela Gothic One',
         'Yusei Magic',
