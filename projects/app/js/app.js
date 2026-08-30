@@ -2609,6 +2609,76 @@ function setupEventListeners() {
         { passive: false }
     );
 
+    // Category Touch Flick Pagination
+    let touchStartY = 0;
+    let touchStartX = 0;
+    let isFlick = false;
+    const FLICK_THRESHOLD = 30;
+
+    categorySection?.addEventListener(
+        'touchstart',
+        (e) => {
+            if (e.touches.length === 1) {
+                touchStartY = e.touches[0].clientY;
+                touchStartX = e.touches[0].clientX;
+                isFlick = false;
+            }
+        },
+        { passive: true }
+    );
+
+    categorySection?.addEventListener(
+        'touchmove',
+        (e) => {
+            if (e.touches.length === 1) {
+                const diffY = touchStartY - e.touches[0].clientY;
+                const diffX = touchStartX - e.touches[0].clientX;
+                if (Math.abs(diffY) > FLICK_THRESHOLD && Math.abs(diffY) > Math.abs(diffX)) {
+                    isFlick = true;
+                    if (e.cancelable) {
+                        e.preventDefault();
+                    }
+                }
+            }
+        },
+        { passive: false }
+    );
+
+    categorySection?.addEventListener(
+        'touchend',
+        (e) => {
+            if (isFlick && e.changedTouches.length > 0) {
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
+                const touchEndY = e.changedTouches[0].clientY;
+                const diffY = touchStartY - touchEndY;
+                if (Math.abs(diffY) >= FLICK_THRESHOLD) {
+                    dbGetAll(STORE_CATEGORIES).then((categories) => {
+                        const itemsPerPage = currentCategoryLayout === '2x4' ? 8 : 16;
+                        const pages = splitCategoriesIntoPages(categories, itemsPerPage);
+                        const totalPages = pages.length;
+                        if (diffY > 0) {
+                            // Flick up -> next page
+                            if (currentCategoryPage < totalPages - 1) {
+                                currentCategoryPage++;
+                                renderCategories();
+                            }
+                        } else {
+                            // Flick down -> prev page
+                            if (currentCategoryPage > 0) {
+                                currentCategoryPage--;
+                                renderCategories();
+                            }
+                        }
+                    });
+                }
+                isFlick = false;
+            }
+        },
+        { passive: false }
+    );
+
     // Modals
     const popups = {
         settings: getEl(ID_SETTINGS_POPUP),
