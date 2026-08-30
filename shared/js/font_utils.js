@@ -28,7 +28,7 @@ export function ensureGoogleFontLoaded(fontValue) {
                 const link = document.createElement('link');
                 link.id = linkId;
                 link.rel = 'stylesheet';
-                link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(f)}:wght@400;500;700&display=swap`;
+                link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(f)}&display=swap`;
                 link.onerror = () => {
                     // Silent fallback to local system font if offline or blocked
                     link.remove();

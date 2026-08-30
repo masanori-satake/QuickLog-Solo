@@ -47,7 +47,7 @@ test.describe('UI and General Settings', () => {
         await expect(page.locator('body')).toHaveClass(/theme-dark/);
     });
 
-    test('should persist font setting', async ({ page }) => {
+    test('should persist font setting and apply font to category buttons', async ({ page }) => {
         await page.click('#settings-toggle');
         await page.waitForSelector('#font-select', { state: 'visible' });
 
@@ -55,9 +55,13 @@ test.describe('UI and General Settings', () => {
         const body = page.locator('body');
         await expect(body).toHaveCSS('--font-family', /Inter/);
 
+        const categoryBtn = page.locator('.category-btn').first();
+        await expect(categoryBtn).toHaveCSS('font-family', /Inter/);
+
         await page.reload();
         await page.waitForSelector('.category-btn');
         await expect(body).toHaveCSS('--font-family', /Inter/);
+        await expect(categoryBtn).toHaveCSS('font-family', /Inter/);
     });
 
     test('should persist animation setting', async ({ page }) => {
