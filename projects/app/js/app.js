@@ -619,23 +619,36 @@ function applyTheme(theme) {
 
 function ensureGoogleFontLoaded(fontValue) {
     if (!fontValue || typeof fontValue !== 'string') return;
-    const fontFamilies = ['Dela Gothic One', 'Yusei Magic', 'Roboto', 'Inter', 'Montserrat', 'Open Sans', 'Ubuntu'];
-    const match = fontFamilies.find((f) => fontValue.includes(`'${f}'`));
-    if (!match) return;
+    const fontFamilies = [
+        'Dela Gothic One',
+        'Yusei Magic',
+        'Roboto',
+        'Inter',
+        'Montserrat',
+        'Open Sans',
+        'Ubuntu',
+        'Noto Sans JP',
+        'Noto Sans KR',
+        'Noto Sans SC',
+        'Noto Sans Symbols',
+    ];
 
-    const linkId = `google-font-link-${match.replace(/\s+/g, '-').toLowerCase()}`;
-    if (document.getElementById(linkId)) return;
-
-    // Load font dynamically from Google Fonts if online
-    const link = document.createElement('link');
-    link.id = linkId;
-    link.rel = 'stylesheet';
-    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(match)}:wght@400;500;700&display=swap`;
-    link.onerror = () => {
-        // Silent fallback to local system font if offline or blocked
-        link.remove();
-    };
-    document.head.appendChild(link);
+    fontFamilies.forEach((f) => {
+        if (fontValue.includes(f)) {
+            const linkId = `google-font-link-${f.replace(/\s+/g, '-').toLowerCase()}`;
+            if (!document.getElementById(linkId)) {
+                const link = document.createElement('link');
+                link.id = linkId;
+                link.rel = 'stylesheet';
+                link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(f)}:wght@400;500;700&display=swap`;
+                link.onerror = () => {
+                    // Silent fallback to local system font if offline or blocked
+                    link.remove();
+                };
+                document.head.appendChild(link);
+            }
+        }
+    });
 }
 
 function applyFont(fontValue) {
