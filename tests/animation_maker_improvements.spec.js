@@ -181,9 +181,12 @@ test.describe('QL-Animation Maker Improvements', () => {
       localStorage.setItem('custom_animation_metadata_map', JSON.stringify(map));
     });
 
-    // Open Settings to trigger rendering of dropdowns
-    await page.click('#settings-toggle');
-    await expect(page.locator('#settings-popup')).not.toHaveClass(/hidden/);
+    // Open Settings if not already open to trigger rendering of dropdowns
+    const settingsPopup = page.locator('#settings-popup');
+    if (await settingsPopup.evaluate((el) => el.classList.contains('hidden'))) {
+      await page.click('#settings-toggle');
+    }
+    await expect(settingsPopup).not.toHaveClass(/hidden/);
 
     // Find the animation select element on the general tab
     const animSelect = page.locator('#animation-select');
