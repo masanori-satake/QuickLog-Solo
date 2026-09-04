@@ -18,6 +18,7 @@ import HeroPot from './animation/hero_pot.js';
 import HexagonalHud from './animation/hexagonal_hud.js';
 import LeftToRight from './animation/left_to_right.js';
 import LiesegangRings from './animation/liesegang_rings.js';
+import M3SymbolsWithKB from './animation/m3_symbols_with_kb.js';
 import MagicRibbons from './animation/magic_ribbons.js';
 import MigratingBirds from './animation/migrating_birds.js';
 import NewtonsCradle from './animation/newtons_cradle.js';
@@ -62,6 +63,7 @@ export const animations = [
     { id: 'hexagonal_hud', class: HexagonalHud, metadata: HexagonalHud.metadata, devOnly: true },
     { id: 'left_to_right', class: LeftToRight, metadata: LeftToRight.metadata },
     { id: 'liesegang_rings', class: LiesegangRings, metadata: LiesegangRings.metadata, devOnly: true },
+    { id: 'm3_symbols_with_kb', class: M3SymbolsWithKB, metadata: M3SymbolsWithKB.metadata },
     { id: 'magic_ribbons', class: MagicRibbons, metadata: MagicRibbons.metadata, devOnly: true },
     { id: 'migrating_birds', class: MigratingBirds, metadata: MigratingBirds.metadata },
     { id: 'newtons_cradle', class: NewtonsCradle, metadata: NewtonsCradle.metadata },

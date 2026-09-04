@@ -194,7 +194,7 @@ let currentCategoryPage = 0;
 let currentCategoryLayout = '2x8';
 /** @type {string} Current background animation ID. */
 let currentAnimationType = 'digital_rain';
-let currentPauseAnimation = 'none';
+let currentPauseAnimation = 'm3_symbols_with_kb';
 let currentPauseTheme = 'neutral';
 /** @type {string|null} JSON string of the last rendered category state for change detection. */
 let lastCategoryRenderData = null;
@@ -1105,7 +1105,7 @@ async function syncState() {
     applyCategoryLayout(state.categoryLayout || '2x8');
     applyFontWeight(state.fontWeight || 'normal');
 
-    currentPauseAnimation = state.pauseAnimation || 'none';
+    currentPauseAnimation = state.pauseAnimation || 'm3_symbols_with_kb';
     currentPauseTheme = state.pauseTheme || 'neutral';
 
     const langSelect = getEl(ID_LANGUAGE_SELECT);
