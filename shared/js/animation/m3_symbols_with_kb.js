@@ -41,24 +41,45 @@ export default class M3SymbolsWithKB extends AnimationBase {
     constructor() {
         super();
 
-        // Symbol Category Definitions
-        this.categories = {
-            pause: ['pause', 'do_not_disturb', 'sleep', 'bedtime', 'dark_mode', 'timer_off'],
-            relax: ['spa', 'self_care', 'local_cafe', 'weekend', 'eco'],
-            abstract: ['circle', 'radio_button_unchecked', 'brightness_low', 'blur_on', 'star', 'motion_photos_pause'],
-            random: ['hexagon', 'change_history', 'wifi', 'bluetooth', 'cloud', 'water_drop', 'bolt']
-        };
+        // Unified Material Design 3 Symbol Definitions
+        this.symbols = [
+            // Pause / Relax / Time
+            'pause', 'do_not_disturb', 'sleep', 'bedtime', 'dark_mode', 'timer_off', 'timer', 'alarm',
+            'schedule', 'calendar_today', 'today', 'event', 'hourglass_empty', 'hourglass_full',
+            'spa', 'self_care', 'local_cafe', 'weekend', 'eco', 'coffee', 'water_drop', 'forest', 'park',
+            'nature', 'grass', 'flower', 'nest_eco_leaf', 'nights_stay', 'wb_sunny', 'light_mode', 'sunny',
+            'partly_cloudy_day', 'cloud', 'air', 'waves', 'thermostat', 'bolt', 'electric_bolt', 'solar_power',
 
-        // Configurable Animation Parameters
-        this.symbol_category_weights = {
-            pause: 0.60,
-            relax: 0.20,
-            abstract: 0.15,
-            random: 0.05
-        };
-        this.kb_scale_start = 1.0;
-        this.kb_scale_end = 1.4;
-        this.kb_duration = 2500; // ms per cycle
+            // Shapes / Abstract
+            'circle', 'radio_button_unchecked', 'brightness_low', 'blur_on', 'star', 'motion_photos_pause',
+            'hexagon', 'change_history', 'square', 'pentagon', 'token', 'diamond', 'interests', 'category',
+            'palette', 'brush', 'draw', 'gesture', 'design_services', 'layers', 'grid_view', 'dashboard',
+
+            // Action / Navigation / UI
+            'search', 'favorite', 'home', 'settings', 'check', 'close', 'menu', 'refresh', 'arrow_forward',
+            'arrow_back', 'check_circle', 'info', 'warning', 'error', 'delete', 'edit', 'visibility',
+            'thumb_up', 'thumb_down', 'share', 'download', 'upload', 'lock', 'key', 'shield', 'notifications',
+            'tune', 'filter_alt', 'zoom_in', 'zoom_out', 'sync', 'loop', 'update', 'history',
+
+            // Devices / Tech / Communication
+            'wifi', 'bluetooth', 'devices', 'computer', 'laptop', 'smartphone', 'tablet', 'tv', 'watch',
+            'headphones', 'headset', 'mic', 'videocam', 'camera', 'photo', 'image', 'music_note',
+            'volume_up', 'cast', 'router', 'memory', 'smart_toy', 'rocket', 'build', 'extension', 'widgets',
+
+            // Places / Food / Objects / Social
+            'location_on', 'map', 'place', 'explore', 'flight', 'directions_car', 'directions_bike',
+            'pedal_bike', 'directions_walk', 'directions_run', 'fitness_center', 'sailing', 'train',
+            'shopping_cart', 'store', 'payment', 'credit_card', 'restaurant', 'flatware', 'local_bar',
+            'cake', 'icecream', 'cookie', 'ramen_dining', 'local_pizza', 'bakery_dining', 'fastfood',
+            'chair', 'king_bed', 'hot_tub', 'bathtub', 'shower', 'clean_hands', 'handshake', 'person',
+            'group', 'groups', 'sentiment_satisfied', 'face', 'psychology', 'pets', 'support_agent'
+        ];
+        this.min_duration = 6000; // ms
+        this.max_duration = 8000; // ms
+        this.zoom_in_scale_start = 1.0;
+        this.zoom_in_scale_end = 1.4;
+        this.zoom_out_scale_start = 2.0;
+        this.zoom_out_scale_end = 1.2;
         this.kb_easing = 'ease-in-out';
         this.max_tilt_deg = 20; // max tilt angle +-20 degrees
         this.min_visibility_ratio = 0.60; // guarantee at least 60% of symbol is visible
@@ -102,29 +123,19 @@ export default class M3SymbolsWithKB extends AnimationBase {
     /**
      * Get randomized cycle parameters deterministically based on cycle index
      * @param {number} cycleIndex - Index of current cycle
-     * @returns {Object} Cycle properties (symbol, sizeFactor, tiltRad, rPosX, rPosY)
+     * @returns {Object} Cycle properties (duration, symbol, sizeFactor, tiltRad, rPosX, rPosY, zoomDirection, scaleStart, scaleEnd)
      */
     _getCycleProperties(cycleIndex) {
         const seedBase = cycleIndex * 7 + 100;
 
-        // 1. Category Selection
-        const rCat = this._pseudoRandom(seedBase + 1);
-        let cumulative = 0;
-        let selectedCategory = 'pause';
+        // 0. Duration Selection (6000ms to 8000ms)
+        const rDur = this._pseudoRandom(seedBase + 0);
+        const duration = this.min_duration + rDur * (this.max_duration - this.min_duration);
 
-        for (const [cat, weight] of Object.entries(this.symbol_category_weights)) {
-            cumulative += weight;
-            if (rCat <= cumulative) {
-                selectedCategory = cat;
-                break;
-            }
-        }
-
-        // 2. Symbol Selection
-        const symbolList = this.categories[selectedCategory] || this.categories.pause;
-        const rSym = this._pseudoRandom(seedBase + 2);
-        const symbolIdx = Math.floor(rSym * symbolList.length) % symbolList.length;
-        const symbol = symbolList[symbolIdx];
+        // 1. Symbol Selection (Randomly pick from the full symbols array)
+        const rSym = this._pseudoRandom(seedBase + 1);
+        const symbolIdx = Math.floor(rSym * this.symbols.length) % this.symbols.length;
+        const symbol = this.symbols[symbolIdx];
 
         // 3. Size Factor (0.85 to 1.25)
         const rSize = this._pseudoRandom(seedBase + 3);
@@ -139,7 +150,62 @@ export default class M3SymbolsWithKB extends AnimationBase {
         const rPosX = this._pseudoRandom(seedBase + 5);
         const rPosY = this._pseudoRandom(seedBase + 6);
 
-        return { symbol, sizeFactor, tiltRad, tiltDeg, rPosX, rPosY };
+        // 6. Zoom Direction and Scale Limits
+        const rZoom = this._pseudoRandom(seedBase + 7);
+        const zoomDirection = rZoom < 0.5 ? 'in' : 'out';
+        const scaleStart = zoomDirection === 'in' ? this.zoom_in_scale_start : this.zoom_out_scale_start;
+        const scaleEnd = zoomDirection === 'in' ? this.zoom_in_scale_end : this.zoom_out_scale_end;
+
+        return {
+            duration,
+            symbol,
+            sizeFactor,
+            tiltRad,
+            tiltDeg,
+            rPosX,
+            rPosY,
+            zoomDirection,
+            scaleStart,
+            scaleEnd
+        };
+    }
+
+    /**
+     * Calculate cycle index, start time, duration, and progress for a given elapsed time
+     * @param {number} elapsedMs - Total elapsed time in milliseconds
+     * @returns {Object} Cycle time info
+     */
+    _getCycleTimeInfo(elapsedMs) {
+        if (elapsedMs <= 0) {
+            const props = this._getCycleProperties(0);
+            return {
+                cycleIndex: 0,
+                cycleStartMs: 0,
+                duration: props.duration,
+                cycleProgress: 0,
+                props
+            };
+        }
+
+        let cycleIndex = 0;
+        let cycleStartMs = 0;
+        let props = this._getCycleProperties(0);
+
+        while (cycleStartMs + props.duration <= elapsedMs) {
+            cycleStartMs += props.duration;
+            cycleIndex++;
+            props = this._getCycleProperties(cycleIndex);
+        }
+
+        const cycleProgress = (elapsedMs - cycleStartMs) / props.duration;
+
+        return {
+            cycleIndex,
+            cycleStartMs,
+            duration: props.duration,
+            cycleProgress,
+            props
+        };
     }
 
     /**
@@ -155,21 +221,19 @@ export default class M3SymbolsWithKB extends AnimationBase {
             return;
         }
 
-        const duration = Math.max(100, this.kb_duration);
-        const cycleIndex = Math.floor(elapsedMs / duration);
-        const cycleProgress = (elapsedMs % duration) / duration;
-
-        const props = this._getCycleProperties(cycleIndex);
+        const timeInfo = this._getCycleTimeInfo(elapsedMs);
+        const cycleProgress = timeInfo.cycleProgress;
+        const props = timeInfo.props;
 
         // Ken Burns Scale Calculation
         const easedProgress = this._ease(cycleProgress);
-        const kbScale = this.kb_scale_start + (this.kb_scale_end - this.kb_scale_start) * easedProgress;
+        const kbScale = props.scaleStart + (props.scaleEnd - props.scaleStart) * easedProgress;
 
         // Final rendered symbol font size
         const fontSize = Math.floor(this.baseSymbolSize * props.sizeFactor * kbScale);
 
-        // Smooth Alpha Fade In and Fade Out with minimum opacity floor
-        const alpha = Math.max(0.20, Math.sin(cycleProgress * Math.PI));
+        // Smooth Alpha Fade In and Fade Out
+        const alpha = Math.sin(cycleProgress * Math.PI);
 
         ctx.save();
         ctx.globalAlpha = Math.max(0, Math.min(1, alpha));

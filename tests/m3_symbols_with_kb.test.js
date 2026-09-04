@@ -50,15 +50,17 @@ describe('M3SymbolsWithKB Animation Module', () => {
     });
 
     test('should initialize default parameter settings', () => {
-        expect(instance.symbol_category_weights).toEqual({
-            pause: 0.60,
-            relax: 0.20,
-            abstract: 0.15,
-            random: 0.05
-        });
-        expect(instance.kb_scale_start).toBe(1.0);
-        expect(instance.kb_scale_end).toBe(1.4);
-        expect(instance.kb_duration).toBe(2500);
+        expect(Array.isArray(instance.symbols)).toBe(true);
+        expect(instance.symbols.length).toBeGreaterThan(100);
+        expect(instance.symbols).toContain('pause');
+        expect(instance.symbols).toContain('spa');
+        expect(instance.symbols).toContain('wifi');
+        expect(instance.min_duration).toBe(6000);
+        expect(instance.max_duration).toBe(8000);
+        expect(instance.zoom_in_scale_start).toBe(1.0);
+        expect(instance.zoom_in_scale_end).toBe(1.4);
+        expect(instance.zoom_out_scale_start).toBe(2.0);
+        expect(instance.zoom_out_scale_end).toBe(1.2);
         expect(instance.kb_easing).toBe('ease-in-out');
         expect(instance.max_tilt_deg).toBe(20);
         expect(instance.min_visibility_ratio).toBe(0.60);
@@ -70,9 +72,69 @@ describe('M3SymbolsWithKB Animation Module', () => {
         expect(propsCycle0).toEqual(propsCycle0Again);
 
         expect(typeof propsCycle0.symbol).toBe('string');
+        expect(instance.symbols).toContain(propsCycle0.symbol);
+        expect(propsCycle0.duration).toBeGreaterThanOrEqual(6000);
+        expect(propsCycle0.duration).toBeLessThanOrEqual(8000);
         expect(propsCycle0.sizeFactor).toBeGreaterThanOrEqual(0.85);
         expect(propsCycle0.sizeFactor).toBeLessThanOrEqual(1.25);
         expect(Math.abs(propsCycle0.tiltDeg)).toBeLessThanOrEqual(20);
+        expect(['in', 'out']).toContain(propsCycle0.zoomDirection);
+    });
+
+    test('should distribute zoom-in and zoom-out directions approximately evenly', () => {
+        let zoomInCount = 0;
+        let zoomOutCount = 0;
+        const total = 1000;
+
+        for (let i = 0; i < total; i++) {
+            const props = instance._getCycleProperties(i);
+            if (props.zoomDirection === 'in') {
+                zoomInCount++;
+                expect(props.scaleStart).toBe(1.0);
+                expect(props.scaleEnd).toBe(1.4);
+            } else {
+                zoomOutCount++;
+                expect(props.scaleStart).toBe(2.0);
+                expect(props.scaleEnd).toBe(1.2);
+            }
+        }
+
+        expect(zoomInCount / total).toBeCloseTo(0.50, 1);
+        expect(zoomOutCount / total).toBeCloseTo(0.50, 1);
+    });
+
+    test('should calculate deterministic cycle time info with variable durations', () => {
+        const info0 = instance._getCycleTimeInfo(0);
+        expect(info0.cycleIndex).toBe(0);
+        expect(info0.cycleStartMs).toBe(0);
+        expect(info0.cycleProgress).toBe(0);
+
+        const props0 = instance._getCycleProperties(0);
+        const info0End = instance._getCycleTimeInfo(props0.duration - 1);
+        expect(info0End.cycleIndex).toBe(0);
+        expect(info0End.cycleProgress).toBeGreaterThan(0.99);
+
+        const info1Start = instance._getCycleTimeInfo(props0.duration);
+        expect(info1Start.cycleIndex).toBe(1);
+        expect(info1Start.cycleStartMs).toBe(props0.duration);
+        expect(info1Start.cycleProgress).toBe(0);
+    });
+
+    test('should apply smooth opacity curve starting from 0.0 to 1.0 back to 0.0', () => {
+        instance.setup(300, 200);
+
+        // At start of cycle (progress ~ 0), opacity is 0
+        instance.draw(mockCtx, { elapsedMs: 0 });
+        expect(mockCtx.globalAlpha).toBeCloseTo(0, 5);
+
+        // At midpoint of cycle
+        const props0 = instance._getCycleProperties(0);
+        instance.draw(mockCtx, { elapsedMs: props0.duration / 2 });
+        expect(mockCtx.globalAlpha).toBeCloseTo(1, 5);
+
+        // At end of cycle
+        instance.draw(mockCtx, { elapsedMs: props0.duration - 0.001 });
+        expect(mockCtx.globalAlpha).toBeCloseTo(0, 2);
     });
 
     test('should generate tilt angles within +-20 degrees across cycles', () => {
@@ -84,26 +146,18 @@ describe('M3SymbolsWithKB Animation Module', () => {
         }
     });
 
-    test('should conform to category target weights across sample cycles', () => {
-        const counts = { pause: 0, relax: 0, abstract: 0, random: 0 };
-        const totalCycles = 10000;
-
-        const allSymbols = instance.categories;
+    test('should select symbols from the full symbols array across cycles', () => {
+        const selectedSymbols = new Set();
+        const totalCycles = 1000;
 
         for (let i = 0; i < totalCycles; i++) {
             const props = instance._getCycleProperties(i);
-            const sym = props.symbol;
-            if (allSymbols.pause.includes(sym)) counts.pause++;
-            else if (allSymbols.relax.includes(sym)) counts.relax++;
-            else if (allSymbols.abstract.includes(sym)) counts.abstract++;
-            else if (allSymbols.random.includes(sym)) counts.random++;
+            expect(instance.symbols).toContain(props.symbol);
+            selectedSymbols.add(props.symbol);
         }
 
-        // Check that frequencies approximate expected weights (within +/- 3% tolerance)
-        expect(counts.pause / totalCycles).toBeCloseTo(0.60, 1);
-        expect(counts.relax / totalCycles).toBeCloseTo(0.20, 1);
-        expect(counts.abstract / totalCycles).toBeCloseTo(0.15, 1);
-        expect(counts.random / totalCycles).toBeCloseTo(0.05, 1);
+        // Verify a wide variety of distinct symbols are picked
+        expect(selectedSymbols.size).toBeGreaterThan(50);
     });
 
     test('should render canvas drawing with translate and rotate without error across frame steps', () => {
@@ -140,12 +194,16 @@ describe('M3SymbolsWithKB Animation Module', () => {
         const textBounds = { left: 50, right: 58, ascent: 70, descent: 16 };
         instance.setup(width, height);
         instance._getCycleProperties = jest.fn(() => ({
+            duration: 7000,
             symbol: 'pause',
             sizeFactor: 1,
             tiltRad,
             tiltDeg,
             rPosX,
             rPosY,
+            zoomDirection: 'in',
+            scaleStart: 1.0,
+            scaleEnd: 1.4,
         }));
 
         instance.draw(mockCtx, { elapsedMs: 0 });
