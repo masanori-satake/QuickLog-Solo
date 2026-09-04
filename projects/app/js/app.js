@@ -570,7 +570,7 @@ async function updateTimer() {
 
     const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
-    if (isPaused) {
+    if (isPaused && currentPauseAnimation === 'none') {
         if (currentActiveAnimation !== null) {
             animationEngine?.stop();
             currentActiveAnimation = null;
