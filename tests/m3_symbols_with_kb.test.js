@@ -14,6 +14,13 @@ describe('M3SymbolsWithKB Animation Module', () => {
             rotate: jest.fn(),
             fillText: jest.fn(),
             strokeText: jest.fn(),
+            measureText: jest.fn(() => ({
+                width: 108,
+                actualBoundingBoxLeft: 50,
+                actualBoundingBoxRight: 58,
+                actualBoundingBoxAscent: 70,
+                actualBoundingBoxDescent: 16
+            })),
             globalAlpha: 1.0,
             fillStyle: '#000000',
             strokeStyle: '#000000',
@@ -115,6 +122,57 @@ describe('M3SymbolsWithKB Animation Module', () => {
         expect(mockCtx.rotate).toHaveBeenCalled();
         expect(mockCtx.fillText).toHaveBeenCalled();
         expect(mockCtx.strokeText).toHaveBeenCalled();
+    });
+
+    test.each([
+        [-20, 0, 0],
+        [-20, 0, 1],
+        [-20, 1, 0],
+        [-20, 1, 1],
+        [20, 0, 0],
+        [20, 0, 1],
+        [20, 1, 0],
+        [20, 1, 1],
+    ])('should keep at least the minimum visible area at maximum tilt (%i deg, %i, %i)', (tiltDeg, rPosX, rPosY) => {
+        const width = 300;
+        const height = 200;
+        const tiltRad = (tiltDeg * Math.PI) / 180;
+        const textBounds = { left: 50, right: 58, ascent: 70, descent: 16 };
+        instance.setup(width, height);
+        instance._getCycleProperties = jest.fn(() => ({
+            symbol: 'pause',
+            sizeFactor: 1,
+            tiltRad,
+            tiltDeg,
+            rPosX,
+            rPosY,
+        }));
+
+        instance.draw(mockCtx, { elapsedMs: 0 });
+
+        const [cx, cy] = mockCtx.translate.mock.calls[0];
+        const strokeRadius = mockCtx.lineWidth / 2;
+        const corners = [
+            [-textBounds.left - strokeRadius, -textBounds.ascent - strokeRadius],
+            [textBounds.right + strokeRadius, -textBounds.ascent - strokeRadius],
+            [textBounds.right + strokeRadius, textBounds.descent + strokeRadius],
+            [-textBounds.left - strokeRadius, textBounds.descent + strokeRadius],
+        ].map(([x, y]) => [
+            cx + x * Math.cos(tiltRad) - y * Math.sin(tiltRad),
+            cy + x * Math.sin(tiltRad) + y * Math.cos(tiltRad),
+        ]);
+
+        const xs = corners.map(([x]) => x);
+        const ys = corners.map(([, y]) => y);
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        const visibleWidth = Math.max(0, Math.min(width, maxX) - Math.max(0, minX));
+        const visibleHeight = Math.max(0, Math.min(height, maxY) - Math.max(0, minY));
+        const visibleAreaRatio = (visibleWidth * visibleHeight) / ((maxX - minX) * (maxY - minY));
+
+        expect(visibleAreaRatio).toBeGreaterThanOrEqual(instance.min_visibility_ratio - Number.EPSILON);
     });
 
     test('should handle edge cases like zero width/height safely', () => {

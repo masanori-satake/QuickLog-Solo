@@ -168,21 +168,65 @@ export default class M3SymbolsWithKB extends AnimationBase {
         // Final rendered symbol font size
         const fontSize = Math.floor(this.baseSymbolSize * props.sizeFactor * kbScale);
 
-        // Calculate position limits to guarantee >= 60% visibility
-        // To guarantee >= 60% total area visible, ensure at least sqrt(0.60) ~= 0.775 coverage per axis
-        // Overlapping at most 0.225 * fontSize outside each canvas boundary
-        const maxOverflowRatio = 0.22;
-        const minMargin = (0.50 - maxOverflowRatio) * fontSize;
+        // Smooth Alpha Fade In and Fade Out with minimum opacity floor
+        const alpha = Math.max(0.20, Math.sin(cycleProgress * Math.PI));
 
-        let minCx = minMargin;
-        let maxCx = width - minMargin;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(2, Math.floor(fontSize * 0.03));
+        ctx.font = `${fontSize}px "Material Symbols Outlined"`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Calculate the rotated text bounds, including the stroke, so edge placements
+        // preserve the configured visible-area ratio instead of assuming a square glyph.
+        const metrics = ctx.measureText(props.symbol);
+        const measuredWidth = Number.isFinite(metrics.width) ? metrics.width : fontSize;
+        const strokeRadius = ctx.lineWidth / 2;
+        const left =
+            (Number.isFinite(metrics.actualBoundingBoxLeft) ? metrics.actualBoundingBoxLeft : measuredWidth / 2) +
+            strokeRadius;
+        const right =
+            (Number.isFinite(metrics.actualBoundingBoxRight) ? metrics.actualBoundingBoxRight : measuredWidth / 2) +
+            strokeRadius;
+        const ascent =
+            (Number.isFinite(metrics.actualBoundingBoxAscent) ? metrics.actualBoundingBoxAscent : fontSize / 2) +
+            strokeRadius;
+        const descent =
+            (Number.isFinite(metrics.actualBoundingBoxDescent) ? metrics.actualBoundingBoxDescent : fontSize / 2) +
+            strokeRadius;
+
+        const cosTilt = Math.cos(props.tiltRad);
+        const sinTilt = Math.sin(props.tiltRad);
+        const corners = [
+            [-left, -ascent],
+            [right, -ascent],
+            [right, descent],
+            [-left, descent],
+        ];
+        const rotatedX = corners.map(([x, y]) => x * cosTilt - y * sinTilt);
+        const rotatedY = corners.map(([x, y]) => x * sinTilt + y * cosTilt);
+        const minRotatedX = Math.min(...rotatedX);
+        const maxRotatedX = Math.max(...rotatedX);
+        const minRotatedY = Math.min(...rotatedY);
+        const maxRotatedY = Math.max(...rotatedY);
+
+        const visibilityRatio = Math.min(1, Math.max(0, this.min_visibility_ratio));
+        const maxOverflowRatio = 1 - Math.sqrt(visibilityRatio);
+        const maxOverflowX = (maxRotatedX - minRotatedX) * maxOverflowRatio;
+        const maxOverflowY = (maxRotatedY - minRotatedY) * maxOverflowRatio;
+
+        let minCx = -minRotatedX - maxOverflowX;
+        let maxCx = width - maxRotatedX + maxOverflowX;
         if (minCx >= maxCx) {
             minCx = width / 2;
             maxCx = width / 2;
         }
 
-        let minCy = minMargin;
-        let maxCy = height - minMargin;
+        let minCy = -minRotatedY - maxOverflowY;
+        let maxCy = height - maxRotatedY + maxOverflowY;
         if (minCy >= maxCy) {
             minCy = height / 2;
             maxCy = height / 2;
@@ -191,19 +235,8 @@ export default class M3SymbolsWithKB extends AnimationBase {
         const cx = minCx + props.rPosX * (maxCx - minCx);
         const cy = minCy + props.rPosY * (maxCy - minCy);
 
-        // Smooth Alpha Fade In and Fade Out with minimum opacity floor
-        const alpha = Math.max(0.20, Math.sin(cycleProgress * Math.PI));
-
-        ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(props.tiltRad);
-        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = Math.max(2, Math.floor(fontSize * 0.03));
-        ctx.font = `${fontSize}px "Material Symbols Outlined"`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
 
         ctx.fillText(props.symbol, 0, 0);
         ctx.strokeText(props.symbol, 0, 0);
