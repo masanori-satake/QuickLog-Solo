@@ -119,7 +119,7 @@ const ID_FONT_SELECT = 'font-select';
 const ID_FONT_WEIGHT_SELECT = 'font-weight-select';
 const ID_ANIMATION_SELECT = 'animation-select';
 const ID_PAUSE_ANIMATION_SELECT = 'pause-animation-select';
-const ID_PAUSE_THEME_SELECT = 'pause-theme-select';
+const ID_PAUSE_THEME_PALETTE = 'pause-theme-palette';
 const ID_LANGUAGE_SELECT = 'language-select';
 const ID_TIMER_HEIGHT_SELECT = 'timer-height-select';
 const ID_CATEGORY_LAYOUT_SELECT = 'category-layout-select';
@@ -1278,15 +1278,15 @@ async function updateAnimationSelect() {
     if (pauseAnimSelect) {
         await populateAnimationSelectOptions(pauseAnimSelect, currentPauseAnimation);
     }
-    const pauseThemeSelect = getEl(ID_PAUSE_THEME_SELECT);
-    if (pauseThemeSelect) {
-        updatePauseThemeSelectOptions(pauseThemeSelect, currentPauseTheme);
+    const pauseThemePalette = getEl(ID_PAUSE_THEME_PALETTE);
+    if (pauseThemePalette) {
+        renderPauseThemePalette(pauseThemePalette, currentPauseTheme);
     }
 }
 
-function updatePauseThemeSelectOptions(selectEl, selectedValue) {
-    if (!selectEl) return;
-    selectEl.replaceChildren();
+function renderPauseThemePalette(paletteEl, selectedValue) {
+    if (!paletteEl) return;
+    paletteEl.replaceChildren();
     const colorKeys = [
         'primary',
         'secondary',
@@ -1307,14 +1307,29 @@ function updatePauseThemeSelectOptions(selectEl, selectedValue) {
         'retro-nixie',
     ];
     colorKeys.forEach((color) => {
-        const opt = createEl('option');
-        opt.value = color;
-        opt.textContent = t(`color-${color}`) !== `color-${color}` ? t(`color-${color}`) : color;
-        selectEl.appendChild(opt);
+        const opt = createEl('div');
+        opt.className = `color-option${color === selectedValue ? ' selected' : ''}`;
+        opt.style.backgroundColor = getColorCode(color);
+        opt.dataset.color = color;
+        opt.title = t(`color-${color}`) !== `color-${color}` ? t(`color-${color}`) : color;
+
+        const check = createEl('span');
+        check.className = 'material-symbols-outlined';
+        check.textContent = 'check';
+        opt.appendChild(check);
+
+        opt.onclick = async () => {
+            currentPauseTheme = color;
+            paletteEl.querySelectorAll('.color-option').forEach((o) => {
+                o.classList.toggle('selected', o.dataset.color === color);
+            });
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_THEME, value: color });
+            await updateUI();
+            broadcastSync();
+        };
+
+        paletteEl.appendChild(opt);
     });
-    if (selectedValue !== undefined) {
-        selectEl.value = selectedValue;
-    }
 }
 
 function updateFontSelect() {
@@ -3158,17 +3173,6 @@ function setupEventListeners() {
             const val = e.target.value;
             currentPauseAnimation = val;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_ANIMATION, value: val });
-            await updateUI();
-            broadcastSync();
-        });
-    }
-
-    const pauseThemeSelect = getEl(ID_PAUSE_THEME_SELECT);
-    if (pauseThemeSelect) {
-        pauseThemeSelect.addEventListener('change', async (e) => {
-            const val = e.target.value;
-            currentPauseTheme = val;
-            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_THEME, value: val });
             await updateUI();
             broadcastSync();
         });
