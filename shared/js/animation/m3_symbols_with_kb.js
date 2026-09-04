@@ -191,8 +191,8 @@ export default class M3SymbolsWithKB extends AnimationBase {
         const cx = minCx + props.rPosX * (maxCx - minCx);
         const cy = minCy + props.rPosY * (maxCy - minCy);
 
-        // Smooth Alpha Fade In and Fade Out
-        const alpha = Math.sin(cycleProgress * Math.PI);
+        // Smooth Alpha Fade In and Fade Out with minimum opacity floor
+        const alpha = Math.max(0.20, Math.sin(cycleProgress * Math.PI));
 
         ctx.save();
         ctx.translate(cx, cy);
