@@ -120,6 +120,27 @@ describe('M3SymbolsWithKB Animation Module', () => {
         expect(info1Start.cycleProgress).toBe(0);
     });
 
+    test('should reuse cached cycle boundaries and preserve rewinding after seven days', () => {
+        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+        const originalGetCycleProperties = instance._getCycleProperties.bind(instance);
+        instance._getCycleProperties = jest.fn(originalGetCycleProperties);
+
+        const longElapsedInfo = instance._getCycleTimeInfo(sevenDaysMs);
+        expect(longElapsedInfo.cycleIndex).toBeGreaterThan(80000);
+        expect(longElapsedInfo.cycleStartMs).toBeLessThanOrEqual(sevenDaysMs);
+        expect(longElapsedInfo.cycleStartMs + longElapsedInfo.duration).toBeGreaterThan(sevenDaysMs);
+        expect(longElapsedInfo.cycleProgress).toBeGreaterThanOrEqual(0);
+        expect(longElapsedInfo.cycleProgress).toBeLessThan(1);
+
+        const callsAfterInitialLookup = instance._getCycleProperties.mock.calls.length;
+        const rewoundInfo = instance._getCycleTimeInfo(sevenDaysMs - 24 * 60 * 60 * 1000);
+        const repeatedInfo = instance._getCycleTimeInfo(sevenDaysMs);
+
+        expect(rewoundInfo.cycleIndex).toBeLessThan(longElapsedInfo.cycleIndex);
+        expect(repeatedInfo).toEqual(longElapsedInfo);
+        expect(instance._getCycleProperties.mock.calls.length - callsAfterInitialLookup).toBeLessThan(10);
+    });
+
     test('should apply smooth opacity curve starting from 0.0 to 1.0 back to 0.0', () => {
         instance.setup(300, 200);
 

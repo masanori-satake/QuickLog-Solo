@@ -85,6 +85,7 @@ export default class M3SymbolsWithKB extends AnimationBase {
         this.min_visibility_ratio = 0.60; // guarantee at least 60% of symbol is visible
         this.dot_granularity = 10;
         this.baseSymbolSize = 0;
+        this.cycleStartTimes = [0];
     }
 
     /**
@@ -187,15 +188,31 @@ export default class M3SymbolsWithKB extends AnimationBase {
             };
         }
 
-        let cycleIndex = 0;
-        let cycleStartMs = 0;
-        let props = this._getCycleProperties(0);
+        let lastCycleIndex = this.cycleStartTimes.length - 1;
+        let lastCycleStartMs = this.cycleStartTimes[lastCycleIndex];
+        let lastCycleProps = this._getCycleProperties(lastCycleIndex);
 
-        while (cycleStartMs + props.duration <= elapsedMs) {
-            cycleStartMs += props.duration;
-            cycleIndex++;
-            props = this._getCycleProperties(cycleIndex);
+        while (lastCycleStartMs + lastCycleProps.duration <= elapsedMs) {
+            lastCycleStartMs += lastCycleProps.duration;
+            this.cycleStartTimes.push(lastCycleStartMs);
+            lastCycleIndex++;
+            lastCycleProps = this._getCycleProperties(lastCycleIndex);
         }
+
+        let low = 0;
+        let high = this.cycleStartTimes.length;
+        while (low < high) {
+            const mid = Math.floor((low + high) / 2);
+            if (this.cycleStartTimes[mid] <= elapsedMs) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+
+        const cycleIndex = low - 1;
+        const cycleStartMs = this.cycleStartTimes[cycleIndex];
+        const props = this._getCycleProperties(cycleIndex);
 
         const cycleProgress = (elapsedMs - cycleStartMs) / props.duration;
 
