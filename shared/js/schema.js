@@ -126,7 +126,17 @@ export function validateSettingsSchema(data) {
         return false;
     if (!Array.isArray(data.entries)) return false;
 
-    const allowedKeys = ['theme', 'font', 'defaultAnimation', 'language', 'reportSettings', 'businessDays', 'alarms'];
+    const allowedKeys = [
+        'theme',
+        'font',
+        'defaultAnimation',
+        'pauseAnimation',
+        'pauseTheme',
+        'language',
+        'reportSettings',
+        'businessDays',
+        'alarms',
+    ];
 
     for (const entry of data.entries) {
         if (!entry || typeof entry !== 'object' || !allowedKeys.includes(entry.key)) return false;
@@ -142,7 +152,11 @@ export function validateSettingsSchema(data) {
                 if (typeof val !== 'string' || val.length > 200) return false;
                 break;
             case 'defaultAnimation':
+            case 'pauseAnimation':
                 if (typeof val !== 'string' || val.length > 50) return false;
+                break;
+            case 'pauseTheme':
+                if (typeof val !== 'string' || val.length > 30 || !isValidColor(val)) return false;
                 break;
             case 'language':
                 if (!['auto', 'ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'].includes(val)) return false;

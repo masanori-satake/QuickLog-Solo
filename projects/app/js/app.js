@@ -20,6 +20,8 @@ import {
     SETTING_KEY_FONT,
     SETTING_KEY_FONT_WEIGHT,
     SETTING_KEY_ANIMATION,
+    SETTING_KEY_PAUSE_ANIMATION,
+    SETTING_KEY_PAUSE_THEME,
     SETTING_KEY_LANGUAGE,
     SETTING_KEY_REPORT_SETTINGS,
     SETTING_KEY_TIMER_HEIGHT,
@@ -116,6 +118,8 @@ const ID_THEME_SELECT = 'theme-select';
 const ID_FONT_SELECT = 'font-select';
 const ID_FONT_WEIGHT_SELECT = 'font-weight-select';
 const ID_ANIMATION_SELECT = 'animation-select';
+const ID_PAUSE_ANIMATION_SELECT = 'pause-animation-select';
+const ID_PAUSE_THEME_SELECT = 'pause-theme-select';
 const ID_LANGUAGE_SELECT = 'language-select';
 const ID_TIMER_HEIGHT_SELECT = 'timer-height-select';
 const ID_CATEGORY_LAYOUT_SELECT = 'category-layout-select';
@@ -190,6 +194,8 @@ let currentCategoryPage = 0;
 let currentCategoryLayout = '2x8';
 /** @type {string} Current background animation ID. */
 let currentAnimationType = 'digital_rain';
+let currentPauseAnimation = 'none';
+let currentPauseTheme = 'neutral';
 /** @type {string|null} JSON string of the last rendered category state for change detection. */
 let lastCategoryRenderData = null;
 /** @type {string|null} JSON string of the last rendered logs state for change detection. */
@@ -684,7 +690,7 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
 
     const display = getEl(ID_CURRENT_TASK_DISPLAY);
 
-    if (animationEngine && activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE && activeAnimation !== 'none') {
+    if (animationEngine && activeTask && activeAnimation !== 'none') {
         const colorCode = getColorCode(color);
         const animStateKey = `${activeAnimation}-${activeTask.startTime}-${colorCode}-${customAnimSpecHash}`;
         if (currentActiveAnimation !== animStateKey) {
@@ -1099,6 +1105,9 @@ async function syncState() {
     applyCategoryLayout(state.categoryLayout || '2x8');
     applyFontWeight(state.fontWeight || 'normal');
 
+    currentPauseAnimation = state.pauseAnimation || 'none';
+    currentPauseTheme = state.pauseTheme || 'neutral';
+
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
 
@@ -1218,46 +1227,93 @@ function getAnimationTooltip(metadata, lang) {
     return '';
 }
 
+async function populateAnimationSelectOptions(selectEl, selectedValue) {
+    if (!selectEl) return;
+    const currentLang = getLanguage();
+    selectEl.replaceChildren();
+
+    const noneOpt = createEl('option');
+    noneOpt.value = 'none';
+    noneOpt.textContent = t('anim-none');
+    selectEl.appendChild(noneOpt);
+
+    animations.forEach((anim) => {
+        const opt = createEl('option');
+        opt.value = anim.id;
+        if (typeof anim.metadata.name === 'object') {
+            opt.textContent = anim.metadata.name[currentLang] || anim.metadata.name['en'] || anim.id;
+        } else {
+            opt.textContent = anim.metadata.name;
+        }
+
+        opt.title = getAnimationTooltip(anim.metadata, currentLang);
+        selectEl.appendChild(opt);
+    });
+
+    const customAnims = await getCustomAnimationMetadataMap();
+    Object.keys(customAnims)
+        .sort((a, b) => {
+            const orderA = customAnims[a].order ?? 0;
+            const orderB = customAnims[b].order ?? 0;
+            return orderA - orderB;
+        })
+        .forEach((id) => {
+            const opt = createEl('option');
+            opt.value = id;
+            opt.textContent = customAnims[id].name;
+            selectEl.appendChild(opt);
+        });
+
+    if (selectedValue !== undefined) {
+        selectEl.value = selectedValue;
+    }
+}
+
 async function updateAnimationSelect() {
     const animSelect = getEl(ID_ANIMATION_SELECT);
     if (animSelect) {
-        const currentLang = getLanguage();
-        animSelect.replaceChildren();
+        await populateAnimationSelectOptions(animSelect, currentAnimationType);
+    }
+    const pauseAnimSelect = getEl(ID_PAUSE_ANIMATION_SELECT);
+    if (pauseAnimSelect) {
+        await populateAnimationSelectOptions(pauseAnimSelect, currentPauseAnimation);
+    }
+    const pauseThemeSelect = getEl(ID_PAUSE_THEME_SELECT);
+    if (pauseThemeSelect) {
+        updatePauseThemeSelectOptions(pauseThemeSelect, currentPauseTheme);
+    }
+}
 
-        const noneOpt = createEl('option');
-        noneOpt.value = 'none';
-        noneOpt.textContent = t('anim-none');
-        animSelect.appendChild(noneOpt);
-
-        animations.forEach((anim) => {
-            const opt = createEl('option');
-            opt.value = anim.id;
-            if (typeof anim.metadata.name === 'object') {
-                opt.textContent = anim.metadata.name[currentLang] || anim.metadata.name['en'] || anim.id;
-            } else {
-                opt.textContent = anim.metadata.name;
-            }
-
-            opt.title = getAnimationTooltip(anim.metadata, currentLang);
-            animSelect.appendChild(opt);
-        });
-
-        // Append custom animations if available
-        const customAnims = await getCustomAnimationMetadataMap();
-        Object.keys(customAnims)
-            .sort((a, b) => {
-                const orderA = customAnims[a].order ?? 0;
-                const orderB = customAnims[b].order ?? 0;
-                return orderA - orderB;
-            })
-            .forEach((id) => {
-                const opt = createEl('option');
-                opt.value = id;
-                opt.textContent = customAnims[id].name;
-                animSelect.appendChild(opt);
-            });
-
-        animSelect.value = currentAnimationType;
+function updatePauseThemeSelectOptions(selectEl, selectedValue) {
+    if (!selectEl) return;
+    selectEl.replaceChildren();
+    const colorKeys = [
+        'primary',
+        'secondary',
+        'tertiary',
+        'error',
+        'neutral',
+        'outline',
+        'teal',
+        'green',
+        'yellow',
+        'orange',
+        'pink',
+        'indigo',
+        'brown',
+        'cyan',
+        'retro-lcd',
+        'retro-crt',
+        'retro-nixie',
+    ];
+    colorKeys.forEach((color) => {
+        const opt = createEl('option');
+        opt.value = color;
+        opt.textContent = t(`color-${color}`) !== `color-${color}` ? t(`color-${color}`) : color;
+        selectEl.appendChild(opt);
+    });
+    if (selectedValue !== undefined) {
+        selectEl.value = selectedValue;
     }
 }
 
@@ -1321,7 +1377,8 @@ async function updateUI() {
         const isPaused = activeTask.category === SYSTEM_CATEGORY_IDLE;
 
         if (isPaused) {
-            color = 'neutral';
+            color = currentPauseTheme;
+            categoryAnimation = currentPauseAnimation;
         } else {
             const cat = await dbGetByName(STORE_CATEGORIES, activeTask.category);
             color = cat ? cat.color : activeTask.color || 'primary';
@@ -3090,6 +3147,28 @@ function setupEventListeners() {
             const fontValue = e.target.value;
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_FONT, value: fontValue });
             applyFont(fontValue);
+            await updateUI();
+            broadcastSync();
+        });
+    }
+
+    const pauseAnimSelect = getEl(ID_PAUSE_ANIMATION_SELECT);
+    if (pauseAnimSelect) {
+        pauseAnimSelect.addEventListener('change', async (e) => {
+            const val = e.target.value;
+            currentPauseAnimation = val;
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_ANIMATION, value: val });
+            await updateUI();
+            broadcastSync();
+        });
+    }
+
+    const pauseThemeSelect = getEl(ID_PAUSE_THEME_SELECT);
+    if (pauseThemeSelect) {
+        pauseThemeSelect.addEventListener('change', async (e) => {
+            const val = e.target.value;
+            currentPauseTheme = val;
+            await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_THEME, value: val });
             await updateUI();
             broadcastSync();
         });
