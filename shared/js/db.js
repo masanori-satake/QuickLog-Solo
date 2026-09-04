@@ -33,6 +33,8 @@ export const SETTING_KEY_REPORT_SETTINGS = 'reportSettings';
 export const SETTING_KEY_BUSINESS_DAYS = 'businessDays';
 export const SETTING_KEY_TIMER_HEIGHT = 'timerHeight';
 export const SETTING_KEY_CATEGORY_LAYOUT = 'categoryLayout';
+export const SETTING_KEY_PAUSE_ANIMATION = 'pauseAnimation';
+export const SETTING_KEY_PAUSE_THEME = 'pauseTheme';
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 export const SETTING_KEY_BACKUP_DIR_HANDLE = 'backupDirectoryHandle';
 export const SETTING_KEY_SESSION_SYNC = 'sessionSync';
@@ -442,6 +444,8 @@ export async function getCurrentAppState() {
     const businessDays = await dbGet(STORE_SETTINGS, SETTING_KEY_BUSINESS_DAYS);
     const timerHeight = await dbGet(STORE_SETTINGS, SETTING_KEY_TIMER_HEIGHT);
     const categoryLayout = await dbGet(STORE_SETTINGS, SETTING_KEY_CATEGORY_LAYOUT);
+    const pauseAnimation = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_ANIMATION);
+    const pauseTheme = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_THEME);
     const categories = await dbGetAll(STORE_CATEGORIES);
     const alarms = await dbGetAll(STORE_ALARMS);
 
@@ -464,6 +468,8 @@ export async function getCurrentAppState() {
         businessDays: businessDays ? businessDays.value : [1, 2, 3, 4, 5],
         timerHeight: timerHeight ? timerHeight.value : 'normal',
         categoryLayout: categoryLayout ? categoryLayout.value : '2x8',
+        pauseAnimation: pauseAnimation ? pauseAnimation.value : 'none',
+        pauseTheme: pauseTheme ? pauseTheme.value : 'neutral',
         sessionSync: (await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC))?.value || false,
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
         alarms: alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0)),

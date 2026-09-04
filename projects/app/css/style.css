@@ -2245,6 +2245,110 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
     font-size: 11px;
 }
 
+/* Color Palette Swatches in Settings */
+.color-palette {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px 6px;
+    padding: 6px;
+}
+
+.color-option {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    justify-self: center;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    user-select: none;
+}
+
+.color-option span.material-symbols-outlined {
+    font-size: 16px;
+    opacity: 0;
+}
+
+.color-option.selected span.material-symbols-outlined {
+    opacity: 1;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option[data-color="retro-lcd"] {
+    background-color: #9bbc0f;
+    border-color: #0f380f;
+    color: #0f380f;
+    position: relative;
+}
+
+.color-option[data-color="retro-lcd"]::after {
+    content: "L";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f380f;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.color-option[data-color="retro-crt"] {
+    background-color: #3f3;
+    border-color: #030c04;
+    color: #030c04;
+    position: relative;
+}
+
+.color-option[data-color="retro-crt"]::after {
+    content: "C";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #030c04;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.color-option[data-color="retro-nixie"] {
+    background-color: #f50;
+    border-color: #0c0603;
+    color: #0c0603;
+    position: relative;
+}
+
+.color-option[data-color="retro-nixie"]::after {
+    content: "N";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0c0603;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.color-option.selected[data-color="retro-lcd"]::after,
+.color-option.selected[data-color="retro-crt"]::after,
+.color-option.selected[data-color="retro-nixie"]::after {
+    display: none;
+}
+
+.color-option.selected {
+    border-color: var(--md-sys-color-on-surface);
+}
+
 /* Backup and Restore UI Fixes */
 .backup-controls {
     display: flex;
