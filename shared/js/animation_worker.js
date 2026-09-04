@@ -45,6 +45,17 @@ self.onmessage = async (e) => {
         if (type === 'init') {
             const { modulePath } = payload;
             initPromise = (async () => {
+                if (typeof self.FontFace !== 'undefined' && self.fonts && !self._m3FontLoaded) {
+                    try {
+                        const fontUrl = new URL('../assets/fonts/material-symbols-outlined.woff2', import.meta.url);
+                        const font = new FontFace('Material Symbols Outlined', `url("${fontUrl.href}")`);
+                        await font.load();
+                        self.fonts.add(font);
+                        self._m3FontLoaded = true;
+                    } catch (e) {
+                        console.warn('Worker font load warning:', e);
+                    }
+                }
                 const module = await import(modulePath);
                 const AnimClass = module.default;
                 animation = new AnimClass();
