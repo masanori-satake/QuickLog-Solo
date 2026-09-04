@@ -77,6 +77,34 @@ test.describe('UI and General Settings', () => {
         await expect(page.locator('#animation-select')).toHaveValue('digital_rain');
     });
 
+    test('should expose pause themes as keyboard-accessible toggle buttons', async ({ page }) => {
+        await page.click('#settings-toggle');
+
+        const selectedTheme = page.locator('#pause-theme-palette .color-option[aria-pressed="true"]');
+        await expect(selectedTheme).toHaveCount(1);
+        await expect(selectedTheme).toHaveAttribute('aria-label', /.+/);
+
+        const retroLcdTheme = page.locator('#pause-theme-palette .color-option[data-color="retro-lcd"]');
+        await expect(retroLcdTheme).toHaveAttribute('type', 'button');
+        await retroLcdTheme.focus();
+        await page.keyboard.press('Enter');
+
+        await expect(retroLcdTheme).toHaveAttribute('aria-pressed', 'true');
+        await expect(retroLcdTheme.locator('.material-symbols-outlined')).toHaveCSS('color', 'rgb(15, 56, 15)');
+        await expect
+            .poll(() =>
+                retroLcdTheme.evaluate((element) => {
+                    const themeBorderProbe = document.createElement('span');
+                    themeBorderProbe.style.color = 'var(--md-sys-color-on-surface)';
+                    document.body.appendChild(themeBorderProbe);
+                    const expectedBorderColor = getComputedStyle(themeBorderProbe).color;
+                    themeBorderProbe.remove();
+                    return getComputedStyle(element).borderTopColor === expectedBorderColor;
+                })
+            )
+            .toBe(true);
+    });
+
     test('should persist alarm settings', async ({ page }) => {
         await page.click('#settings-toggle');
         await page.click('button[data-tab="alarms"]');

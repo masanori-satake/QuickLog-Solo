@@ -2256,6 +2256,7 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
 .color-option {
     width: 32px;
     height: 32px;
+    padding: 0;
     justify-self: center;
     border-radius: 50%;
     cursor: pointer;
@@ -2281,13 +2282,10 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
     transform: scale(1.1);
 }
 
-.color-option.selected {
-    border-color: var(--md-sys-color-on-surface);
-}
-
 .color-option[data-color="retro-lcd"] {
-    background-color: #9bbc0f !important;
-    border-color: #0f380f !important;
+    background-color: #9bbc0f;
+    border-color: #0f380f;
+    color: #0f380f;
     position: relative;
 }
 
@@ -2304,8 +2302,9 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
 }
 
 .color-option[data-color="retro-crt"] {
-    background-color: #3f3 !important;
-    border-color: #030c04 !important;
+    background-color: #3f3;
+    border-color: #030c04;
+    color: #030c04;
     position: relative;
 }
 
@@ -2322,8 +2321,9 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
 }
 
 .color-option[data-color="retro-nixie"] {
-    background-color: #f50 !important;
-    border-color: #0c0603 !important;
+    background-color: #f50;
+    border-color: #0c0603;
+    color: #0c0603;
     position: relative;
 }
 
@@ -2343,6 +2343,10 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
 .color-option.selected[data-color="retro-crt"]::after,
 .color-option.selected[data-color="retro-nixie"]::after {
     display: none;
+}
+
+.color-option.selected {
+    border-color: var(--md-sys-color-on-surface);
 }
 
 /* Backup and Restore UI Fixes */

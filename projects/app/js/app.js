@@ -1307,11 +1307,16 @@ function renderPauseThemePalette(paletteEl, selectedValue) {
         'retro-nixie',
     ];
     colorKeys.forEach((color) => {
-        const opt = createEl('div');
-        opt.className = `color-option${color === selectedValue ? ' selected' : ''}`;
+        const isSelected = color === selectedValue;
+        const opt = createEl('button');
+        opt.type = 'button';
+        opt.className = `color-option${isSelected ? ' selected' : ''}`;
         opt.style.backgroundColor = getColorCode(color);
         opt.dataset.color = color;
-        opt.title = t(`color-${color}`) !== `color-${color}` ? t(`color-${color}`) : color;
+        const themeName = t(`color-${color}`) !== `color-${color}` ? t(`color-${color}`) : color;
+        opt.title = themeName;
+        opt.setAttribute('aria-label', themeName);
+        opt.setAttribute('aria-pressed', String(isSelected));
 
         const check = createEl('span');
         check.className = 'material-symbols-outlined';
@@ -1321,7 +1326,9 @@ function renderPauseThemePalette(paletteEl, selectedValue) {
         opt.onclick = async () => {
             currentPauseTheme = color;
             paletteEl.querySelectorAll('.color-option').forEach((o) => {
-                o.classList.toggle('selected', o.dataset.color === color);
+                const optionIsSelected = o.dataset.color === color;
+                o.classList.toggle('selected', optionIsSelected);
+                o.setAttribute('aria-pressed', String(optionIsSelected));
             });
             await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_THEME, value: color });
             await updateUI();
