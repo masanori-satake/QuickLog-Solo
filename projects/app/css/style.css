@@ -2249,12 +2249,14 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
 .color-palette {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    padding: 4px 0;
+    gap: 8px 6px;
+    padding: 6px;
 }
 
 .color-option {
-    aspect-ratio: 1;
+    width: 32px;
+    height: 32px;
+    justify-self: center;
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid transparent;
