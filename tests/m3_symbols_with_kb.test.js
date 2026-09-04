@@ -10,6 +10,8 @@ describe('M3SymbolsWithKB Animation Module', () => {
         mockCtx = {
             save: jest.fn(),
             restore: jest.fn(),
+            translate: jest.fn(),
+            rotate: jest.fn(),
             fillText: jest.fn(),
             strokeText: jest.fn(),
             globalAlpha: 1.0,
@@ -51,19 +53,28 @@ describe('M3SymbolsWithKB Animation Module', () => {
         expect(instance.kb_scale_end).toBe(1.4);
         expect(instance.kb_duration).toBe(2500);
         expect(instance.kb_easing).toBe('ease-in-out');
+        expect(instance.max_tilt_deg).toBe(20);
+        expect(instance.min_visibility_ratio).toBe(0.60);
     });
 
-    test('should deterministically pick symbols for the same cycle index', () => {
-        const symbolCycle0 = instance._getSymbolForCycle(0);
-        const symbolCycle0Again = instance._getSymbolForCycle(0);
-        expect(symbolCycle0).toBe(symbolCycle0Again);
+    test('should deterministically generate cycle properties for the same cycle index', () => {
+        const propsCycle0 = instance._getCycleProperties(0);
+        const propsCycle0Again = instance._getCycleProperties(0);
+        expect(propsCycle0).toEqual(propsCycle0Again);
 
-        const symbolCycle1 = instance._getSymbolForCycle(1);
-        const symbolCycle2 = instance._getSymbolForCycle(2);
+        expect(typeof propsCycle0.symbol).toBe('string');
+        expect(propsCycle0.sizeFactor).toBeGreaterThanOrEqual(0.85);
+        expect(propsCycle0.sizeFactor).toBeLessThanOrEqual(1.25);
+        expect(Math.abs(propsCycle0.tiltDeg)).toBeLessThanOrEqual(20);
+    });
 
-        expect(typeof symbolCycle0).toBe('string');
-        expect(typeof symbolCycle1).toBe('string');
-        expect(typeof symbolCycle2).toBe('string');
+    test('should generate tilt angles within +-20 degrees across cycles', () => {
+        for (let i = 0; i < 100; i++) {
+            const props = instance._getCycleProperties(i);
+            expect(props.tiltDeg).toBeGreaterThanOrEqual(-20);
+            expect(props.tiltDeg).toBeLessThanOrEqual(20);
+            expect(Math.abs(props.tiltRad)).toBeLessThanOrEqual((20 * Math.PI) / 180 + 0.001);
+        }
     });
 
     test('should conform to category target weights across sample cycles', () => {
@@ -73,7 +84,8 @@ describe('M3SymbolsWithKB Animation Module', () => {
         const allSymbols = instance.categories;
 
         for (let i = 0; i < totalCycles; i++) {
-            const sym = instance._getSymbolForCycle(i);
+            const props = instance._getCycleProperties(i);
+            const sym = props.symbol;
             if (allSymbols.pause.includes(sym)) counts.pause++;
             else if (allSymbols.relax.includes(sym)) counts.relax++;
             else if (allSymbols.abstract.includes(sym)) counts.abstract++;
@@ -87,7 +99,7 @@ describe('M3SymbolsWithKB Animation Module', () => {
         expect(counts.random / totalCycles).toBeCloseTo(0.05, 1);
     });
 
-    test('should render canvas drawing without error across frame steps', () => {
+    test('should render canvas drawing with translate and rotate without error across frame steps', () => {
         instance.setup(300, 200);
 
         // Draw multiple frames across cycle transitions
@@ -99,6 +111,8 @@ describe('M3SymbolsWithKB Animation Module', () => {
             }).not.toThrow();
         });
 
+        expect(mockCtx.translate).toHaveBeenCalled();
+        expect(mockCtx.rotate).toHaveBeenCalled();
         expect(mockCtx.fillText).toHaveBeenCalled();
         expect(mockCtx.strokeText).toHaveBeenCalled();
     });

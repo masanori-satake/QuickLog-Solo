@@ -2,8 +2,9 @@ import { AnimationBase } from '../animation_base.js';
 
 /**
  * M3SymbolsWithKB Animation
- * Displays Material Design 3 symbols with Ken Burns zoom and smooth fade transitions
- * to visually indicate break status without using localized text.
+ * Displays Material Design 3 symbols with Ken Burns zoom, random placement,
+ * random scale, and subtle rotation tilt (up to +-20 deg) to visually indicate
+ * break status without using localized text.
  */
 export default class M3SymbolsWithKB extends AnimationBase {
     static metadata = {
@@ -19,14 +20,14 @@ export default class M3SymbolsWithKB extends AnimationBase {
             zh: "M3 符号 (KB)"
         },
         description: {
-            en: "Break reminder animation displaying Material Design 3 symbols with Ken Burns zoom and fade transitions.",
-            ja: "M3シンボルがKen Burns効果で拡大・フェードし、休憩中であることを優しく知らせるアニメーションです。",
-            de: "Pause-Erinnerungsanimation mit Material Design 3-Symbolen mit Ken Burns-Zoom und Überblendung.",
-            es: "Animación de recordatorio de descanso que muestra símbolos de Material Design 3 con zoom Ken Burns y transición de desvanecimiento.",
-            fr: "Animation de rappel de pause affichant des symboles Material Design 3 avec zoom Ken Burns et fondu.",
-            pt: "Animação de lembrete de pausa exibindo símbolos do Material Design 3 com zoom Ken Burns e transições de esmaecimento.",
-            ko: "Ken Burns 줌 및 페イド効果로 Material Design 3 심볼을 표시하여 휴식 중임을 알려주는 애니메이션です。",
-            zh: "带有 Ken Burns 缩放和淡入淡出过渡的 Material Design 3 符号休息提醒动画。"
+            en: "Break reminder animation displaying Material Design 3 symbols with Ken Burns zoom, random placement, and rotation tilt.",
+            ja: "M3シンボルがランダムな位置・傾き・大きさでKen Burns効果で拡大・フェードし、休憩中であることを優しく知らせるアニメーションです。",
+            de: "Pause-Erinnerungsanimation mit Material Design 3-Symbolen mit Ken Burns-Zoom, zufälliger Platzierung und Drehung.",
+            es: "Animación de recordatorio de descanso que muestra símbolos de Material Design 3 con zoom Ken Burns, ubicación aleatoria e inclinación.",
+            fr: "Animation de rappel de pause affichant des symboles Material Design 3 avec zoom Ken Burns, placement aléatoire et inclinaison.",
+            pt: "Animação de lembrete de pausa exibindo símbolos do Material Design 3 com zoom Ken Burns, posicionamento aleatório e inclinação.",
+            ko: "Ken Burns 줌, 렌덤 위치 및 회전 효과로 Material Design 3 심볼을 표시하여 휴식 중임을 알려주는 애니메이션입니다.",
+            zh: "带有 Ken Burns 缩放、随机位置和倾斜旋转的 Material Design 3 符号休息提醒动画。"
         },
         author: "QuickLog-Solo",
         rewindable: true
@@ -59,6 +60,8 @@ export default class M3SymbolsWithKB extends AnimationBase {
         this.kb_scale_end = 1.4;
         this.kb_duration = 2500; // ms per cycle
         this.kb_easing = 'ease-in-out';
+        this.max_tilt_deg = 20; // max tilt angle +-20 degrees
+        this.min_visibility_ratio = 0.60; // guarantee at least 60% of symbol is visible
         this.dot_granularity = 10;
         this.baseSymbolSize = 0;
     }
@@ -97,12 +100,15 @@ export default class M3SymbolsWithKB extends AnimationBase {
     }
 
     /**
-     * Pick a symbol based on weighted probabilities deterministically for a given cycle index
+     * Get randomized cycle parameters deterministically based on cycle index
      * @param {number} cycleIndex - Index of current cycle
-     * @returns {string} M3 symbol ligature name
+     * @returns {Object} Cycle properties (symbol, sizeFactor, tiltRad, rPosX, rPosY)
      */
-    _getSymbolForCycle(cycleIndex) {
-        const rCat = this._pseudoRandom(cycleIndex * 2 + 101);
+    _getCycleProperties(cycleIndex) {
+        const seedBase = cycleIndex * 7 + 100;
+
+        // 1. Category Selection
+        const rCat = this._pseudoRandom(seedBase + 1);
         let cumulative = 0;
         let selectedCategory = 'pause';
 
@@ -114,11 +120,26 @@ export default class M3SymbolsWithKB extends AnimationBase {
             }
         }
 
+        // 2. Symbol Selection
         const symbolList = this.categories[selectedCategory] || this.categories.pause;
-        const rSym = this._pseudoRandom(cycleIndex * 2 + 102);
+        const rSym = this._pseudoRandom(seedBase + 2);
         const symbolIdx = Math.floor(rSym * symbolList.length) % symbolList.length;
+        const symbol = symbolList[symbolIdx];
 
-        return symbolList[symbolIdx];
+        // 3. Size Factor (0.85 to 1.25)
+        const rSize = this._pseudoRandom(seedBase + 3);
+        const sizeFactor = 0.85 + rSize * 0.40;
+
+        // 4. Tilt Angle in Radians (+- max_tilt_deg)
+        const rTilt = this._pseudoRandom(seedBase + 4);
+        const tiltDeg = (rTilt * 2 - 1) * this.max_tilt_deg;
+        const tiltRad = (tiltDeg * Math.PI) / 180;
+
+        // 5. Position Ratios
+        const rPosX = this._pseudoRandom(seedBase + 5);
+        const rPosY = this._pseudoRandom(seedBase + 6);
+
+        return { symbol, sizeFactor, tiltRad, tiltDeg, rPosX, rPosY };
     }
 
     /**
@@ -138,19 +159,44 @@ export default class M3SymbolsWithKB extends AnimationBase {
         const cycleIndex = Math.floor(elapsedMs / duration);
         const cycleProgress = (elapsedMs % duration) / duration;
 
-        const symbol = this._getSymbolForCycle(cycleIndex);
+        const props = this._getCycleProperties(cycleIndex);
 
         // Ken Burns Scale Calculation
         const easedProgress = this._ease(cycleProgress);
-        const scale = this.kb_scale_start + (this.kb_scale_end - this.kb_scale_start) * easedProgress;
+        const kbScale = this.kb_scale_start + (this.kb_scale_end - this.kb_scale_start) * easedProgress;
+
+        // Final rendered symbol font size
+        const fontSize = Math.floor(this.baseSymbolSize * props.sizeFactor * kbScale);
+
+        // Calculate position limits to guarantee >= 60% visibility
+        // To guarantee >= 60% total area visible, ensure at least sqrt(0.60) ~= 0.775 coverage per axis
+        // Overlapping at most 0.225 * fontSize outside each canvas boundary
+        const maxOverflowRatio = 0.22;
+        const minMargin = (0.50 - maxOverflowRatio) * fontSize;
+
+        let minCx = minMargin;
+        let maxCx = width - minMargin;
+        if (minCx >= maxCx) {
+            minCx = width / 2;
+            maxCx = width / 2;
+        }
+
+        let minCy = minMargin;
+        let maxCy = height - minMargin;
+        if (minCy >= maxCy) {
+            minCy = height / 2;
+            maxCy = height / 2;
+        }
+
+        const cx = minCx + props.rPosX * (maxCx - minCx);
+        const cy = minCy + props.rPosY * (maxCy - minCy);
 
         // Smooth Alpha Fade In and Fade Out
         const alpha = Math.sin(cycleProgress * Math.PI);
 
-        // Calculate rendered font size
-        const fontSize = Math.floor(this.baseSymbolSize * scale);
-
         ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(props.tiltRad);
         ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#ffffff';
@@ -159,11 +205,8 @@ export default class M3SymbolsWithKB extends AnimationBase {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        const cx = width / 2;
-        const cy = height / 2;
-
-        ctx.fillText(symbol, cx, cy);
-        ctx.strokeText(symbol, cx, cy);
+        ctx.fillText(props.symbol, 0, 0);
+        ctx.strokeText(props.symbol, 0, 0);
         ctx.restore();
     }
 }
