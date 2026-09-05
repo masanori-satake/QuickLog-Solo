@@ -468,7 +468,7 @@ export async function getCurrentAppState() {
         businessDays: businessDays ? businessDays.value : [1, 2, 3, 4, 5],
         timerHeight: timerHeight ? timerHeight.value : 'normal',
         categoryLayout: categoryLayout ? categoryLayout.value : '2x8',
-        pauseAnimation: pauseAnimation ? pauseAnimation.value : 'm3_symbols_with_kb',
+        pauseAnimation: pauseAnimation ? pauseAnimation.value : 'snoring_zzz',
         pauseTheme: pauseTheme ? pauseTheme.value : 'neutral',
         sessionSync: (await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC))?.value || false,
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),

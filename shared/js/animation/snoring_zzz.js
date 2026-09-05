@@ -9,14 +9,14 @@ export default class SnoringZzz extends AnimationBase {
     static metadata = {
         specVersion: '1.0',
         name: {
-            en: "Snoring Zzz...",
+            en: "Zzz...",
             ja: "Zzz...",
-            de: "Schnarchen Zzz...",
-            es: "Roncando Zzz...",
-            fr: "Ronflement Zzz...",
-            pt: "Roncando Zzz...",
-            ko: "코골이 Zzz...",
-            zh: "打呼噜 Zzz..."
+            de: "Zzz...",
+            es: "Zzz...",
+            fr: "Zzz...",
+            pt: "Zzz...",
+            ko: "Zzz...",
+            zh: "Zzz..."
         },
         description: {
             en: "Manga-style floating 'Z', 'z', and '.' symbols with gentle swaying motion for standby state.",
@@ -71,7 +71,6 @@ export default class SnoringZzz extends AnimationBase {
         this.height = 0;
         this.elements = [];
         this.lastSpawnTime = 0;
-        this.lastElapsedMs = null;
         this.nextSpawnInterval = 1000;
     }
 
@@ -80,7 +79,6 @@ export default class SnoringZzz extends AnimationBase {
         this.height = height;
         this.elements = [];
         this.lastSpawnTime = 0;
-        this.lastElapsedMs = null;
 
         // Seed initial floating elements on both left and right sides
         this.spawnInitialElements();
@@ -164,14 +162,11 @@ export default class SnoringZzz extends AnimationBase {
         if (width <= 0 || height <= 0) return sprites;
 
         // Handle rewinding / reset
-        const hasPreviousFrame = this.lastElapsedMs !== null;
-        const deltaMs = hasPreviousFrame ? Math.max(0, elapsedMs - this.lastElapsedMs) : 0;
-        if (hasPreviousFrame && elapsedMs < this.lastElapsedMs) {
+        if (elapsedMs < this.lastSpawnTime) {
             this.lastSpawnTime = elapsedMs;
             this.elements = [];
             this.spawnInitialElements();
         }
-        this.lastElapsedMs = elapsedMs;
 
         // Spawn new element periodically
         if (elapsedMs - this.lastSpawnTime > this.nextSpawnInterval) {
@@ -186,7 +181,7 @@ export default class SnoringZzz extends AnimationBase {
         const activeElements = [];
 
         for (const elem of this.elements) {
-            elem.y -= elem.speedY * deltaMs / (1000 / 60);
+            elem.y -= elem.speedY;
 
             // Horizontal sway
             const sway = Math.sin(elapsedMs * elem.swayFrequency + elem.swayPhase) * elem.swayAmplitude;
