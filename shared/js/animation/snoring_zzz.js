@@ -71,6 +71,7 @@ export default class SnoringZzz extends AnimationBase {
         this.height = 0;
         this.elements = [];
         this.lastSpawnTime = 0;
+        this.lastElapsedMs = null;
         this.nextSpawnInterval = 1000;
     }
 
@@ -79,6 +80,7 @@ export default class SnoringZzz extends AnimationBase {
         this.height = height;
         this.elements = [];
         this.lastSpawnTime = 0;
+        this.lastElapsedMs = null;
 
         // Seed initial floating elements on both left and right sides
         this.spawnInitialElements();
@@ -162,11 +164,14 @@ export default class SnoringZzz extends AnimationBase {
         if (width <= 0 || height <= 0) return sprites;
 
         // Handle rewinding / reset
-        if (elapsedMs < this.lastSpawnTime) {
+        const hasPreviousFrame = this.lastElapsedMs !== null;
+        const deltaMs = hasPreviousFrame ? Math.max(0, elapsedMs - this.lastElapsedMs) : 0;
+        if (hasPreviousFrame && elapsedMs < this.lastElapsedMs) {
             this.lastSpawnTime = elapsedMs;
             this.elements = [];
             this.spawnInitialElements();
         }
+        this.lastElapsedMs = elapsedMs;
 
         // Spawn new element periodically
         if (elapsedMs - this.lastSpawnTime > this.nextSpawnInterval) {
@@ -181,7 +186,7 @@ export default class SnoringZzz extends AnimationBase {
         const activeElements = [];
 
         for (const elem of this.elements) {
-            elem.y -= elem.speedY;
+            elem.y -= elem.speedY * deltaMs / (1000 / 60);
 
             // Horizontal sway
             const sway = Math.sin(elapsedMs * elem.swayFrequency + elem.swayPhase) * elem.swayAmplitude;
