@@ -67,4 +67,12 @@ describe('SnoringZzz Animation Module', () => {
             }
         });
     });
+
+    test('defines clean 1:1 cell patterns for Z, z, dot, bubble, star', () => {
+        expect(SnoringZzz.PATTERNS['Z']).toBeDefined();
+        expect(SnoringZzz.PATTERNS['z']).toBeDefined();
+        expect(SnoringZzz.PATTERNS['.']).toBeDefined();
+        expect(SnoringZzz.PATTERNS['bubble']).toBeDefined();
+        expect(SnoringZzz.PATTERNS['star']).toBeDefined();
+    });
 });

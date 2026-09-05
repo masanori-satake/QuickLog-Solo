@@ -1,4 +1,5 @@
 import { AnimationBase } from '../animation_base.js';
+import { CELL_SIZE } from '../utils.js';
 
 /**
  * Snoring Zzz... Animation
@@ -34,8 +35,7 @@ export default class SnoringZzz extends AnimationBase {
 
     config = { mode: 'sprite', exclusionStrategy: 'jump' };
 
-    // Pixel patterns (1 cell = 1 dot)
-    // Single-line width pixels so lines don't merge or overlap into solid blocks
+    // Pixel patterns mapped 1:1 to CELL_SIZE (6px dot grid)
     static PATTERNS = {
         'Z': [
             [1, 1, 1, 1, 1],
@@ -148,8 +148,6 @@ export default class SnoringZzz extends AnimationBase {
             swayAmplitude: 4 + Math.random() * 12,
             swayFrequency: 0.002 + Math.random() * 0.003,
             swayPhase: Math.random() * Math.PI * 2,
-            scale: type === 'Z' ? (0.9 + Math.random() * 0.4) : (0.8 + Math.random() * 0.3),
-            rotation: (Math.random() - 0.5) * 0.4, // Tilt in radians (-11 deg to +11 deg)
             spawnTime: 0
         };
     }
@@ -191,36 +189,24 @@ export default class SnoringZzz extends AnimationBase {
             currentX = Math.max(elem.minX, Math.min(elem.maxX, currentX));
 
             // Fade/disappear check as it reaches top
-            if (elem.y < -20) continue;
+            if (elem.y < -30) continue;
 
             activeElements.push(elem);
 
             // Get pattern grid
             const pattern = SnoringZzz.PATTERNS[elem.type] || SnoringZzz.PATTERNS['z'];
-            const cosR = Math.cos(elem.rotation);
-            const sinR = Math.sin(elem.rotation);
-            const dotSize = 2;
-
             const gridH = pattern.length;
             const gridW = pattern[0].length;
-            const originX = (gridW * dotSize) / 2;
-            const originY = (gridH * dotSize) / 2;
+            const originX = (gridW * CELL_SIZE) / 2;
+            const originY = (gridH * CELL_SIZE) / 2;
 
             for (let r = 0; r < gridH; r++) {
                 for (let c = 0; c < gridW; c++) {
                     if (pattern[r][c] === 1) {
-                        // Position relative to element center
-                        const localX = (c * dotSize - originX) * elem.scale;
-                        const localY = (r * dotSize - originY) * elem.scale;
-
-                        // Rotate
-                        const rotX = localX * cosR - localY * sinR;
-                        const rotY = localX * sinR + localY * cosR;
-
                         sprites.push({
-                            x: Math.round(currentX + rotX),
-                            y: Math.round(elem.y + rotY),
-                            size: dotSize
+                            x: Math.round(currentX + c * CELL_SIZE - originX),
+                            y: Math.round(elem.y + r * CELL_SIZE - originY),
+                            size: 2
                         });
                     }
                 }
