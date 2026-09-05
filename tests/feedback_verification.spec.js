@@ -8,7 +8,7 @@ test('Feedback implementation verification', async ({ page }) => {
   await page.goto('/projects/web/index.html');
   const langOptions = await page.locator('#lang-select-landing option').allTextContents();
   console.log('Lang Options:', langOptions);
-  expect(langOptions[0]).toContain('🇺🇸');
+  expect(langOptions[0]).toContain('English');
 
   // 2. Check Category Editor UI
   await page.goto('/projects/category-editor/index.html');
