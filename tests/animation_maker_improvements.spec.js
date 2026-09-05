@@ -134,6 +134,8 @@ test.describe('QL-Animation Maker Improvements', () => {
 
     // Add custom animation
     await page.click('#add-anim-btn');
+    await page.waitForSelector('#m3-dialog-modal:not(.hidden)');
+    await page.waitForSelector('#m3-dialog-ok-btn', { state: 'visible' });
     await page.click('#m3-dialog-ok-btn');
 
     // Rename the animation to "Test GIF Renaming"
@@ -180,6 +182,8 @@ test.describe('QL-Animation Maker Improvements', () => {
       };
       localStorage.setItem('custom_animation_metadata_map', JSON.stringify(map));
     });
+
+    await page.waitForSelector('.category-btn');
 
     // Open Settings if not already open to trigger rendering of dropdowns
     const settingsPopup = page.locator('#settings-popup');

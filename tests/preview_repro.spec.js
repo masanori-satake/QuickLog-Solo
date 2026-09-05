@@ -13,8 +13,8 @@ test('Preview animations on landing page', async ({ page }) => {
     await previewBtn.click();
 
     // Wait for modal and iframe
-    await page.waitForSelector('.preview-iframe');
-    const frame = page.frame({ url: /app.html/ });
+    const iframeElement = await page.waitForSelector('.preview-iframe');
+    const frame = await iframeElement.contentFrame();
 
     if (!frame) {
         throw new Error('Iframe not found');

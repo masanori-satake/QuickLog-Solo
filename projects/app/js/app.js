@@ -3357,6 +3357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await handleTestParameters();
 
         isAppInitialized = true;
+        document.body.classList.add('app-initialized');
         await syncState();
     } catch (e) {
         console.error('Failed to initialize application:', e);
