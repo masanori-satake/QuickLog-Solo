@@ -12,8 +12,11 @@ test.describe('Duplicate Tab Prevention in Web Browser Mode', () => {
             await okBtn.click();
         }
 
+        await page.waitForSelector('.category-btn');
+
         // Open settings popup
         await page.click('#settings-toggle');
+        await page.waitForSelector('#settings-popup', { state: 'visible' });
 
         // Switch to Categories tab
         await page.click('.tab-btn[data-tab="categories"]');
@@ -53,8 +56,11 @@ test.describe('Duplicate Tab Prevention in Web Browser Mode', () => {
             await okBtn.click();
         }
 
+        await page.waitForSelector('.category-btn');
+
         // Open settings popup
         await page.click('#settings-toggle');
+        await page.waitForSelector('#settings-popup', { state: 'visible' });
 
         // Switch to Alarms tab
         await page.click('.tab-btn[data-tab="alarms"]');

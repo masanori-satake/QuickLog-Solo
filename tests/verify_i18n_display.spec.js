@@ -14,6 +14,7 @@ test.describe('I18n display verification', () => {
 
             // Wait for application initialization
             await page.waitForSelector('#app');
+            await page.waitForSelector('.category-btn');
 
             // Check if a key UI element has text (not just the key name)
             const stopBtnText = page.locator('#end-btn .btn-text');
@@ -38,6 +39,7 @@ test.describe('I18n display verification', () => {
                 const settingsBtn = page.locator('#settings-toggle');
                 await expect(settingsBtn).toBeVisible();
                 await settingsBtn.click();
+                await expect(settingsPopup).toBeVisible();
             }
 
             await expect(settingsPopup).toBeVisible();

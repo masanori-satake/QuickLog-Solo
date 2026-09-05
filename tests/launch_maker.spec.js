@@ -22,8 +22,12 @@ test.describe('Launch QL-Animation Maker from Settings', () => {
       await okBtn.click();
     }
 
+    await page.waitForSelector('.category-btn');
+
     // Open settings and set theme to dark
     await page.click('#settings-toggle');
+    await page.waitForSelector('#settings-popup', { state: 'visible' });
+    await page.waitForSelector('#theme-select', { state: 'visible' });
     await page.selectOption('#theme-select', 'dark');
     await expect(page.locator('body')).toHaveClass(/theme-dark/);
 
