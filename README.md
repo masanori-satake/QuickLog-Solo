@@ -67,10 +67,10 @@ Chrome / Edge をお使いの場合は、Chrome Web Store から簡単にイン�
 ## プライバシーとセキュリティ (Privacy & Security)
 - **Local Only:** 本アプリは、CSP（Content Security Policy）により技術的に外部への通信を一切行わないことが保証されています。
 - **トラッキングなし:** アクセス解析や広告、外部サービスへのデータ送信は一切行いません。
-- **透明性:** プログラムは Vanilla JS で記述されており、依存関係によるブラックボックスがありません。また、開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。さらに、Google OSV-Scanner を用いた[透明性レポート（監査ログ）](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/ci.yml)を公開し、依存関係の安全性と透明性を確保しています。
+- **透明性:** プログラムは Vanilla JS で記述されており、依存関係によるブラックボックスがありません。また、開発者ツール（F12）から IndexedDB の中身を直接確認することが可能です。さらに、Google OSV-Scanner を用いた[透明性レポート（監査ログ）](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/osv-scan.yml)を公開し、依存関係の安全性と透明性を確保しています。
 - **Local Only:** This app is guaranteed by CSP (Content Security Policy) to technically block all external communications.
 - **No Tracking:** No analytics, advertisements, or data transmission to external services are performed.
-- **Transparency:** The program is written in Vanilla JS with no hidden dependencies. You can directly inspect the contents of IndexedDB using browser developer tools (F12). We also publish a [Transparency Report (Audit Logs)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/tests-and-lint.yml) powered by Google OSV-Scanner to ensure the security and transparency of dependencies.
+- **Transparency:** The program is written in Vanilla JS with no hidden dependencies. You can directly inspect the contents of IndexedDB using browser developer tools (F12). We also publish a [Transparency Report (Audit Logs)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/osv-scan.yml) powered by Google OSV-Scanner to ensure the security and transparency of dependencies.
 
 ## カスタマイズ
 - **テーマ:** ライトモード / ダークモードの切り替えが可能です。
