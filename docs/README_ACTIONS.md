@@ -78,7 +78,7 @@ PR マージ時の動作を確実にするため、および自動更新によ�
   3. 各言語（JA, EN等）ごとに、主要なUIコンポーネントのスクリーンショットを要素単位 (`locator.screenshot()`) で取得します。
   4. 生成された画像は `shared/assets/guide/` に保存されます。
 - **自動化**: `update_guide_screenshots.yml` ワークフローにより、コード変更時にこれらの画像が自動的に再生成され、リポジトリにコミットされます。
-- **検証**: CI (`ci.yml`) の E2E テストフェーズにおいて、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
+- **検証**: CI (`tests-and-lint.yml`) の E2E テストフェーズにおいて、`tests/guide_verification.spec.js` が実行され、画像ファイルの存在と内容の妥当性がチェックされます。
 
 ---
 
@@ -119,7 +119,7 @@ graph TD
 ```
 
 #### 特徴的な条件判断
-- **トリガーの最適化**: `ci.yml` 内の各ジョブは、変更されたファイルに基づいて条件付きで実行されます（`tj-actions/changed-files` を活用）。関連性のないファイル（ドキュメントのみの変更など）の更新時には重いテストをスキップすることで、リソースを節約します。
+- **トリガーの最適化**: `tests-and-lint.yml` 内の各ジョブは、変更されたファイルに基づいて条件付きで実行されます（`tj-actions/changed-files` を活用）。関連性のないファイル（ドキュメントのみの変更など）の更新時には重いテストをスキップすることで、リソースを節約します。
 - **並列実行**: 監査・品質、脆弱性スキャン、E2Eテスト、アニメーション評価はそれぞれ独立したジョブとして並列に実行されます。
 
 ---
@@ -161,13 +161,13 @@ flowchart LR
 
 ## トラブルシューティング
 
-### GitHub Security タブに "Action workflow file not found" と表示される場合
+### GitHub Security タブに "Action workflow file not found" や "1 configuration not found" と表示される場合
 
-以前存在していたワークフローファイル（例: `audit.yml` や `test_quality.yml`）が削除されたり、`ci.yml` に統合されたりした際、GitHub の Code scanning 設定に古い登録が残ることがあります。この場合、以下の手順で設定を削除してください。
+以前存在していたワークフローファイル（例: `ci.yml`）が削除・分割された際（例: `tests-and-lint.yml` や `osv-scan.yml` への再編時など）、GitHub の Code scanning 設定に古い登録（例: `.github/workflows/ci.yml:osv-scan`）が残ることがあります。この場合、以下の手順で不要な構成情報を削除してください。
 
 1. リポジトリの **Security** タブを開く。
 2. 左メニューの **Code scanning** をクリック。
-3. 右上の **Tool status** ボタンをクリックしてステータスページを開き、不要になった構成（例: `audit.yml`）の「...」メニューから **Delete**（削除）を選択してください。
+3. 右上の **Tool status** ボタンをクリックしてステータスページを開き、不要になった構成（例: `ci.yml`）の「...」メニューから **Delete**（削除）を選択してください。
 
 ## ドキュメントの維持管理
 

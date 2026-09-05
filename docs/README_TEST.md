@@ -7,7 +7,7 @@
 -   **テストランナー:** Jest
 -   **エミュレーション:** jsdom (ブラウザ環境), fake-indexeddb (IndexedDB)
 -   **テスト対象:** `js/logic.js` (ビジネスロジック), `js/db.js` (データアクセス), `js/backup.js` (バックアップ), `js/utils.js` (ユーティリティ) 等
--   **実行タイミング:** 開発時の手動実行（`npm test`）、およびコミット時の pre-commit フック（ローカル環境）による検証。PR 時は GitHub Actions (`ci.yml`) で実行されます。
+-   **実行タイミング:** 開発時の手動実行（`npm test`）、およびコミット時の pre-commit フック（ローカル環境）による検証。PR 時は、GitHub Actions (`tests-and-lint.yml`) の `pull_request.paths` に含まれる対象パスを変更した場合にのみ実行されます（`docs/**` または `README.md` のみを変更する PR では起動しません）。
 
 ---
 
