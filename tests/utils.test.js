@@ -119,6 +119,9 @@ describe('Utils Module', () => {
 
         test('handles special characters in base name', () => {
             expect(generateDuplicateName('Task [A]', ['Task [A] (1)'])).toBe('Task [A] (2)');
+            expect(generateDuplicateName('Task-Force', ['Task-Force (1)', 'Task-Force (2)'])).toBe('Task-Force (3)');
+            expect(generateDuplicateName('Dev - Task (A-B)', ['Dev - Task (A-B) (1)'])).toBe('Dev - Task (A-B) (2)');
+            expect(generateDuplicateName('App{1}', ['App{1} (1)'])).toBe('App{1} (2)');
         });
 
         test('handles multi-byte characters', () => {
