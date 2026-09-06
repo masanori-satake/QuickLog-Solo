@@ -155,7 +155,7 @@ export function generateDuplicateName(baseName, existingNames) {
     if (!Array.isArray(existingNames)) return baseName;
     const cleanBase = baseName.replace(/\s*\(\d+\)$/, '').trim();
     let maxNum = 0;
-    const pattern = new RegExp(`^${cleanBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\((\\d+)\\)$`);
+    const pattern = new RegExp(`^${cleanBase.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&')}\\s*\\((\\d+)\\)$`);
 
     existingNames.forEach((name) => {
         if (typeof name !== 'string') return;
