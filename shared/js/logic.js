@@ -91,10 +91,12 @@ export function stripEmojis(str) {
 export function getVisualWidth(str) {
     if (typeof str !== 'string') return 0;
     let width = 0;
-    for (let i = 0; i < str.length; i++) {
+    // Cache string length and avoid redundant code >= 0x00 check since charCodeAt is non-negative for valid indices
+    const len = str.length;
+    for (let i = 0; i < len; i++) {
         const code = str.charCodeAt(i);
-        // Half-width characters (roughly)
-        if ((code >= 0x00 && code <= 0xff) || (code >= 0xff61 && code <= 0xff9f)) {
+        // Half-width characters (0x00..0xFF ASCII/Latin-1 or 0xFF61..0xFF9F Half-width Katakana)
+        if (code <= 0xff || (code >= 0xff61 && code <= 0xff9f)) {
             width += 1;
         } else {
             width += 2;
