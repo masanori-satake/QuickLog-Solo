@@ -139,10 +139,27 @@ describe('Utils Module', () => {
     });
 
     describe('generateUUID and floorToMinute', () => {
-        test('generateUUID fallback when crypto.randomUUID is not available', () => {
+        test('generateUUID uses crypto.getRandomValues when crypto.randomUUID is not available', () => {
             const originalCrypto = globalThis.crypto;
             try {
-                // Mock crypto to lack randomUUID or be undefined
+                globalThis.crypto = {
+                    getRandomValues: (arr) => {
+                        for (let i = 0; i < arr.length; i++) {
+                            arr[i] = i * 16;
+                        }
+                        return arr;
+                    },
+                };
+                const uuid = generateUUID();
+                expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+            } finally {
+                globalThis.crypto = originalCrypto;
+            }
+        });
+
+        test('generateUUID fallback when crypto is not available at all', () => {
+            const originalCrypto = globalThis.crypto;
+            try {
                 delete globalThis.crypto;
                 const uuid = generateUUID();
                 expect(uuid).toMatch(/^uuid-\d+-[a-z0-9]+$/);
