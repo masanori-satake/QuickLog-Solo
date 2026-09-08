@@ -185,7 +185,11 @@ export function generateUUID() {
         crypto.getRandomValues(bytes);
         bytes[6] = (bytes[6] & 0x0f) | 0x40; // Version 4
         bytes[8] = (bytes[8] & 0x3f) | 0x80; // Variant 1 (RFC 4122)
-        const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+        var hex = '';
+        for (var i = 0; i < bytes.length; i++) {
+            var byteHex = bytes[i].toString(16);
+            hex += byteHex.length === 1 ? '0' + byteHex : byteHex;
+        }
         return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
     }
     return 'uuid-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
