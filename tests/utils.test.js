@@ -139,10 +139,34 @@ describe('Utils Module', () => {
     });
 
     describe('generateUUID and floorToMinute', () => {
-        test('generateUUID fallback when crypto.randomUUID is not available', () => {
+        test('generateUUID uses crypto.getRandomValues when crypto.randomUUID is not available', () => {
+            const originalCryptoDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+            try {
+                let getRandomValuesCalls = 0;
+                Object.defineProperty(globalThis, 'crypto', {
+                    configurable: true,
+                    value: {
+                        randomUUID: undefined,
+                        getRandomValues: (arr) => {
+                            getRandomValuesCalls++;
+                            for (let i = 0; i < arr.length; i++) {
+                                arr[i] = i * 16;
+                            }
+                            return arr;
+                        },
+                    },
+                });
+                const uuid = generateUUID();
+                expect(getRandomValuesCalls).toBe(1);
+                expect(uuid).toBe('00102030-4050-4070-8090-a0b0c0d0e0f0');
+            } finally {
+                Object.defineProperty(globalThis, 'crypto', originalCryptoDescriptor);
+            }
+        });
+
+        test('generateUUID fallback when crypto is not available at all', () => {
             const originalCrypto = globalThis.crypto;
             try {
-                // Mock crypto to lack randomUUID or be undefined
                 delete globalThis.crypto;
                 const uuid = generateUUID();
                 expect(uuid).toMatch(/^uuid-\d+-[a-z0-9]+$/);
