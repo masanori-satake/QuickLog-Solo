@@ -175,7 +175,7 @@ export async function dbImportCategories(items, importMode) {
 
                 if (item.type === SCHEMA_TYPE_PAGE_BREAK) {
                     store.add({
-                        name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                        name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${generateUUID()}`,
                         order: ++maxOrderInDB
                     });
                 } else {
@@ -414,7 +414,7 @@ export async function initDB(isLite = false) {
     // Ensure Client ID exists
     let clientIdSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID);
     if (!clientIdSetting) {
-        const newId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const newId = generateUUID();
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_CLIENT_ID, value: newId });
     }
 
