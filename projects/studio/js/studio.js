@@ -532,8 +532,10 @@ function deindent(text) {
     }).join('\n');
 }
 
-function findRange(text, namePattern) {
-    const regex = new RegExp(`(^|\\n)([ \\t]*)(static\\s+)?${namePattern}\\b`, 'g');
+export function findRange(text, namePattern) {
+    if (typeof namePattern !== 'string') return null;
+    const escapedPattern = namePattern.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
+    const regex = new RegExp(`(^|\\n)([ \\t]*)(static\\s+)?${escapedPattern}\\b`, 'g');
     let match;
     while ((match = regex.exec(text)) !== null) {
         let actualStart = match.index + match[1].length;
