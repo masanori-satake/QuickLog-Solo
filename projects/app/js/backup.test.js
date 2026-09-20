@@ -19,6 +19,7 @@ jest.unstable_mockModule('../shared/js/db.js', () => ({
 jest.unstable_mockModule('../shared/js/utils.js', () => ({
     SYSTEM_CATEGORY_PAGE_BREAK: '__PAGE_BREAK__',
     SYSTEM_CATEGORY_IDLE: '__IDLE__',
+    generateUUID: jest.fn(() => '12345678-1234-4234-8234-123456789abc'),
 }));
 
 jest.unstable_mockModule('../shared/js/schema.js', () => ({

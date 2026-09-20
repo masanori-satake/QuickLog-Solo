@@ -210,7 +210,7 @@ class RestoreManager {
 
             if (record.type === SCHEMA_TYPE_PAGE_BREAK) {
                 validCategories.push({
-                    name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                    name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${generateUUID()}`,
                     order: i,
                 });
             } else {
