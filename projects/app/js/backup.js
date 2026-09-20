@@ -12,7 +12,7 @@ import {
     SETTING_KEY_BACKUP_DIR_HANDLE,
     LOG_CLEANUP_THRESHOLD_MS,
 } from '../shared/js/db.js';
-import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK, SYSTEM_CATEGORY_IDLE, generateUUID } from '../shared/js/utils.js';
 import {
     SCHEMA_VERSION_1_0,
     SCHEMA_VERSION_2_0,
@@ -497,7 +497,7 @@ class BackupManager {
 
         if (cat.type === SCHEMA_TYPE_PAGE_BREAK) {
             return {
-                name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${generateUUID()}`,
                 order: 0, // Placeholder, will be set during import loop
             };
         }

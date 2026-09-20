@@ -2,7 +2,7 @@
  * QL-Category Editor - UI Module
  */
 
-import { SYSTEM_CATEGORY_PAGE_BREAK, generateDuplicateName } from '../shared/js/utils.js';
+import { SYSTEM_CATEGORY_PAGE_BREAK, generateDuplicateName, generateUUID } from '../shared/js/utils.js';
 import { animations as animationRegistry } from '../shared/js/animation_registry.js';
 import { getCustomAnimationMetadataMap } from '../shared/js/utils/storage.js';
 
@@ -907,7 +907,7 @@ export function initUI(state, elements) {
     addPageBreakBtn.addEventListener('click', () => {
         if (state.recordAction) state.recordAction();
         const newPB = {
-            name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            name: `${SYSTEM_CATEGORY_PAGE_BREAK}_${Date.now()}_${generateUUID()}`,
         };
         state.categories.push(newPB);
         state.selectedIndices = [state.categories.length - 1];

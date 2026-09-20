@@ -605,4 +605,25 @@ describe('RestoreManager - custom animations and configured directory handles', 
         expect(converted.color).toBe('retro-lcd');
         expect(converted.tags).toBe('meeting');
     });
+
+    it('restores page breaks with CSPRNG-generated UUID identifiers', async () => {
+        const categoriesContent = buildCategoriesNdjson([{ type: 'page-break' }]);
+        const settingsContent = buildSettingsJson([]);
+
+        const dirHandle = createAsyncIterableDirHandle({
+            'ql_categories.ndjson': categoriesContent,
+            'ql_settings.json': settingsContent,
+        });
+
+        const showConfirm = jest.fn().mockResolvedValue(true);
+        const showToast = jest.fn();
+        const t = jest.fn((key) => key);
+
+        await restoreManager.restoreFromDirectory(showConfirm, showToast, t, dirHandle);
+
+        const categoryCalls = dbAddMultiple.mock.calls.filter(([store]) => store === 'categories');
+        expect(categoryCalls.length).toBeGreaterThan(0);
+        const pageBreakCat = categoryCalls[0][1][0];
+        expect(pageBreakCat.name).toMatch(/^__PAGE_BREAK___\d+_mocked-uuid$/);
+    });
 });
