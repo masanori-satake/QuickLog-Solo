@@ -1,9 +1,9 @@
 {
   "extensionName": {
-    "message": "QuickLog-Solo"
+    "message": "QuickLog-Solo - Local Task Logger & Tracker"
   },
   "extensionDescription": {
-    "message": "Log in a second, Summarize in a second. Minimalist Task Tracker for your peace of mind."
+    "message": "Log tasks & notes in 1 second from your browser. 100% local storage with zero data tracking. Fast, lightweight, and privacy-first."
   },
   "actionTitle": {
     "message": "Open QuickLog-Solo"

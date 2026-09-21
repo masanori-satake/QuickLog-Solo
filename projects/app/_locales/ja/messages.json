@@ -1,9 +1,9 @@
 {
   "extensionName": {
-    "message": "QuickLog-Solo"
+    "message": "QuickLog-Solo - 1秒で作業記録できるローカル完結型タイムトラッカー"
   },
   "extensionDescription": {
-    "message": "1秒で記録、1秒で集計、1秒で安心 - ミニマリスト向けサイドパネル作業メモツール"
+    "message": "ブラウザを開いたまま1秒でタスクやアイデアをメモ・記録。外部通信ゼロ・完全ローカル保存で、社内業務や機密性の高い作業でも安心して使える軽量タイムトラッカーです。"
   },
   "actionTitle": {
     "message": "QuickLog-Soloを開く"
