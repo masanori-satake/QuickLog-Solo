@@ -82,6 +82,11 @@ To try the latest unreleased features:
 
 ---
 
-## Disclaimer
+## 免責事項 (Disclaimer)
+本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、**無保証 (AS IS)** です。
+利用に際して生じたいかなる損害（データの消失、業務の中断、PCの不具合など、本ツールやドキュメントを利用したことによるすべての損害）について、開発者は一切の責任を負いません。
+MIT ライセンスの規定に基づき、「現状のまま」提供されるものとします。自己責任でご利用ください。
+
 This software is an open-source project provided **"AS IS"** without warranty of any kind.
-The developer shall not be liable for any claims, damages, or data loss arising from its use, as governed by the MIT License.
+The developer shall not be liable for any damages (including data loss, work interruption, etc.) arising from the use of this software.
+Use at your own risk, as per the MIT License.
