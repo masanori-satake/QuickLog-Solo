@@ -116,7 +116,7 @@ def main():
     # 2. Update other files
     files_to_update = [
         'projects/app/version.json',
-        'projects/app/manifest.chrome.json'
+        'projects/app/manifest.json'
     ]
 
     for filepath in files_to_update:
@@ -144,11 +144,6 @@ def main():
             new_content
         )
 
-        new_content = re.sub(
-            r'QuickLog-Solo-Dev-v[0-9.]+\.zip',
-            f'QuickLog-Solo-Dev-v{new_version}.zip',
-            new_content
-        )
 
         if content != new_content:
             with open(readme_path, 'w', encoding='utf-8') as f:

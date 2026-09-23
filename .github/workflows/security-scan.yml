@@ -1,0 +1,29 @@
+name: 'CI: 脆弱性検査 (Security Scan)'
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'projects/**'
+      - 'package.json'
+      - 'package-lock.json'
+  schedule:
+    - cron: '0 0 * * 0'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: read
+  security-events: write
+  contents: read
+
+jobs:
+  security:
+    uses: masanori-satake/common-workflows/.github/workflows/base-security.yml@v1

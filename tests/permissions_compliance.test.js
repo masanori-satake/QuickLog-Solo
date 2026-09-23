@@ -3,7 +3,7 @@ import path from 'path';
 
 describe('Manifest Permissions Compliance (Permissions Delta Verification)', () => {
     test('manifest.json has exact approved permissions and no unexpected additions', () => {
-        const manifestPath = path.resolve(process.cwd(), 'projects/app/manifest.chrome.json');
+        const manifestPath = path.resolve(process.cwd(), 'projects/app/manifest.json');
         const fileContent = fs.readFileSync(manifestPath, 'utf8');
         const manifest = JSON.parse(fileContent);
 

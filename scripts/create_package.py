@@ -4,8 +4,8 @@ import json
 import subprocess
 import shutil
 
-def create_zip(zip_filepath, manifest_src, temp_dir, is_dev=False, version=""):
-    print(f"Creating {'Dev ' if is_dev else ''}package: {zip_filepath}")
+def create_zip(zip_filepath, temp_dir):
+    print(f"Creating package: {zip_filepath}")
     try:
         # Create a temporary directory to assemble the package
         if os.path.exists(temp_dir):
@@ -17,30 +17,6 @@ def create_zip(zip_filepath, manifest_src, temp_dir, is_dev=False, version=""):
         for item in os.listdir(app_dir):
             if item == "shared": continue # Skip symlink
             src_path = os.path.join(app_dir, item)
-
-            if item.startswith("manifest."):
-                if item == manifest_src:
-                    manifest_dest = os.path.join(temp_dir, "manifest.json")
-                    shutil.copy2(src_path, manifest_dest)
-
-                    if is_dev:
-                        with open(manifest_dest, 'r', encoding='utf-8') as f:
-                            manifest_data = json.load(f)
-                        original_name = manifest_data.get("name", "QuickLog-Solo")
-                        manifest_data["name"] = f"{original_name} (Dev v{version})"
-                        # Fixed key for Dev builds to ensure consistent Extension ID across PCs for sync testing
-                        manifest_data["key"] = (
-                            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs4WPnsM/P1ruEw05T+sOitKm5s1rfBWi9"
-                            "prXJ00CLcGSAqlV7J6n6Z4DvkKODP540GisoRibJC5rLJlyih/92nTIwv0rQbP437gM6tXJpZ28Ul"
-                            "NeuC3i9FmafxpXTGDjPAz/8IsOwH/LrYq4fii6wdzwnwVtaAetNU/rDzI4VanLgtxBw7ZqoRXlFcy"
-                            "WlnNXaLf/KffHw41BLGG8mt5C4CyhvU4M+221Y0nzShp3u1izS2hRcPaF6fUO/ZZ19jOd2bmJVAtj"
-                            "m3/VA3QIit+5Z1HNPolNzz1VImozSICT5hxBcWSTzuYDQ15Av3AYLqyEVMV5x9KfRLssWGupCx7F"
-                            "VwIDAQAB"
-                        )
-                        with open(manifest_dest, 'w', encoding='utf-8') as f:
-                            json.dump(manifest_data, f, indent=2, ensure_ascii=False)
-                        print(f"  Modified manifest name: {manifest_data['name']}")
-                continue
 
             if os.path.isdir(src_path):
                 shutil.copytree(src_path, os.path.join(temp_dir, item))
@@ -58,7 +34,7 @@ def create_zip(zip_filepath, manifest_src, temp_dir, is_dev=False, version=""):
                 if 'guide' in names: ignored.append('guide')
                 if 'badges' in names: ignored.append('badges')
 
-            if not is_dev and os.path.normpath(path).endswith(os.path.join('js', 'animation')):
+            if os.path.normpath(path).endswith(os.path.join('js', 'animation')):
                 for name in names:
                     full_path = os.path.join(path, name)
                     if os.path.isfile(full_path) and name.endswith('.js'):
@@ -69,15 +45,7 @@ def create_zip(zip_filepath, manifest_src, temp_dir, is_dev=False, version=""):
 
         shutil.copytree("shared", shared_dest, ignore=ignore_shared, dirs_exist_ok=True)
 
-        # For Dev builds, regenerate icons with orange branding
-        if is_dev:
-            print("  [Branding] Generating orange icons for Dev build...")
-            dev_assets_dir = os.path.join(shared_dest, "assets")
-            env = os.environ.copy()
-            if 'VERCEL' in env: del env['VERCEL']
-            subprocess.run(["python3", "scripts/generate_png_icons.py", dev_assets_dir, "#ea580c"], check=True, env=env)
-
-        # 1.5 Copy Subprojects (animation-maker, category-editor & alarm-editor)
+        # 3. Copy Subprojects (animation-maker, category-editor & alarm-editor)
         for subproj in ["animation-maker", "category-editor", "alarm-editor"]:
             subproj_src = os.path.join("projects", subproj)
             subproj_dest = os.path.join(temp_dir, "projects", subproj)
@@ -123,20 +91,13 @@ def create_packages():
     subprocess.run(["python3", "scripts/generate_animation_registry.py", "--exclude-dev"], check=True)
 
     chrome_zip = os.path.join(dist_dir, f"{package_name}-v{version}.zip")
-    success_chrome = create_zip(chrome_zip, "manifest.chrome.json", "temp_package_release_chrome")
-
-    # --- Dev Build Pipeline ---
-    print("Generating development registry...")
-    subprocess.run(["python3", "scripts/generate_animation_registry.py"], check=True)
-
-    chrome_dev_zip = os.path.join(dist_dir, f"{package_name}-Dev-v{version}.zip")
-    success_chrome_dev = create_zip(chrome_dev_zip, "manifest.chrome.json", "temp_package_dev_chrome", is_dev=True, version=version)
+    success_chrome = create_zip(chrome_zip, "temp_package_release_chrome")
 
     # Restoration
     subprocess.run(["python3", "scripts/generate_animation_registry.py"], check=True)
     subprocess.run(["python3", "scripts/generate_png_icons.py"], check=True)
 
-    return success_chrome and success_chrome_dev
+    return success_chrome
 
 if __name__ == "__main__":
     if create_packages(): exit(0)
