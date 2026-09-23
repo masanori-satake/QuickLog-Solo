@@ -11,5 +11,8 @@ reproduce_*.py
 verify_*.py
 !scripts/verify_*.py
 
+dist/
+coverage/
+
 # Built extension packages
 releases/*.zip

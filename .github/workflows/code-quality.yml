@@ -1,0 +1,34 @@
+name: 'CI: コード品質 (Code Quality)'
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'projects/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'eslint.config.js'
+      - '.stylelintrc.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: read
+  security-events: write
+  contents: read
+
+jobs:
+  code-quality:
+    uses: masanori-satake/common-workflows/.github/workflows/base-ci.yml@v1
+    with:
+      run_typecheck: false

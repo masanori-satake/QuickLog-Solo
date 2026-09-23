@@ -1,0 +1,22 @@
+name: 'CD: GitHub Pages デプロイ (Deploy Pages)'
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/web/**'
+      - 'shared/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy-pages:
+    uses: masanori-satake/common-workflows/.github/workflows/base-deploy-pages.yml@v1
