@@ -8,13 +8,6 @@ on:
       - 'README.md'
   pull_request:
     branches: [main]
-    paths:
-      - 'projects/**'
-      - 'shared/**'
-      - 'tests/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
   workflow_dispatch:
 
 env:
