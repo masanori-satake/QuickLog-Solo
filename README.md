@@ -4,7 +4,7 @@
 [![Privacy: Local-First](https://img.shields.io/badge/Privacy-Local--First-brightgreen)](#-privacy--security)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.chrome.json)
 [![Tests](https://img.shields.io/github/actions/workflow/status/masanori-satake/QuickLog-Solo/code-quality.yml?branch=main&label=Tests)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/code-quality.yml)
-[![Coverage](https://img.shields.io/github/actions/workflow/status/masanori-satake/QuickLog-Solo/coverage.yml?branch=main&label=Coverage)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/coverage.yml)
+[![Coverage](https://img.shields.io/github/actions/workflow/status/masanori-satake/QuickLog-Solo/coverage.yml?event=pull_request&label=Coverage)](https://github.com/masanori-satake/QuickLog-Solo/actions/workflows/coverage.yml)
 [![Pure Vanilla JS](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-informational?logo=javascript&logoColor=white)](#-privacy--security)
 [![Crowdin](https://badges.crowdin.net/quicklog-solo/localized.svg)](https://crowdin.com/project/quicklog-solo)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/masanori-satake/QuickLog-Solo/main.svg)](https://results.pre-commit.ci/latest/github/masanori-satake/QuickLog-Solo/main)
