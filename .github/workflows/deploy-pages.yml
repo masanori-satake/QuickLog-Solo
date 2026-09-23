@@ -4,8 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'projects/web/**'
+      - 'projects/**'
       - 'shared/**'
+      - 'index.html'
   workflow_dispatch:
 
 concurrency:
@@ -20,3 +21,5 @@ permissions:
 jobs:
   deploy-pages:
     uses: masanori-satake/common-workflows/.github/workflows/base-deploy-pages.yml@v1
+    with:
+      publish_dir: '.'
