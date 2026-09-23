@@ -10,6 +10,7 @@ ALLOWED_ROOT_ITEMS = {
     ".stylelintignore",
     ".stylelintrc.json",
     "AGENTS.md",
+    "index.html",
     "LICENSE",
     "README.md",
     "SECURITY.md",
