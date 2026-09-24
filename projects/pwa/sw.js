@@ -41,6 +41,7 @@ self.addEventListener('install', (event) => {
             .then((cache) => {
                 return cache.addAll(STATIC_ASSETS).catch((err) => {
                     console.warn('PWA SW: Some static assets failed to precache:', err);
+                    throw err;
                 });
             })
             .then(() => self.skipWaiting())
@@ -74,7 +75,7 @@ self.addEventListener('fetch', (event) => {
     if (url.pathname.startsWith('/@') || url.search.includes('import') || url.pathname.includes('node_modules')) return;
 
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
+        caches.match(event.request, { ignoreSearch: event.request.mode === 'navigate' }).then((cachedResponse) => {
             const fetchPromise = fetch(event.request)
                 .then((networkResponse) => {
                     if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
@@ -86,8 +87,8 @@ self.addEventListener('fetch', (event) => {
                     return networkResponse;
                 })
                 .catch(() => {
-                    // If network fails, return cached response if available
-                    return cachedResponse;
+                    // If the network fails, use the cache or an explicit offline response.
+                    return cachedResponse || new Response('Offline', { status: 503 });
                 });
 
             return cachedResponse || fetchPromise;
