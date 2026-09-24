@@ -20,7 +20,7 @@ QuickLog-Solo/
 │   ├── category-editor/       # QL-Category Editor（カテゴリ一括管理）
 │   ├── alarm-editor/          # Alarm Editor（アラーム設定ツール）
 │   ├── animation-maker/       # Animation Maker（アニメーション作成支援）
-│   └── web/                   # ランディングページ・ガイド（Vercel デプロイ）
+│   └── web/                   # ランディングページ・ガイド（GitHub Pages デプロイ）
 │
 ├── shared/                    # 全サブプロジェクト共通モジュール ★重要
 │   ├── js/

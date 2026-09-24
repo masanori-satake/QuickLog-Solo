@@ -1,5 +1,5 @@
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kllhfalcincleolgoepnailfjendigdh?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh)
-[![version](https://img.shields.io/badge/version-1.30.14-blue)](projects/app/manifest.chrome.json)
+[![version](https://img.shields.io/badge/version-1.30.15-blue)](projects/app/manifest.chrome.json)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Privacy: Local-First](https://img.shields.io/badge/Privacy-Local--First-brightgreen)](#-privacy--security)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.chrome.json)
@@ -55,7 +55,7 @@ For automatic updates and easy installation, get QuickLog-Solo directly from the
 ### 🛠️ Developer Release (Zip)
 To try the latest unreleased features:
 
-1. Download and extract `releases/QuickLog-Solo-v1.30.14.zip`.
+1. Download and extract `releases/QuickLog-Solo-v1.30.15.zip`.
 2. Open your browser's extensions page (`chrome://extensions` or `edge://extensions`).
 3. Enable **Developer mode**.
 4. Click **Load unpacked** and select the extracted directory.
@@ -68,10 +68,10 @@ To try the latest unreleased features:
 - **CSV Import / Export:** Export or restore full log history under Settings (⚙️) > **General**.
 
 ## Related Projects
-- **[Category Editor](https://quick-log-solo.vercel.app/category-editor):** Web-based manager to edit and organize category items.
-- **[Alarm Editor](https://quick-log-solo.vercel.app/alarm-editor):** Visual editor for advanced alarms and business day schedules.
-- **[Animation Maker](https://quick-log-solo.vercel.app/animation-maker):** No-code editor to upload custom GIFs and generate dot-matrix canvas animations.
-- **[QL-Animation Studio (Beta)](https://quick-log-solo.vercel.app/studio):** Interactive environment to create and test custom background animations.
+- **[Category Editor](https://masanori-satake.github.io/QuickLog-Solo/projects/category-editor/):** Web-based manager to edit and organize category items.
+- **[Alarm Editor](https://masanori-satake.github.io/QuickLog-Solo/projects/alarm-editor/):** Visual editor for advanced alarms and business day schedules.
+- **[Animation Maker](https://masanori-satake.github.io/QuickLog-Solo/projects/animation-maker/):** No-code editor to upload custom GIFs and generate dot-matrix canvas animations.
+- **[QL-Animation Studio (Beta)](https://masanori-satake.github.io/QuickLog-Solo/projects/studio/):** Interactive environment to create and test custom background animations.
 
 ---
 
@@ -128,10 +128,10 @@ To try the latest unreleased features:
 - **背景アニメーション:** 20 種類以上の LCD ドットマトリクス風アニメーションを搭載。
 
 #### 関連プロジェクト
-- **[業務カテゴリ・エディタ (Category Editor)](https://quick-log-solo.vercel.app/category-editor):** 広い画面でカテゴリの詳細編集や並び替えを効率的に行えるウェブベースのエディタ。
-- **[アラーム・エディタ (Alarm Editor)](https://quick-log-solo.vercel.app/alarm-editor):** 高度なアラーム設定や稼働日設定を視覚的に管理できるエディタ。
-- **[アニメーション・メーカー (Animation Maker)](https://quick-log-solo.vercel.app/animation-maker):** プログラミング不要で、GIF画像をアップロードするだけで誰でも直感的に自分だけのカスタムアニメーションを作成・追加できるエディタ。
-- **[QL-Animation Studio (β版)](https://quick-log-solo.vercel.app/studio):** ブラウザ上でオリジナルの背景アニメーションを作成・テストできる開発環境。
+- **[業務カテゴリ・エディタ (Category Editor)](https://masanori-satake.github.io/QuickLog-Solo/projects/category-editor/):** 広い画面でカテゴリの詳細編集や並び替えを効率的に行えるウェブベースのエディタ。
+- **[アラーム・エディタ (Alarm Editor)](https://masanori-satake.github.io/QuickLog-Solo/projects/alarm-editor/):** 高度なアラーム設定や稼働日設定を視覚的に管理できるエディタ。
+- **[アニメーション・メーカー (Animation Maker)](https://masanori-satake.github.io/QuickLog-Solo/projects/animation-maker/):** プログラミング不要で、GIF画像をアップロードするだけで誰でも直感的に自分だけのカスタムアニメーションを作成・追加できるエディタ。
+- **[QL-Animation Studio (β版)](https://masanori-satake.github.io/QuickLog-Solo/projects/studio/):** ブラウザ上でオリジナルの背景アニメーションを作成・テストできる開発環境。
 
 #### 開発者向け情報
 開発環境の構築、ディレクトリ構成、テスト方法などの技術的な詳細は [docs/README_DEV.md](docs/README_DEV.md) を参照してください。

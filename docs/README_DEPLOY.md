@@ -11,7 +11,7 @@ GitHub Actions や CI/CD を初めて触れる開発者向けに、本プロジ�
 | 用語 | 定義 | Atlassian Bamboo での対応（参考） |
 | :--- | :--- | :--- |
 | **CI (Continuous Integration)** | 継続的インテグレーション。コード変更の度に自動でテストや検査を行い、品質を保つ仕組み。 | Plan / Build |
-| **CD (Continuous Delivery)** | 継続的デリバリー。検査済みのコードを、いつでも本番環境（Vercel 等）へ公開できる状態にする仕組み。 | Deployment Project |
+| **CD (Continuous Delivery)** | 継続的デリバリー。検査済みのコードを、いつでも本番環境（GitHub Pages 等）へ公開できる状態にする仕組み。 | Deployment Project |
 | **Workflow** | GitHub Actions における一連の処理プロセス全体（`.yml` ファイル単位）。 | Plan |
 | **Job** | ワークフロー内の実行単位。複数の Step で構成される。 | Stage |
 | **Step** | ジョブ内の個別のタスク（コマンドの実行やアクションの呼び出し）。 | Task |
@@ -30,7 +30,7 @@ sequenceDiagram
     participant Dev as 開発者 (Developer)
     participant GH as GitHub (Repository)
     participant GHA as GitHub Actions
-    participant Vercel as Vercel (Hosting/Build)
+    participant Pages as GitHub Pages
     participant Store as GitHub Releases / Store
     participant User as ユーザ (User)
 
@@ -48,12 +48,11 @@ sequenceDiagram
 
     alt 検査合格 (mainへのpush時)
         rect rgb(230, 255, 230)
-            Note over GHA, Vercel: [Scene 2: 継続的デリバリー (CD)]
-            GHA->>Vercel: デプロイ指示 (Deploy)
-            Vercel->>Vercel: サイト公開 (Landing Page)
-            Vercel->>Vercel: パッケージ生成 (Release & Dev ZIP)
+            Note over GHA, Pages: [Scene 2: 継続的デリバリー (CD)]
+            GHA->>Pages: デプロイ指示 (Deploy Pages)
+            Pages->>Pages: サイト公開 (Landing Page, Editors, PWA)
         end
-        Vercel-->>User: 最新版の利用・開発版の試用が可能に
+        Pages-->>User: 最新版の利用・試用が可能に
     else 検査合格 (タグ v*.*.* 付与時)
         rect rgb(230, 230, 255)
             Note over GHA, Store: [Scene 3: 公式リリース]
@@ -93,24 +92,20 @@ graph TD
 ---
 
 ## 4. Scene 2：継続的デリバリー（配信プロセス）
-`main` ブランチにコードがマージされると、自動的に Vercel を通じた公開作業が始まります。
+`main` ブランチにコードがマージされると、自動的に GitHub Pages を通じた公開作業が始まります。
 
 ### 処理フロー
 ```mermaid
 graph LR
-    Trigger[mainへマージ] --> VercelBuild[Vercel ビルド実行]
-    VercelBuild --> Registry[レジストリ更新<br/>scripts/generate_animation_registry.py]
-    Registry --> Zip[パッケージ作成<br/>scripts/create_package.py]
-    Zip --> Deploy[サイト公開]
+    Trigger[mainへマージ] --> PagesBuild[GitHub Pages デプロイ実行]
+    PagesBuild --> Registry[レジストリ更新<br/>scripts/generate_animation_registry.py]
+    Registry --> Deploy[GitHub Pages サイト公開]
 ```
 
-- **処理の目的**: 最新のソースコードから、紹介ページ（ランディングページ）を更新し、インストール可能な ZIP ファイルを提供すること。
-- **二種類のパッケージ生成**:
-    - **Release版**: ストア申請用。青色アイコン、正規の名称。
-    - **Dev版**: 開発・検証用。オレンジ色アイコン、名称に `(Dev vX.X.X)` サフィックスを付与、開発用アニメーションを同梱。
+- **処理の目的**: 最新のソースコードから、紹介ページ（ランディングページ）、各エディタ、および Web/PWA 版を公開・更新すること。
 - **最後にどんな結果となるのか**:
-    1. ユーザがブラウザで `https://quicklog-solo.vercel.app/` にアクセスすると最新のプレビューが試せる。
-    2. 同ページの「ダウンロード」ボタンから最新の各 ZIP（Release/Dev）が入手できる。
+    1. ユーザがブラウザで `https://masanori-satake.github.io/QuickLog-Solo/` にアクセスすると最新のプレビューが試せる。
+    2. 各エディタ（Category Editor, Alarm Editor, Animation Maker, Animation Studio）が直接ブラウザ上で利用できる。
 
 ---
 
@@ -142,35 +137,12 @@ graph LR
 
 ---
 
-## Vercel への初回設定方法
-*※すでに設定済みの場合は不要です。*
+## GitHub Pages への初回設定方法
 
-#### 1. Vercel での準備
-1. [Vercel](https://vercel.com/) にログインし、プロジェクトを作成（GitHub リポジトリをインポート）。
-   - Framework Preset は「Other」を選択してください（静的HTMLのみのため自動認識されます）。
-2. Vercel のプロジェクト設定およびアカウント設定から以下の情報を取得します：
-   - **Project ID**: プロジェクトの **Settings** > **General** セクションに記載されています。
-   - **Org ID**: アカウントの **Settings** > **General** にある **Personal Account ID** (または Team ID) を使用します。
-3. Vercel の **Account Settings** > **Tokens** で、新しい **Access Token** を発行します。
-
-#### 2. GitHub リポジトリでの設定
-1. GitHub リポジトリの **Settings** > **Secrets and variables** > **Actions** を開きます。
-2. **New repository secret** をクリックし、以下の3つを追加します：
-   - `VERCEL_TOKEN`: 発行した Access Token
-   - `VERCEL_ORG_ID`: 取得した Org ID
-   - `VERCEL_PROJECT_ID`: 取得した Project ID
-
----
-
-> [!CAUTION]
-> **免責事項 / Disclaimer**
-> 本ドキュメントは、本プロジェクトの開発者が自身の環境（Vercel）で構築した際の参考情報を共有するものです。
-> 開発者は Vercel の利用を特別に推奨しているわけではなく、また他のサービスを含め、本手順が将来にわたって正常に動作することを保証しません。
-> 自動化設定に伴う機密情報の管理やデプロイは、すべて利用者の自己責任において行ってください。
->
-> This document shares reference information from the project developer's own setup (Vercel).
-> The developer does not specifically endorse Vercel, nor does the developer guarantee that these steps will continue to function correctly in the future, including for other services.
-> Management of sensitive information and deployments associated with automation settings are entirely at the user's own risk.
+#### GitHub リポジトリでの設定
+1. GitHub リポジトリの **Settings** > **Pages** を開きます。
+2. **Source** を **GitHub Actions** に設定します。
+3. `main` ブランチへのコードマージ時に `deploy-pages.yml` ワークフローが自動で起動し、デプロイが完了します。
 
 ---
 

@@ -7,7 +7,7 @@
 ## 形態・配布
 - **Chrome / Edge 拡張機能**（Manifest V3 / Side Panel API）
 - Chrome Web Store または ZIP パッケージによる手動インストール
-- Web 版（Vercel）でも動作するランディングページ・ガイドを同梱
+- Web 版（GitHub Pages）でも動作するランディングページ・ガイドを同梱
 
 ## コア・フィロソフィー（4本柱）
 1. **持続可能性 (Sustainability)** — 外部サーバー依存なし。オフライン完結。ブラウザ・タブが閉じても計測状態を復元できるレジリエンスを持つ。

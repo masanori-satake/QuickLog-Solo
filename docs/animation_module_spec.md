@@ -311,7 +311,7 @@ return [
 
 ## 7. QL-Animation Studio で試そう
 
-[QL-Animation Studio](https://quick-log-solo.vercel.app/studio) を使えば、ブラウザ上でコードを書きながら、リアルタイムで FG 領域との重なりや、`2.0` 仕様でのカラー表現を確認できます。
+[QL-Animation Studio](https://masanori-satake.github.io/QuickLog-Solo/projects/studio/) を使えば、ブラウザ上でコードを書きながら、リアルタイムで FG 領域との重なりや、`2.0` 仕様でのカラー表現を確認できます。
 メトリクス（密度や変化率）を見ながら、最高の心地よさを追求してください。
 
 ---
