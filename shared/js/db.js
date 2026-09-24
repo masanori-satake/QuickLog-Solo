@@ -458,6 +458,12 @@ export async function getCurrentAppState() {
         activeTask = await dbGetActiveTask();
     }
 
+    const isPWA = typeof window !== 'undefined' && (
+        window.IS_PWA === true ||
+        (window.location && new URLSearchParams(window.location.search).has('pwa')) ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+    );
+
     return {
         theme: theme ? theme.value : null,
         font: font ? font.value : null,
@@ -466,8 +472,8 @@ export async function getCurrentAppState() {
         language: language ? language.value : 'auto',
         reportSettings: reportSettings ? reportSettings.value : null,
         businessDays: businessDays ? businessDays.value : [1, 2, 3, 4, 5],
-        timerHeight: timerHeight ? timerHeight.value : 'normal',
-        categoryLayout: categoryLayout ? categoryLayout.value : '2x8',
+        timerHeight: timerHeight ? timerHeight.value : (isPWA ? 'mini' : 'normal'),
+        categoryLayout: categoryLayout ? categoryLayout.value : (isPWA ? '2x4' : '2x8'),
         pauseAnimation: pauseAnimation ? pauseAnimation.value : 'snoring_zzz',
         pauseTheme: pauseTheme ? pauseTheme.value : 'neutral',
         sessionSync: (await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC))?.value || false,

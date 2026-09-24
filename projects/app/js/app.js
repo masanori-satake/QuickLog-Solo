@@ -1100,9 +1100,15 @@ async function syncState() {
     applyLanguage();
     updateBackupUI();
 
+    const isPWA = typeof window !== 'undefined' && (
+        window.IS_PWA === true ||
+        (window.location && new URLSearchParams(window.location.search).has('pwa')) ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+    );
+
     applyTheme(state.theme || THEME_SYSTEM);
-    applyTimerHeight(state.timerHeight || 'normal');
-    applyCategoryLayout(state.categoryLayout || '2x8');
+    applyTimerHeight(state.timerHeight || (isPWA ? 'mini' : 'normal'));
+    applyCategoryLayout(state.categoryLayout || (isPWA ? '2x4' : '2x8'));
     applyFontWeight(state.fontWeight || 'normal');
 
     currentPauseAnimation = state.pauseAnimation || 'snoring_zzz';
