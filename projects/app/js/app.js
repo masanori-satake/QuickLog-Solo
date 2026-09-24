@@ -3314,7 +3314,7 @@ function setupEventListeners() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initApp() {
     const urlParams = new URLSearchParams(window.location.search);
     const dbParam = urlParams.get('db');
     if (dbParam) {
@@ -3432,7 +3432,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 async function handleTestParameters() {
     const urlParams = new URLSearchParams(window.location.search);
