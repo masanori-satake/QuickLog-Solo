@@ -79,6 +79,26 @@ export function ensureStorageSyncFallback() {
     }
     if (!globalThis.chrome.storage.sync) {
         const STORAGE_KEY = 'ql_pwa_session_sync';
+        const ITEM_PREFIX = `${STORAGE_KEY}:`;
+        const itemKey = (key) => `${ITEM_PREFIX}${encodeURIComponent(key)}`;
+        const reportWrite = (promise, callback) => {
+            if (typeof callback === 'function') {
+                promise.then(
+                    () => callback(),
+                    (error) => {
+                        const previousError = globalThis.chrome.runtime.lastError;
+                        globalThis.chrome.runtime.lastError = error;
+                        try {
+                            callback();
+                        } finally {
+                            if (previousError === undefined) delete globalThis.chrome.runtime.lastError;
+                            else globalThis.chrome.runtime.lastError = previousError;
+                        }
+                    }
+                );
+            }
+            return promise;
+        };
         globalThis.chrome.storage.sync = {
             get: (keys, callback) => {
                 const promise = new Promise((resolve) => {
@@ -87,6 +107,14 @@ export function ensureStorageSyncFallback() {
                         const raw = localStorage.getItem(STORAGE_KEY);
                         if (raw) {
                             result = JSON.parse(raw);
+                        }
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const storedKey = localStorage.key(i);
+                            if (!storedKey?.startsWith(ITEM_PREFIX)) continue;
+                            const key = decodeURIComponent(storedKey.slice(ITEM_PREFIX.length));
+                            const entry = JSON.parse(localStorage.getItem(storedKey));
+                            if (entry.deleted) delete result[key];
+                            else result[key] = entry.value;
                         }
                     } catch (e) {
                         console.error('QuickLog-Solo: Failed to parse fallback sync storage:', e);
@@ -117,39 +145,33 @@ export function ensureStorageSyncFallback() {
                 return promise;
             },
             set: (items, callback) => {
-                const promise = new Promise((resolve) => {
+                const promise = new Promise((resolve, reject) => {
                     try {
-                        const raw = localStorage.getItem(STORAGE_KEY);
-                        const current = raw ? JSON.parse(raw) : {};
-                        Object.assign(current, items);
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+                        for (const [key, value] of Object.entries(items)) {
+                            localStorage.setItem(itemKey(key), JSON.stringify({ value }));
+                        }
                     } catch (e) {
                         console.error('QuickLog-Solo: Failed to set fallback sync storage:', e);
+                        reject(e);
+                        return;
                     }
                     resolve();
                 });
-                if (typeof callback === 'function') {
-                    promise.then(() => callback());
-                }
-                return promise;
+                return reportWrite(promise, callback);
             },
             remove: (keys, callback) => {
-                const promise = new Promise((resolve) => {
+                const promise = new Promise((resolve, reject) => {
                     try {
-                        const raw = localStorage.getItem(STORAGE_KEY);
-                        const current = raw ? JSON.parse(raw) : {};
                         const keyList = typeof keys === 'string' ? [keys] : Array.isArray(keys) ? keys : [];
-                        keyList.forEach((k) => delete current[k]);
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+                        keyList.forEach((key) => localStorage.setItem(itemKey(key), JSON.stringify({ deleted: true })));
                     } catch (e) {
                         console.error('QuickLog-Solo: Failed to remove from fallback sync storage:', e);
+                        reject(e);
+                        return;
                     }
                     resolve();
                 });
-                if (typeof callback === 'function') {
-                    promise.then(() => callback());
-                }
-                return promise;
+                return reportWrite(promise, callback);
             },
         };
     }

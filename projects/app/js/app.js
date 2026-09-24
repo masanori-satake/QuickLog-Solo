@@ -3427,7 +3427,7 @@ async function initApp() {
     window.addEventListener('focus', delayedSync);
     window.addEventListener('online', delayedSync);
     window.addEventListener('storage', (e) => {
-        if (e.key === 'ql_pwa_session_sync') {
+        if (e.key === 'ql_pwa_session_sync' || e.key?.startsWith('ql_pwa_session_sync:')) {
             delayedSync();
         }
     });
