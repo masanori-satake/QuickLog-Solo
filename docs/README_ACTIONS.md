@@ -20,7 +20,7 @@ GitHub Actions Runners における Node.js 20 の廃止に伴い、プロジェ
 | :--- | :--- | :--- | :--- | :--- |
 | CI | **テストと静的解析** | `tests-and-lint.yml` | Python静的チェック、Lint、単体/E2E/アニメーションテスト | `main`へのPush/PR (*1), 手動 |
 | CI | **脆弱性検査** | `osv-scan.yml` | OSV-Scannerによる依存関係の脆弱性スキャン | `main`へのPush/PR (*1), 定期実行 |
-| Release | **リリース: Webアプリケーションのデプロイ** | `release_web_deploy.yml` | Vercelへの自動デプロイ（Landing Page, Studio等） | `main`へのPush/PR (*1), 手動 |
+| Release | **リリース: Webアプリケーションのデプロイ** | `deploy-pages.yml` | GitHub Pagesへの自動デプロイ（Landing Page, Studio等） | `main`へのPush（`projects/**`、`shared/**`、`index.html` の変更時）, 手動 |
 | **Release** | **リリース: 拡張機能パッケージの公開** | `release_extension_packages.yml` | バージョンタグ打刻時の自動ビルドおよびGitHub Release作成 | `v*.*.*`タグのPush |
 | Update | **更新: ガイド用スクリーンショット** | `update_guide_screenshots.yml` | クイックスタートガイド用画像のリポジトリ自動反映 | `main`へのPush/PR (*1), 手動 |
 
@@ -126,9 +126,9 @@ graph TD
 
 ### 2. 公開・配布 (Release)
 
-#### Webアプリケーションのデプロイ (`release_web_deploy.yml`)
-GitHub Actions 経由でビルドを行い、Vercel へデプロイします。
-プルリクエスト時にもプレビュー環境が構築されるため、マージ前に Release/Dev 各 ZIP パッケージの動作やブランディング（オレンジアイコン等）を実機で確認することが可能です。
+#### Webアプリケーションのデプロイ (`deploy-pages.yml`)
+GitHub Actions 経由で GitHub Pages へデプロイされます。
+`main` ブランチへのプッシュで `projects/**`、`shared/**`、`index.html` のいずれかに変更がある場合に自動実行され、手動実行も可能です。実行時には、ランディングページ、各エディタ、Studio、PWAを含むWebリソース全体が更新されます。
 
 #### 拡張機能パッケージの公開 (`release_extension_packages.yml`)
 Node.js **v24** 環境で動作します。本番用の Release ZIP と検証用の Dev ZIP の両方を生成し、GitHub Release にアセットとしてアップロードします。
@@ -144,7 +144,8 @@ flowchart LR
     Dev[開発者] -- PR作成 --> CI[継続的インテグレーション]
 
     CI -- Merge --> Main[mainブランチ]
-    Main -- Push --> Deploy[リリース: Webデプロイ]
+    Main -- 対象パスを含むPush --> Deploy[リリース: Webデプロイ]
+    Manual[手動実行] --> Deploy
 
     Main -- Tag v* --> Rel[リリース: 拡張機能パッケージ作成]
 

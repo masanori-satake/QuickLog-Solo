@@ -28,12 +28,6 @@ def generate_icons(output_dir=None, bg_color=None):
             svg_content = re.sub(r'(<rect\s+[^>]*fill=")([^"]+)(")', rf'\1{bg_color}\3', svg_content, count=1)
             print(f"Background color changed to {bg_color} (using fallback regex)")
 
-    # If VERCEL environment is detected, skip generation as it's not needed for the landing page
-    # and Playwright might not be installed or configured.
-    if os.environ.get('VERCEL') == '1':
-        print("Vercel environment detected. Skipping PNG icon generation for extension.")
-        return True
-
     try:
         from playwright.sync_api import sync_playwright
         print("Playwright found. Generating icons...")

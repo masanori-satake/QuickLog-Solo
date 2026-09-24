@@ -157,8 +157,8 @@ const ID_DELETE_INITIALIZE_BTN = 'delete-initialize-btn';
 const ID_SESSION_SYNC_TOGGLE = 'session-sync-toggle';
 const ID_SYNC_STATUS_BADGE = 'sync-status-badge';
 
-const CATEGORY_EDITOR_URL = 'https://quick-log-solo.vercel.app/category-editor/';
-const ALARM_EDITOR_URL = 'https://quick-log-solo.vercel.app/alarm-editor/';
+const CATEGORY_EDITOR_URL = 'https://masanori-satake.github.io/QuickLog-Solo/projects/category-editor/';
+const ALARM_EDITOR_URL = 'https://masanori-satake.github.io/QuickLog-Solo/projects/alarm-editor/';
 
 const ID_REPORT_MODAL = 'report-modal';
 const ID_REPORT_PREVIEW = 'report-preview';
@@ -1932,8 +1932,8 @@ function getLaunchProjectUrl(extensionPath, webPath, params) {
 
     // For local development or testing on web, resolve absolute production URLs to local relative paths
     if (!isExtension && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        if (webPath.startsWith('https://quick-log-solo.vercel.app/')) {
-            baseUrl = webPath.replace('https://quick-log-solo.vercel.app/', '../');
+        if (webPath.startsWith('https://masanori-satake.github.io/QuickLog-Solo/projects/')) {
+            baseUrl = webPath.replace('https://masanori-satake.github.io/QuickLog-Solo/projects/', '../');
         }
     }
 
