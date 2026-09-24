@@ -37,16 +37,8 @@ describe('GitHub Pages Links & Asset Verification', () => {
             while ((match = attrRegex.exec(htmlContent)) !== null) {
                 const url = match[1];
 
-                if (
-                    url.startsWith('http://') ||
-                    url.startsWith('https://') ||
-                    url.startsWith('data:') ||
-                    url.startsWith('chrome://') ||
-                    url.startsWith('edge://') ||
-                    url.startsWith('#') ||
-                    url.startsWith('javascript:') ||
-                    url === 'about:blank'
-                ) {
+                // Ignore non-relative scheme URLs (http:, https:, data:, chrome:, edge:, javascript:, vbscript:, etc.), fragments, and about:blank
+                if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url) || url.startsWith('#') || url === 'about:blank') {
                     continue;
                 }
 
