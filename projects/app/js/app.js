@@ -228,6 +228,15 @@ const queryAll = (selector) => document.querySelectorAll(selector);
 const getBody = () => document.body;
 const createEl = (tag) => document.createElement(tag);
 
+export function isPWAMode() {
+    return (
+        typeof window !== 'undefined' &&
+        (window.IS_PWA === true ||
+            (window.location && new URLSearchParams(window.location.search).has('pwa')) ||
+            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches))
+    );
+}
+
 const FONTS = [
     {
         name: 'Roboto / Noto Sans JP',
@@ -1100,11 +1109,21 @@ async function syncState() {
     applyLanguage();
     updateBackupUI();
 
-    const isPWA =
-        typeof window !== 'undefined' &&
-        (window.IS_PWA === true ||
-            (window.location && new URLSearchParams(window.location.search).has('pwa')) ||
-            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+    const isPWA = isPWAMode();
+
+    if (isPWA) {
+        const advEditorLink = getEl('advanced-editor-link');
+        if (advEditorLink) advEditorLink.disabled = true;
+
+        const alarmEditorLink = getEl('alarm-editor-link');
+        if (alarmEditorLink) alarmEditorLink.disabled = true;
+
+        const testNotifBtn = getEl('test-notification-btn');
+        if (testNotifBtn) testNotifBtn.disabled = true;
+
+        const changeDirBtn = getEl(ID_BACKUP_CHANGE_DIR_BTN);
+        if (changeDirBtn) changeDirBtn.disabled = true;
+    }
 
     applyTheme(state.theme || THEME_SYSTEM);
     applyTimerHeight(state.timerHeight || (isPWA ? 'mini' : 'normal'));
@@ -2369,7 +2388,7 @@ async function updateBackupUI() {
 
     const changeDirBtn = getEl(ID_BACKUP_CHANGE_DIR_BTN);
     if (changeDirBtn) {
-        changeDirBtn.disabled = backupManager.isSyncing;
+        changeDirBtn.disabled = backupManager.isSyncing || isPWAMode();
     }
 
     const restoreBtn = getEl('restore-configured-btn');
@@ -3407,6 +3426,11 @@ async function initApp() {
     });
     window.addEventListener('focus', delayedSync);
     window.addEventListener('online', delayedSync);
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'ql_pwa_session_sync') {
+            delayedSync();
+        }
+    });
 
     // Deep Sleep / Wake detection: Monitor for significant time jumps
     let lastTick = Date.now();

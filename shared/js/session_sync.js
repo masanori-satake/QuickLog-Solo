@@ -1,15 +1,41 @@
 import {
-    dbGetAll, dbPut, dbGet, dbDelete, dbClear, openDatabase, getCurrentAppState,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS,
-    DB_NAME, SYNC_CHANNEL_NAME,
-    SETTING_KEY_SESSION_SYNC, SETTING_KEY_LAST_PULLED_SYNC_TIME,
-    SETTING_KEY_THEME, SETTING_KEY_FONT, SETTING_KEY_ANIMATION, SETTING_KEY_PAUSE_ANIMATION, SETTING_KEY_PAUSE_THEME,
-    SETTING_KEY_LANGUAGE, SETTING_KEY_REPORT_SETTINGS, SETTING_KEY_BUSINESS_DAYS,
-    SETTING_KEY_TIMER_HEIGHT, SETTING_KEY_CATEGORY_LAYOUT, SETTING_KEY_PAUSE_STATE, SETTING_KEY_CLIENT_ID,
-    SETTING_KEY_DELETED_SYNC_IDS, SETTING_KEY_GLOBAL_CLEAR_TIME
+    dbGetAll,
+    dbPut,
+    dbGet,
+    dbDelete,
+    dbClear,
+    openDatabase,
+    getCurrentAppState,
+    STORE_LOGS,
+    STORE_CATEGORIES,
+    STORE_SETTINGS,
+    STORE_ALARMS,
+    DB_NAME,
+    SYNC_CHANNEL_NAME,
+    SETTING_KEY_SESSION_SYNC,
+    SETTING_KEY_LAST_PULLED_SYNC_TIME,
+    SETTING_KEY_THEME,
+    SETTING_KEY_FONT,
+    SETTING_KEY_ANIMATION,
+    SETTING_KEY_PAUSE_ANIMATION,
+    SETTING_KEY_PAUSE_THEME,
+    SETTING_KEY_LANGUAGE,
+    SETTING_KEY_REPORT_SETTINGS,
+    SETTING_KEY_BUSINESS_DAYS,
+    SETTING_KEY_TIMER_HEIGHT,
+    SETTING_KEY_CATEGORY_LAYOUT,
+    SETTING_KEY_PAUSE_STATE,
+    SETTING_KEY_CLIENT_ID,
+    SETTING_KEY_DELETED_SYNC_IDS,
+    SETTING_KEY_GLOBAL_CLEAR_TIME,
 } from './db.js';
 import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, generateUUID } from './utils.js';
-import { pushAnimationToSync, pullAnimationsFromSync, removeAnimationFromSync, clearAllAnimationChunksFromSync } from './anim_sync.js';
+import {
+    pushAnimationToSync,
+    pullAnimationsFromSync,
+    removeAnimationFromSync,
+    clearAllAnimationChunksFromSync,
+} from './anim_sync.js';
 import { saveAnimationBlob } from './idb_storage.js';
 import { getCustomAnimationMetadataMap, setCustomAnimationMetadataMap } from './utils/storage.js';
 import { isValidLog } from './logic.js';
@@ -24,7 +50,7 @@ const SYNC_KEYS = {
     CLIENT_ID: 'sync_client_id',
     PAUSE_STATE: 'sync_pause_state',
     DELETED_IDS: 'sync_deleted_ids',
-    GLOBAL_CLEAR_TIME: 'sync_global_clear_time'
+    GLOBAL_CLEAR_TIME: 'sync_global_clear_time',
 };
 
 const MAX_SYNC_LOGS = 50;
@@ -35,6 +61,102 @@ let isInternalUpdate = false;
 let activePullPromise = null;
 /** @type {BroadcastChannel|null} */
 let syncChannel = null;
+
+/**
+ * Ensures that globalThis.chrome.storage.sync exists.
+ * If chrome.storage.sync is unavailable (e.g. in standard PWA/web environment),
+ * provides a fallback backed by localStorage so session sync works across tabs/windows.
+ */
+export function ensureStorageSyncFallback() {
+    if (typeof globalThis.chrome === 'undefined') {
+        globalThis.chrome = {};
+    }
+    if (!globalThis.chrome.runtime) {
+        globalThis.chrome.runtime = {};
+    }
+    if (!globalThis.chrome.storage) {
+        globalThis.chrome.storage = {};
+    }
+    if (!globalThis.chrome.storage.sync) {
+        const STORAGE_KEY = 'ql_pwa_session_sync';
+        globalThis.chrome.storage.sync = {
+            get: (keys, callback) => {
+                const promise = new Promise((resolve) => {
+                    let result = {};
+                    try {
+                        const raw = localStorage.getItem(STORAGE_KEY);
+                        if (raw) {
+                            result = JSON.parse(raw);
+                        }
+                    } catch (e) {
+                        console.error('QuickLog-Solo: Failed to parse fallback sync storage:', e);
+                    }
+                    if (keys === null) {
+                        resolve(result);
+                    } else if (typeof keys === 'string') {
+                        resolve({ [keys]: result[keys] });
+                    } else if (Array.isArray(keys)) {
+                        const res = {};
+                        keys.forEach((k) => {
+                            res[k] = result[k];
+                        });
+                        resolve(res);
+                    } else if (typeof keys === 'object') {
+                        const res = { ...keys };
+                        Object.keys(keys).forEach((k) => {
+                            if (result[k] !== undefined) res[k] = result[k];
+                        });
+                        resolve(res);
+                    } else {
+                        resolve(result);
+                    }
+                });
+                if (typeof callback === 'function') {
+                    promise.then((res) => callback(res));
+                }
+                return promise;
+            },
+            set: (items, callback) => {
+                const promise = new Promise((resolve) => {
+                    try {
+                        const raw = localStorage.getItem(STORAGE_KEY);
+                        const current = raw ? JSON.parse(raw) : {};
+                        Object.assign(current, items);
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+                    } catch (e) {
+                        console.error('QuickLog-Solo: Failed to set fallback sync storage:', e);
+                    }
+                    resolve();
+                });
+                if (typeof callback === 'function') {
+                    promise.then(() => callback());
+                }
+                return promise;
+            },
+            remove: (keys, callback) => {
+                const promise = new Promise((resolve) => {
+                    try {
+                        const raw = localStorage.getItem(STORAGE_KEY);
+                        const current = raw ? JSON.parse(raw) : {};
+                        const keyList = typeof keys === 'string' ? [keys] : Array.isArray(keys) ? keys : [];
+                        keyList.forEach((k) => delete current[k]);
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+                    } catch (e) {
+                        console.error('QuickLog-Solo: Failed to remove from fallback sync storage:', e);
+                    }
+                    resolve();
+                });
+                if (typeof callback === 'function') {
+                    promise.then(() => callback());
+                }
+                return promise;
+            },
+        };
+    }
+}
+
+// Auto-initialize fallback on module load
+ensureStorageSyncFallback();
 
 // Callback for animation sync progress notification
 let onAnimSyncProgress = null;
@@ -82,7 +204,7 @@ export async function broadcastSync(type = 'sync') {
 }
 
 export async function isSessionSyncEnabled() {
-    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync) return false;
+    ensureStorageSyncFallback();
     const setting = await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC);
     return !!(setting && setting.value);
 }
@@ -141,12 +263,12 @@ export async function pushToCloud(state) {
     if (isInternalUpdate) return;
     if (!(await isSessionSyncEnabled())) return;
 
-    const categories = state.categories || await dbGetAll(STORE_CATEGORIES);
-    const alarms = state.alarms || await dbGetAll(STORE_ALARMS);
+    const categories = state.categories || (await dbGetAll(STORE_CATEGORIES));
+    const alarms = state.alarms || (await dbGetAll(STORE_ALARMS));
     const allLogs = await dbGetAll(STORE_LOGS);
     const globalClearTime = (await dbGet(STORE_SETTINGS, SETTING_KEY_GLOBAL_CLEAR_TIME))?.value || 0;
     const recentLogs = allLogs
-        .filter(l => (l.updatedAt || l.endTime || l.startTime) > globalClearTime)
+        .filter((l) => (l.updatedAt || l.endTime || l.startTime) > globalClearTime)
         .sort((a, b) => b.startTime - a.startTime)
         .slice(0, MAX_SYNC_LOGS);
     const clientId = (await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID))?.value;
@@ -166,14 +288,14 @@ export async function pushToCloud(state) {
             language: state.language,
             reportSettings: state.reportSettings,
             timerHeight: state.timerHeight,
-            categoryLayout: state.categoryLayout
+            categoryLayout: state.categoryLayout,
         },
         [SYNC_KEYS.BUSINESS_DAYS]: state.businessDays,
         [SYNC_KEYS.LAST_SYNC]: syncTime,
         [SYNC_KEYS.CLIENT_ID]: clientId,
         [SYNC_KEYS.PAUSE_STATE]: state.activeTask, // Sync active task as pauseState
         [SYNC_KEYS.DELETED_IDS]: deletedSyncIds,
-        [SYNC_KEYS.GLOBAL_CLEAR_TIME]: globalClearTime
+        [SYNC_KEYS.GLOBAL_CLEAR_TIME]: globalClearTime,
     };
 
     // Split logs into chunks
@@ -215,7 +337,7 @@ async function applyRemoteSettings(data) {
             language: SETTING_KEY_LANGUAGE,
             reportSettings: SETTING_KEY_REPORT_SETTINGS,
             timerHeight: SETTING_KEY_TIMER_HEIGHT,
-            categoryLayout: SETTING_KEY_CATEGORY_LAYOUT
+            categoryLayout: SETTING_KEY_CATEGORY_LAYOUT,
         };
         for (const [sKey, dbKey] of Object.entries(keysMap)) {
             if (settings[sKey] !== undefined) {
@@ -238,7 +360,7 @@ async function applyRemoteSettings(data) {
                 const t = db.transaction(STORE_CATEGORIES, 'readwrite');
                 const s = t.objectStore(STORE_CATEGORIES);
                 s.clear();
-                remoteCats.forEach(c => {
+                remoteCats.forEach((c) => {
                     const copy = { ...c };
                     delete copy.id;
                     s.add(copy);
@@ -257,7 +379,7 @@ async function applyRemoteSettings(data) {
                 const t = db.transaction(STORE_ALARMS, 'readwrite');
                 const s = t.objectStore(STORE_ALARMS);
                 s.clear();
-                remoteAlarms.forEach(a => s.add(a));
+                remoteAlarms.forEach((a) => s.add(a));
                 t.oncomplete = () => res();
                 t.onerror = () => rej(t.error);
             });
@@ -314,7 +436,7 @@ async function applyAnimationChunks(data) {
                     name: id,
                     description: '',
                     createdAt: Date.now(),
-                    payload: { renderSpec: {}, config: undefined }
+                    payload: { renderSpec: {}, config: undefined },
                 };
                 updated = true;
             }
@@ -510,7 +632,6 @@ export async function performInitialSync(settingsMode, historyMode) {
             await pushToCloud(updatedState);
             isInternalUpdate = true;
         }
-
     } finally {
         isInternalUpdate = false;
     }
@@ -528,8 +649,8 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
 
     // Remove remote local IDs to prevent collision and filter by globalClearTime
     const sanitizedRemoteLogs = remoteLogs
-        .filter(l => (l.updatedAt || l.endTime || l.startTime) > globalClearTime)
-        .map(l => {
+        .filter((l) => (l.updatedAt || l.endTime || l.startTime) > globalClearTime)
+        .map((l) => {
             const copy = { ...l };
             delete copy.id;
             return copy;
@@ -544,8 +665,8 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
         const safeRemoteDeleted = Array.isArray(remoteDeletedIds) ? remoteDeletedIds : [];
         const allDeletedIds = new Set([...safeLocalDeleted, ...safeRemoteDeleted]);
 
-        const filteredRemote = sanitizedRemoteLogs.filter(l => !allDeletedIds.has(l.syncId));
-        const filteredLocal = localLogs.filter(l => !allDeletedIds.has(l.syncId));
+        const filteredRemote = sanitizedRemoteLogs.filter((l) => !allDeletedIds.has(l.syncId));
+        const filteredLocal = localLogs.filter((l) => !allDeletedIds.has(l.syncId));
         combined = [...filteredLocal, ...filteredRemote];
     }
     // Fill gaps only when merging, not when overwriting from cloud
@@ -559,7 +680,7 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
         const reconstructedIds = new Set();
         const usedIdsInThisTransaction = new Set();
 
-        reconstructed.forEach(l => {
+        reconstructed.forEach((l) => {
             const copy = { ...l };
             if (copy.id && !usedIdsInThisTransaction.has(copy.id)) {
                 usedIdsInThisTransaction.add(copy.id);
@@ -577,7 +698,7 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
         });
 
         // Delete logs that are no longer in the reconstructed timeline
-        localLogs.forEach(local => {
+        localLogs.forEach((local) => {
             if (local.id && !reconstructedIds.has(local.id)) {
                 s.delete(local.id);
             }
@@ -603,7 +724,7 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
     // 1. Resolve conflicts and deduplicate
     // Use syncId if available, otherwise fallback to legacy key (startTime + category)
     const byId = new Map();
-    validLogsInput.forEach(l => {
+    validLogsInput.forEach((l) => {
         const id = l.syncId || `legacy-${l.startTime}-${l.category}`;
         const existing = byId.get(id);
         // Prefer logs with endTime.
@@ -623,19 +744,21 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
     });
 
     // Ensure every log has a syncId for the rest of the process
-    const uniqueLogs = Array.from(byId.values()).filter(l => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)).map(l => {
-        const copy = { ...l };
-        if (!copy.syncId) copy.syncId = generateUUID();
-        return copy;
-    });
+    const uniqueLogs = Array.from(byId.values())
+        .filter((l) => !(l.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK))
+        .map((l) => {
+            const copy = { ...l };
+            if (!copy.syncId) copy.syncId = generateUUID();
+            return copy;
+        });
 
     // 2. Separate log types
     // Solid logs: have duration and are not markers.
-    const solidLogs = uniqueLogs.filter(l => l.endTime && l.endTime > l.startTime && !l.isManualStop);
+    const solidLogs = uniqueLogs.filter((l) => l.endTime && l.endTime > l.startTime && !l.isManualStop);
     // Markers: manual stop or zero-duration logs.
-    const markers = uniqueLogs.filter(l => l.isManualStop || (l.endTime && l.endTime === l.startTime));
+    const markers = uniqueLogs.filter((l) => l.isManualStop || (l.endTime && l.endTime === l.startTime));
     // Open tasks: no endTime.
-    const openTasks = uniqueLogs.filter(l => !l.endTime);
+    const openTasks = uniqueLogs.filter((l) => !l.endTime);
 
     if (solidLogs.length === 0) {
         return [...markers, ...openTasks].sort((a, b) => a.startTime - b.startTime);
@@ -643,12 +766,12 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
 
     // 3. Collect and sort all relevant timestamps for segmenting
     const tsSet = new Set();
-    solidLogs.forEach(l => {
+    solidLogs.forEach((l) => {
         tsSet.add(l.startTime);
         tsSet.add(l.endTime);
     });
     // Markers also act as split points
-    markers.forEach(m => tsSet.add(m.startTime));
+    markers.forEach((m) => tsSet.add(m.startTime));
     const sortedTs = Array.from(tsSet).sort((a, b) => a - b);
 
     // 4. Create segments between consecutive timestamps
@@ -658,7 +781,7 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
         const end = sortedTs[i + 1];
         if (start === end) continue;
 
-        const covering = solidLogs.filter(l => l.startTime <= start && l.endTime >= end);
+        const covering = solidLogs.filter((l) => l.startTime <= start && l.endTime >= end);
 
         if (covering.length === 0) {
             // Gap detected
@@ -674,15 +797,15 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
                     }
                     return latest;
                 }, null);
-                const isAfterManualStop = !!latestManualStop && !solidLogs.some(l =>
-                    l.startTime >= latestManualStop.startTime && l.endTime <= start
-                );
+                const isAfterManualStop =
+                    !!latestManualStop &&
+                    !solidLogs.some((l) => l.startTime >= latestManualStop.startTime && l.endTime <= start);
                 if (!isAfterManualStop) {
                     segments.push({
                         category: SYSTEM_CATEGORY_UNKNOWN,
                         startTime: start,
                         endTime: end,
-                        syncId: `unknown-${start}-${end}`
+                        syncId: `unknown-${start}-${end}`,
                     });
                 }
             }
@@ -698,7 +821,7 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
                 for (const other of covering) {
                     if (l === other) continue;
                     // Does other contain l?
-                    const otherContainsL = (other.startTime <= l.startTime && other.endTime >= l.endTime);
+                    const otherContainsL = other.startTime <= l.startTime && other.endTime >= l.endTime;
                     if (!otherContainsL) {
                         isContainedByAllOthers = false;
                         break;
@@ -709,7 +832,7 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
                         // If multiple logs claim containment, pick the smallest range
                         if (best.startTime === l.startTime && best.endTime === l.endTime) {
                             if (best.category !== l.category) conflict = true;
-                        } else if ((l.endTime - l.startTime) < (best.endTime - best.startTime)) {
+                        } else if (l.endTime - l.startTime < best.endTime - best.startTime) {
                             best = l;
                         }
                     } else {
@@ -726,7 +849,7 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
                     category: SYSTEM_CATEGORY_UNKNOWN,
                     startTime: start,
                     endTime: end,
-                    syncId: `unknown-${start}-${end}`
+                    syncId: `unknown-${start}-${end}`,
                 });
             }
         }
@@ -737,14 +860,17 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
     for (const seg of segments) {
         const last = merged[merged.length - 1];
         // Split at markers
-        const hasMarkerAtBoundary = markers.some(m => m.startTime === seg.startTime);
+        const hasMarkerAtBoundary = markers.some((m) => m.startTime === seg.startTime);
 
-        if (last && !hasMarkerAtBoundary &&
+        if (
+            last &&
+            !hasMarkerAtBoundary &&
             last.category === seg.category &&
             last.memo === seg.memo &&
             last.tags === seg.tags &&
             last.color === seg.color &&
-            last.resumableCategory === seg.resumableCategory) {
+            last.resumableCategory === seg.resumableCategory
+        ) {
             last.endTime = seg.endTime;
             // Stable ID for merged Unknown logs
             if (last.category === SYSTEM_CATEGORY_UNKNOWN) {
@@ -757,7 +883,7 @@ export function reconstructTimeline(allLogs, fillGaps = true) {
 
     // Ensure syncId uniqueness if a log was split
     const syncIdCounts = new Map();
-    merged.forEach(l => {
+    merged.forEach((l) => {
         const count = (syncIdCounts.get(l.syncId) || 0) + 1;
         syncIdCounts.set(l.syncId, count);
         if (count > 1) {
@@ -799,7 +925,7 @@ export async function clearCloudHistory() {
     const updateData = {
         [SYNC_KEYS.GLOBAL_CLEAR_TIME]: clearTime,
         [SYNC_KEYS.LAST_SYNC]: clearTime,
-        [SYNC_KEYS.CLIENT_ID]: (await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID))?.value
+        [SYNC_KEYS.CLIENT_ID]: (await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID))?.value,
     };
 
     try {
@@ -831,7 +957,7 @@ export async function syncActiveTask(remoteActiveTask) {
     }
     const localLogs = await dbGetAll(STORE_LOGS);
     // Find matching log in local DB (by syncId, or legacy startTime/category)
-    const matchingLog = localLogs.find(l => {
+    const matchingLog = localLogs.find((l) => {
         if (remoteActiveTask.syncId && l.syncId === remoteActiveTask.syncId) return true;
         return l.startTime === remoteActiveTask.startTime && l.category === remoteActiveTask.category;
     });
@@ -839,7 +965,7 @@ export async function syncActiveTask(remoteActiveTask) {
     if (matchingLog) {
         const pauseState = {
             ...matchingLog,
-            isPaused: remoteActiveTask.category === SYSTEM_CATEGORY_IDLE
+            isPaused: remoteActiveTask.category === SYSTEM_CATEGORY_IDLE,
         };
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
     } else if (!remoteActiveTask.endTime) {
@@ -853,7 +979,7 @@ export async function syncActiveTask(remoteActiveTask) {
 
         const pauseState = {
             ...logCopy,
-            isPaused: remoteActiveTask.category === SYSTEM_CATEGORY_IDLE
+            isPaused: remoteActiveTask.category === SYSTEM_CATEGORY_IDLE,
         };
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_STATE, value: pauseState });
     }

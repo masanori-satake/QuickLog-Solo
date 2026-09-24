@@ -5,6 +5,14 @@
     --pwa-safe-area-bottom: env(safe-area-inset-bottom, 0px);
     --pwa-safe-area-left: env(safe-area-inset-left, 0px);
     --pwa-safe-area-right: env(safe-area-inset-right, 0px);
+
+    /* Category section height variables tuned for PWA touch buttons (40px) */
+    --category-section-height: 380px;
+    --category-section-height-compact: 328px;
+    --category-section-height-mini: 276px;
+    --category-section-height-2x4: 188px;
+    --category-section-height-compact-2x4: 162px;
+    --category-section-height-mini-2x4: 136px;
 }
 
 html,
@@ -26,14 +34,33 @@ body {
     height: 100%;
     height: 100dvh;
     box-sizing: border-box;
-    padding: max(8px, var(--pwa-safe-area-top)) max(8px, var(--pwa-safe-area-right)) max(8px, var(--pwa-safe-area-bottom)) max(8px, var(--pwa-safe-area-left));
+    padding: max(8px, var(--pwa-safe-area-top)) max(8px, var(--pwa-safe-area-right))
+        max(8px, var(--pwa-safe-area-bottom)) max(8px, var(--pwa-safe-area-left));
 }
 
 /* Category Button Optimization for Touch Devices */
 .category-btn {
+    height: 40px;
     min-height: 40px;
+    line-height: 40px;
     touch-action: manipulation;
     user-select: none;
+}
+
+@media (height <= 550px) {
+    .category-btn {
+        height: 34px;
+        min-height: 34px;
+        line-height: 34px;
+    }
+}
+
+@media (height <= 400px) {
+    .category-btn {
+        height: 28px;
+        min-height: 28px;
+        line-height: 28px;
+    }
 }
 
 /* Control Buttons Touch Friendly */
