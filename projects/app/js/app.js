@@ -1062,7 +1062,6 @@ function initAnimationEngine() {
     }
 }
 
-/** Refresh the UI and active task from persisted state, using PWA defaults when no preference is saved. */
 async function syncState() {
     if (!isAppInitialized) return;
     const state = await getCurrentAppState();
@@ -3315,7 +3314,6 @@ function setupEventListeners() {
     });
 }
 
-/** Initialize the app after the DOM is ready, including database selection and event listeners. */
 async function initApp() {
     const urlParams = new URLSearchParams(window.location.search);
     const dbParam = urlParams.get('db');

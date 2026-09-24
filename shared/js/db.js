@@ -434,7 +434,6 @@ export async function initDB(isLite = false) {
     return await getCurrentAppState();
 }
 
-/** Return saved app state, falling back to PWA layout defaults when those settings are absent. */
 export async function getCurrentAppState() {
     const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);

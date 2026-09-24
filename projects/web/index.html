@@ -1135,7 +1135,6 @@
             };
         }
 
-        /** Load the PWA preview with the selected language and isolated database. */
         function loadPreview(iframe, dbName) {
             const safeLang = getSafeLang(currentLang);
             const previewUrl = '../pwa/index.html?lang=' + encodeURIComponent(safeLang) + '&db=' + encodeURIComponent(dbName);
