@@ -3,6 +3,7 @@ import sys
 import re
 
 def generate_icons(output_dir=None, bg_color=None):
+    """Render the shared SVG at every required icon size, using existing PNGs as a fallback."""
     svg_path = os.path.join(os.getcwd(), 'shared/assets/icon.svg')
     if output_dir is None:
         output_dir = os.path.join(os.getcwd(), 'shared/assets')

@@ -6,6 +6,7 @@ import { jest } from '@jest/globals';
 const scope = 'https://example.test/projects/pwa/';
 const source = readFileSync(new URL('./sw.js', import.meta.url), 'utf8');
 
+/** Evaluate the service worker with mocked browser APIs for event and cache assertions. */
 function createWorker() {
     const listeners = {};
     const cache = { addAll: jest.fn().mockResolvedValue(undefined), put: jest.fn() };

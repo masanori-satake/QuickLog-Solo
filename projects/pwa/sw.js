@@ -94,7 +94,8 @@ const STATIC_ASSETS = [
     ...SHARED_JS_ASSETS.flatMap((asset) => [`../../shared/js/${asset}`, `../app/shared/js/${asset}`]),
 ];
 
-self.addEventListener('install', (event) => {
+/** Precache the PWA shell before allowing the new worker to activate. */
+function handleInstall(event) {
     event.waitUntil(
         caches
             .open(CACHE_NAME)
@@ -106,9 +107,12 @@ self.addEventListener('install', (event) => {
             })
             .then(() => self.skipWaiting())
     );
-});
+}
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('install', handleInstall);
+
+/** Remove older PWA caches and take control of open clients. */
+function handleActivate(event) {
     event.waitUntil(
         caches
             .keys()
@@ -123,9 +127,12 @@ self.addEventListener('activate', (event) => {
             })
             .then(() => self.clients.claim())
     );
-});
+}
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('activate', handleActivate);
+
+/** Serve cached GET requests and return an offline response when the network fails. */
+function handleFetch(event) {
     if (event.request.method !== 'GET') return;
 
     const url = new URL(event.request.url);
@@ -156,4 +163,6 @@ self.addEventListener('fetch', (event) => {
             return cachedResponse || fetchPromise;
         })
     );
-});
+}
+
+self.addEventListener('fetch', handleFetch);
