@@ -20,7 +20,7 @@ describe('GitHub Pages Links & Asset Verification', () => {
             'projects/animation-maker/index.html',
             'projects/studio/index.html',
             'projects/pwa/index.html',
-            'projects/app/app.html'
+            'projects/app/app.html',
         ];
 
         htmlFiles.forEach((relHtml) => {
@@ -50,28 +50,47 @@ describe('GitHub Pages Links & Asset Verification', () => {
                 expect({ file: relHtml, asset: url, targetPath }).toEqual({
                     file: relHtml,
                     asset: url,
-                    targetPath: expect.stringMatching(/./)
+                    targetPath: expect.stringMatching(/./),
                 });
                 expect(fs.existsSync(targetPath)).toBe(true);
             }
         });
     });
 
-    test('No vercel.app URLs remain in primary app, web HTML, or README', () => {
-        const filesToCheck = [
-            'README.md',
-            'projects/app/js/app.js',
-            'projects/web/index.html',
-            'docs/animation_module_spec.md'
-        ];
+    test('Expected GitHub Pages URLs remain and no vercel.app URLs remain', () => {
+        const pagesBase = 'https://masanori-satake.github.io/QuickLog-Solo/';
+        const expectedPathsByFile = {
+            'README.md': {
+                'projects/category-editor/': 2,
+                'projects/alarm-editor/': 2,
+                'projects/animation-maker/': 2,
+                'projects/studio/': 2,
+            },
+            'projects/app/js/app.js': {
+                'projects/category-editor/': 1,
+                'projects/alarm-editor/': 1,
+                'projects/': 2,
+            },
+            'projects/web/index.html': {
+                'projects/category-editor': 1,
+            },
+            'docs/animation_module_spec.md': {
+                'projects/studio/': 1,
+            },
+        };
 
-        filesToCheck.forEach((relFile) => {
+        Object.entries(expectedPathsByFile).forEach(([relFile, expectedPaths]) => {
             const filePath = path.join(rootDir, relFile);
-            if (fs.existsSync(filePath)) {
-                const content = fs.readFileSync(filePath, 'utf-8');
-                expect(content).not.toContain('quick-log-solo.vercel.app');
-                expect(content).not.toContain('quicklog-solo.vercel.app');
-            }
+            expect(fs.existsSync(filePath)).toBe(true);
+            const content = fs.readFileSync(filePath, 'utf-8');
+            expect(content).not.toContain('quick-log-solo.vercel.app');
+            expect(content).not.toContain('quicklog-solo.vercel.app');
+
+            const actualUrls = content.match(/https:\/\/masanori-satake\.github\.io\/QuickLog-Solo\/[^\s'"`)]+/g) || [];
+            const expectedUrls = Object.entries(expectedPaths).flatMap(([urlPath, count]) =>
+                Array(count).fill(`${pagesBase}${urlPath}`)
+            );
+            expect(actualUrls.sort()).toEqual(expectedUrls.sort());
         });
     });
 });

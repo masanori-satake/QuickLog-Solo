@@ -92,14 +92,13 @@ graph TD
 ---
 
 ## 4. Scene 2：継続的デリバリー（配信プロセス）
-`main` ブランチにコードがマージされると、自動的に GitHub Pages を通じた公開作業が始まります。
+`main` ブランチへのプッシュで `projects/**`、`shared/**`、`index.html` のいずれかに変更がある場合、GitHub Pages へのデプロイが自動実行されます。手動実行も可能です。
 
 ### 処理フロー
 ```mermaid
 graph LR
-    Trigger[mainへマージ] --> PagesBuild[GitHub Pages デプロイ実行]
-    PagesBuild --> Registry[レジストリ更新<br/>scripts/generate_animation_registry.py]
-    Registry --> Deploy[GitHub Pages サイト公開]
+    Trigger[対象パスを含むmainへのプッシュ / 手動実行] --> PagesBuild[GitHub Pages デプロイ実行]
+    PagesBuild --> Deploy[GitHub Pages サイト公開]
 ```
 
 - **処理の目的**: 最新のソースコードから、紹介ページ（ランディングページ）、各エディタ、および Web/PWA 版を公開・更新すること。
@@ -142,7 +141,7 @@ graph LR
 #### GitHub リポジトリでの設定
 1. GitHub リポジトリの **Settings** > **Pages** を開きます。
 2. **Source** を **GitHub Actions** に設定します。
-3. `main` ブランチへのコードマージ時に `deploy-pages.yml` ワークフローが自動で起動し、デプロイが完了します。
+3. `main` ブランチへのプッシュで `projects/**`、`shared/**`、`index.html` のいずれかに変更がある場合、`deploy-pages.yml` ワークフローが自動で起動します。手動実行も可能です。
 
 ---
 
