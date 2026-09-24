@@ -1137,7 +1137,7 @@
 
         function loadPreview(iframe, dbName) {
             const safeLang = getSafeLang(currentLang);
-            const previewUrl = '../app/app.html?lang=' + encodeURIComponent(safeLang) + '&db=' + encodeURIComponent(dbName);
+            const previewUrl = '../pwa/index.html?lang=' + encodeURIComponent(safeLang) + '&db=' + encodeURIComponent(dbName);
             if (iframe.src !== previewUrl) {
                 iframe.src = previewUrl;
             }

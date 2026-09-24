@@ -39,7 +39,7 @@ def generate_icons(output_dir=None, bg_color=None):
         print("Playwright found. Generating icons...")
     except ImportError:
         # Check if icons already exist before failing
-        required_icons = [os.path.join(output_dir, f"icon{size}.png") for size in [16, 32, 48, 128]]
+        required_icons = [os.path.join(output_dir, f"icon{size}.png") for size in [16, 32, 48, 128, 192, 512]]
         if all(os.path.exists(icon) for icon in required_icons):
             print("Playwright not available, but all required PNG icons already exist. Skipping regeneration.")
             return True
@@ -71,7 +71,7 @@ def generate_icons(output_dir=None, bg_color=None):
                 {svg_content}
             """)
 
-            for size in [16, 32, 48, 128]:
+            for size in [16, 32, 48, 128, 192, 512]:
                 output_path = os.path.join(output_dir, f"icon{size}.png")
                 print(f"Generating {size}x{size} icon: {output_path}")
 
@@ -90,18 +90,18 @@ def generate_icons(output_dir=None, bg_color=None):
     except Exception as e:
         print(f"Warning: Playwright icon generation failed: {e}")
         # Check if required icons already exist in output_dir
-        required_icons = [os.path.join(output_dir, f"icon{size}.png") for size in [16, 32, 48, 128]]
+        required_icons = [os.path.join(output_dir, f"icon{size}.png") for size in [16, 32, 48, 128, 192, 512]]
         if all(os.path.exists(icon) for icon in required_icons):
             print("Required PNG icons already exist in output directory. Skipping regeneration.")
             return True
 
         # Fallback to copy from master shared/assets if output_dir doesn't have them
         master_dir = os.path.join(os.getcwd(), 'shared/assets')
-        master_icons = [os.path.join(master_dir, f"icon{size}.png") for size in [16, 32, 48, 128]]
+        master_icons = [os.path.join(master_dir, f"icon{size}.png") for size in [16, 32, 48, 128, 192, 512]]
         if all(os.path.exists(m_icon) for m_icon in master_icons):
             print("Playwright generation failed, falling back to copying master non-branded PNG icons...")
             import shutil
-            for size in [16, 32, 48, 128]:
+            for size in [16, 32, 48, 128, 192, 512]:
                 shutil.copy2(os.path.join(master_dir, f"icon{size}.png"), os.path.join(output_dir, f"icon{size}.png"))
             return True
 
