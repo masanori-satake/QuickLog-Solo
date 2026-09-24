@@ -116,7 +116,8 @@ def main():
     # 2. Update other files
     files_to_update = [
         'projects/app/version.json',
-        'projects/app/manifest.json'
+        'projects/app/manifest.json',
+        'projects/pwa/version.json'
     ]
 
     for filepath in files_to_update:
@@ -125,6 +126,21 @@ def main():
             print(f"Updated {filepath}")
         else:
             print(f"Warning: {filepath} not found.")
+
+    # Special handling for projects/pwa/sw.js CACHE_NAME
+    sw_path = 'projects/pwa/sw.js'
+    if os.path.exists(sw_path):
+        with open(sw_path, 'r', encoding='utf-8') as f:
+            sw_content = f.read()
+        new_sw_content = re.sub(
+            r"const CACHE_NAME = 'quicklog-pwa-v[0-9.]+';",
+            f"const CACHE_NAME = 'quicklog-pwa-v{new_version}';",
+            sw_content
+        )
+        if sw_content != new_sw_content:
+            with open(sw_path, 'w', encoding='utf-8') as f:
+                f.write(new_sw_content)
+            print(f"Updated CACHE_NAME in {sw_path}")
 
     # 3. Special handling for README.md version badge and ZIP filenames
     readme_path = 'README.md'
