@@ -21,6 +21,8 @@ export default defineConfig({
             input: {
                 app: path.resolve(__dirname, 'projects/app/app.html'),
                 background: path.resolve(__dirname, 'projects/app/js/background.js'),
+                pwa: path.resolve(__dirname, 'projects/pwa/index.html'),
+                web: path.resolve(__dirname, 'projects/web/index.html'),
             },
         },
     },

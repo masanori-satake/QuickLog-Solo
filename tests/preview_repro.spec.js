@@ -3,6 +3,9 @@ import { test, expect } from '@playwright/test';
 test('Preview animations on landing page', async ({ page }) => {
     page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
     page.on('pageerror', err => console.log('BROWSER ERROR:', err.message));
+    page.on('response', resp => {
+        if (resp.status() >= 400) console.log('HTTP ERROR:', resp.status(), resp.url());
+    });
 
     // Use a unique DB to avoid state contamination
     const dbName = `PreviewTestDB_${Math.random().toString(36).substring(7)}`;
@@ -19,6 +22,9 @@ test('Preview animations on landing page', async ({ page }) => {
     if (!frame) {
         throw new Error('Iframe not found');
     }
+
+    console.log('IFRAME URL:', frame.url());
+    console.log('IFRAME HTML:', await frame.content());
 
     // Wait for the app in iframe to initialize
     await frame.waitForSelector('.category-btn');
