@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quicklog-pwa-v1.30.11';
+const CACHE_NAME = 'quicklog-pwa-v1.30.12';
 
 const STATIC_ASSETS = [
     './',
@@ -30,30 +30,36 @@ const STATIC_ASSETS = [
     '../../shared/js/idb_storage.js',
     '../../shared/js/session_sync.js',
     '../../shared/js/font_utils.js',
-    '../../shared/js/locales/common.js'
+    '../../shared/js/locales/common.js',
 ];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(STATIC_ASSETS).catch((err) => {
-                console.warn('PWA SW: Some static assets failed to precache:', err);
-            });
-        }).then(() => self.skipWaiting())
+        caches
+            .open(CACHE_NAME)
+            .then((cache) => {
+                return cache.addAll(STATIC_ASSETS).catch((err) => {
+                    console.warn('PWA SW: Some static assets failed to precache:', err);
+                });
+            })
+            .then(() => self.skipWaiting())
     );
 });
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((name) => {
-                    if (name !== CACHE_NAME && name.startsWith('quicklog-pwa-')) {
-                        return caches.delete(name);
-                    }
-                })
-            );
-        }).then(() => self.clients.claim())
+        caches
+            .keys()
+            .then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((name) => {
+                        if (name !== CACHE_NAME && name.startsWith('quicklog-pwa-')) {
+                            return caches.delete(name);
+                        }
+                    })
+                );
+            })
+            .then(() => self.clients.claim())
     );
 });
 
@@ -67,18 +73,20 @@ self.addEventListener('fetch', (event) => {
 
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
-            const fetchPromise = fetch(event.request).then((networkResponse) => {
-                if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-                    const responseToCache = networkResponse.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseToCache);
-                    });
-                }
-                return networkResponse;
-            }).catch(() => {
-                // If network fails, return cached response if available
-                return cachedResponse;
-            });
+            const fetchPromise = fetch(event.request)
+                .then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                        const responseToCache = networkResponse.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, responseToCache);
+                        });
+                    }
+                    return networkResponse;
+                })
+                .catch(() => {
+                    // If network fails, return cached response if available
+                    return cachedResponse;
+                });
 
             return cachedResponse || fetchPromise;
         })
