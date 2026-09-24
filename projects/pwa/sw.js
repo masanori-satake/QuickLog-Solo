@@ -139,7 +139,9 @@ function handleFetch(event) {
 
     // Bypass non-http(s) requests and Vite dev server / HMR internal requests
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
-    if (url.pathname.startsWith('/@') || url.search.includes('import') || url.pathname.includes('node_modules')) return;
+    if (url.pathname.startsWith('/@') || url.searchParams.has('import') || url.pathname.includes('node_modules')) {
+        return;
+    }
 
     event.respondWith(
         caches.match(event.request, { ignoreSearch: event.request.mode === 'navigate' }).then((cachedResponse) => {

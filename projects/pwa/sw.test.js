@@ -75,13 +75,13 @@ test('failed precaching rejects install without activating the new worker', asyn
     expect(self.skipWaiting).not.toHaveBeenCalled();
 });
 
-test('offline navigation with a query uses the cached shell', async () => {
+test('offline navigation whose query value is "import" uses the cached shell', async () => {
     const { listeners, caches, fetch } = createWorker();
     const cachedResponse = { status: 200 };
     caches.match.mockResolvedValue(cachedResponse);
     fetch.mockRejectedValue(new Error('offline'));
     let responsePromise;
-    const request = { method: 'GET', mode: 'navigate', url: `${scope}?pwa` };
+    const request = { method: 'GET', mode: 'navigate', url: `${scope}?db=import` };
     listeners.fetch({
         request,
         respondWith: (promise) => {
@@ -91,6 +91,18 @@ test('offline navigation with a query uses the cached shell', async () => {
 
     await expect(responsePromise).resolves.toBe(cachedResponse);
     expect(caches.match).toHaveBeenCalledWith(request, { ignoreSearch: true });
+});
+
+test('bypasses Vite module requests marked with the import query parameter', () => {
+    const { listeners, caches, fetch } = createWorker();
+    const respondWith = jest.fn();
+    const request = { method: 'GET', mode: 'cors', url: `${scope}js/pwa.js?import` };
+
+    listeners.fetch({ request, respondWith });
+
+    expect(respondWith).not.toHaveBeenCalled();
+    expect(caches.match).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
 });
 
 test('offline cache misses return a 503 response', async () => {
