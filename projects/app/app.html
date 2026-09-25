@@ -628,6 +628,36 @@
                                 【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。
                             </p>
                         </div>
+
+                        <!-- モバイル(PWA)版QRコード設定セクション (PC/拡張機能版用) -->
+                        <div id="pwa-qr-export-section" class="setting-item" style="border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 12px; margin-top: 12px;">
+                            <label style="font-weight: 700; font-size: 0.9rem;" data-i18n="about-pwa-section-title">モバイル(PWA)版QuickLog-Solo(β)</label>
+                            <p style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 0.5rem;" data-i18n="about-pwa-section-desc">
+                                スマホのカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。
+                            </p>
+                            <div style="display: flex; gap: 12px; justify-content: space-around; align-items: flex-start; text-align: center; margin-top: 8px;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <canvas id="pwa-url-qr-canvas" style="width: 120px; height: 120px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px;"></canvas>
+                                    <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500;" data-i18n="about-pwa-url-qr-label">1. PWA起動URL</p>
+                                </div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <canvas id="pwa-settings-qr-canvas" style="width: 120px; height: 120px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px;"></canvas>
+                                    <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500;" data-i18n="about-pwa-settings-qr-label">2. 設定エクスポート</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- モバイル(PWA)版QRコード設定インポートセクション (PWA版用) -->
+                        <div id="pwa-qr-import-section" class="setting-item hidden" style="border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 12px; margin-top: 12px;">
+                            <label style="font-weight: 700; font-size: 0.9rem;" data-i18n="about-pwa-import-title">QuickLog-Solo設定のインポート(β)</label>
+                            <p style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 0.5rem;" data-i18n="about-pwa-import-desc">
+                                PC拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。
+                            </p>
+                            <button id="pwa-start-qr-scan-btn" class="primary-btn" style="width: 100%; margin-top: 6px;">
+                                <span class="material-symbols-outlined">qr_code_scanner</span>
+                                <span data-i18n="btn-pwa-scan-qr">QRコードを読み取る</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div id="maintenance-tab" class="tab-content hidden">
@@ -726,6 +756,30 @@
                                 data-i18n="maintenance-delete-execute"
                             ></button>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Scanner Modal -->
+            <div id="qr-scan-modal" class="modal hidden">
+                <div class="modal-content" style="max-width: 360px; text-align: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;" data-i18n="qr-scan-modal-title">QRコードスキャン</h3>
+                        <button id="qr-scan-close-btn" class="icon-btn">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div id="qr-video-container" style="position: relative; width: 100%; height: 240px; background: #000000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <video id="qr-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        <div style="position: absolute; width: 180px; height: 180px; border: 2px dashed #00e676; border-radius: 12px; pointer-events: none;"></div>
+                    </div>
+                    <p id="qr-scan-status" style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin: 10px 0;" data-i18n="qr-scan-status-scanning">カメラにQRコードをかざしてください</p>
+                    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px;">
+                        <button id="qr-select-image-btn" class="outline-btn" style="flex: 1; font-size: 0.8rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">image</span>
+                            <span data-i18n="btn-select-qr-image">画像から読み込む</span>
+                        </button>
+                        <input type="file" id="qr-image-file-input" accept="image/*" class="hidden" />
                     </div>
                 </div>
             </div>
