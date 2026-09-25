@@ -205,12 +205,29 @@ export async function dbImportCategories(items, importMode) {
 }
 
 /** Saves a validated QR payload atomically, preserving all stores on failure. */
-export async function dbImportQRSettings({ settings, categories, alarms }) {
+export async function dbImportQRSettings({ settings, categories, alarms }, { signal } = {}) {
     await openDatabase();
+    signal?.throwIfAborted();
     return new Promise((resolve, reject) => {
         const tx = db.transaction([STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS], 'readwrite');
-        tx.oncomplete = () => resolve();
-        tx.onabort = () => reject(tx.error || new Error('QR settings import aborted'));
+        const abortImport = () => {
+            try {
+                tx.abort();
+            } catch (err) {
+                // A transaction that has already committed cannot be rolled back.
+                if (err.name !== 'InvalidStateError') throw err;
+            }
+        };
+        const cleanup = () => signal?.removeEventListener('abort', abortImport);
+        tx.oncomplete = () => {
+            cleanup();
+            resolve();
+        };
+        tx.onabort = () => {
+            cleanup();
+            reject(signal?.aborted ? signal.reason : tx.error || new Error('QR settings import aborted'));
+        };
+        signal?.addEventListener('abort', abortImport, { once: true });
 
         try {
             const settingsStore = tx.objectStore(STORE_SETTINGS);
