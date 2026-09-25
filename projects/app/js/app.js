@@ -1299,6 +1299,7 @@ async function renderAboutQRCodes() {
 let activeVideoStream = null;
 let scanAnimationFrameId = null;
 let activeScanSessionId = 0;
+let activeSelectedImageId = 0;
 
 function setupQRScanner() {
     const scanBtn = getEl('pwa-start-qr-scan-btn');
@@ -1325,8 +1326,15 @@ function setupQRScanner() {
         imgInput.onchange = async (e) => {
             const file = e.target.files && e.target.files[0];
             if (!file) return;
+            const selectedImageId = ++activeSelectedImageId;
+            const currentSessionId = activeScanSessionId;
             const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+
             img.onload = async () => {
+                URL.revokeObjectURL(objectUrl);
+                if (selectedImageId !== activeSelectedImageId || currentSessionId !== activeScanSessionId) return;
+
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width;
                 canvas.height = img.height;
@@ -1334,6 +1342,8 @@ function setupQRScanner() {
                 if (ctx) {
                     ctx.drawImage(img, 0, 0);
                     const decodedText = await decodeQRCodeFromCanvas(canvas);
+                    if (selectedImageId !== activeSelectedImageId || currentSessionId !== activeScanSessionId) return;
+
                     if (decodedText) {
                         await handleImportQRPayload(decodedText);
                     } else {
@@ -1343,7 +1353,15 @@ function setupQRScanner() {
                     }
                 }
             };
-            img.src = URL.createObjectURL(file);
+
+            img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                if (selectedImageId !== activeSelectedImageId || currentSessionId !== activeScanSessionId) return;
+                const statusEl = getEl('qr-scan-status');
+                if (statusEl) statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+            };
+
+            img.src = objectUrl;
             imgInput.value = '';
         };
     }

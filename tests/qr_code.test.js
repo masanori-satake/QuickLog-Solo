@@ -24,8 +24,8 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         };
 
         const inputCategories = [
-            { id: 'cat1', name: '開発', color: '#1976d2', animation: 'digital_rain', tag: 'dev', order: 1 },
-            { id: 'cat2', name: '会議', color: '#388e3c', animation: 'clock', tag: '', order: 2 },
+            { id: 'cat1', name: '開発', color: '#1976d2', animation: 'digital_rain', tags: 'dev', order: 1 },
+            { id: 'cat2', name: '会議', color: '#388e3c', animation: 'clock', tags: '', order: 2 },
         ];
 
         const inputAlarms = [
@@ -36,8 +36,10 @@ describe('QR Code Payload Serialization and Deserialization', () => {
                 time: '12:00',
                 actionCategory: 'cat2',
                 action: 'start',
-                weekdays: [1, 2, 3, 4, 5],
-                customMessage: 'お昼です',
+                daysOfWeek: [1, 2, 3, 4, 5],
+                message: 'お昼です',
+                holidayAdjustment: 'next_business_day',
+                requireConfirmation: true,
                 enabled: true,
                 order: 1,
             },
@@ -62,29 +64,56 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         // Deserialization check
         const restored = deserializeSettingsPayload(jsonStr);
 
-        expect(restored.settings.theme).toBe('dark');
-        expect(restored.settings.font).toBe('Roboto');
-        expect(restored.settings.timerHeight).toBe('compact');
-        expect(restored.settings.businessDays).toEqual([1, 2, 3, 4, 5]);
-
-        expect(restored.categories).toHaveLength(2);
-        expect(restored.categories[0].name).toBe('開発');
-        expect(restored.categories[0].animation).toBe('digital_rain');
-
-        expect(restored.alarms).toHaveLength(1);
-        expect(restored.alarms[0].name).toBe('昼休み');
-        expect(restored.alarms[0].time).toBe('12:00');
+        expect(restored).toEqual({
+            settings: {
+                theme: 'dark',
+                font: 'Roboto',
+                fontWeight: '500',
+                animation: 'clock',
+                pauseAnimation: 'snoring_zzz',
+                pauseTheme: 'neutral',
+                timerHeight: 'compact',
+                categoryLayout: '2x4',
+                businessDays: [1, 2, 3, 4, 5],
+                language: 'ja',
+                reportSettings: { showChart: true },
+            },
+            categories: [
+                { id: 'cat1', name: '開発', color: '#1976d2', animation: 'digital_rain', tags: 'dev', order: 1 },
+                { id: 'cat2', name: '会議', color: '#388e3c', animation: 'clock', tags: '', order: 2 },
+            ],
+            alarms: [
+                {
+                    id: 'alm1',
+                    name: '昼休み',
+                    type: 'time',
+                    time: '12:00',
+                    actionCategory: 'cat2',
+                    action: 'start',
+                    daysOfWeek: [1, 2, 3, 4, 5],
+                    message: 'お昼です',
+                    enabled: true,
+                    holidayAdjustment: 'next_business_day',
+                    dayOfMonth: 1,
+                    daysBeforeEnd: 0,
+                    requireConfirmation: true,
+                    order: 1,
+                },
+            ],
+        });
     });
 
-    test('should sanitize custom animations to digital_rain during serialization', () => {
+    test('should preserve none and default animations while sanitizing custom animations to digital_rain', () => {
         const inputSettings = {
             animation: 'custom_my_anim',
-            pauseAnimation: 'qlanim_test',
+            pauseAnimation: 'none',
         };
 
         const inputCategories = [
-            { id: 'cat1', name: 'Task', color: '#ff0000', animation: 'custom_cool_anim' },
-            { id: 'cat2', name: 'Task 2', color: '#00ff00', animation: 'heart_beat' },
+            { id: 'cat1', name: 'Task 1', color: '#ff0000', animation: 'custom_cool_anim' },
+            { id: 'cat2', name: 'Task 2', color: '#00ff00', animation: 'default' },
+            { id: 'cat3', name: 'Task 3', color: '#0000ff', animation: 'none' },
+            { id: 'cat4', name: 'Task 4', color: '#ffff00', animation: 'heart_beat' },
         ];
 
         const jsonStr = serializeSettingsPayload({
@@ -96,9 +125,31 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         const restored = deserializeSettingsPayload(jsonStr);
 
         expect(restored.settings.animation).toBe('digital_rain');
-        expect(restored.settings.pauseAnimation).toBe('digital_rain');
+        expect(restored.settings.pauseAnimation).toBe('none');
         expect(restored.categories[0].animation).toBe('digital_rain');
-        expect(restored.categories[1].animation).toBe('heart_beat');
+        expect(restored.categories[1].animation).toBe('default');
+        expect(restored.categories[2].animation).toBe('none');
+        expect(restored.categories[3].animation).toBe('heart_beat');
+    });
+
+    test('verifies QR version 1-40 data capacity boundaries including VERSION_SPECS_L[19]', () => {
+        // Test Version 1 boundary: max 17 bytes of pure data in Byte mode (19 - 2)
+        const v1Data = 'A'.repeat(17);
+        const v1Matrix = generateQRCodeMatrix(v1Data);
+        expect(v1Matrix.length).toBe(21); // Size for version 1: 17 + 4*1 = 21
+
+        const v1ExceededData = 'A'.repeat(18);
+        const v2Matrix = generateQRCodeMatrix(v1ExceededData);
+        expect(v2Matrix.length).toBe(25); // Size for version 2: 17 + 4*2 = 25
+
+        // Test Version 19 boundary: VERSION_SPECS_L[19] has 795 data bytes, countBits=16 (2 bytes), mode=4 bits (0.5 byte) -> 792 bytes max
+        const v19Data = 'B'.repeat(792);
+        const v19Matrix = generateQRCodeMatrix(v19Data);
+        expect(v19Matrix.length).toBe(17 + 19 * 4); // 93
+
+        const v19ExceededData = 'B'.repeat(793);
+        const v20Matrix = generateQRCodeMatrix(v19ExceededData);
+        expect(v20Matrix.length).toBe(17 + 20 * 4); // 97
     });
 
     test('should ignore sensitive fields like clientId, backup handles, and sessionSync', () => {
