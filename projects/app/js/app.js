@@ -32,6 +32,12 @@ import { backupManager } from './backup.js';
 import { restoreManager } from './restore.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
 import {
+    serializeSettingsPayload,
+    deserializeSettingsPayload,
+    renderQRCodeToCanvas,
+    decodeQRCodeFromCanvas,
+} from '../shared/js/qr_code.js';
+import {
     formatDuration,
     formatLogDuration,
     startTaskLogic,
@@ -1211,6 +1217,7 @@ async function syncState() {
         const aboutTab = getEl('about-tab');
         if (aboutTab && !aboutTab.classList.contains('hidden')) {
             await updateAboutStats();
+            await renderAboutQRCodes();
         }
     }
 }
@@ -1231,6 +1238,217 @@ async function updateAboutStats() {
         if (catCountEl) catCountEl.textContent = categoryCount.toLocaleString();
     } catch (e) {
         console.error('Failed to update About stats:', e);
+    }
+}
+
+async function renderAboutQRCodes() {
+    const isPWA = isPWAMode();
+    const exportSection = getEl('pwa-qr-export-section');
+    const importSection = getEl('pwa-qr-import-section');
+
+    if (exportSection) {
+        if (isPWA) {
+            exportSection.classList.add('hidden');
+        } else {
+            exportSection.classList.remove('hidden');
+        }
+    }
+    if (importSection) {
+        if (isPWA) {
+            importSection.classList.remove('hidden');
+        } else {
+            importSection.classList.add('hidden');
+        }
+    }
+
+    // 1. Static PWA URL QR Code (rendered when not in PWA)
+    const pwaUrlCanvas = getEl('pwa-url-qr-canvas');
+    if (pwaUrlCanvas && !isPWA) {
+        const pwaUrl = 'https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/';
+        renderQRCodeToCanvas(pwaUrl, pwaUrlCanvas, { width: 120, margin: 1 });
+    }
+
+    // 2. Dynamic Settings Export QR Code
+    const settingsQrCanvas = getEl('pwa-settings-qr-canvas');
+    if (settingsQrCanvas && !isPWA) {
+        try {
+            const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
+            const settingsObj = {};
+            for (const item of allSettingsRaw) {
+                if (item && item.key) {
+                    settingsObj[item.key] = item.value;
+                }
+            }
+            const categories = await dbGetAll(STORE_CATEGORIES);
+            const alarms = await dbGetAll(STORE_ALARMS);
+
+            const payloadStr = serializeSettingsPayload({
+                settings: settingsObj,
+                categories,
+                alarms,
+            });
+
+            renderQRCodeToCanvas(payloadStr, settingsQrCanvas, { width: 120, margin: 1 });
+        } catch (err) {
+            console.error('Failed to render settings QR Code:', err);
+        }
+    }
+}
+
+let activeVideoStream = null;
+let scanAnimationFrameId = null;
+
+function setupQRScanner() {
+    const scanBtn = getEl('pwa-start-qr-scan-btn');
+    const closeBtn = getEl('qr-scan-close-btn');
+    const selectImgBtn = getEl('qr-select-image-btn');
+    const imgInput = getEl('qr-image-file-input');
+
+    if (scanBtn) {
+        scanBtn.onclick = () => {
+            openQRScannerModal();
+        };
+    }
+
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            closeQRScannerModal();
+        };
+    }
+
+    if (selectImgBtn && imgInput) {
+        selectImgBtn.onclick = () => {
+            imgInput.click();
+        };
+        imgInput.onchange = async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const img = new Image();
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0);
+                    const decodedText = await decodeQRCodeFromCanvas(canvas);
+                    if (decodedText) {
+                        await handleImportQRPayload(decodedText);
+                    } else {
+                        const statusEl = getEl('qr-scan-status');
+                        if (statusEl) statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+                    }
+                }
+            };
+            img.src = URL.createObjectURL(file);
+            imgInput.value = '';
+        };
+    }
+}
+
+async function openQRScannerModal() {
+    const modal = getEl('qr-scan-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    const statusEl = getEl('qr-scan-status');
+    if (statusEl) statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
+
+    const video = getEl('qr-video');
+    if (video && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+            });
+            activeVideoStream = stream;
+            video.srcObject = stream;
+            await video.play();
+            startVideoFrameScanning(video);
+        } catch (err) {
+            console.warn('Camera access error:', err);
+            if (statusEl) statusEl.textContent = t('qr-scan-camera-error') || 'カメラアクセスが拒否されたか利用できません。画像から選択してください。';
+        }
+    }
+}
+
+function closeQRScannerModal() {
+    if (scanAnimationFrameId) {
+        cancelAnimationFrame(scanAnimationFrameId);
+        scanAnimationFrameId = null;
+    }
+    if (activeVideoStream) {
+        activeVideoStream.getTracks().forEach((track) => track.stop());
+        activeVideoStream = null;
+    }
+    const modal = getEl('qr-scan-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function startVideoFrameScanning(video) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const scanFrame = async () => {
+        if (!activeVideoStream || video.paused || video.ended) return;
+
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            if (ctx) {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const decoded = await decodeQRCodeFromCanvas(canvas);
+                if (decoded) {
+                    const success = await handleImportQRPayload(decoded);
+                    if (success) return;
+                }
+            }
+        }
+        scanAnimationFrameId = requestAnimationFrame(scanFrame);
+    };
+
+    scanAnimationFrameId = requestAnimationFrame(scanFrame);
+}
+
+async function handleImportQRPayload(payloadStr) {
+    try {
+        const { settings, categories, alarms } = deserializeSettingsPayload(payloadStr);
+
+        // 1. Update Settings in IndexedDB
+        for (const [key, val] of Object.entries(settings)) {
+            await dbPut(STORE_SETTINGS, { key, value: val });
+        }
+
+        // 2. Overwrite Categories in IndexedDB (Clear & Add)
+        if (Array.isArray(categories) && categories.length > 0) {
+            await dbClear(STORE_CATEGORIES);
+            for (const cat of categories) {
+                await dbPut(STORE_CATEGORIES, cat);
+            }
+        }
+
+        // 3. Overwrite Alarms in IndexedDB (Clear & Add)
+        if (Array.isArray(alarms) && alarms.length > 0) {
+            await dbClear(STORE_ALARMS);
+            for (const alm of alarms) {
+                await dbPut(STORE_ALARMS, alm);
+            }
+        }
+
+        closeQRScannerModal();
+        showToast(t('toast-settings-imported') || '設定をインポートしました！');
+
+        // Apply language/theme and refresh UI
+        if (settings.language) {
+            setLanguage(settings.language);
+            applyLanguage();
+        }
+        await syncState();
+        return true;
+    } catch (err) {
+        console.error('Failed to import QR payload:', err);
+        const statusEl = getEl('qr-scan-status');
+        if (statusEl) statusEl.textContent = t('qr-scan-invalid-payload') || '無効なQRコードデータです';
+        return false;
     }
 }
 
@@ -2104,6 +2322,14 @@ async function renderBusinessDays() {
         editBtn.title = t('tooltip-edit-business-days');
         editBtn.setAttribute('data-i18n-title', 'tooltip-edit-business-days');
     }
+
+    if (isPWAMode()) {
+        editBtn.disabled = true;
+        editBtn.setAttribute('aria-disabled', 'true');
+    } else {
+        editBtn.disabled = false;
+        editBtn.removeAttribute('aria-disabled');
+    }
 }
 
 async function renderAlarmList() {
@@ -2938,6 +3164,7 @@ function setupEventListeners() {
             if (tabName === 'maintenance') updateBackupUI();
             if (tabName === 'about') {
                 updateAboutStats();
+                renderAboutQRCodes();
             }
         };
     });
@@ -3379,6 +3606,7 @@ async function initApp() {
         await backupManager.init();
         setupBroadcastChannel(handleSyncMessage);
         setupEventListeners();
+        setupQRScanner();
         await handleTestParameters();
 
         isAppInitialized = true;

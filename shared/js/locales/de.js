@@ -538,4 +538,18 @@ export default {
     'maker-error-name-duplicate':
         'Es existiert bereits eine benutzerdefinierte Animation mit diesem Namen. Bitte geben Sie einen anderen Namen ein.',
     'maker-select-prompt': 'Bitte fügen Sie eine benutzerdefinierte Animation hinzu',
+    'about-pwa-section-title': 'Mobile (PWA) QuickLog-Solo (β)',
+    'about-pwa-section-desc': 'Scannen Sie den QR-Code mit Ihrer Smartphone-Kamera, um die PWA-Version zu starten oder Einstellungen zu übertragen.',
+    'about-pwa-url-qr-label': '1. PWA Start-URL',
+    'about-pwa-settings-qr-label': '2. Einstellungen exportieren',
+    'about-pwa-import-title': 'QuickLog-Solo-Einstellungen importieren (β)',
+    'about-pwa-import-desc': 'Scannen Sie den in der PC-Erweiterung angezeigten Einstellungs-QR-Code, um Kategorien und Alarmeinstellungen zu übernehmen.',
+    'btn-pwa-scan-qr': 'QR-Code scannen',
+    'qr-scan-modal-title': 'QR-Code scannen',
+    'qr-scan-status-scanning': 'Bitte halten Sie Ihre Kamera auf den QR-Code',
+    'btn-select-qr-image': 'Aus Bild auswählen',
+    'toast-settings-imported': 'Einstellungen erfolgreich importiert!',
+    'qr-scan-failed-not-found': 'Kein QR-Code im Bild erkannt',
+    'qr-scan-camera-error': 'Kamerazugriff verweigert oder nicht verfügbar. Bitte wählen Sie ein Bild.',
+    'qr-scan-invalid-payload': 'Ungültige QR-Code-Daten',
 };
