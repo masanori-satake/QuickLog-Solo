@@ -529,7 +529,7 @@ export default {
     'maker-error-name-duplicate': '같은 이름의 커스텀 애니메이션이 이미 존재합니다. 다른 이름을 입력해 주세요.',
     'maker-select-prompt': '커스텀 애니메이션을 추가해 주세요',
     'about-pwa-section-title': '모바일 (PWA) QuickLog-Solo (β)',
-    'about-pwa-section-desc': '스마트폰 카메라로 QR 코드를 스캔하여 PWA 버전을 실행하거나 설정을 이전할 수 있습니다.',
+    'about-pwa-section-desc': '스마트폰 카메라인 QR 코드를 스캔하여 PWA 버전을 실행하거나 설정을 이전할 수 있습니다.',
     'about-pwa-url-qr-label': '1. PWA 실행 URL',
     'about-pwa-settings-qr-label': '2. 설정 내보내기',
     'about-pwa-import-title': 'QuickLog-Solo 설정 가져오기 (β)',
@@ -541,6 +541,5 @@ export default {
     'toast-settings-imported': '설정을 성공적으로 가져왔습니다!',
     'qr-scan-failed-not-found': '이미지에서 QR 코드를 감지할 수 없습니다',
     'qr-scan-camera-error': '카메라 접근이 거부되었거나 사용할 수 없습니다. 이미지에서 선택해 주세요.',
-    'qr-scan-unsupported': '이 브라우저는 QR 코드 스캔을 지원하지 않습니다. 지원되는 브라우저를 사용해 주세요.',
     'qr-scan-invalid-payload': '유효하지 않은 QR 코드 데이터입니다',
 };

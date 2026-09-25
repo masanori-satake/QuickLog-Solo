@@ -551,6 +551,5 @@ export default {
     'toast-settings-imported': 'Einstellungen erfolgreich importiert!',
     'qr-scan-failed-not-found': 'Kein QR-Code im Bild erkannt',
     'qr-scan-camera-error': 'Kamerazugriff verweigert oder nicht verfügbar. Bitte wählen Sie ein Bild.',
-    'qr-scan-unsupported': 'Dieser Browser unterstützt keine QR-Code-Erkennung. Bitte verwenden Sie einen unterstützten Browser.',
     'qr-scan-invalid-payload': 'Ungültige QR-Code-Daten',
 };

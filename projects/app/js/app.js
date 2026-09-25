@@ -1,6 +1,5 @@
 import {
     initDB,
-    openDatabase,
     getCurrentAppState,
     dbGetByName,
     dbGetAll,
@@ -37,7 +36,6 @@ import {
     deserializeSettingsPayload,
     renderQRCodeToCanvas,
     decodeQRCodeFromCanvas,
-    isQRCodeScanningSupported,
 } from '../shared/js/qr_code.js';
 import {
     formatDuration,
@@ -1297,13 +1295,11 @@ async function renderAboutQRCodes() {
     }
 }
 
-let qrScannerSession = 0;
-let qrScannerImageSelection = 0;
 let activeVideoStream = null;
 let scanAnimationFrameId = null;
+let activeScanSessionId = 0;
 
-/** Exported for testing purposes only. */
-export function setupQRScanner() {
+function setupQRScanner() {
     const scanBtn = getEl('pwa-start-qr-scan-btn');
     const closeBtn = getEl('qr-scan-close-btn');
     const selectImgBtn = getEl('qr-select-image-btn');
@@ -1328,11 +1324,8 @@ export function setupQRScanner() {
         imgInput.onchange = async (e) => {
             const file = e.target.files && e.target.files[0];
             if (!file) return;
-            const session = qrScannerSession;
-            const imageSelection = ++qrScannerImageSelection;
             const img = new Image();
             img.onload = async () => {
-                if (session !== qrScannerSession || imageSelection !== qrScannerImageSelection) return;
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width;
                 canvas.height = img.height;
@@ -1340,7 +1333,6 @@ export function setupQRScanner() {
                 if (ctx) {
                     ctx.drawImage(img, 0, 0);
                     const decodedText = await decodeQRCodeFromCanvas(canvas);
-                    if (session !== qrScannerSession || imageSelection !== qrScannerImageSelection) return;
                     if (decodedText) {
                         await handleImportQRPayload(decodedText);
                     } else {
@@ -1356,22 +1348,12 @@ export function setupQRScanner() {
     }
 }
 
-/** Exported for testing purposes only. */
-export async function openQRScannerModal() {
+async function openQRScannerModal() {
     const modal = getEl('qr-scan-modal');
     if (!modal) return;
-    const session = ++qrScannerSession;
     modal.classList.remove('hidden');
 
     const statusEl = getEl('qr-scan-status');
-    const supported = await isQRCodeScanningSupported();
-    if (session !== qrScannerSession || modal.classList.contains('hidden')) return;
-    const selectImgBtn = getEl('qr-select-image-btn');
-    if (selectImgBtn) selectImgBtn.disabled = !supported;
-    if (!supported) {
-        if (statusEl) statusEl.textContent = t('qr-scan-unsupported');
-        return;
-    }
     if (statusEl) statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
 
     const video = getEl('qr-video');
@@ -1380,14 +1362,10 @@ export async function openQRScannerModal() {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment' },
             });
-            if (session !== qrScannerSession || modal.classList.contains('hidden')) {
-                stream.getTracks().forEach((track) => track.stop());
-                return;
-            }
             activeVideoStream = stream;
             video.srcObject = stream;
             await video.play();
-            if (session === qrScannerSession && !modal.classList.contains('hidden')) startVideoFrameScanning(video);
+            startVideoFrameScanning(video);
         } catch (err) {
             console.warn('Camera access error:', err);
             if (statusEl)
@@ -1398,9 +1376,8 @@ export async function openQRScannerModal() {
     }
 }
 
-/** Exported for testing purposes only. */
-export function closeQRScannerModal() {
-    qrScannerSession++;
+function closeQRScannerModal() {
+    activeScanSessionId++;
     if (scanAnimationFrameId) {
         cancelAnimationFrame(scanAnimationFrameId);
         scanAnimationFrameId = null;
@@ -1416,9 +1393,10 @@ export function closeQRScannerModal() {
 function startVideoFrameScanning(video) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
+    const sessionId = ++activeScanSessionId;
 
     const scanFrame = async () => {
-        if (!activeVideoStream || video.paused || video.ended) return;
+        if (sessionId !== activeScanSessionId || !activeVideoStream || video.paused || video.ended) return;
 
         if (video.readyState === video.HAVE_ENOUGH_DATA) {
             canvas.width = video.videoWidth;
@@ -1426,49 +1404,45 @@ function startVideoFrameScanning(video) {
             if (ctx) {
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const decoded = await decodeQRCodeFromCanvas(canvas);
+                if (sessionId !== activeScanSessionId) return;
                 if (decoded) {
                     const success = await handleImportQRPayload(decoded);
                     if (success) return;
                 }
             }
         }
-        scanAnimationFrameId = requestAnimationFrame(scanFrame);
+        if (sessionId === activeScanSessionId) {
+            scanAnimationFrameId = requestAnimationFrame(scanFrame);
+        }
     };
 
     scanAnimationFrameId = requestAnimationFrame(scanFrame);
 }
 
-/** Exported for testing purposes only. */
-export async function handleImportQRPayload(payloadStr) {
+async function handleImportQRPayload(payloadStr) {
     try {
         const { settings, categories, alarms } = deserializeSettingsPayload(payloadStr);
 
-        // Deserialization validates every record before any store is modified.
-        // Keep settings and replacements atomic, including clear() operations.
-        const db = await openDatabase();
-        await new Promise((resolve, reject) => {
-            const tx = db.transaction([STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS], 'readwrite');
-            tx.oncomplete = resolve;
-            tx.onabort = () => reject(tx.error || new Error('QR import aborted'));
-            tx.onerror = () => reject(tx.error || new Error('QR import failed'));
-            try {
-                const settingsStore = tx.objectStore(STORE_SETTINGS);
-                for (const [key, value] of Object.entries(settings)) settingsStore.put({ key, value });
-                for (const [storeName, records] of [
-                    [STORE_CATEGORIES, categories],
-                    [STORE_ALARMS, alarms],
-                ]) {
-                    if (records.length === 0) continue;
-                    const store = tx.objectStore(storeName);
-                    store.clear();
-                    for (const record of records) store.put(record);
-                }
-            } catch (error) {
-                tx.abort();
-                reject(error);
+        // 1. Update Settings in IndexedDB
+        for (const [key, val] of Object.entries(settings)) {
+            await dbPut(STORE_SETTINGS, { key, value: val });
+        }
+
+        // 2. Overwrite Categories in IndexedDB (Clear & Add)
+        if (Array.isArray(categories) && categories.length > 0) {
+            await dbClear(STORE_CATEGORIES);
+            for (const cat of categories) {
+                await dbPut(STORE_CATEGORIES, cat);
             }
-        });
-        broadcastSync();
+        }
+
+        // 3. Overwrite Alarms in IndexedDB (Clear & Add)
+        if (Array.isArray(alarms) && alarms.length > 0) {
+            await dbClear(STORE_ALARMS);
+            for (const alm of alarms) {
+                await dbPut(STORE_ALARMS, alm);
+            }
+        }
 
         closeQRScannerModal();
         showToast(t('toast-settings-imported') || '設定をインポートしました！');

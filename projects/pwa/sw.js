@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quicklog-pwa-v1.31.2';
+const CACHE_NAME = 'quicklog-pwa-v1.30.16';
 
 const STATIC_ASSETS = [
     './',
@@ -21,7 +21,6 @@ const STATIC_ASSETS = [
     '../../shared/assets/icon512.png',
     '../../shared/assets/icon.svg',
     '../../shared/js/db.js',
-    '../../shared/js/qr_code.js',
     '../../shared/js/i18n.js',
     '../../shared/js/logic.js',
     '../../shared/js/utils.js',
