@@ -1298,6 +1298,7 @@ async function renderAboutQRCodes() {
 }
 
 let qrScannerSession = 0;
+let qrScannerImageSelection = 0;
 let activeVideoStream = null;
 let scanAnimationFrameId = null;
 
@@ -1328,9 +1329,10 @@ export function setupQRScanner() {
             const file = e.target.files && e.target.files[0];
             if (!file) return;
             const session = qrScannerSession;
+            const imageSelection = ++qrScannerImageSelection;
             const img = new Image();
             img.onload = async () => {
-                if (session !== qrScannerSession) return;
+                if (session !== qrScannerSession || imageSelection !== qrScannerImageSelection) return;
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width;
                 canvas.height = img.height;
@@ -1338,7 +1340,7 @@ export function setupQRScanner() {
                 if (ctx) {
                     ctx.drawImage(img, 0, 0);
                     const decodedText = await decodeQRCodeFromCanvas(canvas);
-                    if (session !== qrScannerSession) return;
+                    if (session !== qrScannerSession || imageSelection !== qrScannerImageSelection) return;
                     if (decodedText) {
                         await handleImportQRPayload(decodedText);
                     } else {

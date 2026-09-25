@@ -204,4 +204,42 @@ describe('image QR scanner sessions', () => {
             await expectOriginalData();
         }
     });
+
+    test('ignores an earlier image that loads after another image is selected', async () => {
+        const nextImg = document.createElement('img');
+        globalThis.Image.mockImplementationOnce(() => nextImg);
+        const input = document.getElementById('qr-image-file-input');
+        await input.onchange({ target: { files: [new File(['next'], 'next.png')] } });
+
+        detect.mockResolvedValueOnce([{ rawValue: JSON.stringify(payload()) }]);
+        await img.onload();
+        expect(detect).not.toHaveBeenCalled();
+        await expectOriginalData();
+    });
+
+    test.each([false, true])('ignores an earlier decode after another image is selected (found: %s)', async (found) => {
+        const firstLoading = img.onload();
+        await detectionStarted;
+        const nextImg = document.createElement('img');
+        globalThis.Image.mockImplementationOnce(() => nextImg);
+        const input = document.getElementById('qr-image-file-input');
+        await input.onchange({ target: { files: [new File(['next'], 'next.png')] } });
+
+        const status = document.getElementById('qr-scan-status');
+        status.textContent = 'New selection';
+        resolveDetection(found ? [{ rawValue: JSON.stringify(payload()) }] : []);
+        await firstLoading;
+        expect(status.textContent).toBe('New selection');
+        await expectOriginalData();
+
+        const nextPayload = payload();
+        nextPayload.c[0].i = 2;
+        nextPayload.a[0].i = 2;
+        detect.mockResolvedValueOnce([{ rawValue: JSON.stringify(nextPayload) }]);
+        const loading = nextImg.onload();
+        await loading;
+        expect(await dbGetAll('settings')).toEqual([{ key: 'theme', value: 'dark' }]);
+        expect((await dbGetAll('categories')).map((category) => category.id)).toEqual([2]);
+        expect((await dbGetAll('alarms')).map((alarm) => alarm.id)).toEqual([2]);
+    });
 });
