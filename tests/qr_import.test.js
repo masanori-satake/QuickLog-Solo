@@ -121,3 +121,87 @@ test('shows unsupported status and disables image scanning without opening the c
     expect(document.getElementById('qr-select-image-btn').disabled).toBe(true);
     expect(document.getElementById('qr-scan-status').textContent).not.toBe('');
 });
+
+describe('image QR scanner sessions', () => {
+    let img;
+    let detect;
+    let detectionStarted;
+    let resolveDetection;
+
+    beforeEach(async () => {
+        document.getElementById('qr-video').remove();
+        const input = document.createElement('input');
+        input.id = 'qr-image-file-input';
+        input.type = 'file';
+        document.body.append(input);
+        img = document.createElement('img');
+        jest.spyOn(globalThis, 'Image').mockImplementation(() => img);
+        URL.createObjectURL = jest.fn().mockReturnValue('blob:qr-test');
+        jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: jest.fn() });
+        detectionStarted = new Promise((started) => {
+            detect = jest.fn(() => {
+                started();
+                return new Promise((resolve) => {
+                    resolveDetection = resolve;
+                });
+            });
+        });
+        globalThis.BarcodeDetector = class {
+            detect = detect;
+        };
+        app.setupQRScanner();
+        await app.openQRScannerModal();
+        await input.onchange({ target: { files: [new File(['qr'], 'qr.png')] } });
+    });
+
+    afterEach(() => {
+        delete URL.createObjectURL;
+    });
+
+    test.each([false, true])('ignores an image loaded after closing (reopen: %s)', async (reopen) => {
+        app.closeQRScannerModal();
+        if (reopen) await app.openQRScannerModal();
+        const status = document.getElementById('qr-scan-status');
+        status.textContent = 'Current status';
+        await img.onload();
+        expect(detect).not.toHaveBeenCalled();
+        expect(status.textContent).toBe('Current status');
+        await expectOriginalData();
+    });
+
+    test.each([
+        [false, false],
+        [false, true],
+        [true, false],
+        [true, true],
+    ])('ignores decoding after closing (reopen: %s, found: %s)', async (reopen, found) => {
+        const loading = img.onload();
+        await detectionStarted;
+        app.closeQRScannerModal();
+        if (reopen) await app.openQRScannerModal();
+        const status = document.getElementById('qr-scan-status');
+        status.textContent = 'Current status';
+        resolveDetection(found ? [{ rawValue: JSON.stringify(payload()) }] : []);
+        await loading;
+        expect(status.textContent).toBe('Current status');
+        await expectOriginalData();
+    });
+
+    test.each([false, true])('handles decoding in the current session (found: %s)', async (found) => {
+        const loading = img.onload();
+        await detectionStarted;
+        const status = document.getElementById('qr-scan-status');
+        status.textContent = '';
+        const data = payload();
+        data.c[0].tg = 'dev,開発';
+        resolveDetection(found ? [{ rawValue: JSON.stringify(data) }] : []);
+        await loading;
+        if (found) {
+            expect(await dbGetAll('categories')).toEqual([expect.objectContaining({ id: 1, tags: 'dev,開発' })]);
+            expect(broadcastSync).toHaveBeenCalledTimes(1);
+        } else {
+            expect(status.textContent).not.toBe('');
+            await expectOriginalData();
+        }
+    });
+});

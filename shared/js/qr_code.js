@@ -207,7 +207,7 @@ export function deserializeSettingsPayload(jsonString) {
         name: c.n,
         color: c.c ?? 'primary',
         animation: sanitizeAnimationId(c.a),
-        tags: c.tg ?? [],
+        tags: c.tg ?? '',
         order: c.o ?? index,
     }));
 
@@ -242,12 +242,7 @@ export function deserializeSettingsPayload(jsonString) {
         }
     }
     for (const category of categories) {
-        if (
-            !category.name ||
-            typeof category.color !== 'string' ||
-            !Array.isArray(category.tags) ||
-            category.tags.some((tag) => typeof tag !== 'string')
-        ) {
+        if (!category.name || typeof category.color !== 'string' || typeof category.tags !== 'string') {
             throw new Error('Invalid QR category');
         }
     }

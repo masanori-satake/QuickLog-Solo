@@ -26,8 +26,8 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         };
 
         const inputCategories = [
-            { id: 'cat1', name: '開発', color: '#1976d2', animation: 'digital_rain', tags: ['dev'], order: 1 },
-            { id: 'cat2', name: '会議', color: '#388e3c', animation: 'clock', tags: [], order: 2 },
+            { id: 'cat1', name: '開発', color: '#1976d2', animation: 'digital_rain', tags: 'dev,開発', order: 1 },
+            { id: 'cat2', name: '会議', color: '#388e3c', animation: 'clock', tags: '', order: 2 },
         ];
 
         const inputAlarms = [
@@ -219,6 +219,7 @@ test('restores omitted defaults, order, disabled flags and special animations', 
         ['primary', 0, 'none'],
         ['primary', 1, 'default'],
     ]);
+    expect(restored.categories.map((c) => c.tags)).toEqual(['', '']);
     expect(restored.alarms.map((a) => [a.type, a.action, a.enabled, a.order, a.requireConfirmation])).toEqual([
         ['daily_business', 'start', false, 0, false],
         ['daily_business', 'start', true, 1, false],
@@ -229,7 +230,7 @@ test.each([
     { c: [{ n: 'Missing ID' }] },
     { c: [{ i: 1, n: 123 }] },
     { c: [null] },
-    { c: [{ i: 1, n: 'Bad tags', tg: 'tag' }] },
+    { c: [{ i: 1, n: 'Bad tags', tg: ['tag'] }] },
     {
         c: [
             { i: 1, n: 'One' },
