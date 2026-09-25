@@ -152,6 +152,47 @@ export function serializeSettingsPayload({ settings = {}, categories = [], alarm
     return JSON.stringify(payload);
 }
 
+/** Validates compact records before any imported data can reach storage. */
+function validatePayloadRecords(records, kind) {
+    if (!Array.isArray(records)) throw new Error(`Invalid ${kind} records`);
+    const ids = new Set();
+    const stringFields = kind === 'category' ? ['n', 'c', 'a', 'tg'] : ['n', 't', 'ti', 'ac', 'a', 'm', 'ha'];
+    const numberFields = kind === 'category' ? ['o'] : ['o', 'dm', 'dbe'];
+    for (const record of records) {
+        if (!record || typeof record !== 'object' || Array.isArray(record)) {
+            throw new Error(`Invalid ${kind} record`);
+        }
+        const id = record.i;
+        if (
+            !((typeof id === 'string' && id.trim() !== '') || (typeof id === 'number' && Number.isFinite(id))) ||
+            ids.has(id)
+        ) {
+            throw new Error(`Invalid or duplicate ${kind} ID`);
+        }
+        ids.add(id);
+        if (kind === 'category' && typeof record.n !== 'string') {
+            throw new Error('Invalid category name');
+        }
+        if (
+            stringFields.some((key) => record[key] !== undefined && typeof record[key] !== 'string') ||
+            numberFields.some((key) => record[key] !== undefined && !Number.isFinite(record[key]))
+        ) {
+            throw new Error(`Invalid ${kind} field`);
+        }
+        if (kind === 'alarm') {
+            if (record.e !== undefined && ![0, 1, false, true].includes(record.e)) {
+                throw new Error('Invalid alarm enabled flag');
+            }
+            if (
+                record.w !== undefined &&
+                (!Array.isArray(record.w) || record.w.some((day) => !Number.isInteger(day) || day < 0 || day > 6))
+            ) {
+                throw new Error('Invalid alarm weekdays');
+            }
+        }
+    }
+}
+
 /**
  * Deserializes shortened JSON payload back into standard app settings, categories, and alarms objects.
  */
@@ -171,6 +212,11 @@ export function deserializeSettingsPayload(jsonString) {
         throw new Error('Unsupported or invalid payload version');
     }
 
+    const categoryRecords = parsed.c === undefined ? [] : parsed.c;
+    const alarmRecords = parsed.a === undefined ? [] : parsed.a;
+    validatePayloadRecords(categoryRecords, 'category');
+    validatePayloadRecords(alarmRecords, 'alarm');
+
     const minSettings = parsed.s || {};
     const settings = {};
     if (minSettings.t) settings.theme = minSettings.t;
@@ -185,29 +231,29 @@ export function deserializeSettingsPayload(jsonString) {
     if (minSettings.l) settings.language = minSettings.l;
     if (minSettings.r) settings.reportSettings = minSettings.r;
 
-    const categories = (parsed.c || []).map((c) => ({
+    const categories = categoryRecords.map((c, index) => ({
         id: c.i,
         name: c.n,
-        color: c.c,
+        color: c.c ?? 'primary',
         animation: sanitizeAnimationId(c.a),
         tag: c.tg || '',
-        order: c.o ?? 0,
+        order: c.o ?? index,
     }));
 
-    const alarms = (parsed.a || []).map((a) => ({
+    const alarms = alarmRecords.map((a, index) => ({
         id: a.i,
-        name: a.n,
-        type: a.t,
+        name: a.n ?? '',
+        type: a.t ?? 'time',
         time: a.ti,
         actionCategory: a.ac || '',
-        action: a.a,
+        action: a.a ?? 'start',
         weekdays: Array.isArray(a.w) ? a.w : [],
         customMessage: a.m || '',
-        enabled: a.e !== false,
+        enabled: a.e !== 0 && a.e !== false,
         holidayAdj: a.ha || 'none',
         dayOfMonth: a.dm || 1,
         daysBeforeEnd: a.dbe || 0,
-        order: a.o ?? 0,
+        order: a.o ?? index,
     }));
 
     return { settings, categories, alarms };
@@ -292,7 +338,7 @@ const VERSION_SPECS_L = [
     [16, 589, 24, 6],
     [17, 647, 28, 6],
     [18, 721, 30, 6],
-    [19, 795, 28, 8],
+    [19, 795, 28, 7],
     [20, 861, 28, 8],
     [21, 932, 28, 8],
     [22, 1006, 28, 9],

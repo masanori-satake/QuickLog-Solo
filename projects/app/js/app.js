@@ -8,6 +8,7 @@ import {
     dbAdd,
     dbDelete,
     dbClear,
+    dbImportQRSettings,
     dbGetLogsByTimeRange,
     LOG_CLEANUP_THRESHOLD_MS,
     setDatabaseName,
@@ -1348,9 +1349,11 @@ function setupQRScanner() {
     }
 }
 
-async function openQRScannerModal() {
+/** Exported for testing purposes only. */
+export async function openQRScannerModal() {
     const modal = getEl('qr-scan-modal');
     if (!modal) return;
+    const sessionId = ++activeScanSessionId;
     modal.classList.remove('hidden');
 
     const statusEl = getEl('qr-scan-status');
@@ -1362,11 +1365,17 @@ async function openQRScannerModal() {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment' },
             });
+            if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) {
+                stream.getTracks().forEach((track) => track.stop());
+                return;
+            }
             activeVideoStream = stream;
             video.srcObject = stream;
             await video.play();
+            if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) return;
             startVideoFrameScanning(video);
         } catch (err) {
+            if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) return;
             console.warn('Camera access error:', err);
             if (statusEl)
                 statusEl.textContent =
@@ -1376,7 +1385,8 @@ async function openQRScannerModal() {
     }
 }
 
-function closeQRScannerModal() {
+/** Exported for testing purposes only. */
+export function closeQRScannerModal() {
     activeScanSessionId++;
     if (scanAnimationFrameId) {
         cancelAnimationFrame(scanAnimationFrameId);
@@ -1423,26 +1433,8 @@ async function handleImportQRPayload(payloadStr) {
     try {
         const { settings, categories, alarms } = deserializeSettingsPayload(payloadStr);
 
-        // 1. Update Settings in IndexedDB
-        for (const [key, val] of Object.entries(settings)) {
-            await dbPut(STORE_SETTINGS, { key, value: val });
-        }
-
-        // 2. Overwrite Categories in IndexedDB (Clear & Add)
-        if (Array.isArray(categories) && categories.length > 0) {
-            await dbClear(STORE_CATEGORIES);
-            for (const cat of categories) {
-                await dbPut(STORE_CATEGORIES, cat);
-            }
-        }
-
-        // 3. Overwrite Alarms in IndexedDB (Clear & Add)
-        if (Array.isArray(alarms) && alarms.length > 0) {
-            await dbClear(STORE_ALARMS);
-            for (const alm of alarms) {
-                await dbPut(STORE_ALARMS, alm);
-            }
-        }
+        await dbImportQRSettings({ settings, categories, alarms });
+        broadcastSync();
 
         closeQRScannerModal();
         showToast(t('toast-settings-imported') || '設定をインポートしました！');

@@ -204,6 +204,32 @@ export async function dbImportCategories(items, importMode) {
     });
 }
 
+/** Saves a validated QR payload atomically, preserving all stores on failure. */
+export async function dbImportQRSettings({ settings, categories, alarms }) {
+    await openDatabase();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction([STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS], 'readwrite');
+        tx.oncomplete = () => resolve();
+        tx.onabort = () => reject(tx.error || new Error('QR settings import aborted'));
+
+        try {
+            const settingsStore = tx.objectStore(STORE_SETTINGS);
+            for (const [key, value] of Object.entries(settings)) {
+                settingsStore.put({ key, value });
+            }
+            for (const [storeName, records] of [[STORE_CATEGORIES, categories], [STORE_ALARMS, alarms]]) {
+                if (records.length === 0) continue;
+                const store = tx.objectStore(storeName);
+                store.clear();
+                for (const record of records) store.put(record);
+            }
+        } catch (err) {
+            tx.abort();
+            reject(err);
+        }
+    });
+}
+
 export async function dbGetByName(storeName, name) {
     await openDatabase();
     return new Promise((resolve, reject) => {
