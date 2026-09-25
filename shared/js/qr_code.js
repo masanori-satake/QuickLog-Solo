@@ -1,5 +1,5 @@
 /**
- * QuickLog-Solo QR Code Encoder, Decoder & Payload Shortener Library
+ * QuickLog-Solo QR Code Encoder, Native Decoder & Payload Shortener Library
  * Pure Vanilla JS - zero external OSS dependencies.
  */
 
@@ -56,6 +56,7 @@ const STANDARD_ANIMATIONS = new Set([
  */
 function sanitizeAnimationId(animId) {
     if (!animId || typeof animId !== 'string') return 'digital_rain';
+    if (animId === 'none' || animId === 'default') return animId;
     if (animId.startsWith('custom_') || animId.startsWith('qlanim_')) return 'digital_rain';
     if (STANDARD_ANIMATIONS.has(animId)) return animId;
     return 'digital_rain';
@@ -118,7 +119,7 @@ export function serializeSettingsPayload({ settings = {}, categories = [], alarm
         if (cat.color && cat.color !== 'primary') item.c = cat.color;
         const anim = sanitizeAnimationId(cat.animation);
         if (anim && anim !== 'digital_rain') item.a = anim;
-        if (cat.tag) item.tg = cat.tag;
+        if (cat.tags) item.tg = cat.tags;
         const order = cat.order ?? idx;
         if (order !== idx) item.o = order;
         return item;
@@ -127,14 +128,15 @@ export function serializeSettingsPayload({ settings = {}, categories = [], alarm
     const minAlarms = (alarms || []).map((alm, idx) => {
         const item = { i: alm.id };
         if (alm.name) item.n = alm.name;
-        if (alm.type && alm.type !== 'time') item.t = alm.type;
+        if (alm.type && alm.type !== 'daily_business') item.t = alm.type;
         if (alm.time) item.ti = alm.time;
         if (alm.actionCategory) item.ac = alm.actionCategory;
         if (alm.action && alm.action !== 'start') item.a = alm.action;
-        if (Array.isArray(alm.weekdays) && alm.weekdays.length > 0) item.w = alm.weekdays;
-        if (alm.customMessage) item.m = alm.customMessage;
+        if (Array.isArray(alm.daysOfWeek) && alm.daysOfWeek.length > 0) item.w = alm.daysOfWeek;
+        if (alm.message) item.m = alm.message;
+        if (alm.requireConfirmation) item.rc = alm.requireConfirmation;
         if (alm.enabled === false) item.e = 0;
-        if (alm.holidayAdj && alm.holidayAdj !== 'none') item.ha = alm.holidayAdj;
+        if (alm.holidayAdjustment && alm.holidayAdjustment !== 'none') item.ha = alm.holidayAdjustment;
         if (alm.dayOfMonth && alm.dayOfMonth !== 1) item.dm = alm.dayOfMonth;
         if (alm.daysBeforeEnd) item.dbe = alm.daysBeforeEnd;
         const order = alm.order ?? idx;
@@ -171,6 +173,21 @@ export function deserializeSettingsPayload(jsonString) {
         throw new Error('Unsupported or invalid payload version');
     }
 
+    for (const records of [parsed.c, parsed.a]) {
+        if (
+            records !== undefined &&
+            (!Array.isArray(records) ||
+                records.some((record) => !record || typeof record !== 'object' || Array.isArray(record)))
+        )
+            throw new Error('Invalid QR records');
+    }
+    for (const alarm of parsed.a || []) {
+        if (alarm.n !== undefined && typeof alarm.n !== 'string') throw new Error('Invalid alarm name');
+        if (alarm.e !== undefined && ![0, 1, false, true].includes(alarm.e)) {
+            throw new Error('Invalid alarm enabled flag');
+        }
+    }
+
     const minSettings = parsed.s || {};
     const settings = {};
     if (minSettings.t) settings.theme = minSettings.t;
@@ -185,30 +202,77 @@ export function deserializeSettingsPayload(jsonString) {
     if (minSettings.l) settings.language = minSettings.l;
     if (minSettings.r) settings.reportSettings = minSettings.r;
 
-    const categories = (parsed.c || []).map((c) => ({
+    const categories = (parsed.c || []).map((c, index) => ({
         id: c.i,
         name: c.n,
-        color: c.c,
+        color: c.c ?? 'primary',
         animation: sanitizeAnimationId(c.a),
-        tag: c.tg || '',
-        order: c.o ?? 0,
+        tags: c.tg ?? [],
+        order: c.o ?? index,
     }));
 
-    const alarms = (parsed.a || []).map((a) => ({
+    const alarms = (parsed.a || []).map((a, index) => ({
         id: a.i,
-        name: a.n,
-        type: a.t,
+        name: a.n ?? '',
+        type: a.t ?? 'daily_business',
         time: a.ti,
-        actionCategory: a.ac || '',
-        action: a.a,
-        weekdays: Array.isArray(a.w) ? a.w : [],
-        customMessage: a.m || '',
-        enabled: a.e !== false,
-        holidayAdj: a.ha || 'none',
-        dayOfMonth: a.dm || 1,
-        daysBeforeEnd: a.dbe || 0,
-        order: a.o ?? 0,
+        actionCategory: a.ac ?? '',
+        action: a.a ?? 'start',
+        daysOfWeek: a.w ?? [],
+        message: a.m ?? '',
+        requireConfirmation: a.rc ?? false,
+        enabled: a.e !== 0 && a.e !== false,
+        holidayAdjustment: a.ha ?? 'none',
+        dayOfMonth: a.dm ?? 1,
+        daysBeforeEnd: a.dbe ?? 0,
+        order: a.o ?? index,
     }));
+
+    // Validate every record before the caller opens a write transaction. IDs in
+    // IndexedDB can be generated numbers or strings from imported records.
+    for (const records of [categories, alarms]) {
+        const ids = new Set();
+        for (const record of records) {
+            const validId =
+                (typeof record.id === 'string' && record.id.length > 0) ||
+                (typeof record.id === 'number' && Number.isFinite(record.id));
+            if (!validId || ids.has(record.id) || typeof record.name !== 'string' || !Number.isFinite(record.order))
+                throw new Error('Invalid QR record identity');
+            ids.add(record.id);
+        }
+    }
+    for (const category of categories) {
+        if (
+            !category.name ||
+            typeof category.color !== 'string' ||
+            !Array.isArray(category.tags) ||
+            category.tags.some((tag) => typeof tag !== 'string')
+        ) {
+            throw new Error('Invalid QR category');
+        }
+    }
+    for (const alarm of alarms) {
+        if (
+            !['daily', 'daily_business', 'weekly', 'monthly_date', 'monthly_end_relative'].includes(alarm.type) ||
+            typeof alarm.time !== 'string' ||
+            !/^([01]\d|2[0-3]):[0-5]\d$/.test(alarm.time) ||
+            !['none', 'stop', 'pause', 'start'].includes(alarm.action) ||
+            typeof alarm.actionCategory !== 'string' ||
+            typeof alarm.message !== 'string' ||
+            typeof alarm.requireConfirmation !== 'boolean' ||
+            !Array.isArray(alarm.daysOfWeek) ||
+            alarm.daysOfWeek.some((day) => !Number.isInteger(day) || day < 0 || day > 6) ||
+            !Number.isInteger(alarm.dayOfMonth) ||
+            alarm.dayOfMonth < 1 ||
+            alarm.dayOfMonth > 31 ||
+            !Number.isInteger(alarm.daysBeforeEnd) ||
+            alarm.daysBeforeEnd < 0 ||
+            alarm.daysBeforeEnd > 31 ||
+            !['none', 'prev_business_day', 'next_business_day', 'skip'].includes(alarm.holidayAdjustment)
+        ) {
+            throw new Error('Invalid QR alarm');
+        }
+    }
 
     return { settings, categories, alarms };
 }
@@ -292,7 +356,7 @@ const VERSION_SPECS_L = [
     [16, 589, 24, 6],
     [17, 647, 28, 6],
     [18, 721, 30, 6],
-    [19, 795, 28, 8],
+    [19, 795, 28, 7],
     [20, 861, 28, 8],
     [21, 932, 28, 8],
     [22, 1006, 28, 9],
@@ -373,7 +437,7 @@ export function generateQRCodeMatrix(text) {
 
     // Find smallest version that fits dataLen
     let version = 1;
-    while (version <= 40 && VERSION_SPECS_L[version][1] < dataLen) {
+    while (version <= 40 && VERSION_SPECS_L[version][1] * 8 < 4 + (version < 10 ? 8 : 16) + dataLen * 8) {
         version++;
     }
     if (version > 40) {
@@ -514,10 +578,28 @@ export function generateQRCodeMatrix(text) {
     // 4. Dark Module
     setModule(size - 8, 8, true);
 
+    // Version information (BCH code), present in both 6x3 regions for v7+.
+    if (version >= 7) {
+        let remainder = version;
+        for (let i = 0; i < 12; i++) {
+            remainder = (remainder << 1) ^ ((remainder >>> 11) * 0x1f25);
+        }
+        const versionBits = (version << 12) | remainder;
+        for (let i = 0; i < 18; i++) {
+            const bit = ((versionBits >>> i) & 1) !== 0;
+            const a = size - 11 + (i % 3);
+            const b = Math.floor(i / 3);
+            setModule(b, a, bit);
+            setModule(a, b, bit);
+        }
+    }
+
     // Reserve Format Info Areas
     for (let i = 0; i < 9; i++) {
         if (!isReserved[8][i]) isReserved[8][i] = true;
         if (!isReserved[i][8]) isReserved[i][8] = true;
+    }
+    for (let i = 0; i < 8; i++) {
         if (!isReserved[8][size - 1 - i]) isReserved[8][size - 1 - i] = true;
         if (!isReserved[size - 1 - i][8]) isReserved[size - 1 - i][8] = true;
     }
@@ -582,11 +664,11 @@ export function generateQRCodeMatrix(text) {
     setModule(0, 8, getBit(0));
 
     // Bottom-left / Top-right
-    for (let i = 0; i < 7; i++) {
-        setModule(size - 1 - i, 8, getBit(i));
-    }
     for (let i = 0; i < 8; i++) {
-        setModule(8, size - 8 + i, getBit(14 - i));
+        setModule(8, size - 1 - i, getBit(i));
+    }
+    for (let i = 8; i < 15; i++) {
+        setModule(size - 15 + i, 8, getBit(i));
     }
 
     return matrix;
@@ -628,115 +710,37 @@ export function renderQRCodeToCanvas(text, canvas, options = {}) {
     }
 }
 
-// --- 3. Pure Vanilla JS QR Code Decoder ---
+// --- 3. Native QR Code Decoder ---
 
-/**
- * Decodes QR Code from Canvas or ImageData.
- * Uses native BarcodeDetector API when available, with a pure JS finder pattern fallback.
- */
-export async function decodeQRCodeFromCanvas(canvasOrImageData) {
-    if (!canvasOrImageData) return null;
-
-    // 1. Try native BarcodeDetector API if available
-    if (typeof globalThis !== 'undefined' && 'BarcodeDetector' in globalThis) {
-        try {
-            const detector = new globalThis.BarcodeDetector({ formats: ['qr_code'] });
-            let results = [];
-            if (
-                canvasOrImageData instanceof HTMLCanvasElement ||
-                (typeof ImageBitmap !== 'undefined' && canvasOrImageData instanceof ImageBitmap)
-            ) {
-                results = await detector.detect(canvasOrImageData);
-            } else if (typeof ImageData !== 'undefined' && canvasOrImageData instanceof ImageData) {
-                const tmpCanvas = document.createElement('canvas');
-                tmpCanvas.width = canvasOrImageData.width;
-                tmpCanvas.height = canvasOrImageData.height;
-                const tmpCtx = tmpCanvas.getContext('2d');
-                if (tmpCtx) {
-                    tmpCtx.putImageData(canvasOrImageData, 0, 0);
-                    results = await detector.detect(tmpCanvas);
-                }
-            }
-            if (results && results.length > 0) {
-                return results[0].rawValue;
-            }
-        } catch (err) {
-            console.warn('Native BarcodeDetector failed, falling back to pure JS scanner:', err);
+/** Reports whether this browser can decode QR codes using BarcodeDetector. */
+export async function isQRCodeScanningSupported() {
+    if (typeof globalThis.BarcodeDetector !== 'function') return false;
+    try {
+        if (typeof globalThis.BarcodeDetector.getSupportedFormats === 'function') {
+            const formats = await globalThis.BarcodeDetector.getSupportedFormats();
+            if (!formats.includes('qr_code')) return false;
         }
+        new globalThis.BarcodeDetector({ formats: ['qr_code'] });
+        return true;
+    } catch {
+        return false;
     }
-
-    // 2. Pure JS QR pattern scanner fallback
-    let imageData;
-    if (typeof ImageData !== 'undefined' && canvasOrImageData instanceof ImageData) {
-        imageData = canvasOrImageData;
-    } else if (
-        canvasOrImageData &&
-        typeof canvasOrImageData === 'object' &&
-        'data' in canvasOrImageData &&
-        'width' in canvasOrImageData
-    ) {
-        imageData = canvasOrImageData;
-    } else if (canvasOrImageData && typeof canvasOrImageData.getContext === 'function') {
-        const ctx = canvasOrImageData.getContext('2d');
-        if (!ctx) return null;
-        imageData = ctx.getImageData(0, 0, canvasOrImageData.width, canvasOrImageData.height);
-    } else {
-        return null;
-    }
-
-    return scanImageDataPureJS(imageData);
 }
 
 /**
- * Simple pure JS scanner that attempts to locate finder patterns or scan embedded text.
+ * Decodes a canvas or ImageData with the native BarcodeDetector API.
+ * Returns null when no QR code is detected; rejects in unsupported environments.
+ * No pure JavaScript decoder is provided.
  */
-function scanImageDataPureJS(imageData) {
-    if (!imageData || imageData.width < 10 || imageData.height < 10) return null;
-
-    const { width, height, data } = imageData;
-    const getPixel = (x, y) => {
-        const idx = (y * width + x) * 4;
-        const r = data[idx];
-        const g = data[idx + 1];
-        const b = data[idx + 2];
-        return (r * 299 + g * 587 + b * 114) / 1000 < 128;
-    };
-
-    const step = Math.max(1, Math.floor(height / 100));
-
-    for (let y = 0; y < height; y += step) {
-        let state = 0;
-        let counts = [0, 0, 0, 0, 0];
-
-        for (let x = 0; x < width; x++) {
-            const isDark = getPixel(x, y);
-            if (isDark === (state % 2 === 0)) {
-                counts[state]++;
-            } else {
-                if (state < 4) {
-                    state++;
-                    counts[state] = 1;
-                } else {
-                    const total = counts.reduce((a, b) => a + b, 0);
-                    if (total >= 7) {
-                        const moduleSize = total / 7;
-                        const maxErr = moduleSize * 0.5;
-                        if (
-                            Math.abs(counts[0] - moduleSize) < maxErr &&
-                            Math.abs(counts[1] - moduleSize) < maxErr &&
-                            Math.abs(counts[2] - 3 * moduleSize) < maxErr * 3 &&
-                            Math.abs(counts[3] - moduleSize) < maxErr &&
-                            Math.abs(counts[4] - moduleSize) < maxErr
-                        ) {
-                            // Finder pattern candidate detected
-                        }
-                    }
-                    counts = [counts[2], counts[3], counts[4], 1, 0];
-                    state = 3;
-                }
-            }
-        }
+export async function decodeQRCodeFromCanvas(canvasOrImageData) {
+    if (!canvasOrImageData) return null;
+    if (!(await isQRCodeScanningSupported())) throw new Error('QR scanning is not supported in this browser');
+    const detector = new globalThis.BarcodeDetector({ formats: ['qr_code'] });
+    try {
+        const results = await detector.detect(canvasOrImageData);
+        return results.length > 0 ? results[0].rawValue : null;
+    } catch (error) {
+        console.warn('Native QR detection failed:', error);
+        return null;
     }
-
-    return null;
 }

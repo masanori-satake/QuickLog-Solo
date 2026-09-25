@@ -1,5 +1,6 @@
 import {
     initDB,
+    openDatabase,
     getCurrentAppState,
     dbGetByName,
     dbGetAll,
@@ -36,6 +37,7 @@ import {
     deserializeSettingsPayload,
     renderQRCodeToCanvas,
     decodeQRCodeFromCanvas,
+    isQRCodeScanningSupported,
 } from '../shared/js/qr_code.js';
 import {
     formatDuration,
@@ -1295,6 +1297,7 @@ async function renderAboutQRCodes() {
     }
 }
 
+let qrScannerSession = 0;
 let activeVideoStream = null;
 let scanAnimationFrameId = null;
 
@@ -1347,12 +1350,22 @@ function setupQRScanner() {
     }
 }
 
-async function openQRScannerModal() {
+/** Exported for testing purposes only. */
+export async function openQRScannerModal() {
     const modal = getEl('qr-scan-modal');
     if (!modal) return;
+    const session = ++qrScannerSession;
     modal.classList.remove('hidden');
 
     const statusEl = getEl('qr-scan-status');
+    const supported = await isQRCodeScanningSupported();
+    if (session !== qrScannerSession || modal.classList.contains('hidden')) return;
+    const selectImgBtn = getEl('qr-select-image-btn');
+    if (selectImgBtn) selectImgBtn.disabled = !supported;
+    if (!supported) {
+        if (statusEl) statusEl.textContent = t('qr-scan-unsupported');
+        return;
+    }
     if (statusEl) statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
 
     const video = getEl('qr-video');
@@ -1361,10 +1374,14 @@ async function openQRScannerModal() {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment' },
             });
+            if (session !== qrScannerSession || modal.classList.contains('hidden')) {
+                stream.getTracks().forEach((track) => track.stop());
+                return;
+            }
             activeVideoStream = stream;
             video.srcObject = stream;
             await video.play();
-            startVideoFrameScanning(video);
+            if (session === qrScannerSession && !modal.classList.contains('hidden')) startVideoFrameScanning(video);
         } catch (err) {
             console.warn('Camera access error:', err);
             if (statusEl)
@@ -1375,7 +1392,9 @@ async function openQRScannerModal() {
     }
 }
 
-function closeQRScannerModal() {
+/** Exported for testing purposes only. */
+export function closeQRScannerModal() {
+    qrScannerSession++;
     if (scanAnimationFrameId) {
         cancelAnimationFrame(scanAnimationFrameId);
         scanAnimationFrameId = null;
@@ -1413,30 +1432,37 @@ function startVideoFrameScanning(video) {
     scanAnimationFrameId = requestAnimationFrame(scanFrame);
 }
 
-async function handleImportQRPayload(payloadStr) {
+/** Exported for testing purposes only. */
+export async function handleImportQRPayload(payloadStr) {
     try {
         const { settings, categories, alarms } = deserializeSettingsPayload(payloadStr);
 
-        // 1. Update Settings in IndexedDB
-        for (const [key, val] of Object.entries(settings)) {
-            await dbPut(STORE_SETTINGS, { key, value: val });
-        }
-
-        // 2. Overwrite Categories in IndexedDB (Clear & Add)
-        if (Array.isArray(categories) && categories.length > 0) {
-            await dbClear(STORE_CATEGORIES);
-            for (const cat of categories) {
-                await dbPut(STORE_CATEGORIES, cat);
+        // Deserialization validates every record before any store is modified.
+        // Keep settings and replacements atomic, including clear() operations.
+        const db = await openDatabase();
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction([STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS], 'readwrite');
+            tx.oncomplete = resolve;
+            tx.onabort = () => reject(tx.error || new Error('QR import aborted'));
+            tx.onerror = () => reject(tx.error || new Error('QR import failed'));
+            try {
+                const settingsStore = tx.objectStore(STORE_SETTINGS);
+                for (const [key, value] of Object.entries(settings)) settingsStore.put({ key, value });
+                for (const [storeName, records] of [
+                    [STORE_CATEGORIES, categories],
+                    [STORE_ALARMS, alarms],
+                ]) {
+                    if (records.length === 0) continue;
+                    const store = tx.objectStore(storeName);
+                    store.clear();
+                    for (const record of records) store.put(record);
+                }
+            } catch (error) {
+                tx.abort();
+                reject(error);
             }
-        }
-
-        // 3. Overwrite Alarms in IndexedDB (Clear & Add)
-        if (Array.isArray(alarms) && alarms.length > 0) {
-            await dbClear(STORE_ALARMS);
-            for (const alm of alarms) {
-                await dbPut(STORE_ALARMS, alm);
-            }
-        }
+        });
+        broadcastSync();
 
         closeQRScannerModal();
         showToast(t('toast-settings-imported') || '設定をインポートしました！');

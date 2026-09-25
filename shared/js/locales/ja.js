@@ -564,5 +564,6 @@ export default {
     'toast-settings-imported': '設定をインポートしました！',
     'qr-scan-failed-not-found': 'QRコードを検出できませんでした',
     'qr-scan-camera-error': 'カメラアクセスが拒否されたか利用できません。画像から選択してください。',
+    'qr-scan-unsupported': 'このブラウザはQRコードの読み取りに対応していません。対応ブラウザを使用してください。',
     'qr-scan-invalid-payload': '無効なQRコードデータです',
 };
