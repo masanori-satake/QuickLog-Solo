@@ -56,6 +56,7 @@ const STANDARD_ANIMATIONS = new Set([
  */
 function sanitizeAnimationId(animId) {
     if (!animId || typeof animId !== 'string') return 'digital_rain';
+    if (animId === 'none' || animId === 'default') return animId;
     if (animId.startsWith('custom_') || animId.startsWith('qlanim_')) return 'digital_rain';
     if (STANDARD_ANIMATIONS.has(animId)) return animId;
     return 'digital_rain';
@@ -118,7 +119,7 @@ export function serializeSettingsPayload({ settings = {}, categories = [], alarm
         if (cat.color && cat.color !== 'primary') item.c = cat.color;
         const anim = sanitizeAnimationId(cat.animation);
         if (anim && anim !== 'digital_rain') item.a = anim;
-        if (cat.tag) item.tg = cat.tag;
+        if (cat.tags) item.tg = cat.tags;
         const order = cat.order ?? idx;
         if (order !== idx) item.o = order;
         return item;
@@ -131,12 +132,13 @@ export function serializeSettingsPayload({ settings = {}, categories = [], alarm
         if (alm.time) item.ti = alm.time;
         if (alm.actionCategory) item.ac = alm.actionCategory;
         if (alm.action && alm.action !== 'start') item.a = alm.action;
-        if (Array.isArray(alm.weekdays) && alm.weekdays.length > 0) item.w = alm.weekdays;
-        if (alm.customMessage) item.m = alm.customMessage;
+        if (Array.isArray(alm.daysOfWeek) && alm.daysOfWeek.length > 0) item.w = alm.daysOfWeek;
+        if (alm.message) item.m = alm.message;
         if (alm.enabled === false) item.e = 0;
-        if (alm.holidayAdj && alm.holidayAdj !== 'none') item.ha = alm.holidayAdj;
+        if (alm.holidayAdjustment && alm.holidayAdjustment !== 'none') item.ha = alm.holidayAdjustment;
         if (alm.dayOfMonth && alm.dayOfMonth !== 1) item.dm = alm.dayOfMonth;
         if (alm.daysBeforeEnd) item.dbe = alm.daysBeforeEnd;
+        if (alm.requireConfirmation) item.rc = 1;
         const order = alm.order ?? idx;
         if (order !== idx) item.o = order;
         return item;
@@ -236,7 +238,7 @@ export function deserializeSettingsPayload(jsonString) {
         name: c.n,
         color: c.c ?? 'primary',
         animation: sanitizeAnimationId(c.a),
-        tag: c.tg || '',
+        tags: c.tg || '',
         order: c.o ?? index,
     }));
 
@@ -247,12 +249,13 @@ export function deserializeSettingsPayload(jsonString) {
         time: a.ti,
         actionCategory: a.ac || '',
         action: a.a ?? 'start',
-        weekdays: Array.isArray(a.w) ? a.w : [],
-        customMessage: a.m || '',
+        daysOfWeek: Array.isArray(a.w) ? a.w : [],
+        message: a.m || '',
         enabled: a.e !== 0 && a.e !== false,
-        holidayAdj: a.ha || 'none',
+        holidayAdjustment: a.ha || 'none',
         dayOfMonth: a.dm || 1,
         daysBeforeEnd: a.dbe || 0,
+        requireConfirmation: a.rc === 1 || a.rc === true,
         order: a.o ?? index,
     }));
 
@@ -417,9 +420,14 @@ export function generateQRCodeMatrix(text) {
     const utf8Bytes = encodeUTF8(text);
     const dataLen = utf8Bytes.length;
 
-    // Find smallest version that fits dataLen
+    // Find smallest version that fits dataLen including mode (4 bits) and character count indicators
     let version = 1;
-    while (version <= 40 && VERSION_SPECS_L[version][1] < dataLen) {
+    while (version <= 40) {
+        const countBits = version < 10 ? 8 : 16;
+        const totalBits = 4 + countBits + dataLen * 8;
+        if (totalBits <= VERSION_SPECS_L[version][1] * 8) {
+            break;
+        }
         version++;
     }
     if (version > 40) {
@@ -564,8 +572,28 @@ export function generateQRCodeMatrix(text) {
     for (let i = 0; i < 9; i++) {
         if (!isReserved[8][i]) isReserved[8][i] = true;
         if (!isReserved[i][8]) isReserved[i][8] = true;
+    }
+    for (let i = 0; i < 8; i++) {
         if (!isReserved[8][size - 1 - i]) isReserved[8][size - 1 - i] = true;
         if (!isReserved[size - 1 - i][8]) isReserved[size - 1 - i][8] = true;
+    }
+
+    // Place Version Information (Version >= 7)
+    if (version >= 7) {
+        let rem = version << 12;
+        for (let i = 17; i >= 12; i--) {
+            if ((rem >> i) & 1) {
+                rem ^= 0x1f25 << (i - 12);
+            }
+        }
+        const versionInfo = (version << 12) | rem;
+        for (let i = 0; i < 18; i++) {
+            const bit = ((versionInfo >> i) & 1) === 1;
+            // Bottom-left (3 rows x 6 cols)
+            setModule(size - 11 + (i % 3), Math.floor(i / 3), bit, true);
+            // Top-right (6 rows x 3 cols)
+            setModule(Math.floor(i / 3), size - 11 + (i % 3), bit, true);
+        }
     }
 
     // Place Data Bits
@@ -628,11 +656,11 @@ export function generateQRCodeMatrix(text) {
     setModule(0, 8, getBit(0));
 
     // Bottom-left / Top-right
-    for (let i = 0; i < 7; i++) {
-        setModule(size - 1 - i, 8, getBit(i));
-    }
     for (let i = 0; i < 8; i++) {
-        setModule(8, size - 8 + i, getBit(14 - i));
+        setModule(8, size - 1 - i, getBit(i));
+    }
+    for (let i = 8; i <= 14; i++) {
+        setModule(size - 15 + i, 8, getBit(i));
     }
 
     return matrix;
@@ -677,14 +705,20 @@ export function renderQRCodeToCanvas(text, canvas, options = {}) {
 // --- 3. Pure Vanilla JS QR Code Decoder ---
 
 /**
+ * Checks if QR code scanning via native BarcodeDetector API is supported in the current environment.
+ */
+export function isQRCodeScanSupported() {
+    return typeof globalThis !== 'undefined' && 'BarcodeDetector' in globalThis;
+}
+
+/**
  * Decodes QR Code from Canvas or ImageData.
- * Uses native BarcodeDetector API when available, with a pure JS finder pattern fallback.
+ * Uses native BarcodeDetector API when available.
  */
 export async function decodeQRCodeFromCanvas(canvasOrImageData) {
     if (!canvasOrImageData) return null;
 
-    // 1. Try native BarcodeDetector API if available
-    if (typeof globalThis !== 'undefined' && 'BarcodeDetector' in globalThis) {
+    if (isQRCodeScanSupported()) {
         try {
             const detector = new globalThis.BarcodeDetector({ formats: ['qr_code'] });
             let results = [];
@@ -707,82 +741,17 @@ export async function decodeQRCodeFromCanvas(canvasOrImageData) {
                 return results[0].rawValue;
             }
         } catch (err) {
-            console.warn('Native BarcodeDetector failed, falling back to pure JS scanner:', err);
+            console.warn('Native BarcodeDetector failed:', err);
         }
     }
 
-    // 2. Pure JS QR pattern scanner fallback
-    let imageData;
-    if (typeof ImageData !== 'undefined' && canvasOrImageData instanceof ImageData) {
-        imageData = canvasOrImageData;
-    } else if (
-        canvasOrImageData &&
-        typeof canvasOrImageData === 'object' &&
-        'data' in canvasOrImageData &&
-        'width' in canvasOrImageData
-    ) {
-        imageData = canvasOrImageData;
-    } else if (canvasOrImageData && typeof canvasOrImageData.getContext === 'function') {
-        const ctx = canvasOrImageData.getContext('2d');
-        if (!ctx) return null;
-        imageData = ctx.getImageData(0, 0, canvasOrImageData.width, canvasOrImageData.height);
-    } else {
-        return null;
-    }
-
-    return scanImageDataPureJS(imageData);
+    return scanImageDataPureJS(canvasOrImageData);
 }
 
 /**
- * Simple pure JS scanner that attempts to locate finder patterns or scan embedded text.
+ * Fallback scanner when native BarcodeDetector is unavailable.
+ * Returns null as pure JS QR decoding is disabled when BarcodeDetector is unsupported.
  */
-function scanImageDataPureJS(imageData) {
-    if (!imageData || imageData.width < 10 || imageData.height < 10) return null;
-
-    const { width, height, data } = imageData;
-    const getPixel = (x, y) => {
-        const idx = (y * width + x) * 4;
-        const r = data[idx];
-        const g = data[idx + 1];
-        const b = data[idx + 2];
-        return (r * 299 + g * 587 + b * 114) / 1000 < 128;
-    };
-
-    const step = Math.max(1, Math.floor(height / 100));
-
-    for (let y = 0; y < height; y += step) {
-        let state = 0;
-        let counts = [0, 0, 0, 0, 0];
-
-        for (let x = 0; x < width; x++) {
-            const isDark = getPixel(x, y);
-            if (isDark === (state % 2 === 0)) {
-                counts[state]++;
-            } else {
-                if (state < 4) {
-                    state++;
-                    counts[state] = 1;
-                } else {
-                    const total = counts.reduce((a, b) => a + b, 0);
-                    if (total >= 7) {
-                        const moduleSize = total / 7;
-                        const maxErr = moduleSize * 0.5;
-                        if (
-                            Math.abs(counts[0] - moduleSize) < maxErr &&
-                            Math.abs(counts[1] - moduleSize) < maxErr &&
-                            Math.abs(counts[2] - 3 * moduleSize) < maxErr * 3 &&
-                            Math.abs(counts[3] - moduleSize) < maxErr &&
-                            Math.abs(counts[4] - moduleSize) < maxErr
-                        ) {
-                            // Finder pattern candidate detected
-                        }
-                    }
-                    counts = [counts[2], counts[3], counts[4], 1, 0];
-                    state = 3;
-                }
-            }
-        }
-    }
-
+function scanImageDataPureJS() {
     return null;
 }

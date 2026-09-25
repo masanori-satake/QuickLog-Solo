@@ -67,3 +67,32 @@ test.each(['synchronous', 'request'])('rolls back every store after a %s write f
     await expect(apply(payload)).rejects.toThrow();
     expect(await snapshot()).toEqual(originals);
 });
+
+test('cancels while awaiting the database without queuing any writes', async () => {
+    closeDatabase();
+    const controller = new AbortController();
+    const put = jest.spyOn(globalThis.IDBObjectStore.prototype, 'put');
+    const pending = dbImportQRSettings(deserializeSettingsPayload(JSON.stringify(payload)), {
+        signal: controller.signal,
+    });
+    controller.abort();
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    expect(put).not.toHaveBeenCalled();
+    expect(await snapshot()).toEqual(originals);
+});
+
+test('cancellation after a write succeeds rolls back all stores before commit', async () => {
+    const controller = new AbortController();
+    const originalPut = globalThis.IDBObjectStore.prototype.put;
+    jest.spyOn(globalThis.IDBObjectStore.prototype, 'put').mockImplementation(function (record) {
+        const request = originalPut.call(this, record);
+        if (this.name === STORE_ALARMS) {
+            request.addEventListener('success', () => controller.abort());
+        }
+        return request;
+    });
+    await expect(
+        dbImportQRSettings(deserializeSettingsPayload(JSON.stringify(payload)), { signal: controller.signal })
+    ).rejects.toMatchObject({ name: 'AbortError' });
+    expect(await snapshot()).toEqual(originals);
+});

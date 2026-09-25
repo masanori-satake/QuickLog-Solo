@@ -1299,8 +1299,16 @@ async function renderAboutQRCodes() {
 let activeVideoStream = null;
 let scanAnimationFrameId = null;
 let activeScanSessionId = 0;
+let activeSelectedImageId = 0;
+let qrImportController = new AbortController();
 
-function setupQRScanner() {
+function invalidateQRImports() {
+    qrImportController.abort();
+    qrImportController = new AbortController();
+}
+
+/** Exported for testing purposes only. */
+export function setupQRScanner() {
     const scanBtn = getEl('pwa-start-qr-scan-btn');
     const closeBtn = getEl('qr-scan-close-btn');
     const selectImgBtn = getEl('qr-select-image-btn');
@@ -1325,8 +1333,16 @@ function setupQRScanner() {
         imgInput.onchange = async (e) => {
             const file = e.target.files && e.target.files[0];
             if (!file) return;
+            const selectedImageId = ++activeSelectedImageId;
+            invalidateQRImports();
+            const signal = qrImportController.signal;
             const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+
             img.onload = async () => {
+                URL.revokeObjectURL(objectUrl);
+                if (selectedImageId !== activeSelectedImageId || signal.aborted) return;
+
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width;
                 canvas.height = img.height;
@@ -1334,8 +1350,10 @@ function setupQRScanner() {
                 if (ctx) {
                     ctx.drawImage(img, 0, 0);
                     const decodedText = await decodeQRCodeFromCanvas(canvas);
+                    if (selectedImageId !== activeSelectedImageId || signal.aborted) return;
+
                     if (decodedText) {
-                        await handleImportQRPayload(decodedText);
+                        await handleImportQRPayload(decodedText, signal);
                     } else {
                         const statusEl = getEl('qr-scan-status');
                         if (statusEl)
@@ -1343,7 +1361,15 @@ function setupQRScanner() {
                     }
                 }
             };
-            img.src = URL.createObjectURL(file);
+
+            img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                if (selectedImageId !== activeSelectedImageId || signal.aborted) return;
+                const statusEl = getEl('qr-scan-status');
+                if (statusEl) statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+            };
+
+            img.src = objectUrl;
             imgInput.value = '';
         };
     }
@@ -1354,6 +1380,8 @@ export async function openQRScannerModal() {
     const modal = getEl('qr-scan-modal');
     if (!modal) return;
     const sessionId = ++activeScanSessionId;
+    activeSelectedImageId++;
+    invalidateQRImports();
     modal.classList.remove('hidden');
 
     const statusEl = getEl('qr-scan-status');
@@ -1373,7 +1401,7 @@ export async function openQRScannerModal() {
             video.srcObject = stream;
             await video.play();
             if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) return;
-            startVideoFrameScanning(video);
+            startVideoFrameScanning(video, sessionId);
         } catch (err) {
             if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) return;
             console.warn('Camera access error:', err);
@@ -1388,6 +1416,8 @@ export async function openQRScannerModal() {
 /** Exported for testing purposes only. */
 export function closeQRScannerModal() {
     activeScanSessionId++;
+    activeSelectedImageId++;
+    invalidateQRImports();
     if (scanAnimationFrameId) {
         cancelAnimationFrame(scanAnimationFrameId);
         scanAnimationFrameId = null;
@@ -1400,11 +1430,9 @@ export function closeQRScannerModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-function startVideoFrameScanning(video) {
+function startVideoFrameScanning(video, sessionId) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const sessionId = ++activeScanSessionId;
-
     const scanFrame = async () => {
         if (sessionId !== activeScanSessionId || !activeVideoStream || video.paused || video.ended) return;
 
@@ -1413,10 +1441,11 @@ function startVideoFrameScanning(video) {
             canvas.height = video.videoHeight;
             if (ctx) {
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const signal = qrImportController.signal;
                 const decoded = await decodeQRCodeFromCanvas(canvas);
                 if (sessionId !== activeScanSessionId) return;
-                if (decoded) {
-                    const success = await handleImportQRPayload(decoded);
+                if (decoded && !signal.aborted) {
+                    const success = await handleImportQRPayload(decoded, signal);
                     if (success) return;
                 }
             }
@@ -1429,11 +1458,13 @@ function startVideoFrameScanning(video) {
     scanAnimationFrameId = requestAnimationFrame(scanFrame);
 }
 
-async function handleImportQRPayload(payloadStr) {
+async function handleImportQRPayload(payloadStr, signal) {
     try {
+        if (signal.aborted) return false;
         const { settings, categories, alarms } = deserializeSettingsPayload(payloadStr);
 
-        await dbImportQRSettings({ settings, categories, alarms });
+        await dbImportQRSettings({ settings, categories, alarms }, { signal });
+        if (signal.aborted) return false;
         broadcastSync();
 
         closeQRScannerModal();
@@ -1447,6 +1478,7 @@ async function handleImportQRPayload(payloadStr) {
         await syncState();
         return true;
     } catch (err) {
+        if (signal.aborted) return false;
         console.error('Failed to import QR payload:', err);
         const statusEl = getEl('qr-scan-status');
         if (statusEl) statusEl.textContent = t('qr-scan-invalid-payload') || '無効なQRコードデータです';
