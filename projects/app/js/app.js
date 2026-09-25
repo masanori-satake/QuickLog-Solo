@@ -1336,7 +1336,8 @@ function setupQRScanner() {
                         await handleImportQRPayload(decodedText);
                     } else {
                         const statusEl = getEl('qr-scan-status');
-                        if (statusEl) statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+                        if (statusEl)
+                            statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
                     }
                 }
             };
@@ -1366,7 +1367,10 @@ async function openQRScannerModal() {
             startVideoFrameScanning(video);
         } catch (err) {
             console.warn('Camera access error:', err);
-            if (statusEl) statusEl.textContent = t('qr-scan-camera-error') || 'カメラアクセスが拒否されたか利用できません。画像から選択してください。';
+            if (statusEl)
+                statusEl.textContent =
+                    t('qr-scan-camera-error') ||
+                    'カメラアクセスが拒否されたか利用できません。画像から選択してください。';
         }
     }
 }

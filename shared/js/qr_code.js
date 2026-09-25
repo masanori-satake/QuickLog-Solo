@@ -5,15 +5,50 @@
 
 // Standard built-in animation IDs
 const STANDARD_ANIMATIONS = new Set([
-    'aura_charge', 'car_drive', 'cats', 'clock', 'coffee_drip', 'contour_lines',
-    'crab_alien', 'digital_rain', 'dot_typing', 'dune_formation', 'elastic_alert',
-    'forest_fire', 'heart_beat', 'hero_pot', 'hexagonal_hud', 'left_to_right',
-    'liesegang_rings', 'm3_symbols_with_kb', 'magic_ribbons', 'migrating_birds',
-    'newtons_cradle', 'night_sky', 'open_reel', 'physarum_mold', 'plasma_discharge',
-    'red_cap_jumper', 'repelling_digital_rain', 'right_to_left', 'ripple',
-    'rising_menacing', 'rotational_bbq', 'rpg_grid', 'sand_clock', 'smoke',
-    'snoring_zzz', 'spectrum', 'spotlight_evasion', 'suminagashi', 'target_reticle',
-    'test_pattern', 'tetris_building', 'trophy_celebration', 'wind_tunnel', 'yellow_pizza'
+    'aura_charge',
+    'car_drive',
+    'cats',
+    'clock',
+    'coffee_drip',
+    'contour_lines',
+    'crab_alien',
+    'digital_rain',
+    'dot_typing',
+    'dune_formation',
+    'elastic_alert',
+    'forest_fire',
+    'heart_beat',
+    'hero_pot',
+    'hexagonal_hud',
+    'left_to_right',
+    'liesegang_rings',
+    'm3_symbols_with_kb',
+    'magic_ribbons',
+    'migrating_birds',
+    'newtons_cradle',
+    'night_sky',
+    'open_reel',
+    'physarum_mold',
+    'plasma_discharge',
+    'red_cap_jumper',
+    'repelling_digital_rain',
+    'right_to_left',
+    'ripple',
+    'rising_menacing',
+    'rotational_bbq',
+    'rpg_grid',
+    'sand_clock',
+    'smoke',
+    'snoring_zzz',
+    'spectrum',
+    'spotlight_evasion',
+    'suminagashi',
+    'target_reticle',
+    'test_pattern',
+    'tetris_building',
+    'trophy_celebration',
+    'wind_tunnel',
+    'yellow_pizza',
 ]);
 
 /**
@@ -111,7 +146,7 @@ export function serializeSettingsPayload({ settings = {}, categories = [], alarm
         v: 1,
         s: minSettings,
         c: minCategories,
-        a: minAlarms
+        a: minAlarms,
     };
 
     return JSON.stringify(payload);
@@ -150,16 +185,16 @@ export function deserializeSettingsPayload(jsonString) {
     if (minSettings.l) settings.language = minSettings.l;
     if (minSettings.r) settings.reportSettings = minSettings.r;
 
-    const categories = (parsed.c || []).map(c => ({
+    const categories = (parsed.c || []).map((c) => ({
         id: c.i,
         name: c.n,
         color: c.c,
         animation: sanitizeAnimationId(c.a),
         tag: c.tg || '',
-        order: c.o ?? 0
+        order: c.o ?? 0,
     }));
 
-    const alarms = (parsed.a || []).map(a => ({
+    const alarms = (parsed.a || []).map((a) => ({
         id: a.i,
         name: a.n,
         type: a.t,
@@ -172,7 +207,7 @@ export function deserializeSettingsPayload(jsonString) {
         holidayAdj: a.ha || 'none',
         dayOfMonth: a.dm || 1,
         daysBeforeEnd: a.dbe || 0,
-        order: a.o ?? 0
+        order: a.o ?? 0,
     }));
 
     return { settings, categories, alarms };
@@ -278,26 +313,56 @@ const VERSION_SPECS_L = [
     [37, 2566, 30, 21],
     [38, 2702, 30, 22],
     [39, 2812, 30, 24],
-    [40, 2956, 30, 25]
+    [40, 2956, 30, 25],
 ];
 
 // Alignment pattern center locations by version
 const ALIGNMENT_LOCATIONS = [
-    [], [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34],
-    [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50], [6, 30, 54], [6, 32, 58], [6, 34, 62],
-    [6, 26, 46, 66], [6, 26, 48, 70], [6, 26, 50, 74], [6, 30, 54, 78], [6, 30, 56, 82], [6, 30, 58, 86],
-    [6, 34, 62, 90], [6, 28, 50, 72, 94], [6, 26, 50, 74, 98], [6, 30, 54, 78, 102], [6, 28, 54, 80, 106],
-    [6, 32, 58, 84, 110], [6, 30, 58, 86, 114], [6, 34, 62, 90, 118], [6, 26, 50, 74, 98, 122],
-    [6, 30, 54, 78, 102, 126], [6, 26, 52, 78, 104, 130], [6, 30, 56, 82, 108, 134], [6, 34, 60, 86, 112, 138],
-    [6, 30, 58, 86, 114, 142], [6, 34, 62, 90, 118, 146], [6, 30, 54, 78, 102, 126, 150],
-    [6, 24, 50, 76, 102, 128, 154], [6, 28, 54, 80, 106, 132, 158], [6, 32, 58, 84, 110, 136, 162],
-    [6, 26, 54, 82, 110, 138, 166], [6, 30, 58, 86, 114, 142, 170]
+    [],
+    [],
+    [6, 18],
+    [6, 22],
+    [6, 26],
+    [6, 30],
+    [6, 34],
+    [6, 22, 38],
+    [6, 24, 42],
+    [6, 26, 46],
+    [6, 28, 50],
+    [6, 30, 54],
+    [6, 32, 58],
+    [6, 34, 62],
+    [6, 26, 46, 66],
+    [6, 26, 48, 70],
+    [6, 26, 50, 74],
+    [6, 30, 54, 78],
+    [6, 30, 56, 82],
+    [6, 30, 58, 86],
+    [6, 34, 62, 90],
+    [6, 28, 50, 72, 94],
+    [6, 26, 50, 74, 98],
+    [6, 30, 54, 78, 102],
+    [6, 28, 54, 80, 106],
+    [6, 32, 58, 84, 110],
+    [6, 30, 58, 86, 114],
+    [6, 34, 62, 90, 118],
+    [6, 26, 50, 74, 98, 122],
+    [6, 30, 54, 78, 102, 126],
+    [6, 26, 52, 78, 104, 130],
+    [6, 30, 56, 82, 108, 134],
+    [6, 34, 60, 86, 112, 138],
+    [6, 30, 58, 86, 114, 142],
+    [6, 34, 62, 90, 118, 146],
+    [6, 30, 54, 78, 102, 126, 150],
+    [6, 24, 50, 76, 102, 128, 154],
+    [6, 28, 54, 80, 106, 132, 158],
+    [6, 32, 58, 84, 110, 136, 162],
+    [6, 26, 54, 82, 110, 138, 166],
+    [6, 30, 58, 86, 114, 142, 170],
 ];
 
 // Format info bit strings for EC Level L (01), masks 0 to 7
-const FORMAT_INFO_L = [
-    0x77c4, 0x72f3, 0x7daa, 0x789d, 0x662f, 0x6318, 0x6c41, 0x6956
-];
+const FORMAT_INFO_L = [0x77c4, 0x72f3, 0x7daa, 0x789d, 0x662f, 0x6318, 0x6c41, 0x6956];
 
 /**
  * Creates QR Code Matrix (boolean 2D array) for given string.
@@ -429,7 +494,8 @@ export function generateQRCodeMatrix(text) {
             const r0 = locs[i];
             const c0 = locs[j];
             // Skip overlaps with finder patterns
-            if ((i === 0 && j === 0) || (i === 0 && j === locs.length - 1) || (i === locs.length - 1 && j === 0)) continue;
+            if ((i === 0 && j === 0) || (i === 0 && j === locs.length - 1) || (i === locs.length - 1 && j === 0))
+                continue;
             for (let r = -2; r <= 2; r++) {
                 for (let c = -2; c <= 2; c++) {
                     const isDark = Math.max(Math.abs(r), Math.abs(c)) !== 1;
@@ -576,7 +642,10 @@ export async function decodeQRCodeFromCanvas(canvasOrImageData) {
         try {
             const detector = new globalThis.BarcodeDetector({ formats: ['qr_code'] });
             let results = [];
-            if (canvasOrImageData instanceof HTMLCanvasElement || (typeof ImageBitmap !== 'undefined' && canvasOrImageData instanceof ImageBitmap)) {
+            if (
+                canvasOrImageData instanceof HTMLCanvasElement ||
+                (typeof ImageBitmap !== 'undefined' && canvasOrImageData instanceof ImageBitmap)
+            ) {
                 results = await detector.detect(canvasOrImageData);
             } else if (typeof ImageData !== 'undefined' && canvasOrImageData instanceof ImageData) {
                 const tmpCanvas = document.createElement('canvas');
@@ -600,7 +669,12 @@ export async function decodeQRCodeFromCanvas(canvasOrImageData) {
     let imageData;
     if (typeof ImageData !== 'undefined' && canvasOrImageData instanceof ImageData) {
         imageData = canvasOrImageData;
-    } else if (canvasOrImageData && typeof canvasOrImageData === 'object' && 'data' in canvasOrImageData && 'width' in canvasOrImageData) {
+    } else if (
+        canvasOrImageData &&
+        typeof canvasOrImageData === 'object' &&
+        'data' in canvasOrImageData &&
+        'width' in canvasOrImageData
+    ) {
         imageData = canvasOrImageData;
     } else if (canvasOrImageData && typeof canvasOrImageData.getContext === 'function') {
         const ctx = canvasOrImageData.getContext('2d');
@@ -628,7 +702,6 @@ function scanImageDataPureJS(imageData) {
         return (r * 299 + g * 587 + b * 114) / 1000 < 128;
     };
 
-    let foundFinderCount = 0;
     const step = Math.max(1, Math.floor(height / 100));
 
     for (let y = 0; y < height; y += step) {
@@ -655,7 +728,7 @@ function scanImageDataPureJS(imageData) {
                             Math.abs(counts[3] - moduleSize) < maxErr &&
                             Math.abs(counts[4] - moduleSize) < maxErr
                         ) {
-                            foundFinderCount++;
+                            // Finder pattern candidate detected
                         }
                     }
                     counts = [counts[2], counts[3], counts[4], 1, 0];
