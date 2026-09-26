@@ -48,7 +48,7 @@ export default {
     'label-before-end-2': '日前 (0は月末日)',
     'back-to-app': 'アプリに戻る',
     'alarm-setting-description': '在指定时间显示消息，并根据需要自动执行“结束”、“暂停”或“开始”任务。',
-    'alarm-note-extension-only': '※ アラーム機能はPWA版では通知や自動動作は実行されません。',
+    'alarm-editor-note-extension-only': '※ PWA版ではアラームを編集できません。',
     'alarm-label-enabled': '启用',
     'alarm-label-time': '时间',
     'alarm-label-message': '消息',
