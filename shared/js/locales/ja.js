@@ -52,8 +52,8 @@ export default {
     'back-to-app': 'アプリに戻る',
     'alarm-setting-description':
         '指定した時刻にメッセージを表示し、必要に応じて作業を自動的に「終了」「一時停止」「開始」します。',
-    'alarm-note-extension-only':
-        '※ アラーム機能はPWA版では通知や自動動作は実行されません。',
+    'alarm-editor-note-extension-only':
+        '※ PWA版ではアラームを編集できません。',
     'alarm-label-enabled': '有効',
     'alarm-label-time': '時刻',
     'alarm-label-message': 'メッセージ',

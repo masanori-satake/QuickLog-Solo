@@ -76,8 +76,8 @@ export default {
     'back-to-app': 'Zurück zur App',
     'alarm-setting-description':
         'Zeigt zu einer bestimmten Zeit eine Nachricht an und führt bei Bedarf automatisch Aktionen wie „Beenden“, „Pause“ oder „Start“ aus.',
-    'alarm-note-extension-only':
-        '* Die Alarmfunktion funktioniert nur, wenn sie als Browser-Erweiterung installiert ist. Benachrichtigungen und automatische Aktionen werden in der Vorschauversion nicht ausgeführt.',
+    'alarm-editor-note-extension-only':
+        '* Alarme können in der PWA-Version nicht bearbeitet werden.',
     'alarm-label-enabled': 'Aktiviert',
     'alarm-label-time': 'Zeit',
     'alarm-label-message': 'Nachricht',

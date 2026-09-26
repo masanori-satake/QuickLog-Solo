@@ -1067,10 +1067,9 @@ function addCandidate(candidates, x, y, ms) {
     candidates.push({ x, y, ms });
 }
 
-function findBestTriangle(candidates) {
-    if (candidates.length < 3) return null;
-    let bestScore = Infinity;
-    let bestTriple = null;
+function findCandidateTriangles(candidates) {
+    if (candidates.length < 3) return [];
+    const triples = [];
 
     for (let i = 0; i < candidates.length; i++) {
         for (let j = i + 1; j < candidates.length; j++) {
@@ -1082,11 +1081,7 @@ function findBestTriangle(candidates) {
                 const d12 = Math.hypot(p1.x - p2.x, p1.y - p2.y);
                 const d20 = Math.hypot(p2.x - p0.x, p2.y - p0.y);
 
-                let tl;
-                let tr;
-                let bl;
-                let d1;
-                let d2;
+                let tl, tr, bl, d1, d2;
                 if (d01 >= d12 && d01 >= d20) {
                     tl = p2;
                     tr = p0;
@@ -1123,186 +1118,19 @@ function findBestTriangle(candidates) {
                 if (sideDiff > 0.4 || msDiff > 0.4) continue;
 
                 const score = sideDiff * 0.5 + msDiff;
-                if (score < bestScore) {
-                    bestScore = score;
-                    bestTriple = { tl, tr, bl };
-                }
+                triples.push({ score, triple: { tl, tr, bl } });
             }
         }
     }
-    return bestTriple;
+    triples.sort((a, b) => a.score - b.score);
+    return triples.map((t) => t.triple);
 }
 
 /**
- * Fallback scanner when native BarcodeDetector is unavailable.
+ * Samples a QR code matrix using finder pattern coordinates and attempts RS/text decoding.
  */
-function scanImageDataPureJS(canvasOrImageData) {
-    if (!canvasOrImageData) return null;
-    let imageData = null;
-    if (typeof HTMLCanvasElement !== 'undefined' && canvasOrImageData instanceof HTMLCanvasElement) {
-        const ctx = canvasOrImageData.getContext('2d');
-        if (!ctx) return null;
-        try {
-            imageData = ctx.getImageData(0, 0, canvasOrImageData.width, canvasOrImageData.height);
-        } catch {
-            return null;
-        }
-    } else if (canvasOrImageData && typeof canvasOrImageData.width === 'number' && canvasOrImageData.data) {
-        imageData = canvasOrImageData;
-    }
-    if (!imageData || !imageData.width || !imageData.height) return null;
-
-    const width = imageData.width;
-    const height = imageData.height;
-    const data = imageData.data;
-
-    const gray = new Uint8Array(width * height);
-    const hist = new Int32Array(256);
-    for (let i = 0, j = 0; i < data.length; i += 4, j++) {
-        const g = (data[i] * 77 + data[i + 1] * 150 + data[i + 2] * 29) >> 8;
-        gray[j] = g;
-        hist[g]++;
-    }
-
-    let sum = 0;
-    for (let t = 0; t < 256; t++) sum += t * hist[t];
-    let sumB = 0;
-    let wB = 0;
-    let maxVar = -1;
-    let firstT = 0;
-    let lastT = 0;
-    const totalPixels = width * height;
-    for (let t = 0; t < 256; t++) {
-        wB += hist[t];
-        if (wB === 0) continue;
-        const wF = totalPixels - wB;
-        if (wF === 0) break;
-        sumB += t * hist[t];
-        const mB = sumB / wB;
-        const mF = (sum - sumB) / wF;
-        const varBetween = wB * wF * (mB - mF) * (mB - mF);
-        if (varBetween > maxVar) {
-            maxVar = varBetween;
-            firstT = t;
-            lastT = t;
-        } else if (varBetween === maxVar) {
-            lastT = t;
-        }
-    }
-    const threshold = maxVar > 0 ? Math.floor((firstT + lastT) / 2) : 128;
-
-    const isDark = (x, y) => {
-        x = Math.floor(x);
-        y = Math.floor(y);
-        if (x < 0 || x >= width || y < 0 || y >= height) return false;
-        return gray[y * width + x] < threshold;
-    };
-
-    const checkRatio = (counts) => {
-        const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
-        if (total < 7) return false;
-        const moduleSize = total / 7;
-        const maxVariance = moduleSize * 0.75;
-        return (
-            Math.abs(moduleSize - counts[0]) < maxVariance &&
-            Math.abs(moduleSize - counts[1]) < maxVariance &&
-            Math.abs(moduleSize * 3 - counts[2]) < maxVariance * 3 &&
-            Math.abs(moduleSize - counts[3]) < maxVariance &&
-            Math.abs(moduleSize - counts[4]) < maxVariance
-        );
-    };
-
-    const patternCandidates = [];
-    const step = Math.max(1, Math.floor(height / 200));
-
-    for (let y = 0; y < height; y += step) {
-        const counts = [0, 0, 0, 0, 0];
-        let state = 0;
-
-        for (let x = 0; x < width; x++) {
-            const dark = isDark(x, y);
-            if (state === 0) {
-                if (dark) {
-                    state = 1;
-                    counts[0] = 1;
-                }
-            } else if (state === 1) {
-                if (dark) counts[0]++;
-                else {
-                    state = 2;
-                    counts[1] = 1;
-                }
-            } else if (state === 2) {
-                if (!dark) counts[1]++;
-                else {
-                    state = 3;
-                    counts[2] = 1;
-                }
-            } else if (state === 3) {
-                if (dark) counts[2]++;
-                else {
-                    state = 4;
-                    counts[3] = 1;
-                }
-            } else if (state === 4) {
-                if (!dark) counts[3]++;
-                else {
-                    state = 5;
-                    counts[4] = 1;
-                }
-            } else if (state === 5) {
-                if (dark) {
-                    counts[4]++;
-                } else {
-                    if (checkRatio(counts)) {
-                        const centerX = x - counts[4] - counts[3] - counts[2] / 2;
-                        const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
-                        if (vCenterY !== null) {
-                            const hCenterX = crossCheckHorizontal(
-                                centerX,
-                                vCenterY,
-                                counts[2] * 2,
-                                isDark,
-                                width,
-                                checkRatio
-                            );
-                            if (hCenterX !== null) {
-                                const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
-                                const ms = total / 7;
-                                addCandidate(patternCandidates, hCenterX, vCenterY, ms);
-                            }
-                        }
-                    }
-                    counts[0] = counts[2];
-                    counts[1] = counts[3];
-                    counts[2] = counts[4];
-                    counts[3] = 1;
-                    counts[4] = 0;
-                    state = 4;
-                }
-            }
-        }
-
-        if (state === 5 && checkRatio(counts)) {
-            const centerX = width - counts[4] - counts[3] - counts[2] / 2;
-            const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
-            if (vCenterY !== null) {
-                const hCenterX = crossCheckHorizontal(centerX, vCenterY, counts[2] * 2, isDark, width, checkRatio);
-                if (hCenterX !== null) {
-                    const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
-                    const ms = total / 7;
-                    addCandidate(patternCandidates, hCenterX, vCenterY, ms);
-                }
-            }
-        }
-    }
-
-    if (patternCandidates.length < 3) return null;
-
-    const bestTriple = findBestTriangle(patternCandidates);
-    if (!bestTriple) return null;
-
-    const { tl, tr, bl } = bestTriple;
+function tryDecodeTriple(triple, isDark) {
+    const { tl, tr, bl } = triple;
 
     const distTR = Math.hypot(tr.x - tl.x, tr.y - tl.y);
     const distBL = Math.hypot(bl.x - tl.x, bl.y - tl.y);
@@ -1565,4 +1393,263 @@ function scanImageDataPureJS(canvasOrImageData) {
         }
         return str;
     }
+}
+
+/**
+ * Fallback scanner when native BarcodeDetector is unavailable.
+ */
+function scanImageDataPureJS(canvasOrImageData) {
+    if (!canvasOrImageData) return null;
+    let imageData = null;
+    if (typeof HTMLCanvasElement !== 'undefined' && canvasOrImageData instanceof HTMLCanvasElement) {
+        const ctx = canvasOrImageData.getContext('2d');
+        if (!ctx) return null;
+        try {
+            imageData = ctx.getImageData(0, 0, canvasOrImageData.width, canvasOrImageData.height);
+        } catch {
+            return null;
+        }
+    } else if (canvasOrImageData && typeof canvasOrImageData.width === 'number' && canvasOrImageData.data) {
+        imageData = canvasOrImageData;
+    }
+    if (!imageData || !imageData.width || !imageData.height) return null;
+
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+
+    const gray = new Uint8Array(width * height);
+    const hist = new Int32Array(256);
+    for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+        const g = (data[i] * 77 + data[i + 1] * 150 + data[i + 2] * 29) >> 8;
+        gray[j] = g;
+        hist[g]++;
+    }
+
+    let sum = 0;
+    for (let t = 0; t < 256; t++) sum += t * hist[t];
+    let sumB = 0;
+    let wB = 0;
+    let maxVar = -1;
+    let firstT = 0;
+    let lastT = 0;
+    const totalPixels = width * height;
+    for (let t = 0; t < 256; t++) {
+        wB += hist[t];
+        if (wB === 0) continue;
+        const wF = totalPixels - wB;
+        if (wF === 0) break;
+        sumB += t * hist[t];
+        const mB = sumB / wB;
+        const mF = (sum - sumB) / wF;
+        const varBetween = wB * wF * (mB - mF) * (mB - mF);
+        if (varBetween > maxVar) {
+            maxVar = varBetween;
+            firstT = t;
+            lastT = t;
+        } else if (varBetween === maxVar) {
+            lastT = t;
+        }
+    }
+    const otsuThreshold = maxVar > 0 ? Math.floor((firstT + lastT) / 2) : 128;
+    const thresholdCandidates = [otsuThreshold, Math.max(10, otsuThreshold - 28), Math.min(245, otsuThreshold + 28)];
+
+    let currentThreshold = otsuThreshold;
+    const isDark = (x, y) => {
+        x = Math.floor(x);
+        y = Math.floor(y);
+        if (x < 0 || x >= width || y < 0 || y >= height) return false;
+        return gray[y * width + x] < currentThreshold;
+    };
+
+    const checkRatio = (counts) => {
+        const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+        if (total < 7) return false;
+        const moduleSize = total / 7;
+        const maxVariance = moduleSize * 0.85;
+        return (
+            Math.abs(moduleSize - counts[0]) < maxVariance &&
+            Math.abs(moduleSize - counts[1]) < maxVariance &&
+            Math.abs(moduleSize * 3 - counts[2]) < maxVariance * 3 &&
+            Math.abs(moduleSize - counts[3]) < maxVariance &&
+            Math.abs(moduleSize - counts[4]) < maxVariance
+        );
+    };
+
+    for (const thresh of thresholdCandidates) {
+        currentThreshold = thresh;
+        const patternCandidates = [];
+        const stepY = Math.max(1, Math.floor(height / 320));
+
+        // Horizontal line scans
+        for (let y = 0; y < height; y += stepY) {
+            const counts = [0, 0, 0, 0, 0];
+            let state = 0;
+
+            for (let x = 0; x < width; x++) {
+                const dark = isDark(x, y);
+                if (state === 0) {
+                    if (dark) {
+                        state = 1;
+                        counts[0] = 1;
+                    }
+                } else if (state === 1) {
+                    if (dark) counts[0]++;
+                    else {
+                        state = 2;
+                        counts[1] = 1;
+                    }
+                } else if (state === 2) {
+                    if (!dark) counts[1]++;
+                    else {
+                        state = 3;
+                        counts[2] = 1;
+                    }
+                } else if (state === 3) {
+                    if (dark) counts[2]++;
+                    else {
+                        state = 4;
+                        counts[3] = 1;
+                    }
+                } else if (state === 4) {
+                    if (!dark) counts[3]++;
+                    else {
+                        state = 5;
+                        counts[4] = 1;
+                    }
+                } else if (state === 5) {
+                    if (dark) {
+                        counts[4]++;
+                    } else {
+                        if (checkRatio(counts)) {
+                            const centerX = x - counts[4] - counts[3] - counts[2] / 2;
+                            const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
+                            if (vCenterY !== null) {
+                                const hCenterX = crossCheckHorizontal(
+                                    centerX,
+                                    vCenterY,
+                                    counts[2] * 2,
+                                    isDark,
+                                    width,
+                                    checkRatio
+                                );
+                                if (hCenterX !== null) {
+                                    const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+                                    const ms = total / 7;
+                                    addCandidate(patternCandidates, hCenterX, vCenterY, ms);
+                                }
+                            }
+                        }
+                        counts[0] = counts[2];
+                        counts[1] = counts[3];
+                        counts[2] = counts[4];
+                        counts[3] = 1;
+                        counts[4] = 0;
+                        state = 4;
+                    }
+                }
+            }
+
+            if (state === 5 && checkRatio(counts)) {
+                const centerX = width - counts[4] - counts[3] - counts[2] / 2;
+                const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
+                if (vCenterY !== null) {
+                    const hCenterX = crossCheckHorizontal(centerX, vCenterY, counts[2] * 2, isDark, width, checkRatio);
+                    if (hCenterX !== null) {
+                        const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+                        const ms = total / 7;
+                        addCandidate(patternCandidates, hCenterX, vCenterY, ms);
+                    }
+                }
+            }
+        }
+
+        // Vertical line scans (helps with tilted/rotated QR codes)
+        if (patternCandidates.length < 3) {
+            const stepX = Math.max(1, Math.floor(width / 320));
+            for (let x = 0; x < width; x += stepX) {
+                const counts = [0, 0, 0, 0, 0];
+                let state = 0;
+                for (let y = 0; y < height; y++) {
+                    const dark = isDark(x, y);
+                    if (state === 0) {
+                        if (dark) {
+                            state = 1;
+                            counts[0] = 1;
+                        }
+                    } else if (state === 1) {
+                        if (dark) counts[0]++;
+                        else {
+                            state = 2;
+                            counts[1] = 1;
+                        }
+                    } else if (state === 2) {
+                        if (!dark) counts[1]++;
+                        else {
+                            state = 3;
+                            counts[2] = 1;
+                        }
+                    } else if (state === 3) {
+                        if (dark) counts[2]++;
+                        else {
+                            state = 4;
+                            counts[3] = 1;
+                        }
+                    } else if (state === 4) {
+                        if (!dark) counts[3]++;
+                        else {
+                            state = 5;
+                            counts[4] = 1;
+                        }
+                    } else if (state === 5) {
+                        if (dark) {
+                            counts[4]++;
+                        } else {
+                            if (checkRatio(counts)) {
+                                const centerY = y - counts[4] - counts[3] - counts[2] / 2;
+                                const hCenterX = crossCheckHorizontal(
+                                    x,
+                                    centerY,
+                                    counts[2] * 2,
+                                    isDark,
+                                    width,
+                                    checkRatio
+                                );
+                                if (hCenterX !== null) {
+                                    const vCenterY = crossCheckVertical(
+                                        hCenterX,
+                                        centerY,
+                                        counts[2] * 2,
+                                        isDark,
+                                        height,
+                                        checkRatio
+                                    );
+                                    if (vCenterY !== null) {
+                                        const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+                                        addCandidate(patternCandidates, hCenterX, vCenterY, total / 7);
+                                    }
+                                }
+                            }
+                            counts[0] = counts[2];
+                            counts[1] = counts[3];
+                            counts[2] = counts[4];
+                            counts[3] = 1;
+                            counts[4] = 0;
+                            state = 4;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (patternCandidates.length >= 3) {
+            const candidateTriples = findCandidateTriangles(patternCandidates);
+            for (const triple of candidateTriples) {
+                const result = tryDecodeTriple(triple, isDark);
+                if (result) return result;
+            }
+        }
+    }
+
+    return null;
 }
