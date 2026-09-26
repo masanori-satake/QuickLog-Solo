@@ -49,7 +49,7 @@ export default {
     'back-to-app': '앱으로 돌아가기',
     'alarm-setting-description':
         '지정한 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 「종료」, 「일시 중지」, 「시작」합니다.',
-    'alarm-note-extension-only': '※ アラーム機能はPWA版では通知や自動動作は実行されません。',
+    'alarm-editor-note-extension-only': '※ PWA版ではアラームを編集できません。',
     'alarm-label-enabled': '활성화됨',
     'alarm-label-time': '시간',
     'alarm-label-message': '메시지',
