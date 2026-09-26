@@ -187,3 +187,52 @@ test.each([
     expect(document.getElementById('qr-scan-modal').classList.contains('hidden')).toBe(action === 'close');
     expect(document.getElementById('qr-scan-status').textContent).not.toContain('無効');
 });
+
+test('decodes generated QR code matrix using pure JS fallback when BarcodeDetector is unavailable', async () => {
+    delete globalThis.BarcodeDetector;
+    const { serializeSettingsPayload, renderQRCodeToCanvas, decodeQRCodeFromCanvas } = await import('../shared/js/qr_code.js');
+
+    const expectedPayload = serializeSettingsPayload({
+        settings: { theme: 'light', language: 'ja' },
+        categories: [{ id: 'cat_test', name: 'テスト業務', color: 'primary' }],
+        alarms: [],
+    });
+
+    const canvasWidth = 360;
+    const canvasPixels = new Uint8ClampedArray(canvasWidth * canvasWidth * 4);
+
+    const mockCtx = {
+        fillStyle: '#ffffff',
+        fillRect: jest.fn((x, y, w, h) => {
+            const isBlack = mockCtx.fillStyle === '#000000';
+            for (let py = y; py < y + h; py++) {
+                for (let px = x; px < x + w; px++) {
+                    if (px >= 0 && px < canvasWidth && py >= 0 && py < canvasWidth) {
+                        const idx = (py * canvasWidth + px) * 4;
+                        const val = isBlack ? 0 : 255;
+                        canvasPixels[idx] = val;
+                        canvasPixels[idx + 1] = val;
+                        canvasPixels[idx + 2] = val;
+                        canvasPixels[idx + 3] = 255;
+                    }
+                }
+            }
+        }),
+    };
+
+    const canvas = {
+        width: canvasWidth,
+        height: canvasWidth,
+        getContext: (type) => (type === '2d' ? mockCtx : null),
+    };
+
+    renderQRCodeToCanvas(expectedPayload, canvas, { width: canvasWidth, margin: 4 });
+
+    const decodedResult = await decodeQRCodeFromCanvas({
+        width: canvasWidth,
+        height: canvasWidth,
+        data: canvasPixels,
+    });
+
+    expect(decodedResult).toBe(expectedPayload);
+});
