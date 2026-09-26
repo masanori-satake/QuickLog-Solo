@@ -49,8 +49,7 @@ export default {
     'back-to-app': '앱으로 돌아가기',
     'alarm-setting-description':
         '지정한 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 「종료」, 「일시 중지」, 「시작」합니다.',
-    'alarm-note-extension-only':
-        '* 알람 기능은 브라우저 확장 프로그램으로 설치된 경우에만 작동합니다. 미리보기 버전에서는 알림 및 자동 동작이 실행되지 않습니다.',
+    'alarm-note-extension-only': '※ アラーム機能はPWA版では通知や自動動作は実行されません。',
     'alarm-label-enabled': '활성화됨',
     'alarm-label-time': '시간',
     'alarm-label-message': '메시지',
@@ -514,13 +513,12 @@ export default {
     'maker-playback-zoom': '재생과 줌',
     'maker-data-transfer': '데이터 입출력',
     'maker-warning-title': '경고',
-    'maker-note-extension-only':
-        '※ 애니메이션 메이커는 브라우저 확장 기능으로 설치돼있는 경우에만 사용할 수 있습니다. 미리보기 버전에서는 기동되지 않습니다.',
+    'maker-note-extension-only': '※ アニメーション・メーカーはPWA版では起動できません。',
     'maker-error-name-empty': '이름을 입력해주십시오',
     'maker-error-name-duplicate': '같은 이름을 가진 커스텀 애니메이션이 존재합니다. 다른 이름을 입력해주십시오.',
     'maker-select-prompt': '커스텀 애니메이션을 추가해주십시오',
-    'about-pwa-section-title': 'モバイル(PWA)版QuickLog-Solo(β)',
-    'about-pwa-section-desc': 'スマホのカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。',
+    'about-pwa-section-title': 'PWA版QuickLog-Solo(β)',
+    'about-pwa-section-desc': 'スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。',
     'about-pwa-url-qr-label': '1. PWA起動URL',
     'about-pwa-general-qr-label': '2. 設定全般・アラーム',
     'about-pwa-categories-qr-label': '3. 業務カテゴリ',
@@ -531,7 +529,8 @@ export default {
     'about-pwa-qr-too-large-title': 'データ超過',
     'about-pwa-qr-too-large-sub': 'QR表示不可',
     'about-pwa-import-title': 'QuickLog-Solo設定のインポート(β)',
-    'about-pwa-import-desc': 'PC拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。',
+    'about-pwa-import-desc':
+        'Chrome拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。',
     'btn-pwa-scan-qr': 'QRコードを読み取る',
     'qr-scan-modal-title': 'QRコードスキャン',
     'qr-scan-status-scanning': 'カメラにQRコードをかざしてください',
