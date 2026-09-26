@@ -1620,54 +1620,69 @@ export function setupQRScanner() {
             invalidateQRImports();
             const signal = qrImportController.signal;
 
-            files.forEach((file) => {
-                if (selectedImageId !== activeSelectedImageId || signal.aborted) return;
-                const img = new Image();
-                const objectUrl = URL.createObjectURL(file);
+            let allCompleted = false;
+            let hasError = false;
 
-                img.onload = async () => {
-                    URL.revokeObjectURL(objectUrl);
-                    if (selectedImageId !== activeSelectedImageId || signal.aborted) return;
+            const processPromises = files.map((file) => {
+                return new Promise((resolve) => {
+                    if (selectedImageId !== activeSelectedImageId || signal.aborted) return resolve();
+                    const img = new Image();
+                    const objectUrl = URL.createObjectURL(file);
 
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    if (ctx) {
-                        ctx.drawImage(img, 0, 0);
-                        const decodedText = await decodeQRCodeFromCanvas(canvas);
-                        if (selectedImageId === activeSelectedImageId && !signal.aborted) {
-                            if (decodedText) {
-                                const result = await handleImportQRPayload(decodedText, signal);
-                                if (
-                                    result &&
-                                    result.isAllPartsCompleted &&
-                                    selectedImageId === activeSelectedImageId &&
-                                    !signal.aborted
-                                ) {
-                                    closeQRScannerModal();
+                    img.onload = async () => {
+                        URL.revokeObjectURL(objectUrl);
+                        if (selectedImageId !== activeSelectedImageId || signal.aborted) return resolve();
+
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            const ctx = canvas.getContext('2d');
+                            if (ctx) {
+                                ctx.drawImage(img, 0, 0);
+                                const decodedText = await decodeQRCodeFromCanvas(canvas);
+                                if (selectedImageId === activeSelectedImageId && !signal.aborted) {
+                                    if (decodedText) {
+                                        const result = await handleImportQRPayload(decodedText, signal);
+                                        if (result && result.isAllPartsCompleted) {
+                                            allCompleted = true;
+                                        }
+                                    } else {
+                                        hasError = true;
+                                    }
                                 }
-                            } else {
-                                const statusEl = getEl('qr-scan-status');
-                                if (statusEl)
-                                    statusEl.textContent =
-                                        t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
                             }
+                        } catch (err) {
+                            console.error('Image QR decode error:', err);
+                            hasError = true;
                         }
-                    }
-                };
+                        resolve();
+                    };
 
-                img.onerror = () => {
-                    URL.revokeObjectURL(objectUrl);
-                    if (selectedImageId === activeSelectedImageId && !signal.aborted) {
-                        const statusEl = getEl('qr-scan-status');
-                        if (statusEl)
-                            statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
-                    }
-                };
+                    img.onerror = () => {
+                        URL.revokeObjectURL(objectUrl);
+                        hasError = true;
+                        resolve();
+                    };
 
-                img.src = objectUrl;
+                    img.src = objectUrl;
+                });
             });
+
+            Promise.all(processPromises).then(() => {
+                if (selectedImageId === activeSelectedImageId && !signal.aborted) {
+                    if (hasError && !allCompleted) {
+                        const statusEl = getEl('qr-scan-status');
+                        if (statusEl) {
+                            statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+                            statusEl.style.color = '#d32f2f';
+                        }
+                    } else if (allCompleted) {
+                        closeQRScannerModal();
+                    }
+                }
+            });
+
             imgInput.value = '';
         };
     }
@@ -3795,6 +3810,8 @@ function setupEventListeners() {
                     (_id) => {
                         if (chrome.runtime.lastError) {
                             console.error('QuickLog-Solo: Test notification failed:', chrome.runtime.lastError);
+                        } else {
+                            showToast(t('test-notification-message'));
                         }
                     }
                 );
@@ -3817,25 +3834,28 @@ function setupEventListeners() {
                     showToast(t('test-notification-message'));
                 } catch (err) {
                     console.error('PWA Notification creation failed:', err);
-                    showToast(t('test-notification-message'));
+                    alert(t('alert-error') || 'Notification creation failed');
                 }
             };
 
             if (Notification.permission === 'granted') {
                 sendPWANotif();
             } else if (Notification.permission !== 'denied') {
-                Notification.requestPermission().then((permission) => {
+                try {
+                    const permission = await Notification.requestPermission();
                     if (permission === 'granted') {
                         sendPWANotif();
                     } else {
-                        showToast(t('test-notification-message'));
+                        alert(t('alarm-editor-note-extension-only') || 'Notification permission denied');
                     }
-                });
+                } catch (err) {
+                    console.error('Notification permission request failed:', err);
+                }
             } else {
-                showToast(t('test-notification-message'));
+                alert(t('alarm-editor-note-extension-only') || 'Notification permission denied');
             }
         } else {
-            showToast(t('test-notification-message'));
+            alert(t('alert-error') || 'Notifications not supported');
         }
     });
 
@@ -4026,6 +4046,19 @@ function setupEventListeners() {
 // --- PWA Active Alarm Execution ---
 
 const executedPWAAlarms = new Set();
+let lastPWAAlarmCheckTime = 0;
+
+function claimPWAAlarmExecution(key) {
+    if (typeof localStorage === 'undefined') return true;
+    const storageKey = `ql_pwa_executed_alarm_${key}`;
+    const claimVal = `${Date.now()}_${Math.random()}`;
+    const existing = localStorage.getItem(storageKey);
+    if (existing) return false;
+
+    localStorage.setItem(storageKey, claimVal);
+    const readBack = localStorage.getItem(storageKey);
+    return readBack === claimVal;
+}
 
 async function checkPWAAlarms() {
     if (!isAppInitialized) return;
@@ -4036,33 +4069,68 @@ async function checkPWAAlarms() {
         const now = Date.now();
         const d = new Date(now);
         const dateKey = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-        const currentHHmm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+        // Look back up to 2 minutes or since last check
+        const checkWindowMs = lastPWAAlarmCheckTime > 0 ? Math.min(now - lastPWAAlarmCheckTime, 120000) : 60000;
+        lastPWAAlarmCheckTime = now;
+
+        // Start search for next alarm 7 days prior to capture candidate schedules shifted by holiday/business day rules
+        const searchStartTime = now - 7 * 24 * 60 * 60 * 1000;
 
         for (const alarm of alarms) {
             if (!alarm.enabled || !alarm.time) continue;
 
-            if (alarm.time === currentHHmm) {
-                const key = `${alarm.id}_${dateKey}_${currentHHmm}`;
-                if (!executedPWAAlarms.has(key)) {
-                    // Check if today is scheduled according to alarm calendar logic
-                    const targetTime = calculateNextAlarmTime(alarm, businessDays, now - 60000);
+            const [alarmH, alarmM] = alarm.time.split(':').map(Number);
+            const alarmToday = new Date(now);
+            alarmToday.setHours(alarmH, alarmM, 0, 0);
+            const alarmTimeMs = alarmToday.getTime();
+
+            if (alarmTimeMs <= now && now - alarmTimeMs <= checkWindowMs) {
+                const key = `${alarm.id}_${dateKey}_${alarm.time}`;
+                if (!executedPWAAlarms.has(key) && claimPWAAlarmExecution(key)) {
+                    // Check if target scheduled time lands on today
+                    const targetTime = calculateNextAlarmTime(alarm, businessDays, searchStartTime);
                     if (targetTime) {
                         const targetD = new Date(targetTime);
                         const targetDateKey = `${targetD.getFullYear()}-${targetD.getMonth() + 1}-${targetD.getDate()}`;
                         if (targetDateKey === dateKey) {
                             executedPWAAlarms.add(key);
 
-                            // Execute action
-                            if (alarm.action === 'stop') {
-                                if (activeTask) await stopTask();
-                            } else if (alarm.action === 'pause') {
-                                if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) await pauseTask();
-                            } else if (alarm.action === 'start' && alarm.actionCategory) {
-                                await startTask(alarm.actionCategory);
+                            const runAlarmAction = async () => {
+                                let actionExecuted = false;
+                                if (alarm.action === 'stop') {
+                                    if (activeTask) {
+                                        await stopTask();
+                                        actionExecuted = true;
+                                    }
+                                } else if (alarm.action === 'pause') {
+                                    if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
+                                        await pauseTask();
+                                        actionExecuted = true;
+                                    }
+                                } else if (alarm.action === 'start' && alarm.actionCategory) {
+                                    await startTask(alarm.actionCategory);
+                                    actionExecuted = true;
+                                }
+
+                                if (actionExecuted) {
+                                    await updateUI();
+                                }
+                            };
+
+                            const msg = alarm.message || alarm.name || t('title');
+
+                            if (alarm.requireConfirmation) {
+                                showConfirm(`${alarm.time} ${msg}`).then((confirmed) => {
+                                    if (confirmed) {
+                                        runAlarmAction();
+                                    }
+                                });
+                            } else {
+                                await runAlarmAction();
                             }
 
                             // Notification
-                            const msg = alarm.message || alarm.name || t('title');
                             if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                                 try {
                                     new Notification(t('title') || 'QuickLog-Solo', {
@@ -4138,9 +4206,11 @@ async function initApp() {
         document.body.classList.add('app-initialized');
         await syncState();
 
-        // Start PWA alarm runner
-        setInterval(checkPWAAlarms, 10000);
-        checkPWAAlarms();
+        // Start PWA alarm runner only when in PWA mode
+        if (isPWAMode()) {
+            setInterval(checkPWAAlarms, 10000);
+            checkPWAAlarms();
+        }
     } catch (e) {
         console.error('Failed to initialize application:', e);
         alert(`${t('alert-init-error')}\n\nDetails: ${e.message || e}`);
