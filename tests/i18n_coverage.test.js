@@ -33,4 +33,12 @@ describe('i18n Coverage', () => {
             expect(messages[code]).toBeDefined();
         });
     });
+
+    test('Japanese locale contains expected updated label messages', () => {
+        expect(messages.ja['about-pwa-section-title']).toBe('PWA版QuickLog-Solo(β)');
+        expect(messages.ja['about-pwa-section-desc']).toBe('スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。');
+        expect(messages.ja['maker-note-extension-only']).toBe('※ アニメーション・メーカーはPWA版では起動できません。');
+        expect(messages.ja['alarm-note-extension-only']).toBe('※ アラーム機能はPWA版では通知や自動動作は実行されません。');
+        expect(messages.ja['about-pwa-import-desc']).toBe('Chrome拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。');
+    });
 });
