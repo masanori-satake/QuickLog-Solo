@@ -1074,9 +1074,9 @@ function findBestTriangle(candidates) {
                 const msAvg = (tl.ms + tr.ms + bl.ms) / 3;
                 const msDiff = (Math.abs(tl.ms - msAvg) + Math.abs(tr.ms - msAvg) + Math.abs(bl.ms - msAvg)) / msAvg;
 
-                if (sideDiff > 0.25 || msDiff > 0.3) continue;
+                if (sideDiff > 0.4 || msDiff > 0.4) continue;
 
-                const score = sideDiff + msDiff * 0.5;
+                const score = sideDiff * 0.5 + msDiff;
                 if (score < bestScore) {
                     bestScore = score;
                     bestTriple = { tl, tr, bl };
