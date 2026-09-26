@@ -518,6 +518,8 @@ export default {
     'about-pwa-url-qr-label': '1. PWA 啟動網址',
     'about-pwa-settings-qr-label': '2. 設定匯出',
     'about-pwa-qr-too-large': '資料大小超出 QR 碼容量。請使用「維護」頁籤中的備份功能。',
+    'about-pwa-qr-error-title': '錯誤',
+    'about-pwa-qr-error': '無法產生設定 QR 碼。請再試一次。',
     'about-pwa-qr-too-large-title': '資料超出',
     'about-pwa-qr-too-large-sub': '無法顯示 QR',
     'about-pwa-import-title': '匯入 QuickLog-Solo 設定 (β)',

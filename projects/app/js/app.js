@@ -1330,9 +1330,10 @@ async function renderAboutQRCodes() {
             settingsQrCanvas.title = '';
         } catch (err) {
             console.error('Failed to render settings QR Code:', err);
-            const errTitle = t('about-pwa-qr-too-large-title');
+            const isCapacityError = err?.message === 'Payload too large for QR Code';
+            const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
             const errSub = t('about-pwa-qr-too-large-sub');
-            const errTooltip = t('about-pwa-qr-too-large');
+            const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
             drawQRErrorCanvas(settingsQrCanvas, errTitle, errSub);
             settingsQrCanvas.title = errTooltip;
         }

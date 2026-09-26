@@ -556,6 +556,8 @@ export default {
     'about-pwa-url-qr-label': '1. PWA起動URL',
     'about-pwa-settings-qr-label': '2. 設定エクスポート',
     'about-pwa-qr-too-large': 'データ量が多いためQRコードを生成できません。保守タブのバックアップをご利用ください。',
+    'about-pwa-qr-error-title': 'エラー',
+    'about-pwa-qr-error': '設定のQRコードを生成できませんでした。もう一度お試しください。',
     'about-pwa-qr-too-large-title': 'データ超過',
     'about-pwa-qr-too-large-sub': 'QR表示不可',
     'about-pwa-import-title': 'QuickLog-Solo設定のインポート(β)',

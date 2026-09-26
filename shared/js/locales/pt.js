@@ -541,6 +541,8 @@ export default {
     'about-pwa-url-qr-label': '1. URL de início PWA',
     'about-pwa-settings-qr-label': '2. Exportar configurações',
     'about-pwa-qr-too-large': 'O tamanho dos dados excede a capacidade do código QR. Use a função de backup na guia Manutenção.',
+    'about-pwa-qr-error-title': 'Erro',
+    'about-pwa-qr-error': 'Não foi possível gerar o código QR das configurações. Tente novamente.',
     'about-pwa-qr-too-large-title': 'Dados Excedidos',
     'about-pwa-qr-too-large-sub': 'QR Indisponível',
     'about-pwa-import-title': 'Importar configurações do QuickLog-Solo (β)',

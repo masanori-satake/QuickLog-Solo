@@ -533,6 +533,8 @@ export default {
     'about-pwa-url-qr-label': '1. PWA 실행 URL',
     'about-pwa-settings-qr-label': '2. 설정 내보내기',
     'about-pwa-qr-too-large': '데이터 크기가 QR 코드 용량을 초과했습니다. 유지 관리 탭의 백업 기능을 사용하세요.',
+    'about-pwa-qr-error-title': '오류',
+    'about-pwa-qr-error': '설정 QR 코드를 생성하지 못했습니다. 다시 시도해 주세요.',
     'about-pwa-qr-too-large-title': '데이터 초과',
     'about-pwa-qr-too-large-sub': 'QR 표시 불가',
     'about-pwa-import-title': 'QuickLog-Solo 설정 가져오기 (β)',

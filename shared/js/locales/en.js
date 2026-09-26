@@ -557,6 +557,8 @@ export default {
     'about-pwa-url-qr-label': '1. PWA Launch URL',
     'about-pwa-settings-qr-label': '2. Export Settings',
     'about-pwa-qr-too-large': 'Data size exceeds QR code capacity. Please use the Backup function in the Maintenance tab.',
+    'about-pwa-qr-error-title': 'Error',
+    'about-pwa-qr-error': 'Unable to generate the settings QR code. Please try again.',
     'about-pwa-qr-too-large-title': 'Too Large',
     'about-pwa-qr-too-large-sub': 'QR Unavailable',
     'about-pwa-import-title': 'Import QuickLog-Solo Settings (β)',
