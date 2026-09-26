@@ -281,6 +281,19 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         expect(restoredGroup2.settings).toBeUndefined();
         expect(restoredGroup2.alarms).toBeUndefined();
     });
+
+    test('should include partInfo metadata when provided in serializeSettingsPayload', () => {
+        const payloadStr = serializeSettingsPayload({
+            categories: [{ id: 'cat1', name: 'Task 1' }],
+            partInfo: { gt: 1, gi: 0, ct: 3, ci: 2 },
+        });
+
+        const raw = JSON.parse(payloadStr);
+        expect(raw.p).toEqual({ gt: 1, gi: 0, ct: 3, ci: 2 });
+
+        const restored = deserializeSettingsPayload(payloadStr);
+        expect(restored.partInfo).toEqual({ gt: 1, gi: 0, ct: 3, ci: 2 });
+    });
 });
 
 describe('QR Code Generator & Renderer', () => {

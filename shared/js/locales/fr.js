@@ -561,4 +561,7 @@ export default {
     'qr-scan-failed-not-found': 'Aucun QR code détecté dans l\'image',
     'qr-scan-camera-error': 'Accès à l\'appareil photo refusé ou indisponible. Veuillez sélectionner une image.',
     'qr-scan-invalid-payload': 'Données de QR code invalides',
+    'about-pwa-qr-accordion-label': 'Afficher les QR codes de transfert (2. Général/Alarmes / 3. Catégories)',
+    'btn-qr-scan-done': 'Terminé',
+    'qr-scan-all-completed': 'Tous les QR codes ont été numérisés avec succès !',
 };

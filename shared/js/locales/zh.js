@@ -534,4 +534,7 @@ export default {
     'qr-scan-failed-not-found': '未在圖片中偵測到 QR 碼',
     'qr-scan-camera-error': '相機存取被拒絕或不可用。請從圖片選擇。',
     'qr-scan-invalid-payload': '無效的 QR 碼資料',
+    'about-pwa-qr-accordion-label': '顯示設定轉移 QR 碼 (2. 一般設定·鬧鐘 / 3. 業務分類)',
+    'btn-qr-scan-done': '完成',
+    'qr-scan-all-completed': '所有 QR 碼均已成功掃描！',
 };

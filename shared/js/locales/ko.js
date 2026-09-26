@@ -549,4 +549,7 @@ export default {
     'qr-scan-failed-not-found': '이미지에서 QR 코드를 감지할 수 없습니다',
     'qr-scan-camera-error': '카메라 접근이 거부되었거나 사용할 수 없습니다. 이미지에서 선택해 주세요.',
     'qr-scan-invalid-payload': '유효하지 않은 QR 코드 데이터입니다',
+    'about-pwa-qr-accordion-label': '설정 이전용 QR 코드 표시 (2. 일반 설정·알람 / 3. 업무 카테고리)',
+    'btn-qr-scan-done': '완료',
+    'qr-scan-all-completed': '모든 QR 코드를 성공적으로 스캔했습니다!',
 };

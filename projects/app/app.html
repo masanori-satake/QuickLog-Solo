@@ -633,24 +633,35 @@
                             <p style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 0.5rem;" data-i18n="about-pwa-section-desc">
                                 スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。
                             </p>
-                            <div style="display: flex; gap: 8px; justify-content: space-around; align-items: flex-start; text-align: center; margin-top: 8px;">
-                                <div style="flex: 1; min-width: 0;">
-                                    <a id="pwa-url-qr-link" href="https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit; display: inline-block; cursor: pointer;">
-                                        <canvas id="pwa-url-qr-canvas" style="width: 100%; max-width: 100px; aspect-ratio: 1; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
-                                        <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500; color: var(--md-sys-color-primary); text-decoration: underline;" data-i18n="about-pwa-url-qr-label">1. PWA起動URL</p>
-                                    </a>
-                                </div>
-                                <div style="flex: 1; min-width: 0;">
-                                    <canvas id="pwa-general-qr-canvas" style="width: 100%; max-width: 100px; aspect-ratio: 1; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
-                                    <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500;" data-i18n="about-pwa-general-qr-label">2. 設定全般・アラーム</p>
-                                </div>
-                                <div id="pwa-categories-qr-container" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; align-items: center;">
-                                    <div style="width: 100%;">
-                                        <canvas id="pwa-categories-qr-canvas" style="width: 100%; max-width: 100px; aspect-ratio: 1; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
-                                        <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500;" data-i18n="about-pwa-categories-qr-label">3. 業務カテゴリ</p>
+
+                            <!-- 1. PWA Launch URL QR Code (Top) -->
+                            <div style="text-align: center; margin: 12px 0;">
+                                <a id="pwa-url-qr-link" href="https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit; display: inline-block; cursor: pointer;">
+                                    <canvas id="pwa-url-qr-canvas" style="width: 100%; max-width: 180px; aspect-ratio: 1; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
+                                    <p style="font-size: 0.8rem; margin-top: 6px; font-weight: 600; color: var(--md-sys-color-primary); text-decoration: underline;" data-i18n="about-pwa-url-qr-label">1. PWA起動URL</p>
+                                </a>
+                            </div>
+
+                            <!-- Accordion for Settings Export QRs (2 and 3) -->
+                            <details id="pwa-settings-qr-accordion" style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; padding: 8px 12px; background: var(--md-sys-color-surface-container-low); margin-top: 12px;">
+                                <summary style="cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--md-sys-color-primary); user-select: none;" data-i18n="about-pwa-qr-accordion-label">
+                                    設定引き継ぎ用QRコードを表示 (2. 設定全般・アラーム / 3. 業務カテゴリ)
+                                </summary>
+                                <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; margin-top: 12px; width: 100%;">
+                                    <!-- 2. Settings General & Alarms -->
+                                    <div style="width: 100%; text-align: center;">
+                                        <canvas id="pwa-general-qr-canvas" style="width: 100%; max-width: 240px; aspect-ratio: 1; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
+                                        <p style="font-size: 0.8rem; margin-top: 6px; font-weight: 600;" data-i18n="about-pwa-general-qr-label">2. 設定全般・アラーム</p>
+                                    </div>
+                                    <!-- 3. Business Categories (Dynamic vertical list) -->
+                                    <div id="pwa-categories-qr-container" style="width: 100%; display: flex; flex-direction: column; gap: 16px; align-items: center; text-align: center;">
+                                        <div style="width: 100%;">
+                                            <canvas id="pwa-categories-qr-canvas" style="width: 100%; max-width: 240px; aspect-ratio: 1; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
+                                            <p style="font-size: 0.8rem; margin-top: 6px; font-weight: 600;" data-i18n="about-pwa-categories-qr-label">3. 業務カテゴリ</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </details>
                         </div>
 
                         <!-- モバイル(PWA)版QRコード設定インポートセクション (PWA版用) -->
@@ -768,22 +779,30 @@
 
             <!-- QR Code Scanner Modal -->
             <div id="qr-scan-modal" class="modal hidden">
-                <div class="modal-content" style="max-width: 360px; text-align: center;">
+                <div class="modal-content" style="max-width: 380px; text-align: center;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;" data-i18n="qr-scan-modal-title">QRコードスキャン</h3>
                         <button id="qr-scan-close-btn" class="icon-btn">
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
-                    <div id="qr-video-container" style="position: relative; width: 100%; height: 240px; background: #000000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <div id="qr-video-container" style="position: relative; width: 100%; height: 220px; background: #000000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
                         <video id="qr-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-                        <div style="position: absolute; width: 180px; height: 180px; border: 2px dashed #00e676; border-radius: 12px; pointer-events: none;"></div>
+                        <div style="position: absolute; width: 160px; height: 160px; border: 2px dashed #00e676; border-radius: 12px; pointer-events: none;"></div>
                     </div>
-                    <p id="qr-scan-status" style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin: 10px 0;" data-i18n="qr-scan-status-scanning">カメラにQRコードをかざしてください</p>
+                    <p id="qr-scan-status" style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin: 8px 0 4px;" data-i18n="qr-scan-status-scanning">カメラにQRコードをかざしてください</p>
+
+                    <!-- Dynamic Checklist Container for Scanned Parts -->
+                    <div id="qr-scan-checklist" style="display: flex; flex-direction: column; gap: 4px; text-align: left; background: var(--md-sys-color-surface-container-low); border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; padding: 8px 12px; margin: 6px 0; font-size: 0.78rem;">
+                    </div>
+
                     <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px;">
                         <button id="qr-select-image-btn" class="outline-btn" style="flex: 1; font-size: 0.8rem;">
                             <span class="material-symbols-outlined" style="font-size: 1.1rem;">image</span>
                             <span data-i18n="btn-select-qr-image">画像から読み込む</span>
+                        </button>
+                        <button id="qr-scan-done-btn" class="primary-btn" style="flex: 1; font-size: 0.8rem;">
+                            <span data-i18n="btn-qr-scan-done">完了</span>
                         </button>
                         <input type="file" id="qr-image-file-input" accept="image/*" class="hidden" />
                     </div>

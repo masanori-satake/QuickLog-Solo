@@ -1324,9 +1324,33 @@ export async function renderAboutQRCodes() {
                 }
                 const alarms = await dbGetAll(STORE_ALARMS);
 
+                let categoryChunksCount = 1;
+                const catContainer = getEl('pwa-categories-qr-container');
+                const categoriesQrCanvas = getEl('pwa-categories-qr-canvas');
+                if (catContainer || categoriesQrCanvas) {
+                    try {
+                        const rawCats = await dbGetAll(STORE_CATEGORIES);
+                        const validCats = (rawCats || []).filter(
+                            (cat) =>
+                                cat &&
+                                cat.name !== SYSTEM_CATEGORY_IDLE &&
+                                !(cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+                        );
+                        categoryChunksCount = Math.max(1, Math.ceil(validCats.length / 5));
+                    } catch {
+                        // ignore category error for general QR calculation
+                    }
+                }
+
                 const generalPayloadStr = serializeSettingsPayload({
                     settings: settingsObj,
                     alarms,
+                    partInfo: {
+                        gt: 1,
+                        gi: 1,
+                        ct: categoryChunksCount,
+                        ci: 0,
+                    },
                 });
                 renderQRCodeToCanvas(generalPayloadStr, generalQrCanvas, { width: 360, margin: 4 });
                 generalQrCanvas.title = '';
@@ -1345,7 +1369,6 @@ export async function renderAboutQRCodes() {
         if (catContainer || categoriesQrCanvas) {
             try {
                 const rawCategories = await dbGetAll(STORE_CATEGORIES);
-                // Filter out system categories and page breaks
                 const validCategories = (rawCategories || []).filter(
                     (cat) =>
                         cat &&
@@ -1374,7 +1397,7 @@ export async function renderAboutQRCodes() {
                         const canvasEl = document.createElement('canvas');
                         canvasEl.id = idx === 0 ? 'pwa-categories-qr-canvas' : `pwa-categories-qr-canvas-${idx + 1}`;
                         canvasEl.style.width = '100%';
-                        canvasEl.style.maxWidth = '100px';
+                        canvasEl.style.maxWidth = '240px';
                         canvasEl.style.aspectRatio = '1';
                         canvasEl.style.border = '1px solid var(--md-sys-color-outline-variant)';
                         canvasEl.style.borderRadius = '8px';
@@ -1384,9 +1407,9 @@ export async function renderAboutQRCodes() {
                         canvasEl.style.margin = '0 auto';
 
                         const labelEl = document.createElement('p');
-                        labelEl.style.fontSize = '0.75rem';
-                        labelEl.style.marginTop = '4px';
-                        labelEl.style.fontWeight = '500';
+                        labelEl.style.fontSize = '0.8rem';
+                        labelEl.style.marginTop = '6px';
+                        labelEl.style.fontWeight = '600';
 
                         const baseLabel = t('about-pwa-categories-qr-label');
                         labelEl.textContent =
@@ -1397,7 +1420,15 @@ export async function renderAboutQRCodes() {
                         catContainer.appendChild(wrapper);
 
                         try {
-                            const chunkPayloadStr = serializeSettingsPayload({ categories: chunkCats });
+                            const chunkPayloadStr = serializeSettingsPayload({
+                                categories: chunkCats,
+                                partInfo: {
+                                    gt: 1,
+                                    gi: 0,
+                                    ct: chunks.length,
+                                    ci: idx + 1,
+                                },
+                            });
                             renderQRCodeToCanvas(chunkPayloadStr, canvasEl, { width: 360, margin: 4 });
                             canvasEl.title = '';
                         } catch (err) {
@@ -1413,7 +1444,10 @@ export async function renderAboutQRCodes() {
                         }
                     });
                 } else if (categoriesQrCanvas) {
-                    const categoriesPayloadStr = serializeSettingsPayload({ categories: validCategories });
+                    const categoriesPayloadStr = serializeSettingsPayload({
+                        categories: validCategories,
+                        partInfo: { gt: 1, gi: 0, ct: 1, ci: 1 },
+                    });
                     renderQRCodeToCanvas(categoriesPayloadStr, categoriesQrCanvas, { width: 360, margin: 4 });
                     categoriesQrCanvas.title = '';
                 }
@@ -1469,15 +1503,93 @@ let activeScanSessionId = 0;
 let activeSelectedImageId = 0;
 let qrImportController = new AbortController();
 
+const scannedPartsSet = new Set();
+const knownPartsTotal = { generalTotal: 1, categoryTotal: 0 };
+let isScanningFrame = false;
+
 function invalidateQRImports() {
     qrImportController.abort();
     qrImportController = new AbortController();
+}
+
+function updateQRScanChecklist() {
+    const checklistEl = getEl('qr-scan-checklist');
+    if (!checklistEl) return;
+
+    if (knownPartsTotal.categoryTotal === 0 && scannedPartsSet.size === 0) {
+        checklistEl.replaceChildren();
+        checklistEl.style.display = 'none';
+        return;
+    }
+
+    checklistEl.style.display = 'flex';
+    checklistEl.replaceChildren();
+
+    const baseGeneralLabel = t('about-pwa-general-qr-label') || '2. 設定全般・アラーム';
+    const baseCategoryLabel = t('about-pwa-categories-qr-label') || '3. 業務カテゴリ';
+
+    // General / Alarms parts
+    for (let g = 1; g <= knownPartsTotal.generalTotal; g++) {
+        const key = `general_${g}_${knownPartsTotal.generalTotal}`;
+        const isScanned = scannedPartsSet.has(key);
+
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.gap = '6px';
+        row.style.color = isScanned ? '#2e7d32' : 'var(--md-sys-color-on-surface-variant)';
+
+        const icon = document.createElement('span');
+        icon.className = 'material-symbols-outlined';
+        icon.style.fontSize = '1.1rem';
+        icon.style.color = isScanned ? '#2e7d32' : '#9e9e9e';
+        icon.textContent = isScanned ? 'check_circle' : 'radio_button_unchecked';
+
+        const text = document.createElement('span');
+        text.textContent =
+            knownPartsTotal.generalTotal > 1
+                ? `${baseGeneralLabel} (${g}/${knownPartsTotal.generalTotal})`
+                : baseGeneralLabel;
+
+        row.appendChild(icon);
+        row.appendChild(text);
+        checklistEl.appendChild(row);
+    }
+
+    // Category parts
+    for (let c = 1; c <= knownPartsTotal.categoryTotal; c++) {
+        const key = `category_${c}_${knownPartsTotal.categoryTotal}`;
+        const isScanned = scannedPartsSet.has(key);
+
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.gap = '6px';
+        row.style.color = isScanned ? '#2e7d32' : 'var(--md-sys-color-on-surface-variant)';
+
+        const icon = document.createElement('span');
+        icon.className = 'material-symbols-outlined';
+        icon.style.fontSize = '1.1rem';
+        icon.style.color = isScanned ? '#2e7d32' : '#9e9e9e';
+        icon.textContent = isScanned ? 'check_circle' : 'radio_button_unchecked';
+
+        const text = document.createElement('span');
+        text.textContent =
+            knownPartsTotal.categoryTotal > 1
+                ? `${baseCategoryLabel} (${c}/${knownPartsTotal.categoryTotal})`
+                : baseCategoryLabel;
+
+        row.appendChild(icon);
+        row.appendChild(text);
+        checklistEl.appendChild(row);
+    }
 }
 
 /** Exported for testing purposes only. */
 export function setupQRScanner() {
     const scanBtn = getEl('pwa-start-qr-scan-btn');
     const closeBtn = getEl('qr-scan-close-btn');
+    const doneBtn = getEl('qr-scan-done-btn');
     const selectImgBtn = getEl('qr-select-image-btn');
     const imgInput = getEl('qr-image-file-input');
 
@@ -1493,6 +1605,12 @@ export function setupQRScanner() {
         };
     }
 
+    if (doneBtn) {
+        doneBtn.onclick = () => {
+            closeQRScannerModal();
+        };
+    }
+
     if (selectImgBtn && imgInput) {
         selectImgBtn.onclick = () => {
             imgInput.click();
@@ -1502,6 +1620,9 @@ export function setupQRScanner() {
             if (!file) return;
             const selectedImageId = ++activeSelectedImageId;
             invalidateQRImports();
+            scannedPartsSet.clear();
+            knownPartsTotal.generalTotal = 1;
+            knownPartsTotal.categoryTotal = 0;
             const signal = qrImportController.signal;
             const img = new Image();
             const objectUrl = URL.createObjectURL(file);
@@ -1520,7 +1641,10 @@ export function setupQRScanner() {
                     if (selectedImageId !== activeSelectedImageId || signal.aborted) return;
 
                     if (decodedText) {
-                        await handleImportQRPayload(decodedText, signal);
+                        const success = await handleImportQRPayload(decodedText, signal);
+                        if (success && selectedImageId === activeSelectedImageId && !signal.aborted) {
+                            closeQRScannerModal();
+                        }
                     } else {
                         const statusEl = getEl('qr-scan-status');
                         if (statusEl)
@@ -1551,14 +1675,23 @@ export async function openQRScannerModal() {
     invalidateQRImports();
     modal.classList.remove('hidden');
 
+    scannedPartsSet.clear();
+    knownPartsTotal.generalTotal = 1;
+    knownPartsTotal.categoryTotal = 0;
+    updateQRScanChecklist();
+
     const statusEl = getEl('qr-scan-status');
-    if (statusEl) statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
+    if (statusEl) {
+        statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
+        statusEl.style.color = 'var(--md-sys-color-on-surface-variant)';
+        statusEl.style.fontWeight = 'normal';
+    }
 
     const video = getEl('qr-video');
     if (video && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' },
+                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
             });
             if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) {
                 stream.getTracks().forEach((track) => track.stop());
@@ -1582,6 +1715,7 @@ export async function openQRScannerModal() {
 
 /** Exported for testing purposes only. */
 export function closeQRScannerModal() {
+    const scannedAny = scannedPartsSet.size > 0;
     activeScanSessionId++;
     activeSelectedImageId++;
     invalidateQRImports();
@@ -1595,26 +1729,41 @@ export function closeQRScannerModal() {
     }
     const modal = getEl('qr-scan-modal');
     if (modal) modal.classList.add('hidden');
+
+    if (scannedAny) {
+        lastCategoryRenderData = null;
+        syncState().catch((err) => console.error('Error syncing state on scanner close:', err));
+    }
 }
 
 function startVideoFrameScanning(video, sessionId) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
+    isScanningFrame = false;
+
     const scanFrame = async () => {
         if (sessionId !== activeScanSessionId || !activeVideoStream || video.paused || video.ended) return;
 
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            if (ctx) {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const signal = qrImportController.signal;
-                const decoded = await decodeQRCodeFromCanvas(canvas);
-                if (sessionId !== activeScanSessionId) return;
-                if (decoded && !signal.aborted) {
-                    const success = await handleImportQRPayload(decoded, signal);
-                    if (success) return;
+        if (video.readyState === video.HAVE_ENOUGH_DATA && !isScanningFrame) {
+            isScanningFrame = true;
+            try {
+                const maxDim = 640;
+                const scale = Math.min(maxDim / video.videoWidth, maxDim / video.videoHeight, 1);
+                canvas.width = Math.round(video.videoWidth * scale);
+                canvas.height = Math.round(video.videoHeight * scale);
+
+                if (ctx) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const signal = qrImportController.signal;
+                    const decoded = await decodeQRCodeFromCanvas(canvas);
+                    if (sessionId === activeScanSessionId && decoded && !signal.aborted) {
+                        await handleImportQRPayload(decoded, signal);
+                    }
                 }
+            } catch (err) {
+                console.warn('Frame scan error:', err);
+            } finally {
+                isScanningFrame = false;
             }
         }
         if (sessionId === activeScanSessionId) {
@@ -1628,21 +1777,68 @@ function startVideoFrameScanning(video, sessionId) {
 async function handleImportQRPayload(payloadStr, signal) {
     try {
         if (signal.aborted) return false;
-        const { settings, categories, alarms } = deserializeSettingsPayload(payloadStr);
+        const { settings, categories, alarms, partInfo } = deserializeSettingsPayload(payloadStr);
+
+        let partKey = '';
+        let partName = '';
+        if (partInfo && (partInfo.gi > 0 || partInfo.ci > 0)) {
+            if (partInfo.gi > 0) {
+                partKey = `general_${partInfo.gi}_${partInfo.gt || 1}`;
+                partName =
+                    partInfo.gt > 1
+                        ? `${t('about-pwa-general-qr-label')} (${partInfo.gi}/${partInfo.gt})`
+                        : t('about-pwa-general-qr-label');
+            } else if (partInfo.ci > 0) {
+                partKey = `category_${partInfo.ci}_${partInfo.ct || 1}`;
+                partName =
+                    partInfo.ct > 1
+                        ? `${t('about-pwa-categories-qr-label')} (${partInfo.ci}/${partInfo.ct})`
+                        : t('about-pwa-categories-qr-label');
+            }
+            if (partInfo.gt) knownPartsTotal.generalTotal = Math.max(knownPartsTotal.generalTotal, partInfo.gt);
+            if (partInfo.ct) knownPartsTotal.categoryTotal = Math.max(knownPartsTotal.categoryTotal, partInfo.ct);
+        } else {
+            // For QR payloads without explicit partInfo (or legacy QRs), use string payload hash key for deduplication
+            partKey = `raw_${payloadStr}`;
+        }
+
+        // Avoid re-processing if already scanned in this session
+        if (partKey && scannedPartsSet.has(partKey)) {
+            return true;
+        }
 
         await dbImportQRSettings({ settings, categories, alarms }, { signal });
         if (signal.aborted) return false;
         broadcastSync();
 
-        closeQRScannerModal();
-        showToast(t('toast-settings-imported') || '設定をインポートしました！');
+        if (partKey) {
+            scannedPartsSet.add(partKey);
+        }
 
-        // Apply language/theme and refresh UI
-        if (settings.language) {
+        updateQRScanChecklist();
+
+        const successMsg = partName
+            ? `${partName}: ${t('toast-settings-imported') || '設定をインポートしました！'}`
+            : t('toast-settings-imported') || '設定をインポートしました！';
+        showToast(successMsg);
+
+        // Calculate completed parts count using only real part keys (excluding raw_ keys)
+        const completedPartsCount = Array.from(scannedPartsSet).filter((k) => !k.startsWith('raw_')).length;
+        const totalExpected = knownPartsTotal.generalTotal + knownPartsTotal.categoryTotal;
+        if (knownPartsTotal.categoryTotal > 0 && completedPartsCount >= totalExpected) {
+            const statusEl = getEl('qr-scan-status');
+            if (statusEl) {
+                statusEl.textContent = t('qr-scan-all-completed') || 'すべてのQRコードの読み取りが完了しました！';
+                statusEl.style.color = '#2e7d32';
+                statusEl.style.fontWeight = '700';
+            }
+        }
+
+        // Apply language/theme if updated
+        if (settings && settings.language) {
             setLanguage(settings.language);
             applyLanguage();
         }
-        await syncState();
         return true;
     } catch (err) {
         if (signal.aborted) return false;
@@ -3235,16 +3431,29 @@ function setupEventListeners() {
     queryAll(
         '.settings-close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn'
     ).forEach((btn) => {
-        btn.onclick = (e) => {
+        btn.onclick = async (e) => {
             e.stopPropagation(); // Avoid triggering window.onclick
+            const settingsWasVisible = popups.settings && !popups.settings.classList.contains('hidden');
             Object.values(popups).forEach((p) => p?.classList.add('hidden'));
+            if (settingsWasVisible) {
+                lastCategoryRenderData = null;
+                await syncState();
+            }
         };
     });
 
-    window.onclick = (event) => {
+    window.onclick = async (event) => {
+        let closedSettings = false;
         Object.values(popups).forEach((p) => {
-            if (event.target === p) p.classList.add('hidden');
+            if (event.target === p) {
+                if (p === popups.settings) closedSettings = true;
+                p.classList.add('hidden');
+            }
         });
+        if (closedSettings) {
+            lastCategoryRenderData = null;
+            await syncState();
+        }
         // Close custom dropdowns when clicking outside
         if (!event.target.closest('.custom-color-dropdown')) {
             queryAll('.color-dropdown-menu').forEach((m) => m.classList.add('hidden'));

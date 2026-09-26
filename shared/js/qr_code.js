@@ -101,7 +101,7 @@ function encodeUTF8(str) {
  * Preserves empty category/alarm groups; omitted groups leave destination stores unchanged.
  */
 export function serializeSettingsPayload(input = {}) {
-    const { settings, categories, alarms } = input;
+    const { settings, categories, alarms, partInfo } = input;
     const hasSettings = 'settings' in input && settings !== undefined;
     const minSettings = {};
 
@@ -175,6 +175,19 @@ export function serializeSettingsPayload(input = {}) {
     if (hasSettings) payload.s = minSettings;
     if (categories !== undefined) payload.c = minCategories;
     if (alarms !== undefined) payload.a = minAlarms;
+
+    if (partInfo && typeof partInfo === 'object') {
+        const p = {};
+        const gt = partInfo.gt ?? partInfo.generalTotal;
+        const gi = partInfo.gi ?? partInfo.generalIndex;
+        const ct = partInfo.ct ?? partInfo.categoryTotal;
+        const ci = partInfo.ci ?? partInfo.categoryIndex;
+        if (Number.isFinite(gt)) p.gt = gt;
+        if (Number.isFinite(gi)) p.gi = gi;
+        if (Number.isFinite(ct)) p.ct = ct;
+        if (Number.isFinite(ci)) p.ci = ci;
+        if (Object.keys(p).length > 0) payload.p = p;
+    }
 
     return JSON.stringify(payload);
 }
@@ -325,10 +338,21 @@ export function deserializeSettingsPayload(jsonString) {
         order: a.o ?? index,
     }));
 
+    let partInfo;
+    if (parsed.p && typeof parsed.p === 'object') {
+        partInfo = {
+            gt: Number.isFinite(parsed.p.gt) ? parsed.p.gt : 1,
+            gi: Number.isFinite(parsed.p.gi) ? parsed.p.gi : 0,
+            ct: Number.isFinite(parsed.p.ct) ? parsed.p.ct : 0,
+            ci: Number.isFinite(parsed.p.ci) ? parsed.p.ci : 0,
+        };
+    }
+
     return {
         settings,
         categories: parsed.c === undefined ? undefined : categories,
         alarms: parsed.a === undefined ? undefined : alarms,
+        partInfo,
     };
 }
 
@@ -785,7 +809,7 @@ export function isQRCodeScanSupported() {
  * Decodes QR Code from Canvas or ImageData.
  * Uses native BarcodeDetector API when available.
  */
-export async function decodeQRCodeFromCanvas(canvasOrImageData) {
+export async function decodeQRCodeFromCanvas(canvasOrImageData, options = {}) {
     if (!canvasOrImageData) return null;
 
     if (isQRCodeScanSupported()) {
@@ -815,7 +839,29 @@ export async function decodeQRCodeFromCanvas(canvasOrImageData) {
         }
     }
 
-    return scanImageDataPureJS(canvasOrImageData);
+    // Downscale large canvas / image before running pure JS scanner for fast, responsive scanning on mobile
+    const maxDimension = options.maxDimension || 640;
+    let target = canvasOrImageData;
+
+    if (
+        typeof HTMLCanvasElement !== 'undefined' &&
+        canvasOrImageData instanceof HTMLCanvasElement &&
+        (canvasOrImageData.width > maxDimension || canvasOrImageData.height > maxDimension)
+    ) {
+        const scale = Math.min(maxDimension / canvasOrImageData.width, maxDimension / canvasOrImageData.height);
+        const w = Math.round(canvasOrImageData.width * scale);
+        const h = Math.round(canvasOrImageData.height * scale);
+        const scaledCanvas = document.createElement('canvas');
+        scaledCanvas.width = w;
+        scaledCanvas.height = h;
+        const sCtx = scaledCanvas.getContext('2d');
+        if (sCtx) {
+            sCtx.drawImage(canvasOrImageData, 0, 0, w, h);
+            target = scaledCanvas;
+        }
+    }
+
+    return scanImageDataPureJS(target);
 }
 
 /**
