@@ -534,6 +534,7 @@ export default {
     'btn-pwa-scan-qr': 'QRコードを読み取る',
     'qr-scan-modal-title': 'QRコードスキャン',
     'qr-scan-status-scanning': 'カメラにQRコードをかざしてください',
+    'btn-qr-capture': '撮影して解析',
     'btn-select-qr-image': '画像から読み込む',
     'toast-settings-imported': '設定をインポートしました！',
     'qr-scan-failed-not-found': 'QRコードを検出できませんでした',
