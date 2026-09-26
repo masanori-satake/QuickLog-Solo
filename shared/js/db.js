@@ -230,9 +230,11 @@ export async function dbImportQRSettings({ settings, categories, alarms }, { sig
         signal?.addEventListener('abort', abortImport, { once: true });
 
         try {
-            const settingsStore = tx.objectStore(STORE_SETTINGS);
-            for (const [key, value] of Object.entries(settings)) {
-                settingsStore.put({ key, value });
+            if (settings !== undefined && settings !== null) {
+                const settingsStore = tx.objectStore(STORE_SETTINGS);
+                for (const [key, value] of Object.entries(settings)) {
+                    settingsStore.put({ key, value });
+                }
             }
             for (const [storeName, records] of [[STORE_CATEGORIES, categories], [STORE_ALARMS, alarms]]) {
                 if (records === undefined) continue;

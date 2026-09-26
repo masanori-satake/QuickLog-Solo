@@ -1296,7 +1296,7 @@ export async function renderAboutQRCodes() {
     const pwaUrlLink = getEl('pwa-url-qr-link');
     if (pwaUrlCanvas && !isPWA) {
         const pwaUrl = 'https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/';
-        renderQRCodeToCanvas(pwaUrl, pwaUrlCanvas, { width: 360, margin: 2 });
+        renderQRCodeToCanvas(pwaUrl, pwaUrlCanvas, { width: 360, margin: 4 });
     }
     if (pwaUrlLink) {
         pwaUrlLink.onclick = (e) => {
@@ -1328,7 +1328,7 @@ export async function renderAboutQRCodes() {
                     settings: settingsObj,
                     alarms,
                 });
-                renderQRCodeToCanvas(generalPayloadStr, generalQrCanvas, { width: 360, margin: 2 });
+                renderQRCodeToCanvas(generalPayloadStr, generalQrCanvas, { width: 360, margin: 4 });
                 generalQrCanvas.title = '';
             } catch (err) {
                 console.error('Failed to render general QR Code:', err);
@@ -1353,7 +1353,7 @@ export async function renderAboutQRCodes() {
                         !(cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
                 );
 
-                const CHUNK_SIZE = 8;
+                const CHUNK_SIZE = 5;
                 const chunks = [];
                 if (validCategories.length === 0) {
                     chunks.push([]);
@@ -1398,7 +1398,7 @@ export async function renderAboutQRCodes() {
 
                         try {
                             const chunkPayloadStr = serializeSettingsPayload({ categories: chunkCats });
-                            renderQRCodeToCanvas(chunkPayloadStr, canvasEl, { width: 360, margin: 2 });
+                            renderQRCodeToCanvas(chunkPayloadStr, canvasEl, { width: 360, margin: 4 });
                             canvasEl.title = '';
                         } catch (err) {
                             console.error(`Failed to render category QR Code chunk ${idx + 1}:`, err);
@@ -1414,7 +1414,7 @@ export async function renderAboutQRCodes() {
                     });
                 } else if (categoriesQrCanvas) {
                     const categoriesPayloadStr = serializeSettingsPayload({ categories: validCategories });
-                    renderQRCodeToCanvas(categoriesPayloadStr, categoriesQrCanvas, { width: 360, margin: 2 });
+                    renderQRCodeToCanvas(categoriesPayloadStr, categoriesQrCanvas, { width: 360, margin: 4 });
                     categoriesQrCanvas.title = '';
                 }
             } catch (err) {
@@ -1448,7 +1448,7 @@ export async function renderAboutQRCodes() {
                     categories,
                     alarms,
                 });
-                renderQRCodeToCanvas(payloadStr, settingsQrCanvas, { width: 360, margin: 2 });
+                renderQRCodeToCanvas(payloadStr, settingsQrCanvas, { width: 360, margin: 4 });
                 settingsQrCanvas.title = '';
             } catch (err) {
                 console.error('Failed to render settings QR Code:', err);
