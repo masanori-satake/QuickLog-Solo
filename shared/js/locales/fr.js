@@ -49,7 +49,7 @@ export default {
     'back-to-app': 'アプリに戻る',
     'alarm-setting-description':
         'Affiche un message à une heure précise et effectue automatiquement des actions telles que « Arrêter », « Pause » ou « Démarrer » les tâches si nécessaire.',
-    'alarm-note-extension-only': '※ アラーム機能はPWA版では通知や自動動作は実行されません。',
+    'alarm-editor-note-extension-only': '※ PWA版ではアラームを編集できません。',
     'alarm-label-enabled': 'Activé',
     'alarm-label-time': 'Heure',
     'alarm-label-message': 'Message',
