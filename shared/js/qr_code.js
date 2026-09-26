@@ -759,9 +759,598 @@ export async function decodeQRCodeFromCanvas(canvasOrImageData) {
 }
 
 /**
- * Fallback scanner when native BarcodeDetector is unavailable.
- * Returns null as pure JS QR decoding is disabled when BarcodeDetector is unsupported.
+ * Reed-Solomon Error Correction Decoder for GF(2^8) blocks.
  */
-function scanImageDataPureJS() {
+function rsDecodeBlock(data, ec) {
+    const n = data.length + ec.length;
+    const ecCount = ec.length;
+    const c = new Uint8Array(n);
+    c.set(data, 0);
+    c.set(ec, data.length);
+
+    const syndromes = new Uint8Array(ecCount);
+    let hasError = false;
+    for (let i = 0; i < ecCount; i++) {
+        let s = 0;
+        for (let j = 0; j < n; j++) {
+            s = s ^ gfMul(c[j], GF_EXP[(i * (n - 1 - j)) % 255]);
+        }
+        syndromes[i] = s;
+        if (s !== 0) hasError = true;
+    }
+
+    if (!hasError) return data;
+
+    let C = [1];
+    let B = [1];
+    let L = 0;
+    let m = 1;
+    let b = 1;
+
+    for (let r = 0; r < ecCount; r++) {
+        let d = syndromes[r];
+        for (let i = 1; i <= L; i++) {
+            d ^= gfMul(C[i], syndromes[r - i]);
+        }
+        if (d === 0) {
+            m++;
+        } else {
+            const T = new Array(Math.max(C.length, B.length + m)).fill(0);
+            for (let i = 0; i < C.length; i++) T[i] ^= C[i];
+            const scale = gfMul(d, GF_EXP[255 - GF_LOG[b]]);
+            for (let i = 0; i < B.length; i++) T[i + m] ^= gfMul(scale, B[i]);
+
+            if (2 * L <= r) {
+                L = r + 1 - L;
+                B = C;
+                b = d;
+                m = 1;
+            } else {
+                m++;
+            }
+            C = T;
+        }
+    }
+
+    const errPos = [];
+    for (let j = 0; j < n; j++) {
+        let val = 1;
+        const alphaInv = GF_EXP[(255 - ((n - 1 - j) % 255)) % 255];
+        let alphaInvPow = 1;
+        for (let i = 1; i < C.length; i++) {
+            alphaInvPow = gfMul(alphaInvPow, alphaInv);
+            val ^= gfMul(C[i], alphaInvPow);
+        }
+        if (val === 0) {
+            errPos.push(j);
+        }
+    }
+
+    if (errPos.length !== L) {
+        return null;
+    }
+
+    const Omega = new Array(ecCount).fill(0);
+    for (let i = 0; i < ecCount; i++) {
+        for (let j = 0; j <= i && j < C.length; j++) {
+            Omega[i] ^= gfMul(syndromes[i - j], C[j]);
+        }
+    }
+
+    for (const pos of errPos) {
+        const Xi = GF_EXP[(n - 1 - pos) % 255];
+        const XiInv = GF_EXP[255 - GF_LOG[Xi]];
+
+        let num = 0;
+        let p = 1;
+        for (let i = 0; i < ecCount; i++) {
+            num ^= gfMul(Omega[i], p);
+            p = gfMul(p, XiInv);
+        }
+
+        let den = 0;
+        let p2 = 1;
+        for (let i = 1; i < C.length; i += 2) {
+            den ^= gfMul(C[i], p2);
+            p2 = gfMul(p2, gfMul(XiInv, XiInv));
+        }
+
+        if (den === 0) return null;
+        const errVal = gfMul(num, GF_EXP[255 - GF_LOG[den]]);
+        c[pos] ^= errVal;
+    }
+
+    return c.subarray(0, data.length);
+}
+
+function crossCheckVertical(startX, startY, maxCount, isDark, height, checkRatio) {
+    let topY = startY;
+    while (topY >= 0 && isDark(startX, topY)) topY--;
+    topY++;
+
+    let bottomY = startY;
+    while (bottomY < height && isDark(startX, bottomY)) bottomY++;
+    bottomY--;
+
+    const centerLength = bottomY - topY + 1;
+    if (centerLength === 0) return null;
+
+    let y = topY - 1;
+    let count1 = 0;
+    while (y >= 0 && !isDark(startX, y) && count1 < maxCount) { count1++; y--; }
+    let count0 = 0;
+    while (y >= 0 && isDark(startX, y) && count0 < maxCount) { count0++; y--; }
+
+    y = bottomY + 1;
+    let count3 = 0;
+    while (y < height && !isDark(startX, y) && count3 < maxCount) { count3++; y++; }
+    let count4 = 0;
+    while (y < height && isDark(startX, y) && count4 < maxCount) { count4++; y++; }
+
+    const counts = [count0, count1, centerLength, count3, count4];
+    if (checkRatio(counts)) {
+        return (topY + bottomY) / 2;
+    }
     return null;
+}
+
+function crossCheckHorizontal(startX, startY, maxCount, isDark, width, checkRatio) {
+    let leftX = startX;
+    while (leftX >= 0 && isDark(leftX, startY)) leftX--;
+    leftX++;
+
+    let rightX = startX;
+    while (rightX < width && isDark(rightX, startY)) rightX++;
+    rightX--;
+
+    const centerLength = rightX - leftX + 1;
+    if (centerLength === 0) return null;
+
+    let x = leftX - 1;
+    let count1 = 0;
+    while (x >= 0 && !isDark(x, startY) && count1 < maxCount) { count1++; x--; }
+    let count0 = 0;
+    while (x >= 0 && isDark(x, startY) && count0 < maxCount) { count0++; x--; }
+
+    x = rightX + 1;
+    let count3 = 0;
+    while (x < width && !isDark(x, startY) && count3 < maxCount) { count3++; x++; }
+    let count4 = 0;
+    while (x < width && isDark(x, startY) && count4 < maxCount) { count4++; x++; }
+
+    const counts = [count0, count1, centerLength, count3, count4];
+    if (checkRatio(counts)) {
+        return (leftX + rightX) / 2;
+    }
+    return null;
+}
+
+function addCandidate(candidates, x, y, ms) {
+    for (const c of candidates) {
+        if (Math.hypot(c.x - x, c.y - y) < ms * 2) {
+            c.x = (c.x + x) / 2;
+            c.y = (c.y + y) / 2;
+            c.ms = (c.ms + ms) / 2;
+            return;
+        }
+    }
+    candidates.push({ x, y, ms });
+}
+
+function findBestTriangle(candidates) {
+    if (candidates.length < 3) return null;
+    let bestScore = Infinity;
+    let bestTriple = null;
+
+    for (let i = 0; i < candidates.length; i++) {
+        for (let j = i + 1; j < candidates.length; j++) {
+            for (let k = j + 1; k < candidates.length; k++) {
+                const p0 = candidates[i], p1 = candidates[j], p2 = candidates[k];
+                const d01 = Math.hypot(p0.x - p1.x, p0.y - p1.y);
+                const d12 = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                const d20 = Math.hypot(p2.x - p0.x, p2.y - p0.y);
+
+                let tl, tr, bl, d1, d2;
+                if (d01 >= d12 && d01 >= d20) {
+                    tl = p2; tr = p0; bl = p1; d1 = d20; d2 = d12;
+                } else if (d12 >= d01 && d12 >= d20) {
+                    tl = p0; tr = p1; bl = p2; d1 = d01; d2 = d20;
+                } else {
+                    tl = p1; tr = p2; bl = p0; d1 = d12; d2 = d01;
+                }
+
+                const cross = (tr.x - tl.x) * (bl.y - tl.y) - (tr.y - tl.y) * (bl.x - tl.x);
+                if (cross === 0) continue;
+
+                if (cross < 0) {
+                    const tmp = tr; tr = bl; bl = tmp;
+                }
+
+                const sideDiff = Math.abs(d1 - d2) / Math.max(d1, d2);
+                if (sideDiff > 0.4) continue;
+
+                const score = sideDiff;
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestTriple = { tl, tr, bl };
+                }
+            }
+        }
+    }
+    return bestTriple;
+}
+
+/**
+ * Fallback scanner when native BarcodeDetector is unavailable.
+ */
+function scanImageDataPureJS(canvasOrImageData) {
+    if (!canvasOrImageData) return null;
+    let imageData = null;
+    if (typeof HTMLCanvasElement !== 'undefined' && canvasOrImageData instanceof HTMLCanvasElement) {
+        const ctx = canvasOrImageData.getContext('2d');
+        if (!ctx) return null;
+        try {
+            imageData = ctx.getImageData(0, 0, canvasOrImageData.width, canvasOrImageData.height);
+        } catch {
+            return null;
+        }
+    } else if (canvasOrImageData && typeof canvasOrImageData.width === 'number' && canvasOrImageData.data) {
+        imageData = canvasOrImageData;
+    }
+    if (!imageData || !imageData.width || !imageData.height) return null;
+
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+
+    const gray = new Uint8Array(width * height);
+    const hist = new Int32Array(256);
+    for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+        const g = (data[i] * 77 + data[i + 1] * 150 + data[i + 2] * 29) >> 8;
+        gray[j] = g;
+        hist[g]++;
+    }
+
+    let sum = 0;
+    for (let t = 0; t < 256; t++) sum += t * hist[t];
+    let sumB = 0, wB = 0, maxVar = 0, threshold = 128;
+    const totalPixels = width * height;
+    for (let t = 0; t < 256; t++) {
+        wB += hist[t];
+        if (wB === 0) continue;
+        const wF = totalPixels - wB;
+        if (wF === 0) break;
+        sumB += t * hist[t];
+        const mB = sumB / wB;
+        const mF = (sum - sumB) / wF;
+        const varBetween = wB * wF * (mB - mF) * (mB - mF);
+        if (varBetween > maxVar) {
+            maxVar = varBetween;
+            threshold = t;
+        }
+    }
+
+    const isDark = (x, y) => {
+        x = Math.floor(x);
+        y = Math.floor(y);
+        if (x < 0 || x >= width || y < 0 || y >= height) return false;
+        return gray[y * width + x] < threshold;
+    };
+
+    const checkRatio = (counts) => {
+        const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+        if (total < 7) return false;
+        const moduleSize = total / 7;
+        const maxVariance = moduleSize * 0.75;
+        return (
+            Math.abs(moduleSize - counts[0]) < maxVariance &&
+            Math.abs(moduleSize - counts[1]) < maxVariance &&
+            Math.abs(moduleSize * 3 - counts[2]) < maxVariance * 3 &&
+            Math.abs(moduleSize - counts[3]) < maxVariance &&
+            Math.abs(moduleSize - counts[4]) < maxVariance
+        );
+    };
+
+    const patternCandidates = [];
+    const step = Math.max(1, Math.floor(height / 200));
+
+    for (let y = 0; y < height; y += step) {
+        const counts = [0, 0, 0, 0, 0];
+        let state = 0; // 0: quiet zone (light), 1: D1, 2: L1, 3: D3, 4: L2, 5: D2
+
+        for (let x = 0; x < width; x++) {
+            const dark = isDark(x, y);
+            if (state === 0) {
+                if (dark) {
+                    state = 1;
+                    counts[0] = 1;
+                }
+            } else if (state === 1) {
+                if (dark) counts[0]++;
+                else { state = 2; counts[1] = 1; }
+            } else if (state === 2) {
+                if (!dark) counts[1]++;
+                else { state = 3; counts[2] = 1; }
+            } else if (state === 3) {
+                if (dark) counts[2]++;
+                else { state = 4; counts[3] = 1; }
+            } else if (state === 4) {
+                if (!dark) counts[3]++;
+                else { state = 5; counts[4] = 1; }
+            } else if (state === 5) {
+                if (dark) {
+                    counts[4]++;
+                } else {
+                    if (checkRatio(counts)) {
+                        const centerX = x - counts[4] - counts[3] - counts[2] / 2;
+                        const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
+                        if (vCenterY !== null) {
+                            const hCenterX = crossCheckHorizontal(centerX, vCenterY, counts[2] * 2, isDark, width, checkRatio);
+                            if (hCenterX !== null) {
+                                const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+                                const ms = total / 7;
+                                addCandidate(patternCandidates, hCenterX, vCenterY, ms);
+                            }
+                        }
+                    }
+                    counts[0] = counts[2];
+                    counts[1] = counts[3];
+                    counts[2] = counts[4];
+                    counts[3] = 1;
+                    counts[4] = 0;
+                    state = 4;
+                }
+            }
+        }
+
+        if (state === 5 && checkRatio(counts)) {
+            const centerX = width - counts[4] - counts[3] - counts[2] / 2;
+            const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
+            if (vCenterY !== null) {
+                const hCenterX = crossCheckHorizontal(centerX, vCenterY, counts[2] * 2, isDark, width, checkRatio);
+                if (hCenterX !== null) {
+                    const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+                    const ms = total / 7;
+                    addCandidate(patternCandidates, hCenterX, vCenterY, ms);
+                }
+            }
+        }
+    }
+
+    if (patternCandidates.length < 3) return null;
+
+    const bestTriple = findBestTriangle(patternCandidates);
+    if (!bestTriple) return null;
+
+    const { tl, tr, bl } = bestTriple;
+
+    const distTR = Math.hypot(tr.x - tl.x, tr.y - tl.y);
+    const distBL = Math.hypot(bl.x - tl.x, bl.y - tl.y);
+    const avgMs = (tl.ms + tr.ms + bl.ms) / 3;
+
+    const modulesBetweenCenters = Math.round(((distTR + distBL) / 2) / avgMs);
+    let version = Math.round((modulesBetweenCenters - 10) / 4);
+    if (version < 1) version = 1;
+    if (version > 40) version = 40;
+
+    const matrixSize = 17 + version * 4;
+
+    const br = {
+        x: tr.x + bl.x - tl.x,
+        y: tr.y + bl.y - tl.y,
+    };
+
+    const matrix = Array.from({ length: matrixSize }, () => new Array(matrixSize).fill(false));
+
+    for (let row = 0; row < matrixSize; row++) {
+        for (let col = 0; col < matrixSize; col++) {
+            const u = (col + 0.5 - 3.5) / (matrixSize - 7);
+            const v = (row + 0.5 - 3.5) / (matrixSize - 7);
+
+            const px = Math.round((1 - u) * (1 - v) * tl.x + u * (1 - v) * tr.x + (1 - u) * v * bl.x + u * v * br.x);
+            const py = Math.round((1 - u) * (1 - v) * tl.y + u * (1 - v) * tr.y + (1 - u) * v * bl.y + u * v * br.y);
+
+            matrix[row][col] = isDark(px, py);
+        }
+    }
+
+    const fmtCoordsTopLeft = [
+        [8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [8, 5], [8, 7], [8, 8],
+        [7, 8], [5, 8], [4, 8], [3, 8], [2, 8], [1, 8], [0, 8]
+    ];
+    let fmtVal = 0;
+    for (let i = 0; i < 15; i++) {
+        const [r, c] = fmtCoordsTopLeft[i];
+        fmtVal = (fmtVal << 1) | (matrix[r][c] ? 1 : 0);
+    }
+
+    let bestMask = 0;
+    let minDist = 16;
+    for (let m = 0; m < 8; m++) {
+        const target = FORMAT_INFO_L[m];
+        const diff = fmtVal ^ target;
+        let dist = 0;
+        for (let b = 0; b < 15; b++) if ((diff >> b) & 1) dist++;
+        if (dist < minDist) {
+            minDist = dist;
+            bestMask = m;
+        }
+    }
+
+    const isReserved = Array.from({ length: matrixSize }, () => new Array(matrixSize).fill(false));
+    const setRes = (r, c) => {
+        if (r >= 0 && r < matrixSize && c >= 0 && c < matrixSize) isReserved[r][c] = true;
+    };
+
+    const placeFinderRes = (r0, c0) => {
+        for (let r = -1; r <= 7; r++) {
+            for (let c = -1; c <= 7; c++) setRes(r0 + r, c0 + c);
+        }
+    };
+    placeFinderRes(0, 0);
+    placeFinderRes(0, matrixSize - 7);
+    placeFinderRes(matrixSize - 7, 0);
+
+    setRes(matrixSize - 8, 8); // Dark module
+
+    for (let i = 0; i < 9; i++) {
+        setRes(8, i);
+        setRes(i, 8);
+    }
+    for (let i = 0; i < 8; i++) {
+        setRes(8, matrixSize - 1 - i);
+        setRes(matrixSize - 1 - i, 8);
+    }
+    for (let i = 0; i < matrixSize; i++) {
+        setRes(6, i);
+        setRes(i, 6);
+    }
+    const locs = ALIGNMENT_LOCATIONS[version] || [];
+    for (let i = 0; i < locs.length; i++) {
+        for (let j = 0; j < locs.length; j++) {
+            const r0 = locs[i];
+            const c0 = locs[j];
+            if ((i === 0 && j === 0) || (i === 0 && j === locs.length - 1) || (i === locs.length - 1 && j === 0))
+                continue;
+            for (let r = -2; r <= 2; r++) {
+                for (let c = -2; c <= 2; c++) setRes(r0 + r, c0 + c);
+            }
+        }
+    }
+    if (version >= 7) {
+        for (let r = 0; r < 6; r++) {
+            for (let c = 0; c < 3; c++) {
+                setRes(matrixSize - 11 + c, r);
+                setRes(r, matrixSize - 11 + c);
+            }
+        }
+    }
+
+    const isMasked = (r, c, mask) => {
+        switch (mask) {
+            case 0: return (r + c) % 2 === 0;
+            case 1: return r % 2 === 0;
+            case 2: return c % 3 === 0;
+            case 3: return (r + c) % 3 === 0;
+            case 4: return (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0;
+            case 5: return ((r * c) % 2) + ((r * c) % 3) === 0;
+            case 6: return (((r * c) % 2) + ((r * c) % 3)) % 2 === 0;
+            case 7: return (((r + c) % 2) + ((r * c) % 3)) % 2 === 0;
+            default: return false;
+        }
+    };
+
+    const unmaskedMatrix = Array.from({ length: matrixSize }, () => new Array(matrixSize).fill(false));
+    for (let r = 0; r < matrixSize; r++) {
+        for (let c = 0; c < matrixSize; c++) {
+            if (isReserved[r][c]) {
+                unmaskedMatrix[r][c] = matrix[r][c];
+            } else {
+                unmaskedMatrix[r][c] = isMasked(r, c, bestMask) ? !matrix[r][c] : matrix[r][c];
+            }
+        }
+    }
+
+    const rawBits = [];
+    let upward = true;
+    for (let col = matrixSize - 1; col > 0; col -= 2) {
+        if (col === 6) col--;
+        for (let rowStep = 0; rowStep < matrixSize; rowStep++) {
+            const r = upward ? matrixSize - 1 - rowStep : rowStep;
+            for (let cStep = 0; cStep < 2; cStep++) {
+                const c = col - cStep;
+                if (!isReserved[r][c]) {
+                    rawBits.push(unmaskedMatrix[r][c] ? 1 : 0);
+                }
+            }
+        }
+        upward = !upward;
+    }
+
+    const interleavedBytes = new Uint8Array(Math.floor(rawBits.length / 8));
+    for (let i = 0; i < interleavedBytes.length; i++) {
+        let b = 0;
+        for (let bit = 0; bit < 8; bit++) {
+            b = (b << 1) | rawBits[i * 8 + bit];
+        }
+        interleavedBytes[i] = b;
+    }
+
+    const spec = VERSION_SPECS_L[version];
+    if (!spec) return null;
+    const [, maxDataBytes, ecCount, numBlocks] = spec;
+    const blockSize = Math.floor(maxDataBytes / numBlocks);
+    const shortBlocksCount = numBlocks - (maxDataBytes % numBlocks);
+    const maxBlockLen = blockSize + (maxDataBytes % numBlocks > 0 ? 1 : 0);
+
+    const blocks = Array.from({ length: numBlocks }, (_, b) =>
+        new Uint8Array(b < shortBlocksCount ? blockSize : blockSize + 1)
+    );
+    const ecBlocks = Array.from({ length: numBlocks }, () => new Uint8Array(ecCount));
+
+    let ptr = 0;
+    for (let i = 0; i < maxBlockLen; i++) {
+        for (let b = 0; b < numBlocks; b++) {
+            if (i < blocks[b].length && ptr < interleavedBytes.length) {
+                blocks[b][i] = interleavedBytes[ptr++];
+            }
+        }
+    }
+    for (let i = 0; i < ecCount; i++) {
+        for (let b = 0; b < numBlocks; b++) {
+            if (ptr < interleavedBytes.length) {
+                ecBlocks[b][i] = interleavedBytes[ptr++];
+            }
+        }
+    }
+
+    const correctedData = new Uint8Array(maxDataBytes);
+    let dataOffset = 0;
+    for (let b = 0; b < numBlocks; b++) {
+        const decoded = rsDecodeBlock(blocks[b], ecBlocks[b]);
+        if (!decoded) return null;
+        correctedData.set(decoded, dataOffset);
+        dataOffset += decoded.length;
+    }
+
+    let bitPtr = 0;
+    const readBits = (count) => {
+        let val = 0;
+        for (let i = 0; i < count; i++) {
+            const byteIdx = Math.floor(bitPtr / 8);
+            const bitOffset = 7 - (bitPtr % 8);
+            if (byteIdx >= correctedData.length) return 0;
+            val = (val << 1) | ((correctedData[byteIdx] >> bitOffset) & 1);
+            bitPtr++;
+        }
+        return val;
+    };
+
+    const mode = readBits(4);
+    if (mode !== 4) {
+        return null;
+    }
+
+    const countBits = version < 10 ? 8 : 16;
+    const charCount = readBits(countBits);
+    if (charCount <= 0 || charCount > maxDataBytes) return null;
+
+    const payloadBytes = new Uint8Array(charCount);
+    for (let i = 0; i < charCount; i++) {
+        payloadBytes[i] = readBits(8);
+    }
+
+    try {
+        if (typeof TextDecoder !== 'undefined') {
+            return new TextDecoder('utf-8').decode(payloadBytes);
+        }
+    } catch {
+        // Fallback
+    }
+
+    let str = '';
+    for (let i = 0; i < payloadBytes.length; i++) {
+        str += String.fromCharCode(payloadBytes[i]);
+    }
+    return str;
 }

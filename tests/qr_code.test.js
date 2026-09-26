@@ -338,4 +338,49 @@ describe('QR Code Generator & Renderer', () => {
         const result = await decodeQRCodeFromCanvas(canvas);
         expect(result).toBeNull();
     });
+
+    test('should decode QR code using pure JS fallback when BarcodeDetector is unavailable', async () => {
+        const originalBarcodeDetector = globalThis.BarcodeDetector;
+        delete globalThis.BarcodeDetector;
+
+        try {
+            const text = 'QuickLogSoloTest';
+            const matrix = generateQRCodeMatrix(text);
+            const size = matrix.length;
+            const margin = 4;
+            const moduleSize = 4;
+            const totalModules = size + margin * 2;
+            const imgWidth = totalModules * moduleSize;
+            const imgHeight = totalModules * moduleSize;
+            const imgData = new Uint8ClampedArray(imgWidth * imgHeight * 4);
+
+            imgData.fill(255); // Fill white
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    if (matrix[r][c]) {
+                        for (let my = 0; my < moduleSize; my++) {
+                            for (let mx = 0; mx < moduleSize; mx++) {
+                                const px = (c + margin) * moduleSize + mx;
+                                const py = (r + margin) * moduleSize + my;
+                                const idx = (py * imgWidth + px) * 4;
+                                imgData[idx] = 0;
+                                imgData[idx + 1] = 0;
+                                imgData[idx + 2] = 0;
+                                imgData[idx + 3] = 255;
+                            }
+                        }
+                    }
+                }
+            }
+
+            const imageDataObj = { width: imgWidth, height: imgHeight, data: imgData };
+            const decoded = await decodeQRCodeFromCanvas(imageDataObj);
+            expect(decoded).toBe(text);
+        } finally {
+            if (originalBarcodeDetector) {
+                globalThis.BarcodeDetector = originalBarcodeDetector;
+            }
+        }
+    });
 });
