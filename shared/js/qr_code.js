@@ -100,34 +100,40 @@ function encodeUTF8(str) {
  * Converts custom category animations to default background animation.
  * Preserves empty category/alarm groups; omitted groups leave destination stores unchanged.
  */
-export function serializeSettingsPayload({ settings = {}, categories, alarms }) {
+export function serializeSettingsPayload(input = {}) {
+    const { settings, categories, alarms } = input;
+    const hasSettings = 'settings' in input && settings !== undefined;
     const minSettings = {};
 
-    if (settings.theme && settings.theme !== 'system') minSettings.t = settings.theme;
-    if (settings.font && settings.font !== 'system-ui') minSettings.f = settings.font;
-    if (settings.fontWeight && settings.fontWeight !== '400') minSettings.fw = settings.fontWeight;
-    if (settings.animation && settings.animation !== 'digital_rain')
-        minSettings.a = sanitizeAnimationId(settings.animation);
-    if (settings.pauseAnimation && settings.pauseAnimation !== 'snoring_zzz')
-        minSettings.pa = sanitizeAnimationId(settings.pauseAnimation);
-    if (settings.pauseTheme && settings.pauseTheme !== 'neutral') minSettings.pt = settings.pauseTheme;
-    if (settings.timerHeight && settings.timerHeight !== 'normal') minSettings.th = settings.timerHeight;
-    if (settings.categoryLayout && settings.categoryLayout !== '2x8') minSettings.cl = settings.categoryLayout;
-    if (Array.isArray(settings.businessDays)) {
-        const isDefaultBd =
-            settings.businessDays.length === 5 && [1, 2, 3, 4, 5].every((d, i) => settings.businessDays[i] === d);
-        if (!isDefaultBd) minSettings.bd = settings.businessDays;
-    }
-    if (settings.language) minSettings.l = settings.language;
-    if (settings.reportSettings && typeof settings.reportSettings === 'object') {
-        const r = {};
-        if (settings.reportSettings.includeTags !== undefined && settings.reportSettings.includeTags !== true)
-            r.it = settings.reportSettings.includeTags ? 1 : 0;
-        if (settings.reportSettings.includeSummary !== undefined && settings.reportSettings.includeSummary !== true)
-            r.is = settings.reportSettings.includeSummary ? 1 : 0;
-        if (settings.reportSettings.format && settings.reportSettings.format !== 'text')
-            r.f = settings.reportSettings.format;
-        if (Object.keys(r).length > 0) minSettings.r = r;
+    if (hasSettings && settings && typeof settings === 'object') {
+        if (settings.theme && settings.theme !== 'system') minSettings.t = settings.theme;
+        if (settings.font && settings.font !== 'system-ui') minSettings.f = settings.font;
+        if (settings.fontWeight && settings.fontWeight !== '400') minSettings.fw = settings.fontWeight;
+        if (settings.animation && settings.animation !== 'digital_rain')
+            minSettings.a = sanitizeAnimationId(settings.animation);
+        if (settings.pauseAnimation && settings.pauseAnimation !== 'snoring_zzz')
+            minSettings.pa = sanitizeAnimationId(settings.pauseAnimation);
+        if (settings.pauseTheme && settings.pauseTheme !== 'neutral') minSettings.pt = settings.pauseTheme;
+        if (settings.timerHeight && settings.timerHeight !== 'normal') minSettings.th = settings.timerHeight;
+        if (settings.categoryLayout && settings.categoryLayout !== '2x8') minSettings.cl = settings.categoryLayout;
+        if (Array.isArray(settings.businessDays)) {
+            const isDefaultBd =
+                settings.businessDays.length === 5 && [1, 2, 3, 4, 5].every((d, i) => settings.businessDays[i] === d);
+            if (!isDefaultBd) minSettings.bd = settings.businessDays;
+        }
+        if (settings.language) minSettings.l = settings.language;
+        if (settings.reportSettings && typeof settings.reportSettings === 'object') {
+            const rs = settings.reportSettings;
+            const r = {};
+            if (rs.includeTags !== undefined && rs.includeTags !== true) r.it = rs.includeTags ? 1 : 0;
+            if (rs.includeSummary !== undefined && rs.includeSummary !== true) r.is = rs.includeSummary ? 1 : 0;
+            if (rs.format && rs.format !== 'markdown') r.f = rs.format;
+            if (rs.emoji && rs.emoji !== 'keep') r.e = rs.emoji;
+            if (rs.endTime && rs.endTime !== 'none') r.et = rs.endTime;
+            if (rs.duration && rs.duration !== 'none') r.d = rs.duration;
+            if (rs.adjust && rs.adjust !== 'none') r.a = rs.adjust;
+            if (Object.keys(r).length > 0) minSettings.r = r;
+        }
     }
 
     // Filter out internal system categories (IDLE) and page breaks (__PAGE_BREAK__)
@@ -166,7 +172,7 @@ export function serializeSettingsPayload({ settings = {}, categories, alarms }) 
     });
 
     const payload = { v: 1 };
-    if (Object.keys(minSettings).length > 0) payload.s = minSettings;
+    if (hasSettings) payload.s = minSettings;
     if (categories !== undefined) payload.c = minCategories;
     if (alarms !== undefined) payload.a = minAlarms;
 
@@ -238,29 +244,58 @@ export function deserializeSettingsPayload(jsonString) {
     validatePayloadRecords(categoryRecords, 'category');
     validatePayloadRecords(alarmRecords, 'alarm');
 
-    const minSettings = parsed.s || {};
-    const settings = {};
-    if (minSettings.t !== undefined) settings.theme = minSettings.t;
-    if (minSettings.f !== undefined) settings.font = minSettings.f;
-    if (minSettings.fw !== undefined) settings.fontWeight = minSettings.fw;
-    if (minSettings.a !== undefined) settings.animation = sanitizeAnimationId(minSettings.a);
-    if (minSettings.pa !== undefined) settings.pauseAnimation = sanitizeAnimationId(minSettings.pa);
-    if (minSettings.pt !== undefined) settings.pauseTheme = minSettings.pt;
-    if (minSettings.th !== undefined) settings.timerHeight = minSettings.th;
-    if (minSettings.cl !== undefined) settings.categoryLayout = minSettings.cl;
-    if (minSettings.bd !== undefined) {
-        settings.businessDays = Array.isArray(minSettings.bd) ? minSettings.bd : [1, 2, 3, 4, 5];
-    }
-    if (minSettings.l !== undefined) settings.language = minSettings.l;
-    if (minSettings.r !== undefined) {
-        if (typeof minSettings.r === 'object' && minSettings.r !== null && !Array.isArray(minSettings.r)) {
-            settings.reportSettings = {
-                includeTags: minSettings.r.it === undefined ? true : minSettings.r.it === 1,
-                includeSummary: minSettings.r.is === undefined ? true : minSettings.r.is === 1,
-                format: minSettings.r.f || 'text',
-            };
-        } else {
-            settings.reportSettings = minSettings.r;
+    let settings;
+    if (parsed.s !== undefined) {
+        const minSettings = parsed.s || {};
+        settings = {};
+        if (minSettings.t !== undefined) settings.theme = minSettings.t;
+        if (minSettings.f !== undefined) settings.font = minSettings.f;
+        if (minSettings.fw !== undefined) settings.fontWeight = minSettings.fw;
+        if (minSettings.a !== undefined) settings.animation = sanitizeAnimationId(minSettings.a);
+        if (minSettings.pa !== undefined) settings.pauseAnimation = sanitizeAnimationId(minSettings.pa);
+        if (minSettings.pt !== undefined) settings.pauseTheme = minSettings.pt;
+        if (minSettings.th !== undefined) settings.timerHeight = minSettings.th;
+        if (minSettings.cl !== undefined) settings.categoryLayout = minSettings.cl;
+        if (minSettings.bd !== undefined) {
+            settings.businessDays = Array.isArray(minSettings.bd) ? minSettings.bd : [1, 2, 3, 4, 5];
+        }
+        if (minSettings.l !== undefined) settings.language = minSettings.l;
+
+        if (minSettings.r !== undefined) {
+            if (typeof minSettings.r === 'object' && minSettings.r !== null && !Array.isArray(minSettings.r)) {
+                const r = minSettings.r;
+                const isCompact =
+                    r.it !== undefined ||
+                    r.is !== undefined ||
+                    r.f !== undefined ||
+                    r.e !== undefined ||
+                    r.et !== undefined ||
+                    r.d !== undefined ||
+                    r.a !== undefined;
+                if (isCompact) {
+                    settings.reportSettings = {
+                        includeTags: r.it === undefined ? true : r.it === 1,
+                        includeSummary: r.is === undefined ? true : r.is === 1,
+                        format: r.f || 'markdown',
+                        emoji: r.e || 'keep',
+                        endTime: r.et || 'none',
+                        duration: r.d || 'none',
+                        adjust: r.a || 'none',
+                    };
+                } else {
+                    settings.reportSettings = {
+                        includeTags: r.includeTags ?? true,
+                        includeSummary: r.includeSummary ?? true,
+                        format: r.format || 'markdown',
+                        emoji: r.emoji || 'keep',
+                        endTime: r.endTime || 'none',
+                        duration: r.duration || 'none',
+                        adjust: r.adjust || 'none',
+                    };
+                }
+            } else {
+                settings.reportSettings = minSettings.r;
+            }
         }
     }
 

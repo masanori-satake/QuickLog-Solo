@@ -278,7 +278,7 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         const restoredGroup2 = deserializeSettingsPayload(group2Json);
         expect(restoredGroup2.categories).toHaveLength(1);
         expect(restoredGroup2.categories[0].name).toBe('Dev');
-        expect(restoredGroup2.settings).toEqual({});
+        expect(restoredGroup2.settings).toBeUndefined();
         expect(restoredGroup2.alarms).toBeUndefined();
     });
 });
