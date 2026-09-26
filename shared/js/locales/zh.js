@@ -513,7 +513,7 @@ export default {
     'maker-error-name-empty': '名称不能为空',
     'maker-error-name-duplicate': '已存在同名的自定义动画。请输入不同的名称。',
     'maker-select-prompt': '请添加自定义动画',
-    'about-pwa-section-title': '移動 (PWA) 版 QuickLog-Solo (β)',
+    'about-pwa-section-title': 'PWA版 QuickLog-Solo (β)',
     'about-pwa-section-desc': '使用智慧型手機相機掃描 QR 碼即可啟動 PWA 版本或傳輸設定。',
     'about-pwa-url-qr-label': '1. PWA 啟動網址',
     'about-pwa-general-qr-label': '2. 一般與鬧鐘',

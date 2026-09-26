@@ -536,7 +536,7 @@ export default {
     'maker-error-name-duplicate':
         'Ya existe una animación personalizada con el mismo nombre. Por favor, ingrese un nombre diferente.',
     'maker-select-prompt': 'Por favor, agregue una animación personalizada',
-    'about-pwa-section-title': 'QuickLog-Solo Móvil (PWA) (β)',
+    'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
     'about-pwa-section-desc': 'Escanee el código QR con la cámara de su teléfono para iniciar la versión PWA o transferir la configuración.',
     'about-pwa-url-qr-label': '1. URL de inicio PWA',
     'about-pwa-general-qr-label': '2. Gral. y Alarmas',

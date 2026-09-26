@@ -552,7 +552,7 @@ export default {
     'maker-error-name-empty': 'Name cannot be empty',
     'maker-error-name-duplicate': 'The same custom animation name already exists. Please enter a different name.',
     'maker-select-prompt': 'Please add a custom animation',
-    'about-pwa-section-title': 'Mobile (PWA) QuickLog-Solo (β)',
+    'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
     'about-pwa-section-desc': 'Scan the QR code with your smartphone camera to launch the PWA version or transfer settings.',
     'about-pwa-url-qr-label': '1. PWA Launch URL',
     'about-pwa-general-qr-label': '2. General & Alarms',
