@@ -1622,9 +1622,14 @@ export function setupQRScanner() {
                 statusEl.style.color = 'var(--md-sys-color-primary)';
             }
 
+            const currentSelectedImageId = activeSelectedImageId;
+            const capturedSignal = qrImportController.signal;
+
             try {
                 // Yield to let UI update status text and disabled button state
                 await new Promise((resolve) => setTimeout(resolve, 30));
+
+                if (capturedSignal.aborted) return;
 
                 const canvas = document.createElement('canvas');
                 canvas.width = video.videoWidth || 1280;
@@ -1632,15 +1637,17 @@ export function setupQRScanner() {
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const signal = qrImportController.signal;
                     const decodedText = await decodeQRCodeFromCanvas(canvas, { maxDimension: 960 });
 
-                    if (!signal.aborted) {
+                    if (!capturedSignal.aborted && currentSelectedImageId === activeSelectedImageId) {
                         if (decodedText) {
-                            const result = await handleImportQRPayload(decodedText, signal);
+                            const result = await handleImportQRPayload(decodedText, capturedSignal);
                             if (result && result.isAllPartsCompleted) {
                                 closeQRScannerModal();
                                 return;
+                            } else if (statusEl) {
+                                statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
+                                statusEl.style.color = 'var(--md-sys-color-on-surface-variant)';
                             }
                         } else if (statusEl) {
                             statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
@@ -1650,12 +1657,14 @@ export function setupQRScanner() {
                 }
             } catch (err) {
                 console.error('Capture QR decode error:', err);
-                if (statusEl) {
+                if (!capturedSignal.aborted && statusEl) {
                     statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
                     statusEl.style.color = '#d32f2f';
                 }
             } finally {
-                captureBtn.disabled = false;
+                if (currentSelectedImageId === activeSelectedImageId) {
+                    captureBtn.disabled = false;
+                }
             }
         };
     }
@@ -1728,15 +1737,20 @@ export function setupQRScanner() {
             });
 
             Promise.all(processPromises).then(() => {
-                if (captureBtn) captureBtn.disabled = false;
-                if (selectedImageId === activeSelectedImageId && !signal.aborted) {
-                    if (hasError && !allCompleted) {
-                        if (statusEl) {
-                            statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
-                            statusEl.style.color = '#d32f2f';
+                if (selectedImageId === activeSelectedImageId) {
+                    if (captureBtn) captureBtn.disabled = false;
+                    if (!signal.aborted) {
+                        if (hasError && !allCompleted) {
+                            if (statusEl) {
+                                statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+                                statusEl.style.color = '#d32f2f';
+                            }
+                        } else if (allCompleted) {
+                            closeQRScannerModal();
+                        } else if (statusEl) {
+                            statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
+                            statusEl.style.color = 'var(--md-sys-color-on-surface-variant)';
                         }
-                    } else if (allCompleted) {
-                        closeQRScannerModal();
                     }
                 }
             });
