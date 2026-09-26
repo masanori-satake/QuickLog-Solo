@@ -49,8 +49,7 @@ export default {
     'back-to-app': 'アプリに戻る',
     'alarm-setting-description':
         'Exibe uma mensagem em um horário especificado e executa automaticamente ações como "Parar", "Pausar" ou "Iniciar" tarefas, conforme necessário.',
-    'alarm-note-extension-only':
-        '* O recurso de alarme só funciona quando instalado como uma extensão do navegador. Notificações e ações automáticas não são executadas na versão de visualização.',
+    'alarm-note-extension-only': '※ アラーム機能はPWA版では通知や自動動作は実行されません。',
     'alarm-label-enabled': 'Ativado',
     'alarm-label-time': 'Hora',
     'alarm-label-message': 'Mensagem',
@@ -517,13 +516,12 @@ export default {
     'maker-playback-zoom': '再生とズーム',
     'maker-data-transfer': 'データの入出力',
     'maker-warning-title': '警告',
-    'maker-note-extension-only':
-        '※ アニメーション・メーカーはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
+    'maker-note-extension-only': '※ アニメーション・メーカーはPWA版では起動できません。',
     'maker-error-name-empty': '名前を入力してください',
     'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
     'maker-select-prompt': 'カスタムアニメーションを追加してください',
-    'about-pwa-section-title': 'モバイル(PWA)版QuickLog-Solo(β)',
-    'about-pwa-section-desc': 'スマホのカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。',
+    'about-pwa-section-title': 'PWA版QuickLog-Solo(β)',
+    'about-pwa-section-desc': 'スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。',
     'about-pwa-url-qr-label': '1. PWA起動URL',
     'about-pwa-general-qr-label': '2. 設定全般・アラーム',
     'about-pwa-categories-qr-label': '3. 業務カテゴリ',
@@ -534,7 +532,8 @@ export default {
     'about-pwa-qr-too-large-title': 'データ超過',
     'about-pwa-qr-too-large-sub': 'QR表示不可',
     'about-pwa-import-title': 'QuickLog-Solo設定のインポート(β)',
-    'about-pwa-import-desc': 'PC拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。',
+    'about-pwa-import-desc':
+        'Chrome拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。',
     'btn-pwa-scan-qr': 'QRコードを読み取る',
     'qr-scan-modal-title': 'QRコードスキャン',
     'qr-scan-status-scanning': 'カメラにQRコードをかざしてください',
