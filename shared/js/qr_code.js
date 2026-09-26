@@ -1452,14 +1452,53 @@ function scanImageDataPureJS(canvasOrImageData) {
         }
     }
     const otsuThreshold = maxVar > 0 ? Math.floor((firstT + lastT) / 2) : 128;
-    const thresholdCandidates = [otsuThreshold, Math.max(10, otsuThreshold - 28), Math.min(245, otsuThreshold + 28)];
 
-    let currentThreshold = otsuThreshold;
+    // Integral image for fast local adaptive thresholding (helps with screen moire, glare, and gradients)
+    const integral = new Int32Array((width + 1) * (height + 1));
+    for (let y = 0; y < height; y++) {
+        let rowSum = 0;
+        const yOffset = y * width;
+        const intOffsetCurr = (y + 1) * (width + 1);
+        const intOffsetPrev = y * (width + 1);
+        for (let x = 0; x < width; x++) {
+            rowSum += gray[yOffset + x];
+            integral[intOffsetCurr + x + 1] = integral[intOffsetPrev + x + 1] + rowSum;
+        }
+    }
+
+    const adaptiveBinary = new Uint8Array(width * height);
+    const windowSize = Math.max(8, Math.floor(Math.min(width, height) / 8));
+    const halfWin = Math.floor(windowSize / 2);
+    const C = 10;
+
+    for (let y = 0; y < height; y++) {
+        const y0 = Math.max(0, y - halfWin);
+        const y1 = Math.min(height, y + halfWin + 1);
+        const rowOffset = y * width;
+        const intY0 = y0 * (width + 1);
+        const intY1 = y1 * (width + 1);
+
+        for (let x = 0; x < width; x++) {
+            const x0 = Math.max(0, x - halfWin);
+            const x1 = Math.min(width, x + halfWin + 1);
+            const count = (x1 - x0) * (y1 - y0);
+            const sum = integral[intY1 + x1] - integral[intY0 + x1] - integral[intY1 + x0] + integral[intY0 + x0];
+            const avg = sum / count;
+            adaptiveBinary[rowOffset + x] = gray[rowOffset + x] < avg * (1 - C / 100) ? 1 : 0;
+        }
+    }
+
+    const passes = ['adaptive', otsuThreshold, Math.max(10, otsuThreshold - 28), Math.min(245, otsuThreshold + 28)];
+
+    let currentPass = 'adaptive';
     const isDark = (x, y) => {
         x = Math.floor(x);
         y = Math.floor(y);
         if (x < 0 || x >= width || y < 0 || y >= height) return false;
-        return gray[y * width + x] < currentThreshold;
+        if (currentPass === 'adaptive') {
+            return adaptiveBinary[y * width + x] === 1;
+        }
+        return gray[y * width + x] < currentPass;
     };
 
     const checkRatio = (counts) => {
@@ -1476,8 +1515,8 @@ function scanImageDataPureJS(canvasOrImageData) {
         );
     };
 
-    for (const thresh of thresholdCandidates) {
-        currentThreshold = thresh;
+    for (const passMode of passes) {
+        currentPass = passMode;
         const patternCandidates = [];
         const stepY = Math.max(1, Math.floor(height / 320));
 

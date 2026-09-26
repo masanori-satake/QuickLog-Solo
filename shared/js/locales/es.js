@@ -552,6 +552,7 @@ export default {
     'btn-pwa-scan-qr': 'Escanear código QR',
     'qr-scan-modal-title': 'Escaneo de código QR',
     'qr-scan-status-scanning': 'Por favor, apunte su cámara al código QR',
+    'btn-qr-capture': 'Capturar y escanear',
     'btn-select-qr-image': 'Seleccionar desde imagen',
     'toast-settings-imported': '¡Configuración importada con éxito!',
     'qr-scan-failed-not-found': 'No se detectó código QR en la imagen',

@@ -31,7 +31,7 @@ afterEach(() => {
     closeDatabase();
 });
 
-test('upserts categories and alarms and merges settings after the transaction commits', async () => {
+test('replaces categories and alarms and merges settings after the transaction commits', async () => {
     await dbPut(STORE_SETTINGS, { key: 'unrelated', value: true });
     await apply(payload);
     const [settings, categories, alarms] = await snapshot();
@@ -40,11 +40,9 @@ test('upserts categories and alarms and merges settings after the transaction co
         { key: 'unrelated', value: true },
     ]);
     expect(categories).toEqual([
-        expect.objectContaining({ id: 1, name: 'Original category' }),
         expect.objectContaining({ id: 2, name: 'New category' }),
     ]);
     expect(alarms).toEqual([
-        expect.objectContaining({ id: 1, name: 'Original alarm' }),
         expect.objectContaining({ id: 2, name: 'New alarm' }),
     ]);
 });

@@ -529,6 +529,7 @@ export default {
     'btn-pwa-scan-qr': '掃描 QR 碼',
     'qr-scan-modal-title': 'QR 碼掃描',
     'qr-scan-status-scanning': '請將相機對準 QR 碼',
+    'btn-qr-capture': '拍照並解析',
     'btn-select-qr-image': '從圖片選擇',
     'toast-settings-imported': '設定已成功匯入！',
     'qr-scan-failed-not-found': '未在圖片中偵測到 QR 碼',

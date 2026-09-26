@@ -556,6 +556,7 @@ export default {
     'btn-pwa-scan-qr': 'Scanner le QR code',
     'qr-scan-modal-title': 'Numérisation de QR code',
     'qr-scan-status-scanning': 'Veuillez pointer votre appareil photo vers le QR code',
+    'btn-qr-capture': 'Capturer et analyser',
     'btn-select-qr-image': 'Sélectionner une image',
     'toast-settings-imported': 'Paramètres importés avec succès !',
     'qr-scan-failed-not-found': 'Aucun QR code détecté dans l\'image',

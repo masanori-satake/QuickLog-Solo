@@ -544,6 +544,7 @@ export default {
     'btn-pwa-scan-qr': 'QR 코드 스캔',
     'qr-scan-modal-title': 'QR 코드 스캔',
     'qr-scan-status-scanning': '카메라를 QR 코드에 맞춰 주세요',
+    'btn-qr-capture': '촬영하여 분석',
     'btn-select-qr-image': '이미지에서 선택',
     'toast-settings-imported': '설정을 성공적으로 가져왔습니다!',
     'qr-scan-failed-not-found': '이미지에서 QR 코드를 감지할 수 없습니다',

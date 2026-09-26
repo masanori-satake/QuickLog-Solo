@@ -1588,6 +1588,7 @@ export function setupQRScanner() {
     const scanBtn = getEl('pwa-start-qr-scan-btn');
     const closeBtn = getEl('qr-scan-close-btn');
     const doneBtn = getEl('qr-scan-done-btn');
+    const captureBtn = getEl('qr-capture-btn');
     const selectImgBtn = getEl('qr-select-image-btn');
     const imgInput = getEl('qr-image-file-input');
 
@@ -1606,6 +1607,44 @@ export function setupQRScanner() {
     if (doneBtn) {
         doneBtn.onclick = () => {
             closeQRScannerModal();
+        };
+    }
+
+    if (captureBtn) {
+        captureBtn.onclick = async () => {
+            const video = getEl('qr-video');
+            const statusEl = getEl('qr-scan-status');
+            if (!video || !activeVideoStream || video.paused || video.ended) return;
+
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 1280;
+                canvas.height = video.videoHeight || 720;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return;
+
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const signal = qrImportController.signal;
+                const decodedText = await decodeQRCodeFromCanvas(canvas, { maxDimension: 1280 });
+
+                if (!signal.aborted) {
+                    if (decodedText) {
+                        const result = await handleImportQRPayload(decodedText, signal);
+                        if (result && result.isAllPartsCompleted) {
+                            closeQRScannerModal();
+                        }
+                    } else if (statusEl) {
+                        statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+                        statusEl.style.color = '#d32f2f';
+                    }
+                }
+            } catch (err) {
+                console.error('Capture QR decode error:', err);
+                if (statusEl) {
+                    statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+                    statusEl.style.color = '#d32f2f';
+                }
+            }
         };
     }
 
@@ -1713,7 +1752,7 @@ export async function openQRScannerModal() {
     if (video && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+                video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
             });
             if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) {
                 stream.getTracks().forEach((track) => track.stop());
@@ -1836,7 +1875,7 @@ async function handleImportQRPayload(payloadStr, signal) {
             return { success: true, isAllPartsCompleted };
         }
 
-        await dbImportQRSettings({ settings, categories, alarms }, { signal });
+        await dbImportQRSettings({ settings, categories, alarms, partInfo }, { signal });
         if (signal.aborted) return { success: false, isAllPartsCompleted: false };
         broadcastSync();
 
