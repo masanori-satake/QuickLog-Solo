@@ -785,10 +785,17 @@
                         <div style="position: absolute; width: 180px; height: 180px; border: 2px dashed #00e676; border-radius: 12px; pointer-events: none;"></div>
                     </div>
                     <p id="qr-scan-status" style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin: 10px 0;" data-i18n="qr-scan-status-scanning">カメラにQRコードをかざしてください</p>
-                    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px;">
-                        <button id="qr-select-image-btn" class="outline-btn" style="flex: 1; font-size: 0.8rem;">
+                    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap;">
+                        <button id="qr-capture-btn" class="primary-btn" style="flex: 1; min-width: 100px; font-size: 0.8rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">photo_camera</span>
+                            <span data-i18n="btn-qr-capture">撮影して解析</span>
+                        </button>
+                        <button id="qr-select-image-btn" class="outline-btn" style="flex: 1; min-width: 100px; font-size: 0.8rem;">
                             <span class="material-symbols-outlined" style="font-size: 1.1rem;">image</span>
                             <span data-i18n="btn-select-qr-image">画像から読み込む</span>
+                        </button>
+                        <button id="qr-scan-done-btn" class="secondary-btn" style="flex: 0 0 auto; min-width: 60px; font-size: 0.8rem;">
+                            <span data-i18n="btn-qr-scan-done">完了</span>
                         </button>
                         <input type="file" id="qr-image-file-input" accept="image/*" multiple class="hidden" />
                     </div>

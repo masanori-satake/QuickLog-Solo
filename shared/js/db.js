@@ -205,7 +205,7 @@ export async function dbImportCategories(items, importMode) {
 }
 
 /** Saves a validated QR payload atomically, preserving all stores on failure. */
-export async function dbImportQRSettings({ settings, categories, alarms }, { signal } = {}) {
+export async function dbImportQRSettings({ settings, categories, alarms, partInfo }, { signal } = {}) {
     await openDatabase();
     signal?.throwIfAborted();
     return new Promise((resolve, reject) => {
@@ -236,10 +236,25 @@ export async function dbImportQRSettings({ settings, categories, alarms }, { sig
                     settingsStore.put({ key, value });
                 }
             }
-            for (const [storeName, records] of [[STORE_CATEGORIES, categories], [STORE_ALARMS, alarms]]) {
-                if (records === undefined) continue;
-                const store = tx.objectStore(storeName);
-                for (const record of records) store.put(record);
+            if (Array.isArray(categories) && categories.length > 0) {
+                const catStore = tx.objectStore(STORE_CATEGORIES);
+                const ci = partInfo?.ci;
+                if (!ci || ci === 1) {
+                    catStore.clear();
+                }
+                for (const record of categories) {
+                    catStore.put(record);
+                }
+            }
+            if (Array.isArray(alarms) && alarms.length > 0) {
+                const alarmStore = tx.objectStore(STORE_ALARMS);
+                const gi = partInfo?.gi;
+                if (!gi || gi === 1) {
+                    alarmStore.clear();
+                }
+                for (const record of alarms) {
+                    alarmStore.put(record);
+                }
             }
         } catch (err) {
             tx.abort();
