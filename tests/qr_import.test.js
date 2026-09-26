@@ -9,7 +9,7 @@ import {
     STORE_CATEGORIES,
     STORE_ALARMS,
 } from '../shared/js/db.js';
-import { deserializeSettingsPayload } from '../shared/js/qr_code.js';
+import { serializeSettingsPayload, deserializeSettingsPayload } from '../shared/js/qr_code.js';
 
 const stores = [STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS];
 const originals = [
@@ -48,9 +48,66 @@ test('rejects malformed alarms before modifying settings or categories', async (
     expect(await snapshot()).toEqual(originals);
 });
 
-test('retains existing categories and alarms for empty arrays', async () => {
-    await apply({ ...payload, c: [], a: [] });
-    expect((await snapshot()).slice(1)).toEqual(originals.slice(1));
+test.each([
+    [{}, false, false],
+    [{ categories: [] }, true, false],
+    [{ alarms: [] }, false, true],
+    [{ categories: [], alarms: [] }, true, true],
+    [{ categories: [{ id: 2, name: 'IDLE' }, { id: 3, name: '__PAGE_BREAK__1' }] }, true, false],
+])('clears only groups explicitly included in the exported payload: %j', async (groups, clearCategories, clearAlarms) => {
+    const serialized = serializeSettingsPayload({ settings: { theme: 'light' }, ...groups });
+    const restored = deserializeSettingsPayload(serialized);
+    expect(restored.categories).toEqual(clearCategories ? [] : undefined);
+    expect(restored.alarms).toEqual(clearAlarms ? [] : undefined);
+    await dbImportQRSettings(restored);
+    expect(await snapshot()).toEqual([
+        [{ key: 'theme', value: 'light' }],
+        clearCategories ? [] : originals[1],
+        clearAlarms ? [] : originals[2],
+    ]);
+});
+
+test('rolls back an explicit empty group when a later write fails', async () => {
+    jest.spyOn(globalThis.IDBObjectStore.prototype, 'put').mockImplementation(function () {
+        throw new DOMException('Write failed', 'DataCloneError');
+    });
+    await expect(apply({ v: 1, c: [], a: payload.a })).rejects.toThrow();
+    expect(await snapshot()).toEqual(originals);
+});
+
+test('supports split QR imports in any order without overwriting unrelated stores', async () => {
+    const group1Payload = { v: 1, s: { t: 'dark' }, a: [{ i: 10, n: 'Imported Alarm' }] };
+    const group2Payload = { v: 1, c: [{ i: 20, n: 'Imported Category' }] };
+
+    // Order 1: Group 1 then Group 2
+    await apply(group1Payload);
+    let [settings, categories, alarms] = await snapshot();
+    expect(settings).toEqual([{ key: 'theme', value: 'dark' }]);
+    expect(alarms).toEqual([expect.objectContaining({ id: 10, name: 'Imported Alarm' })]);
+    expect(categories).toEqual(originals[1]); // Original category preserved
+
+    await apply(group2Payload);
+    [settings, categories, alarms] = await snapshot();
+    expect(settings).toEqual([{ key: 'theme', value: 'dark' }]); // Preserved from Group 1
+    expect(alarms).toEqual([expect.objectContaining({ id: 10, name: 'Imported Alarm' })]); // Preserved from Group 1
+    expect(categories).toEqual([expect.objectContaining({ id: 20, name: 'Imported Category' })]);
+
+    // Reset DB and test Order 2: Group 2 then Group 1
+    closeDatabase();
+    setDatabaseName(`QRImport_Reverse_${Math.random()}`);
+    for (let i = 0; i < stores.length; i++) await dbPut(stores[i], originals[i][0]);
+
+    await apply(group2Payload);
+    [settings, categories, alarms] = await snapshot();
+    expect(categories).toEqual([expect.objectContaining({ id: 20, name: 'Imported Category' })]);
+    expect(settings).toEqual(originals[0]); // Original settings preserved
+    expect(alarms).toEqual(originals[2]); // Original alarms preserved
+
+    await apply(group1Payload);
+    [settings, categories, alarms] = await snapshot();
+    expect(settings).toEqual([{ key: 'theme', value: 'dark' }]);
+    expect(alarms).toEqual([expect.objectContaining({ id: 10, name: 'Imported Alarm' })]);
+    expect(categories).toEqual([expect.objectContaining({ id: 20, name: 'Imported Category' })]); // Preserved from Group 2
 });
 
 test.each(['synchronous', 'request'])('rolls back every store after a %s write failure', async (failure) => {
