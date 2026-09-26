@@ -2753,19 +2753,19 @@ async function renderAlarmList() {
     const alarmEditorNotice = getEl('alarm-editor-extension-notice');
     const alarmEditorLink = getEl('alarm-editor-link');
     if (alarmEditorNotice) {
-        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
-            alarmEditorNotice.classList.add('hidden');
-            if (alarmEditorLink) {
-                alarmEditorLink.disabled = false;
-                alarmEditorLink.style.opacity = '1';
-                alarmEditorLink.style.pointerEvents = 'auto';
-            }
-        } else {
+        if (isPWAMode()) {
             alarmEditorNotice.classList.remove('hidden');
             if (alarmEditorLink) {
                 alarmEditorLink.disabled = true;
                 alarmEditorLink.style.opacity = '0.5';
                 alarmEditorLink.style.pointerEvents = 'none';
+            }
+        } else {
+            alarmEditorNotice.classList.add('hidden');
+            if (alarmEditorLink) {
+                alarmEditorLink.disabled = false;
+                alarmEditorLink.style.opacity = '1';
+                alarmEditorLink.style.pointerEvents = 'auto';
             }
         }
     }
@@ -3059,19 +3059,19 @@ async function renderCategoryList() {
     const makerExtensionNotice = getEl('maker-extension-notice');
     const launchMakerBtn = getEl('launch-maker-btn');
     if (makerExtensionNotice) {
-        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
-            makerExtensionNotice.classList.add('hidden');
-            if (launchMakerBtn) {
-                launchMakerBtn.disabled = false;
-                launchMakerBtn.style.opacity = '1';
-                launchMakerBtn.style.pointerEvents = 'auto';
-            }
-        } else {
+        if (isPWAMode()) {
             makerExtensionNotice.classList.remove('hidden');
             if (launchMakerBtn) {
                 launchMakerBtn.disabled = true;
                 launchMakerBtn.style.opacity = '0.5';
                 launchMakerBtn.style.pointerEvents = 'none';
+            }
+        } else {
+            makerExtensionNotice.classList.add('hidden');
+            if (launchMakerBtn) {
+                launchMakerBtn.disabled = false;
+                launchMakerBtn.style.opacity = '1';
+                launchMakerBtn.style.pointerEvents = 'auto';
             }
         }
     }
