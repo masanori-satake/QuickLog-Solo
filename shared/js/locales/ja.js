@@ -551,7 +551,7 @@ export default {
     'maker-error-name-empty': '名前を入力してください',
     'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
     'maker-select-prompt': 'カスタムアニメーションを追加してください',
-    'about-pwa-section-title': 'PWA版QuickLog-Solo(β)',
+    'about-pwa-section-title': 'モバイル(PWA)版QuickLog-Solo(β)',
     'about-pwa-section-desc': 'スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。',
     'about-pwa-url-qr-label': '1. PWA起動URL',
     'about-pwa-general-qr-label': '2. 設定全般・アラーム',

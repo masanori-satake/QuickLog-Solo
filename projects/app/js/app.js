@@ -1347,7 +1347,10 @@ export async function renderAboutQRCodes() {
                 const rawCategories = await dbGetAll(STORE_CATEGORIES);
                 // Filter out system categories and page breaks
                 const validCategories = (rawCategories || []).filter(
-                    (cat) => cat && cat.name !== SYSTEM_CATEGORY_IDLE && !(cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+                    (cat) =>
+                        cat &&
+                        cat.name !== SYSTEM_CATEGORY_IDLE &&
+                        !(cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
                 );
 
                 const CHUNK_SIZE = 8;
@@ -1386,7 +1389,8 @@ export async function renderAboutQRCodes() {
                         labelEl.style.fontWeight = '500';
 
                         const baseLabel = t('about-pwa-categories-qr-label');
-                        labelEl.textContent = chunks.length > 1 ? `${baseLabel} (${idx + 1}/${chunks.length})` : baseLabel;
+                        labelEl.textContent =
+                            chunks.length > 1 ? `${baseLabel} (${idx + 1}/${chunks.length})` : baseLabel;
 
                         wrapper.appendChild(canvasEl);
                         wrapper.appendChild(labelEl);
@@ -1399,7 +1403,9 @@ export async function renderAboutQRCodes() {
                         } catch (err) {
                             console.error(`Failed to render category QR Code chunk ${idx + 1}:`, err);
                             const isCapacityError = err?.message === 'Payload too large for QR Code';
-                            const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
+                            const errTitle = t(
+                                isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title'
+                            );
                             const errSub = t('about-pwa-qr-too-large-sub');
                             const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
                             drawQRErrorCanvas(canvasEl, errTitle, errSub);
