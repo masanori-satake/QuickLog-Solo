@@ -49,8 +49,7 @@ export default {
     'back-to-app': 'アプリに戻る',
     'alarm-setting-description':
         'Affiche un message à une heure précise et effectue automatiquement des actions telles que « Arrêter », « Pause » ou « Démarrer » les tâches si nécessaire.',
-    'alarm-note-extension-only':
-        "* La fonction d'alarme ne fonctionne que lorsqu'elle est installée en tant qu'extension de navigateur. Les notifications et les actions automatiques ne sont pas exécutées dans la version d'aperçu.",
+    'alarm-note-extension-only': '※ アラーム機能はPWA版では通知や自動動作は実行されません。',
     'alarm-label-enabled': 'Activé',
     'alarm-label-time': 'Heure',
     'alarm-label-message': 'Message',
@@ -518,13 +517,12 @@ export default {
     'maker-playback-zoom': '再生とズーム',
     'maker-data-transfer': 'データの入出力',
     'maker-warning-title': '警告',
-    'maker-note-extension-only':
-        '※ アニメーション・メーカーはブラウザ拡張機能としてインストールされている場合のみ利用できます。プレビュー版では起動できません。',
+    'maker-note-extension-only': '※ アニメーション・メーカーはPWA版では起動できません。',
     'maker-error-name-empty': '名前を入力してください',
     'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
     'maker-select-prompt': 'カスタムアニメーションを追加してください',
-    'about-pwa-section-title': 'モバイル(PWA)版QuickLog-Solo(β)',
-    'about-pwa-section-desc': 'スマホのカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。',
+    'about-pwa-section-title': 'PWA版QuickLog-Solo(β)',
+    'about-pwa-section-desc': 'スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。',
     'about-pwa-url-qr-label': '1. PWA起動URL',
     'about-pwa-general-qr-label': '2. 設定全般・アラーム',
     'about-pwa-categories-qr-label': '3. 業務カテゴリ',
@@ -535,7 +533,8 @@ export default {
     'about-pwa-qr-too-large-title': 'データ超過',
     'about-pwa-qr-too-large-sub': 'QR表示不可',
     'about-pwa-import-title': 'QuickLog-Solo設定のインポート(β)',
-    'about-pwa-import-desc': 'PC拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。',
+    'about-pwa-import-desc':
+        'Chrome拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。',
     'btn-pwa-scan-qr': 'QRコードを読み取る',
     'qr-scan-modal-title': 'QRコードスキャン',
     'qr-scan-status-scanning': 'カメラにQRコードをかざしてください',
