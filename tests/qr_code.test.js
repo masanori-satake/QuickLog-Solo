@@ -103,6 +103,22 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         });
     });
 
+    test('should filter out internal system categories (IDLE) and page breaks (__PAGE_BREAK__)', () => {
+        const categories = [
+            { id: 'cat1', name: '開発', color: '#1976d2' },
+            { id: 'idle', name: 'IDLE', color: 'neutral' },
+            { id: 'pb1', name: '__PAGE_BREAK__12345', color: 'neutral' },
+            { id: 'cat2', name: '会議', color: '#388e3c' },
+        ];
+
+        const jsonStr = serializeSettingsPayload({ categories });
+        const restored = deserializeSettingsPayload(jsonStr);
+
+        expect(restored.categories).toHaveLength(2);
+        expect(restored.categories[0].name).toBe('開発');
+        expect(restored.categories[1].name).toBe('会議');
+    });
+
     test('should preserve none and default animations while sanitizing custom animations to digital_rain', () => {
         const inputSettings = {
             animation: 'custom_my_anim',
@@ -274,6 +290,11 @@ describe('QR Code Generator & Renderer', () => {
         expect(fillRectMock).toHaveBeenCalled();
         expect(canvas.width).toBe(200);
         expect(canvas.height).toBe(200);
+    });
+
+    test('should throw error when payload exceeds version 40 QR capacity limit', () => {
+        const hugePayload = 'X'.repeat(3000);
+        expect(() => generateQRCodeMatrix(hugePayload)).toThrow('Payload too large for QR Code');
     });
 
     test('should decode QR code from canvas using mock detector or return null safely', async () => {
