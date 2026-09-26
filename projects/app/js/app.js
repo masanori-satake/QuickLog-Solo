@@ -1296,7 +1296,7 @@ export async function renderAboutQRCodes() {
     const pwaUrlLink = getEl('pwa-url-qr-link');
     if (pwaUrlCanvas && !isPWA) {
         const pwaUrl = 'https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/';
-        renderQRCodeToCanvas(pwaUrl, pwaUrlCanvas, { width: 120, margin: 1 });
+        renderQRCodeToCanvas(pwaUrl, pwaUrlCanvas, { width: 360, margin: 2 });
     }
     if (pwaUrlLink) {
         pwaUrlLink.onclick = (e) => {
@@ -1328,7 +1328,7 @@ export async function renderAboutQRCodes() {
                     settings: settingsObj,
                     alarms,
                 });
-                renderQRCodeToCanvas(generalPayloadStr, generalQrCanvas, { width: 120, margin: 1 });
+                renderQRCodeToCanvas(generalPayloadStr, generalQrCanvas, { width: 360, margin: 2 });
                 generalQrCanvas.title = '';
             } catch (err) {
                 console.error('Failed to render general QR Code:', err);
@@ -1341,22 +1341,87 @@ export async function renderAboutQRCodes() {
             }
         }
 
-        if (categoriesQrCanvas) {
+        const catContainer = getEl('pwa-categories-qr-container');
+        if (catContainer || categoriesQrCanvas) {
             try {
-                const categories = await dbGetAll(STORE_CATEGORIES);
-                const categoriesPayloadStr = serializeSettingsPayload({
-                    categories,
-                });
-                renderQRCodeToCanvas(categoriesPayloadStr, categoriesQrCanvas, { width: 120, margin: 1 });
-                categoriesQrCanvas.title = '';
+                const rawCategories = await dbGetAll(STORE_CATEGORIES);
+                // Filter out system categories and page breaks
+                const validCategories = (rawCategories || []).filter(
+                    (cat) => cat && cat.name !== SYSTEM_CATEGORY_IDLE && !(cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+                );
+
+                const CHUNK_SIZE = 8;
+                const chunks = [];
+                if (validCategories.length === 0) {
+                    chunks.push([]);
+                } else {
+                    for (let i = 0; i < validCategories.length; i += CHUNK_SIZE) {
+                        chunks.push(validCategories.slice(i, i + CHUNK_SIZE));
+                    }
+                }
+
+                if (catContainer) {
+                    // Clear previous dynamic elements while preserving container structure
+                    catContainer.replaceChildren();
+
+                    chunks.forEach((chunkCats, idx) => {
+                        const wrapper = document.createElement('div');
+                        wrapper.style.width = '100%';
+
+                        const canvasEl = document.createElement('canvas');
+                        canvasEl.id = idx === 0 ? 'pwa-categories-qr-canvas' : `pwa-categories-qr-canvas-${idx + 1}`;
+                        canvasEl.style.width = '100%';
+                        canvasEl.style.maxWidth = '100px';
+                        canvasEl.style.aspectRatio = '1';
+                        canvasEl.style.border = '1px solid var(--md-sys-color-outline-variant)';
+                        canvasEl.style.borderRadius = '8px';
+                        canvasEl.style.background = '#ffffff';
+                        canvasEl.style.padding = '4px';
+                        canvasEl.style.display = 'block';
+                        canvasEl.style.margin = '0 auto';
+
+                        const labelEl = document.createElement('p');
+                        labelEl.style.fontSize = '0.75rem';
+                        labelEl.style.marginTop = '4px';
+                        labelEl.style.fontWeight = '500';
+
+                        const baseLabel = t('about-pwa-categories-qr-label');
+                        labelEl.textContent = chunks.length > 1 ? `${baseLabel} (${idx + 1}/${chunks.length})` : baseLabel;
+
+                        wrapper.appendChild(canvasEl);
+                        wrapper.appendChild(labelEl);
+                        catContainer.appendChild(wrapper);
+
+                        try {
+                            const chunkPayloadStr = serializeSettingsPayload({ categories: chunkCats });
+                            renderQRCodeToCanvas(chunkPayloadStr, canvasEl, { width: 360, margin: 2 });
+                            canvasEl.title = '';
+                        } catch (err) {
+                            console.error(`Failed to render category QR Code chunk ${idx + 1}:`, err);
+                            const isCapacityError = err?.message === 'Payload too large for QR Code';
+                            const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
+                            const errSub = t('about-pwa-qr-too-large-sub');
+                            const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
+                            drawQRErrorCanvas(canvasEl, errTitle, errSub);
+                            canvasEl.title = errTooltip;
+                        }
+                    });
+                } else if (categoriesQrCanvas) {
+                    const categoriesPayloadStr = serializeSettingsPayload({ categories: validCategories });
+                    renderQRCodeToCanvas(categoriesPayloadStr, categoriesQrCanvas, { width: 360, margin: 2 });
+                    categoriesQrCanvas.title = '';
+                }
             } catch (err) {
                 console.error('Failed to render categories QR Code:', err);
-                const isCapacityError = err?.message === 'Payload too large for QR Code';
-                const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
-                const errSub = t('about-pwa-qr-too-large-sub');
-                const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
-                drawQRErrorCanvas(categoriesQrCanvas, errTitle, errSub);
-                categoriesQrCanvas.title = errTooltip;
+                const targetCanvas = categoriesQrCanvas || getEl('pwa-categories-qr-canvas');
+                if (targetCanvas) {
+                    const isCapacityError = err?.message === 'Payload too large for QR Code';
+                    const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
+                    const errSub = t('about-pwa-qr-too-large-sub');
+                    const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
+                    drawQRErrorCanvas(targetCanvas, errTitle, errSub);
+                    targetCanvas.title = errTooltip;
+                }
             }
         }
 
@@ -1377,7 +1442,7 @@ export async function renderAboutQRCodes() {
                     categories,
                     alarms,
                 });
-                renderQRCodeToCanvas(payloadStr, settingsQrCanvas, { width: 120, margin: 1 });
+                renderQRCodeToCanvas(payloadStr, settingsQrCanvas, { width: 360, margin: 2 });
                 settingsQrCanvas.title = '';
             } catch (err) {
                 console.error('Failed to render settings QR Code:', err);

@@ -27,13 +27,30 @@ beforeEach(async () => {
     document.body.replaceChildren();
     contexts = {};
     for (const group of groups) {
-        const canvas = document.createElement('canvas');
-        canvas.id = `pwa-${group}-qr-canvas`;
-        canvas.title = 'Previous error';
-        document.body.append(canvas);
-        contexts[canvas.id] = { fillRect: jest.fn(), strokeRect: jest.fn(), fillText: jest.fn() };
+        if (group === 'categories') {
+            const container = document.createElement('div');
+            container.id = 'pwa-categories-qr-container';
+            const canvas = document.createElement('canvas');
+            canvas.id = `pwa-categories-qr-canvas`;
+            canvas.title = 'Previous error';
+            container.append(canvas);
+            document.body.append(container);
+        } else {
+            const canvas = document.createElement('canvas');
+            canvas.id = `pwa-${group}-qr-canvas`;
+            canvas.title = 'Previous error';
+            document.body.append(canvas);
+        }
+    }
+    const getMockContext = () => ({ fillRect: jest.fn(), strokeRect: jest.fn(), fillText: jest.fn() });
+    for (const group of groups) {
+        const canvasId = `pwa-${group}-qr-canvas`;
+        contexts[canvasId] = getMockContext();
     }
     jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function () {
+        if (!contexts[this.id]) {
+            contexts[this.id] = { fillRect: jest.fn(), strokeRect: jest.fn(), fillText: jest.fn() };
+        }
         return contexts[this.id];
     });
     jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -78,7 +95,12 @@ test.each([
     ['settings', [STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS]],
 ])('the %s QR reads only its required stores', async (group, requiredStores) => {
     for (const other of groups.filter((value) => value !== group)) {
-        document.getElementById(`pwa-${other}-qr-canvas`).remove();
+        const el = document.getElementById(`pwa-${other}-qr-canvas`);
+        if (el) el.remove();
+        if (other === 'categories') {
+            const container = document.getElementById('pwa-categories-qr-container');
+            if (container) container.remove();
+        }
     }
     const readStores = [];
     const getAll = globalThis.IDBObjectStore.prototype.getAll;
