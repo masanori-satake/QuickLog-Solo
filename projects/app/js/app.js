@@ -49,6 +49,7 @@ import {
     updateHistoryStartTime,
     deleteHistoryItem,
     splitHistoryItem,
+    calculateNextAlarmTime,
 } from '../shared/js/logic.js';
 import {
     SYSTEM_CATEGORY_IDLE,
@@ -1124,12 +1125,6 @@ async function syncState() {
 
         const alarmEditorLink = getEl('alarm-editor-link');
         if (alarmEditorLink) alarmEditorLink.disabled = true;
-
-        const testNotifBtn = getEl('test-notification-btn');
-        if (testNotifBtn) testNotifBtn.disabled = true;
-
-        const changeDirBtn = getEl(ID_BACKUP_CHANGE_DIR_BTN);
-        if (changeDirBtn) changeDirBtn.disabled = true;
     }
 
     applyTheme(state.theme || THEME_SYSTEM);
@@ -1510,6 +1505,9 @@ let isScanningFrame = false;
 function invalidateQRImports() {
     qrImportController.abort();
     qrImportController = new AbortController();
+    scannedPartsSet.clear();
+    knownPartsTotal.generalTotal = 1;
+    knownPartsTotal.categoryTotal = 0;
 }
 
 function updateQRScanChecklist() {
@@ -1615,52 +1613,61 @@ export function setupQRScanner() {
         selectImgBtn.onclick = () => {
             imgInput.click();
         };
-        imgInput.onchange = async (e) => {
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
+        imgInput.onchange = (e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length === 0) return;
             const selectedImageId = ++activeSelectedImageId;
             invalidateQRImports();
-            scannedPartsSet.clear();
-            knownPartsTotal.generalTotal = 1;
-            knownPartsTotal.categoryTotal = 0;
             const signal = qrImportController.signal;
-            const img = new Image();
-            const objectUrl = URL.createObjectURL(file);
 
-            img.onload = async () => {
-                URL.revokeObjectURL(objectUrl);
+            files.forEach((file) => {
                 if (selectedImageId !== activeSelectedImageId || signal.aborted) return;
+                const img = new Image();
+                const objectUrl = URL.createObjectURL(file);
 
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                    ctx.drawImage(img, 0, 0);
-                    const decodedText = await decodeQRCodeFromCanvas(canvas);
+                img.onload = async () => {
+                    URL.revokeObjectURL(objectUrl);
                     if (selectedImageId !== activeSelectedImageId || signal.aborted) return;
 
-                    if (decodedText) {
-                        const success = await handleImportQRPayload(decodedText, signal);
-                        if (success && selectedImageId === activeSelectedImageId && !signal.aborted) {
-                            closeQRScannerModal();
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0);
+                        const decodedText = await decodeQRCodeFromCanvas(canvas);
+                        if (selectedImageId === activeSelectedImageId && !signal.aborted) {
+                            if (decodedText) {
+                                const result = await handleImportQRPayload(decodedText, signal);
+                                if (
+                                    result &&
+                                    result.isAllPartsCompleted &&
+                                    selectedImageId === activeSelectedImageId &&
+                                    !signal.aborted
+                                ) {
+                                    closeQRScannerModal();
+                                }
+                            } else {
+                                const statusEl = getEl('qr-scan-status');
+                                if (statusEl)
+                                    statusEl.textContent =
+                                        t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+                            }
                         }
-                    } else {
+                    }
+                };
+
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    if (selectedImageId === activeSelectedImageId && !signal.aborted) {
                         const statusEl = getEl('qr-scan-status');
                         if (statusEl)
                             statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
                     }
-                }
-            };
+                };
 
-            img.onerror = () => {
-                URL.revokeObjectURL(objectUrl);
-                if (selectedImageId !== activeSelectedImageId || signal.aborted) return;
-                const statusEl = getEl('qr-scan-status');
-                if (statusEl) statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
-            };
-
-            img.src = objectUrl;
+                img.src = objectUrl;
+            });
             imgInput.value = '';
         };
     }
@@ -1740,6 +1747,7 @@ function startVideoFrameScanning(video, sessionId) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     isScanningFrame = false;
+    let scanFrameCounter = 0;
 
     const scanFrame = async () => {
         if (sessionId !== activeScanSessionId || !activeVideoStream || video.paused || video.ended) return;
@@ -1747,7 +1755,9 @@ function startVideoFrameScanning(video, sessionId) {
         if (video.readyState === video.HAVE_ENOUGH_DATA && !isScanningFrame) {
             isScanningFrame = true;
             try {
-                const maxDim = 640;
+                scanFrameCounter++;
+                // Cycle resolution between 640px and 960px to reliably capture distant/small and normal QR codes
+                const maxDim = scanFrameCounter % 3 === 0 ? 960 : 640;
                 const scale = Math.min(maxDim / video.videoWidth, maxDim / video.videoHeight, 1);
                 canvas.width = Math.round(video.videoWidth * scale);
                 canvas.height = Math.round(video.videoHeight * scale);
@@ -1755,7 +1765,7 @@ function startVideoFrameScanning(video, sessionId) {
                 if (ctx) {
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                     const signal = qrImportController.signal;
-                    const decoded = await decodeQRCodeFromCanvas(canvas);
+                    const decoded = await decodeQRCodeFromCanvas(canvas, { maxDimension: maxDim });
                     if (sessionId === activeScanSessionId && decoded && !signal.aborted) {
                         await handleImportQRPayload(decoded, signal);
                     }
@@ -1776,7 +1786,7 @@ function startVideoFrameScanning(video, sessionId) {
 
 async function handleImportQRPayload(payloadStr, signal) {
     try {
-        if (signal.aborted) return false;
+        if (signal.aborted) return { success: false, isAllPartsCompleted: false };
         const { settings, categories, alarms, partInfo } = deserializeSettingsPayload(payloadStr);
 
         let partKey = '';
@@ -1802,13 +1812,17 @@ async function handleImportQRPayload(payloadStr, signal) {
             partKey = `raw_${payloadStr}`;
         }
 
+        const completedPartsCountBefore = Array.from(scannedPartsSet).filter((k) => !k.startsWith('raw_')).length;
+
         // Avoid re-processing if already scanned in this session
         if (partKey && scannedPartsSet.has(partKey)) {
-            return true;
+            const totalExpected = knownPartsTotal.generalTotal + knownPartsTotal.categoryTotal;
+            const isAllPartsCompleted = totalExpected > 0 && completedPartsCountBefore >= totalExpected;
+            return { success: true, isAllPartsCompleted };
         }
 
         await dbImportQRSettings({ settings, categories, alarms }, { signal });
-        if (signal.aborted) return false;
+        if (signal.aborted) return { success: false, isAllPartsCompleted: false };
         broadcastSync();
 
         if (partKey) {
@@ -1822,10 +1836,13 @@ async function handleImportQRPayload(payloadStr, signal) {
             : t('toast-settings-imported') || '設定をインポートしました！';
         showToast(successMsg);
 
-        // Calculate completed parts count using only real part keys (excluding raw_ keys)
-        const completedPartsCount = Array.from(scannedPartsSet).filter((k) => !k.startsWith('raw_')).length;
+        // Calculate completed parts count using real part keys and raw payload detection
+        const realPartsCount = Array.from(scannedPartsSet).filter((k) => !k.startsWith('raw_')).length;
+        const hasRawPayload = Array.from(scannedPartsSet).some((k) => k.startsWith('raw_'));
         const totalExpected = knownPartsTotal.generalTotal + knownPartsTotal.categoryTotal;
-        if (knownPartsTotal.categoryTotal > 0 && completedPartsCount >= totalExpected) {
+        const isAllPartsCompleted = hasRawPayload || (totalExpected > 0 && realPartsCount >= totalExpected);
+
+        if (isAllPartsCompleted) {
             const statusEl = getEl('qr-scan-status');
             if (statusEl) {
                 statusEl.textContent = t('qr-scan-all-completed') || 'すべてのQRコードの読み取りが完了しました！';
@@ -1839,13 +1856,13 @@ async function handleImportQRPayload(payloadStr, signal) {
             setLanguage(settings.language);
             applyLanguage();
         }
-        return true;
+        return { success: true, isAllPartsCompleted };
     } catch (err) {
-        if (signal.aborted) return false;
+        if (signal.aborted) return { success: false, isAllPartsCompleted: false };
         console.error('Failed to import QR payload:', err);
         const statusEl = getEl('qr-scan-status');
         if (statusEl) statusEl.textContent = t('qr-scan-invalid-payload') || '無効なQRコードデータです';
-        return false;
+        return { success: false, isAllPartsCompleted: false };
     }
 }
 
@@ -2733,12 +2750,23 @@ async function renderAlarmList() {
     const list = getEl(ID_ALARM_LIST);
     if (!list) return;
 
-    const extensionOnlyNotice = getEl('alarm-extension-notice');
-    if (extensionOnlyNotice) {
-        if (typeof chrome !== 'undefined' && chrome.alarms) {
-            extensionOnlyNotice.classList.add('hidden');
+    const alarmEditorNotice = getEl('alarm-editor-extension-notice');
+    const alarmEditorLink = getEl('alarm-editor-link');
+    if (alarmEditorNotice) {
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+            alarmEditorNotice.classList.add('hidden');
+            if (alarmEditorLink) {
+                alarmEditorLink.disabled = false;
+                alarmEditorLink.style.opacity = '1';
+                alarmEditorLink.style.pointerEvents = 'auto';
+            }
         } else {
-            extensionOnlyNotice.classList.remove('hidden');
+            alarmEditorNotice.classList.remove('hidden');
+            if (alarmEditorLink) {
+                alarmEditorLink.disabled = true;
+                alarmEditorLink.style.opacity = '0.5';
+                alarmEditorLink.style.pointerEvents = 'none';
+            }
         }
     }
 
@@ -3011,7 +3039,7 @@ async function updateBackupUI() {
 
     const changeDirBtn = getEl(ID_BACKUP_CHANGE_DIR_BTN);
     if (changeDirBtn) {
-        changeDirBtn.disabled = backupManager.isSyncing || isPWAMode();
+        changeDirBtn.disabled = backupManager.isSyncing;
     }
 
     const restoreBtn = getEl('restore-configured-btn');
@@ -3773,16 +3801,41 @@ function setupEventListeners() {
             }
 
             // 2. Background alarm test (schedules an alarm for 1 minute in the future)
-            // Chrome enforces a 1-minute minimum for alarms in packed extensions to prevent abuse.
             if (chrome.alarms) {
                 const testAlarmName = 'ql_test_alarm';
                 await chrome.alarms.clear(testAlarmName);
-                // We use exactly 1.0 minutes to ensure scheduling by the browser
                 chrome.alarms.create(testAlarmName, { delayInMinutes: 1.0 });
                 showToast('Background test scheduled. Please wait 60s.');
             }
+        } else if (typeof Notification !== 'undefined') {
+            const sendPWANotif = () => {
+                try {
+                    new Notification(t('title') || 'QuickLog-Solo', {
+                        body: t('test-notification-message'),
+                        icon: 'shared/assets/icon128.png',
+                    });
+                    showToast(t('test-notification-message'));
+                } catch (err) {
+                    console.error('PWA Notification creation failed:', err);
+                    showToast(t('test-notification-message'));
+                }
+            };
+
+            if (Notification.permission === 'granted') {
+                sendPWANotif();
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then((permission) => {
+                    if (permission === 'granted') {
+                        sendPWANotif();
+                    } else {
+                        showToast(t('test-notification-message'));
+                    }
+                });
+            } else {
+                showToast(t('test-notification-message'));
+            }
         } else {
-            alert('Extension APIs not available in this environment.');
+            showToast(t('test-notification-message'));
         }
     });
 
@@ -3970,6 +4023,68 @@ function setupEventListeners() {
     });
 }
 
+// --- PWA Active Alarm Execution ---
+
+const executedPWAAlarms = new Set();
+
+async function checkPWAAlarms() {
+    if (!isAppInitialized) return;
+    try {
+        const state = await getCurrentAppState();
+        const alarms = state.alarms || [];
+        const businessDays = state.businessDays || [1, 2, 3, 4, 5];
+        const now = Date.now();
+        const d = new Date(now);
+        const dateKey = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+        const currentHHmm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+        for (const alarm of alarms) {
+            if (!alarm.enabled || !alarm.time) continue;
+
+            if (alarm.time === currentHHmm) {
+                const key = `${alarm.id}_${dateKey}_${currentHHmm}`;
+                if (!executedPWAAlarms.has(key)) {
+                    // Check if today is scheduled according to alarm calendar logic
+                    const targetTime = calculateNextAlarmTime(alarm, businessDays, now - 60000);
+                    if (targetTime) {
+                        const targetD = new Date(targetTime);
+                        const targetDateKey = `${targetD.getFullYear()}-${targetD.getMonth() + 1}-${targetD.getDate()}`;
+                        if (targetDateKey === dateKey) {
+                            executedPWAAlarms.add(key);
+
+                            // Execute action
+                            if (alarm.action === 'stop') {
+                                if (activeTask) await stopTask();
+                            } else if (alarm.action === 'pause') {
+                                if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) await pauseTask();
+                            } else if (alarm.action === 'start' && alarm.actionCategory) {
+                                await startTask(alarm.actionCategory);
+                            }
+
+                            // Notification
+                            const msg = alarm.message || alarm.name || t('title');
+                            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                                try {
+                                    new Notification(t('title') || 'QuickLog-Solo', {
+                                        body: msg,
+                                        icon: 'shared/assets/icon128.png',
+                                    });
+                                } catch (err) {
+                                    console.warn('PWA Notification failed:', err);
+                                }
+                            }
+
+                            showToast(`${alarm.time} ${msg}`);
+                        }
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.error('QuickLog-Solo: PWA Alarm check error:', err);
+    }
+}
+
 async function initApp() {
     const urlParams = new URLSearchParams(window.location.search);
     const dbParam = urlParams.get('db');
@@ -4022,6 +4137,10 @@ async function initApp() {
         isAppInitialized = true;
         document.body.classList.add('app-initialized');
         await syncState();
+
+        // Start PWA alarm runner
+        setInterval(checkPWAAlarms, 10000);
+        checkPWAAlarms();
     } catch (e) {
         console.error('Failed to initialize application:', e);
         alert(`${t('alert-init-error')}\n\nDetails: ${e.message || e}`);

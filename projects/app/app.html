@@ -473,25 +473,6 @@
 
                     <div id="alarms-tab" class="tab-content hidden">
                         <div id="alarms-scroll-container">
-                            <div
-                                id="alarm-extension-notice"
-                                class="setting-item hidden"
-                                style="
-                                    background-color: var(--md-sys-color-error-container);
-                                    color: var(--md-sys-color-on-error-container);
-                                    padding: 12px;
-                                    border-radius: 8px;
-                                    margin-bottom: 16px;
-                                "
-                            >
-                                <p
-                                    class="note"
-                                    data-i18n="alarm-note-extension-only"
-                                    style="font-weight: 500; margin: 0"
-                                >
-                                    ※ アラーム機能はPWA版では通知や自動動作は実行されません。
-                                </p>
-                            </div>
 
                             <div class="setting-item">
                                 <label data-i18n="business-days">稼働曜日</label>
@@ -510,6 +491,26 @@
 
                         <div id="alarms-fixed-footer">
                             <div class="setting-item">
+                                <div
+                                    id="alarm-editor-extension-notice"
+                                    class="setting-item hidden"
+                                    style="
+                                        background-color: var(--md-sys-color-error-container);
+                                        color: var(--md-sys-color-on-error-container);
+                                        padding: 12px;
+                                        border-radius: 8px;
+                                        margin-bottom: 12px;
+                                        width: 100%;
+                                    "
+                                >
+                                    <p
+                                        class="note"
+                                        data-i18n="alarm-editor-note-extension-only"
+                                        style="font-weight: 500; margin: 0; font-size: 0.75rem"
+                                    >
+                                        ※ PWA版ではアラームを編集できません。
+                                    </p>
+                                </div>
                                 <button id="alarm-editor-link" class="secondary-btn" style="width: 100%">
                                     <span class="material-symbols-outlined">edit_notifications</span>
                                     <span data-i18n="btn-launch-alarm-editor">編集</span>
@@ -804,7 +805,7 @@
                         <button id="qr-scan-done-btn" class="primary-btn" style="flex: 1; font-size: 0.8rem;">
                             <span data-i18n="btn-qr-scan-done">完了</span>
                         </button>
-                        <input type="file" id="qr-image-file-input" accept="image/*" class="hidden" />
+                        <input type="file" id="qr-image-file-input" accept="image/*" multiple class="hidden" />
                     </div>
                 </div>
             </div>

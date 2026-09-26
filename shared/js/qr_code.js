@@ -1189,20 +1189,22 @@ function scanImageDataPureJS(canvasOrImageData) {
             lastT = t;
         }
     }
-    const threshold = maxVar > 0 ? Math.floor((firstT + lastT) / 2) : 128;
+    const otsuThreshold = maxVar > 0 ? Math.floor((firstT + lastT) / 2) : 128;
+    const thresholdCandidates = [otsuThreshold, Math.max(10, otsuThreshold - 28), Math.min(245, otsuThreshold + 28)];
 
+    let currentThreshold = otsuThreshold;
     const isDark = (x, y) => {
         x = Math.floor(x);
         y = Math.floor(y);
         if (x < 0 || x >= width || y < 0 || y >= height) return false;
-        return gray[y * width + x] < threshold;
+        return gray[y * width + x] < currentThreshold;
     };
 
     const checkRatio = (counts) => {
         const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
         if (total < 7) return false;
         const moduleSize = total / 7;
-        const maxVariance = moduleSize * 0.75;
+        const maxVariance = moduleSize * 0.85;
         return (
             Math.abs(moduleSize - counts[0]) < maxVariance &&
             Math.abs(moduleSize - counts[1]) < maxVariance &&
@@ -1212,94 +1214,180 @@ function scanImageDataPureJS(canvasOrImageData) {
         );
     };
 
-    const patternCandidates = [];
-    const step = Math.max(1, Math.floor(height / 200));
+    let bestTriple = null;
 
-    for (let y = 0; y < height; y += step) {
-        const counts = [0, 0, 0, 0, 0];
-        let state = 0;
+    for (const thresh of thresholdCandidates) {
+        currentThreshold = thresh;
+        const patternCandidates = [];
+        const stepY = Math.max(1, Math.floor(height / 320));
 
-        for (let x = 0; x < width; x++) {
-            const dark = isDark(x, y);
-            if (state === 0) {
-                if (dark) {
-                    state = 1;
-                    counts[0] = 1;
-                }
-            } else if (state === 1) {
-                if (dark) counts[0]++;
-                else {
-                    state = 2;
-                    counts[1] = 1;
-                }
-            } else if (state === 2) {
-                if (!dark) counts[1]++;
-                else {
-                    state = 3;
-                    counts[2] = 1;
-                }
-            } else if (state === 3) {
-                if (dark) counts[2]++;
-                else {
-                    state = 4;
-                    counts[3] = 1;
-                }
-            } else if (state === 4) {
-                if (!dark) counts[3]++;
-                else {
-                    state = 5;
-                    counts[4] = 1;
-                }
-            } else if (state === 5) {
-                if (dark) {
-                    counts[4]++;
-                } else {
-                    if (checkRatio(counts)) {
-                        const centerX = x - counts[4] - counts[3] - counts[2] / 2;
-                        const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
-                        if (vCenterY !== null) {
-                            const hCenterX = crossCheckHorizontal(
-                                centerX,
-                                vCenterY,
-                                counts[2] * 2,
-                                isDark,
-                                width,
-                                checkRatio
-                            );
-                            if (hCenterX !== null) {
-                                const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
-                                const ms = total / 7;
-                                addCandidate(patternCandidates, hCenterX, vCenterY, ms);
+        // Horizontal line scans
+        for (let y = 0; y < height; y += stepY) {
+            const counts = [0, 0, 0, 0, 0];
+            let state = 0;
+
+            for (let x = 0; x < width; x++) {
+                const dark = isDark(x, y);
+                if (state === 0) {
+                    if (dark) {
+                        state = 1;
+                        counts[0] = 1;
+                    }
+                } else if (state === 1) {
+                    if (dark) counts[0]++;
+                    else {
+                        state = 2;
+                        counts[1] = 1;
+                    }
+                } else if (state === 2) {
+                    if (!dark) counts[1]++;
+                    else {
+                        state = 3;
+                        counts[2] = 1;
+                    }
+                } else if (state === 3) {
+                    if (dark) counts[2]++;
+                    else {
+                        state = 4;
+                        counts[3] = 1;
+                    }
+                } else if (state === 4) {
+                    if (!dark) counts[3]++;
+                    else {
+                        state = 5;
+                        counts[4] = 1;
+                    }
+                } else if (state === 5) {
+                    if (dark) {
+                        counts[4]++;
+                    } else {
+                        if (checkRatio(counts)) {
+                            const centerX = x - counts[4] - counts[3] - counts[2] / 2;
+                            const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
+                            if (vCenterY !== null) {
+                                const hCenterX = crossCheckHorizontal(
+                                    centerX,
+                                    vCenterY,
+                                    counts[2] * 2,
+                                    isDark,
+                                    width,
+                                    checkRatio
+                                );
+                                if (hCenterX !== null) {
+                                    const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+                                    const ms = total / 7;
+                                    addCandidate(patternCandidates, hCenterX, vCenterY, ms);
+                                }
                             }
                         }
+                        counts[0] = counts[2];
+                        counts[1] = counts[3];
+                        counts[2] = counts[4];
+                        counts[3] = 1;
+                        counts[4] = 0;
+                        state = 4;
                     }
-                    counts[0] = counts[2];
-                    counts[1] = counts[3];
-                    counts[2] = counts[4];
-                    counts[3] = 1;
-                    counts[4] = 0;
-                    state = 4;
+                }
+            }
+
+            if (state === 5 && checkRatio(counts)) {
+                const centerX = width - counts[4] - counts[3] - counts[2] / 2;
+                const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
+                if (vCenterY !== null) {
+                    const hCenterX = crossCheckHorizontal(centerX, vCenterY, counts[2] * 2, isDark, width, checkRatio);
+                    if (hCenterX !== null) {
+                        const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+                        const ms = total / 7;
+                        addCandidate(patternCandidates, hCenterX, vCenterY, ms);
+                    }
                 }
             }
         }
 
-        if (state === 5 && checkRatio(counts)) {
-            const centerX = width - counts[4] - counts[3] - counts[2] / 2;
-            const vCenterY = crossCheckVertical(centerX, y, counts[2] * 2, isDark, height, checkRatio);
-            if (vCenterY !== null) {
-                const hCenterX = crossCheckHorizontal(centerX, vCenterY, counts[2] * 2, isDark, width, checkRatio);
-                if (hCenterX !== null) {
-                    const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
-                    const ms = total / 7;
-                    addCandidate(patternCandidates, hCenterX, vCenterY, ms);
+        // Vertical line scans (helps with tilted/rotated QR codes)
+        if (patternCandidates.length < 3) {
+            const stepX = Math.max(1, Math.floor(width / 320));
+            for (let x = 0; x < width; x += stepX) {
+                const counts = [0, 0, 0, 0, 0];
+                let state = 0;
+                for (let y = 0; y < height; y++) {
+                    const dark = isDark(x, y);
+                    if (state === 0) {
+                        if (dark) {
+                            state = 1;
+                            counts[0] = 1;
+                        }
+                    } else if (state === 1) {
+                        if (dark) counts[0]++;
+                        else {
+                            state = 2;
+                            counts[1] = 1;
+                        }
+                    } else if (state === 2) {
+                        if (!dark) counts[1]++;
+                        else {
+                            state = 3;
+                            counts[2] = 1;
+                        }
+                    } else if (state === 3) {
+                        if (dark) counts[2]++;
+                        else {
+                            state = 4;
+                            counts[3] = 1;
+                        }
+                    } else if (state === 4) {
+                        if (!dark) counts[3]++;
+                        else {
+                            state = 5;
+                            counts[4] = 1;
+                        }
+                    } else if (state === 5) {
+                        if (dark) {
+                            counts[4]++;
+                        } else {
+                            if (checkRatio(counts)) {
+                                const centerY = y - counts[4] - counts[3] - counts[2] / 2;
+                                const hCenterX = crossCheckHorizontal(
+                                    x,
+                                    centerY,
+                                    counts[2] * 2,
+                                    isDark,
+                                    width,
+                                    checkRatio
+                                );
+                                if (hCenterX !== null) {
+                                    const vCenterY = crossCheckVertical(
+                                        hCenterX,
+                                        centerY,
+                                        counts[2] * 2,
+                                        isDark,
+                                        height,
+                                        checkRatio
+                                    );
+                                    if (vCenterY !== null) {
+                                        const total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+                                        addCandidate(patternCandidates, hCenterX, vCenterY, total / 7);
+                                    }
+                                }
+                            }
+                            counts[0] = counts[2];
+                            counts[1] = counts[3];
+                            counts[2] = counts[4];
+                            counts[3] = 1;
+                            counts[4] = 0;
+                            state = 4;
+                        }
+                    }
                 }
             }
+        }
+
+        if (patternCandidates.length >= 3) {
+            bestTriple = findBestTriangle(patternCandidates);
+            if (bestTriple) break;
         }
     }
 
-    if (patternCandidates.length < 3) return null;
-
-    const bestTriple = findBestTriangle(patternCandidates);
     if (!bestTriple) return null;
 
     const { tl, tr, bl } = bestTriple;

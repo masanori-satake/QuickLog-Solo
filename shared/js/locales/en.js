@@ -52,8 +52,8 @@ export default {
     'back-to-app': 'Back to App',
     'alarm-setting-description':
         'Display a message at a specified time and automatically "Stop", "Pause", or "Start" tasks as needed.',
-    'alarm-note-extension-only':
-        '* The alarm feature only works when installed as a browser extension. Notifications and auto-actions are not executed in the preview version.',
+    'alarm-editor-note-extension-only':
+        '* Alarms cannot be edited in the PWA version.',
     'alarm-label-enabled': 'Enabled',
     'alarm-label-time': 'Time',
     'alarm-label-message': 'Message',

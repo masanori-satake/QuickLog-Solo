@@ -25,6 +25,7 @@ body {
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    min-width: 0;
 }
 
 #app {
@@ -34,8 +35,18 @@ body {
     height: 100%;
     height: 100dvh;
     box-sizing: border-box;
+    min-width: 0;
     padding: max(8px, var(--pwa-safe-area-top)) max(8px, var(--pwa-safe-area-right))
         max(8px, var(--pwa-safe-area-bottom)) max(8px, var(--pwa-safe-area-left));
+}
+
+main,
+#control-section,
+#category-section,
+#category-list,
+#stop-btn-box,
+#log-section {
+    min-width: 0;
 }
 
 /* Category Button Optimization for Touch Devices */
@@ -97,5 +108,51 @@ body {
     .report-option-row {
         flex-direction: column;
         gap: 8px;
+    }
+}
+
+/* Ultra-Narrow Viewport Optimization to match Side Panel min-width */
+@media (width <= 320px) {
+    #app {
+        padding: max(4px, var(--pwa-safe-area-top)) max(4px, var(--pwa-safe-area-right))
+            max(4px, var(--pwa-safe-area-bottom)) max(4px, var(--pwa-safe-area-left));
+    }
+
+    header {
+        min-height: 36px;
+        padding: 2px 4px;
+    }
+
+    #settings-toggle,
+    #copy-report-btn,
+    #copy-aggregation-btn {
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+        font-size: 1.1rem;
+    }
+
+    .privacy-badge {
+        padding: 2px 4px;
+        font-size: 0.7rem;
+    }
+
+    .privacy-text {
+        display: none;
+    }
+
+    .category-btn {
+        padding: 0 4px;
+        font-size: 0.7rem;
+    }
+
+    #stop-btn-box button {
+        min-height: 36px;
+        padding: 0 4px;
+        font-size: 0.8rem;
+    }
+
+    .btn-icon {
+        font-size: 1.2rem !important;
     }
 }
