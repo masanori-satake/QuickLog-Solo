@@ -554,6 +554,8 @@ export default {
     'about-pwa-section-title': 'PWA版QuickLog-Solo(β)',
     'about-pwa-section-desc': 'スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。',
     'about-pwa-url-qr-label': '1. PWA起動URL',
+    'about-pwa-general-qr-label': '2. 設定全般・アラーム',
+    'about-pwa-categories-qr-label': '3. 業務カテゴリ',
     'about-pwa-settings-qr-label': '2. 設定エクスポート',
     'about-pwa-qr-too-large': 'データ量が多いためQRコードを生成できません。保守タブのバックアップをご利用ください。',
     'about-pwa-qr-error-title': 'エラー',

@@ -539,6 +539,8 @@ export default {
     'about-pwa-section-title': 'QuickLog-Solo Mobile (PWA) (β)',
     'about-pwa-section-desc': 'Digitalize o código QR com a câmera do seu smartphone para iniciar a versão PWA ou transferir configurações.',
     'about-pwa-url-qr-label': '1. URL de início PWA',
+    'about-pwa-general-qr-label': '2. Geral e Alarmes',
+    'about-pwa-categories-qr-label': '3. Categorias',
     'about-pwa-settings-qr-label': '2. Exportar configurações',
     'about-pwa-qr-too-large': 'O tamanho dos dados excede a capacidade do código QR. Use a função de backup na guia Manutenção.',
     'about-pwa-qr-error-title': 'Erro',

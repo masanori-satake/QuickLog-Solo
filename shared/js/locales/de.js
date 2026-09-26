@@ -541,6 +541,8 @@ export default {
     'about-pwa-section-title': 'Mobile (PWA) QuickLog-Solo (β)',
     'about-pwa-section-desc': 'Scannen Sie den QR-Code mit Ihrer Smartphone-Kamera, um die PWA-Version zu starten oder Einstellungen zu übertragen.',
     'about-pwa-url-qr-label': '1. PWA Start-URL',
+    'about-pwa-general-qr-label': '2. Allg. & Alarme',
+    'about-pwa-categories-qr-label': '3. Kategorien',
     'about-pwa-settings-qr-label': '2. Einstellungen exportieren',
     'about-pwa-qr-too-large': 'Die Datengröße überschreitet die QR-Code-Kapazität. Bitte nutzen Sie die Sichern-Funktion im Reiter Wartung.',
     'about-pwa-qr-error-title': 'Fehler',

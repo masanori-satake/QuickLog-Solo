@@ -531,6 +531,8 @@ export default {
     'about-pwa-section-title': '모바일 (PWA) QuickLog-Solo (β)',
     'about-pwa-section-desc': '스마트폰 카메라로 QR 코드를 스캔하여 PWA 버전을 실행하거나 설정을 이전할 수 있습니다.',
     'about-pwa-url-qr-label': '1. PWA 실행 URL',
+    'about-pwa-general-qr-label': '2. 일반 및 알람',
+    'about-pwa-categories-qr-label': '3. 업무 카테고리',
     'about-pwa-settings-qr-label': '2. 설정 내보내기',
     'about-pwa-qr-too-large': '데이터 크기가 QR 코드 용량을 초과했습니다. 유지 관리 탭의 백업 기능을 사용하세요.',
     'about-pwa-qr-error-title': '오류',
