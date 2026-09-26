@@ -1270,7 +1270,8 @@ function drawQRErrorCanvas(canvas, titleText, subText) {
     ctx.fillText(subText || 'QR表示不可', 60, 72);
 }
 
-async function renderAboutQRCodes() {
+/** Exported for testing purposes only. */
+export async function renderAboutQRCodes() {
     const isPWA = isPWAMode();
     const exportSection = getEl('pwa-qr-export-section');
     const importSection = getEl('pwa-qr-import-section');
@@ -1312,18 +1313,17 @@ async function renderAboutQRCodes() {
     const settingsQrCanvas = getEl('pwa-settings-qr-canvas');
 
     if ((generalQrCanvas || categoriesQrCanvas || settingsQrCanvas) && !isPWA) {
-        const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
-        const settingsObj = {};
-        for (const item of allSettingsRaw) {
-            if (item && item.key) {
-                settingsObj[item.key] = item.value;
-            }
-        }
-        const categories = await dbGetAll(STORE_CATEGORIES);
-        const alarms = await dbGetAll(STORE_ALARMS);
-
         if (generalQrCanvas) {
             try {
+                const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
+                const settingsObj = {};
+                for (const item of allSettingsRaw) {
+                    if (item && item.key) {
+                        settingsObj[item.key] = item.value;
+                    }
+                }
+                const alarms = await dbGetAll(STORE_ALARMS);
+
                 const generalPayloadStr = serializeSettingsPayload({
                     settings: settingsObj,
                     alarms,
@@ -1343,6 +1343,7 @@ async function renderAboutQRCodes() {
 
         if (categoriesQrCanvas) {
             try {
+                const categories = await dbGetAll(STORE_CATEGORIES);
                 const categoriesPayloadStr = serializeSettingsPayload({
                     categories,
                 });
@@ -1361,6 +1362,16 @@ async function renderAboutQRCodes() {
 
         if (settingsQrCanvas) {
             try {
+                const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
+                const settingsObj = {};
+                for (const item of allSettingsRaw) {
+                    if (item && item.key) {
+                        settingsObj[item.key] = item.value;
+                    }
+                }
+                const categories = await dbGetAll(STORE_CATEGORIES);
+                const alarms = await dbGetAll(STORE_ALARMS);
+
                 const payloadStr = serializeSettingsPayload({
                     settings: settingsObj,
                     categories,

@@ -98,8 +98,9 @@ function encodeUTF8(str) {
  * Serializes application settings, categories, and alarms into a shortened JSON payload string.
  * Omits custom animation metadata, Session Sync IDs/state, and Backup handles.
  * Converts custom category animations to default background animation.
+ * Preserves empty category/alarm groups; omitted groups leave destination stores unchanged.
  */
-export function serializeSettingsPayload({ settings = {}, categories = [], alarms = [] }) {
+export function serializeSettingsPayload({ settings = {}, categories, alarms }) {
     const minSettings = {};
 
     if (settings.theme) minSettings.t = settings.theme;
@@ -151,8 +152,8 @@ export function serializeSettingsPayload({ settings = {}, categories = [], alarm
 
     const payload = { v: 1 };
     if (Object.keys(minSettings).length > 0) payload.s = minSettings;
-    if (minCategories.length > 0) payload.c = minCategories;
-    if (minAlarms.length > 0) payload.a = minAlarms;
+    if (categories !== undefined) payload.c = minCategories;
+    if (alarms !== undefined) payload.a = minAlarms;
 
     return JSON.stringify(payload);
 }
@@ -264,7 +265,11 @@ export function deserializeSettingsPayload(jsonString) {
         order: a.o ?? index,
     }));
 
-    return { settings, categories, alarms };
+    return {
+        settings,
+        categories: parsed.c === undefined ? undefined : categories,
+        alarms: parsed.a === undefined ? undefined : alarms,
+    };
 }
 
 // --- 2. Pure Vanilla JS QR Code Encoder ---

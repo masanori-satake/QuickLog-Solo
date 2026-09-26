@@ -9,7 +9,7 @@ import {
     STORE_CATEGORIES,
     STORE_ALARMS,
 } from '../shared/js/db.js';
-import { deserializeSettingsPayload } from '../shared/js/qr_code.js';
+import { serializeSettingsPayload, deserializeSettingsPayload } from '../shared/js/qr_code.js';
 
 const stores = [STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS];
 const originals = [
@@ -48,9 +48,31 @@ test('rejects malformed alarms before modifying settings or categories', async (
     expect(await snapshot()).toEqual(originals);
 });
 
-test('retains existing categories and alarms for empty arrays', async () => {
-    await apply({ ...payload, c: [], a: [] });
-    expect((await snapshot()).slice(1)).toEqual(originals.slice(1));
+test.each([
+    [{}, false, false],
+    [{ categories: [] }, true, false],
+    [{ alarms: [] }, false, true],
+    [{ categories: [], alarms: [] }, true, true],
+    [{ categories: [{ id: 2, name: 'IDLE' }, { id: 3, name: '__PAGE_BREAK__1' }] }, true, false],
+])('clears only groups explicitly included in the exported payload: %j', async (groups, clearCategories, clearAlarms) => {
+    const serialized = serializeSettingsPayload({ settings: { theme: 'light' }, ...groups });
+    const restored = deserializeSettingsPayload(serialized);
+    expect(restored.categories).toEqual(clearCategories ? [] : undefined);
+    expect(restored.alarms).toEqual(clearAlarms ? [] : undefined);
+    await dbImportQRSettings(restored);
+    expect(await snapshot()).toEqual([
+        [{ key: 'theme', value: 'light' }],
+        clearCategories ? [] : originals[1],
+        clearAlarms ? [] : originals[2],
+    ]);
+});
+
+test('rolls back an explicit empty group when a later write fails', async () => {
+    jest.spyOn(globalThis.IDBObjectStore.prototype, 'put').mockImplementation(function () {
+        throw new DOMException('Write failed', 'DataCloneError');
+    });
+    await expect(apply({ v: 1, c: [], a: payload.a })).rejects.toThrow();
+    expect(await snapshot()).toEqual(originals);
 });
 
 test('supports split QR imports in any order without overwriting unrelated stores', async () => {

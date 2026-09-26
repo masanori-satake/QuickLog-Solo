@@ -270,7 +270,7 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         const restoredGroup1 = deserializeSettingsPayload(group1Json);
         expect(restoredGroup1.settings.theme).toBe('dark');
         expect(restoredGroup1.alarms).toHaveLength(1);
-        expect(restoredGroup1.categories).toEqual([]);
+        expect(restoredGroup1.categories).toBeUndefined();
 
         // Group 2: Business Categories
         const group2Json = serializeSettingsPayload({ categories: inputCategories });
@@ -283,7 +283,7 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         expect(restoredGroup2.categories).toHaveLength(1);
         expect(restoredGroup2.categories[0].name).toBe('Dev');
         expect(restoredGroup2.settings).toEqual({});
-        expect(restoredGroup2.alarms).toEqual([]);
+        expect(restoredGroup2.alarms).toBeUndefined();
     });
 });
 
