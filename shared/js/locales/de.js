@@ -49,7 +49,7 @@ export default {
     'back-to-app': 'アプリに戻る',
     'alarm-setting-description':
         'Zeigt zu einer bestimmten Zeit eine Nachricht an und führt bei Bedarf automatisch Aktionen wie „Beenden“, „Pause“ oder „Start“ aus.',
-    'alarm-note-extension-only': '※ アラーム機能はPWA版では通知や自動動作は実行されません。',
+    'alarm-editor-note-extension-only': '※ PWA版ではアラームを編集できません。',
     'alarm-label-enabled': 'Aktiviert',
     'alarm-label-time': 'Zeit',
     'alarm-label-message': 'Nachricht',
