@@ -1547,7 +1547,9 @@ function updateQRScanChecklist() {
 
         const text = document.createElement('span');
         text.textContent =
-            knownPartsTotal.generalTotal > 1 ? `${baseGeneralLabel} (${g}/${knownPartsTotal.generalTotal})` : baseGeneralLabel;
+            knownPartsTotal.generalTotal > 1
+                ? `${baseGeneralLabel} (${g}/${knownPartsTotal.generalTotal})`
+                : baseGeneralLabel;
 
         row.appendChild(icon);
         row.appendChild(text);
@@ -1573,7 +1575,9 @@ function updateQRScanChecklist() {
 
         const text = document.createElement('span');
         text.textContent =
-            knownPartsTotal.categoryTotal > 1 ? `${baseCategoryLabel} (${c}/${knownPartsTotal.categoryTotal})` : baseCategoryLabel;
+            knownPartsTotal.categoryTotal > 1
+                ? `${baseCategoryLabel} (${c}/${knownPartsTotal.categoryTotal})`
+                : baseCategoryLabel;
 
         row.appendChild(icon);
         row.appendChild(text);
@@ -1816,8 +1820,7 @@ async function handleImportQRPayload(payloadStr, signal) {
         if (knownPartsTotal.categoryTotal > 0 && scannedPartsSet.size >= totalExpected) {
             const statusEl = getEl('qr-scan-status');
             if (statusEl) {
-                statusEl.textContent =
-                    t('qr-scan-all-completed') || 'すべてのQRコードの読み取りが完了しました！';
+                statusEl.textContent = t('qr-scan-all-completed') || 'すべてのQRコードの読み取りが完了しました！';
                 statusEl.style.color = '#2e7d32';
                 statusEl.style.fontWeight = '700';
             }
