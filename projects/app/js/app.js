@@ -1646,7 +1646,8 @@ export function setupQRScanner() {
                                 closeQRScannerModal();
                                 return;
                             } else if (statusEl) {
-                                statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
+                                statusEl.textContent =
+                                    t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
                                 statusEl.style.color = 'var(--md-sys-color-on-surface-variant)';
                             }
                         } else if (statusEl) {
@@ -1742,7 +1743,8 @@ export function setupQRScanner() {
                     if (!signal.aborted) {
                         if (hasError && !allCompleted) {
                             if (statusEl) {
-                                statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+                                statusEl.textContent =
+                                    t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
                                 statusEl.style.color = '#d32f2f';
                             }
                         } else if (allCompleted) {
