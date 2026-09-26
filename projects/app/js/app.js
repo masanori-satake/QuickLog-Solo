@@ -1776,6 +1776,11 @@ export async function openQRScannerModal() {
     knownPartsTotal.categoryTotal = 0;
     updateQRScanChecklist();
 
+    const captureBtn = getEl('qr-capture-btn');
+    if (captureBtn) {
+        captureBtn.disabled = false;
+    }
+
     const statusEl = getEl('qr-scan-status');
     if (statusEl) {
         statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
