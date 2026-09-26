@@ -551,6 +551,7 @@ export default {
     'about-pwa-import-desc': 'Digitalize o código QR de configuração exibido na extensão para PC para aplicar categorias e alarmes.',
     'btn-pwa-scan-qr': 'Escanear código QR',
     'qr-scan-modal-title': 'Escaneamento de código QR',
+    'qr-scan-status-analyzing': 'Analyzing...',
     'qr-scan-status-scanning': 'Por favor, aponte a câmera para o código QR',
     'btn-qr-capture': 'Capturar e analisar',
     'btn-select-qr-image': 'Selecionar da imagem',

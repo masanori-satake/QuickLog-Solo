@@ -555,6 +555,7 @@ export default {
     'about-pwa-import-desc': 'Scannez le QR code de configuration affiché dans l\'extension PC pour appliquer les catégories et alarmes.',
     'btn-pwa-scan-qr': 'Scanner le QR code',
     'qr-scan-modal-title': 'Numérisation de QR code',
+    'qr-scan-status-analyzing': 'Analyzing...',
     'qr-scan-status-scanning': 'Veuillez pointer votre appareil photo vers le QR code',
     'btn-qr-capture': 'Capturer et analyser',
     'btn-select-qr-image': 'Sélectionner une image',

@@ -528,6 +528,7 @@ export default {
     'about-pwa-import-desc': '掃描 PC 擴充功能中顯示的設定 QR 碼以套用類別與鬧鐘設定。',
     'btn-pwa-scan-qr': '掃描 QR 碼',
     'qr-scan-modal-title': 'QR 碼掃描',
+    'qr-scan-status-analyzing': 'Analyzing...',
     'qr-scan-status-scanning': '請將相機對準 QR 碼',
     'btn-qr-capture': '拍照並解析',
     'btn-select-qr-image': '從圖片選擇',
