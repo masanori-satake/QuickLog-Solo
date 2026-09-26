@@ -1306,36 +1306,77 @@ async function renderAboutQRCodes() {
         };
     }
 
-    // 2. Dynamic Settings Export QR Code
+    // 2. Dynamic Settings Export QR Codes
+    const generalQrCanvas = getEl('pwa-general-qr-canvas');
+    const categoriesQrCanvas = getEl('pwa-categories-qr-canvas');
     const settingsQrCanvas = getEl('pwa-settings-qr-canvas');
-    if (settingsQrCanvas && !isPWA) {
-        try {
-            const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
-            const settingsObj = {};
-            for (const item of allSettingsRaw) {
-                if (item && item.key) {
-                    settingsObj[item.key] = item.value;
-                }
+
+    if ((generalQrCanvas || categoriesQrCanvas || settingsQrCanvas) && !isPWA) {
+        const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
+        const settingsObj = {};
+        for (const item of allSettingsRaw) {
+            if (item && item.key) {
+                settingsObj[item.key] = item.value;
             }
-            const categories = await dbGetAll(STORE_CATEGORIES);
-            const alarms = await dbGetAll(STORE_ALARMS);
+        }
+        const categories = await dbGetAll(STORE_CATEGORIES);
+        const alarms = await dbGetAll(STORE_ALARMS);
 
-            const payloadStr = serializeSettingsPayload({
-                settings: settingsObj,
-                categories,
-                alarms,
-            });
+        if (generalQrCanvas) {
+            try {
+                const generalPayloadStr = serializeSettingsPayload({
+                    settings: settingsObj,
+                    alarms,
+                });
+                renderQRCodeToCanvas(generalPayloadStr, generalQrCanvas, { width: 120, margin: 1 });
+                generalQrCanvas.title = '';
+            } catch (err) {
+                console.error('Failed to render general QR Code:', err);
+                const isCapacityError = err?.message === 'Payload too large for QR Code';
+                const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
+                const errSub = t('about-pwa-qr-too-large-sub');
+                const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
+                drawQRErrorCanvas(generalQrCanvas, errTitle, errSub);
+                generalQrCanvas.title = errTooltip;
+            }
+        }
 
-            renderQRCodeToCanvas(payloadStr, settingsQrCanvas, { width: 120, margin: 1 });
-            settingsQrCanvas.title = '';
-        } catch (err) {
-            console.error('Failed to render settings QR Code:', err);
-            const isCapacityError = err?.message === 'Payload too large for QR Code';
-            const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
-            const errSub = t('about-pwa-qr-too-large-sub');
-            const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
-            drawQRErrorCanvas(settingsQrCanvas, errTitle, errSub);
-            settingsQrCanvas.title = errTooltip;
+        if (categoriesQrCanvas) {
+            try {
+                const categoriesPayloadStr = serializeSettingsPayload({
+                    categories,
+                });
+                renderQRCodeToCanvas(categoriesPayloadStr, categoriesQrCanvas, { width: 120, margin: 1 });
+                categoriesQrCanvas.title = '';
+            } catch (err) {
+                console.error('Failed to render categories QR Code:', err);
+                const isCapacityError = err?.message === 'Payload too large for QR Code';
+                const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
+                const errSub = t('about-pwa-qr-too-large-sub');
+                const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
+                drawQRErrorCanvas(categoriesQrCanvas, errTitle, errSub);
+                categoriesQrCanvas.title = errTooltip;
+            }
+        }
+
+        if (settingsQrCanvas) {
+            try {
+                const payloadStr = serializeSettingsPayload({
+                    settings: settingsObj,
+                    categories,
+                    alarms,
+                });
+                renderQRCodeToCanvas(payloadStr, settingsQrCanvas, { width: 120, margin: 1 });
+                settingsQrCanvas.title = '';
+            } catch (err) {
+                console.error('Failed to render settings QR Code:', err);
+                const isCapacityError = err?.message === 'Payload too large for QR Code';
+                const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
+                const errSub = t('about-pwa-qr-too-large-sub');
+                const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
+                drawQRErrorCanvas(settingsQrCanvas, errTitle, errSub);
+                settingsQrCanvas.title = errTooltip;
+            }
         }
     }
 }

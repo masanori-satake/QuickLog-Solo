@@ -254,6 +254,37 @@ describe('QR Code Payload Serialization and Deserialization', () => {
         expect(() => deserializeSettingsPayload('invalid json')).toThrow();
         expect(() => deserializeSettingsPayload(JSON.stringify({ v: 999 }))).toThrow();
     });
+
+    test('should correctly serialize and deserialize split payloads (Group 1: General+Alarms, Group 2: Categories)', () => {
+        const inputSettings = { theme: 'dark', font: 'Roboto', language: 'ja' };
+        const inputAlarms = [{ id: 'alm1', name: 'Alarm 1', enabled: true }];
+        const inputCategories = [{ id: 'cat1', name: 'Dev', color: 'primary' }];
+
+        // Group 1: General Settings + Alarms
+        const group1Json = serializeSettingsPayload({ settings: inputSettings, alarms: inputAlarms });
+        const parsedGroup1 = JSON.parse(group1Json);
+        expect(parsedGroup1.s).toBeDefined();
+        expect(parsedGroup1.a).toBeDefined();
+        expect(parsedGroup1.c).toBeUndefined();
+
+        const restoredGroup1 = deserializeSettingsPayload(group1Json);
+        expect(restoredGroup1.settings.theme).toBe('dark');
+        expect(restoredGroup1.alarms).toHaveLength(1);
+        expect(restoredGroup1.categories).toEqual([]);
+
+        // Group 2: Business Categories
+        const group2Json = serializeSettingsPayload({ categories: inputCategories });
+        const parsedGroup2 = JSON.parse(group2Json);
+        expect(parsedGroup2.c).toBeDefined();
+        expect(parsedGroup2.s).toBeUndefined();
+        expect(parsedGroup2.a).toBeUndefined();
+
+        const restoredGroup2 = deserializeSettingsPayload(group2Json);
+        expect(restoredGroup2.categories).toHaveLength(1);
+        expect(restoredGroup2.categories[0].name).toBe('Dev');
+        expect(restoredGroup2.settings).toEqual({});
+        expect(restoredGroup2.alarms).toEqual([]);
+    });
 });
 
 describe('QR Code Generator & Renderer', () => {

@@ -635,16 +635,20 @@
                             <p style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 0.5rem;" data-i18n="about-pwa-section-desc">
                                 スマホのカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。
                             </p>
-                            <div style="display: flex; gap: 12px; justify-content: space-around; align-items: flex-start; text-align: center; margin-top: 8px;">
+                            <div style="display: flex; gap: 8px; justify-content: space-around; align-items: flex-start; text-align: center; margin-top: 8px;">
                                 <div style="flex: 1; min-width: 0;">
                                     <a id="pwa-url-qr-link" href="https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit; display: inline-block; cursor: pointer;">
-                                        <canvas id="pwa-url-qr-canvas" style="width: 120px; height: 120px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
+                                        <canvas id="pwa-url-qr-canvas" style="width: 100%; max-width: 100px; aspect-ratio: 1; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
                                         <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500; color: var(--md-sys-color-primary); text-decoration: underline;" data-i18n="about-pwa-url-qr-label">1. PWA起動URL</p>
                                     </a>
                                 </div>
                                 <div style="flex: 1; min-width: 0;">
-                                    <canvas id="pwa-settings-qr-canvas" style="width: 120px; height: 120px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px;"></canvas>
-                                    <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500;" data-i18n="about-pwa-settings-qr-label">2. 設定エクスポート</p>
+                                    <canvas id="pwa-general-qr-canvas" style="width: 100%; max-width: 100px; aspect-ratio: 1; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
+                                    <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500;" data-i18n="about-pwa-general-qr-label">2. 設定全般・アラーム</p>
+                                </div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <canvas id="pwa-categories-qr-canvas" style="width: 100%; max-width: 100px; aspect-ratio: 1; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
+                                    <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500;" data-i18n="about-pwa-categories-qr-label">3. 業務カテゴリ</p>
                                 </div>
                             </div>
                         </div>

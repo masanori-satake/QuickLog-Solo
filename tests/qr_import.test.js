@@ -53,6 +53,41 @@ test('retains existing categories and alarms for empty arrays', async () => {
     expect((await snapshot()).slice(1)).toEqual(originals.slice(1));
 });
 
+test('supports split QR imports in any order without overwriting unrelated stores', async () => {
+    const group1Payload = { v: 1, s: { t: 'dark' }, a: [{ i: 10, n: 'Imported Alarm' }] };
+    const group2Payload = { v: 1, c: [{ i: 20, n: 'Imported Category' }] };
+
+    // Order 1: Group 1 then Group 2
+    await apply(group1Payload);
+    let [settings, categories, alarms] = await snapshot();
+    expect(settings).toEqual([{ key: 'theme', value: 'dark' }]);
+    expect(alarms).toEqual([expect.objectContaining({ id: 10, name: 'Imported Alarm' })]);
+    expect(categories).toEqual(originals[1]); // Original category preserved
+
+    await apply(group2Payload);
+    [settings, categories, alarms] = await snapshot();
+    expect(settings).toEqual([{ key: 'theme', value: 'dark' }]); // Preserved from Group 1
+    expect(alarms).toEqual([expect.objectContaining({ id: 10, name: 'Imported Alarm' })]); // Preserved from Group 1
+    expect(categories).toEqual([expect.objectContaining({ id: 20, name: 'Imported Category' })]);
+
+    // Reset DB and test Order 2: Group 2 then Group 1
+    closeDatabase();
+    setDatabaseName(`QRImport_Reverse_${Math.random()}`);
+    for (let i = 0; i < stores.length; i++) await dbPut(stores[i], originals[i][0]);
+
+    await apply(group2Payload);
+    [settings, categories, alarms] = await snapshot();
+    expect(categories).toEqual([expect.objectContaining({ id: 20, name: 'Imported Category' })]);
+    expect(settings).toEqual(originals[0]); // Original settings preserved
+    expect(alarms).toEqual(originals[2]); // Original alarms preserved
+
+    await apply(group1Payload);
+    [settings, categories, alarms] = await snapshot();
+    expect(settings).toEqual([{ key: 'theme', value: 'dark' }]);
+    expect(alarms).toEqual([expect.objectContaining({ id: 10, name: 'Imported Alarm' })]);
+    expect(categories).toEqual([expect.objectContaining({ id: 20, name: 'Imported Category' })]); // Preserved from Group 2
+});
+
 test.each(['synchronous', 'request'])('rolls back every store after a %s write failure', async (failure) => {
     const originalPut = globalThis.IDBObjectStore.prototype.put;
     jest.spyOn(globalThis.IDBObjectStore.prototype, 'put').mockImplementation(function (record) {

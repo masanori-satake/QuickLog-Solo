@@ -516,6 +516,8 @@ export default {
     'about-pwa-section-title': '移動 (PWA) 版 QuickLog-Solo (β)',
     'about-pwa-section-desc': '使用智慧型手機相機掃描 QR 碼即可啟動 PWA 版本或傳輸設定。',
     'about-pwa-url-qr-label': '1. PWA 啟動網址',
+    'about-pwa-general-qr-label': '2. 一般與鬧鐘',
+    'about-pwa-categories-qr-label': '3. 業務類別',
     'about-pwa-settings-qr-label': '2. 設定匯出',
     'about-pwa-qr-too-large': '資料大小超出 QR 碼容量。請使用「維護」頁籤中的備份功能。',
     'about-pwa-qr-error-title': '錯誤',
