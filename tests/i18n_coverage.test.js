@@ -35,7 +35,7 @@ describe('i18n Coverage', () => {
     });
 
     test('Japanese locale contains expected updated label messages', () => {
-        expect(messages.ja['about-pwa-section-title']).toBe('モバイル(PWA)版QuickLog-Solo(β)');
+        expect(messages.ja['about-pwa-section-title']).toBe('PWA版QuickLog-Solo(β)');
         expect(messages.ja['about-pwa-section-desc']).toBe('スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。');
         expect(messages.ja['maker-note-extension-only']).toBe('※ アニメーション・メーカーはPWA版では起動できません。');
         expect(messages.ja['alarm-note-extension-only']).toBe('※ アラーム機能はPWA版では通知や自動動作は実行されません。');
