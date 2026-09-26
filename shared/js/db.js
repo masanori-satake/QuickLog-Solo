@@ -239,7 +239,6 @@ export async function dbImportQRSettings({ settings, categories, alarms }, { sig
             for (const [storeName, records] of [[STORE_CATEGORIES, categories], [STORE_ALARMS, alarms]]) {
                 if (records === undefined) continue;
                 const store = tx.objectStore(storeName);
-                store.clear();
                 for (const record of records) store.put(record);
             }
         } catch (err) {

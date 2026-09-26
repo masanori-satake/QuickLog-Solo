@@ -559,4 +559,7 @@ export default {
     'qr-scan-failed-not-found': 'Kein QR-Code im Bild erkannt',
     'qr-scan-camera-error': 'Kamerazugriff verweigert oder nicht verfügbar. Bitte wählen Sie ein Bild.',
     'qr-scan-invalid-payload': 'Ungültige QR-Code-Daten',
+    'about-pwa-qr-accordion-label': 'QR-Codes zur Übertragung anzeigen (2. Allgemein/Alarme / 3. Kategorien)',
+    'btn-qr-scan-done': 'Fertig',
+    'qr-scan-all-completed': 'Alle QR-Codes erfolgreich gescannt!',
 };

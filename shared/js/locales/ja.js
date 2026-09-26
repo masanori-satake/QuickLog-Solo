@@ -572,4 +572,7 @@ export default {
     'qr-scan-failed-not-found': 'QRコードを検出できませんでした',
     'qr-scan-camera-error': 'カメラアクセスが拒否されたか利用できません。画像から選択してください。',
     'qr-scan-invalid-payload': '無効なQRコードデータです',
+    'about-pwa-qr-accordion-label': '設定引き継ぎ用QRコードを表示 (2. 設定全般・アラーム / 3. 業務カテゴリ)',
+    'btn-qr-scan-done': '完了',
+    'qr-scan-all-completed': 'すべてのQRコードの読み取りが完了しました！',
 };
