@@ -929,7 +929,7 @@ function crossCheckVertical(startX, startY, maxCount, isDark, height, checkRatio
     topY++;
 
     let bottomY = Math.floor(startY);
-    while (bottomY < height && isDark(startX, bottomY)) bottomY--;
+    while (bottomY < height && isDark(startX, bottomY)) bottomY++;
     bottomY--;
 
     const centerLength = bottomY - topY + 1;
@@ -972,7 +972,7 @@ function crossCheckHorizontal(startX, startY, maxCount, isDark, width, checkRati
     leftX++;
 
     let rightX = Math.floor(startX);
-    while (rightX < width && isDark(rightX, startY)) rightX--;
+    while (rightX < width && isDark(rightX, startY)) rightX++;
     rightX--;
 
     const centerLength = rightX - leftX + 1;
@@ -1071,9 +1071,12 @@ function findBestTriangle(candidates) {
                 }
 
                 const sideDiff = Math.abs(d1 - d2) / Math.max(d1, d2);
-                if (sideDiff > 0.4) continue;
+                const msAvg = (tl.ms + tr.ms + bl.ms) / 3;
+                const msDiff = (Math.abs(tl.ms - msAvg) + Math.abs(tr.ms - msAvg) + Math.abs(bl.ms - msAvg)) / msAvg;
 
-                const score = sideDiff;
+                if (sideDiff > 0.25 || msDiff > 0.3) continue;
+
+                const score = sideDiff + msDiff * 0.5;
                 if (score < bestScore) {
                     bestScore = score;
                     bestTriple = { tl, tr, bl };
@@ -1119,8 +1122,9 @@ function scanImageDataPureJS(canvasOrImageData) {
     for (let t = 0; t < 256; t++) sum += t * hist[t];
     let sumB = 0;
     let wB = 0;
-    let maxVar = 0;
-    let threshold = 128;
+    let maxVar = -1;
+    let firstT = 0;
+    let lastT = 0;
     const totalPixels = width * height;
     for (let t = 0; t < 256; t++) {
         wB += hist[t];
@@ -1133,9 +1137,13 @@ function scanImageDataPureJS(canvasOrImageData) {
         const varBetween = wB * wF * (mB - mF) * (mB - mF);
         if (varBetween > maxVar) {
             maxVar = varBetween;
-            threshold = t;
+            firstT = t;
+            lastT = t;
+        } else if (varBetween === maxVar) {
+            lastT = t;
         }
     }
+    const threshold = maxVar > 0 ? Math.floor((firstT + lastT) / 2) : 128;
 
     const isDark = (x, y) => {
         x = Math.floor(x);
@@ -1490,16 +1498,25 @@ function scanImageDataPureJS(canvasOrImageData) {
     }
 
     try {
-        if (typeof TextDecoder !== 'undefined') {
-            return new TextDecoder('utf-8').decode(payloadBytes);
+        const TD = typeof TextDecoder !== 'undefined' ? TextDecoder : globalThis.TextDecoder;
+        if (TD) {
+            return new TD('utf-8').decode(payloadBytes);
         }
     } catch {
         // Fallback
     }
 
-    let str = '';
-    for (let i = 0; i < payloadBytes.length; i++) {
-        str += String.fromCharCode(payloadBytes[i]);
+    try {
+        let binary = '';
+        for (let i = 0; i < payloadBytes.length; i++) {
+            binary += String.fromCharCode(payloadBytes[i]);
+        }
+        return decodeURIComponent(escape(binary));
+    } catch {
+        let str = '';
+        for (let i = 0; i < payloadBytes.length; i++) {
+            str += String.fromCharCode(payloadBytes[i]);
+        }
+        return str;
     }
-    return str;
 }
