@@ -70,13 +70,9 @@ describe('QR Code Payload Serialization and Deserialization', () => {
                 font: 'Roboto',
                 fontWeight: '500',
                 animation: 'clock',
-                pauseAnimation: 'snoring_zzz',
-                pauseTheme: 'neutral',
                 timerHeight: 'compact',
                 categoryLayout: '2x4',
-                businessDays: [1, 2, 3, 4, 5],
                 language: 'ja',
-                reportSettings: { showChart: true },
             },
             categories: [
                 { id: 'cat1', name: '開発', color: '#1976d2', animation: 'digital_rain', tags: 'dev', order: 1 },

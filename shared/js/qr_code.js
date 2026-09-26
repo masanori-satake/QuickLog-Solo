@@ -103,17 +103,32 @@ function encodeUTF8(str) {
 export function serializeSettingsPayload({ settings = {}, categories, alarms }) {
     const minSettings = {};
 
-    if (settings.theme) minSettings.t = settings.theme;
-    if (settings.font) minSettings.f = settings.font;
-    if (settings.fontWeight) minSettings.fw = settings.fontWeight;
-    if (settings.animation) minSettings.a = sanitizeAnimationId(settings.animation);
-    if (settings.pauseAnimation) minSettings.pa = sanitizeAnimationId(settings.pauseAnimation);
-    if (settings.pauseTheme) minSettings.pt = settings.pauseTheme;
-    if (settings.timerHeight) minSettings.th = settings.timerHeight;
-    if (settings.categoryLayout) minSettings.cl = settings.categoryLayout;
-    if (Array.isArray(settings.businessDays)) minSettings.bd = settings.businessDays;
+    if (settings.theme && settings.theme !== 'system') minSettings.t = settings.theme;
+    if (settings.font && settings.font !== 'system-ui') minSettings.f = settings.font;
+    if (settings.fontWeight && settings.fontWeight !== '400') minSettings.fw = settings.fontWeight;
+    if (settings.animation && settings.animation !== 'digital_rain')
+        minSettings.a = sanitizeAnimationId(settings.animation);
+    if (settings.pauseAnimation && settings.pauseAnimation !== 'snoring_zzz')
+        minSettings.pa = sanitizeAnimationId(settings.pauseAnimation);
+    if (settings.pauseTheme && settings.pauseTheme !== 'neutral') minSettings.pt = settings.pauseTheme;
+    if (settings.timerHeight && settings.timerHeight !== 'normal') minSettings.th = settings.timerHeight;
+    if (settings.categoryLayout && settings.categoryLayout !== '2x8') minSettings.cl = settings.categoryLayout;
+    if (Array.isArray(settings.businessDays)) {
+        const isDefaultBd =
+            settings.businessDays.length === 5 && [1, 2, 3, 4, 5].every((d, i) => settings.businessDays[i] === d);
+        if (!isDefaultBd) minSettings.bd = settings.businessDays;
+    }
     if (settings.language) minSettings.l = settings.language;
-    if (settings.reportSettings) minSettings.r = settings.reportSettings;
+    if (settings.reportSettings && typeof settings.reportSettings === 'object') {
+        const r = {};
+        if (settings.reportSettings.includeTags !== undefined && settings.reportSettings.includeTags !== true)
+            r.it = settings.reportSettings.includeTags ? 1 : 0;
+        if (settings.reportSettings.includeSummary !== undefined && settings.reportSettings.includeSummary !== true)
+            r.is = settings.reportSettings.includeSummary ? 1 : 0;
+        if (settings.reportSettings.format && settings.reportSettings.format !== 'text')
+            r.f = settings.reportSettings.format;
+        if (Object.keys(r).length > 0) minSettings.r = r;
+    }
 
     // Filter out internal system categories (IDLE) and page breaks (__PAGE_BREAK__)
     const validCategories = (categories || []).filter(
@@ -237,7 +252,17 @@ export function deserializeSettingsPayload(jsonString) {
         settings.businessDays = Array.isArray(minSettings.bd) ? minSettings.bd : [1, 2, 3, 4, 5];
     }
     if (minSettings.l !== undefined) settings.language = minSettings.l;
-    if (minSettings.r !== undefined) settings.reportSettings = minSettings.r;
+    if (minSettings.r !== undefined) {
+        if (typeof minSettings.r === 'object' && minSettings.r !== null && !Array.isArray(minSettings.r)) {
+            settings.reportSettings = {
+                includeTags: minSettings.r.it === undefined ? true : minSettings.r.it === 1,
+                includeSummary: minSettings.r.is === undefined ? true : minSettings.r.is === 1,
+                format: minSettings.r.f || 'text',
+            };
+        } else {
+            settings.reportSettings = minSettings.r;
+        }
+    }
 
     const categories = categoryRecords.map((c, index) => ({
         id: c.i,
@@ -670,7 +695,7 @@ export function generateQRCodeMatrix(text) {
         setModule(8, size - 1 - i, getBit(i));
     }
     for (let i = 8; i <= 14; i++) {
-        setModule(size - 15 + i, 8, getBit(i));
+        setModule(size - 1 - (i - 8), 8, getBit(i));
     }
 
     return matrix;
@@ -684,7 +709,7 @@ export function renderQRCodeToCanvas(text, canvas, options = {}) {
     const ctx = canvas.getContext ? canvas.getContext('2d') : null;
     const matrix = generateQRCodeMatrix(text);
     const size = matrix.length;
-    const margin = options.margin ?? 2;
+    const margin = options.margin ?? 4;
     const totalModules = size + margin * 2;
 
     const targetWidth = options.width || canvas.width || 200;
@@ -704,9 +729,9 @@ export function renderQRCodeToCanvas(text, canvas, options = {}) {
             if (matrix[r][c]) {
                 const x = Math.round((c + margin) * scale);
                 const y = Math.round((r + margin) * scale);
-                const w = Math.ceil(scale);
-                const h = Math.ceil(scale);
-                ctx.fillRect(x, y, w, h);
+                const x2 = Math.round((c + margin + 1) * scale);
+                const y2 = Math.round((r + margin + 1) * scale);
+                ctx.fillRect(x, y, x2 - x, y2 - y);
             }
         }
     }
