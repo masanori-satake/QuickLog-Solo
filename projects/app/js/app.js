@@ -1242,6 +1242,34 @@ async function updateAboutStats() {
     }
 }
 
+function drawQRErrorCanvas(canvas, titleText, subText) {
+    if (!canvas) return;
+    const ctx = canvas.getContext ? canvas.getContext('2d') : null;
+    if (!ctx) return;
+
+    canvas.width = 120;
+    canvas.height = 120;
+
+    // Background
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0, 0, 120, 120);
+
+    // Border
+    ctx.strokeStyle = '#d32f2f';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, 118, 118);
+
+    // Warning text
+    ctx.fillStyle = '#d32f2f';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(titleText || 'データ超過', 60, 50);
+
+    ctx.font = '10px sans-serif';
+    ctx.fillText(subText || 'QR表示不可', 60, 72);
+}
+
 async function renderAboutQRCodes() {
     const isPWA = isPWAMode();
     const exportSection = getEl('pwa-qr-export-section');
@@ -1262,11 +1290,20 @@ async function renderAboutQRCodes() {
         }
     }
 
-    // 1. Static PWA URL QR Code (rendered when not in PWA)
+    // 1. Static PWA URL QR Code & Link (rendered when not in PWA)
     const pwaUrlCanvas = getEl('pwa-url-qr-canvas');
+    const pwaUrlLink = getEl('pwa-url-qr-link');
     if (pwaUrlCanvas && !isPWA) {
         const pwaUrl = 'https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/';
         renderQRCodeToCanvas(pwaUrl, pwaUrlCanvas, { width: 120, margin: 1 });
+    }
+    if (pwaUrlLink) {
+        pwaUrlLink.onclick = (e) => {
+            if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
+                e.preventDefault();
+                chrome.tabs.create({ url: pwaUrlLink.href });
+            }
+        };
     }
 
     // 2. Dynamic Settings Export QR Code
@@ -1290,8 +1327,15 @@ async function renderAboutQRCodes() {
             });
 
             renderQRCodeToCanvas(payloadStr, settingsQrCanvas, { width: 120, margin: 1 });
+            settingsQrCanvas.title = '';
         } catch (err) {
             console.error('Failed to render settings QR Code:', err);
+            const isCapacityError = err?.message === 'Payload too large for QR Code';
+            const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
+            const errSub = t('about-pwa-qr-too-large-sub');
+            const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
+            drawQRErrorCanvas(settingsQrCanvas, errTitle, errSub);
+            settingsQrCanvas.title = errTooltip;
         }
     }
 }

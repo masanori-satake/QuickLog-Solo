@@ -114,11 +114,16 @@ export function serializeSettingsPayload({ settings = {}, categories = [], alarm
     if (settings.language) minSettings.l = settings.language;
     if (settings.reportSettings) minSettings.r = settings.reportSettings;
 
-    const minCategories = (categories || []).map((cat, idx) => {
+    // Filter out internal system categories (IDLE) and page breaks (__PAGE_BREAK__)
+    const validCategories = (categories || []).filter(
+        (cat) => cat && cat.name !== 'IDLE' && !(cat.name || '').startsWith('__PAGE_BREAK__')
+    );
+
+    const minCategories = validCategories.map((cat, idx) => {
         const item = { i: cat.id, n: cat.name };
         if (cat.color && cat.color !== 'primary') item.c = cat.color;
-        const anim = sanitizeAnimationId(cat.animation);
-        if (anim && anim !== 'digital_rain') item.a = anim;
+        const cAnim = sanitizeAnimationId(cat.animation);
+        if (cAnim && cAnim !== 'digital_rain') item.a = cAnim;
         if (cat.tags) item.tg = cat.tags;
         const order = cat.order ?? idx;
         if (order !== idx) item.o = order;
@@ -144,12 +149,10 @@ export function serializeSettingsPayload({ settings = {}, categories = [], alarm
         return item;
     });
 
-    const payload = {
-        v: 1,
-        s: minSettings,
-        c: minCategories,
-        a: minAlarms,
-    };
+    const payload = { v: 1 };
+    if (Object.keys(minSettings).length > 0) payload.s = minSettings;
+    if (minCategories.length > 0) payload.c = minCategories;
+    if (minAlarms.length > 0) payload.a = minAlarms;
 
     return JSON.stringify(payload);
 }
@@ -221,17 +224,19 @@ export function deserializeSettingsPayload(jsonString) {
 
     const minSettings = parsed.s || {};
     const settings = {};
-    if (minSettings.t) settings.theme = minSettings.t;
-    if (minSettings.f) settings.font = minSettings.f;
-    if (minSettings.fw) settings.fontWeight = minSettings.fw;
-    if (minSettings.a) settings.animation = sanitizeAnimationId(minSettings.a);
-    if (minSettings.pa) settings.pauseAnimation = sanitizeAnimationId(minSettings.pa);
-    if (minSettings.pt) settings.pauseTheme = minSettings.pt;
-    if (minSettings.th) settings.timerHeight = minSettings.th;
-    if (minSettings.cl) settings.categoryLayout = minSettings.cl;
-    if (Array.isArray(minSettings.bd)) settings.businessDays = minSettings.bd;
-    if (minSettings.l) settings.language = minSettings.l;
-    if (minSettings.r) settings.reportSettings = minSettings.r;
+    if (minSettings.t !== undefined) settings.theme = minSettings.t;
+    if (minSettings.f !== undefined) settings.font = minSettings.f;
+    if (minSettings.fw !== undefined) settings.fontWeight = minSettings.fw;
+    if (minSettings.a !== undefined) settings.animation = sanitizeAnimationId(minSettings.a);
+    if (minSettings.pa !== undefined) settings.pauseAnimation = sanitizeAnimationId(minSettings.pa);
+    if (minSettings.pt !== undefined) settings.pauseTheme = minSettings.pt;
+    if (minSettings.th !== undefined) settings.timerHeight = minSettings.th;
+    if (minSettings.cl !== undefined) settings.categoryLayout = minSettings.cl;
+    if (minSettings.bd !== undefined) {
+        settings.businessDays = Array.isArray(minSettings.bd) ? minSettings.bd : [1, 2, 3, 4, 5];
+    }
+    if (minSettings.l !== undefined) settings.language = minSettings.l;
+    if (minSettings.r !== undefined) settings.reportSettings = minSettings.r;
 
     const categories = categoryRecords.map((c, index) => ({
         id: c.i,
