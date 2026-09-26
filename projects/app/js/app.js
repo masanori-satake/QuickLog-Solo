@@ -1331,7 +1331,7 @@ export async function renderAboutQRCodes() {
                                 cat.name !== SYSTEM_CATEGORY_IDLE &&
                                 !(cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
                         );
-                        categoryChunksCount = Math.max(1, Math.ceil(validCats.length / 5));
+                        categoryChunksCount = Math.max(1, Math.ceil(validCats.length / 3));
                     } catch {
                         // ignore category error for general QR calculation
                     }
@@ -1371,7 +1371,7 @@ export async function renderAboutQRCodes() {
                         !(cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
                 );
 
-                const CHUNK_SIZE = 5;
+                const CHUNK_SIZE = 3;
                 const chunks = [];
                 if (validCategories.length === 0) {
                     chunks.push([]);
@@ -1616,26 +1616,36 @@ export function setupQRScanner() {
             const statusEl = getEl('qr-scan-status');
             if (!video || !activeVideoStream || video.paused || video.ended) return;
 
+            captureBtn.disabled = true;
+            if (statusEl) {
+                statusEl.textContent = t('qr-scan-status-analyzing') || '解析中...';
+                statusEl.style.color = 'var(--md-sys-color-primary)';
+            }
+
             try {
+                // Yield to let UI update status text and disabled button state
+                await new Promise((resolve) => setTimeout(resolve, 30));
+
                 const canvas = document.createElement('canvas');
                 canvas.width = video.videoWidth || 1280;
                 canvas.height = video.videoHeight || 720;
                 const ctx = canvas.getContext('2d');
-                if (!ctx) return;
+                if (ctx) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const signal = qrImportController.signal;
+                    const decodedText = await decodeQRCodeFromCanvas(canvas, { maxDimension: 960 });
 
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const signal = qrImportController.signal;
-                const decodedText = await decodeQRCodeFromCanvas(canvas, { maxDimension: 1280 });
-
-                if (!signal.aborted) {
-                    if (decodedText) {
-                        const result = await handleImportQRPayload(decodedText, signal);
-                        if (result && result.isAllPartsCompleted) {
-                            closeQRScannerModal();
+                    if (!signal.aborted) {
+                        if (decodedText) {
+                            const result = await handleImportQRPayload(decodedText, signal);
+                            if (result && result.isAllPartsCompleted) {
+                                closeQRScannerModal();
+                                return;
+                            }
+                        } else if (statusEl) {
+                            statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
+                            statusEl.style.color = '#d32f2f';
                         }
-                    } else if (statusEl) {
-                        statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
-                        statusEl.style.color = '#d32f2f';
                     }
                 }
             } catch (err) {
@@ -1644,6 +1654,8 @@ export function setupQRScanner() {
                     statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
                     statusEl.style.color = '#d32f2f';
                 }
+            } finally {
+                captureBtn.disabled = false;
             }
         };
     }
@@ -1658,6 +1670,13 @@ export function setupQRScanner() {
             const selectedImageId = ++activeSelectedImageId;
             invalidateQRImports();
             const signal = qrImportController.signal;
+
+            const statusEl = getEl('qr-scan-status');
+            if (statusEl) {
+                statusEl.textContent = t('qr-scan-status-analyzing') || '解析中...';
+                statusEl.style.color = 'var(--md-sys-color-primary)';
+            }
+            if (captureBtn) captureBtn.disabled = true;
 
             let allCompleted = false;
             let hasError = false;
@@ -1709,9 +1728,9 @@ export function setupQRScanner() {
             });
 
             Promise.all(processPromises).then(() => {
+                if (captureBtn) captureBtn.disabled = false;
                 if (selectedImageId === activeSelectedImageId && !signal.aborted) {
                     if (hasError && !allCompleted) {
-                        const statusEl = getEl('qr-scan-status');
                         if (statusEl) {
                             statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
                             statusEl.style.color = '#d32f2f';

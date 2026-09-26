@@ -543,6 +543,7 @@ export default {
     'about-pwa-import-desc': 'PC 확장 프로그램에 표시된 설정 QR 코드를 스캔하여 카테고리 및 알람 설정을 적용합니다.',
     'btn-pwa-scan-qr': 'QR 코드 스캔',
     'qr-scan-modal-title': 'QR 코드 스캔',
+    'qr-scan-status-analyzing': 'Analyzing...',
     'qr-scan-status-scanning': '카메라를 QR 코드에 맞춰 주세요',
     'btn-qr-capture': '촬영하여 분석',
     'btn-select-qr-image': '이미지에서 선택',

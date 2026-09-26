@@ -568,6 +568,7 @@ export default {
     'btn-pwa-scan-qr': 'Scan QR Code',
     'qr-scan-modal-title': 'Scan QR Code',
     'qr-scan-status-scanning': 'Please point your camera at the QR code',
+    'qr-scan-status-analyzing': 'Analyzing...',
     'btn-qr-capture': 'Capture & Scan',
     'btn-select-qr-image': 'Select from Image',
     'toast-settings-imported': 'Settings imported successfully!',

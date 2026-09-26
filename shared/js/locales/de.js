@@ -554,6 +554,7 @@ export default {
     'btn-pwa-scan-qr': 'QR-Code scannen',
     'qr-scan-modal-title': 'QR-Code scannen',
     'qr-scan-status-scanning': 'Bitte halten Sie Ihre Kamera auf den QR-Code',
+    'qr-scan-status-analyzing': 'Analysieren...',
     'btn-qr-capture': 'Aufnehmen und scannen',
     'btn-select-qr-image': 'Aus Bild auswählen',
     'toast-settings-imported': 'Einstellungen erfolgreich importiert!',
