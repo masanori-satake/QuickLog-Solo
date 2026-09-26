@@ -1620,6 +1620,9 @@ export function setupQRScanner() {
             if (!file) return;
             const selectedImageId = ++activeSelectedImageId;
             invalidateQRImports();
+            scannedPartsSet.clear();
+            knownPartsTotal.generalTotal = 1;
+            knownPartsTotal.categoryTotal = 0;
             const signal = qrImportController.signal;
             const img = new Image();
             const objectUrl = URL.createObjectURL(file);
@@ -1778,7 +1781,7 @@ async function handleImportQRPayload(payloadStr, signal) {
 
         let partKey = '';
         let partName = '';
-        if (partInfo) {
+        if (partInfo && (partInfo.gi > 0 || partInfo.ci > 0)) {
             if (partInfo.gi > 0) {
                 partKey = `general_${partInfo.gi}_${partInfo.gt || 1}`;
                 partName =
@@ -1794,6 +1797,9 @@ async function handleImportQRPayload(payloadStr, signal) {
             }
             if (partInfo.gt) knownPartsTotal.generalTotal = Math.max(knownPartsTotal.generalTotal, partInfo.gt);
             if (partInfo.ct) knownPartsTotal.categoryTotal = Math.max(knownPartsTotal.categoryTotal, partInfo.ct);
+        } else {
+            // For QR payloads without explicit partInfo (or legacy QRs), use string payload hash key for deduplication
+            partKey = `raw_${payloadStr}`;
         }
 
         // Avoid re-processing if already scanned in this session
@@ -1816,8 +1822,10 @@ async function handleImportQRPayload(payloadStr, signal) {
             : t('toast-settings-imported') || '設定をインポートしました！';
         showToast(successMsg);
 
+        // Calculate completed parts count using only real part keys (excluding raw_ keys)
+        const completedPartsCount = Array.from(scannedPartsSet).filter((k) => !k.startsWith('raw_')).length;
         const totalExpected = knownPartsTotal.generalTotal + knownPartsTotal.categoryTotal;
-        if (knownPartsTotal.categoryTotal > 0 && scannedPartsSet.size >= totalExpected) {
+        if (knownPartsTotal.categoryTotal > 0 && completedPartsCount >= totalExpected) {
             const statusEl = getEl('qr-scan-status');
             if (statusEl) {
                 statusEl.textContent = t('qr-scan-all-completed') || 'すべてのQRコードの読み取りが完了しました！';
