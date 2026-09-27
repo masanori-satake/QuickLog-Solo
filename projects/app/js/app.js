@@ -1787,7 +1787,7 @@ export async function openQRScannerModal() {
                 } catch (e) {
                     console.warn('Error pausing QR video:', e);
                 }
-                delete video.srcObject;
+                video.srcObject = null;
                 return;
             }
             startVideoFrameScanning(video, sessionId);
@@ -1823,7 +1823,7 @@ export function closeQRScannerModal() {
         } catch (e) {
             console.warn('Error pausing QR video on close:', e);
         }
-        delete video.srcObject;
+        video.srcObject = null;
     }
     const modal = getEl('qr-scan-modal');
     if (modal) modal.classList.add('hidden');
@@ -1865,10 +1865,17 @@ function startVideoFrameScanning(video, sessionId) {
                     const decoded = await decodeQRCodeFromCanvas(canvas, { maxDimension: maxDim });
                     if (sessionId === activeScanSessionId && decoded && !signal.aborted) {
                         const result = await handleImportQRPayload(decoded, signal);
-                        // If import payload handled `#sync?` or completed, frame scanner stays locked
-                        if (result && (result.handledError || result.isAllPartsCompleted)) {
+                        if (result && result.isAllPartsCompleted) {
                             keepLocked = true;
                             return;
+                        }
+                        if (result && result.handledError) {
+                            keepLocked = true;
+                            setTimeout(() => {
+                                if (sessionId === activeScanSessionId) {
+                                    isScanningFrame = false;
+                                }
+                            }, 2000);
                         }
                     }
                 }
