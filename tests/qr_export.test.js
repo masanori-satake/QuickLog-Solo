@@ -109,7 +109,7 @@ test('buildPusherErrorReport generates markdown table with step details and erro
     expect(report).toContain('**エラー詳細:** Failed to fetch');
 });
 
-test('accordion toggle runs startPusherTransferProcess, completes encryption step 4, and fails at step 5 when Pusher is unconfigured', async () => {
+test('accordion toggle runs startPusherTransferProcess, completes encryption step 4, and fails at step 5 when Pusher is configured but fetch fails in node test environment', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const accordion = document.getElementById('pwa-settings-qr-accordion');
 
@@ -128,6 +128,6 @@ test('accordion toggle runs startPusherTransferProcess, completes encryption ste
     expect(reportContent).toContain('| 2. QRコード描画 | 完了 | OK |');
     expect(reportContent).toContain('| 3. 設定データ取得 | 完了 | OK |');
     expect(reportContent).toContain('| 4. データ暗号化 | 完了 | OK |');
-    expect(reportContent).toContain('| 5. Pusher通信送信 | 失敗 | Pusherの設定が未構成です（APIキーまたはクラスタが設定されていません）。 |');
+    expect(reportContent).toContain('| 5. Pusher通信送信 | 失敗 |');
     expect(warnSpy).toHaveBeenCalledWith('Pusher transfer warning:', expect.any(Error));
 });

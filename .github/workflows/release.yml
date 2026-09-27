@@ -20,9 +20,4 @@ jobs:
     with:
       package_source_dir: ''
       release_files: 'releases/*.zip'
-      install_command: |
-        echo "PUSHER_APP_ID=${{ '${{ secrets.PUSHER_APP_ID }}' }}" >> $GITHUB_ENV
-        echo "PUSHER_KEY=${{ '${{ secrets.PUSHER_KEY }}' }}" >> $GITHUB_ENV
-        echo "PUSHER_SECRET=${{ '${{ secrets.PUSHER_SECRET }}' }}" >> $GITHUB_ENV
-        echo "PUSHER_CLUSTER=${{ '${{ secrets.PUSHER_CLUSTER }}' }}" >> $GITHUB_ENV
-        npm ci
+      install_command: 'npm ci'
