@@ -1,5 +1,18 @@
 import { jest } from '@jest/globals';
+import { webcrypto } from 'crypto';
 import { TextEncoder, TextDecoder } from 'util';
+
+if (!globalThis.crypto || !globalThis.crypto.subtle) {
+    try {
+        Object.defineProperty(globalThis, 'crypto', {
+            value: webcrypto,
+            configurable: true,
+            writable: true,
+        });
+    } catch {
+        globalThis.crypto = webcrypto;
+    }
+}
 
 if (typeof globalThis.TextEncoder === 'undefined') {
     globalThis.TextEncoder = TextEncoder;
@@ -54,6 +67,7 @@ describe('pusher_sync.js', () => {
         const startTime = Date.now();
         const encrypted = await encryptPayload(settingsData, pin);
         expect(encrypted.data).toBeDefined();
+        expect(encrypted.iv).toBeDefined();
         expect(typeof encrypted.data).toBe('string');
 
         const decrypted = await decryptPayload(encrypted, pin);
@@ -61,7 +75,7 @@ describe('pusher_sync.js', () => {
         expect(decrypted.settings).toEqual(settingsData);
     });
 
-    test('computeHmacSha256 generates correct signature using Pure JS SHA256', async () => {
+    test('computeHmacSha256 generates correct signature using WebCrypto SHA256', async () => {
         const secret = 'my_secret';
         const message = 'POST\n/apps/123/events\nauth_key=key&auth_timestamp=1000&auth_version=1.0';
         const sig = await computeHmacSha256(secret, message);

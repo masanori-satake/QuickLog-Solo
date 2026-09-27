@@ -1,5 +1,18 @@
 import { PUSHER_CONFIG } from './pusher_config.js';
 
+function getCrypto() {
+    if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.subtle) {
+        return globalThis.crypto;
+    }
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+        return window.crypto;
+    }
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+        return crypto;
+    }
+    return null;
+}
+
 /**
  * Lightweight Pure JS MD5 implementation for computing body_md5 required by Pusher REST API.
  * @param {string} str - Input string to hash.
@@ -81,152 +94,35 @@ export function md5(str) {
 }
 
 /**
- * Pure JS SHA-256 implementation on byte arrays.
- * @param {Uint8Array} bytes
- * @returns {Uint8Array} 32-byte digest
- */
-export function sha256Bytes(bytes) {
-    const K = [
-        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98,
-        0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
-        0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8,
-        0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-        0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819,
-        0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a,
-        0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7,
-        0xc67178f2,
-    ];
-
-    let H0 = 0x6a09e667,
-        H1 = 0xbb67ae85,
-        H2 = 0x3c6ef372,
-        H3 = 0xa54ff53a;
-    let H4 = 0x510e527f,
-        H5 = 0x9b05688c,
-        H6 = 0x1f83d9ab,
-        H7 = 0x5be0cd19;
-
-    const l = bytes.length;
-    const bitLen = l * 8;
-    const padLen = (l + 9) % 64 === 0 ? l + 9 : l + 9 + (64 - ((l + 9) % 64));
-    const padded = new Uint8Array(padLen);
-    padded.set(bytes);
-    padded[l] = 0x80;
-
-    const highBits = Math.floor(bitLen / 0x100000000);
-    const lowBits = bitLen % 0x100000000;
-    padded[padLen - 8] = (highBits >>> 24) & 0xff;
-    padded[padLen - 7] = (highBits >>> 16) & 0xff;
-    padded[padLen - 6] = (highBits >>> 8) & 0xff;
-    padded[padLen - 5] = highBits & 0xff;
-    padded[padLen - 4] = (lowBits >>> 24) & 0xff;
-    padded[padLen - 3] = (lowBits >>> 16) & 0xff;
-    padded[padLen - 2] = (lowBits >>> 8) & 0xff;
-    padded[padLen - 1] = lowBits & 0xff;
-
-    const W = new Uint32Array(64);
-
-    for (let i = 0; i < padded.length; i += 64) {
-        for (let t = 0; t < 16; t++) {
-            W[t] =
-                (padded[i + t * 4] << 24) |
-                (padded[i + t * 4 + 1] << 16) |
-                (padded[i + t * 4 + 2] << 8) |
-                padded[i + t * 4 + 3];
-        }
-        for (let t = 16; t < 64; t++) {
-            const s0 =
-                ((W[t - 15] >>> 7) | (W[t - 15] << 25)) ^ ((W[t - 15] >>> 18) | (W[t - 15] << 14)) ^ (W[t - 15] >>> 3);
-            const s1 =
-                ((W[t - 2] >>> 17) | (W[t - 2] << 15)) ^ ((W[t - 2] >>> 19) | (W[t - 2] << 13)) ^ (W[t - 2] >>> 10);
-            W[t] = (W[t - 16] + s0 + W[t - 7] + s1) | 0;
-        }
-
-        let a = H0,
-            b = H1,
-            c = H2,
-            d = H3,
-            e = H4,
-            f = H5,
-            g = H6,
-            h = H7;
-
-        for (let t = 0; t < 64; t++) {
-            const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
-            const ch = (e & f) ^ (~e & g);
-            const temp1 = (h + S1 + ch + K[t] + W[t]) | 0;
-            const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
-            const maj = (a & b) ^ (a & c) ^ (b & c);
-            const temp2 = (S0 + maj) | 0;
-
-            h = g;
-            g = f;
-            f = e;
-            e = (d + temp1) | 0;
-            d = c;
-            c = b;
-            b = a;
-            a = (temp1 + temp2) | 0;
-        }
-
-        H0 = (H0 + a) | 0;
-        H1 = (H1 + b) | 0;
-        H2 = (H2 + c) | 0;
-        H3 = (H3 + d) | 0;
-        H4 = (H4 + e) | 0;
-        H5 = (H5 + f) | 0;
-        H6 = (H6 + g) | 0;
-        H7 = (H7 + h) | 0;
-    }
-
-    const out = new Uint8Array(32);
-    const state = [H0, H1, H2, H3, H4, H5, H6, H7];
-    for (let i = 0; i < 8; i++) {
-        out[i * 4] = (state[i] >>> 24) & 0xff;
-        out[i * 4 + 1] = (state[i] >>> 16) & 0xff;
-        out[i * 4 + 2] = (state[i] >>> 8) & 0xff;
-        out[i * 4 + 3] = state[i] & 0xff;
-    }
-    return out;
-}
-
-/**
- * Computes HMAC-SHA256 in hex using Pure JS.
+ * Computes HMAC-SHA256 in hex using WebCrypto API (crypto.subtle).
  * @param {string} keyStr - Secret key string.
  * @param {string} messageStr - Message string to sign.
  * @returns {Promise<string>} Hex signature.
  */
 export async function computeHmacSha256(keyStr, messageStr) {
+    const cryptoObj = getCrypto();
     const encoder = new TextEncoder();
-    let keyBytes = encoder.encode(keyStr);
-    const msgBytes = encoder.encode(messageStr);
+    const keyData = encoder.encode(keyStr);
+    const msgData = encoder.encode(messageStr);
 
-    if (keyBytes.length > 64) {
-        keyBytes = sha256Bytes(keyBytes);
-    }
-    const kPadded = new Uint8Array(64);
-    kPadded.set(keyBytes);
-
-    const ipad = new Uint8Array(64);
-    const opad = new Uint8Array(64);
-    for (let i = 0; i < 64; i++) {
-        ipad[i] = kPadded[i] ^ 0x36;
-        opad[i] = kPadded[i] ^ 0x5c;
-    }
-
-    const inner = new Uint8Array(64 + msgBytes.length);
-    inner.set(ipad);
-    inner.set(msgBytes, 64);
-    const innerHash = sha256Bytes(inner);
-
-    const outer = new Uint8Array(64 + 32);
-    outer.set(opad);
-    outer.set(innerHash, 64);
-    const outerHash = sha256Bytes(outer);
-
-    return Array.from(outerHash)
+    const key = await cryptoObj.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const signature = await cryptoObj.subtle.sign('HMAC', key, msgData);
+    return Array.from(new Uint8Array(signature))
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('');
+}
+
+/**
+ * Generates a CryptoKey for AES-GCM from a 6-digit PIN or secret key string using SHA-256 digest.
+ * @param {string} pinOrKey
+ * @returns {Promise<CryptoKey>}
+ */
+async function getKeyFromPin(pinOrKey) {
+    const cryptoObj = getCrypto();
+    const encoder = new TextEncoder();
+    const pinBytes = encoder.encode(String(pinOrKey));
+    const hash = await cryptoObj.subtle.digest('SHA-256', pinBytes);
+    return cryptoObj.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
 }
 
 /**
@@ -250,13 +146,14 @@ export function generateSecretKey() {
 }
 
 /**
- * Encrypts data using Pure JS XOR algorithm with 6-digit PIN / key.
+ * Encrypts data using WebCrypto API (AES-GCM) with 6-digit PIN / key.
  * Adds `createdAt: Date.now()` timestamp to payload object before encryption.
  * @param {any} data - Object to encrypt.
  * @param {string} pinOrKey - 6-digit PIN or secret key string.
- * @returns {Promise<{data: string}>} Object containing Base64 encoded encrypted data string.
+ * @returns {Promise<{iv: string, data: string}>} Base64 IV and encrypted data.
  */
 export async function encryptPayload(data, pinOrKey) {
+    const cryptoObj = getCrypto();
     const payload = {
         createdAt: Date.now(),
         settings: data,
@@ -264,51 +161,58 @@ export async function encryptPayload(data, pinOrKey) {
     const jsonStr = JSON.stringify(payload);
     const encoder = new TextEncoder();
     const dataBytes = encoder.encode(jsonStr);
-    const keyBytes = encoder.encode(String(pinOrKey));
 
-    const encryptedBytes = new Uint8Array(dataBytes.length);
-    for (let i = 0; i < dataBytes.length; i++) {
-        encryptedBytes[i] = dataBytes[i] ^ keyBytes[i % keyBytes.length] ^ ((i * 13) & 0xff);
+    const key = await getKeyFromPin(pinOrKey);
+    const iv = cryptoObj.getRandomValues(new Uint8Array(12));
+    const encryptedBuf = await cryptoObj.subtle.encrypt({ name: 'AES-GCM', iv }, key, dataBytes);
+
+    let ivBinary = '';
+    const ivArr = new Uint8Array(iv);
+    for (let i = 0; i < ivArr.length; i++) {
+        ivBinary += String.fromCharCode(ivArr[i]);
     }
 
-    let binaryStr = '';
-    for (let i = 0; i < encryptedBytes.length; i++) {
-        binaryStr += String.fromCharCode(encryptedBytes[i]);
+    let dataBinary = '';
+    const dataArr = new Uint8Array(encryptedBuf);
+    for (let i = 0; i < dataArr.length; i++) {
+        dataBinary += String.fromCharCode(dataArr[i]);
     }
-    const dataBase64 = btoa(binaryStr);
 
     return {
-        data: dataBase64,
+        iv: btoa(ivBinary),
+        data: btoa(dataBinary),
     };
 }
 
 /**
- * Decrypts data using Pure JS XOR algorithm.
- * @param {{data: string}} encryptedObj - Object containing Base64 encoded data string.
+ * Decrypts data using WebCrypto API (AES-GCM).
+ * @param {{iv: string, data: string}} encryptedObj - Base64 IV and encrypted data.
  * @param {string} pinOrKey - 6-digit PIN or secret key string.
  * @returns {Promise<{createdAt: number, settings: any}>} Decrypted payload object with timestamp and settings.
  */
 export async function decryptPayload(encryptedObj, pinOrKey) {
-    if (!encryptedObj || !encryptedObj.data) {
+    if (!encryptedObj || !encryptedObj.data || !encryptedObj.iv) {
         throw new Error('Invalid encrypted payload structure');
     }
 
-    const binaryStr = atob(encryptedObj.data);
-    const encryptedBytes = new Uint8Array(binaryStr.length);
-    for (let i = 0; i < binaryStr.length; i++) {
-        encryptedBytes[i] = binaryStr.charCodeAt(i);
+    const cryptoObj = getCrypto();
+    const key = await getKeyFromPin(pinOrKey);
+
+    const ivBinary = atob(encryptedObj.iv);
+    const iv = new Uint8Array(ivBinary.length);
+    for (let i = 0; i < ivBinary.length; i++) {
+        iv[i] = ivBinary.charCodeAt(i);
     }
 
-    const encoder = new TextEncoder();
-    const keyBytes = encoder.encode(String(pinOrKey));
-    const decryptedBytes = new Uint8Array(encryptedBytes.length);
-
-    for (let i = 0; i < encryptedBytes.length; i++) {
-        decryptedBytes[i] = encryptedBytes[i] ^ keyBytes[i % keyBytes.length] ^ ((i * 13) & 0xff);
+    const dataBinary = atob(encryptedObj.data);
+    const dataBytes = new Uint8Array(dataBinary.length);
+    for (let i = 0; i < dataBinary.length; i++) {
+        dataBytes[i] = dataBinary.charCodeAt(i);
     }
 
+    const decryptedBuf = await cryptoObj.subtle.decrypt({ name: 'AES-GCM', iv }, key, dataBytes);
     const decoder = new TextDecoder();
-    const jsonStr = decoder.decode(decryptedBytes);
+    const jsonStr = decoder.decode(decryptedBuf);
     return JSON.parse(jsonStr);
 }
 
