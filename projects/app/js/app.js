@@ -1304,10 +1304,11 @@ export function buildPusherErrorReport(steps, err) {
     }
 
     const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    const isSendingFailure = steps.some((s) => s.name.includes('Pusher通信送信') && s.status === 'failed');
     let userGuide = '';
     const rawErrMsg = err && (err.message || String(err));
 
-    if (isOffline) {
+    if (isOffline && isSendingFailure) {
         userGuide =
             '\n\n**【原因と対処方法】**\nPCがオフライン状態（インターネット切断）です。ネットワーク接続を確認して再試行してください。';
     } else if (rawErrMsg && (rawErrMsg.includes('Failed to fetch') || rawErrMsg.includes('NetworkError'))) {
