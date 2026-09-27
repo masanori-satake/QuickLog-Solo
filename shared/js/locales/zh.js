@@ -541,6 +541,9 @@ export default {
     'about-pwa-qr-accordion-label': '設定引き継ぎ用QRコードを表示',
     'btn-qr-scan-done': '完了',
     'qr-scan-all-completed': 'すべてのQRコードの読み取りが完了しました！',
+    'qr-scan-fetching-pusher': 'Pusherから設定データを取得中...',
+    'qr-scan-pusher-success': '設定データの読み取りが完了しました！',
+    'qr-scan-pusher-timeout': '受信タイムアウト：送信側のQRコードを表示したまま、再度読み取ってください。',
     'pusher-error-title': '【原因と対処方法】',
     'pusher-error-offline':
         'PCがオフライン状態（インターネット切断）です。ネットワーク接続を確認して再試行してください。',
