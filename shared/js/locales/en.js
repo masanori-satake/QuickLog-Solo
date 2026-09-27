@@ -126,7 +126,7 @@ export default {
     'about-stats-logs': 'Work History Count',
     'about-stats-categories': 'Category Count',
     'about-description':
-        'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved in IndexedDB within your browser (data is only transferred when settings transfer is initiated, end-to-end encrypted via Web Crypto API). It maintains high transparency and security through strict dependency verification via GitHub Actions and continuous auditing with Google OSV-Scanner.',
+        'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved in IndexedDB within your browser (data is only transmitted when settings transfer or device-to-device sync is enabled). It maintains high transparency and security through strict dependency verification via GitHub Actions and continuous auditing with Google OSV-Scanner.',
     'about-disclaimer':
         '[Disclaimer] This is a personal open-source project and is provided "AS IS" without warranty of any kind. The developer shall not be liable for any damages arising from its use. Use at your own risk.',
 

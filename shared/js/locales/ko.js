@@ -131,7 +131,7 @@ export default {
     'about-stats-logs': '작업 이력 수',
     'about-stats-categories': '카테고리 수',
     'about-description':
-        'QuickLog-Solo는 개인정보 보호를 중시하는 미니멀리스트 작업 메모 툴입니다. 데이터는 브라우저 내의 IndexedDB에 저장됩니다(설정 이전 시에만 Web Crypto API를 통해 E2E 암호화되어 전송됩니다). GitHub Actions를 통한 엄격한 종속성 검증과 Google OSV-Scanner를 통한 지속적인 감사를 통해 높은 투명성과 안전성을 유지하고 있습니다.',
+        'QuickLog-Solo는 개인정보 보호를 중시하는 미니멀리스트 작업 메모 툴입니다. 데이터는 브라우저 내의 IndexedDB에 저장됩니다(설정 이전 시 또는 기기 간 동기화 활성화 시에만 데이터가 전송됩니다). GitHub Actions를 통한 엄격한 종속성 검증과 Google OSV-Scanner를 통한 지속的な 감사를 통해 높은 투명성과 안전성을 유지하고 있습니다.',
     'about-disclaimer':
         '[면책 조항] 이 프로젝트는 개인 오픈 소스 프로젝트이며 어떠한 보증도 제공하지 않습니다. 개발자는 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 사용자의 책임 하에 이용해 주십시오.',
     // Maintenance - Backup & Restore

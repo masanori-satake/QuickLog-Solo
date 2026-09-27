@@ -130,7 +130,7 @@ export default {
     'about-stats-logs': '工作历史数量',
     'about-stats-categories': '分类数量',
     'about-description':
-        'QuickLog-Solo 是一款注重隱私的極簡工作筆記工具。資料儲存於瀏覽器內的 IndexedDB（僅在進行設定轉移時，透過 Web Crypto API 進行端到端加密傳輸）。透過 GitHub Actions 嚴格驗證相依性以及 Google OSV-Scanner 的持續審計，保持高度的透明度與安全性。',
+        'QuickLog-Solo 頁面是一款注重隱私的極簡工作筆記工具。資料儲存於瀏覽器內的 IndexedDB（僅在進行設定轉移或開啟跨裝置同步時傳輸資料）。透過 GitHub Actions 嚴格驗證相依性以及 Google OSV-Scanner 的持續審計，保持高度的透明度與安全性。',
     'about-disclaimer':
         '[免责声明] 这是一个个人开源项目，按“原样”提供，不附带任何形式的保证。开发者不对因使用本软件而产生的任何损害承担责任。请自行承担使用风险。',
     // Maintenance - Backup & Restore

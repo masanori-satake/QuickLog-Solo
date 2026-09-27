@@ -307,6 +307,8 @@ export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CO
             reject(new Error('Pusher WebSocket connection timeout'));
         }, timeoutMs);
 
+        let isResolved = false;
+
         socket.onmessage = async (event) => {
             try {
                 const message = JSON.parse(event.data);
@@ -321,6 +323,7 @@ export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CO
                 }
 
                 if (message.event === 'sync-settings') {
+                    isResolved = true;
                     clearTimeout(timeoutId);
                     const eventData = typeof message.data === 'string' ? JSON.parse(message.data) : message.data;
                     const encryptedPayload = eventData.payload;
@@ -329,19 +332,30 @@ export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CO
                     resolve(settings);
                 }
             } catch (err) {
-                clearTimeout(timeoutId);
-                if (socket) socket.close();
-                reject(err);
+                if (!isResolved) {
+                    clearTimeout(timeoutId);
+                    if (socket) socket.close();
+                    reject(err);
+                }
             }
         };
 
         socket.onerror = (err) => {
-            clearTimeout(timeoutId);
-            reject(err || new Error('WebSocket error'));
+            if (!isResolved) {
+                clearTimeout(timeoutId);
+                reject(err || new Error('WebSocket error'));
+            }
         };
 
-        socket.onclose = () => {
-            // Handled in message or timeout
+        socket.onclose = (event) => {
+            if (!isResolved) {
+                clearTimeout(timeoutId);
+                reject(
+                    new Error(
+                        `WebSocket closed before message received (code: ${event.code}, reason: ${event.reason || 'none'})`
+                    )
+                );
+            }
         };
     });
 }

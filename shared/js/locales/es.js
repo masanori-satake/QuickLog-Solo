@@ -131,7 +131,7 @@ export default {
     'about-stats-logs': 'Número de historiales de trabajo',
     'about-stats-categories': 'Número de categorías',
     'about-description':
-        'QuickLog-Solo es una herramienta minimalista de notas de trabajo centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (los datos solo se transfieren al iniciar la transferencia de configuración, cifrados de extremo a extremo mediante Web Crypto API). Mantiene una alta transparencia y seguridad mediante una verificación estricta de dependencias con GitHub Actions y auditorías continuas con Google OSV-Scanner.',
+        'QuickLog-Solo es una herramienta minimalista de notas de trabajo centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (los datos solo se transmiten cuando se inicia la transferencia de configuración o la sincronización entre dispositivos está activada). Mantiene una alta transparencia y seguridad mediante una verificación estricta de dependencias con GitHub Actions y auditorías continuas con Google OSV-Scanner.',
     'about-disclaimer':
         '[Descargo de responsabilidad] Este es un proyecto personal de código abierto y se proporciona "TAL CUAL" sin garantía de ningún tipo. El desarrollador no será responsable de ningún daño derivado de su uso. Úselo bajo su propio riesgo.',
     // Maintenance - Backup & Restore
