@@ -16,8 +16,6 @@ permissions:
 jobs:
   release:
     uses: masanori-satake/common-workflows/.github/workflows/base-release.yml@v1
-    secrets: inherit
     with:
       package_source_dir: ''
       release_files: 'releases/*.zip'
-      install_command: 'npm ci'
