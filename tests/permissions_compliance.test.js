@@ -41,4 +41,12 @@ describe('Manifest Permissions Compliance (Permissions Delta Verification)', () 
         const csp = manifest.content_security_policy.extension_pages;
         expect(csp).toContain("connect-src 'self' https://*.pusher.com wss://*.pusher.com");
     });
+
+    test('manifest.json host_permissions includes Pusher domain', () => {
+        const manifestPath = path.resolve(process.cwd(), 'projects/app/manifest.json');
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+        expect(manifest.host_permissions).toBeInstanceOf(Array);
+        expect(manifest.host_permissions).toContain("https://*.pusher.com/");
+    });
 });
