@@ -75,8 +75,7 @@ export default {
     'back-to-app': 'Voltar para o aplicativo',
     'alarm-setting-description':
         'Exibe uma mensagem em um horário especificado e executa automaticamente ações como "Terminar", "Pausar" ou "Iniciar", se necessário.',
-    'alarm-editor-note-extension-only':
-        '* Os alarmes não podem ser editados na versão PWA.',
+    'alarm-editor-note-extension-only': '* Os alarmes não podem ser editados na versão PWA.',
     'alarm-label-enabled': 'Ativado',
     'alarm-label-time': 'Hora',
     'alarm-label-message': 'Mensagem',
@@ -537,18 +536,21 @@ export default {
         'Já existe uma animação personalizada com o mesmo nome. Por favor, insira um nome diferente.',
     'maker-select-prompt': 'Por favor, adicione uma animação personalizada',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
-    'about-pwa-section-desc': 'Digitalize o código QR com a câmera do seu smartphone para iniciar a versão PWA ou transferir configurações.',
+    'about-pwa-section-desc':
+        'Digitalize o código QR com a câmera do seu smartphone para iniciar a versão PWA ou transferir configurações.',
     'about-pwa-url-qr-label': '1. URL de início PWA',
     'about-pwa-general-qr-label': '2. Geral e Alarmes',
     'about-pwa-categories-qr-label': '3. Categorias',
     'about-pwa-settings-qr-label': '2. Exportar configurações',
-    'about-pwa-qr-too-large': 'O tamanho dos dados excede a capacidade do código QR. Use a função de backup na guia Manutenção.',
+    'about-pwa-qr-too-large':
+        'O tamanho dos dados excede a capacidade do código QR. Use a função de backup na guia Manutenção.',
     'about-pwa-qr-error-title': 'Erro',
     'about-pwa-qr-error': 'Não foi possível gerar o código QR das configurações. Tente novamente.',
     'about-pwa-qr-too-large-title': 'Dados Excedidos',
     'about-pwa-qr-too-large-sub': 'QR Indisponível',
     'about-pwa-import-title': 'Importar configurações do QuickLog-Solo (β)',
-    'about-pwa-import-desc': 'Digitalize o código QR de configuração exibido na extensão para PC para aplicar categorias e alarmes.',
+    'about-pwa-import-desc':
+        'Digitalize o código QR de configuração exibido na extensão para PC para aplicar categorias e alarmes.',
     'btn-pwa-scan-qr': 'Escanear código QR',
     'qr-scan-modal-title': 'Escaneamento de código QR',
     'qr-scan-status-analyzing': 'Analisando...',
@@ -559,7 +561,7 @@ export default {
     'qr-scan-failed-not-found': 'Nenhum código QR detectado na imagem',
     'qr-scan-camera-error': 'Acesso à câmera negado ou indisponível. Por favor, selecione uma imagem.',
     'qr-scan-invalid-payload': 'Dados de código QR inválidos',
-    'about-pwa-qr-accordion-label': 'Exibir códigos QR de transferência (2. Geral/Alarmes / 3. Categorias)',
+    'about-pwa-qr-accordion-label': 'Show Transfer QR Code',
     'btn-qr-scan-done': 'Concluído',
     'qr-scan-all-completed': 'Todos os códigos QR foram escaneados com sucesso!',
 };

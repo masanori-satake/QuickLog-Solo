@@ -118,7 +118,7 @@ describe('pusher_sync.js', () => {
         expect(callArgs[1].method).toBe('POST');
     });
 
-    test('fetchSettingsFromPusher fetches and decrypts settings', async () => {
+    test('fetchSettingsFromPusher receives and decrypts settings via WebSocket', async () => {
         const config = {
             appId: '100',
             key: 'test_key',
@@ -131,17 +131,33 @@ describe('pusher_sync.js', () => {
 
         const encrypted = await encryptPayload(originalData, secretKey);
 
-        const mockResponseBody = {
-            payload: encrypted,
-        };
-        const mockResponse = {
-            ok: true,
-            json: async () => mockResponseBody,
-        };
-        const fetchMock = jest.fn().mockResolvedValue(mockResponse);
-        globalThis.fetch = fetchMock;
+        class MockWebSocket {
+            constructor(url) {
+                this.url = url;
+                setTimeout(() => {
+                    if (this.onmessage) {
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'pusher:connection_established',
+                                data: '{}',
+                            }),
+                        });
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'sync-settings',
+                                data: JSON.stringify({ payload: encrypted }),
+                            }),
+                        });
+                    }
+                }, 10);
+            }
+            send() {}
+            close() {}
+        }
 
-        const fetchedData = await fetchSettingsFromPusher(roomId, secretKey, config, 1, 10);
+        globalThis.WebSocket = MockWebSocket;
+
+        const fetchedData = await fetchSettingsFromPusher(roomId, secretKey, config, 1000);
         expect(fetchedData).toEqual(originalData);
     });
 });

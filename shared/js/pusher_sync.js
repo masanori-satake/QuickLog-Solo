@@ -214,6 +214,10 @@ export async function generatePusherQueryString(method, path, body, config, time
     const sortedKeys = Object.keys(params).sort();
     const queryString = sortedKeys.map((k) => `${k}=${encodeURIComponent(params[k])}`).join('&');
 
+    if (!config.secret) {
+        return queryString;
+    }
+
     const stringToSign = `${method.toUpperCase()}\n${path}\n${queryString}`;
     const signature = await computeHmacSha256(config.secret, stringToSign);
 
@@ -228,16 +232,27 @@ export async function generatePusherQueryString(method, path, body, config, time
  * @param {Object} [config=PUSHER_CONFIG] - Pusher config object.
  * @returns {Promise<Response>} Fetch response.
  */
+const PUSHER_MAX_PAYLOAD_BYTES = 10240; // Pusher standard event data limit (10KB)
+
 export async function sendSettingsToPusher(roomId, settingsData, secretKeyHex, config = PUSHER_CONFIG) {
     const encryptedPayload = await encryptPayload(settingsData, secretKeyHex);
 
     const path = `/apps/${config.appId}/events`;
     const url = `https://api-${config.cluster}.pusher.com${path}`;
 
+    const payloadDataStr = JSON.stringify({ payload: encryptedPayload });
+    const payloadSizeBytes = new TextEncoder().encode(payloadDataStr).length;
+
+    if (payloadSizeBytes > PUSHER_MAX_PAYLOAD_BYTES) {
+        throw new Error(
+            `Payload size (${payloadSizeBytes} bytes) exceeds Pusher event limit (${PUSHER_MAX_PAYLOAD_BYTES} bytes)`
+        );
+    }
+
     const bodyObj = {
         name: 'sync-settings',
         channels: [roomId],
-        data: JSON.stringify({ payload: encryptedPayload }),
+        data: payloadDataStr,
     };
     const bodyStr = JSON.stringify(bodyObj);
 
@@ -267,48 +282,66 @@ export async function sendSettingsToPusher(roomId, settingsData, secretKeyHex, c
  * @param {number} [intervalMs=1000] - Polling interval in ms.
  * @returns {Promise<Object>} Decrypted settings data.
  */
-export async function fetchSettingsFromPusher(
-    roomId,
-    secretKeyHex,
-    config = PUSHER_CONFIG,
-    maxRetries = 5,
-    intervalMs = 1000
-) {
-    const path = `/apps/${config.appId}/channels/${roomId}`;
-    const url = `https://api-${config.cluster}.pusher.com${path}`;
+/**
+ * Subscribes to Pusher WebSocket channel and receives encrypted settings payload in Pure JS.
+ * @param {string} roomId - Room ID (channel name).
+ * @param {string} secretKeyHex - 32-byte secret key in hex string format.
+ * @param {Object} [config=PUSHER_CONFIG] - Pusher config object.
+ * @param {number} [timeoutMs=30000] - Connection timeout in ms.
+ * @returns {Promise<Object>} Decrypted settings data.
+ */
+export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CONFIG, timeoutMs = 30000) {
+    return new Promise((resolve, reject) => {
+        const wsUrl = `wss://ws-${config.cluster}.pusher.com/app/${config.key}?protocol=7&client=js&version=8.0.0`;
+        let socket;
+        let timeoutId;
 
-    let lastError = null;
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-            const queryParams = await generatePusherQueryString('GET', path, '', config);
-            const response = await fetch(`${url}?${queryParams}`, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                const json = await response.json();
-                if (json && json.payload) {
-                    return await decryptPayload(json.payload, secretKeyHex);
-                }
-                if (json && json.data) {
-                    const parsedData = typeof json.data === 'string' ? JSON.parse(json.data) : json.data;
-                    if (parsedData.payload) {
-                        return await decryptPayload(parsedData.payload, secretKeyHex);
-                    }
-                }
-            }
+            socket = new WebSocket(wsUrl);
         } catch (err) {
-            lastError = err;
+            return reject(err);
         }
 
-        if (attempt < maxRetries - 1) {
-            await new Promise((resolve) => setTimeout(resolve, intervalMs));
-        }
-    }
+        timeoutId = setTimeout(() => {
+            if (socket) socket.close();
+            reject(new Error('Pusher WebSocket connection timeout'));
+        }, timeoutMs);
 
-    throw lastError || new Error(`Failed to fetch settings from Pusher after ${maxRetries} attempts`);
+        socket.onmessage = async (event) => {
+            try {
+                const message = JSON.parse(event.data);
+
+                if (message.event === 'pusher:connection_established') {
+                    socket.send(
+                        JSON.stringify({
+                            event: 'pusher:subscribe',
+                            data: { channel: roomId },
+                        })
+                    );
+                }
+
+                if (message.event === 'sync-settings') {
+                    clearTimeout(timeoutId);
+                    const eventData = typeof message.data === 'string' ? JSON.parse(message.data) : message.data;
+                    const encryptedPayload = eventData.payload;
+                    const settings = await decryptPayload(encryptedPayload, secretKeyHex);
+                    socket.close();
+                    resolve(settings);
+                }
+            } catch (err) {
+                clearTimeout(timeoutId);
+                if (socket) socket.close();
+                reject(err);
+            }
+        };
+
+        socket.onerror = (err) => {
+            clearTimeout(timeoutId);
+            reject(err || new Error('WebSocket error'));
+        };
+
+        socket.onclose = () => {
+            // Handled in message or timeout
+        };
+    });
 }

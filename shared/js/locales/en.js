@@ -52,8 +52,7 @@ export default {
     'back-to-app': 'Back to App',
     'alarm-setting-description':
         'Display a message at a specified time and automatically "Stop", "Pause", or "Start" tasks as needed.',
-    'alarm-editor-note-extension-only':
-        '* Alarms cannot be edited in the PWA version.',
+    'alarm-editor-note-extension-only': '* Alarms cannot be edited in the PWA version.',
     'alarm-label-enabled': 'Enabled',
     'alarm-label-time': 'Time',
     'alarm-label-message': 'Message',
@@ -127,7 +126,7 @@ export default {
     'about-stats-logs': 'Work History Count',
     'about-stats-categories': 'Category Count',
     'about-description':
-        'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved in IndexedDB within your browser (and also to the local file system when the backup is executed) and is never sent externally. It maintains high transparency and security through strict dependency verification via GitHub Actions and continuous auditing with Google OSV-Scanner.',
+        'QuickLog-Solo is a privacy-focused minimalist work memo tool. Data is saved in IndexedDB within your browser (data is only transferred when settings transfer is initiated, end-to-end encrypted via Web Crypto API). It maintains high transparency and security through strict dependency verification via GitHub Actions and continuous auditing with Google OSV-Scanner.',
     'about-disclaimer':
         '[Disclaimer] This is a personal open-source project and is provided "AS IS" without warranty of any kind. The developer shall not be liable for any damages arising from its use. Use at your own risk.',
 
@@ -553,18 +552,21 @@ export default {
     'maker-error-name-duplicate': 'The same custom animation name already exists. Please enter a different name.',
     'maker-select-prompt': 'Please add a custom animation',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
-    'about-pwa-section-desc': 'Scan the QR code with your smartphone camera to launch the PWA version or transfer settings.',
+    'about-pwa-section-desc':
+        'Scan the QR code with your smartphone camera to launch the PWA version or transfer settings.',
     'about-pwa-url-qr-label': '1. PWA Launch URL',
     'about-pwa-general-qr-label': '2. General & Alarms',
     'about-pwa-categories-qr-label': '3. Categories',
     'about-pwa-settings-qr-label': '2. Export Settings',
-    'about-pwa-qr-too-large': 'Data size exceeds QR code capacity. Please use the Backup function in the Maintenance tab.',
+    'about-pwa-qr-too-large':
+        'Data size exceeds QR code capacity. Please use the Backup function in the Maintenance tab.',
     'about-pwa-qr-error-title': 'Error',
     'about-pwa-qr-error': 'Unable to generate the settings QR code. Please try again.',
     'about-pwa-qr-too-large-title': 'Too Large',
     'about-pwa-qr-too-large-sub': 'QR Unavailable',
     'about-pwa-import-title': 'Import QuickLog-Solo Settings (β)',
-    'about-pwa-import-desc': 'Scan the settings QR code displayed in the PC extension to apply categories and alarm settings.',
+    'about-pwa-import-desc':
+        'Scan the settings QR code displayed in the PC extension to apply categories and alarm settings.',
     'btn-pwa-scan-qr': 'Scan QR Code',
     'qr-scan-modal-title': 'Scan QR Code',
     'qr-scan-status-scanning': 'Please point your camera at the QR code',
@@ -575,7 +577,7 @@ export default {
     'qr-scan-failed-not-found': 'No QR code detected in the image',
     'qr-scan-camera-error': 'Camera access denied or unavailable. Please select an image.',
     'qr-scan-invalid-payload': 'Invalid QR code data',
-    'about-pwa-qr-accordion-label': 'Show Transfer QR Codes (2. General/Alarms / 3. Categories)',
+    'about-pwa-qr-accordion-label': 'Show Transfer QR Code',
     'btn-qr-scan-done': 'Done',
     'qr-scan-all-completed': 'All QR codes scanned successfully!',
 };
