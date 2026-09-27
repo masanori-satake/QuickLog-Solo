@@ -118,8 +118,8 @@ test('accordion toggle runs startPusherTransferProcess, completes encryption ste
     accordion.open = true;
     accordion.dispatchEvent(new Event('toggle'));
 
-    // Yield to allow async startPusherTransferProcess to execute
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // Yield to allow async startPusherTransferProcess to execute with retries and timeouts
+    await new Promise((resolve) => setTimeout(resolve, 3500));
 
     const errDetails = document.getElementById('pusher-sync-error-details');
     const reportContent = errDetails.textContent;
