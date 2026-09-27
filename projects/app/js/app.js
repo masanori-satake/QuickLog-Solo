@@ -1308,11 +1308,17 @@ export function buildPusherErrorReport(steps, err) {
     const rawErrMsg = err && (err.message || String(err));
 
     if (isOffline) {
-        userGuide = '\n\n**【原因と対処方法】**\nPCがオフライン状態（インターネット切断）です。ネットワーク接続を確認して再試行してください。';
+        userGuide =
+            '\n\n**【原因と対処方法】**\nPCがオフライン状態（インターネット切断）です。ネットワーク接続を確認して再試行してください。';
     } else if (rawErrMsg && (rawErrMsg.includes('Failed to fetch') || rawErrMsg.includes('NetworkError'))) {
-        userGuide = '\n\n**【原因と対処方法】**\n通信エラーまたはセキュリティソフト・プロキシ等による遮断が発生しました。インターネット接続およびセキュリティ設定を確認してください。';
-    } else if (rawErrMsg && (rawErrMsg.includes('タイムアウト') || rawErrMsg.includes('timeout') || rawErrMsg.includes('AbortError'))) {
-        userGuide = '\n\n**【原因と対処方法】**\n通信がタイムアウトしました。回線状況を確認のうえ、時間をおいて再試行してください。';
+        userGuide =
+            '\n\n**【原因と対処方法】**\n通信エラーまたはセキュリティソフト・プロキシ等による遮断が発生しました。インターネット接続およびセキュリティ設定を確認してください。';
+    } else if (
+        rawErrMsg &&
+        (rawErrMsg.includes('タイムアウト') || rawErrMsg.includes('timeout') || rawErrMsg.includes('AbortError'))
+    ) {
+        userGuide =
+            '\n\n**【原因と対処方法】**\n通信がタイムアウトしました。回線状況を確認のうえ、時間をおいて再試行してください。';
     }
 
     const errMsg = err && (err.message || String(err));
