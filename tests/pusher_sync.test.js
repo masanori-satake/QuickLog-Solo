@@ -27,6 +27,7 @@ import {
     generatePusherQueryString,
     sendSettingsToPusher,
     fetchSettingsFromPusher,
+    validatePusherConfig,
 } from '../shared/js/pusher_sync.js';
 
 describe('pusher_sync.js', () => {
@@ -92,6 +93,27 @@ describe('pusher_sync.js', () => {
         expect(queryStr).toContain('auth_version=1.0');
         expect(queryStr).toContain('body_md5=' + md5(body));
         expect(queryStr).toContain('auth_signature=');
+    });
+
+    test('validatePusherConfig throws error when config is missing or placeholders', () => {
+        expect(() => validatePusherConfig({ appId: '__PUSHER_APP_ID__', key: 'key', cluster: 'ap3' })).toThrow();
+        expect(() => validatePusherConfig({ appId: '123', key: '__PUSHER_KEY__', cluster: 'ap3' })).toThrow();
+        expect(() => validatePusherConfig({ appId: '123', key: 'key', cluster: '__PUSHER_CLUSTER__' })).toThrow();
+        expect(() => validatePusherConfig(null)).toThrow();
+        expect(() => validatePusherConfig({ appId: '123', key: 'mykey', cluster: 'ap3' })).not.toThrow();
+    });
+
+    test('sendSettingsToPusher throws error when config has placeholders', async () => {
+        const secretKey = generateSecretKey();
+        const placeholderConfig = {
+            appId: '__PUSHER_APP_ID__',
+            key: '__PUSHER_KEY__',
+            secret: '__PUSHER_SECRET__',
+            cluster: '__PUSHER_CLUSTER__',
+        };
+        await expect(sendSettingsToPusher('room_1', {}, secretKey, placeholderConfig)).rejects.toThrow(
+            'Pusherの設定が未構成です'
+        );
     });
 
     test('sendSettingsToPusher issues POST fetch request', async () => {

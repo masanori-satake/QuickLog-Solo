@@ -21,5 +21,6 @@ permissions:
 jobs:
   deploy-pages:
     uses: masanori-satake/common-workflows/.github/workflows/base-deploy-pages.yml@v1
+    secrets: inherit
     with:
       publish_dir: '.'

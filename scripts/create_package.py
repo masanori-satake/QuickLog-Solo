@@ -45,6 +45,25 @@ def create_zip(zip_filepath, temp_dir):
 
         shutil.copytree("shared", shared_dest, ignore=ignore_shared, dirs_exist_ok=True)
 
+        # Inject Pusher configuration environment variables into pusher_config.js if present
+        pusher_app_id = os.environ.get("PUSHER_APP_ID", "")
+        pusher_key = os.environ.get("PUSHER_KEY", "")
+        pusher_secret = os.environ.get("PUSHER_SECRET", "")
+        pusher_cluster = os.environ.get("PUSHER_CLUSTER", "")
+
+        if pusher_key:
+            print("Injecting Pusher configuration into shared/js/pusher_config.js...")
+            pusher_config_path = os.path.join(shared_dest, "js", "pusher_config.js")
+            if os.path.exists(pusher_config_path):
+                with open(pusher_config_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                content = content.replace("__PUSHER_APP_ID__", pusher_app_id)
+                content = content.replace("__PUSHER_KEY__", pusher_key)
+                content = content.replace("__PUSHER_SECRET__", pusher_secret)
+                content = content.replace("__PUSHER_CLUSTER__", pusher_cluster)
+                with open(pusher_config_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+
         # 3. Copy Subprojects (animation-maker, category-editor & alarm-editor)
         for subproj in ["animation-maker", "category-editor", "alarm-editor"]:
             subproj_src = os.path.join("projects", subproj)
@@ -54,7 +73,7 @@ def create_zip(zip_filepath, temp_dir):
                 if item == "shared":
                     # Copy shared/ contents to this project's shared/ folder
                     dest_shared = os.path.join(subproj_dest, "shared")
-                    shutil.copytree("shared", dest_shared, ignore=ignore_shared, dirs_exist_ok=True)
+                    shutil.copytree(shared_dest, dest_shared, dirs_exist_ok=True)
                 else:
                     src_path = os.path.join(subproj_src, item)
                     if os.path.isdir(src_path):

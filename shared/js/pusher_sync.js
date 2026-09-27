@@ -200,6 +200,25 @@ export async function computeHmacSha256(secret, message) {
  * @param {number} [timestamp] - Unix timestamp in seconds.
  * @returns {Promise<string>} Query string containing authentication parameters.
  */
+/**
+ * Validates whether Pusher configuration has been injected.
+ * @param {Object} [config=PUSHER_CONFIG] - Pusher configuration object.
+ * @throws {Error} If configuration is missing or contains placeholder values.
+ */
+export function validatePusherConfig(config = PUSHER_CONFIG) {
+    if (
+        !config ||
+        !config.appId ||
+        !config.key ||
+        !config.cluster ||
+        String(config.appId).includes('__PUSHER_') ||
+        String(config.key).includes('__PUSHER_') ||
+        String(config.cluster).includes('__PUSHER_')
+    ) {
+        throw new Error('Pusherの設定が未構成です（APIキーまたはクラスタが設定されていません）。');
+    }
+}
+
 export async function generatePusherQueryString(method, path, body, config, timestamp = Math.floor(Date.now() / 1000)) {
     const params = {
         auth_key: config.key,
@@ -241,6 +260,8 @@ export async function sendSettingsToPusher(
     config = PUSHER_CONFIG,
     onEncrypted = null
 ) {
+    validatePusherConfig(config);
+
     const encryptedPayload = await encryptPayload(settingsData, secretKeyHex);
     if (typeof onEncrypted === 'function') {
         onEncrypted();
@@ -300,6 +321,8 @@ export async function sendSettingsToPusher(
  * @returns {Promise<Object>} Decrypted settings data.
  */
 export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CONFIG, timeoutMs = 30000) {
+    validatePusherConfig(config);
+
     return new Promise((resolve, reject) => {
         const wsUrl = `wss://ws-${config.cluster}.pusher.com/app/${config.key}?protocol=7&client=js&version=8.0.0`;
         let socket;
