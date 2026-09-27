@@ -118,7 +118,7 @@ export default {
     'about-stats-logs': '作業履歴件数',
     'about-stats-categories': '分类数量',
     'about-description':
-        'QuickLog-Solo 是一款注重隐私的极简工作笔记工具。数据保存在您浏览器的 IndexedDB 中（执行备份时也会保存到本地文件系统），且绝不上传服务器。通过 GitHub Actions 的严格依赖校验和 Google OSV-Scanner 的持续审计，确保高度的透明性与安全性。',
+        'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB に保存されます（設定引き継ぎ時や端末間同期の有効時のみデータが送信されます）。GitHub Actions による依存関係の検証と Google OSV-Scanner による継続的な監査により、高い透明性と安全性を維持しています。',
     'about-disclaimer':
         '[免责声明] 这是一个个人开源项目，按“原样”提供，不附带任何形式的保证。开发者不对因使用本软件而产生的任何损害承担责任。请自行承担使用风险。',
     // Auto Stop & Page Break
@@ -538,7 +538,7 @@ export default {
     'qr-scan-failed-not-found': 'QRコードを検出できませんでした',
     'qr-scan-camera-error': 'カメラアクセスが拒否されたか利用できません。画像から選択してください。',
     'qr-scan-invalid-payload': '無効なQRコードデータです',
-    'about-pwa-qr-accordion-label': '設定引き継ぎ用QRコードを表示 (2. 設定全般・アラーム / 3. 業務カテゴリ)',
+    'about-pwa-qr-accordion-label': '設定引き継ぎ用QRコードを表示',
     'btn-qr-scan-done': '完了',
     'qr-scan-all-completed': 'すべてのQRコードの読み取りが完了しました！',
 };
