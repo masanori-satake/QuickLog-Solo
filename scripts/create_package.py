@@ -45,6 +45,21 @@ def create_zip(zip_filepath, temp_dir):
 
         shutil.copytree("shared", shared_dest, ignore=ignore_shared, dirs_exist_ok=True)
 
+        # Inject Pusher configuration environment variables into pusher_config.js if present
+        config_keys = ["APP_ID", "KEY", "SECRET", "CLUSTER"]
+        env_vals = {k: os.environ.get(f"PUSHER_{k}", "") for k in config_keys}
+
+        if env_vals.get("KEY"):
+            print("Injecting Pusher configuration into shared/js/pusher_config.js...")
+            pusher_config_path = os.path.join(shared_dest, "js", "pusher_config.js")
+            if os.path.exists(pusher_config_path):
+                with open(pusher_config_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                for k, val in env_vals.items():
+                    content = content.replace(f"__PUSHER_{k}__", val)
+                with open(pusher_config_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+
         # 3. Copy Subprojects (animation-maker, category-editor & alarm-editor)
         for subproj in ["animation-maker", "category-editor", "alarm-editor"]:
             subproj_src = os.path.join("projects", subproj)
@@ -54,7 +69,7 @@ def create_zip(zip_filepath, temp_dir):
                 if item == "shared":
                     # Copy shared/ contents to this project's shared/ folder
                     dest_shared = os.path.join(subproj_dest, "shared")
-                    shutil.copytree("shared", dest_shared, ignore=ignore_shared, dirs_exist_ok=True)
+                    shutil.copytree(shared_dest, dest_shared, dirs_exist_ok=True)
                 else:
                     src_path = os.path.join(subproj_src, item)
                     if os.path.isdir(src_path):
