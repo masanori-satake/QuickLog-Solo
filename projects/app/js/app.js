@@ -1896,6 +1896,17 @@ function startVideoFrameScanning(video, sessionId) {
     scanAnimationFrameId = requestAnimationFrame(scanFrame);
 }
 
+/** Exported for testing purposes only. */
+export async function finishQRImportUI(signal, refreshUI = syncState) {
+    const sessionId = activeScanSessionId;
+    try {
+        await refreshUI();
+    } catch (err) {
+        console.error('Error refreshing UI after QR import:', err);
+    }
+    if (sessionId === activeScanSessionId && !signal.aborted) closeQRScannerModal();
+}
+
 async function handleImportQRPayload(payloadStr, signal) {
     try {
         if (signal.aborted) return { success: false, isAllPartsCompleted: false, handledError: false };
@@ -1940,8 +1951,7 @@ async function handleImportQRPayload(payloadStr, signal) {
 
                     scannedPartsSet.add(`pusher_${roomId}`);
                     lastCategoryRenderData = null;
-                    await syncState();
-                    closeQRScannerModal();
+                    await finishQRImportUI(signal);
 
                     return { success: true, isAllPartsCompleted: true, handledError: false };
                 } catch (pusherErr) {
@@ -2023,8 +2033,7 @@ async function handleImportQRPayload(payloadStr, signal) {
                 statusEl.style.fontWeight = '700';
             }
             lastCategoryRenderData = null;
-            await syncState();
-            closeQRScannerModal();
+            await finishQRImportUI(signal);
         }
 
         // Apply language/theme if updated

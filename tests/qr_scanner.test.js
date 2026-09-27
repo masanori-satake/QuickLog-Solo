@@ -6,6 +6,7 @@ let openQRScannerModal;
 let detect;
 let images;
 let closeQRScannerModal;
+let finishQRImportUI;
 let getUserMedia;
 let play;
 const deferred = () => {
@@ -22,7 +23,8 @@ const makeStream = () => {
 
 beforeAll(async () => {
     const ready = jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-    ({ setupQRScanner, openQRScannerModal, closeQRScannerModal } = await import('../projects/app/js/app.js'));
+    ({ setupQRScanner, openQRScannerModal, closeQRScannerModal, finishQRImportUI } =
+        await import('../projects/app/js/app.js'));
     ready.mockRestore();
 });
 beforeEach(async () => {
@@ -92,6 +94,28 @@ test('an old camera request cannot replace the stream of a reopened modal', asyn
     expect(document.getElementById('qr-video').srcObject).toBe(newStream);
     expect(play).toHaveBeenCalledTimes(1);
     expect(requestAnimationFrame).toHaveBeenCalledTimes(1);
+});
+
+test('an old import UI refresh cannot close a reopened scanner', async () => {
+    const refresh = deferred();
+    getUserMedia.mockResolvedValue(makeStream());
+    await openQRScannerModal();
+    const pending = finishQRImportUI(new AbortController().signal, () => refresh.promise);
+    closeQRScannerModal();
+    await openQRScannerModal();
+    refresh.resolve();
+    await pending;
+    expect(document.getElementById('qr-scan-modal').classList.contains('hidden')).toBe(false);
+});
+
+test('a failed UI refresh does not turn a completed import into a scanner error', async () => {
+    getUserMedia.mockResolvedValue(makeStream());
+    await openQRScannerModal();
+    const error = new Error('UI refresh failed');
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await expect(finishQRImportUI(new AbortController().signal, () => Promise.reject(error))).resolves.toBeUndefined();
+    expect(log).toHaveBeenCalledWith('Error refreshing UI after QR import:', error);
+    expect(document.getElementById('qr-scan-modal').classList.contains('hidden')).toBe(true);
 });
 
 test('closing while video.play is pending cannot restart scanning', async () => {
@@ -190,7 +214,8 @@ test.each([
 
 test('decodes generated QR code matrix using pure JS fallback when BarcodeDetector is unavailable', async () => {
     delete globalThis.BarcodeDetector;
-    const { serializeSettingsPayload, renderQRCodeToCanvas, decodeQRCodeFromCanvas } = await import('../shared/js/qr_code.js');
+    const { serializeSettingsPayload, renderQRCodeToCanvas, decodeQRCodeFromCanvas } =
+        await import('../shared/js/qr_code.js');
 
     const expectedPayload = serializeSettingsPayload({
         settings: { theme: 'light', language: 'ja' },

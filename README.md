@@ -1,5 +1,5 @@
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kllhfalcincleolgoepnailfjendigdh?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh)
-[![version](https://img.shields.io/badge/version-1.38.4-blue)](projects/app/manifest.chrome.json)
+[![version](https://img.shields.io/badge/version-1.38.5-blue)](projects/app/manifest.chrome.json)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Privacy: Local-First](https://img.shields.io/badge/Privacy-Local--First-brightgreen)](#-privacy--security)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.chrome.json)
@@ -55,7 +55,7 @@ For automatic updates and easy installation, get QuickLog-Solo directly from the
 ### 🛠️ Developer Release (Zip)
 To try the latest unreleased features:
 
-1. Download the release package (`QuickLog-Solo-v1.38.4.zip`) from the [GitHub Releases](https://github.com/masanori-satake/QuickLog-Solo/releases) page and extract it.
+1. Download the release package (`QuickLog-Solo-v1.38.5.zip`) from the [GitHub Releases](https://github.com/masanori-satake/QuickLog-Solo/releases) page and extract it.
 2. Open your browser's extensions page (`chrome://extensions` or `edge://extensions`).
 3. Enable **Developer mode**.
 4. Click **Load unpacked** and select the extracted directory.
