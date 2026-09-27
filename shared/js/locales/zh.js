@@ -539,4 +539,8 @@ export default {
     'about-pwa-qr-accordion-label': '顯示設定轉移 QR 碼',
     'btn-qr-scan-done': '完成',
     'qr-scan-all-completed': '所有 QR 碼均已成功掃描！',
+    'pusher-error-title': '[原因与排查方法]',
+    'pusher-error-offline': '您的电脑处于离线状态（网络已断开）。请检查网络连接后重试。',
+    'pusher-error-network': '发生通信错误或被安全软件/代理拦截。请检查您的互联网连接和安全设置。',
+    'pusher-error-timeout': '通信超时。请检查您的网络连接并稍后重试。',
 };

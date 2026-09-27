@@ -93,7 +93,7 @@ test('renderAboutQRCodes binds toggle listener to pwa-settings-qr-accordion', as
     expect(accordion.dataset.pusherListenerAdded).toBe('true');
 });
 
-test('buildPusherErrorReport generates markdown table with step details and error stack', () => {
+test('buildPusherErrorReport generates markdown table with step details and localized error guide', () => {
     const steps = [
         { name: '1. 鍵・共有ID生成', status: 'success', detail: 'OK' },
         { name: '2. QRコード描画', status: 'success', detail: 'OK' },
@@ -101,12 +101,13 @@ test('buildPusherErrorReport generates markdown table with step details and erro
     ];
     const err = new Error('Failed to fetch');
 
-    const report = buildPusherErrorReport(steps, err);
+    const reportEn = buildPusherErrorReport(steps, err);
 
-    expect(report).toContain('### Pusher転送処理 エラーレポート');
-    expect(report).toContain('| 1. 鍵・共有ID生成 | 完了 | OK |');
-    expect(report).toContain('| 3. Pusher通信送信 | 失敗 | Failed to fetch |');
-    expect(report).toContain('**エラー詳細:** Failed to fetch');
+    expect(reportEn).toContain('### Pusher転送処理 エラーレポート');
+    expect(reportEn).toContain('| 1. 鍵・共有ID生成 | 完了 | OK |');
+    expect(reportEn).toContain('| 3. Pusher通信送信 | 失敗 | Failed to fetch |');
+    expect(reportEn).toContain('**エラー詳細:** Failed to fetch');
+    expect(reportEn).toContain('**[Cause & Troubleshooting]**');
 });
 
 test('accordion toggle runs startPusherTransferProcess, completes encryption step 4, and fails at step 5 when Pusher is configured but fetch fails in node test environment', async () => {
@@ -118,8 +119,8 @@ test('accordion toggle runs startPusherTransferProcess, completes encryption ste
     accordion.open = true;
     accordion.dispatchEvent(new Event('toggle'));
 
-    // Yield to allow async startPusherTransferProcess to execute
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // Yield to allow async startPusherTransferProcess to execute with retries and timeouts
+    await new Promise((resolve) => setTimeout(resolve, 3500));
 
     const errDetails = document.getElementById('pusher-sync-error-details');
     const reportContent = errDetails.textContent;

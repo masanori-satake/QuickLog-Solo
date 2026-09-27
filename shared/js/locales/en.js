@@ -580,4 +580,8 @@ export default {
     'about-pwa-qr-accordion-label': 'Show Transfer QR Code',
     'btn-qr-scan-done': 'Done',
     'qr-scan-all-completed': 'All QR codes scanned successfully!',
+    'pusher-error-title': '[Cause & Troubleshooting]',
+    'pusher-error-offline': 'Your PC is offline (disconnected from internet). Please check your network connection and try again.',
+    'pusher-error-network': 'A communication error or blocking by security software/proxy occurred. Please check your internet connection and security settings.',
+    'pusher-error-timeout': 'The communication timed out. Please check your connection and try again later.',
 };

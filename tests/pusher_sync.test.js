@@ -112,11 +112,11 @@ describe('pusher_sync.js', () => {
             cluster: '__PUSHER_CLUSTER__',
         };
         await expect(sendSettingsToPusher('room_1', {}, secretKey, placeholderConfig)).rejects.toThrow(
-            'Pusherの設定が未構成です'
+            'Pusher configuration is incomplete'
         );
     });
 
-    test('sendSettingsToPusher issues POST fetch request', async () => {
+    test('sendSettingsToPusher issues POST fetch request with text/plain Content-Type to avoid CORS preflight', async () => {
         const config = {
             appId: '100',
             key: 'test_key',
@@ -138,6 +138,28 @@ describe('pusher_sync.js', () => {
         const callArgs = fetchMock.mock.calls[0];
         expect(callArgs[0]).toContain('https://api-ap3.pusher.com/apps/100/events?');
         expect(callArgs[1].method).toBe('POST');
+        expect(callArgs[1].headers['Content-Type']).toBe('text/plain;charset=UTF-8');
+    });
+
+    test('sendSettingsToPusher retries on network failure and handles timeout', async () => {
+        const config = {
+            appId: '100',
+            key: 'test_key',
+            secret: 'test_secret',
+            cluster: 'ap3',
+        };
+        const secretKey = generateSecretKey();
+        const roomId = 'room_123';
+        const settingsData = { settings: { theme: 'dark' } };
+
+        const fetchMock = jest.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+        globalThis.fetch = fetchMock;
+
+        await expect(
+            sendSettingsToPusher(roomId, settingsData, secretKey, config, null, { timeoutMs: 10, maxRetries: 1 })
+        ).rejects.toThrow('Failed to fetch');
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
     test('fetchSettingsFromPusher receives and decrypts settings via WebSocket', async () => {

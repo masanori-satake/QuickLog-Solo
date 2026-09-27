@@ -1303,10 +1303,30 @@ export function buildPusherErrorReport(steps, err) {
         tableRows += `| ${step.name} | ${st} | ${dt} |\n`;
     }
 
+    const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    const isSendingFailure = steps.some((s) => s.name.includes('Pusher通信送信') && s.status === 'failed');
+    let userGuide = '';
+    const rawErrMsg = err && (err.message || String(err));
+
+    const errorTitle = t('pusher-error-title');
+    if (isOffline && isSendingFailure) {
+        userGuide = `\n\n**${errorTitle}**\n${t('pusher-error-offline')}`;
+    } else if (rawErrMsg && (rawErrMsg.includes('Failed to fetch') || rawErrMsg.includes('NetworkError'))) {
+        userGuide = `\n\n**${errorTitle}**\n${t('pusher-error-network')}`;
+    } else if (
+        rawErrMsg &&
+        (rawErrMsg.includes('タイムアウト') ||
+            rawErrMsg.includes('timeout') ||
+            rawErrMsg.includes('timed out') ||
+            rawErrMsg.includes('AbortError'))
+    ) {
+        userGuide = `\n\n**${errorTitle}**\n${t('pusher-error-timeout')}`;
+    }
+
     const errMsg = err && (err.message || String(err));
     const errStack = err && err.stack ? `\n\n\`\`\`\n${err.stack}\n\`\`\`` : '';
 
-    return `### Pusher転送処理 エラーレポート\n\n${tableRows}\n**エラー詳細:** ${errMsg}${errStack}`;
+    return `### Pusher転送処理 エラーレポート\n\n${tableRows}\n**エラー詳細:** ${errMsg}${userGuide}${errStack}`;
 }
 
 async function startPusherTransferProcess() {

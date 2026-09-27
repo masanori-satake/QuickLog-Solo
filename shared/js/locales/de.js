@@ -567,4 +567,8 @@ export default {
     'about-pwa-qr-accordion-label': 'QR-Code zur Übertragung anzeigen',
     'btn-qr-scan-done': 'Fertig',
     'qr-scan-all-completed': 'Alle QR-Codes erfolgreich gescannt!',
+    'pusher-error-title': '[Ursache & Fehlerbehebung]',
+    'pusher-error-offline': 'Ihr PC ist offline (Internetverbindung getrennt). Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut.',
+    'pusher-error-network': 'Ein Übertragungsfehler oder eine Blockierung durch Sicherheitssoftware/Proxy ist aufgetreten. Bitte überprüfen Sie Ihre Internetverbindung und Sicherheitseinstellungen.',
+    'pusher-error-timeout': 'Die Verbindung hat das Zeitlimit überschritten. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es später erneut.',
 };

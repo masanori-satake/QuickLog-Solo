@@ -215,7 +215,7 @@ export function validatePusherConfig(config = PUSHER_CONFIG) {
         String(config.key).includes('__PUSHER_') ||
         String(config.cluster).includes('__PUSHER_')
     ) {
-        throw new Error('Pusherの設定が未構成です（APIキーまたはクラスタが設定されていません）。');
+        throw new Error('Pusher configuration is incomplete (API key or cluster is missing).');
     }
 }
 
@@ -258,9 +258,13 @@ export async function sendSettingsToPusher(
     settingsData,
     secretKeyHex,
     config = PUSHER_CONFIG,
-    onEncrypted = null
+    onEncrypted = null,
+    options = {}
 ) {
     validatePusherConfig(config);
+
+    const timeoutMs = options.timeoutMs || 10000;
+    const maxRetries = options.maxRetries !== undefined ? options.maxRetries : 2;
 
     const encryptedPayload = await encryptPayload(settingsData, secretKeyHex);
     if (typeof onEncrypted === 'function') {
@@ -286,21 +290,48 @@ export async function sendSettingsToPusher(
     };
     const bodyStr = JSON.stringify(bodyObj);
 
-    const queryParams = await generatePusherQueryString('POST', path, bodyStr, config);
+    let lastError = null;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const queryParams = await generatePusherQueryString('POST', path, bodyStr, config);
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timerId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
-    const response = await fetch(`${url}?${queryParams}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: bodyStr,
-    });
+        try {
+            const fetchOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain;charset=UTF-8',
+                },
+                body: bodyStr,
+            };
+            if (controller) {
+                fetchOptions.signal = controller.signal;
+            }
 
-    if (!response.ok) {
-        throw new Error(`Pusher API error: ${response.status} ${response.statusText}`);
+            const response = await fetch(`${url}?${queryParams}`, fetchOptions);
+            if (timerId) clearTimeout(timerId);
+
+            if (!response.ok) {
+                throw new Error(`Pusher API error: ${response.status} ${response.statusText}`);
+            }
+
+            return response;
+        } catch (err) {
+            if (timerId) clearTimeout(timerId);
+            const isAbort = err && (err.name === 'AbortError' || err.message?.includes('aborted'));
+            if (isAbort) {
+                lastError = new Error(`Communication timed out (${timeoutMs / 1000}s)`);
+            } else {
+                lastError = err;
+            }
+
+            if (attempt < maxRetries) {
+                await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+            }
+        }
     }
 
-    return response;
+    throw lastError;
 }
 
 /**
