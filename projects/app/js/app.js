@@ -1315,7 +1315,10 @@ export function buildPusherErrorReport(steps, err) {
         userGuide = `\n\n**${errorTitle}**\n${t('pusher-error-network')}`;
     } else if (
         rawErrMsg &&
-        (rawErrMsg.includes('タイムアウト') || rawErrMsg.includes('timeout') || rawErrMsg.includes('AbortError'))
+        (rawErrMsg.includes('タイムアウト') ||
+            rawErrMsg.includes('timeout') ||
+            rawErrMsg.includes('timed out') ||
+            rawErrMsg.includes('AbortError'))
     ) {
         userGuide = `\n\n**${errorTitle}**\n${t('pusher-error-timeout')}`;
     }
