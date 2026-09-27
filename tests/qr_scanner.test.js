@@ -6,6 +6,7 @@ let openQRScannerModal;
 let detect;
 let images;
 let closeQRScannerModal;
+let finishQRImportUI;
 let getUserMedia;
 let play;
 const deferred = () => {
@@ -22,7 +23,8 @@ const makeStream = () => {
 
 beforeAll(async () => {
     const ready = jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-    ({ setupQRScanner, openQRScannerModal, closeQRScannerModal } = await import('../projects/app/js/app.js'));
+    ({ setupQRScanner, openQRScannerModal, closeQRScannerModal, finishQRImportUI } =
+        await import('../projects/app/js/app.js'));
     ready.mockRestore();
 });
 beforeEach(async () => {
@@ -72,7 +74,7 @@ test.each(['close', 'hide'])('stops all late camera tracks when the modal action
     camera.resolve(stream);
     await pending;
     for (const track of stream.getTracks()) expect(track.stop).toHaveBeenCalledTimes(1);
-    expect(document.getElementById('qr-video').srcObject).toBeUndefined();
+    expect(document.getElementById('qr-video').srcObject).toBeFalsy();
     expect(play).not.toHaveBeenCalled();
     expect(requestAnimationFrame).not.toHaveBeenCalled();
 });
@@ -92,6 +94,28 @@ test('an old camera request cannot replace the stream of a reopened modal', asyn
     expect(document.getElementById('qr-video').srcObject).toBe(newStream);
     expect(play).toHaveBeenCalledTimes(1);
     expect(requestAnimationFrame).toHaveBeenCalledTimes(1);
+});
+
+test('an old import UI refresh cannot close a reopened scanner', async () => {
+    const refresh = deferred();
+    getUserMedia.mockResolvedValue(makeStream());
+    await openQRScannerModal();
+    const pending = finishQRImportUI(new AbortController().signal, () => refresh.promise);
+    closeQRScannerModal();
+    await openQRScannerModal();
+    refresh.resolve();
+    await pending;
+    expect(document.getElementById('qr-scan-modal').classList.contains('hidden')).toBe(false);
+});
+
+test('a failed UI refresh does not turn a completed import into a scanner error', async () => {
+    getUserMedia.mockResolvedValue(makeStream());
+    await openQRScannerModal();
+    const error = new Error('UI refresh failed');
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await expect(finishQRImportUI(new AbortController().signal, () => Promise.reject(error))).resolves.toBeUndefined();
+    expect(log).toHaveBeenCalledWith('Error refreshing UI after QR import:', error);
+    expect(document.getElementById('qr-scan-modal').classList.contains('hidden')).toBe(true);
 });
 
 test('closing while video.play is pending cannot restart scanning', async () => {
@@ -190,7 +214,8 @@ test.each([
 
 test('decodes generated QR code matrix using pure JS fallback when BarcodeDetector is unavailable', async () => {
     delete globalThis.BarcodeDetector;
-    const { serializeSettingsPayload, renderQRCodeToCanvas, decodeQRCodeFromCanvas } = await import('../shared/js/qr_code.js');
+    const { serializeSettingsPayload, renderQRCodeToCanvas, decodeQRCodeFromCanvas } =
+        await import('../shared/js/qr_code.js');
 
     const expectedPayload = serializeSettingsPayload({
         settings: { theme: 'light', language: 'ja' },
@@ -235,4 +260,58 @@ test('decodes generated QR code matrix using pure JS fallback when BarcodeDetect
     });
 
     expect(decodedResult).toBe(expectedPayload);
+});
+
+test('closeQRScannerModal sets video.srcObject to null and stops video stream tracks', async () => {
+    const stream = makeStream();
+    getUserMedia.mockResolvedValue(stream);
+    await openQRScannerModal();
+
+    const video = document.getElementById('qr-video');
+    expect(video.srcObject).toBe(stream);
+
+    closeQRScannerModal();
+
+    expect(video.srcObject).toBeNull();
+    for (const track of stream.getTracks()) {
+        expect(track.stop).toHaveBeenCalled();
+    }
+});
+
+test('resumes frame scanning after 2 second cooldown when QR payload import error occurs', async () => {
+    const setTimeoutSpy = jest.spyOn(window, 'setTimeout');
+    try {
+        const stream = makeStream();
+        getUserMedia.mockResolvedValue(stream);
+        await openQRScannerModal();
+
+        const video = document.getElementById('qr-video');
+        Object.defineProperty(video, 'paused', { value: false, configurable: true });
+        Object.defineProperty(video, 'readyState', { value: video.HAVE_ENOUGH_DATA, configurable: true });
+
+        // Trigger scan frame with invalid payload that causes handledError instantly
+        detect.mockResolvedValueOnce([{ rawValue: 'invalid_qr_payload_1' }]);
+
+        const calls = window.requestAnimationFrame.mock.calls;
+        const frameCallback = calls[calls.length - 1][0];
+        await frameCallback();
+
+        const statusEl = document.getElementById('qr-scan-status');
+        expect(statusEl.textContent).toBeTruthy();
+
+        // Check setTimeout was registered for 2000ms cooldown
+        const cooldownTimer = setTimeoutSpy.mock.calls.find((call) => call[1] === 2000);
+        expect(cooldownTimer).toBeDefined();
+
+        // Invoke cooldown timer callback directly to unlock scanner
+        cooldownTimer[0]();
+
+        // Subsequent frame should be allowed to scan again
+        detect.mockResolvedValueOnce([{ rawValue: 'invalid_qr_payload_2' }]);
+        await calls[calls.length - 1][0]();
+
+        expect(statusEl.textContent).toBeTruthy();
+    } finally {
+        setTimeoutSpy.mockRestore();
+    }
 });
