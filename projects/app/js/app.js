@@ -1294,7 +1294,7 @@ export function buildPusherErrorReport(steps, err) {
     let tableRows = '| ステップ | 状態 | 詳細 |\n| --- | --- | --- |\n';
     for (const step of steps) {
         const st = statusMap[step.status] || step.status;
-        const dt = (step.detail || '-').replace(/\|/g, '\\|').replace(/\n/g, ' ');
+        const dt = (step.detail || '-').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ');
         tableRows += `| ${step.name} | ${st} | ${dt} |\n`;
     }
 
