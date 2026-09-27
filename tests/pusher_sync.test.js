@@ -112,7 +112,7 @@ describe('pusher_sync.js', () => {
             cluster: '__PUSHER_CLUSTER__',
         };
         await expect(sendSettingsToPusher('room_1', {}, secretKey, placeholderConfig)).rejects.toThrow(
-            'Pusherの設定が未構成です'
+            'Pusher configuration is incomplete'
         );
     });
 

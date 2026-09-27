@@ -215,7 +215,7 @@ export function validatePusherConfig(config = PUSHER_CONFIG) {
         String(config.key).includes('__PUSHER_') ||
         String(config.cluster).includes('__PUSHER_')
     ) {
-        throw new Error('Pusherの設定が未構成です（APIキーまたはクラスタが設定されていません）。');
+        throw new Error('Pusher configuration is incomplete (API key or cluster is missing).');
     }
 }
 
@@ -320,7 +320,7 @@ export async function sendSettingsToPusher(
             if (timerId) clearTimeout(timerId);
             const isAbort = err && (err.name === 'AbortError' || err.message?.includes('aborted'));
             if (isAbort) {
-                lastError = new Error(`通信がタイムアウトしました (${timeoutMs / 1000}秒)`);
+                lastError = new Error(`Communication timed out (${timeoutMs / 1000}s)`);
             } else {
                 lastError = err;
             }
