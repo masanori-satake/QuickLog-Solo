@@ -568,4 +568,8 @@ export default {
     'about-pwa-qr-accordion-label': 'Afficher le QR code de transfert',
     'btn-qr-scan-done': 'Terminé',
     'qr-scan-all-completed': 'Tous les QR codes ont été numérisés avec succès !',
+    'pusher-error-title': '[Cause et dépannage]',
+    'pusher-error-offline': 'Votre PC est hors ligne (déconnecté d\'Internet). Veuillez vérifier votre connexion réseau et réessayer.',
+    'pusher-error-network': 'Une erreur de communication ou un blocage par un logiciel de sécurité/proxy est survenu. Veuillez vérifier votre connexion Internet et vos paramètres de sécurité.',
+    'pusher-error-timeout': 'La communication a expiré. Veuillez vérifier votre connexion et réessayer plus tard.',
 };

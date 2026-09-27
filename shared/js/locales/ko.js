@@ -553,4 +553,8 @@ export default {
     'about-pwa-qr-accordion-label': '설정 이전용 QR 코드 표시',
     'btn-qr-scan-done': '완료',
     'qr-scan-all-completed': '모든 QR 코드를 성공적으로 스캔했습니다!',
+    'pusher-error-title': '[원인 및 문제 해결]',
+    'pusher-error-offline': 'PC가 오프라인 상태(인터넷 연결 끊김)입니다. 네트워크 연결을 확인하고 다시 시도해 주세요.',
+    'pusher-error-network': '통신 오류 또는 보안 소프트웨어/프록시로 인한 차단이 발생했습니다. 인터넷 연결 및 보안 설정을 확인해 주세요.',
+    'pusher-error-timeout': '통신 시간이 초과되었습니다. 네트워크 상태를 확인한 후 잠시 후 다시 시도해 주세요.',
 };

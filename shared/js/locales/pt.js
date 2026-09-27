@@ -564,4 +564,8 @@ export default {
     'about-pwa-qr-accordion-label': 'Exibir código QR de transferência',
     'btn-qr-scan-done': 'Concluído',
     'qr-scan-all-completed': 'Todos os códigos QR foram escaneados com sucesso!',
+    'pusher-error-title': '[Causa e Resolução de Problemas]',
+    'pusher-error-offline': 'Seu PC está offline (desconectado da Internet). Verifique sua conexão de rede e tente novamente.',
+    'pusher-error-network': 'Ocorreu um erro de comunicação ou bloqueio por software de segurança/proxy. Verifique sua conexão com a Internet e as configurações de segurança.',
+    'pusher-error-timeout': 'A comunicação expirou. Verifique sua conexão e tente novamente mais tarde.',
 };
