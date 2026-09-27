@@ -132,7 +132,7 @@ export default {
     'about-stats-logs': 'Anzahl der Arbeitshistorien',
     'about-stats-categories': 'Anzahl der Kategorien',
     'about-description':
-        'QuickLog-Solo ist ein datenschutzorientiertes minimalistisches Arbeitsnotiz-Tool. Die Daten werden in der IndexedDB Ihres Browsers gespeichert (wenn das Backup ausgeführt wird, auch im lokalen Dateisystem) und niemals extern übertragen. Es gewährleistet hohe Transparenz und Sicherheit durch strikte Abhängigkeitsprüfung via GitHub Actions und kontinuierliche Prüfungen mit Google OSV-Scanner.',
+        'QuickLog-Solo ist ein datenschutzorientiertes, minimalistisches Arbeitstool. Die Daten werden in der IndexedDB Ihres Browsers gespeichert (bei der Übertragung von Einstellungen per Web Crypto API Ende-zu-Ende verschlüsselt übertragen). Es behält eine hohe Transparenz und Sicherheit durch strikte Überprüfung von Abhängigkeiten über GitHub Actions und kontinuierliche Audits mit Google OSV-Scanner bei.',
     'about-disclaimer':
         '[Haftungsausschluss] Dies ist ein persönliches Open-Source-Projekt und wird ohne jegliche Gewährleistung zur Verfügung gestellt. Der Entwickler haftet nicht für Schäden, die aus der Nutzung resultieren. Nutzung auf eigene Gefahr.',
     // Maintenance - Backup & Restore
@@ -564,7 +564,7 @@ export default {
     'qr-scan-failed-not-found': 'Kein QR-Code im Bild erkannt',
     'qr-scan-camera-error': 'Kamerazugriff verweigert oder nicht verfügbar. Bitte wählen Sie ein Bild.',
     'qr-scan-invalid-payload': 'Ungültige QR-Code-Daten',
-    'about-pwa-qr-accordion-label': 'Show Transfer QR Code',
+    'about-pwa-qr-accordion-label': 'QR-Code zur Übertragung anzeigen',
     'btn-qr-scan-done': 'Fertig',
     'qr-scan-all-completed': 'Alle QR-Codes erfolgreich gescannt!',
 };

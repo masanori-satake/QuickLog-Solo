@@ -131,7 +131,7 @@ export default {
     'about-stats-logs': 'Número de historiales de trabajo',
     'about-stats-categories': 'Número de categorías',
     'about-description':
-        'QuickLog-Solo es una herramienta de notas de trabajo minimalista centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (y también en el sistema de archivos local cuando se realiza el respaldo) y nunca se envían al exterior. Mantiene una alta transparencia y seguridad mediante la verificación estricta de dependencias vía GitHub Actions y auditorías continuas con Google OSV-Scanner.',
+        'QuickLog-Solo es una herramienta minimalista de notas de trabajo centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (los datos solo se transfieren al iniciar la transferencia de configuración, cifrados de extremo a extremo mediante Web Crypto API). Mantiene una alta transparencia y seguridad mediante una verificación estricta de dependencias con GitHub Actions y auditorías continuas con Google OSV-Scanner.',
     'about-disclaimer':
         '[Descargo de responsabilidad] Este es un proyecto personal de código abierto y se proporciona "TAL CUAL" sin garantía de ningún tipo. El desarrollador no será responsable de ningún daño derivado de su uso. Úselo bajo su propio riesgo.',
     // Maintenance - Backup & Restore
@@ -561,7 +561,7 @@ export default {
     'qr-scan-failed-not-found': 'No se detectó código QR en la imagen',
     'qr-scan-camera-error': 'Acceso a la cámara denegado o no disponible. Por favor seleccione una imagen.',
     'qr-scan-invalid-payload': 'Datos de código QR no válidos',
-    'about-pwa-qr-accordion-label': 'Show Transfer QR Code',
+    'about-pwa-qr-accordion-label': 'Mostrar código QR de transferencia',
     'btn-qr-scan-done': 'Listo',
     'qr-scan-all-completed': '¡Todos los códigos QR escaneados con éxito!',
 };
