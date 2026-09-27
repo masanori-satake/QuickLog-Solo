@@ -30,4 +30,15 @@ describe('Manifest Permissions Compliance (Permissions Delta Verification)', () 
         expect(manifest.permissions).toContain("notifications");
         expect(manifest.permissions).toContain("storage");
     });
+
+    test('manifest.json CSP allows connect-src to Pusher endpoints', () => {
+        const manifestPath = path.resolve(process.cwd(), 'projects/app/manifest.json');
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+        expect(manifest.content_security_policy).toBeDefined();
+        expect(manifest.content_security_policy.extension_pages).toBeDefined();
+
+        const csp = manifest.content_security_policy.extension_pages;
+        expect(csp).toContain("connect-src 'self' https://*.pusher.com wss://*.pusher.com");
+    });
 });

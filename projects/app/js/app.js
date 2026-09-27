@@ -1284,22 +1284,70 @@ export async function renderAboutQRCodes() {
     }
 }
 
+export function buildPusherErrorReport(steps, err) {
+    const statusMap = {
+        success: '完了',
+        failed: '失敗',
+        pending: '未実行',
+    };
+
+    let tableRows = '| ステップ | 状態 | 詳細 |\n| --- | --- | --- |\n';
+    for (const step of steps) {
+        const st = statusMap[step.status] || step.status;
+        const dt = (step.detail || '-').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ');
+        tableRows += `| ${step.name} | ${st} | ${dt} |\n`;
+    }
+
+    const errMsg = err && (err.message || String(err));
+    const errStack = err && err.stack ? `\n\n\`\`\`\n${err.stack}\n\`\`\`` : '';
+
+    return `### Pusher転送処理 エラーレポート\n\n${tableRows}\n**エラー詳細:** ${errMsg}${errStack}`;
+}
+
 async function startPusherTransferProcess() {
     const statusTextEl = getEl('pusher-sync-status-text');
     const qrCanvas = getEl('pusher-sync-qr-canvas');
+    const errorContainer = getEl('pusher-sync-error-container');
+    const errorDetailsEl = getEl('pusher-sync-error-details');
+    const copyErrorBtn = getEl('pusher-sync-copy-error-btn');
+
     if (!statusTextEl || !qrCanvas) return;
+
+    if (errorContainer) {
+        errorContainer.classList.add('hidden');
+    }
+    if (errorDetailsEl) {
+        errorDetailsEl.textContent = '';
+    }
+
+    const steps = [
+        { name: '1. 鍵・共有ID生成', status: 'pending', detail: '' },
+        { name: '2. QRコード描画', status: 'pending', detail: '' },
+        { name: '3. 設定データ取得', status: 'pending', detail: '' },
+        { name: '4. データ暗号化', status: 'pending', detail: '' },
+        { name: '5. Pusher通信送信', status: 'pending', detail: '' },
+    ];
+
+    let currentStepIdx = 0;
 
     try {
         if (statusTextEl) statusTextEl.textContent = '鍵と共有IDを生成中...';
 
+        currentStepIdx = 0;
         const roomId = generateUUID();
         const secretKey = generateSecretKey();
+        steps[0].status = 'success';
+        steps[0].detail = 'OK';
 
+        currentStepIdx = 1;
         const pwaBaseUrl = 'https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/';
         const qrUrl = `${pwaBaseUrl}#sync?room=${roomId}&key=${secretKey}`;
 
         renderQRCodeToCanvas(qrUrl, qrCanvas, { width: 240, margin: 2 });
+        steps[1].status = 'success';
+        steps[1].detail = 'OK';
 
+        currentStepIdx = 2;
         if (statusTextEl) statusTextEl.textContent = 'データ暗号化 & 送信中...';
 
         const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
@@ -1317,8 +1365,17 @@ async function startPusherTransferProcess() {
             categories,
             alarms,
         };
+        steps[2].status = 'success';
+        steps[2].detail = 'OK';
 
-        await sendSettingsToPusher(roomId, settingsData, secretKey);
+        currentStepIdx = 3;
+        await sendSettingsToPusher(roomId, settingsData, secretKey, undefined, () => {
+            steps[3].status = 'success';
+            steps[3].detail = 'OK';
+            currentStepIdx = 4;
+        });
+        steps[4].status = 'success';
+        steps[4].detail = 'OK';
 
         if (statusTextEl) {
             statusTextEl.textContent = '送信完了！PWA版でQRコードを読み取ってください';
@@ -1329,6 +1386,30 @@ async function startPusherTransferProcess() {
         if (statusTextEl) {
             statusTextEl.textContent = '送信エラーが発生しました';
             statusTextEl.style.color = '#d32f2f';
+        }
+
+        if (currentStepIdx < steps.length) {
+            steps[currentStepIdx].status = 'failed';
+            steps[currentStepIdx].detail = err.message || String(err);
+        }
+
+        const reportText = buildPusherErrorReport(steps, err);
+
+        if (errorContainer && errorDetailsEl) {
+            errorDetailsEl.textContent = reportText;
+            errorContainer.classList.remove('hidden');
+
+            if (copyErrorBtn) {
+                copyErrorBtn.onclick = async () => {
+                    try {
+                        await navigator.clipboard.writeText(reportText);
+                        showToast(t('toast-copied') || 'コピーしました！');
+                    } catch (copyErr) {
+                        console.error('Failed to copy error report:', copyErr);
+                        showToast(t('alert-error') || 'コピーに失敗しました');
+                    }
+                };
+            }
         }
     }
 }

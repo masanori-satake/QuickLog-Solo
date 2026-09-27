@@ -1,5 +1,5 @@
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kllhfalcincleolgoepnailfjendigdh?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/kllhfalcincleolgoepnailfjendigdh)
-[![version](https://img.shields.io/badge/version-1.37.0-blue)](projects/app/manifest.chrome.json)
+[![version](https://img.shields.io/badge/version-1.37.1-blue)](projects/app/manifest.chrome.json)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Privacy: Local-First](https://img.shields.io/badge/Privacy-Local--First-brightgreen)](#-privacy--security)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.chrome.json)
@@ -33,7 +33,7 @@ Context switching and complex time-tracking tools disrupt daily focus and introd
 Data security and user privacy are foundational principles of QuickLog-Solo:
 
 - **100% Local Execution (Default):** All task logs and user data remain stored locally in your browser's IndexedDB. When optional Device Sync is explicitly enabled, `chrome.storage.sync` synchronizes settings, categories, alarms, current task state, deletion info, and recent history (up to 50 records) across your Chrome-synced devices.
-- **Zero Third-Party Server Communication:** Strict Content Security Policy (CSP) blocks all external API calls and outgoing third-party network requests.
+- **Controlled External Communication:** Standard extension page CSP permits connections only to `https://*.pusher.com` and `wss://*.pusher.com`. In non-PWA views, opening the settings transfer accordion transmits end-to-end encrypted settings, categories, and alarms via Pusher for PWA sync.
 - **Pure Vanilla JS (Zero Dependencies):** Built without external runtime frameworks or third-party packages, eliminating supply chain vulnerabilities.
 - **Zero Data Collection:** No user telemetry, analytics, cookies, or tracking scripts are included or used.
 - **Continuous Security Auditing:** Automatically scanned and verified using Google OSV-Scanner and strict dependency policies.
@@ -55,7 +55,7 @@ For automatic updates and easy installation, get QuickLog-Solo directly from the
 ### 🛠️ Developer Release (Zip)
 To try the latest unreleased features:
 
-1. Download and extract `releases/QuickLog-Solo-v1.37.0.zip`.
+1. Download the release package (`QuickLog-Solo-v1.37.1.zip`) from the [GitHub Releases](https://github.com/masanori-satake/QuickLog-Solo/releases) page and extract it.
 2. Open your browser's extensions page (`chrome://extensions` or `edge://extensions`).
 3. Enable **Developer mode**.
 4. Click **Load unpacked** and select the extracted directory.
@@ -95,7 +95,7 @@ To try the latest unreleased features:
 - **ローカルファイルバックアップ:** 指定したローカルフォルダへのバックアップに対応。ブラウザのキャッシュクリア等による予期せぬデータ消失から記録を守ります（File System Access API を利用）。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。
 - **徹底したプライバシーと透明性:**
     - **完全ローカル（標準状態）:** 記録されたデータはすべてブラウザ内の IndexedDB に保存されます（バックアップを実行した際には、ローカルファイルシステムにも保存されます）。端末間同期機能を有効にした場合のみ、Chrome Sync 経由で一部設定および直近の履歴（最大50件）が同期対象となります。
-    - **サードパーティ通信ゼロ:** CSP（Content Security Policy）により技術的にサードパーティの外部通信を遮断しています。
+    - **限定された外部通信:** 拡張機能ページの CSP では `https://*.pusher.com` および `wss://*.pusher.com` への接続のみが許可されています。非 PWA 画面で設定引き継ぎ用 QR コードのアコーディオンを開いた際、端対端暗号化された設定・カテゴリ・アラームデータが Pusher 経由で PWA 同期用に送信されます。
     - **ピュアで長寿命な設計:** 外部ライブラリを一切使用しない Vanilla JS 構成。OSS のライフサイクルやトレンドに左右されないため、10年後も変わらず使い続けられる長期的安心感を提供します。また、依存関係によるブラックボックスを排除し、技術者が安心して利用・検証できる透明性を確保しています。
     - **OSS脆弱性・依存関係監査:** OSSの依存関係および脆弱性を継続的に監視するため、Googleの提供する **OSV-Scanner** による厳格な監査を全開発フローで実施しています。さらに、AI エージェント等による一時的なスクリプトの混入を防ぐため、ルートディレクトリの厳格なクリーンネス・ポリシーを CI で強制しています。
 
