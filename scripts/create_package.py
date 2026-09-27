@@ -46,21 +46,25 @@ def create_zip(zip_filepath, temp_dir):
         shutil.copytree("shared", shared_dest, ignore=ignore_shared, dirs_exist_ok=True)
 
         # Inject Pusher configuration environment variables into pusher_config.js if present
-        pusher_app_id = os.environ.get("PUSHER_APP_ID", "")
-        pusher_key = os.environ.get("PUSHER_KEY", "")
-        pusher_secret = os.environ.get("PUSHER_SECRET", "")
-        pusher_cluster = os.environ.get("PUSHER_CLUSTER", "")
+        p_app_id = os.environ.get("PUSHER_APP_ID", "")
+        p_key = os.environ.get("PUSHER_KEY", "")
+        p_sec = os.environ.get("PUSHER_SECRET", "")
+        p_cluster = os.environ.get("PUSHER_CLUSTER", "")
 
-        if pusher_key:
+        if p_key:
             print("Injecting Pusher configuration into shared/js/pusher_config.js...")
             pusher_config_path = os.path.join(shared_dest, "js", "pusher_config.js")
             if os.path.exists(pusher_config_path):
                 with open(pusher_config_path, "r", encoding="utf-8") as f:
                     content = f.read()
-                content = content.replace("__PUSHER_APP_ID__", pusher_app_id)
-                content = content.replace("__PUSHER_KEY__", pusher_key)
-                content = content.replace("__PUSHER_SECRET__", pusher_secret)
-                content = content.replace("__PUSHER_CLUSTER__", pusher_cluster)
+                replacements = {
+                    "__PUSHER_APP_ID__": p_app_id,
+                    "__PUSHER_KEY__": p_key,
+                    "__PUSHER_SECRET__": p_sec,
+                    "__PUSHER_CLUSTER__": p_cluster,
+                }
+                for placeholder, val in replacements.items():
+                    content = content.replace(placeholder, val)
                 with open(pusher_config_path, "w", encoding="utf-8") as f:
                     f.write(content)
 
