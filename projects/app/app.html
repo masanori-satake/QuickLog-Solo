@@ -797,6 +797,45 @@
                                             "
                                         ></canvas>
                                     </div>
+                                    <div
+                                        id="pusher-sync-error-container"
+                                        class="hidden"
+                                        style="
+                                            width: 100%;
+                                            border: 1px solid var(--md-sys-color-error);
+                                            border-radius: 6px;
+                                            padding: 8px;
+                                            background: var(--md-sys-color-error-container, #fdeded);
+                                            color: var(--md-sys-color-on-error-container, #5f2120);
+                                            font-size: 0.75rem;
+                                            margin-top: 8px;
+                                            box-sizing: border-box;
+                                        "
+                                    >
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px">
+                                            <span style="font-weight: 700; color: var(--md-sys-color-error);">エラー詳細</span>
+                                            <button
+                                                id="pusher-sync-copy-error-btn"
+                                                type="button"
+                                                class="outline-btn"
+                                                style="padding: 2px 8px; font-size: 0.7rem; height: 24px; min-height: 24px;"
+                                            >
+                                                コピー
+                                            </button>
+                                        </div>
+                                        <div
+                                            id="pusher-sync-error-details"
+                                            style="
+                                                max-height: 160px;
+                                                overflow-y: auto;
+                                                user-select: text;
+                                                -webkit-user-select: text;
+                                                word-break: break-all;
+                                                font-family: monospace;
+                                                white-space: pre-wrap;
+                                            "
+                                        ></div>
+                                    </div>
                                 </div>
                             </details>
                         </div>

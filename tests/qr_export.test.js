@@ -9,10 +9,11 @@ import {
 } from '../shared/js/db.js';
 
 let renderAboutQRCodes;
+let buildPusherErrorReport;
 
 beforeAll(async () => {
     const ready = jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-    ({ renderAboutQRCodes } = await import('../projects/app/js/app.js'));
+    ({ renderAboutQRCodes, buildPusherErrorReport } = await import('../projects/app/js/app.js'));
     ready.mockRestore();
 });
 
@@ -33,8 +34,22 @@ beforeEach(async () => {
     const canvas = document.createElement('canvas');
     canvas.id = 'pusher-sync-qr-canvas';
 
+    const errContainer = document.createElement('div');
+    errContainer.id = 'pusher-sync-error-container';
+    errContainer.classList.add('hidden');
+
+    const errDetails = document.createElement('div');
+    errDetails.id = 'pusher-sync-error-details';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.id = 'pusher-sync-copy-error-btn';
+
+    errContainer.appendChild(errDetails);
+    errContainer.appendChild(copyBtn);
+
     accordion.appendChild(statusText);
     accordion.appendChild(canvas);
+    accordion.appendChild(errContainer);
     document.body.appendChild(accordion);
 
     jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => ({
@@ -57,4 +72,20 @@ test('renderAboutQRCodes binds toggle listener to pwa-settings-qr-accordion', as
     await renderAboutQRCodes();
 
     expect(accordion.dataset.pusherListenerAdded).toBe('true');
+});
+
+test('buildPusherErrorReport generates markdown table with step details and error stack', () => {
+    const steps = [
+        { name: '1. 鍵・共有ID生成', status: 'success', detail: 'OK' },
+        { name: '2. QRコード描画', status: 'success', detail: 'OK' },
+        { name: '3. Pusher通信送信', status: 'failed', detail: 'Failed to fetch' },
+    ];
+    const err = new Error('Failed to fetch');
+
+    const report = buildPusherErrorReport(steps, err);
+
+    expect(report).toContain('### Pusher転送処理 エラーレポート');
+    expect(report).toContain('| 1. 鍵・共有ID生成 | 完了 | OK |');
+    expect(report).toContain('| 3. Pusher通信送信 | 失敗 | Failed to fetch |');
+    expect(report).toContain('**エラー詳細:** Failed to fetch');
 });
