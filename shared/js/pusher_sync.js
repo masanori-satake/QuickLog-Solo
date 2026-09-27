@@ -351,10 +351,10 @@ export async function sendSettingsToPusher(
  * @param {string} roomId - Room ID (channel name).
  * @param {string} secretKeyHex - 32-byte secret key in hex string format.
  * @param {Object} [config=PUSHER_CONFIG] - Pusher config object.
- * @param {number} [timeoutMs=30000] - Connection timeout in ms.
+ * @param {number} [timeoutMs=12000] - Connection timeout in ms (default 12s for fast recovery).
  * @returns {Promise<Object>} Decrypted settings data.
  */
-export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CONFIG, timeoutMs = 30000) {
+export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CONFIG, timeoutMs = 12000) {
     validatePusherConfig(config);
 
     return new Promise((resolve, reject) => {
