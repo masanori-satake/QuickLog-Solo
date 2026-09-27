@@ -300,7 +300,7 @@ export async function sendSettingsToPusher(
             const fetchOptions = {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'text/plain;charset=UTF-8',
+                    'Content-Type': 'application/json',
                 },
                 body: bodyStr,
             };
@@ -312,7 +312,10 @@ export async function sendSettingsToPusher(
             if (timerId) clearTimeout(timerId);
 
             if (!response.ok) {
-                throw new Error(`Pusher API error: ${response.status} ${response.statusText}`);
+                const responseText = await response.text().catch(() => '');
+                throw new Error(
+                    `Pusher API error: ${response.status} ${response.statusText}${responseText ? ` - ${responseText}` : ''}`
+                );
             }
 
             return response;

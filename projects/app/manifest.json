@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "default_locale": "en",
   "name": "__MSG_extensionName__",
-  "version": "1.38.0",
+  "version": "1.38.2",
   "description": "__MSG_extensionDescription__",
   "permissions": [
     "tabs",
@@ -11,6 +11,9 @@
     "notifications",
     "storage",
     "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://*.pusher.com/"
   ],
   "content_security_policy": {
     "extension_pages": "default-src 'self'; connect-src 'self' https://*.pusher.com wss://*.pusher.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data:;"
