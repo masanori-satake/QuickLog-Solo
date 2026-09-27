@@ -576,4 +576,8 @@ export default {
     'about-pwa-qr-accordion-label': '設定引き継ぎ用QRコードを表示',
     'btn-qr-scan-done': '完了',
     'qr-scan-all-completed': 'すべてのQRコードの読み取りが完了しました！',
+    'pusher-error-title': '【原因と対処方法】',
+    'pusher-error-offline': 'PCがオフライン状態（インターネット切断）です。ネットワーク接続を確認して再試行してください。',
+    'pusher-error-network': '通信エラーまたはセキュリティソフト・プロキシ等による遮断が発生しました。インターネット接続およびセキュリティ設定を確認してください。',
+    'pusher-error-timeout': '通信がタイムアウトしました。回線状況を確認のうえ、時間をおいて再試行してください。',
 };
