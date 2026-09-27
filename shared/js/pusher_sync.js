@@ -234,8 +234,17 @@ export async function generatePusherQueryString(method, path, body, config, time
  */
 const PUSHER_MAX_PAYLOAD_BYTES = 10240; // Pusher standard event data limit (10KB)
 
-export async function sendSettingsToPusher(roomId, settingsData, secretKeyHex, config = PUSHER_CONFIG) {
+export async function sendSettingsToPusher(
+    roomId,
+    settingsData,
+    secretKeyHex,
+    config = PUSHER_CONFIG,
+    onEncrypted = null
+) {
     const encryptedPayload = await encryptPayload(settingsData, secretKeyHex);
+    if (typeof onEncrypted === 'function') {
+        onEncrypted();
+    }
 
     const path = `/apps/${config.appId}/events`;
     const url = `https://api-${config.cluster}.pusher.com${path}`;

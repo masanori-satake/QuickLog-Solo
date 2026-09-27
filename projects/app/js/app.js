@@ -1369,12 +1369,11 @@ async function startPusherTransferProcess() {
         steps[2].detail = 'OK';
 
         currentStepIdx = 3;
-        // Data encryption will be done inside sendSettingsToPusher or right before
-        steps[3].status = 'success';
-        steps[3].detail = 'OK';
-
-        currentStepIdx = 4;
-        await sendSettingsToPusher(roomId, settingsData, secretKey);
+        await sendSettingsToPusher(roomId, settingsData, secretKey, undefined, () => {
+            steps[3].status = 'success';
+            steps[3].detail = 'OK';
+            currentStepIdx = 4;
+        });
         steps[4].status = 'success';
         steps[4].detail = 'OK';
 
@@ -1401,9 +1400,14 @@ async function startPusherTransferProcess() {
             errorContainer.classList.remove('hidden');
 
             if (copyErrorBtn) {
-                copyErrorBtn.onclick = () => {
-                    navigator.clipboard.writeText(reportText);
-                    showToast(t('toast-copied') || 'コピーしました！');
+                copyErrorBtn.onclick = async () => {
+                    try {
+                        await navigator.clipboard.writeText(reportText);
+                        showToast(t('toast-copied') || 'コピーしました！');
+                    } catch (copyErr) {
+                        console.error('Failed to copy error report:', copyErr);
+                        showToast(t('alert-error') || 'コピーに失敗しました');
+                    }
                 };
             }
         }
