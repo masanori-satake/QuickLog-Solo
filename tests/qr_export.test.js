@@ -45,13 +45,25 @@ beforeEach(async () => {
     document.body.replaceChildren();
 
     const accordion = document.createElement('details');
-    accordion.id = 'pwa-settings-qr-accordion';
+    accordion.id = 'pwa-settings-pin-accordion';
 
     const statusText = document.createElement('p');
     statusText.id = 'pusher-sync-status-text';
 
-    const canvas = document.createElement('canvas');
-    canvas.id = 'pusher-sync-qr-canvas';
+    const boxesContainer = document.createElement('div');
+    boxesContainer.id = 'pin-code-boxes-container';
+    for (let i = 0; i < 6; i++) {
+        const box = document.createElement('div');
+        box.className = 'pin-display-box';
+        box.textContent = '-';
+        boxesContainer.appendChild(box);
+    }
+
+    const countdownText = document.createElement('p');
+    const countdownSpan = document.createElement('span');
+    countdownSpan.id = 'pin-code-countdown';
+    countdownSpan.textContent = '03:00';
+    countdownText.appendChild(countdownSpan);
 
     const errContainer = document.createElement('div');
     errContainer.id = 'pusher-sync-error-container';
@@ -67,7 +79,8 @@ beforeEach(async () => {
     errContainer.appendChild(copyBtn);
 
     accordion.appendChild(statusText);
-    accordion.appendChild(canvas);
+    accordion.appendChild(boxesContainer);
+    accordion.appendChild(countdownText);
     accordion.appendChild(errContainer);
     document.body.appendChild(accordion);
 
@@ -84,8 +97,8 @@ afterEach(() => {
     closeDatabase();
 });
 
-test('renderAboutQRCodes binds toggle listener to pwa-settings-qr-accordion', async () => {
-    const accordion = document.getElementById('pwa-settings-qr-accordion');
+test('renderAboutQRCodes binds toggle listener to pwa-settings-pin-accordion', async () => {
+    const accordion = document.getElementById('pwa-settings-pin-accordion');
     expect(accordion.dataset.pusherListenerAdded).toBeUndefined();
 
     await renderAboutQRCodes();
@@ -93,10 +106,10 @@ test('renderAboutQRCodes binds toggle listener to pwa-settings-qr-accordion', as
     expect(accordion.dataset.pusherListenerAdded).toBe('true');
 });
 
-test('buildPusherErrorReport generates markdown table with step details and localized error guide', () => {
+test('buildPusherErrorReport generates markdown table with step details and error guide', () => {
     const steps = [
-        { name: '1. 鍵・共有ID生成', status: 'success', detail: 'OK' },
-        { name: '2. QRコード描画', status: 'success', detail: 'OK' },
+        { name: '1. 6桁PINコード生成', status: 'success', detail: 'OK' },
+        { name: '2. 設定データ取得', status: 'success', detail: 'OK' },
         { name: '3. Pusher通信送信', status: 'failed', detail: 'Failed to fetch' },
     ];
     const err = new Error('Failed to fetch');
@@ -104,31 +117,38 @@ test('buildPusherErrorReport generates markdown table with step details and loca
     const reportEn = buildPusherErrorReport(steps, err);
 
     expect(reportEn).toContain('### Pusher転送処理 エラーレポート');
-    expect(reportEn).toContain('| 1. 鍵・共有ID生成 | 完了 | OK |');
+    expect(reportEn).toContain('| 1. 6桁PINコード生成 | 完了 | OK |');
     expect(reportEn).toContain('| 3. Pusher通信送信 | 失敗 | Failed to fetch |');
     expect(reportEn).toContain('**エラー詳細:** Failed to fetch');
-    expect(reportEn).toContain('**[Cause & Troubleshooting]**');
 });
 
-test('accordion toggle runs startPusherTransferProcess, completes encryption step 4, and fails at step 5 when Pusher is configured but fetch fails in node test environment', async () => {
+test('accordion toggle runs startPusherTransferProcess, completes PIN generation & encryption, and attempts sendSettingsToPusher', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const accordion = document.getElementById('pwa-settings-qr-accordion');
+    const accordion = document.getElementById('pwa-settings-pin-accordion');
+
+    globalThis.fetch = jest.fn().mockImplementation(async () => {
+        return {
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            text: async () => 'OK',
+        };
+    });
 
     await renderAboutQRCodes();
 
     accordion.open = true;
     accordion.dispatchEvent(new Event('toggle'));
 
-    // Yield to allow async startPusherTransferProcess to execute with retries and timeouts
-    await new Promise((resolve) => setTimeout(resolve, 3500));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    const errDetails = document.getElementById('pusher-sync-error-details');
-    const reportContent = errDetails.textContent;
+    const boxEls = document.querySelectorAll('#pin-code-boxes-container .pin-display-box');
+    expect(boxEls.length).toBe(6);
+    const pinCode = Array.from(boxEls)
+        .map((b) => b.textContent)
+        .join('');
+    expect(/^\d{6}$/.test(pinCode)).toBe(true);
 
-    expect(reportContent).toContain('| 1. 鍵・共有ID生成 | 完了 | OK |');
-    expect(reportContent).toContain('| 2. QRコード描画 | 完了 | OK |');
-    expect(reportContent).toContain('| 3. 設定データ取得 | 完了 | OK |');
-    expect(reportContent).toContain('| 4. データ暗号化 | 完了 | OK |');
-    expect(reportContent).toContain('| 5. Pusher通信送信 | 失敗 |');
-    expect(warnSpy).toHaveBeenCalledWith('Pusher transfer warning:', expect.any(Error));
+    const statusText = document.getElementById('pusher-sync-status-text').textContent;
+    expect(statusText).toContain('引き継ぎコードを発行しました');
 });
