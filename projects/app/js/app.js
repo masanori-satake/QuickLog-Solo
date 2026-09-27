@@ -1623,12 +1623,8 @@ export function setupQRScanner() {
                         if (decodedText) {
                             const result = await handleImportQRPayload(decodedText, capturedSignal);
                             if (result && result.isAllPartsCompleted) {
-                                closeQRScannerModal();
+                                // Handled automatically by handleImportQRPayload
                                 return;
-                            } else if (statusEl) {
-                                statusEl.textContent =
-                                    t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
-                                statusEl.style.color = 'var(--md-sys-color-on-surface-variant)';
                             }
                         } else if (statusEl) {
                             statusEl.textContent = t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
@@ -1727,11 +1723,6 @@ export function setupQRScanner() {
                                     t('qr-scan-failed-not-found') || 'QRコードを検出できませんでした';
                                 statusEl.style.color = '#d32f2f';
                             }
-                        } else if (allCompleted) {
-                            closeQRScannerModal();
-                        } else if (statusEl) {
-                            statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
-                            statusEl.style.color = 'var(--md-sys-color-on-surface-variant)';
                         }
                     }
                 }
@@ -1761,6 +1752,11 @@ export async function openQRScannerModal() {
         captureBtn.disabled = false;
     }
 
+    const selectImgBtn = getEl('qr-select-image-btn');
+    if (selectImgBtn) {
+        selectImgBtn.disabled = false;
+    }
+
     const statusEl = getEl('qr-scan-status');
     if (statusEl) {
         statusEl.textContent = t('qr-scan-status-scanning') || 'カメラにQRコードをかざしてください';
@@ -1781,7 +1777,19 @@ export async function openQRScannerModal() {
             activeVideoStream = stream;
             video.srcObject = stream;
             await video.play();
-            if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) return;
+            if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) {
+                if (activeVideoStream === stream) {
+                    activeVideoStream.getTracks().forEach((track) => track.stop());
+                    activeVideoStream = null;
+                }
+                try {
+                    video.pause();
+                } catch (e) {
+                    console.warn('Error pausing QR video:', e);
+                }
+                delete video.srcObject;
+                return;
+            }
             startVideoFrameScanning(video, sessionId);
         } catch (err) {
             if (sessionId !== activeScanSessionId || modal.classList.contains('hidden')) return;
@@ -1808,8 +1816,22 @@ export function closeQRScannerModal() {
         activeVideoStream.getTracks().forEach((track) => track.stop());
         activeVideoStream = null;
     }
+    const video = getEl('qr-video');
+    if (video) {
+        try {
+            video.pause();
+        } catch (e) {
+            console.warn('Error pausing QR video on close:', e);
+        }
+        delete video.srcObject;
+    }
     const modal = getEl('qr-scan-modal');
     if (modal) modal.classList.add('hidden');
+
+    const captureBtn = getEl('qr-capture-btn');
+    if (captureBtn) captureBtn.disabled = false;
+    const selectImgBtn = getEl('qr-select-image-btn');
+    if (selectImgBtn) selectImgBtn.disabled = false;
 
     if (scannedAny) {
         lastCategoryRenderData = null;
@@ -1828,6 +1850,7 @@ function startVideoFrameScanning(video, sessionId) {
 
         if (video.readyState === video.HAVE_ENOUGH_DATA && !isScanningFrame) {
             isScanningFrame = true;
+            let keepLocked = false;
             try {
                 scanFrameCounter++;
                 // Cycle resolution between 640px and 960px to reliably capture distant/small and normal QR codes
@@ -1841,13 +1864,21 @@ function startVideoFrameScanning(video, sessionId) {
                     const signal = qrImportController.signal;
                     const decoded = await decodeQRCodeFromCanvas(canvas, { maxDimension: maxDim });
                     if (sessionId === activeScanSessionId && decoded && !signal.aborted) {
-                        await handleImportQRPayload(decoded, signal);
+                        const result = await handleImportQRPayload(decoded, signal);
+                        // If import payload handled `#sync?` or completed, frame scanner stays locked
+                        if (result && (result.handledError || result.isAllPartsCompleted)) {
+                            keepLocked = true;
+                            return;
+                        }
                     }
                 }
             } catch (err) {
                 console.warn('Frame scan error:', err);
             } finally {
-                isScanningFrame = false;
+                // Unlock frame scanning only if session is active and not locked
+                if (sessionId === activeScanSessionId && !keepLocked) {
+                    isScanningFrame = false;
+                }
             }
         }
         if (sessionId === activeScanSessionId) {
@@ -1860,7 +1891,7 @@ function startVideoFrameScanning(video, sessionId) {
 
 async function handleImportQRPayload(payloadStr, signal) {
     try {
-        if (signal.aborted) return { success: false, isAllPartsCompleted: false };
+        if (signal.aborted) return { success: false, isAllPartsCompleted: false, handledError: false };
 
         // Check if payload is a Pusher URL format (#sync?room={roomId}&key={secretKey})
         if (typeof payloadStr === 'string' && payloadStr.includes('#sync?')) {
@@ -1871,6 +1902,11 @@ async function handleImportQRPayload(payloadStr, signal) {
             const secretKey = params.get('key');
 
             if (roomId && secretKey) {
+                const captureBtn = getEl('qr-capture-btn');
+                const selectImgBtn = getEl('qr-select-image-btn');
+                if (captureBtn) captureBtn.disabled = true;
+                if (selectImgBtn) selectImgBtn.disabled = true;
+
                 const statusEl = getEl('qr-scan-status');
                 if (statusEl) {
                     statusEl.textContent = t('qr-scan-fetching-pusher') || 'Pusherから設定データを取得中...';
@@ -1880,7 +1916,7 @@ async function handleImportQRPayload(payloadStr, signal) {
                 try {
                     const settingsData = await fetchSettingsFromPusher(roomId, secretKey);
                     await dbImportQRSettings(settingsData, { signal });
-                    if (signal.aborted) return { success: false, isAllPartsCompleted: false };
+                    if (signal.aborted) return { success: false, isAllPartsCompleted: false, handledError: false };
                     broadcastSync();
 
                     showToast(t('toast-settings-imported') || '設定をインポートしました！');
@@ -1894,9 +1930,15 @@ async function handleImportQRPayload(payloadStr, signal) {
                         setLanguage(settingsData.settings.language);
                         applyLanguage();
                     }
-                    return { success: true, isAllPartsCompleted: true };
+
+                    scannedPartsSet.add(`pusher_${roomId}`);
+                    lastCategoryRenderData = null;
+                    await syncState();
+                    closeQRScannerModal();
+
+                    return { success: true, isAllPartsCompleted: true, handledError: false };
                 } catch (pusherErr) {
-                    if (signal.aborted) return { success: false, isAllPartsCompleted: false };
+                    if (signal.aborted) return { success: false, isAllPartsCompleted: false, handledError: false };
                     console.warn('Pusher fetch error in QR scanner:', pusherErr);
                     if (statusEl) {
                         statusEl.textContent =
@@ -1904,7 +1946,9 @@ async function handleImportQRPayload(payloadStr, signal) {
                             '受信タイムアウト：送信側のQRコードを表示したまま、再度読み取ってください。';
                         statusEl.style.color = '#d32f2f';
                     }
-                    return { success: false, isAllPartsCompleted: false };
+                    if (captureBtn) captureBtn.disabled = false;
+                    if (selectImgBtn) selectImgBtn.disabled = false;
+                    return { success: false, isAllPartsCompleted: false, handledError: true };
                 }
             }
         }
@@ -1940,11 +1984,11 @@ async function handleImportQRPayload(payloadStr, signal) {
         if (partKey && scannedPartsSet.has(partKey)) {
             const totalExpected = knownPartsTotal.generalTotal + knownPartsTotal.categoryTotal;
             const isAllPartsCompleted = totalExpected > 0 && completedPartsCountBefore >= totalExpected;
-            return { success: true, isAllPartsCompleted };
+            return { success: true, isAllPartsCompleted, handledError: false };
         }
 
         await dbImportQRSettings({ settings, categories, alarms, partInfo }, { signal });
-        if (signal.aborted) return { success: false, isAllPartsCompleted: false };
+        if (signal.aborted) return { success: false, isAllPartsCompleted: false, handledError: false };
         broadcastSync();
 
         if (partKey) {
@@ -1971,6 +2015,9 @@ async function handleImportQRPayload(payloadStr, signal) {
                 statusEl.style.color = '#2e7d32';
                 statusEl.style.fontWeight = '700';
             }
+            lastCategoryRenderData = null;
+            await syncState();
+            closeQRScannerModal();
         }
 
         // Apply language/theme if updated
@@ -1978,13 +2025,13 @@ async function handleImportQRPayload(payloadStr, signal) {
             setLanguage(settings.language);
             applyLanguage();
         }
-        return { success: true, isAllPartsCompleted };
+        return { success: true, isAllPartsCompleted, handledError: false };
     } catch (err) {
-        if (signal.aborted) return { success: false, isAllPartsCompleted: false };
+        if (signal.aborted) return { success: false, isAllPartsCompleted: false, handledError: false };
         console.error('Failed to import QR payload:', err);
         const statusEl = getEl('qr-scan-status');
         if (statusEl) statusEl.textContent = t('qr-scan-invalid-payload') || '無効なQRコードデータです';
-        return { success: false, isAllPartsCompleted: false };
+        return { success: false, isAllPartsCompleted: false, handledError: true };
     }
 }
 
@@ -3565,6 +3612,7 @@ function setupEventListeners() {
         syncSetup: getEl('sync-setup-modal'),
         historyAction: getEl('history-action-modal'),
         historyEdit: getEl('history-edit-modal'),
+        qrScan: getEl('qr-scan-modal'),
     };
 
     getEl(ID_SETTINGS_TOGGLE)?.addEventListener('click', async () => {
@@ -3579,16 +3627,21 @@ function setupEventListeners() {
     });
 
     queryAll(
-        '.settings-close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn'
+        '.settings-close-btn, .report-close-btn, .tag-aggregation-close-btn, .history-action-close-btn, .history-edit-close-btn, .qr-scan-close-btn'
     ).forEach((btn) => {
         btn.onclick = async (e) => {
             e.stopPropagation(); // Avoid triggering window.onclick
             const settingsWasVisible = popups.settings && !popups.settings.classList.contains('hidden');
-            Object.values(popups).forEach((p) => p?.classList.add('hidden'));
-            if (settingsWasVisible) {
-                stopPusherHeartbeat();
-                lastCategoryRenderData = null;
-                await syncState();
+            const qrScanWasVisible = popups.qrScan && !popups.qrScan.classList.contains('hidden');
+            if (qrScanWasVisible) {
+                closeQRScannerModal();
+            } else {
+                Object.values(popups).forEach((p) => p?.classList.add('hidden'));
+                if (settingsWasVisible) {
+                    stopPusherHeartbeat();
+                    lastCategoryRenderData = null;
+                    await syncState();
+                }
             }
         };
     });
@@ -3598,7 +3651,11 @@ function setupEventListeners() {
         Object.values(popups).forEach((p) => {
             if (event.target === p) {
                 if (p === popups.settings) closedSettings = true;
-                p.classList.add('hidden');
+                if (p === popups.qrScan) {
+                    closeQRScannerModal();
+                } else {
+                    p.classList.add('hidden');
+                }
             }
         });
         if (closedSettings) {
