@@ -33,7 +33,12 @@ import { backupManager } from './backup.js';
 import { restoreManager } from './restore.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
 import { deserializeSettingsPayload, renderQRCodeToCanvas, decodeQRCodeFromCanvas } from '../shared/js/qr_code.js';
-import { generateSecretKey, sendSettingsToPusher, fetchSettingsFromPusher } from '../shared/js/pusher_sync.js';
+import {
+    generateSecretKey,
+    encryptPayload,
+    sendSettingsToPusher,
+    fetchSettingsFromPusher,
+} from '../shared/js/pusher_sync.js';
 import {
     formatDuration,
     formatLogDuration,
@@ -1369,11 +1374,12 @@ async function startPusherTransferProcess() {
         steps[2].detail = 'OK';
 
         currentStepIdx = 3;
-        await sendSettingsToPusher(roomId, settingsData, secretKey, undefined, () => {
-            steps[3].status = 'success';
-            steps[3].detail = 'OK';
-            currentStepIdx = 4;
-        });
+        await encryptPayload(settingsData, secretKey);
+        steps[3].status = 'success';
+        steps[3].detail = 'OK';
+
+        currentStepIdx = 4;
+        await sendSettingsToPusher(roomId, settingsData, secretKey, undefined);
         steps[4].status = 'success';
         steps[4].detail = 'OK';
 
@@ -1382,7 +1388,7 @@ async function startPusherTransferProcess() {
             statusTextEl.style.color = '#2e7d32';
         }
     } catch (err) {
-        console.error('Pusher transfer error:', err);
+        console.warn('Pusher transfer warning:', err);
         if (statusTextEl) {
             statusTextEl.textContent = '送信エラーが発生しました';
             statusTextEl.style.color = '#d32f2f';

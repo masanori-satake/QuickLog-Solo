@@ -1,4 +1,23 @@
 import { jest } from '@jest/globals';
+import { webcrypto } from 'crypto';
+import { TextEncoder, TextDecoder } from 'util';
+
+if (!globalThis.crypto || !globalThis.crypto.subtle) {
+    try {
+        Object.defineProperty(globalThis, 'crypto', {
+            value: webcrypto,
+            configurable: true,
+            writable: true,
+        });
+    } catch {
+        globalThis.crypto = webcrypto;
+    }
+}
+if (typeof globalThis.TextEncoder === 'undefined') {
+    globalThis.TextEncoder = TextEncoder;
+    globalThis.TextDecoder = TextDecoder;
+}
+
 import {
     closeDatabase,
     setDatabaseName,
@@ -88,4 +107,27 @@ test('buildPusherErrorReport generates markdown table with step details and erro
     expect(report).toContain('| 1. 鍵・共有ID生成 | 完了 | OK |');
     expect(report).toContain('| 3. Pusher通信送信 | 失敗 | Failed to fetch |');
     expect(report).toContain('**エラー詳細:** Failed to fetch');
+});
+
+test('accordion toggle runs startPusherTransferProcess, completes encryption step 4, and fails at step 5 when Pusher is unconfigured', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const accordion = document.getElementById('pwa-settings-qr-accordion');
+
+    await renderAboutQRCodes();
+
+    accordion.open = true;
+    accordion.dispatchEvent(new Event('toggle'));
+
+    // Yield to allow async startPusherTransferProcess to execute
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const errDetails = document.getElementById('pusher-sync-error-details');
+    const reportContent = errDetails.textContent;
+
+    expect(reportContent).toContain('| 1. 鍵・共有ID生成 | 完了 | OK |');
+    expect(reportContent).toContain('| 2. QRコード描画 | 完了 | OK |');
+    expect(reportContent).toContain('| 3. 設定データ取得 | 完了 | OK |');
+    expect(reportContent).toContain('| 4. データ暗号化 | 完了 | OK |');
+    expect(reportContent).toContain('| 5. Pusher通信送信 | 失敗 | Pusherの設定が未構成です（APIキーまたはクラスタが設定されていません）。 |');
+    expect(warnSpy).toHaveBeenCalledWith('Pusher transfer warning:', expect.any(Error));
 });
