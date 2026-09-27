@@ -116,7 +116,7 @@ describe('pusher_sync.js', () => {
         );
     });
 
-    test('sendSettingsToPusher issues POST fetch request with text/plain Content-Type to avoid CORS preflight', async () => {
+    test('sendSettingsToPusher issues POST fetch request with application/json Content-Type', async () => {
         const config = {
             appId: '100',
             key: 'test_key',
@@ -138,7 +138,7 @@ describe('pusher_sync.js', () => {
         const callArgs = fetchMock.mock.calls[0];
         expect(callArgs[0]).toContain('https://api-ap3.pusher.com/apps/100/events?');
         expect(callArgs[1].method).toBe('POST');
-        expect(callArgs[1].headers['Content-Type']).toBe('text/plain;charset=UTF-8');
+        expect(callArgs[1].headers['Content-Type']).toBe('application/json');
     });
 
     test('sendSettingsToPusher retries on network failure and handles timeout', async () => {
