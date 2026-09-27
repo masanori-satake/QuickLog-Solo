@@ -32,12 +32,8 @@ import {
 import { backupManager } from './backup.js';
 import { restoreManager } from './restore.js';
 import { t, setLanguage, getLanguage, applyLanguage, detectBrowserLanguage } from '../shared/js/i18n.js';
-import {
-    serializeSettingsPayload,
-    deserializeSettingsPayload,
-    renderQRCodeToCanvas,
-    decodeQRCodeFromCanvas,
-} from '../shared/js/qr_code.js';
+import { deserializeSettingsPayload, renderQRCodeToCanvas, decodeQRCodeFromCanvas } from '../shared/js/qr_code.js';
+import { generateSecretKey, sendSettingsToPusher, fetchSettingsFromPusher } from '../shared/js/pusher_sync.js';
 import {
     formatDuration,
     formatLogDuration,
@@ -1237,34 +1233,6 @@ async function updateAboutStats() {
     }
 }
 
-function drawQRErrorCanvas(canvas, titleText, subText) {
-    if (!canvas) return;
-    const ctx = canvas.getContext ? canvas.getContext('2d') : null;
-    if (!ctx) return;
-
-    canvas.width = 120;
-    canvas.height = 120;
-
-    // Background
-    ctx.fillStyle = '#f8f9fa';
-    ctx.fillRect(0, 0, 120, 120);
-
-    // Border
-    ctx.strokeStyle = '#d32f2f';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(1, 1, 118, 118);
-
-    // Warning text
-    ctx.fillStyle = '#d32f2f';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.fillText(titleText || 'データ超過', 60, 50);
-
-    ctx.font = '10px sans-serif';
-    ctx.fillText(subText || 'QR表示不可', 60, 72);
-}
-
 /** Exported for testing purposes only. */
 export async function renderAboutQRCodes() {
     const isPWA = isPWAMode();
@@ -1302,192 +1270,65 @@ export async function renderAboutQRCodes() {
         };
     }
 
-    // 2. Dynamic Settings Export QR Codes
-    const generalQrCanvas = getEl('pwa-general-qr-canvas');
-    const categoriesQrCanvas = getEl('pwa-categories-qr-canvas');
-    const settingsQrCanvas = getEl('pwa-settings-qr-canvas');
-
-    if ((generalQrCanvas || categoriesQrCanvas || settingsQrCanvas) && !isPWA) {
-        if (generalQrCanvas) {
-            try {
-                const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
-                const settingsObj = {};
-                for (const item of allSettingsRaw) {
-                    if (item && item.key) {
-                        settingsObj[item.key] = item.value;
-                    }
+    // 2. Pusher Transfer QR Code Accordion
+    const accordion = getEl('pwa-settings-qr-accordion');
+    if (accordion && !isPWA) {
+        if (!accordion.dataset.pusherListenerAdded) {
+            accordion.dataset.pusherListenerAdded = 'true';
+            accordion.addEventListener('toggle', async () => {
+                if (accordion.open) {
+                    await startPusherTransferProcess();
                 }
-                const alarms = await dbGetAll(STORE_ALARMS);
+            });
+        }
+    }
+}
 
-                let categoryChunksCount = 1;
-                const catContainer = getEl('pwa-categories-qr-container');
-                const categoriesQrCanvas = getEl('pwa-categories-qr-canvas');
-                if (catContainer || categoriesQrCanvas) {
-                    try {
-                        const rawCats = await dbGetAll(STORE_CATEGORIES);
-                        const validCats = (rawCats || []).filter(
-                            (cat) =>
-                                cat &&
-                                cat.name !== SYSTEM_CATEGORY_IDLE &&
-                                !(cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
-                        );
-                        categoryChunksCount = Math.max(1, Math.ceil(validCats.length / 3));
-                    } catch {
-                        // ignore category error for general QR calculation
-                    }
-                }
+async function startPusherTransferProcess() {
+    const statusTextEl = getEl('pusher-sync-status-text');
+    const qrCanvas = getEl('pusher-sync-qr-canvas');
+    if (!statusTextEl || !qrCanvas) return;
 
-                const generalPayloadStr = serializeSettingsPayload({
-                    settings: settingsObj,
-                    alarms,
-                    partInfo: {
-                        gt: 1,
-                        gi: 1,
-                        ct: categoryChunksCount,
-                        ci: 0,
-                    },
-                });
-                renderQRCodeToCanvas(generalPayloadStr, generalQrCanvas, { width: 360, margin: 4 });
-                generalQrCanvas.title = '';
-            } catch (err) {
-                console.error('Failed to render general QR Code:', err);
-                const isCapacityError = err?.message === 'Payload too large for QR Code';
-                const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
-                const errSub = t('about-pwa-qr-too-large-sub');
-                const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
-                drawQRErrorCanvas(generalQrCanvas, errTitle, errSub);
-                generalQrCanvas.title = errTooltip;
+    try {
+        if (statusTextEl) statusTextEl.textContent = '鍵と共有IDを生成中...';
+
+        const roomId = generateUUID();
+        const secretKey = generateSecretKey();
+
+        const pwaBaseUrl = 'https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/';
+        const qrUrl = `${pwaBaseUrl}#sync?room=${roomId}&key=${secretKey}`;
+
+        renderQRCodeToCanvas(qrUrl, qrCanvas, { width: 240, margin: 2 });
+
+        if (statusTextEl) statusTextEl.textContent = 'データ暗号化 & 送信中...';
+
+        const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
+        const settingsObj = {};
+        for (const item of allSettingsRaw) {
+            if (item && item.key) {
+                settingsObj[item.key] = item.value;
             }
         }
+        const categories = await dbGetAll(STORE_CATEGORIES);
+        const alarms = await dbGetAll(STORE_ALARMS);
 
-        const catContainer = getEl('pwa-categories-qr-container');
-        if (catContainer || categoriesQrCanvas) {
-            try {
-                const rawCategories = await dbGetAll(STORE_CATEGORIES);
-                const validCategories = (rawCategories || []).filter(
-                    (cat) =>
-                        cat &&
-                        cat.name !== SYSTEM_CATEGORY_IDLE &&
-                        !(cat.name || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
-                );
+        const settingsData = {
+            settings: settingsObj,
+            categories,
+            alarms,
+        };
 
-                const CHUNK_SIZE = 3;
-                const chunks = [];
-                if (validCategories.length === 0) {
-                    chunks.push([]);
-                } else {
-                    for (let i = 0; i < validCategories.length; i += CHUNK_SIZE) {
-                        chunks.push(validCategories.slice(i, i + CHUNK_SIZE));
-                    }
-                }
+        await sendSettingsToPusher(roomId, settingsData, secretKey);
 
-                if (catContainer) {
-                    // Clear previous dynamic elements while preserving container structure
-                    catContainer.replaceChildren();
-
-                    chunks.forEach((chunkCats, idx) => {
-                        const wrapper = document.createElement('div');
-                        wrapper.style.width = '100%';
-
-                        const canvasEl = document.createElement('canvas');
-                        canvasEl.id = idx === 0 ? 'pwa-categories-qr-canvas' : `pwa-categories-qr-canvas-${idx + 1}`;
-                        canvasEl.style.width = '100%';
-                        canvasEl.style.maxWidth = '240px';
-                        canvasEl.style.aspectRatio = '1';
-                        canvasEl.style.border = '1px solid var(--md-sys-color-outline-variant)';
-                        canvasEl.style.borderRadius = '8px';
-                        canvasEl.style.background = '#ffffff';
-                        canvasEl.style.padding = '4px';
-                        canvasEl.style.display = 'block';
-                        canvasEl.style.margin = '0 auto';
-
-                        const labelEl = document.createElement('p');
-                        labelEl.style.fontSize = '0.8rem';
-                        labelEl.style.marginTop = '6px';
-                        labelEl.style.fontWeight = '600';
-
-                        const baseLabel = t('about-pwa-categories-qr-label');
-                        labelEl.textContent =
-                            chunks.length > 1 ? `${baseLabel} (${idx + 1}/${chunks.length})` : baseLabel;
-
-                        wrapper.appendChild(canvasEl);
-                        wrapper.appendChild(labelEl);
-                        catContainer.appendChild(wrapper);
-
-                        try {
-                            const chunkPayloadStr = serializeSettingsPayload({
-                                categories: chunkCats,
-                                partInfo: {
-                                    gt: 1,
-                                    gi: 0,
-                                    ct: chunks.length,
-                                    ci: idx + 1,
-                                },
-                            });
-                            renderQRCodeToCanvas(chunkPayloadStr, canvasEl, { width: 360, margin: 4 });
-                            canvasEl.title = '';
-                        } catch (err) {
-                            console.error(`Failed to render category QR Code chunk ${idx + 1}:`, err);
-                            const isCapacityError = err?.message === 'Payload too large for QR Code';
-                            const errTitle = t(
-                                isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title'
-                            );
-                            const errSub = t('about-pwa-qr-too-large-sub');
-                            const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
-                            drawQRErrorCanvas(canvasEl, errTitle, errSub);
-                            canvasEl.title = errTooltip;
-                        }
-                    });
-                } else if (categoriesQrCanvas) {
-                    const categoriesPayloadStr = serializeSettingsPayload({
-                        categories: validCategories,
-                        partInfo: { gt: 1, gi: 0, ct: 1, ci: 1 },
-                    });
-                    renderQRCodeToCanvas(categoriesPayloadStr, categoriesQrCanvas, { width: 360, margin: 4 });
-                    categoriesQrCanvas.title = '';
-                }
-            } catch (err) {
-                console.error('Failed to render categories QR Code:', err);
-                const targetCanvas = categoriesQrCanvas || getEl('pwa-categories-qr-canvas');
-                if (targetCanvas) {
-                    const isCapacityError = err?.message === 'Payload too large for QR Code';
-                    const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
-                    const errSub = t('about-pwa-qr-too-large-sub');
-                    const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
-                    drawQRErrorCanvas(targetCanvas, errTitle, errSub);
-                    targetCanvas.title = errTooltip;
-                }
-            }
+        if (statusTextEl) {
+            statusTextEl.textContent = '送信完了！PWA版でQRコードを読み取ってください';
+            statusTextEl.style.color = '#2e7d32';
         }
-
-        if (settingsQrCanvas) {
-            try {
-                const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
-                const settingsObj = {};
-                for (const item of allSettingsRaw) {
-                    if (item && item.key) {
-                        settingsObj[item.key] = item.value;
-                    }
-                }
-                const categories = await dbGetAll(STORE_CATEGORIES);
-                const alarms = await dbGetAll(STORE_ALARMS);
-
-                const payloadStr = serializeSettingsPayload({
-                    settings: settingsObj,
-                    categories,
-                    alarms,
-                });
-                renderQRCodeToCanvas(payloadStr, settingsQrCanvas, { width: 360, margin: 4 });
-                settingsQrCanvas.title = '';
-            } catch (err) {
-                console.error('Failed to render settings QR Code:', err);
-                const isCapacityError = err?.message === 'Payload too large for QR Code';
-                const errTitle = t(isCapacityError ? 'about-pwa-qr-too-large-title' : 'about-pwa-qr-error-title');
-                const errSub = t('about-pwa-qr-too-large-sub');
-                const errTooltip = t(isCapacityError ? 'about-pwa-qr-too-large' : 'about-pwa-qr-error');
-                drawQRErrorCanvas(settingsQrCanvas, errTitle, errSub);
-                settingsQrCanvas.title = errTooltip;
-            }
+    } catch (err) {
+        console.error('Pusher transfer error:', err);
+        if (statusTextEl) {
+            statusTextEl.textContent = '送信エラーが発生しました';
+            statusTextEl.style.color = '#d32f2f';
         }
     }
 }
@@ -1881,6 +1722,42 @@ function startVideoFrameScanning(video, sessionId) {
 async function handleImportQRPayload(payloadStr, signal) {
     try {
         if (signal.aborted) return { success: false, isAllPartsCompleted: false };
+
+        // Check if payload is a Pusher URL format (#sync?room={roomId}&key={secretKey})
+        if (typeof payloadStr === 'string' && payloadStr.includes('#sync?')) {
+            const hashIndex = payloadStr.indexOf('#sync?');
+            const queryString = payloadStr.substring(hashIndex + 6);
+            const params = new URLSearchParams(queryString);
+            const roomId = params.get('room');
+            const secretKey = params.get('key');
+
+            if (roomId && secretKey) {
+                const statusEl = getEl('qr-scan-status');
+                if (statusEl) {
+                    statusEl.textContent = 'Pusherから設定データを取得中...';
+                    statusEl.style.color = 'var(--md-sys-color-primary)';
+                }
+
+                const settingsData = await fetchSettingsFromPusher(roomId, secretKey);
+                await dbImportQRSettings(settingsData, { signal });
+                if (signal.aborted) return { success: false, isAllPartsCompleted: false };
+                broadcastSync();
+
+                showToast(t('toast-settings-imported') || '設定をインポートしました！');
+                if (statusEl) {
+                    statusEl.textContent = '設定データの読み取りが完了しました！';
+                    statusEl.style.color = '#2e7d32';
+                    statusEl.style.fontWeight = '700';
+                }
+
+                if (settingsData.settings && settingsData.settings.language) {
+                    setLanguage(settingsData.settings.language);
+                    applyLanguage();
+                }
+                return { success: true, isAllPartsCompleted: true };
+            }
+        }
+
         const { settings, categories, alarms, partInfo } = deserializeSettingsPayload(payloadStr);
 
         let partKey = '';

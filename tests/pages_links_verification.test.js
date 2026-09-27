@@ -69,7 +69,7 @@ describe('GitHub Pages Links & Asset Verification', () => {
             'projects/app/js/app.js': {
                 'projects/category-editor/': 1,
                 'projects/alarm-editor/': 1,
-                'projects/pwa/': 1,
+                'projects/pwa/': 2,
                 'projects/': 2,
             },
             'projects/web/index.html': {
