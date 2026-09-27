@@ -75,8 +75,7 @@ export default {
     'back-to-app': 'Volver a la aplicación',
     'alarm-setting-description':
         'Muestra un mensaje a una hora específica y, si es necesario, realiza acciones automáticas como «Finalizar», «Pausar» o «Iniciar».',
-    'alarm-editor-note-extension-only':
-        '* Los alarmas no se pueden editar en la versión PWA.',
+    'alarm-editor-note-extension-only': '* Los alarmas no se pueden editar en la versión PWA.',
     'alarm-label-enabled': 'Activado',
     'alarm-label-time': 'Hora',
     'alarm-label-message': 'Mensaje',
@@ -132,7 +131,7 @@ export default {
     'about-stats-logs': 'Número de historiales de trabajo',
     'about-stats-categories': 'Número de categorías',
     'about-description':
-        'QuickLog-Solo es una herramienta de notas de trabajo minimalista centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (y también en el sistema de archivos local cuando se realiza el respaldo) y nunca se envían al exterior. Mantiene una alta transparencia y seguridad mediante la verificación estricta de dependencias vía GitHub Actions y auditorías continuas con Google OSV-Scanner.',
+        'QuickLog-Solo es una herramienta minimalista de notas de trabajo centrada en la privacidad. Los datos se guardan en IndexedDB dentro de su navegador (los datos solo se transmiten cuando se inicia la transferencia de configuración o la sincronización entre dispositivos está activada). Mantiene una alta transparencia y seguridad mediante una verificación estricta de dependencias con GitHub Actions y auditorías continuas con Google OSV-Scanner.',
     'about-disclaimer':
         '[Descargo de responsabilidad] Este es un proyecto personal de código abierto y se proporciona "TAL CUAL" sin garantía de ningún tipo. El desarrollador no será responsable de ningún daño derivado de su uso. Úselo bajo su propio riesgo.',
     // Maintenance - Backup & Restore
@@ -537,18 +536,21 @@ export default {
         'Ya existe una animación personalizada con el mismo nombre. Por favor, ingrese un nombre diferente.',
     'maker-select-prompt': 'Por favor, agregue una animación personalizada',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
-    'about-pwa-section-desc': 'Escanee el código QR con la cámara de su teléfono para iniciar la versión PWA o transferir la configuración.',
+    'about-pwa-section-desc':
+        'Escanee el código QR con la cámara de su teléfono para iniciar la versión PWA o transferir la configuración.',
     'about-pwa-url-qr-label': '1. URL de inicio PWA',
     'about-pwa-general-qr-label': '2. Gral. y Alarmas',
     'about-pwa-categories-qr-label': '3. Categorías',
     'about-pwa-settings-qr-label': '2. Exportar configuración',
-    'about-pwa-qr-too-large': 'El tamaño de los datos excede la capacidad del código QR. Utilice la función de copia de seguridad en la pestaña Mantenimiento.',
+    'about-pwa-qr-too-large':
+        'El tamaño de los datos excede la capacidad del código QR. Utilice la función de copia de seguridad en la pestaña Mantenimiento.',
     'about-pwa-qr-error-title': 'Error',
     'about-pwa-qr-error': 'No se pudo generar el código QR de la configuración. Inténtelo de nuevo.',
     'about-pwa-qr-too-large-title': 'Datos Excedidos',
     'about-pwa-qr-too-large-sub': 'QR No Disponible',
     'about-pwa-import-title': 'Importar configuración de QuickLog-Solo (β)',
-    'about-pwa-import-desc': 'Escanee el código QR de configuración que se muestra en la extensión de PC para aplicar las categorías y la alarma.',
+    'about-pwa-import-desc':
+        'Escanee el código QR de configuración que se muestra en la extensión de PC para aplicar las categorías y la alarma.',
     'btn-pwa-scan-qr': 'Escanear código QR',
     'qr-scan-modal-title': 'Escaneo de código QR',
     'qr-scan-status-analyzing': 'Analizando...',
@@ -559,7 +561,7 @@ export default {
     'qr-scan-failed-not-found': 'No se detectó código QR en la imagen',
     'qr-scan-camera-error': 'Acceso a la cámara denegado o no disponible. Por favor seleccione una imagen.',
     'qr-scan-invalid-payload': 'Datos de código QR no válidos',
-    'about-pwa-qr-accordion-label': 'Mostrar códigos QR de transferencias (2. General/Alarmas / 3. Categorías)',
+    'about-pwa-qr-accordion-label': 'Mostrar código QR de transferencia',
     'btn-qr-scan-done': 'Listo',
     'qr-scan-all-completed': '¡Todos los códigos QR escaneados con éxito!',
 };

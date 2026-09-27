@@ -76,8 +76,7 @@ export default {
     'back-to-app': 'Zurück zur App',
     'alarm-setting-description':
         'Zeigt zu einer bestimmten Zeit eine Nachricht an und führt bei Bedarf automatisch Aktionen wie „Beenden“, „Pause“ oder „Start“ aus.',
-    'alarm-editor-note-extension-only':
-        '* Alarme können in der PWA-Version nicht bearbeitet werden.',
+    'alarm-editor-note-extension-only': '* Alarme können in der PWA-Version nicht bearbeitet werden.',
     'alarm-label-enabled': 'Aktiviert',
     'alarm-label-time': 'Zeit',
     'alarm-label-message': 'Nachricht',
@@ -133,7 +132,7 @@ export default {
     'about-stats-logs': 'Anzahl der Arbeitshistorien',
     'about-stats-categories': 'Anzahl der Kategorien',
     'about-description':
-        'QuickLog-Solo ist ein datenschutzorientiertes minimalistisches Arbeitsnotiz-Tool. Die Daten werden in der IndexedDB Ihres Browsers gespeichert (wenn das Backup ausgeführt wird, auch im lokalen Dateisystem) und niemals extern übertragen. Es gewährleistet hohe Transparenz und Sicherheit durch strikte Abhängigkeitsprüfung via GitHub Actions und kontinuierliche Prüfungen mit Google OSV-Scanner.',
+        'QuickLog-Solo ist ein datenschutzorientiertes, minimalistisches Arbeitstool. Die Daten werden in der IndexedDB Ihres Browsers gespeichert (Daten werden nur bei der Einstellungen-Übertragung oder aktivierter Geräte-Synchronisierung übertragen). Es behält eine hohe Transparenz und Sicherheit durch strikte Überprüfung von Abhängigkeiten über GitHub Actions und kontinuierliche Audits mit Google OSV-Scanner bei.',
     'about-disclaimer':
         '[Haftungsausschluss] Dies ist ein persönliches Open-Source-Projekt und wird ohne jegliche Gewährleistung zur Verfügung gestellt. Der Entwickler haftet nicht für Schäden, die aus der Nutzung resultieren. Nutzung auf eigene Gefahr.',
     // Maintenance - Backup & Restore
@@ -539,18 +538,22 @@ export default {
         'Es existiert bereits eine benutzerdefinierte Animation mit diesem Namen. Bitte geben Sie einen anderen Namen ein.',
     'maker-select-prompt': 'Bitte fügen Sie eine benutzerdefinierte Animation hinzu',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
-    'about-pwa-section-desc': 'Scannen Sie den QR-Code mit Ihrer Smartphone-Kamera, um die PWA-Version zu starten oder Einstellungen zu übertragen.',
+    'about-pwa-section-desc':
+        'Scannen Sie den QR-Code mit Ihrer Smartphone-Kamera, um die PWA-Version zu starten oder Einstellungen zu übertragen.',
     'about-pwa-url-qr-label': '1. PWA Start-URL',
     'about-pwa-general-qr-label': '2. Allg. & Alarme',
     'about-pwa-categories-qr-label': '3. Kategorien',
     'about-pwa-settings-qr-label': '2. Einstellungen exportieren',
-    'about-pwa-qr-too-large': 'Die Datengröße überschreitet die QR-Code-Kapazität. Bitte nutzen Sie die Sichern-Funktion im Reiter Wartung.',
+    'about-pwa-qr-too-large':
+        'Die Datengröße überschreitet die QR-Code-Kapazität. Bitte nutzen Sie die Sichern-Funktion im Reiter Wartung.',
     'about-pwa-qr-error-title': 'Fehler',
-    'about-pwa-qr-error': 'Der QR-Code für die Einstellungen konnte nicht erstellt werden. Bitte versuchen Sie es erneut.',
+    'about-pwa-qr-error':
+        'Der QR-Code für die Einstellungen konnte nicht erstellt werden. Bitte versuchen Sie es erneut.',
     'about-pwa-qr-too-large-title': 'Daten zu groß',
     'about-pwa-qr-too-large-sub': 'QR Nicht Verfügbar',
     'about-pwa-import-title': 'QuickLog-Solo-Einstellungen importieren (β)',
-    'about-pwa-import-desc': 'Scannen Sie den in der PC-Erweiterung angezeigten Einstellungs-QR-Code, um Kategorien und Alarmeinstellungen zu übernehmen.',
+    'about-pwa-import-desc':
+        'Scannen Sie den in der PC-Erweiterung angezeigten Einstellungs-QR-Code, um Kategorien und Alarmeinstellungen zu übernehmen.',
     'btn-pwa-scan-qr': 'QR-Code scannen',
     'qr-scan-modal-title': 'QR-Code scannen',
     'qr-scan-status-scanning': 'Bitte halten Sie Ihre Kamera auf den QR-Code',
@@ -561,7 +564,7 @@ export default {
     'qr-scan-failed-not-found': 'Kein QR-Code im Bild erkannt',
     'qr-scan-camera-error': 'Kamerazugriff verweigert oder nicht verfügbar. Bitte wählen Sie ein Bild.',
     'qr-scan-invalid-payload': 'Ungültige QR-Code-Daten',
-    'about-pwa-qr-accordion-label': 'QR-Codes zur Übertragung anzeigen (2. Allgemein/Alarme / 3. Kategorien)',
+    'about-pwa-qr-accordion-label': 'QR-Code zur Übertragung anzeigen',
     'btn-qr-scan-done': 'Fertig',
     'qr-scan-all-completed': 'Alle QR-Codes erfolgreich gescannt!',
 };

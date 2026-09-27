@@ -52,8 +52,7 @@ export default {
     'back-to-app': 'アプリに戻る',
     'alarm-setting-description':
         '指定した時刻にメッセージを表示し、必要に応じて作業を自動的に「終了」「一時停止」「開始」します。',
-    'alarm-editor-note-extension-only':
-        '※ PWA版ではアラームを編集できません。',
+    'alarm-editor-note-extension-only': '※ PWA版ではアラームを編集できません。',
     'alarm-label-enabled': '有効',
     'alarm-label-time': '時刻',
     'alarm-label-message': 'メッセージ',
@@ -127,7 +126,7 @@ export default {
     'about-stats-logs': '作業履歴件数',
     'about-stats-categories': 'カテゴリ数',
     'about-description':
-        'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB に保存され（バックアップを実行した際にはローカルファイルシステムにも保存されます）、外部送信は一切行われません。GitHub Actions による依存関係の検証と Google OSV-Scanner による継続的な監査により、高い透明性と安全性を維持しています。',
+        'QuickLog-Solo は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB に保存されます（設定引き継ぎ時や端末間同期の有効時のみデータが送信されます）。GitHub Actions による依存関係の検証と Google OSV-Scanner による継続的な監査により、高い透明性と安全性を維持しています。',
     'about-disclaimer':
         '【免責事項】本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。',
 
@@ -546,8 +545,7 @@ export default {
     'maker-playback-zoom': '再生とズーム',
     'maker-data-transfer': 'データの入出力',
     'maker-warning-title': '警告',
-    'maker-note-extension-only':
-        '※ アニメーション・メーカーはPWA版では起動できません。',
+    'maker-note-extension-only': '※ アニメーション・メーカーはPWA版では起動できません。',
     'maker-error-name-empty': '名前を入力してください',
     'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
     'maker-select-prompt': 'カスタムアニメーションを追加してください',
@@ -563,7 +561,8 @@ export default {
     'about-pwa-qr-too-large-title': 'データ超過',
     'about-pwa-qr-too-large-sub': 'QR表示不可',
     'about-pwa-import-title': 'QuickLog-Solo設定のインポート(β)',
-    'about-pwa-import-desc': 'Chrome拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。',
+    'about-pwa-import-desc':
+        'Chrome拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。',
     'btn-pwa-scan-qr': 'QRコードを読み取る',
     'qr-scan-modal-title': 'QRコードスキャン',
     'qr-scan-status-scanning': 'カメラにQRコードをかざしてください',
@@ -574,7 +573,7 @@ export default {
     'qr-scan-failed-not-found': 'QRコードを検出できませんでした',
     'qr-scan-camera-error': 'カメラアクセスが拒否されたか利用できません。画像から選択してください。',
     'qr-scan-invalid-payload': '無効なQRコードデータです',
-    'about-pwa-qr-accordion-label': '設定引き継ぎ用QRコードを表示 (2. 設定全般・アラーム / 3. 業務カテゴリ)',
+    'about-pwa-qr-accordion-label': '設定引き継ぎ用QRコードを表示',
     'btn-qr-scan-done': '完了',
     'qr-scan-all-completed': 'すべてのQRコードの読み取りが完了しました！',
 };

@@ -130,7 +130,7 @@ export default {
     'about-stats-logs': '工作历史数量',
     'about-stats-categories': '分类数量',
     'about-description':
-        'QuickLog-Solo 是一款注重隐私的极简工作笔记工具。数据保存在您浏览器的 IndexedDB 中（执行备份时也会保存到本地文件系统），且绝不上传服务器。通过 GitHub Actions 的严格依赖校验和 Google OSV-Scanner 的持续审计，确保高度的透明性与安全性。',
+        'QuickLog-Solo 頁面是一款注重隱私的極簡工作筆記工具。資料儲存於瀏覽器內的 IndexedDB（僅在進行設定轉移或開啟跨裝置同步時傳輸資料）。透過 GitHub Actions 嚴格驗證相依性以及 Google OSV-Scanner 的持續審計，保持高度的透明度與安全性。',
     'about-disclaimer':
         '[免责声明] 这是一个个人开源项目，按“原样”提供，不附带任何形式的保证。开发者不对因使用本软件而产生的任何损害承担责任。请自行承担使用风险。',
     // Maintenance - Backup & Restore
@@ -536,7 +536,7 @@ export default {
     'qr-scan-failed-not-found': '未在圖片中偵測到 QR 碼',
     'qr-scan-camera-error': '相機存取被拒絕或不可用。請從圖片選擇。',
     'qr-scan-invalid-payload': '無效的 QR 碼資料',
-    'about-pwa-qr-accordion-label': '顯示設定轉移 QR 碼 (2. 一般設定·鬧鐘 / 3. 業務分類)',
+    'about-pwa-qr-accordion-label': '顯示設定轉移 QR 碼',
     'btn-qr-scan-done': '完成',
     'qr-scan-all-completed': '所有 QR 碼均已成功掃描！',
 };

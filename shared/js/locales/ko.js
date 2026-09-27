@@ -75,8 +75,7 @@ export default {
     'back-to-app': '앱으로 돌아가기',
     'alarm-setting-description':
         '지정된 시간에 메시지를 표시하고 필요에 따라 작업을 자동으로 "종료", "일시 중지" 또는 "시작"합니다.',
-    'alarm-editor-note-extension-only':
-        '* PWA 버전에서는 알람을 편집할 수 없습니다.',
+    'alarm-editor-note-extension-only': '* PWA 버전에서는 알람을 편집할 수 없습니다.',
     'alarm-label-enabled': '활성화됨',
     'alarm-label-time': '시간',
     'alarm-label-message': '메시지',
@@ -132,7 +131,7 @@ export default {
     'about-stats-logs': '작업 이력 수',
     'about-stats-categories': '카테고리 수',
     'about-description':
-        'QuickLog-Solo는 개인정보를 중시하는 미니멀리스트 작업 메모 도구입니다. 데이터는 브라우저의 IndexedDB에 저장되며(백업을 실행했을 때는 로컬 파일 시스템에도 저장됩니다) 외부로 전송되지 않습니다. GitHub Actions를 통한 엄격한 의존성 검증과 Google OSV-Scanner의 지속적인 감사를 통해 높은 투명성과 보안성을 유지합니다.',
+        'QuickLog-Solo는 개인정보 보호를 중시하는 미니멀리스트 작업 메모 툴입니다. 데이터는 브라우저 내의 IndexedDB에 저장됩니다(설정 이전 시 또는 기기 간 동기화 활성화 시에만 데이터가 전송됩니다). GitHub Actions를 통한 엄격한 종속성 검증과 Google OSV-Scanner를 통한 지속적인 감사를 통해 높은 투명성과 안전성을 유지하고 있습니다.',
     'about-disclaimer':
         '[면책 조항] 이 프로젝트는 개인 오픈 소스 프로젝트이며 어떠한 보증도 제공하지 않습니다. 개발자는 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 사용자의 책임 하에 이용해 주십시오.',
     // Maintenance - Backup & Restore
@@ -551,7 +550,7 @@ export default {
     'qr-scan-failed-not-found': '이미지에서 QR 코드를 감지할 수 없습니다',
     'qr-scan-camera-error': '카메라 접근이 거부되었거나 사용할 수 없습니다. 이미지에서 선택해 주세요.',
     'qr-scan-invalid-payload': '유효하지 않은 QR 코드 데이터입니다',
-    'about-pwa-qr-accordion-label': '설정 이전용 QR 코드 표시 (2. 일반 설정·알람 / 3. 업무 카테고리)',
+    'about-pwa-qr-accordion-label': '설정 이전용 QR 코드 표시',
     'btn-qr-scan-done': '완료',
     'qr-scan-all-completed': '모든 QR 코드를 성공적으로 스캔했습니다!',
 };

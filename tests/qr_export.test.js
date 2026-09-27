@@ -9,8 +9,6 @@ import {
 } from '../shared/js/db.js';
 
 let renderAboutQRCodes;
-const groups = ['general', 'categories', 'settings'];
-let contexts;
 
 beforeAll(async () => {
     const ready = jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
@@ -25,34 +23,25 @@ beforeEach(async () => {
     await dbPut(STORE_CATEGORIES, { id: 1, name: 'Work' });
     await dbPut(STORE_ALARMS, { id: 1, name: 'Alarm' });
     document.body.replaceChildren();
-    contexts = {};
-    for (const group of groups) {
-        if (group === 'categories') {
-            const container = document.createElement('div');
-            container.id = 'pwa-categories-qr-container';
-            const canvas = document.createElement('canvas');
-            canvas.id = `pwa-categories-qr-canvas`;
-            canvas.title = 'Previous error';
-            container.append(canvas);
-            document.body.append(container);
-        } else {
-            const canvas = document.createElement('canvas');
-            canvas.id = `pwa-${group}-qr-canvas`;
-            canvas.title = 'Previous error';
-            document.body.append(canvas);
-        }
-    }
-    const getMockContext = () => ({ fillRect: jest.fn(), strokeRect: jest.fn(), fillText: jest.fn() });
-    for (const group of groups) {
-        const canvasId = `pwa-${group}-qr-canvas`;
-        contexts[canvasId] = getMockContext();
-    }
-    jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function () {
-        if (!contexts[this.id]) {
-            contexts[this.id] = { fillRect: jest.fn(), strokeRect: jest.fn(), fillText: jest.fn() };
-        }
-        return contexts[this.id];
-    });
+
+    const accordion = document.createElement('details');
+    accordion.id = 'pwa-settings-qr-accordion';
+
+    const statusText = document.createElement('p');
+    statusText.id = 'pusher-sync-status-text';
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'pusher-sync-qr-canvas';
+
+    accordion.appendChild(statusText);
+    accordion.appendChild(canvas);
+    document.body.appendChild(accordion);
+
+    jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => ({
+        fillRect: jest.fn(),
+        strokeRect: jest.fn(),
+        fillText: jest.fn(),
+    }));
     jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
@@ -61,54 +50,11 @@ afterEach(() => {
     closeDatabase();
 });
 
-test.each([
-    [STORE_SETTINGS, ['general', 'settings']],
-    [STORE_CATEGORIES, ['categories', 'settings']],
-    [STORE_ALARMS, ['general', 'settings']],
-])('a failed %s read shows errors only on dependent QR codes', async (failedStore, affectedGroups) => {
-    const getAll = globalThis.IDBObjectStore.prototype.getAll;
-    jest.spyOn(globalThis.IDBObjectStore.prototype, 'getAll').mockImplementation(function () {
-        if (this.name === failedStore) throw new Error('Read failed');
-        return getAll.call(this);
-    });
+test('renderAboutQRCodes binds toggle listener to pwa-settings-qr-accordion', async () => {
+    const accordion = document.getElementById('pwa-settings-qr-accordion');
+    expect(accordion.dataset.pusherListenerAdded).toBeUndefined();
 
-    await expect(renderAboutQRCodes()).resolves.toBeUndefined();
-
-    for (const group of groups) {
-        const canvas = document.getElementById(`pwa-${group}-qr-canvas`);
-        const context = contexts[canvas.id];
-        if (affectedGroups.includes(group)) {
-            expect(context.fillText).toHaveBeenCalledTimes(2);
-            expect(canvas.title).not.toBe('');
-            expect(canvas.title).not.toBe('Previous error');
-        } else {
-            expect(context.fillText).not.toHaveBeenCalled();
-            expect(context.fillRect.mock.calls.length).toBeGreaterThan(1);
-            expect(canvas.title).toBe('');
-        }
-    }
-});
-
-test.each([
-    ['general', [STORE_SETTINGS, STORE_ALARMS]],
-    ['categories', [STORE_CATEGORIES]],
-    ['settings', [STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS]],
-])('the %s QR reads only its required stores', async (group, requiredStores) => {
-    for (const other of groups.filter((value) => value !== group)) {
-        const el = document.getElementById(`pwa-${other}-qr-canvas`);
-        if (el) el.remove();
-        if (other === 'categories') {
-            const container = document.getElementById('pwa-categories-qr-container');
-            if (container) container.remove();
-        }
-    }
-    const readStores = [];
-    const getAll = globalThis.IDBObjectStore.prototype.getAll;
-    jest.spyOn(globalThis.IDBObjectStore.prototype, 'getAll').mockImplementation(function () {
-        readStores.push(this.name);
-        return getAll.call(this);
-    });
     await renderAboutQRCodes();
-    expect(readStores).toEqual(requiredStores);
-    expect(document.getElementById(`pwa-${group}-qr-canvas`).title).toBe('');
+
+    expect(accordion.dataset.pusherListenerAdded).toBe('true');
 });
