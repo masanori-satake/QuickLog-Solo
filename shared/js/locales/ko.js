@@ -545,4 +545,10 @@ export default {
     'about-pwa-qr-accordion-label': '설정 이어받기용 QR 코드를 표시',
     'btn-qr-scan-done': '완료',
     'qr-scan-all-completed': '모든 QR 코드 읽어들이기가 완료됐습니다!',
+    'pusher-error-title': '【原因と対処方法】',
+    'pusher-error-offline':
+        'PCがオフライン状態（インターネット切断）です。ネットワーク接続を確認して再試行してください。',
+    'pusher-error-network':
+        '通信エラーまたはセキュリティソフト・プロキシ等による遮断が発生しました。インターネット接続およびセキュリティ設定を確認してください。',
+    'pusher-error-timeout': '通信がタイムアウトしました。回線状況を確認のうえ、時間をおいて再試行してください。',
 };
