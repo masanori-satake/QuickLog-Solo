@@ -1283,6 +1283,8 @@ export async function renderAboutQRCodes() {
             accordion.addEventListener('toggle', async () => {
                 if (accordion.open) {
                     await startPusherTransferProcess();
+                } else {
+                    stopPusherHeartbeat();
                 }
             });
         }
@@ -1329,7 +1331,34 @@ export function buildPusherErrorReport(steps, err) {
     return `### Pusher転送処理 エラーレポート\n\n${tableRows}\n**エラー詳細:** ${errMsg}${userGuide}${errStack}`;
 }
 
+let pusherHeartbeatTimer = null;
+
+export function stopPusherHeartbeat() {
+    if (pusherHeartbeatTimer) {
+        clearInterval(pusherHeartbeatTimer);
+        pusherHeartbeatTimer = null;
+    }
+}
+
+export function startPusherHeartbeat(roomId, settingsData, secretKey) {
+    stopPusherHeartbeat();
+    pusherHeartbeatTimer = setInterval(async () => {
+        const accordion = getEl('pwa-settings-qr-accordion');
+        const settingsPopup = getEl(ID_SETTINGS_POPUP);
+        if ((!accordion || accordion.open) && (!settingsPopup || !settingsPopup.classList.contains('hidden'))) {
+            try {
+                await sendSettingsToPusher(roomId, settingsData, secretKey, undefined);
+            } catch (e) {
+                console.warn('Pusher heartbeat transfer warning:', e);
+            }
+        } else {
+            stopPusherHeartbeat();
+        }
+    }, 3000);
+}
+
 async function startPusherTransferProcess() {
+    stopPusherHeartbeat();
     const statusTextEl = getEl('pusher-sync-status-text');
     const qrCanvas = getEl('pusher-sync-qr-canvas');
     const errorContainer = getEl('pusher-sync-error-container');
@@ -1407,6 +1436,9 @@ async function startPusherTransferProcess() {
             statusTextEl.textContent = '送信完了！PWA版でQRコードを読み取ってください';
             statusTextEl.style.color = '#2e7d32';
         }
+
+        // Start periodic re-transmission (heartbeat) while accordion is open
+        startPusherHeartbeat(roomId, settingsData, secretKey);
     } catch (err) {
         console.warn('Pusher transfer warning:', err);
         if (statusTextEl) {
@@ -1841,27 +1873,39 @@ async function handleImportQRPayload(payloadStr, signal) {
             if (roomId && secretKey) {
                 const statusEl = getEl('qr-scan-status');
                 if (statusEl) {
-                    statusEl.textContent = 'Pusherから設定データを取得中...';
+                    statusEl.textContent = t('qr-scan-fetching-pusher') || 'Pusherから設定データを取得中...';
                     statusEl.style.color = 'var(--md-sys-color-primary)';
                 }
 
-                const settingsData = await fetchSettingsFromPusher(roomId, secretKey);
-                await dbImportQRSettings(settingsData, { signal });
-                if (signal.aborted) return { success: false, isAllPartsCompleted: false };
-                broadcastSync();
+                try {
+                    const settingsData = await fetchSettingsFromPusher(roomId, secretKey);
+                    await dbImportQRSettings(settingsData, { signal });
+                    if (signal.aborted) return { success: false, isAllPartsCompleted: false };
+                    broadcastSync();
 
-                showToast(t('toast-settings-imported') || '設定をインポートしました！');
-                if (statusEl) {
-                    statusEl.textContent = '設定データの読み取りが完了しました！';
-                    statusEl.style.color = '#2e7d32';
-                    statusEl.style.fontWeight = '700';
-                }
+                    showToast(t('toast-settings-imported') || '設定をインポートしました！');
+                    if (statusEl) {
+                        statusEl.textContent = t('qr-scan-pusher-success') || '設定データの読み取りが完了しました！';
+                        statusEl.style.color = '#2e7d32';
+                        statusEl.style.fontWeight = '700';
+                    }
 
-                if (settingsData.settings && settingsData.settings.language) {
-                    setLanguage(settingsData.settings.language);
-                    applyLanguage();
+                    if (settingsData.settings && settingsData.settings.language) {
+                        setLanguage(settingsData.settings.language);
+                        applyLanguage();
+                    }
+                    return { success: true, isAllPartsCompleted: true };
+                } catch (pusherErr) {
+                    if (signal.aborted) return { success: false, isAllPartsCompleted: false };
+                    console.warn('Pusher fetch error in QR scanner:', pusherErr);
+                    if (statusEl) {
+                        statusEl.textContent =
+                            t('qr-scan-pusher-timeout') ||
+                            '受信タイムアウト：送信側のQRコードを表示したまま、再度読み取ってください。';
+                        statusEl.style.color = '#d32f2f';
+                    }
+                    return { success: false, isAllPartsCompleted: false };
                 }
-                return { success: true, isAllPartsCompleted: true };
             }
         }
 
@@ -3542,6 +3586,7 @@ function setupEventListeners() {
             const settingsWasVisible = popups.settings && !popups.settings.classList.contains('hidden');
             Object.values(popups).forEach((p) => p?.classList.add('hidden'));
             if (settingsWasVisible) {
+                stopPusherHeartbeat();
                 lastCategoryRenderData = null;
                 await syncState();
             }
@@ -3557,6 +3602,7 @@ function setupEventListeners() {
             }
         });
         if (closedSettings) {
+            stopPusherHeartbeat();
             lastCategoryRenderData = null;
             await syncState();
         }

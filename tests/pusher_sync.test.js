@@ -204,4 +204,23 @@ describe('pusher_sync.js', () => {
         const fetchedData = await fetchSettingsFromPusher(roomId, secretKey, config, 1000);
         expect(fetchedData).toEqual(originalData);
     });
+
+    test('fetchSettingsFromPusher times out when no WebSocket message received', async () => {
+        class TimeoutMockWebSocket {
+            constructor() {
+                setTimeout(() => {
+                    if (this.onclose) this.onclose({ code: 1000, reason: 'Normal closure' });
+                }, 50);
+            }
+            close() {}
+        }
+
+        globalThis.WebSocket = TimeoutMockWebSocket;
+
+        const roomId = 'timeout-room';
+        const secretKey = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+
+        const dummyConfig = { appId: '12345', key: 'testkey', secret: 'testsecret', cluster: 'ap3' };
+        await expect(fetchSettingsFromPusher(roomId, secretKey, dummyConfig, 100)).rejects.toThrow();
+    });
 });
