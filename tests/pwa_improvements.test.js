@@ -226,5 +226,8 @@ describe('PWA Improvements & Session Sync Fallback', () => {
 
         expect(pasteEvent.defaultPrevented).toBe(true);
         expect(inputs.map((i) => i.value).join('')).toBe('123456');
+        inputs.forEach((input) => {
+            expect(input.disabled).toBe(true);
+        });
     });
 });

@@ -1571,6 +1571,12 @@ export function stopPusherTransferProcess() {
         statusTextEl.textContent = '準備中...';
         statusTextEl.style.color = 'var(--md-sys-color-primary)';
     }
+
+    const copyPinBtn = getEl('pin-code-copy-btn');
+    if (copyPinBtn) {
+        copyPinBtn.disabled = true;
+        copyPinBtn.onclick = null;
+    }
 }
 
 export function startPusherHeartbeat(roomId, settingsData, pinCode, generation) {
@@ -1679,6 +1685,7 @@ async function startPusherTransferProcess() {
         }
 
         if (copyPinBtn) {
+            copyPinBtn.disabled = false;
             copyPinBtn.onclick = async () => {
                 try {
                     await navigator.clipboard.writeText(pinCode);
