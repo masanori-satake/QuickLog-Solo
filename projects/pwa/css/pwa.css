@@ -111,8 +111,8 @@ main,
     }
 }
 
-/* Ultra-Narrow Viewport Optimization to match Side Panel min-width */
-@media (width <= 320px) {
+/* Ultra-Narrow Viewport Optimization to match Side Panel min-width (360px) */
+@media (width <= 360px) {
     #app {
         padding: max(4px, var(--pwa-safe-area-top)) max(4px, var(--pwa-safe-area-right))
             max(4px, var(--pwa-safe-area-bottom)) max(4px, var(--pwa-safe-area-left));
