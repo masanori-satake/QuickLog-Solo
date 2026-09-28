@@ -6,6 +6,7 @@
 import { jest } from '@jest/globals';
 import { saveAnimationBlob, getAnimationBlob, deleteAnimationBlob, initAnimationDB } from '../shared/js/idb_storage.js';
 import GenericGifAnimation from '../shared/js/animation/generic_gif_animation.js';
+import { sanitizeRenderSpec } from '../shared/js/utils.js';
 
 describe('Custom Animations Storage & Rendering fallback', () => {
     beforeAll(async () => {
@@ -261,4 +262,22 @@ describe('importCustomAnimation package validation & security rules', () => {
         expect(candidateName).toBe('A'.repeat(96) + ' (1)');
     });
 
+    test('sanitizes and clamps renderSpec parameters for package imports using sanitizeRenderSpec', () => {
+        const unsanitizedSpec = {
+            focusX: 99999,
+            focusY: -99999,
+            targetHeight: -50,
+            maxWidth: 100000,
+            brightness: 50.0,
+            overflowBehavior: 'unsupported_mode',
+        };
+
+        const safeSpec = sanitizeRenderSpec(unsanitizedSpec);
+        expect(safeSpec.focusX).toBe(5000);
+        expect(safeSpec.focusY).toBe(-5000);
+        expect(safeSpec.targetHeight).toBe(10);
+        expect(safeSpec.maxWidth).toBe(5000);
+        expect(safeSpec.brightness).toBe(3.0);
+        expect(safeSpec.overflowBehavior).toBe('categoryColor');
+    });
 });
