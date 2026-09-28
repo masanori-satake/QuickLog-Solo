@@ -1601,6 +1601,7 @@ async function startPusherTransferProcess() {
     const statusTextEl = getEl('pusher-sync-status-text');
     const boxEls = queryAll('#pin-code-boxes-container .pin-display-box');
     const countdownEl = getEl('pin-code-countdown');
+    const copyPinBtn = getEl('pin-code-copy-btn');
     const errorContainer = getEl('pusher-sync-error-container');
     const errorDetailsEl = getEl('pusher-sync-error-details');
     const copyErrorBtn = getEl('pusher-sync-copy-error-btn');
@@ -1675,6 +1676,18 @@ async function startPusherTransferProcess() {
             for (let i = 0; i < 6; i++) {
                 boxEls[i].textContent = pinCode[i];
             }
+        }
+
+        if (copyPinBtn) {
+            copyPinBtn.onclick = async () => {
+                try {
+                    await navigator.clipboard.writeText(pinCode);
+                    showToast(t('toast-copied') || 'コピーしました！');
+                } catch (copyErr) {
+                    console.error('Failed to copy PIN code:', copyErr);
+                    showToast(t('alert-error') || 'コピーに失敗しました');
+                }
+            };
         }
 
         if (statusTextEl) {
@@ -1781,8 +1794,24 @@ export function setupPinSync() {
 
     inputs.forEach((input, idx) => {
         input.addEventListener('input', (e) => {
-            const val = e.target.value.replace(/\D/g, '');
-            e.target.value = val ? val.slice(-1) : '';
+            const rawVal = e.target.value.replace(/\D/g, '');
+            if (rawVal.length > 1) {
+                const digits = rawVal.slice(0, 6);
+                digits.split('').forEach((digit, i) => {
+                    if (inputs[i]) {
+                        inputs[i].value = digit;
+                    }
+                });
+                if (digits.length === 6) {
+                    handlePinSubmit(digits);
+                } else if (digits.length > 0 && inputs[digits.length]) {
+                    inputs[digits.length].focus();
+                    inputs[digits.length].select();
+                }
+                return;
+            }
+
+            e.target.value = rawVal ? rawVal.slice(-1) : '';
 
             if (e.target.value && idx < inputs.length - 1) {
                 inputs[idx + 1].focus();
@@ -1799,8 +1828,36 @@ export function setupPinSync() {
         });
 
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !input.value && idx > 0) {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+            } else if (e.key === 'ArrowLeft' && idx > 0) {
+                e.preventDefault();
                 inputs[idx - 1].focus();
+                inputs[idx - 1].select();
+            } else if (e.key === 'ArrowRight' && idx < inputs.length - 1) {
+                e.preventDefault();
+                inputs[idx + 1].focus();
+                inputs[idx + 1].select();
+            } else if (e.key === 'Backspace' && !input.value && idx > 0) {
+                inputs[idx - 1].focus();
+            }
+        });
+
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+            const digits = pastedData.replace(/\D/g, '').slice(0, 6);
+            if (!digits) return;
+            digits.split('').forEach((digit, i) => {
+                if (inputs[i]) {
+                    inputs[i].value = digit;
+                }
+            });
+            if (digits.length === 6) {
+                handlePinSubmit(digits);
+            } else if (digits.length > 0 && inputs[digits.length]) {
+                inputs[digits.length].focus();
+                inputs[digits.length].select();
             }
         });
 

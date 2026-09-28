@@ -801,18 +801,38 @@
                                         <div class="pin-display-box" style="flex: 1; aspect-ratio: 1; min-width: 0; max-width: 42px; height: 42px; border: 2px solid var(--md-sys-color-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; background: var(--md-sys-color-surface);"> - </div>
                                     </div>
 
-                                    <!-- Countdown Timer Display -->
-                                    <p
-                                        id="pin-code-timer-text"
+                                    <!-- Copy Button & Countdown Timer Display -->
+                                    <div
                                         style="
-                                            font-size: 0.85rem;
-                                            color: var(--md-sys-color-on-surface-variant);
-                                            margin: 0;
-                                            font-weight: 600;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: space-between;
+                                            width: 100%;
+                                            max-width: 280px;
+                                            margin: 2px 0;
                                         "
                                     >
-                                        有効期限: <span id="pin-code-countdown" style="font-family: monospace; font-size: 1rem; color: var(--md-sys-color-error);">03:00</span>
-                                    </p>
+                                        <button
+                                            id="pin-code-copy-btn"
+                                            type="button"
+                                            class="outline-btn"
+                                            style="padding: 2px 8px; font-size: 0.75rem; height: 26px; min-height: 26px; display: inline-flex; align-items: center; gap: 4px;"
+                                        >
+                                            <span class="material-symbols-outlined" style="font-size: 1rem;">content_copy</span>
+                                            <span>コードをコピー</span>
+                                        </button>
+                                        <p
+                                            id="pin-code-timer-text"
+                                            style="
+                                                font-size: 0.85rem;
+                                                color: var(--md-sys-color-on-surface-variant);
+                                                margin: 0;
+                                                font-weight: 600;
+                                            "
+                                        >
+                                            有効期限: <span id="pin-code-countdown" style="font-family: monospace; font-size: 1rem; color: var(--md-sys-color-error);">03:00</span>
+                                        </p>
+                                    </div>
 
                                     <div
                                         id="pusher-sync-error-container"
@@ -1017,12 +1037,12 @@
                             width: 100%;
                         "
                     >
-                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
-                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
-                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
-                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
-                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
-                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
                     </div>
 
                     <!-- Status / Feedback & Remaining Attempts Message -->
