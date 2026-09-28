@@ -131,6 +131,7 @@ export default {
     'tooltip-copy-report': '复制日报到剪贴板',
     'tooltip-copy-aggregation': '按标签汇总结果并复制到剪贴板',
     'tooltip-settings': '打开设置',
+    'tooltip-pin-window': '常時最前面（ピン留め）を切り替えます',
     'tooltip-drag-handle': '拖动以排序',
     'tooltip-delete-category': '删除此分类',
     'tooltip-delete-history': 'この履歴を削除します',
