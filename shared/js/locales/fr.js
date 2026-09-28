@@ -522,7 +522,8 @@ export default {
     'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
     'maker-select-prompt': 'カスタムアニメーションを追加してください',
     'about-pwa-section-title': 'PWA版QuickLog-Solo(β)',
-    'about-pwa-section-desc': 'スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。',
+    'about-pwa-section-desc':
+        'スマホ等のカメラでQRコードを読み取ってPWA版の起動や、引き継ぎコードを使った設定同期を行えます。',
     'about-pwa-url-qr-label': '1. PWA起動URL',
     'about-pwa-general-qr-label': '2. 設定全般・アラーム',
     'about-pwa-categories-qr-label': '3. 業務カテゴリ',
@@ -534,7 +535,10 @@ export default {
     'about-pwa-qr-too-large-sub': 'QR表示不可',
     'about-pwa-import-title': 'QuickLog-Solo設定のインポート(β)',
     'about-pwa-import-desc':
-        'Chrome拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。',
+        'Chrome拡張機能版で表示された6桁の設定引き継ぎコードを入力して、カテゴリやアラーム設定を反映します。',
+    'about-pwa-pin-accordion-label': '設定引き継ぎ用コードを表示',
+    'btn-pwa-sync-pin': '設定引き継ぎコードを入力する',
+    'pin-sync-modal-title': '設定引き継ぎコードの入力',
     'btn-pwa-scan-qr': 'QRコードを読み取る',
     'qr-scan-modal-title': 'QRコードスキャン',
     'qr-scan-status-scanning': 'カメラにQRコードをかざしてください',
