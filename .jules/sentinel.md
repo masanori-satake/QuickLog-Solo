@@ -14,3 +14,8 @@
 **Vulnerability:** Page break entity IDs in `backup.js`, `restore.js`, and `category-editor/js/ui.js` still relied on `Math.random().toString(36)`, creating predictable internal category keys during backup validation, restoration, and UI creation.
 **Learning:** Secondary subprojects and backup/restore handlers can retain legacy `Math.random()` patterns even after core database initialization is updated to CSPRNG.
 **Prevention:** Periodically audit all entity ID creation sites across subprojects and backup/restore handlers to ensure full migration to CSPRNG `generateUUID()`.
+
+## 2026-05-10 - Eliminating Modulo Bias in CSPRNG PIN Generation for Key Derivation
+**Vulnerability:** `generate6DigitPin()` computed `Uint32Array` values modulo 1,000,000, creating modulo bias where lower PIN ranges (000000-967295) had a slightly higher probability (~0.023%) of selection when deriving AES-GCM encryption keys.
+**Learning:** Applying simple modulo arithmetic on fixed-width Uint32 integers introduces non-uniform probability distribution across numeric ranges that do not cleanly divide 2^32.
+**Prevention:** Always use rejection sampling (e.g. discarding values >= 4,294,000,000) when mapping CSPRNG Uint32 random numbers into numeric ranges.

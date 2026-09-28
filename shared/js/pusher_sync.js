@@ -140,15 +140,22 @@ async function getKeyFromPin(pinOrKey, saltBytes) {
 
 /**
  * Generates a cryptographically secure random 6-digit PIN code string (e.g. "582914").
+ * Eliminates modulo bias using rejection sampling over 32-bit unsigned integer space.
  * @returns {string} 6-digit PIN.
  */
 export function generate6DigitPin() {
     const cryptoObj = getCrypto();
-    if (cryptoObj && cryptoObj.getRandomValues) {
+    if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
         const array = new Uint32Array(1);
-        cryptoObj.getRandomValues(array);
-        const pinNum = array[0] % 1000000;
-        return String(pinNum).padStart(6, '0');
+        // 4,294,000,000 is the largest multiple of 1,000,000 <= 2^32 - 1 (4,294,967,295).
+        // Discard values >= 4,294,000,000 to eliminate modulo bias when deriving AES-GCM keys.
+        const maxValid = 4294000000;
+        let pinNum;
+        do {
+            cryptoObj.getRandomValues(array);
+            pinNum = array[0];
+        } while (pinNum >= maxValid);
+        return String(pinNum % 1000000).padStart(6, '0');
     }
 
     let pin = '';
