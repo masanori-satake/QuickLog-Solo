@@ -79,6 +79,36 @@ describe('pusher_sync.js', () => {
         }
     });
 
+    test('generate6DigitPin uses getRandomValues even in non-secure origins where crypto.subtle is undefined', () => {
+        const mockGetRandomValues = jest.fn((buf) => {
+            buf[0] = 654321;
+            return buf;
+        });
+
+        const originalSubtle = globalThis.crypto.subtle;
+        const spyGetRandomValues = jest.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(mockGetRandomValues);
+
+        try {
+            // Simulate non-secure origin (HTTP) where SubtleCrypto is undefined
+            Object.defineProperty(globalThis.crypto, 'subtle', {
+                value: undefined,
+                configurable: true,
+                writable: true,
+            });
+
+            const pin = generate6DigitPin();
+            expect(mockGetRandomValues).toHaveBeenCalled();
+            expect(pin).toBe('654321');
+        } finally {
+            spyGetRandomValues.mockRestore();
+            Object.defineProperty(globalThis.crypto, 'subtle', {
+                value: originalSubtle,
+                configurable: true,
+                writable: true,
+            });
+        }
+    });
+
     test('encryptPayload and decryptPayload round-trip with createdAt timestamp', async () => {
         const pin = '582914';
         const settingsData = {

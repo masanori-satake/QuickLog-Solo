@@ -1,14 +1,25 @@
 import { PUSHER_CONFIG } from './pusher_config.js';
 
-function getCrypto() {
-    if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.subtle) {
+function getCryptoObject() {
+    if (typeof globalThis !== 'undefined' && globalThis.crypto) {
         return globalThis.crypto;
     }
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+    if (typeof window !== 'undefined' && window.crypto) {
         return window.crypto;
     }
-    if (typeof crypto !== 'undefined' && crypto.subtle) {
+    if (typeof self !== 'undefined' && self.crypto) {
+        return self.crypto;
+    }
+    if (typeof crypto !== 'undefined') {
         return crypto;
+    }
+    return null;
+}
+
+function getCrypto() {
+    const cryptoObj = getCryptoObject();
+    if (cryptoObj && cryptoObj.subtle) {
+        return cryptoObj;
     }
     return null;
 }
@@ -144,7 +155,7 @@ async function getKeyFromPin(pinOrKey, saltBytes) {
  * @returns {string} 6-digit PIN.
  */
 export function generate6DigitPin() {
-    const cryptoObj = getCrypto();
+    const cryptoObj = getCryptoObject();
     if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
         const array = new Uint32Array(1);
         // 4,294,000,000 is the largest multiple of 1,000,000 <= 2^32 - 1 (4,294,967,295).

@@ -177,12 +177,18 @@ export function generateDuplicateName(baseName, existingNames) {
  * @returns {string}
  */
 export function generateUUID() {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID();
+    const cryptoObj =
+        (typeof globalThis !== 'undefined' && globalThis.crypto) ||
+        (typeof window !== 'undefined' && window.crypto) ||
+        (typeof self !== 'undefined' && self.crypto) ||
+        (typeof crypto !== 'undefined' ? crypto : null);
+
+    if (cryptoObj && typeof cryptoObj.randomUUID === 'function') {
+        return cryptoObj.randomUUID();
     }
-    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
         const bytes = new Uint8Array(16);
-        crypto.getRandomValues(bytes);
+        cryptoObj.getRandomValues(bytes);
         bytes[6] = (bytes[6] & 0x0f) | 0x40; // Version 4
         bytes[8] = (bytes[8] & 0x3f) | 0x80; // Variant 1 (RFC 4122)
         var hex = '';
