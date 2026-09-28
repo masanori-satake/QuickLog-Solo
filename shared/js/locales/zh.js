@@ -24,6 +24,8 @@ export default {
     'tooltip-copy-aggregation': '按标签汇总结果并复制到剪贴板',
     'tooltip-settings': '打开设置',
     'tooltip-pin-window': '切换置顶 (固定窗口)',
+    'pip-active-message': '正在以置顶模式显示',
+    'btn-restore-window': '取消置顶',
     'tooltip-drag-handle': '拖动以排序',
     'tooltip-delete-category': '删除此分类',
     'tooltip-delete-history': '删除此历史记录',

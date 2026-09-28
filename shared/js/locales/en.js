@@ -142,6 +142,8 @@ export default {
     'tooltip-copy-aggregation': 'Copy tag aggregation results to clipboard',
     'tooltip-settings': 'Open settings',
     'tooltip-pin-window': 'Toggle always on top (Pin window)',
+    'pip-active-message': 'Displaying in Always-on-Top mode',
+    'btn-restore-window': 'Unpin',
     'tooltip-drag-handle': 'Drag to reorder',
     'tooltip-delete-category': 'Delete this category',
     'tooltip-delete-history': 'Delete this history',

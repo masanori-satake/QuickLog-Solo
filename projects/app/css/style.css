@@ -2258,6 +2258,68 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
     font-size: 11px;
 }
 
+/* Document Picture-in-Picture Placeholder */
+body.pip-active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 16px;
+    box-sizing: border-box;
+    background-color: var(--md-sys-color-surface-container-lowest);
+    color: var(--md-sys-color-on-surface);
+    overflow: hidden;
+}
+
+#pip-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px 20px;
+    background-color: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 16px;
+    box-shadow: var(--md-elevation-1);
+    text-align: center;
+    max-width: 320px;
+    width: 100%;
+}
+
+.pip-placeholder-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pip-placeholder-icon > span {
+    font-size: 28px;
+}
+
+.pip-placeholder-text {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    line-height: 1.4;
+}
+
+#pip-restore-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+
 /* Color Palette Swatches in Settings */
 .color-palette {
     display: grid;

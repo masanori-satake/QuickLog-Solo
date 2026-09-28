@@ -286,6 +286,8 @@ export async function openPinWindow() {
         pipWindow.document.body.style.cssText = document.body.style.cssText;
         pipWindow.document.body.appendChild(app);
 
+        showPipPlaceholder();
+
         pipWindow.addEventListener('resize', () => {
             if (animationEngine) {
                 animationEngine.resize();
@@ -312,6 +314,7 @@ export async function openPinWindow() {
         }
     } catch (err) {
         console.warn('QuickLog-Solo: Document Picture-in-Picture request failed:', err);
+        hidePipPlaceholder();
         const appContainer = getEl('app');
         if (appContainer && appContainer.parentElement !== document.body) {
             document.body.appendChild(appContainer);
@@ -336,13 +339,75 @@ export function closePinWindow() {
     }
 }
 
+export function showPipPlaceholder() {
+    let placeholder = document.getElementById('pip-placeholder');
+    if (!placeholder) {
+        placeholder = createEl('div');
+        placeholder.id = 'pip-placeholder';
+        placeholder.className = 'pip-placeholder-card';
+
+        const iconContainer = createEl('div');
+        iconContainer.className = 'pip-placeholder-icon';
+        const icon = createEl('span');
+        icon.className = 'material-symbols-outlined';
+        icon.textContent = 'push_pin';
+        iconContainer.appendChild(icon);
+
+        const msg = createEl('p');
+        msg.className = 'pip-placeholder-text';
+        msg.setAttribute('data-i18n', 'pip-active-message');
+        msg.textContent = t('pip-active-message');
+
+        const restoreBtn = createEl('button');
+        restoreBtn.id = 'pip-restore-btn';
+        restoreBtn.className = 'primary-btn';
+        restoreBtn.onclick = () => {
+            closePinWindow();
+        };
+
+        const btnIcon = createEl('span');
+        btnIcon.className = 'material-symbols-outlined';
+        btnIcon.textContent = 'keep_off';
+
+        const btnText = createEl('span');
+        btnText.setAttribute('data-i18n', 'btn-restore-window');
+        btnText.textContent = t('btn-restore-window');
+
+        restoreBtn.appendChild(btnIcon);
+        restoreBtn.appendChild(btnText);
+
+        placeholder.appendChild(iconContainer);
+        placeholder.appendChild(msg);
+        placeholder.appendChild(restoreBtn);
+
+        document.body.appendChild(placeholder);
+    }
+    document.body.classList.add('pip-active');
+}
+
+export function hidePipPlaceholder() {
+    const placeholder = document.getElementById('pip-placeholder');
+    if (placeholder) {
+        placeholder.remove();
+    }
+    document.body.classList.remove('pip-active');
+}
+
 function onPipWindowClosed() {
     if (!pipWindow) return;
     const app = pipWindow.document.getElementById('app');
     pipWindow = null;
 
+    hidePipPlaceholder();
+
     if (app && app.parentElement !== document.body) {
         document.body.appendChild(app);
+    }
+
+    try {
+        window.focus();
+    } catch {
+        // ignore focus error
     }
 
     const btn = getEl('pin-window-btn');

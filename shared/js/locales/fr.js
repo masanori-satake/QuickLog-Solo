@@ -24,6 +24,8 @@ export default {
     'tooltip-copy-aggregation': "Copier les résultats de l'agrégation par tag dans le presse-papiers",
     'tooltip-settings': 'Ouvrir les paramètres',
     'tooltip-pin-window': 'Toujours au premier plan (Epingler la fenêtre)',
+    'pip-active-message': 'Affichage en mode toujours au premier plan',
+    'btn-restore-window': 'Désépingler',
     'tooltip-drag-handle': 'Faire glisser pour réordonner',
     'tooltip-delete-category': 'Supprimer cette catégorie',
     'tooltip-delete-history': 'Supprimer cet historique',

@@ -24,6 +24,8 @@ export default {
     'tooltip-copy-aggregation': 'Kopiert die Ergebnisse der Tag-Aggregation in die Zwischenablage',
     'tooltip-settings': 'Einstellungen öffnen',
     'tooltip-pin-window': 'Immer im Vordergrund umschalten (Fenster anheften)',
+    'pip-active-message': 'Wird im Immer-im-Vordergrund-Modus angezeigt',
+    'btn-restore-window': 'Anheften aufheben',
     'tooltip-drag-handle': 'Ziehen zum Neuordnen',
     'tooltip-delete-category': 'Diese Kategorie löschen',
     'tooltip-delete-history': 'Diesen Verlauf löschen',

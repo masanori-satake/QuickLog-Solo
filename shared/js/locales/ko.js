@@ -24,6 +24,8 @@ export default {
     'tooltip-copy-aggregation': '태그별 집계 결과를 클립보드에 복사합니다',
     'tooltip-settings': '설정 열기',
     'tooltip-pin-window': '항상 위에 표시 (창 고정)',
+    'pip-active-message': '항상 위에 표시(창 고정) 모드로 표시 중',
+    'btn-restore-window': '고정 해제',
     'tooltip-drag-handle': '드래그하여 순서 변경',
     'tooltip-delete-category': '이 카테고리 삭제',
     'tooltip-delete-history': '이 이력을 삭제합니다',
