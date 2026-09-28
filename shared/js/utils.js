@@ -212,18 +212,27 @@ export function floorToMinute(ms) {
  */
 export function sanitizeRenderSpec(rawSpec) {
     const spec = rawSpec && typeof rawSpec === 'object' ? rawSpec : {};
+
+    const parseNum = (val, min, max, defaultVal) => {
+        if (val === null || val === undefined || val === '') return defaultVal;
+        const num = Number(val);
+        return Number.isFinite(num) ? Math.max(min, Math.min(max, num)) : defaultVal;
+    };
+
+    const parseBool = (val) => {
+        if (val === 'true') return true;
+        if (val === 'false') return false;
+        return Boolean(val);
+    };
+
     return {
-        focusX: Number.isFinite(Number(spec.focusX)) ? Math.max(-5000, Math.min(5000, Number(spec.focusX))) : 0,
-        focusY: Number.isFinite(Number(spec.focusY)) ? Math.max(-5000, Math.min(5000, Number(spec.focusY))) : 0,
-        targetHeight: Number.isFinite(Number(spec.targetHeight))
-            ? Math.max(10, Math.min(2000, Number(spec.targetHeight)))
-            : 100,
-        maxWidth: Number.isFinite(Number(spec.maxWidth)) ? Math.max(10, Math.min(5000, Number(spec.maxWidth))) : 2030,
-        scaleWithHeight: Boolean(spec.scaleWithHeight),
-        invert: Boolean(spec.invert),
+        focusX: parseNum(spec.focusX, -5000, 5000, 0),
+        focusY: parseNum(spec.focusY, -5000, 5000, 0),
+        targetHeight: parseNum(spec.targetHeight, 10, 2000, 100),
+        maxWidth: parseNum(spec.maxWidth, 10, 5000, 2030),
+        scaleWithHeight: parseBool(spec.scaleWithHeight),
+        invert: parseBool(spec.invert),
         overflowBehavior: spec.overflowBehavior === 'repeat' ? 'repeat' : 'categoryColor',
-        brightness: Number.isFinite(Number(spec.brightness))
-            ? Math.max(0.1, Math.min(3.0, Number(spec.brightness)))
-            : 1.0,
+        brightness: parseNum(spec.brightness, 0.1, 3.0, 1.0),
     };
 }

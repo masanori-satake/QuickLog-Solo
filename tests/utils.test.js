@@ -283,8 +283,8 @@ describe('Utils Module', () => {
                 focusY: NaN,
                 targetHeight: -100,
                 maxWidth: 10000,
-                scaleWithHeight: 1,
-                invert: 0,
+                scaleWithHeight: 'true',
+                invert: 'false',
                 overflowBehavior: 'invalid_mode',
                 brightness: 100,
             };
@@ -299,6 +299,24 @@ describe('Utils Module', () => {
             expect(safeRenderSpec.invert).toBe(false);
             expect(safeRenderSpec.overflowBehavior).toBe('categoryColor');
             expect(safeRenderSpec.brightness).toBe(3.0);
+        });
+
+        test('preserves defaults when null values are passed for numeric fields', () => {
+            const rawSpec = {
+                focusX: null,
+                focusY: null,
+                targetHeight: null,
+                maxWidth: null,
+                brightness: null,
+            };
+
+            const safeRenderSpec = sanitizeRenderSpec(rawSpec);
+
+            expect(safeRenderSpec.focusX).toBe(0);
+            expect(safeRenderSpec.focusY).toBe(0);
+            expect(safeRenderSpec.targetHeight).toBe(100);
+            expect(safeRenderSpec.maxWidth).toBe(2030);
+            expect(safeRenderSpec.brightness).toBe(1.0);
         });
 
         test('handles null/undefined gracefully', () => {
