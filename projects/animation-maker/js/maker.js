@@ -4,6 +4,7 @@
 
 import { messages } from '../shared/js/messages.js';
 import { initDB, dbGetAll, dbPut, STORE_CATEGORIES, DB_NAME, SYNC_CHANNEL_NAME } from '../shared/js/db.js';
+import { sanitizeRenderSpec } from '../shared/js/utils.js';
 import {
     getCustomAnimationMetadataMap as sharedGetCustomAnimationMetadataMap,
     setCustomAnimationMetadataMap as sharedSetCustomAnimationMetadataMap,
@@ -718,20 +719,13 @@ function showM3ImportCollisionDialog(data, blob, existingId, existingMeta) {
         const map = await getCustomAnimationMetadataMap();
         map[existingId] = {
             ...map[existingId],
-            description: data.metadata?.description || '',
-            author: data.metadata?.author || 'User',
+            description:
+                typeof data.metadata?.description === 'string' ? data.metadata.description.trim().slice(0, 500) : '',
+            author: typeof data.metadata?.author === 'string' ? data.metadata.author.trim().slice(0, 100) : 'User',
             revision: (map[existingId].revision || 0) + 1,
             config: data.config || { exclusionStrategy: 'freedom' },
             payload: {
-                renderSpec: data.payload?.renderSpec || {
-                    focusX: 0,
-                    focusY: 0,
-                    targetHeight: 100,
-                    maxWidth: 2030,
-                    scaleWithHeight: true,
-                    overflowBehavior: 'repeat',
-                    previewColor: 'primary',
-                },
+                renderSpec: sanitizeRenderSpec(data.payload?.renderSpec),
             },
         };
 
@@ -822,22 +816,15 @@ async function proceedWithImport(data, blob, finalName) {
     const newId = crypto.randomUUID();
 
     map[newId] = {
-        name: finalName,
-        description: data.metadata?.description || '',
-        author: data.metadata?.author || 'User',
+        name: typeof finalName === 'string' ? finalName.trim().slice(0, 100) : 'My Animation',
+        description:
+            typeof data.metadata?.description === 'string' ? data.metadata.description.trim().slice(0, 500) : '',
+        author: typeof data.metadata?.author === 'string' ? data.metadata.author.trim().slice(0, 100) : 'User',
         order: Object.keys(map).length,
         revision: 1,
         config: data.config || { exclusionStrategy: 'freedom' },
         payload: {
-            renderSpec: data.payload?.renderSpec || {
-                focusX: 0,
-                focusY: 0,
-                targetHeight: 100,
-                maxWidth: 2030,
-                scaleWithHeight: true,
-                overflowBehavior: 'repeat',
-                previewColor: 'primary',
-            },
+            renderSpec: sanitizeRenderSpec(data.payload?.renderSpec),
         },
     };
 
@@ -2039,8 +2026,8 @@ function setupEventListeners() {
 
             // Decode base64 GIF back to file blob first to validate
             const base64 = data.payload?.imageData;
-            if (!base64) {
-                throw new Error('Missing imageData in payload');
+            if (!base64 || typeof base64 !== 'string' || !base64.startsWith('data:') || !base64.includes(',')) {
+                throw new Error('Invalid image data format');
             }
             const byteString = atob(base64.split(',')[1]);
             const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
