@@ -678,22 +678,31 @@
                                 margin-top: 12px;
                             "
                         >
-                            <label style="font-weight: 700; font-size: 0.9rem" data-i18n="about-pwa-section-title"
-                                >PWA版QuickLog-Solo(β)</label
-                            >
-                            <p
-                                style="
-                                    font-size: 0.8rem;
-                                    color: var(--md-sys-color-on-surface-variant);
-                                    margin-bottom: 0.5rem;
-                                "
-                                data-i18n="about-pwa-section-desc"
-                            >
-                                スマホ等のカメラでQRコードを読み取ってPWA版の起動や、引き継ぎコードを使った設定同期を行えます。
-                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center">
+                                <label style="font-weight: 700; font-size: 0.9rem" data-i18n="about-pwa-section-title"
+                                    >PWA版QuickLog-Solo(β)</label
+                                >
+                                <label class="switch" data-i18n-title="setting-pwa-support">
+                                    <input type="checkbox" id="pwa-support-toggle" data-i18n-aria-label="setting-pwa-support" />
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
 
-                            <!-- PWA Launch URL QR Code -->
-                            <div style="text-align: center; margin: 12px 0">
+                            <div id="pwa-support-details-container" class="hidden">
+                                <p
+                                    style="
+                                        font-size: 0.8rem;
+                                        color: var(--md-sys-color-on-surface-variant);
+                                        margin-top: 0.5rem;
+                                        margin-bottom: 0.5rem;
+                                    "
+                                    data-i18n="about-pwa-section-desc"
+                                >
+                                    スマホ等のカメラでQRコードを読み取ってPWA版の起動や、引き継ぎコードを使った設定同期を行えます。
+                                </p>
+
+                                <!-- PWA Launch URL QR Code -->
+                                <div style="text-align: center; margin: 12px 0">
                                 <a
                                     id="pwa-url-qr-link"
                                     href="https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/"
@@ -876,6 +885,7 @@
                                     </div>
                                 </div>
                             </details>
+                            </div>
                         </div>
 
                         <!-- モバイル(PWA)版 設定インポートセクション (PWA版用) -->

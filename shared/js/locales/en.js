@@ -554,10 +554,11 @@ export default {
     'maker-error-name-empty': 'Name cannot be empty',
     'maker-error-name-duplicate': 'The same custom animation name already exists. Please enter a different name.',
     'maker-select-prompt': 'Please add a custom animation',
+    'setting-pwa-support': 'PWA Support',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
     'about-pwa-section-desc':
         'Scan the QR code to launch the PWA version or sync settings using the transfer code.',
-    'about-pwa-url-qr-label': '1. PWA Launch URL',
+    'about-pwa-url-qr-label': 'PWA Launch URL',
     'about-pwa-general-qr-label': '2. General & Alarms',
     'about-pwa-categories-qr-label': '3. Categories',
     'about-pwa-settings-qr-label': '2. Export Settings',
