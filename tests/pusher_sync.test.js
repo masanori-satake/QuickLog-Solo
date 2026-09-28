@@ -75,13 +75,15 @@ describe('pusher_sync.js', () => {
         expect(decrypted.settings).toEqual(settingsData);
     });
 
-    test('computeHmacSha256 generates correct signature using WebCrypto SHA256', async () => {
-        const secret = 'my_secret';
-        const message = 'POST\n/apps/123/events\nauth_key=key&auth_timestamp=1000&auth_version=1.0';
+    test('computeHmacSha256 generates correct signature matching RFC 4231 test vectors', async () => {
+        // RFC 4231 Test Case 2:
+        // Key = "Jefe" (4 bytes)
+        // Data = "what do ya want for nothing?" (28 bytes)
+        // HMAC-SHA-256 digest = 5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843
+        const secret = 'Jefe';
+        const message = 'what do ya want for nothing?';
         const sig = await computeHmacSha256(secret, message);
-        expect(typeof sig).toBe('string');
-        expect(sig.length).toBe(64);
-        expect(/^[0-9a-f]{64}$/.test(sig)).toBe(true);
+        expect(sig).toBe('5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843');
     });
 
     test('generatePusherQueryString formats query string with HMAC signature', async () => {

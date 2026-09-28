@@ -3324,7 +3324,9 @@ function setupEventListeners() {
             } else {
                 Object.values(popups).forEach((p) => p?.classList.add('hidden'));
                 if (settingsWasVisible) {
-                    stopPusherHeartbeat();
+                    stopPusherTransferProcess();
+                    const accordion = getEl('pwa-settings-pin-accordion') || getEl('pwa-settings-qr-accordion');
+                    if (accordion) accordion.open = false;
                     lastCategoryRenderData = null;
                     await syncState();
                 }
@@ -3341,7 +3343,9 @@ function setupEventListeners() {
             }
         });
         if (closedSettings) {
-            stopPusherHeartbeat();
+            stopPusherTransferProcess();
+            const accordion = getEl('pwa-settings-pin-accordion') || getEl('pwa-settings-qr-accordion');
+            if (accordion) accordion.open = false;
             lastCategoryRenderData = null;
             await syncState();
         }

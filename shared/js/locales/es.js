@@ -550,7 +550,10 @@ export default {
     'about-pwa-qr-too-large-sub': 'QR No Disponible',
     'about-pwa-import-title': 'Importar configuración de QuickLog-Solo (β)',
     'about-pwa-import-desc':
-        'Escanee el código QR de configuración que se muestra en la extensión de PC para aplicar las categorías y la alarma.',
+        'Ingrese el código de transferencia de 6 dígitos mostrado en la extensión de Chrome para aplicar la configuración.',
+    'about-pwa-pin-accordion-label': 'Mostrar código de transferencia',
+    'btn-pwa-sync-pin': 'Ingresar código de transferencia',
+    'pin-sync-modal-title': 'Ingresar código de transferencia',
     'btn-pwa-scan-qr': 'Escanear código QR',
     'qr-scan-modal-title': 'Escaneo de código QR',
     'qr-scan-status-analyzing': 'Analizando...',

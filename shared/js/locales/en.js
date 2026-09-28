@@ -553,7 +553,7 @@ export default {
     'maker-select-prompt': 'Please add a custom animation',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
     'about-pwa-section-desc':
-        'Scan the QR code with your smartphone camera to launch the PWA version or transfer settings.',
+        'Scan the QR code to launch the PWA version or sync settings using the transfer code.',
     'about-pwa-url-qr-label': '1. PWA Launch URL',
     'about-pwa-general-qr-label': '2. General & Alarms',
     'about-pwa-categories-qr-label': '3. Categories',
@@ -566,7 +566,10 @@ export default {
     'about-pwa-qr-too-large-sub': 'QR Unavailable',
     'about-pwa-import-title': 'Import QuickLog-Solo Settings (β)',
     'about-pwa-import-desc':
-        'Scan the settings QR code displayed in the PC extension to apply categories and alarm settings.',
+        'Enter the 6-digit transfer code displayed on the Chrome extension to apply category and alarm settings.',
+    'about-pwa-pin-accordion-label': 'Show Transfer Code',
+    'btn-pwa-sync-pin': 'Enter Transfer Code',
+    'pin-sync-modal-title': 'Enter Transfer Code',
     'btn-pwa-scan-qr': 'Scan QR Code',
     'qr-scan-modal-title': 'Scan QR Code',
     'qr-scan-status-scanning': 'Please point your camera at the QR code',

@@ -140,7 +140,7 @@ test('accordion toggle runs startPusherTransferProcess, completes PIN generation
     accordion.open = true;
     accordion.dispatchEvent(new Event('toggle'));
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const boxEls = document.querySelectorAll('#pin-code-boxes-container .pin-display-box');
     expect(boxEls.length).toBe(6);

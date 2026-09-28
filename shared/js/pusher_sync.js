@@ -113,23 +113,44 @@ export async function computeHmacSha256(keyStr, messageStr) {
 }
 
 /**
- * Generates a CryptoKey for AES-GCM from a 6-digit PIN or secret key string using SHA-256 digest.
+ * Generates an authenticated AES-GCM CryptoKey from a 6-digit PIN using PBKDF2-HMAC-SHA256 key derivation.
  * @param {string} pinOrKey
+ * @param {Uint8Array} saltBytes
  * @returns {Promise<CryptoKey>}
  */
-async function getKeyFromPin(pinOrKey) {
+async function getKeyFromPin(pinOrKey, saltBytes) {
     const cryptoObj = getCrypto();
     const encoder = new TextEncoder();
     const pinBytes = encoder.encode(String(pinOrKey));
-    const hash = await cryptoObj.subtle.digest('SHA-256', pinBytes);
-    return cryptoObj.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+
+    const baseKey = await cryptoObj.subtle.importKey('raw', pinBytes, 'PBKDF2', false, ['deriveKey']);
+    return cryptoObj.subtle.deriveKey(
+        {
+            name: 'PBKDF2',
+            salt: saltBytes,
+            iterations: 100000,
+            hash: 'SHA-256',
+        },
+        baseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+    );
 }
 
 /**
- * Generates a random 6-digit PIN code string (e.g. "582914").
+ * Generates a cryptographically secure random 6-digit PIN code string (e.g. "582914").
  * @returns {string} 6-digit PIN.
  */
 export function generate6DigitPin() {
+    const cryptoObj = getCrypto();
+    if (cryptoObj && cryptoObj.getRandomValues) {
+        const array = new Uint32Array(1);
+        cryptoObj.getRandomValues(array);
+        const pinNum = array[0] % 1000000;
+        return String(pinNum).padStart(6, '0');
+    }
+
     let pin = '';
     for (let i = 0; i < 6; i++) {
         pin += Math.floor(Math.random() * 10).toString();
@@ -138,19 +159,19 @@ export function generate6DigitPin() {
 }
 
 /**
- * Generates a random 32-byte secret key as a hex string (64 characters) - kept for compatibility.
- * @returns {string} Hex string of 32 random bytes.
+ * Generates a random 6-digit numeric string for compatibility.
+ * @returns {string} 6-digit numeric string.
  */
 export function generateSecretKey() {
     return generate6DigitPin();
 }
 
 /**
- * Encrypts data using WebCrypto API (AES-GCM) with 6-digit PIN / key.
+ * Encrypts data using WebCrypto API (AES-GCM 256-bit) with PBKDF2 key derivation.
  * Adds `createdAt: Date.now()` timestamp to payload object before encryption.
  * @param {any} data - Object to encrypt.
  * @param {string} pinOrKey - 6-digit PIN or secret key string.
- * @returns {Promise<{iv: string, data: string}>} Base64 IV and encrypted data.
+ * @returns {Promise<{salt: string, iv: string, data: string}>} Base64 salt, IV and encrypted data.
  */
 export async function encryptPayload(data, pinOrKey) {
     const cryptoObj = getCrypto();
@@ -162,14 +183,20 @@ export async function encryptPayload(data, pinOrKey) {
     const encoder = new TextEncoder();
     const dataBytes = encoder.encode(jsonStr);
 
-    const key = await getKeyFromPin(pinOrKey);
+    const salt = cryptoObj.getRandomValues(new Uint8Array(16));
     const iv = cryptoObj.getRandomValues(new Uint8Array(12));
+
+    const key = await getKeyFromPin(pinOrKey, salt);
     const encryptedBuf = await cryptoObj.subtle.encrypt({ name: 'AES-GCM', iv }, key, dataBytes);
 
+    let saltBinary = '';
+    for (let i = 0; i < salt.length; i++) {
+        saltBinary += String.fromCharCode(salt[i]);
+    }
+
     let ivBinary = '';
-    const ivArr = new Uint8Array(iv);
-    for (let i = 0; i < ivArr.length; i++) {
-        ivBinary += String.fromCharCode(ivArr[i]);
+    for (let i = 0; i < iv.length; i++) {
+        ivBinary += String.fromCharCode(iv[i]);
     }
 
     let dataBinary = '';
@@ -179,14 +206,15 @@ export async function encryptPayload(data, pinOrKey) {
     }
 
     return {
+        salt: btoa(saltBinary),
         iv: btoa(ivBinary),
         data: btoa(dataBinary),
     };
 }
 
 /**
- * Decrypts data using WebCrypto API (AES-GCM).
- * @param {{iv: string, data: string}} encryptedObj - Base64 IV and encrypted data.
+ * Decrypts and authenticates data using WebCrypto API (AES-GCM 256-bit).
+ * @param {{salt?: string, iv: string, data: string}} encryptedObj - Base64 salt, IV and encrypted data.
  * @param {string} pinOrKey - 6-digit PIN or secret key string.
  * @returns {Promise<{createdAt: number, settings: any}>} Decrypted payload object with timestamp and settings.
  */
@@ -196,13 +224,25 @@ export async function decryptPayload(encryptedObj, pinOrKey) {
     }
 
     const cryptoObj = getCrypto();
-    const key = await getKeyFromPin(pinOrKey);
 
     const ivBinary = atob(encryptedObj.iv);
     const iv = new Uint8Array(ivBinary.length);
     for (let i = 0; i < ivBinary.length; i++) {
         iv[i] = ivBinary.charCodeAt(i);
     }
+
+    let salt;
+    if (encryptedObj.salt) {
+        const saltBinary = atob(encryptedObj.salt);
+        salt = new Uint8Array(saltBinary.length);
+        for (let i = 0; i < saltBinary.length; i++) {
+            salt[i] = saltBinary.charCodeAt(i);
+        }
+    } else {
+        salt = new TextEncoder().encode('QuickLog-Solo-Sync-Salt');
+    }
+
+    const key = await getKeyFromPin(pinOrKey, salt);
 
     const dataBinary = atob(encryptedObj.data);
     const dataBytes = new Uint8Array(dataBinary.length);
@@ -419,14 +459,15 @@ export function fetchSettingsFromPusher(
                 }
 
                 if (message.event === 'sync-settings') {
-                    isResolved = true;
-                    clearTimeout(timeoutId);
                     if (typeof onStatusChange === 'function') {
                         onStatusChange('データ受信完了・復号中...');
                     }
                     const eventData = typeof message.data === 'string' ? JSON.parse(message.data) : message.data;
                     const encryptedPayload = eventData.payload;
                     const decryptedPayload = await decryptPayload(encryptedPayload, pinOrKey);
+
+                    isResolved = true;
+                    clearTimeout(timeoutId);
                     socket.close();
                     resolve(decryptedPayload);
                 }
