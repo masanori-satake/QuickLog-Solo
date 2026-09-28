@@ -132,6 +132,7 @@ export default {
     'tooltip-copy-report': '일일 보고서를 클립보드에 복사',
     'tooltip-copy-aggregation': '태그별 집계 결과를 클립보드에 복사합니다',
     'tooltip-settings': '설정 열기',
+    'tooltip-pin-window': '常時最前面（ピン留め）を切り替えます',
     'tooltip-drag-handle': '드래그하여 순서 변경',
     'tooltip-delete-category': '이 카테고리 삭제',
     'tooltip-delete-history': '기록을 삭제합니다',
