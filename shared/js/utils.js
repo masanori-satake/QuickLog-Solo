@@ -204,3 +204,26 @@ export function floorToMinute(ms) {
     if (typeof ms !== 'number' || !Number.isFinite(ms)) return 0;
     return Math.floor(ms / 60000) * 60000;
 }
+
+/**
+ * Sanitizes and bounds custom animation renderSpec parameters to safe limits and defaults.
+ * @param {any} rawSpec
+ * @returns {Object} Safe renderSpec object
+ */
+export function sanitizeRenderSpec(rawSpec) {
+    const spec = rawSpec && typeof rawSpec === 'object' ? rawSpec : {};
+    return {
+        focusX: Number.isFinite(Number(spec.focusX)) ? Math.max(-5000, Math.min(5000, Number(spec.focusX))) : 0,
+        focusY: Number.isFinite(Number(spec.focusY)) ? Math.max(-5000, Math.min(5000, Number(spec.focusY))) : 0,
+        targetHeight: Number.isFinite(Number(spec.targetHeight))
+            ? Math.max(10, Math.min(2000, Number(spec.targetHeight)))
+            : 100,
+        maxWidth: Number.isFinite(Number(spec.maxWidth)) ? Math.max(10, Math.min(5000, Number(spec.maxWidth))) : 2030,
+        scaleWithHeight: Boolean(spec.scaleWithHeight),
+        invert: Boolean(spec.invert),
+        overflowBehavior: spec.overflowBehavior === 'repeat' ? 'repeat' : 'categoryColor',
+        brightness: Number.isFinite(Number(spec.brightness))
+            ? Math.max(0.1, Math.min(3.0, Number(spec.brightness)))
+            : 1.0,
+    };
+}
