@@ -177,6 +177,7 @@ main {
     color: var(--md-sys-color-on-surface-variant);
     min-width: 75px;
     font-family: 'Roboto Mono', monospace;
+    flex-shrink: 0;
 }
 
 .log-name {
@@ -196,6 +197,9 @@ main {
     color: var(--muted-color);
     margin-left: 0.25rem;
     opacity: 0.8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .log-duration {
@@ -203,6 +207,8 @@ main {
     color: var(--muted-color);
     min-width: 35px;
     text-align: right;
+    flex-shrink: 0;
+    margin-left: 4px;
 }
 
 .category-dot {
