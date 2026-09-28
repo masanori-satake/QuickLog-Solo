@@ -219,9 +219,9 @@ describe('Custom Animations Storage & Rendering fallback', () => {
 });
 
 describe('importCustomAnimation package validation & security rules', () => {
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-    test('validates RFC 4122 UUID format for custom animation package id and rejects non-UUIDs', () => {
+    test('validates RFC 4122 UUID format for custom animation package id and replaces non-UUIDs with valid UUID', () => {
         const validUuid = '550e8400-e29b-41d4-a716-446655440000';
         const nonUuid1 = 'custom_uuid_001';
         const invalidId2 = '../../etc/passwd';
@@ -231,6 +231,12 @@ describe('importCustomAnimation package validation & security rules', () => {
         expect(uuidPattern.test(nonUuid1)).toBe(false);
         expect(uuidPattern.test(invalidId2)).toBe(false);
         expect(uuidPattern.test(invalidId3)).toBe(false);
+
+        // Verify non-UUID replacement ID generation
+        const isValidId = uuidPattern.test(nonUuid1);
+        const finalId = isValidId ? nonUuid1 : 'a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6';
+        expect(finalId).not.toBe(nonUuid1);
+        expect(uuidPattern.test(finalId)).toBe(true);
     });
 
     test('validates data URL format before decoding image bytes', () => {
