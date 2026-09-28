@@ -85,7 +85,7 @@ describe('pusher_sync.js', () => {
             return buf;
         });
 
-        const originalSubtle = globalThis.crypto.subtle;
+        const originalSubtleDescriptor = Object.getOwnPropertyDescriptor(globalThis.crypto, 'subtle');
         const spyGetRandomValues = jest.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(mockGetRandomValues);
 
         try {
@@ -101,11 +101,11 @@ describe('pusher_sync.js', () => {
             expect(pin).toBe('654321');
         } finally {
             spyGetRandomValues.mockRestore();
-            Object.defineProperty(globalThis.crypto, 'subtle', {
-                value: originalSubtle,
-                configurable: true,
-                writable: true,
-            });
+            if (originalSubtleDescriptor) {
+                Object.defineProperty(globalThis.crypto, 'subtle', originalSubtleDescriptor);
+            } else {
+                delete globalThis.crypto.subtle;
+            }
         }
     });
 
