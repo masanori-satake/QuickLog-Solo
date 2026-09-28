@@ -1124,6 +1124,7 @@ body.category-layout-2x4 #category-list {
     display: block;
     flex: 1;
     overflow-y: auto;
+    padding: 4px;
 }
 
 .tab-content.hidden {
