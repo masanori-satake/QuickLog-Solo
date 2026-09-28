@@ -165,7 +165,69 @@ describe('PWA Improvements & Session Sync Fallback', () => {
 
         expect(document.body.classList.contains('pip-active')).toBe(false);
         expect(document.getElementById('pip-placeholder')).toBeNull();
+        expect(document.body.classList.contains('pip-active')).toBe(false);
+        expect(document.getElementById('pip-placeholder')).toBeNull();
         expect(document.getElementById('app')).not.toBeNull();
         expect(focusSpy).toHaveBeenCalled();
+    });
+
+    test('setupPinSync attaches keyboard navigation, input type, and paste events to PIN inputs', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        document.body.innerHTML = `
+            <div id="pin-inputs-container">
+                <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" />
+                <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" />
+                <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" />
+                <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" />
+                <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" />
+                <input type="text" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" />
+            </div>
+            <button id="pwa-start-pin-sync-btn"></button>
+            <button id="pin-sync-close-btn"></button>
+            <button id="pin-reset-attempts-btn"></button>
+        `;
+
+        const { setupPinSync } = await import('../projects/app/js/app.js');
+        setupPinSync();
+
+        const inputs = Array.from(document.querySelectorAll('.pin-digit-input'));
+        expect(inputs.length).toBe(6);
+        inputs.forEach((input) => {
+            expect(input.getAttribute('type')).toBe('text');
+        });
+
+        // Test ArrowUp / ArrowDown preventDefault
+        const arrowUpEvent = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true });
+        inputs[0].dispatchEvent(arrowUpEvent);
+        expect(arrowUpEvent.defaultPrevented).toBe(true);
+
+        const arrowDownEvent = new KeyboardEvent('keydown', { key: 'ArrowDown', cancelable: true });
+        inputs[0].dispatchEvent(arrowDownEvent);
+        expect(arrowDownEvent.defaultPrevented).toBe(true);
+
+        // Test ArrowRight focus move
+        inputs[0].focus();
+        const arrowRightEvent = new KeyboardEvent('keydown', { key: 'ArrowRight', cancelable: true });
+        inputs[0].dispatchEvent(arrowRightEvent);
+        expect(arrowRightEvent.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(inputs[1]);
+
+        // Test ArrowLeft focus move
+        const arrowLeftEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft', cancelable: true });
+        inputs[1].dispatchEvent(arrowLeftEvent);
+        expect(arrowLeftEvent.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(inputs[0]);
+
+        // Test Paste event handling for 6 digits
+        const pasteData = { getData: (format) => (format === 'text' ? '123456' : '') };
+        const pasteEvent = new Event('paste', { cancelable: true });
+        pasteEvent.clipboardData = pasteData;
+        inputs[0].dispatchEvent(pasteEvent);
+
+        expect(pasteEvent.defaultPrevented).toBe(true);
+        expect(inputs.map((i) => i.value).join('')).toBe('123456');
+        inputs.forEach((input) => {
+            expect(input.disabled).toBe(true);
+        });
     });
 });
