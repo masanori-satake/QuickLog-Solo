@@ -40,6 +40,8 @@ body {
         max(8px, var(--pwa-safe-area-bottom)) max(8px, var(--pwa-safe-area-left));
 }
 
+header,
+#header-btns,
 main,
 #control-section,
 #category-section,
@@ -112,7 +114,7 @@ main,
 }
 
 /* Ultra-Narrow Viewport Optimization to match Side Panel min-width (360px) */
-@media (width <= 360px) {
+@media (width <= 480px) {
     #app {
         padding: max(4px, var(--pwa-safe-area-top)) max(4px, var(--pwa-safe-area-right))
             max(4px, var(--pwa-safe-area-bottom)) max(4px, var(--pwa-safe-area-left));
