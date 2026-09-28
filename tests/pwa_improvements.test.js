@@ -241,7 +241,7 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         `;
 
         const { renderAboutQRCodes } = await import('../projects/app/js/app.js');
-        const { dbPut, STORE_SETTINGS, SETTING_KEY_PWA_SUPPORT } = await import('../shared/js/db.js');
+        const { dbGet, STORE_SETTINGS, SETTING_KEY_PWA_SUPPORT } = await import('../shared/js/db.js');
 
         // Initial render (pwaSupport default OFF)
         await renderAboutQRCodes();
@@ -251,14 +251,18 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(toggle.checked).toBe(false);
         expect(detailsContainer.classList.contains('hidden')).toBe(true);
 
-        // Toggle ON
+        // Toggle ON and trigger change event
         toggle.checked = true;
         toggle.dispatchEvent(new Event('change'));
 
         expect(detailsContainer.classList.contains('hidden')).toBe(false);
 
-        // Re-render reflects ON state
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PWA_SUPPORT, value: true });
+        // Verify persistence via dbGet
+        const savedSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PWA_SUPPORT);
+        expect(savedSetting).toBeDefined();
+        expect(savedSetting.value).toBe(true);
+
+        // Re-render reflects ON state without direct dbPut
         await renderAboutQRCodes();
         expect(toggle.checked).toBe(true);
         expect(detailsContainer.classList.contains('hidden')).toBe(false);

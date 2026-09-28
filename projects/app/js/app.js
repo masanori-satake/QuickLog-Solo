@@ -1477,12 +1477,26 @@ export async function renderAboutQRCodes() {
             pwaSupportToggle.dataset.pwaSupportListenerAdded = 'true';
             pwaSupportToggle.addEventListener('change', async (e) => {
                 const enabled = e.target.checked;
+                if (!enabled) {
+                    stopPusherTransferProcess();
+                }
                 if (pwaDetailsContainer) {
                     pwaDetailsContainer.classList.toggle('hidden', !enabled);
                 }
-                await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PWA_SUPPORT, value: enabled });
-                if (!enabled) {
-                    stopPusherTransferProcess();
+                try {
+                    await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PWA_SUPPORT, value: enabled });
+                    if (enabled) {
+                        const accordion = getEl('pwa-settings-pin-accordion') || getEl('pwa-settings-qr-accordion');
+                        if (accordion && accordion.open) {
+                            await startPusherTransferProcess();
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to save PWA support setting:', err);
+                    pwaSupportToggle.checked = !enabled;
+                    if (pwaDetailsContainer) {
+                        pwaDetailsContainer.classList.toggle('hidden', enabled);
+                    }
                 }
             });
         }
