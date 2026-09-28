@@ -1452,6 +1452,10 @@ async function startPusherTransferProcess() {
         steps[2].status = 'success';
         steps[2].detail = 'OK';
 
+        if (generation !== currentTransferGeneration) {
+            return;
+        }
+
         currentStepIdx = 3;
         await sendSettingsToPusher(roomId, settingsData, pinCode, undefined);
 
