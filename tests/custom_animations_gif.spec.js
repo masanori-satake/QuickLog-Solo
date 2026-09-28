@@ -72,8 +72,29 @@ test.describe('Custom Animation (GIF) E2E rendering', () => {
         const catName = (await firstCategoryBtn.textContent()).trim();
         expect(catName).toBeTruthy();
 
-        // Programmatically update the category's animation mapping in IndexedDB first
-        await page.evaluate(async (name) => {
+        // Programmatically import the custom animation first
+        await page.evaluate(async (text) => {
+            await window.importCustomAnimation(text);
+        }, updatedQlanimText);
+
+        // Retrieve the assigned custom animation ID from storage
+        const importedAnimId = await page.evaluate(async () => {
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                const res = await chrome.storage.local.get('custom_animation_metadata_map');
+                const map = res.custom_animation_metadata_map || {};
+                return Object.keys(map).find(k => map[k].name === 'ねこぽん');
+            }
+            const raw = localStorage.getItem('custom_animation_metadata_map');
+            if (raw) {
+                const map = JSON.parse(raw);
+                return Object.keys(map).find(k => map[k].name === 'ねこぽん');
+            }
+            return null;
+        });
+        expect(importedAnimId).toBeTruthy();
+
+        // Programmatically update the category's animation mapping in IndexedDB to the imported animation ID
+        await page.evaluate(async ({ name, animId }) => {
             const urlParams = new URLSearchParams(window.location.search);
             const dbName = urlParams.get('db') || 'QuickLogSoloDB';
             const req = indexedDB.open(dbName);
@@ -87,7 +108,7 @@ test.describe('Custom Animation (GIF) E2E rendering', () => {
                         const categories = getReq.result;
                         const target = categories.find(c => c.name === name);
                         if (target) {
-                            target.animation = 'custom_uuid_001';
+                            target.animation = animId;
                             store.put(target);
                         }
                         tx.oncomplete = () => resolve();
@@ -96,12 +117,7 @@ test.describe('Custom Animation (GIF) E2E rendering', () => {
                 };
                 req.onerror = () => reject(req.error);
             });
-        }, catName);
-
-        // Programmatically import the custom animation, which triggers updateUI() and loads animation
-        await page.evaluate(async (text) => {
-            await window.importCustomAnimation(text);
-        }, updatedQlanimText);
+        }, { name: catName, animId: importedAnimId });
 
         // Start task for the configured category
         await page.click(`.category-btn:has-text("${catName}")`);

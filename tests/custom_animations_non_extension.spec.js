@@ -24,8 +24,23 @@ test.describe('Custom Animation Non-Extension Fallback E2E', () => {
         const catName = (await firstCategoryBtn.textContent()).trim();
         expect(catName).toBeTruthy();
 
-        // Programmatically update the category's animation mapping in IndexedDB first
-        await page.evaluate(async (name) => {
+        // Programmatically import the custom animation using window-exposed importCustomAnimation
+        await page.evaluate(async (text) => {
+            await window.importCustomAnimation(text);
+        }, updatedQlanimText);
+
+        // Verify it was saved in localStorage since chrome is undefined
+        const lsMetadata = await page.evaluate(() => {
+            return localStorage.getItem('custom_animation_metadata_map');
+        });
+        expect(lsMetadata).toBeTruthy();
+        const parsedMap = JSON.parse(lsMetadata);
+        const importedAnimId = Object.keys(parsedMap).find((key) => parsedMap[key].name === 'ねこぽn' || parsedMap[key].name === 'ねこぽん');
+        expect(importedAnimId).toBeDefined();
+        expect(parsedMap[importedAnimId].name).toBe('ねこぽん');
+
+        // Programmatically update the category's animation mapping in IndexedDB to the imported animation ID
+        await page.evaluate(async ({ name, animId }) => {
             const urlParams = new URLSearchParams(window.location.search);
             const dbName = urlParams.get('db') || 'QuickLogSoloDB';
             const req = indexedDB.open(dbName);
@@ -37,9 +52,9 @@ test.describe('Custom Animation Non-Extension Fallback E2E', () => {
                     const getReq = store.getAll();
                     getReq.onsuccess = () => {
                         const categories = getReq.result;
-                        const target = categories.find(c => c.name === name);
+                        const target = categories.find((c) => c.name === name);
                         if (target) {
-                            target.animation = 'custom_uuid_001';
+                            target.animation = animId;
                             store.put(target);
                         }
                         tx.oncomplete = () => resolve();
@@ -48,22 +63,7 @@ test.describe('Custom Animation Non-Extension Fallback E2E', () => {
                 };
                 req.onerror = () => reject(req.error);
             });
-        }, catName);
-
-        // Programmatically import the custom animation using window-exposed importCustomAnimation
-        // This will automatically trigger updateUI() and pull the updated category animation mapping from DB!
-        await page.evaluate(async (text) => {
-            await window.importCustomAnimation(text);
-        }, updatedQlanimText);
-
-        // Verify it was saved in localStorage since chrome is undefined
-        const lsMetadata = await page.evaluate(() => {
-            return localStorage.getItem('custom_animation_metadata_map');
-        });
-        expect(lsMetadata).toBeTruthy();
-        const parsedMap = JSON.parse(lsMetadata);
-        expect(parsedMap['custom_uuid_001']).toBeDefined();
-        expect(parsedMap['custom_uuid_001'].name).toBe('ねこぽん');
+        }, { name: catName, animId: importedAnimId });
 
         // Start task for the configured category
         await page.click(`.category-btn:has-text("${catName}")`);

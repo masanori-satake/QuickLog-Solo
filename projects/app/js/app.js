@@ -3305,9 +3305,9 @@ async function importCustomAnimation(text) {
 
     const custom_animation_metadata_map = await getCustomAnimationMetadataMap();
 
-    // Security: Validate id format (safe alphanumeric identifier, up to 50 chars) to prevent key pollution/injection
-    const safeIdPattern = /^[a-zA-Z0-9_-]{1,50}$/;
-    const isValidId = id && typeof id === 'string' && safeIdPattern.test(id) && id !== '__proto__';
+    // Security: Validate id format against RFC 4122 UUID pattern to prevent key pollution/injection
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isValidId = id && typeof id === 'string' && uuidPattern.test(id);
     const finalId = isValidId && !custom_animation_metadata_map[id] ? id : generateUUID();
 
     // Security: Validate data URL structure before decoding
@@ -3327,17 +3327,20 @@ async function importCustomAnimation(text) {
     const safeConfig = config && typeof config === 'object' ? config : { exclusionStrategy: 'freedom' };
     await saveAnimationBlob(finalId, blob, payload.renderSpec, safeConfig);
 
-    // Resolve name duplicate by appending sequence numbering (1), (2), etc.
-    let finalName = metadata.name.trim().slice(0, 100) || 'My Animation';
+    // Resolve name duplicate by appending sequence numbering (1), (2), etc., reserving space for suffix within 100 chars
+    const baseName = metadata.name.trim() || 'My Animation';
+    let finalName = baseName.slice(0, 100);
     const finalDesc = typeof metadata.description === 'string' ? metadata.description.trim().slice(0, 500) : '';
 
     const existingNames = new Set(Object.values(custom_animation_metadata_map).map((item) => item.name));
     if (existingNames.has(finalName)) {
         let suffix = 1;
-        let candidateName = `${finalName} (${suffix})`;
+        let suffixStr = ` (${suffix})`;
+        let candidateName = `${baseName.slice(0, 100 - suffixStr.length)}${suffixStr}`;
         while (existingNames.has(candidateName)) {
             suffix++;
-            candidateName = `${finalName} (${suffix})`;
+            suffixStr = ` (${suffix})`;
+            candidateName = `${baseName.slice(0, 100 - suffixStr.length)}${suffixStr}`;
         }
         finalName = candidateName;
     }

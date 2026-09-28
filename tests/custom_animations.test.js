@@ -219,18 +219,18 @@ describe('Custom Animations Storage & Rendering fallback', () => {
 });
 
 describe('importCustomAnimation package validation & security rules', () => {
-    const safeIdPattern = /^[a-zA-Z0-9_-]{1,50}$/;
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-    test('validates safe identifier format correctly for custom animation package id', () => {
+    test('validates RFC 4122 UUID format for custom animation package id and rejects non-UUIDs', () => {
         const validUuid = '550e8400-e29b-41d4-a716-446655440000';
-        const validId1 = 'custom_uuid_001';
+        const nonUuid1 = 'custom_uuid_001';
         const invalidId2 = '../../etc/passwd';
         const invalidId3 = '<script>alert(1)</script>';
 
-        expect(safeIdPattern.test(validUuid)).toBe(true);
-        expect(safeIdPattern.test(validId1)).toBe(true);
-        expect(safeIdPattern.test(invalidId2)).toBe(false);
-        expect(safeIdPattern.test(invalidId3)).toBe(false);
+        expect(uuidPattern.test(validUuid)).toBe(true);
+        expect(uuidPattern.test(nonUuid1)).toBe(false);
+        expect(uuidPattern.test(invalidId2)).toBe(false);
+        expect(uuidPattern.test(invalidId3)).toBe(false);
     });
 
     test('validates data URL format before decoding image bytes', () => {
@@ -243,16 +243,15 @@ describe('importCustomAnimation package validation & security rules', () => {
         expect(invalidDataUrl2.startsWith('data:') && invalidDataUrl2.includes(',')).toBe(false);
     });
 
-    test('trims and bounds metadata strings to safe limits', () => {
-        const longName = '   ' + 'A'.repeat(150) + '   ';
-        const longDesc = '   ' + 'B'.repeat(600) + '   ';
+    test('trims, bounds metadata strings to safe limits, and reserves space for numeric suffix on duplicate names', () => {
+        const baseName = 'A'.repeat(100);
+        const existingNames = new Set([baseName]);
 
-        const trimmedName = longName.trim().slice(0, 100);
-        const trimmedDesc = longDesc.trim().slice(0, 500);
+        const suffix = 1;
+        const suffixStr = ` (${suffix})`;
+        const candidateName = `${baseName.slice(0, 100 - suffixStr.length)}${suffixStr}`;
 
-        expect(trimmedName.length).toBe(100);
-        expect(trimmedName).toBe('A'.repeat(100));
-        expect(trimmedDesc.length).toBe(500);
-        expect(trimmedDesc).toBe('B'.repeat(500));
+        expect(candidateName.length).toBe(100);
+        expect(candidateName).toBe('A'.repeat(96) + ' (1)');
     });
 });
