@@ -13,6 +13,7 @@ if (!globalThis.crypto || !globalThis.crypto.subtle) {
         globalThis.crypto = webcrypto;
     }
 }
+
 if (typeof globalThis.TextEncoder === 'undefined') {
     globalThis.TextEncoder = TextEncoder;
     globalThis.TextDecoder = TextDecoder;
@@ -20,6 +21,7 @@ if (typeof globalThis.TextEncoder === 'undefined') {
 
 import {
     md5,
+    generate6DigitPin,
     generateSecretKey,
     encryptPayload,
     decryptPayload,
@@ -47,35 +49,41 @@ describe('pusher_sync.js', () => {
         expect(md5('')).toBe('d41d8cd98f00b204e9800998ecf8427e');
     });
 
-    test('generateSecretKey returns 64-char hex string', () => {
-        const key = generateSecretKey();
-        expect(typeof key).toBe('string');
-        expect(key.length).toBe(64);
-        expect(/^[0-9a-f]{64}$/.test(key)).toBe(true);
+    test('generate6DigitPin returns a 6-digit numeric string', () => {
+        const pin = generate6DigitPin();
+        expect(typeof pin).toBe('string');
+        expect(pin.length).toBe(6);
+        expect(/^\d{6}$/.test(pin)).toBe(true);
     });
 
-    test('encryptPayload and decryptPayload round-trip', async () => {
-        const secretKey = generateSecretKey();
-        const data = {
+    test('encryptPayload and decryptPayload round-trip with createdAt timestamp', async () => {
+        const pin = '582914';
+        const settingsData = {
             settings: { theme: 'dark', language: 'ja' },
             categories: [{ name: '開発', color: 'primary' }],
             alarms: [{ id: 1, time: '12:00', enabled: true }],
         };
 
-        const encrypted = await encryptPayload(data, secretKey);
-        expect(encrypted.iv).toBeDefined();
+        const startTime = Date.now();
+        const encrypted = await encryptPayload(settingsData, pin);
         expect(encrypted.data).toBeDefined();
+        expect(encrypted.iv).toBeDefined();
+        expect(typeof encrypted.data).toBe('string');
 
-        const decrypted = await decryptPayload(encrypted, secretKey);
-        expect(decrypted).toEqual(data);
+        const decrypted = await decryptPayload(encrypted, pin);
+        expect(decrypted.createdAt).toBeGreaterThanOrEqual(startTime);
+        expect(decrypted.settings).toEqual(settingsData);
     });
 
-    test('computeHmacSha256 generates correct signature', async () => {
-        const secret = 'my_secret';
-        const message = 'POST\n/apps/123/events\nauth_key=key&auth_timestamp=1000&auth_version=1.0';
+    test('computeHmacSha256 generates correct signature matching RFC 4231 test vectors', async () => {
+        // RFC 4231 Test Case 2:
+        // Key = "Jefe" (4 bytes)
+        // Data = "what do ya want for nothing?" (28 bytes)
+        // HMAC-SHA-256 digest = 5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843
+        const secret = 'Jefe';
+        const message = 'what do ya want for nothing?';
         const sig = await computeHmacSha256(secret, message);
-        expect(typeof sig).toBe('string');
-        expect(sig.length).toBe(64);
+        expect(sig).toBe('5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843');
     });
 
     test('generatePusherQueryString formats query string with HMAC signature', async () => {
@@ -104,14 +112,14 @@ describe('pusher_sync.js', () => {
     });
 
     test('sendSettingsToPusher throws error when config has placeholders', async () => {
-        const secretKey = generateSecretKey();
+        const pin = '123456';
         const placeholderConfig = {
             appId: '__PUSHER_APP_ID__',
             key: '__PUSHER_KEY__',
             secret: '__PUSHER_SECRET__',
             cluster: '__PUSHER_CLUSTER__',
         };
-        await expect(sendSettingsToPusher('room_1', {}, secretKey, placeholderConfig)).rejects.toThrow(
+        await expect(sendSettingsToPusher('sync-123456', {}, pin, placeholderConfig)).rejects.toThrow(
             'Pusher configuration is incomplete'
         );
     });
@@ -123,15 +131,15 @@ describe('pusher_sync.js', () => {
             secret: 'test_secret',
             cluster: 'ap3',
         };
-        const secretKey = generateSecretKey();
-        const roomId = 'room_123';
+        const pin = '582914';
+        const roomId = 'sync-582914';
         const settingsData = { settings: { theme: 'light' } };
 
         const mockResponse = { ok: true, status: 200, statusText: 'OK' };
         const fetchMock = jest.fn().mockResolvedValue(mockResponse);
         globalThis.fetch = fetchMock;
 
-        const res = await sendSettingsToPusher(roomId, settingsData, secretKey, config);
+        const res = await sendSettingsToPusher(roomId, settingsData, pin, config);
         expect(res.ok).toBe(true);
         expect(fetchMock).toHaveBeenCalledTimes(1);
 
@@ -148,15 +156,15 @@ describe('pusher_sync.js', () => {
             secret: 'test_secret',
             cluster: 'ap3',
         };
-        const secretKey = generateSecretKey();
-        const roomId = 'room_123';
+        const pin = '582914';
+        const roomId = 'sync-582914';
         const settingsData = { settings: { theme: 'dark' } };
 
         const fetchMock = jest.fn().mockRejectedValue(new TypeError('Failed to fetch'));
         globalThis.fetch = fetchMock;
 
         await expect(
-            sendSettingsToPusher(roomId, settingsData, secretKey, config, null, { timeoutMs: 10, maxRetries: 1 })
+            sendSettingsToPusher(roomId, settingsData, pin, config, null, { timeoutMs: 10, maxRetries: 1 })
         ).rejects.toThrow('Failed to fetch');
 
         expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -169,11 +177,11 @@ describe('pusher_sync.js', () => {
             secret: 'test_secret',
             cluster: 'ap3',
         };
-        const secretKey = generateSecretKey();
-        const roomId = 'room_123';
+        const pin = '582914';
+        const roomId = 'sync-582914';
         const originalData = { settings: { language: 'en' } };
 
-        const encrypted = await encryptPayload(originalData, secretKey);
+        const encrypted = await encryptPayload(originalData, pin);
 
         class MockWebSocket {
             constructor(url) {
@@ -201,8 +209,9 @@ describe('pusher_sync.js', () => {
 
         globalThis.WebSocket = MockWebSocket;
 
-        const fetchedData = await fetchSettingsFromPusher(roomId, secretKey, config, 1000);
-        expect(fetchedData).toEqual(originalData);
+        const fetchedData = await fetchSettingsFromPusher(roomId, pin, config, 1000);
+        expect(fetchedData.settings).toEqual(originalData);
+        expect(typeof fetchedData.createdAt).toBe('number');
     });
 
     test('fetchSettingsFromPusher times out when no WebSocket message received', async () => {
@@ -217,10 +226,10 @@ describe('pusher_sync.js', () => {
 
         globalThis.WebSocket = TimeoutMockWebSocket;
 
-        const roomId = 'timeout-room';
-        const secretKey = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+        const roomId = 'sync-582914';
+        const pin = '582914';
 
         const dummyConfig = { appId: '12345', key: 'testkey', secret: 'testsecret', cluster: 'ap3' };
-        await expect(fetchSettingsFromPusher(roomId, secretKey, dummyConfig, 100)).rejects.toThrow();
+        await expect(fetchSettingsFromPusher(roomId, pin, dummyConfig, 100)).rejects.toThrow();
     });
 });

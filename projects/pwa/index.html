@@ -89,7 +89,6 @@
                 </section>
             </main>
 
-            <!-- Report Modal -->
             <!-- Tag Aggregation Modal -->
             <div id="tag-aggregation-modal" class="modal hidden">
                 <div class="modal-content">
@@ -456,7 +455,6 @@
                         <div class="setting-item">
                             <div style="display: flex; justify-content: space-between; align-items: center">
                                 <label style="display: flex; align-items: center; gap: 6px">
-                                    <!-- Beta status is indicated via textual suffix (β) in localization strings -->
                                     <span data-i18n="setting-session-sync">端末間同期 (Sync)</span>
                                 </label>
                                 <label class="switch">
@@ -613,7 +611,7 @@
                             >
                                 QuickLog-Solo
                                 は、プライバシー重視のミニマリストな作業メモツールです。データはブラウザ内の IndexedDB
-                                に保存され（バックアップを実行した際にはローカルファイルシステムにも保存されます）、外部送信は一切行われません。外部ライブラリを使用しない軽量・セキュアな設計で、サイドパネルからいつでも素早く記録できます。
+                                に保存されます。外部ライブラリを使用しない軽量・セキュアな設計で、サイドパネルからいつでも素早く記録できます。
                             </p>
                             <p
                                 style="
@@ -638,35 +636,15 @@
                             </p>
                         </div>
 
-                        <!-- モバイル(PWA)版QRコード設定セクション (PC/拡張機能版用) -->
-                        <div id="pwa-qr-export-section" class="setting-item" style="border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 12px; margin-top: 12px;">
-                            <label style="font-weight: 700; font-size: 0.9rem;" data-i18n="about-pwa-section-title">PWA版QuickLog-Solo(β)</label>
-                            <p style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 0.5rem;" data-i18n="about-pwa-section-desc">
-                                スマホ等のカメラでQRコードを読み取って、PWA版の起動や設定の引き継ぎを行えます。
-                            </p>
-                            <div style="display: flex; gap: 12px; justify-content: space-around; align-items: flex-start; text-align: center; margin-top: 8px;">
-                                <div style="flex: 1; min-width: 0;">
-                                    <a id="pwa-url-qr-link" href="https://masanori-satake.github.io/QuickLog-Solo/projects/pwa/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit; display: inline-block; cursor: pointer;">
-                                        <canvas id="pwa-url-qr-canvas" style="width: 120px; height: 120px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px; display: block; margin: 0 auto;"></canvas>
-                                        <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500; color: var(--md-sys-color-primary); text-decoration: underline;" data-i18n="about-pwa-url-qr-label">1. PWA起動URL</p>
-                                    </a>
-                                </div>
-                                <div style="flex: 1; min-width: 0;">
-                                    <canvas id="pwa-settings-qr-canvas" style="width: 120px; height: 120px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; background: #ffffff; padding: 4px;"></canvas>
-                                    <p style="font-size: 0.75rem; margin-top: 4px; font-weight: 500;" data-i18n="about-pwa-settings-qr-label">2. 設定エクスポート</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- モバイル(PWA)版QRコード設定インポートセクション (PWA版用) -->
-                        <div id="pwa-qr-import-section" class="setting-item hidden" style="border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 12px; margin-top: 12px;">
+                        <!-- モバイル(PWA)版 設定インポートセクション (PWA版用) -->
+                        <div id="pwa-qr-import-section" class="setting-item" style="border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 12px; margin-top: 12px;">
                             <label style="font-weight: 700; font-size: 0.9rem;" data-i18n="about-pwa-import-title">QuickLog-Solo設定のインポート(β)</label>
                             <p style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 0.5rem;" data-i18n="about-pwa-import-desc">
-                                Chrome拡張機能版で表示された設定用QRコードを読み込んで、カテゴリやアラーム設定を反映します。
+                                Chrome拡張機能版で表示された6桁の設定引き継ぎコードを入力して、カテゴリやアラーム設定を反映します。
                             </p>
-                            <button id="pwa-start-qr-scan-btn" class="primary-btn" style="width: 100%; margin-top: 6px;">
-                                <span class="material-symbols-outlined">qr_code_scanner</span>
-                                <span data-i18n="btn-pwa-scan-qr">QRコードを読み取る</span>
+                            <button id="pwa-start-pin-sync-btn" class="primary-btn" style="width: 100%; margin-top: 6px;">
+                                <span class="material-symbols-outlined">pin</span>
+                                <span data-i18n="btn-pwa-sync-pin">設定引き継ぎコードを入力する</span>
                             </button>
                         </div>
                     </div>
@@ -771,34 +749,66 @@
                 </div>
             </div>
 
-            <!-- QR Code Scanner Modal -->
-            <div id="qr-scan-modal" class="modal hidden">
-                <div class="modal-content" style="max-width: 360px; text-align: center;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;" data-i18n="qr-scan-modal-title">QRコードスキャン</h3>
-                        <button id="qr-scan-close-btn" class="icon-btn qr-scan-close-btn">
+            <!-- 6-Digit PIN Code Sync Modal (PWA Receiver) -->
+            <div id="pin-sync-modal" class="modal hidden">
+                <div class="modal-content" style="max-width: 380px; text-align: center">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px"
+                    >
+                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700" data-i18n="pin-sync-modal-title">
+                            設定引き継ぎコードの入力
+                        </h3>
+                        <button id="pin-sync-close-btn" class="icon-btn pin-sync-close-btn">
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
-                    <div id="qr-video-container" style="position: relative; width: 100%; height: 240px; background: #000000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                        <video id="qr-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-                        <div style="position: absolute; width: 180px; height: 180px; border: 2px dashed #00e676; border-radius: 12px; pointer-events: none;"></div>
+
+                    <p style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin: 8px 0 12px">
+                        PC版QuickLog-Solo画面に表示された6桁の数字コードを入力してください。
+                    </p>
+
+                    <!-- 6 Individual Numeric Input Boxes -->
+                    <div
+                        id="pin-inputs-container"
+                        style="
+                            display: flex;
+                            gap: 6px;
+                            justify-content: center;
+                            align-items: center;
+                            margin: 12px 0;
+                            width: 100%;
+                        "
+                    >
+                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
+                        <input type="number" pattern="[0-9]*" inputmode="numeric" maxlength="1" class="pin-digit-input" style="width: 40px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface);" />
                     </div>
-                    <p id="qr-scan-status" style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin: 10px 0;" data-i18n="qr-scan-status-scanning">カメラにQRコードをかざしてください</p>
-                    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap;">
-                        <button id="qr-capture-btn" class="primary-btn" style="flex: 1; min-width: 100px; font-size: 0.8rem;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">photo_camera</span>
-                            <span data-i18n="btn-qr-capture">撮影して解析</span>
-                        </button>
-                        <button id="qr-select-image-btn" class="outline-btn" style="flex: 1; min-width: 100px; font-size: 0.8rem;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">image</span>
-                            <span data-i18n="btn-select-qr-image">画像から読み込む</span>
-                        </button>
-                        <button id="qr-scan-done-btn" class="secondary-btn" style="flex: 0 0 auto; min-width: 60px; font-size: 0.8rem;">
-                            <span data-i18n="btn-qr-scan-done">完了</span>
-                        </button>
-                        <input type="file" id="qr-image-file-input" accept="image/*" multiple class="hidden" />
-                    </div>
+
+                    <!-- Status / Feedback & Remaining Attempts Message -->
+                    <p
+                        id="pin-sync-status-text"
+                        style="font-size: 0.85rem; color: var(--md-sys-color-primary); margin: 8px 0; font-weight: 600; min-height: 1.2rem;"
+                    ></p>
+
+                    <p
+                        id="pin-attempts-text"
+                        style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); margin: 4px 0;"
+                    >
+                        残り試行回数: <span id="pin-attempts-count" style="font-weight: 700; color: var(--md-sys-color-error);">3</span> 回
+                    </p>
+
+                    <!-- Reset Button for 3 Failed Attempts -->
+                    <button
+                        id="pin-reset-attempts-btn"
+                        class="outline-btn hidden"
+                        style="width: 100%; margin-top: 12px"
+                    >
+                        <span class="material-symbols-outlined">refresh</span>
+                        <span>最初からやり直す</span>
+                    </button>
                 </div>
             </div>
 

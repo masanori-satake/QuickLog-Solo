@@ -539,7 +539,7 @@ export default {
     'maker-select-prompt': 'Bitte fügen Sie eine benutzerdefinierte Animation hinzu',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
     'about-pwa-section-desc':
-        'Scannen Sie den QR-Code mit Ihrer Smartphone-Kamera, um die PWA-Version zu starten oder Einstellungen zu übertragen.',
+        'Scannen Sie den QR-Code, um die PWA-Version zu starten, und geben Sie einen Übertragungscode ein, um Einstellungen zu synchronisieren.',
     'about-pwa-url-qr-label': '1. PWA Start-URL',
     'about-pwa-general-qr-label': '2. Allg. & Alarme',
     'about-pwa-categories-qr-label': '3. Kategorien',
@@ -553,7 +553,10 @@ export default {
     'about-pwa-qr-too-large-sub': 'QR Nicht Verfügbar',
     'about-pwa-import-title': 'QuickLog-Solo-Einstellungen importieren (β)',
     'about-pwa-import-desc':
-        'Scannen Sie den in der PC-Erweiterung angezeigten Einstellungs-QR-Code, um Kategorien und Alarmeinstellungen zu übernehmen.',
+        'Geben Sie den 6-stelligen Übertragungscode aus der Chrome-Erweiterung ein, um Einstellungen zu übernehmen.',
+    'about-pwa-pin-accordion-label': 'Übertragungscode anzeigen',
+    'btn-pwa-sync-pin': 'Übertragungscode eingeben',
+    'pin-sync-modal-title': 'Übertragungscode eingeben',
     'btn-pwa-scan-qr': 'QR-Code scannen',
     'qr-scan-modal-title': 'QR-Code scannen',
     'qr-scan-status-scanning': 'Bitte halten Sie Ihre Kamera auf den QR-Code',

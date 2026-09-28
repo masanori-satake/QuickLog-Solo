@@ -537,7 +537,7 @@ export default {
     'maker-select-prompt': 'Por favor, adicione uma animação personalizada',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
     'about-pwa-section-desc':
-        'Digitalize o código QR com a câmera do seu smartphone para iniciar a versão PWA ou transferir configurações.',
+        'Digitalize o código QR para iniciar a versão PWA e digite um código de transferência para sincronizar as configurações.',
     'about-pwa-url-qr-label': '1. URL de início PWA',
     'about-pwa-general-qr-label': '2. Geral e Alarmes',
     'about-pwa-categories-qr-label': '3. Categorias',
@@ -550,7 +550,10 @@ export default {
     'about-pwa-qr-too-large-sub': 'QR Indisponível',
     'about-pwa-import-title': 'Importar configurações do QuickLog-Solo (β)',
     'about-pwa-import-desc':
-        'Digitalize o código QR de configuração exibido na extensão para PC para aplicar categorias e alarmes.',
+        'Digite o código de transferência de 6 dígitos exibido na extensão do Chrome para aplicar as configurações.',
+    'about-pwa-pin-accordion-label': 'Exibir código de transferência',
+    'btn-pwa-sync-pin': 'Digitar código de transferência',
+    'pin-sync-modal-title': 'Digitar código de transferência',
     'btn-pwa-scan-qr': 'Escanear código QR',
     'qr-scan-modal-title': 'Escaneamento de código QR',
     'qr-scan-status-analyzing': 'Analisando...',

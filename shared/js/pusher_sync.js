@@ -1,8 +1,21 @@
 import { PUSHER_CONFIG } from './pusher_config.js';
 
+function getCrypto() {
+    if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.subtle) {
+        return globalThis.crypto;
+    }
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+        return window.crypto;
+    }
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+        return crypto;
+    }
+    return null;
+}
+
 /**
  * Lightweight Pure JS MD5 implementation for computing body_md5 required by Pusher REST API.
- * @param {string} string - Input string to hash.
+ * @param {string} str - Input string to hash.
  * @returns {string} MD5 hex digest.
  */
 export function md5(str) {
@@ -81,125 +94,168 @@ export function md5(str) {
 }
 
 /**
- * Generates a random 32-byte secret key as a hex string (64 characters).
- * @returns {string} Hex string of 32 random bytes.
+ * Computes HMAC-SHA256 in hex using WebCrypto API (crypto.subtle).
+ * @param {string} keyStr - Secret key string.
+ * @param {string} messageStr - Message string to sign.
+ * @returns {Promise<string>} Hex signature.
  */
-export function generateSecretKey() {
-    const bytes = new Uint8Array(32);
+export async function computeHmacSha256(keyStr, messageStr) {
     const cryptoObj = getCrypto();
-    cryptoObj.getRandomValues(bytes);
-    return Array.from(bytes)
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(keyStr);
+    const msgData = encoder.encode(messageStr);
+
+    const key = await cryptoObj.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const signature = await cryptoObj.subtle.sign('HMAC', key, msgData);
+    return Array.from(new Uint8Array(signature))
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('');
 }
 
 /**
- * Converts a hex string to Uint8Array.
- * @param {string} hexString
- * @returns {Uint8Array}
+ * Generates an authenticated AES-GCM CryptoKey from a 6-digit PIN using PBKDF2-HMAC-SHA256 key derivation.
+ * @param {string} pinOrKey
+ * @param {Uint8Array} saltBytes
+ * @returns {Promise<CryptoKey>}
  */
-function hexToBytes(hexString) {
-    const bytes = new Uint8Array(hexString.length / 2);
-    for (let i = 0; i < hexString.length; i += 2) {
-        bytes[i / 2] = parseInt(hexString.substr(i, 2), 16);
-    }
-    return bytes;
+async function getKeyFromPin(pinOrKey, saltBytes) {
+    const cryptoObj = getCrypto();
+    const encoder = new TextEncoder();
+    const pinBytes = encoder.encode(String(pinOrKey));
+
+    const baseKey = await cryptoObj.subtle.importKey('raw', pinBytes, 'PBKDF2', false, ['deriveKey']);
+    return cryptoObj.subtle.deriveKey(
+        {
+            name: 'PBKDF2',
+            salt: saltBytes,
+            iterations: 100000,
+            hash: 'SHA-256',
+        },
+        baseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+    );
 }
 
 /**
- * Encrypts data using Web Crypto API (AES-GCM 256-bit).
- * @param {any} data - Data to encrypt.
- * @param {string} secretKeyHex - 32-byte key in hex string format.
- * @returns {Promise<{iv: string, data: string}>} Object with Base64 encoded iv and encrypted data.
+ * Generates a cryptographically secure random 6-digit PIN code string (e.g. "582914").
+ * @returns {string} 6-digit PIN.
  */
-function getCrypto() {
-    if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.subtle) {
-        return globalThis.crypto;
+export function generate6DigitPin() {
+    const cryptoObj = getCrypto();
+    if (cryptoObj && cryptoObj.getRandomValues) {
+        const array = new Uint32Array(1);
+        cryptoObj.getRandomValues(array);
+        const pinNum = array[0] % 1000000;
+        return String(pinNum).padStart(6, '0');
     }
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
-        return window.crypto;
+
+    let pin = '';
+    for (let i = 0; i < 6; i++) {
+        pin += Math.floor(Math.random() * 10).toString();
     }
-    if (typeof crypto !== 'undefined' && crypto.subtle) {
-        return crypto;
-    }
-    return null;
+    return pin;
 }
 
-export async function encryptPayload(data, secretKeyHex) {
+/**
+ * Generates a random 6-digit numeric string for compatibility.
+ * @returns {string} 6-digit numeric string.
+ */
+export function generateSecretKey() {
+    return generate6DigitPin();
+}
+
+/**
+ * Encrypts data using WebCrypto API (AES-GCM 256-bit) with PBKDF2 key derivation.
+ * Adds `createdAt: Date.now()` timestamp to payload object before encryption.
+ * @param {any} data - Object to encrypt.
+ * @param {string} pinOrKey - 6-digit PIN or secret key string.
+ * @returns {Promise<{salt: string, iv: string, data: string}>} Base64 salt, IV and encrypted data.
+ */
+export async function encryptPayload(data, pinOrKey) {
     const cryptoObj = getCrypto();
-    const keyBytes = hexToBytes(secretKeyHex);
-    const cryptoKey = await cryptoObj.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt']);
+    const payload = {
+        createdAt: Date.now(),
+        settings: data,
+    };
+    const jsonStr = JSON.stringify(payload);
+    const encoder = new TextEncoder();
+    const dataBytes = encoder.encode(jsonStr);
 
+    const salt = cryptoObj.getRandomValues(new Uint8Array(16));
     const iv = cryptoObj.getRandomValues(new Uint8Array(12));
-    const jsonStr = JSON.stringify(data);
-    const encodedData = new TextEncoder().encode(jsonStr);
 
-    const encryptedBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, encodedData);
+    const key = await getKeyFromPin(pinOrKey, salt);
+    const encryptedBuf = await cryptoObj.subtle.encrypt({ name: 'AES-GCM', iv }, key, dataBytes);
 
-    const ivBase64 = btoa(String.fromCharCode(...iv));
-    const dataBase64 = btoa(String.fromCharCode(...new Uint8Array(encryptedBuffer)));
+    let saltBinary = '';
+    for (let i = 0; i < salt.length; i++) {
+        saltBinary += String.fromCharCode(salt[i]);
+    }
+
+    let ivBinary = '';
+    for (let i = 0; i < iv.length; i++) {
+        ivBinary += String.fromCharCode(iv[i]);
+    }
+
+    let dataBinary = '';
+    const dataArr = new Uint8Array(encryptedBuf);
+    for (let i = 0; i < dataArr.length; i++) {
+        dataBinary += String.fromCharCode(dataArr[i]);
+    }
 
     return {
-        iv: ivBase64,
-        data: dataBase64,
+        salt: btoa(saltBinary),
+        iv: btoa(ivBinary),
+        data: btoa(dataBinary),
     };
 }
 
 /**
- * Decrypts data using Web Crypto API (AES-GCM 256-bit).
- * @param {{iv: string, data: string}} encryptedObj - Object containing Base64 encoded iv and data.
- * @param {string} secretKeyHex - 32-byte key in hex string format.
- * @returns {Promise<any>} Decrypted JSON data.
+ * Decrypts and authenticates data using WebCrypto API (AES-GCM 256-bit).
+ * @param {{salt?: string, iv: string, data: string}} encryptedObj - Base64 salt, IV and encrypted data.
+ * @param {string} pinOrKey - 6-digit PIN or secret key string.
+ * @returns {Promise<{createdAt: number, settings: any}>} Decrypted payload object with timestamp and settings.
  */
-export async function decryptPayload(encryptedObj, secretKeyHex) {
+export async function decryptPayload(encryptedObj, pinOrKey) {
+    if (!encryptedObj || !encryptedObj.data || !encryptedObj.iv) {
+        throw new Error('Invalid encrypted payload structure');
+    }
+
     const cryptoObj = getCrypto();
-    const keyBytes = hexToBytes(secretKeyHex);
-    const cryptoKey = await cryptoObj.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['decrypt']);
 
-    const ivBytes = Uint8Array.from(atob(encryptedObj.iv), (c) => c.charCodeAt(0));
-    const dataBytes = Uint8Array.from(atob(encryptedObj.data), (c) => c.charCodeAt(0));
+    const ivBinary = atob(encryptedObj.iv);
+    const iv = new Uint8Array(ivBinary.length);
+    for (let i = 0; i < ivBinary.length; i++) {
+        iv[i] = ivBinary.charCodeAt(i);
+    }
 
-    const decryptedBuffer = await cryptoObj.subtle.decrypt({ name: 'AES-GCM', iv: ivBytes }, cryptoKey, dataBytes);
+    let salt;
+    if (encryptedObj.salt) {
+        const saltBinary = atob(encryptedObj.salt);
+        salt = new Uint8Array(saltBinary.length);
+        for (let i = 0; i < saltBinary.length; i++) {
+            salt[i] = saltBinary.charCodeAt(i);
+        }
+    } else {
+        salt = new TextEncoder().encode('QuickLog-Solo-Sync-Salt');
+    }
 
-    const decodedStr = new TextDecoder().decode(decryptedBuffer);
-    return JSON.parse(decodedStr);
+    const key = await getKeyFromPin(pinOrKey, salt);
+
+    const dataBinary = atob(encryptedObj.data);
+    const dataBytes = new Uint8Array(dataBinary.length);
+    for (let i = 0; i < dataBinary.length; i++) {
+        dataBytes[i] = dataBinary.charCodeAt(i);
+    }
+
+    const decryptedBuf = await cryptoObj.subtle.decrypt({ name: 'AES-GCM', iv }, key, dataBytes);
+    const decoder = new TextDecoder();
+    const jsonStr = decoder.decode(decryptedBuf);
+    return JSON.parse(jsonStr);
 }
 
-/**
- * Computes HMAC-SHA256 signature in hex using Web Crypto API.
- * @param {string} secret - Secret key string.
- * @param {string} message - String to sign.
- * @returns {Promise<string>} Hex signature.
- */
-export async function computeHmacSha256(secret, message) {
-    const cryptoObj = getCrypto();
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(secret);
-    const msgData = encoder.encode(message);
-
-    const cryptoKey = await cryptoObj.subtle.importKey(
-        'raw',
-        keyData,
-        { name: 'HMAC', hash: { name: 'SHA-256' } },
-        false,
-        ['sign']
-    );
-
-    const signatureBuffer = await cryptoObj.subtle.sign('HMAC', cryptoKey, msgData);
-    return Array.from(new Uint8Array(signatureBuffer))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-}
-
-/**
- * Generates Pusher REST API authentication signature query string.
- * @param {string} method - HTTP method ('POST' or 'GET').
- * @param {string} path - Request path e.g. '/apps/123/events'.
- * @param {string} body - Request body string (empty string for GET).
- * @param {Object} config - Pusher configuration object ({ appId, key, secret, cluster }).
- * @param {number} [timestamp] - Unix timestamp in seconds.
- * @returns {Promise<string>} Query string containing authentication parameters.
- */
 /**
  * Validates whether Pusher configuration has been injected.
  * @param {Object} [config=PUSHER_CONFIG] - Pusher configuration object.
@@ -219,6 +275,15 @@ export function validatePusherConfig(config = PUSHER_CONFIG) {
     }
 }
 
+/**
+ * Generates Pusher REST API authentication signature query string.
+ * @param {string} method - HTTP method ('POST' or 'GET').
+ * @param {string} path - Request path e.g. '/apps/123/events'.
+ * @param {string} body - Request body string (empty string for GET).
+ * @param {Object} config - Pusher configuration object.
+ * @param {number} [timestamp] - Unix timestamp in seconds.
+ * @returns {Promise<string>} Query string containing authentication parameters.
+ */
 export async function generatePusherQueryString(method, path, body, config, timestamp = Math.floor(Date.now() / 1000)) {
     const params = {
         auth_key: config.key,
@@ -243,20 +308,20 @@ export async function generatePusherQueryString(method, path, body, config, time
     return `${queryString}&auth_signature=${signature}`;
 }
 
+const PUSHER_MAX_PAYLOAD_BYTES = 10240; // Pusher standard event data limit (10KB)
+
 /**
  * Sends encrypted settings payload to Pusher via HTTP REST API POST request.
- * @param {string} roomId - Room ID (channel name).
+ * @param {string} roomId - Room ID / Channel name (e.g. "sync-582914").
  * @param {Object} settingsData - Settings data to send.
- * @param {string} secretKeyHex - 32-byte secret key in hex string format.
+ * @param {string} pinOrKey - 6-digit PIN or secret key string.
  * @param {Object} [config=PUSHER_CONFIG] - Pusher config object.
  * @returns {Promise<Response>} Fetch response.
  */
-const PUSHER_MAX_PAYLOAD_BYTES = 10240; // Pusher standard event data limit (10KB)
-
 export async function sendSettingsToPusher(
     roomId,
     settingsData,
-    secretKeyHex,
+    pinOrKey,
     config = PUSHER_CONFIG,
     onEncrypted = null,
     options = {}
@@ -266,7 +331,7 @@ export async function sendSettingsToPusher(
     const timeoutMs = options.timeoutMs || 10000;
     const maxRetries = options.maxRetries !== undefined ? options.maxRetries : 2;
 
-    const encryptedPayload = await encryptPayload(settingsData, secretKeyHex);
+    const encryptedPayload = await encryptPayload(settingsData, pinOrKey);
     if (typeof onEncrypted === 'function') {
         onEncrypted();
     }
@@ -338,24 +403,26 @@ export async function sendSettingsToPusher(
 }
 
 /**
- * Fetches encrypted settings payload from Pusher via HTTP REST API GET request with retry polling.
- * @param {string} roomId - Room ID (channel name).
- * @param {string} secretKeyHex - 32-byte secret key in hex string format.
- * @param {Object} [config=PUSHER_CONFIG] - Pusher config object.
- * @param {number} [maxRetries=5] - Maximum retry count.
- * @param {number} [intervalMs=1000] - Polling interval in ms.
- * @returns {Promise<Object>} Decrypted settings data.
- */
-/**
  * Subscribes to Pusher WebSocket channel and receives encrypted settings payload in Pure JS.
- * @param {string} roomId - Room ID (channel name).
- * @param {string} secretKeyHex - 32-byte secret key in hex string format.
+ * @param {string} roomId - Room ID / Channel name (e.g. "sync-582914").
+ * @param {string} pinOrKey - 6-digit PIN or secret key string.
  * @param {Object} [config=PUSHER_CONFIG] - Pusher config object.
- * @param {number} [timeoutMs=12000] - Connection timeout in ms (default 12s for fast recovery).
- * @returns {Promise<Object>} Decrypted settings data.
+ * @param {number} [timeoutMs=12000] - Connection timeout in ms.
+ * @param {function} [onStatusChange] - Status callback e.g. (statusMsg) => void.
+ * @returns {Promise<{createdAt: number, settings: any}>} Decrypted payload object with timestamp and settings.
  */
-export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CONFIG, timeoutMs = 12000) {
+export function fetchSettingsFromPusher(
+    roomId,
+    pinOrKey,
+    config = PUSHER_CONFIG,
+    timeoutMs = 12000,
+    onStatusChange = null
+) {
     validatePusherConfig(config);
+
+    if (typeof onStatusChange === 'function') {
+        onStatusChange('接続中...');
+    }
 
     return new Promise((resolve, reject) => {
         const wsUrl = `wss://ws-${config.cluster}.pusher.com/app/${config.key}?protocol=7&client=js&version=8.0.0`;
@@ -380,6 +447,9 @@ export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CO
                 const message = JSON.parse(event.data);
 
                 if (message.event === 'pusher:connection_established') {
+                    if (typeof onStatusChange === 'function') {
+                        onStatusChange('データ待機中...');
+                    }
                     socket.send(
                         JSON.stringify({
                             event: 'pusher:subscribe',
@@ -389,13 +459,17 @@ export function fetchSettingsFromPusher(roomId, secretKeyHex, config = PUSHER_CO
                 }
 
                 if (message.event === 'sync-settings') {
-                    isResolved = true;
                     clearTimeout(timeoutId);
+                    if (typeof onStatusChange === 'function') {
+                        onStatusChange('データ受信完了・復号中...');
+                    }
                     const eventData = typeof message.data === 'string' ? JSON.parse(message.data) : message.data;
                     const encryptedPayload = eventData.payload;
-                    const settings = await decryptPayload(encryptedPayload, secretKeyHex);
+                    const decryptedPayload = await decryptPayload(encryptedPayload, pinOrKey);
+
+                    isResolved = true;
                     socket.close();
-                    resolve(settings);
+                    resolve(decryptedPayload);
                 }
             } catch (err) {
                 if (!isResolved) {
