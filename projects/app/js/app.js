@@ -3924,10 +3924,18 @@ function setupEventListeners() {
 const executedPWAAlarms = new Set();
 let lastPWAAlarmCheckTime = 0;
 
+/**
+ * Attempts to claim a PWA alarm occurrence across tabs using localStorage.
+ * Writes a timestamp/UUID token and reads it back as a best-effort, non-atomic check.
+ *
+ * @param {string} key - Alarm occurrence key combining its ID, local date, and time.
+ * @returns {boolean} True if localStorage is unavailable or the token matches on read-back;
+ *     false if a claim already exists or another tab overwrites the token before read-back.
+ */
 function claimPWAAlarmExecution(key) {
     if (typeof localStorage === 'undefined') return true;
     const storageKey = `ql_pwa_executed_alarm_${key}`;
-    const claimVal = `${Date.now()}_${Math.random()}`;
+    const claimVal = `${Date.now()}_${generateUUID()}`;
     const existing = localStorage.getItem(storageKey);
     if (existing) return false;
 
