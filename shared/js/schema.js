@@ -133,6 +133,7 @@ export function validateSettingsSchema(data) {
         'pauseAnimation',
         'pauseTheme',
         'alwaysOnTop',
+        'pwaSupport',
         'language',
         'reportSettings',
         'businessDays',
@@ -160,6 +161,7 @@ export function validateSettingsSchema(data) {
                 if (typeof val !== 'string' || val.length > 30 || !isValidColor(val)) return false;
                 break;
             case 'alwaysOnTop':
+            case 'pwaSupport':
                 if (typeof val !== 'boolean') return false;
                 break;
             case 'language':

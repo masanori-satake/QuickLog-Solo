@@ -538,10 +538,11 @@ export default {
     'maker-error-name-duplicate':
         'Ya existe una animación personalizada con el mismo nombre. Por favor, ingrese un nombre diferente.',
     'maker-select-prompt': 'Por favor, agregue una animación personalizada',
+    'setting-pwa-support': 'PWA Support',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
     'about-pwa-section-desc':
         'Escanee el código QR para iniciar la versión PWA e ingrese un código de transferencia para sincronizar la configuración.',
-    'about-pwa-url-qr-label': '1. URL de inicio PWA',
+    'about-pwa-url-qr-label': 'URL de inicio PWA',
     'about-pwa-general-qr-label': '2. Gral. y Alarmas',
     'about-pwa-categories-qr-label': '3. Categorías',
     'about-pwa-settings-qr-label': '2. Exportar configuración',

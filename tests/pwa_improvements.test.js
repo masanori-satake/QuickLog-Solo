@@ -230,4 +230,37 @@ describe('PWA Improvements & Session Sync Fallback', () => {
             expect(input.disabled).toBe(true);
         });
     });
+
+    test('renderAboutQRCodes handles pwaSupport toggle state and visibility', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        document.body.innerHTML = `
+            <div id="pwa-qr-export-section">
+                <input type="checkbox" id="pwa-support-toggle" />
+                <div id="pwa-support-details-container" class="hidden"></div>
+            </div>
+        `;
+
+        const { renderAboutQRCodes } = await import('../projects/app/js/app.js');
+        const { dbPut, STORE_SETTINGS, SETTING_KEY_PWA_SUPPORT } = await import('../shared/js/db.js');
+
+        // Initial render (pwaSupport default OFF)
+        await renderAboutQRCodes();
+        const toggle = document.getElementById('pwa-support-toggle');
+        const detailsContainer = document.getElementById('pwa-support-details-container');
+
+        expect(toggle.checked).toBe(false);
+        expect(detailsContainer.classList.contains('hidden')).toBe(true);
+
+        // Toggle ON
+        toggle.checked = true;
+        toggle.dispatchEvent(new Event('change'));
+
+        expect(detailsContainer.classList.contains('hidden')).toBe(false);
+
+        // Re-render reflects ON state
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PWA_SUPPORT, value: true });
+        await renderAboutQRCodes();
+        expect(toggle.checked).toBe(true);
+        expect(detailsContainer.classList.contains('hidden')).toBe(false);
+    });
 });

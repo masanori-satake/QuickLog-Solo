@@ -1,6 +1,7 @@
 import {
     initDB,
     getCurrentAppState,
+    dbGet,
     dbGetByName,
     dbGetAll,
     dbCount,
@@ -29,6 +30,7 @@ import {
     SETTING_KEY_TIMER_HEIGHT,
     SETTING_KEY_CATEGORY_LAYOUT,
     SETTING_KEY_PAUSE_STATE,
+    SETTING_KEY_PWA_SUPPORT,
 } from '../shared/js/db.js';
 import { backupManager } from './backup.js';
 import { restoreManager } from './restore.js';
@@ -1463,6 +1465,33 @@ export async function renderAboutQRCodes() {
         }
     }
 
+    // Load and reflect PWA Support setting
+    const pwaSupportToggle = getEl('pwa-support-toggle');
+    const pwaDetailsContainer = getEl('pwa-support-details-container');
+    const pwaSupportSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_PWA_SUPPORT);
+    const isPwaSupportEnabled = pwaSupportSetting ? pwaSupportSetting.value : false;
+
+    if (pwaSupportToggle) {
+        pwaSupportToggle.checked = isPwaSupportEnabled;
+        if (!pwaSupportToggle.dataset.pwaSupportListenerAdded) {
+            pwaSupportToggle.dataset.pwaSupportListenerAdded = 'true';
+            pwaSupportToggle.addEventListener('change', async (e) => {
+                const enabled = e.target.checked;
+                if (pwaDetailsContainer) {
+                    pwaDetailsContainer.classList.toggle('hidden', !enabled);
+                }
+                await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PWA_SUPPORT, value: enabled });
+                if (!enabled) {
+                    stopPusherTransferProcess();
+                }
+            });
+        }
+    }
+
+    if (pwaDetailsContainer) {
+        pwaDetailsContainer.classList.toggle('hidden', !isPwaSupportEnabled);
+    }
+
     // 1. Static PWA URL QR Code & Link (rendered when not in PWA)
     const pwaUrlCanvas = getEl('pwa-url-qr-canvas');
     const pwaUrlLink = getEl('pwa-url-qr-link');
@@ -1643,7 +1672,7 @@ async function startPusherTransferProcess() {
         const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
         const settingsObj = {};
         for (const item of allSettingsRaw) {
-            if (item && item.key) {
+            if (item && item.key && item.key !== SETTING_KEY_PWA_SUPPORT) {
                 settingsObj[item.key] = item.value;
             }
         }
