@@ -219,18 +219,18 @@ describe('Custom Animations Storage & Rendering fallback', () => {
 });
 
 describe('importCustomAnimation package validation & security rules', () => {
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const safeIdPattern = /^[a-zA-Z0-9_-]{1,50}$/;
 
-    test('validates UUID format correctly for custom animation package id', () => {
+    test('validates safe identifier format correctly for custom animation package id', () => {
         const validUuid = '550e8400-e29b-41d4-a716-446655440000';
-        const invalidId1 = 'custom-anim-123';
+        const validId1 = 'custom_uuid_001';
         const invalidId2 = '../../etc/passwd';
         const invalidId3 = '<script>alert(1)</script>';
 
-        expect(uuidPattern.test(validUuid)).toBe(true);
-        expect(uuidPattern.test(invalidId1)).toBe(false);
-        expect(uuidPattern.test(invalidId2)).toBe(false);
-        expect(uuidPattern.test(invalidId3)).toBe(false);
+        expect(safeIdPattern.test(validUuid)).toBe(true);
+        expect(safeIdPattern.test(validId1)).toBe(true);
+        expect(safeIdPattern.test(invalidId2)).toBe(false);
+        expect(safeIdPattern.test(invalidId3)).toBe(false);
     });
 
     test('validates data URL format before decoding image bytes', () => {

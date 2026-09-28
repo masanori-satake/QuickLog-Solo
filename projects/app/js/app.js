@@ -3305,9 +3305,9 @@ async function importCustomAnimation(text) {
 
     const custom_animation_metadata_map = await getCustomAnimationMetadataMap();
 
-    // Security: Validate id format against RFC 4122 UUID pattern to prevent key pollution/injection
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const isValidId = id && typeof id === 'string' && uuidPattern.test(id);
+    // Security: Validate id format (safe alphanumeric identifier, up to 50 chars) to prevent key pollution/injection
+    const safeIdPattern = /^[a-zA-Z0-9_-]{1,50}$/;
+    const isValidId = id && typeof id === 'string' && safeIdPattern.test(id) && id !== '__proto__';
     const finalId = isValidId && !custom_animation_metadata_map[id] ? id : generateUUID();
 
     // Security: Validate data URL structure before decoding
