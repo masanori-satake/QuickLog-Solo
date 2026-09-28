@@ -528,7 +528,7 @@ export default {
     'maker-error-name-duplicate': '같은 이름의 커스텀 애니메이션이 이미 존재합니다. 다른 이름을 입력해 주세요.',
     'maker-select-prompt': '커스텀 애니메이션을 추가해 주세요',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
-    'about-pwa-section-desc': '스마트폰 카메라로 QR 코드를 스캔하여 PWA 버전을 실행하거나 설정을 이전할 수 있습니다.',
+    'about-pwa-section-desc': 'QR 코드를 스캔하여 PWA 버전을 실행하고 이전 코드를 입력하여 설정을 동기화할 수 있습니다.',
     'about-pwa-url-qr-label': '1. PWA 실행 URL',
     'about-pwa-general-qr-label': '2. 일반 및 알람',
     'about-pwa-categories-qr-label': '3. 업무 카테고리',

@@ -537,7 +537,7 @@ export default {
     'maker-select-prompt': 'Por favor, agregue una animación personalizada',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
     'about-pwa-section-desc':
-        'Escanee el código QR con la cámara de su teléfono para iniciar la versión PWA o transferir la configuración.',
+        'Escanee el código QR para iniciar la versión PWA e ingrese un código de transferencia para sincronizar la configuración.',
     'about-pwa-url-qr-label': '1. URL de inicio PWA',
     'about-pwa-general-qr-label': '2. Gral. y Alarmas',
     'about-pwa-categories-qr-label': '3. Categorías',

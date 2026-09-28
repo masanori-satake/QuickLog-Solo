@@ -459,6 +459,7 @@ export function fetchSettingsFromPusher(
                 }
 
                 if (message.event === 'sync-settings') {
+                    clearTimeout(timeoutId);
                     if (typeof onStatusChange === 'function') {
                         onStatusChange('データ受信完了・復号中...');
                     }
@@ -467,7 +468,6 @@ export function fetchSettingsFromPusher(
                     const decryptedPayload = await decryptPayload(encryptedPayload, pinOrKey);
 
                     isResolved = true;
-                    clearTimeout(timeoutId);
                     socket.close();
                     resolve(decryptedPayload);
                 }

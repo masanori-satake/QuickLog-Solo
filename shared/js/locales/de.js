@@ -539,7 +539,7 @@ export default {
     'maker-select-prompt': 'Bitte fügen Sie eine benutzerdefinierte Animation hinzu',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
     'about-pwa-section-desc':
-        'Scannen Sie den QR-Code mit Ihrer Smartphone-Kamera, um die PWA-Version zu starten oder Einstellungen zu übertragen.',
+        'Scannen Sie den QR-Code, um die PWA-Version zu starten, und geben Sie einen Übertragungscode ein, um Einstellungen zu synchronisieren.',
     'about-pwa-url-qr-label': '1. PWA Start-URL',
     'about-pwa-general-qr-label': '2. Allg. & Alarme',
     'about-pwa-categories-qr-label': '3. Kategorien',

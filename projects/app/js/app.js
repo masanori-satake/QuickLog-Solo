@@ -1333,6 +1333,7 @@ export function buildPusherErrorReport(steps, err) {
 
 let pusherHeartbeatTimer = null;
 let pinCountdownInterval = null;
+let currentTransferGeneration = 0;
 
 export function stopPusherHeartbeat() {
     if (pusherHeartbeatTimer) {
@@ -1349,6 +1350,7 @@ export function stopPinCountdown() {
 }
 
 export function stopPusherTransferProcess() {
+    currentTransferGeneration++;
     stopPusherHeartbeat();
     stopPinCountdown();
 
@@ -1367,9 +1369,13 @@ export function stopPusherTransferProcess() {
     }
 }
 
-export function startPusherHeartbeat(roomId, settingsData, pinCode) {
+export function startPusherHeartbeat(roomId, settingsData, pinCode, generation) {
     stopPusherHeartbeat();
     pusherHeartbeatTimer = setInterval(async () => {
+        if (generation !== currentTransferGeneration) {
+            stopPusherHeartbeat();
+            return;
+        }
         const accordion = getEl('pwa-settings-pin-accordion') || getEl('pwa-settings-qr-accordion');
         const settingsPopup = getEl(ID_SETTINGS_POPUP);
         if ((!accordion || accordion.open) && (!settingsPopup || !settingsPopup.classList.contains('hidden'))) {
@@ -1386,6 +1392,7 @@ export function startPusherHeartbeat(roomId, settingsData, pinCode) {
 
 async function startPusherTransferProcess() {
     stopPusherTransferProcess();
+    const generation = currentTransferGeneration;
 
     const statusTextEl = getEl('pusher-sync-status-text');
     const boxEls = queryAll('#pin-code-boxes-container .pin-display-box');
@@ -1447,6 +1454,11 @@ async function startPusherTransferProcess() {
 
         currentStepIdx = 3;
         await sendSettingsToPusher(roomId, settingsData, pinCode, undefined);
+
+        if (generation !== currentTransferGeneration) {
+            return;
+        }
+
         steps[3].status = 'success';
         steps[3].detail = 'OK';
 
@@ -1467,6 +1479,10 @@ async function startPusherTransferProcess() {
         const startTime = Date.now();
 
         pinCountdownInterval = setInterval(() => {
+            if (generation !== currentTransferGeneration) {
+                stopPinCountdown();
+                return;
+            }
             const elapsed = Date.now() - startTime;
             const remainingMs = Math.max(0, PIN_DURATION_MS - elapsed);
             const totalSec = Math.floor(remainingMs / 1000);
@@ -1489,8 +1505,12 @@ async function startPusherTransferProcess() {
         }, 1000);
 
         // Start periodic re-transmission (heartbeat) while accordion is open
-        startPusherHeartbeat(roomId, settingsData, pinCode);
+        startPusherHeartbeat(roomId, settingsData, pinCode, generation);
     } catch (err) {
+        if (generation !== currentTransferGeneration) {
+            return;
+        }
+
         console.warn('Pusher transfer warning:', err);
         if (statusTextEl) {
             statusTextEl.textContent = '送信エラーが発生しました';
