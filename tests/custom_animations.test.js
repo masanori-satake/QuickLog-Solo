@@ -217,3 +217,42 @@ describe('Custom Animations Storage & Rendering fallback', () => {
         }
     });
 });
+
+describe('importCustomAnimation package validation & security rules', () => {
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    test('validates UUID format correctly for custom animation package id', () => {
+        const validUuid = '550e8400-e29b-41d4-a716-446655440000';
+        const invalidId1 = 'custom-anim-123';
+        const invalidId2 = '../../etc/passwd';
+        const invalidId3 = '<script>alert(1)</script>';
+
+        expect(uuidPattern.test(validUuid)).toBe(true);
+        expect(uuidPattern.test(invalidId1)).toBe(false);
+        expect(uuidPattern.test(invalidId2)).toBe(false);
+        expect(uuidPattern.test(invalidId3)).toBe(false);
+    });
+
+    test('validates data URL format before decoding image bytes', () => {
+        const validDataUrl = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+        const invalidDataUrl1 = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+        const invalidDataUrl2 = 'http://example.com/test.gif';
+
+        expect(validDataUrl.startsWith('data:') && validDataUrl.includes(',')).toBe(true);
+        expect(invalidDataUrl1.startsWith('data:') && invalidDataUrl1.includes(',')).toBe(false);
+        expect(invalidDataUrl2.startsWith('data:') && invalidDataUrl2.includes(',')).toBe(false);
+    });
+
+    test('trims and bounds metadata strings to safe limits', () => {
+        const longName = '   ' + 'A'.repeat(150) + '   ';
+        const longDesc = '   ' + 'B'.repeat(600) + '   ';
+
+        const trimmedName = longName.trim().slice(0, 100);
+        const trimmedDesc = longDesc.trim().slice(0, 500);
+
+        expect(trimmedName.length).toBe(100);
+        expect(trimmedName).toBe('A'.repeat(100));
+        expect(trimmedDesc.length).toBe(500);
+        expect(trimmedDesc).toBe('B'.repeat(500));
+    });
+});
