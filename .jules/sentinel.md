@@ -19,3 +19,8 @@
 **Vulnerability:** `generate6DigitPin()` computed `Uint32Array` values modulo 1,000,000, creating modulo bias where lower PIN ranges (000000-967295) had a slightly higher probability (~0.023%) of selection when deriving AES-GCM encryption keys.
 **Learning:** Applying simple modulo arithmetic on fixed-width Uint32 integers introduces non-uniform probability distribution across numeric ranges that do not cleanly divide 2^32.
 **Prevention:** Always use rejection sampling (e.g. discarding values >= 4,294,000,000) when mapping CSPRNG Uint32 random numbers into numeric ranges.
+
+## 2026-05-18 - Decoupling CSPRNG getRandomValues from SubtleCrypto Requirements
+**Vulnerability:** `generate6DigitPin()` relied on `getCrypto()`, which returned `null` whenever `crypto.subtle` was undefined. In non-secure HTTP browsing contexts (where SubtleCrypto is omitted by browsers), this caused PIN generation to fall back to insecure `Math.random()`.
+**Learning:** WebCrypto `crypto.subtle` is restricted to secure origins (HTTPS/localhost), whereas `crypto.getRandomValues()` remains available in non-secure HTTP contexts. Requiring `.subtle` when only `.getRandomValues()` is needed unnecessarily downgrades CSPRNG security to PRNG.
+**Prevention:** Separate WebCrypto checks: query `crypto.getRandomValues()` directly on the `Crypto` instance (`globalThis.crypto || window.crypto || self.crypto || crypto`) without requiring `crypto.subtle` unless subtle operations (e.g., HMAC, key derivation) are actually needed.
