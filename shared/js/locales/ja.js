@@ -142,6 +142,8 @@ export default {
     'tooltip-copy-aggregation': 'タグ毎の集計結果をクリップボードにコピーします',
     'tooltip-settings': '設定を開きます',
     'tooltip-pin-window': '常時最前面（ピン留め）を切り替えます',
+    'pip-active-message': '常時最前面（ピン留め）で表示中',
+    'btn-restore-window': 'ピン留めを解除',
     'tooltip-drag-handle': 'ドラッグして順序を入れ替えます',
     'tooltip-delete-category': 'このカテゴリを削除します',
     'tooltip-delete-history': 'この履歴を削除します',

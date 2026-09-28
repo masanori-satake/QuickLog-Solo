@@ -24,6 +24,8 @@ export default {
     'tooltip-copy-aggregation': 'Copia los resultados de la agregación de etiquetas al portapapeles',
     'tooltip-settings': 'Abrir ajustes',
     'tooltip-pin-window': 'Alternar siempre visible (Fijar ventana)',
+    'pip-active-message': 'Mostrando en modo siempre visible',
+    'btn-restore-window': 'Desfijar',
     'tooltip-drag-handle': 'Arrastrar para reordenar',
     'tooltip-delete-category': 'Eliminar esta categoría',
     'tooltip-delete-history': 'Eliminar este historial',

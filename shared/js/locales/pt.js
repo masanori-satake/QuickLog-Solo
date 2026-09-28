@@ -24,6 +24,8 @@ export default {
     'tooltip-copy-aggregation': 'Copiar resultados de agregação de tags para a área de transferência',
     'tooltip-settings': 'Abrir configurações',
     'tooltip-pin-window': 'Alternar sempre visível (Fixar janela)',
+    'pip-active-message': 'Exibindo no modo sempre visível',
+    'btn-restore-window': 'Desfixar',
     'tooltip-drag-handle': 'Arraste para reordenar',
     'tooltip-delete-category': 'Excluir esta categoria',
     'tooltip-delete-history': 'Excluir este histórico',

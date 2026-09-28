@@ -103,4 +103,69 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(callbackError).toBe(error);
         expect(globalThis.chrome.runtime.lastError).toBeUndefined();
     });
+
+    test('showPipPlaceholder and hidePipPlaceholder manage placeholder UI and body class', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { showPipPlaceholder, hidePipPlaceholder } = await import('../projects/app/js/app.js');
+
+        showPipPlaceholder();
+        expect(document.body.classList.contains('pip-active')).toBe(true);
+        const placeholder = document.getElementById('pip-placeholder');
+        expect(placeholder).not.toBeNull();
+        expect(placeholder.querySelector('.pip-placeholder-text')).not.toBeNull();
+
+        const restoreBtn = document.getElementById('pip-restore-btn');
+        expect(restoreBtn).not.toBeNull();
+
+        hidePipPlaceholder();
+        expect(document.body.classList.contains('pip-active')).toBe(false);
+        expect(document.getElementById('pip-placeholder')).toBeNull();
+    });
+
+    test('openPinWindow creates placeholder and onPipWindowClosed cleans up and returns focus', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { openPinWindow, isPinWindowSupported } = await import('../projects/app/js/app.js');
+
+        const mockPipBody = document.createElement('body');
+        const mockPipHead = document.createElement('head');
+        let pageHideListener = null;
+
+        const mockPipWindow = {
+            document: {
+                head: mockPipHead,
+                body: mockPipBody,
+                getElementById: (id) => mockPipBody.querySelector(`#${id}`) || document.getElementById(id),
+            },
+            addEventListener: jest.fn((event, cb) => {
+                if (event === 'pagehide') {
+                    pageHideListener = cb;
+                }
+            }),
+            close: jest.fn(() => {
+                if (pageHideListener) pageHideListener();
+            }),
+        };
+
+        window.documentPictureInPicture = {
+            requestWindow: jest.fn().mockResolvedValue(mockPipWindow),
+        };
+        const focusSpy = jest.spyOn(window, 'focus').mockImplementation(() => {});
+
+        expect(isPinWindowSupported()).toBe(true);
+        await openPinWindow();
+
+        expect(document.body.classList.contains('pip-active')).toBe(true);
+        expect(document.getElementById('pip-placeholder')).not.toBeNull();
+        expect(mockPipBody.querySelector('#app')).not.toBeNull();
+
+        // Restore via button click
+        const restoreBtn = document.getElementById('pip-restore-btn');
+        expect(restoreBtn).not.toBeNull();
+        restoreBtn.click();
+
+        expect(document.body.classList.contains('pip-active')).toBe(false);
+        expect(document.getElementById('pip-placeholder')).toBeNull();
+        expect(document.getElementById('app')).not.toBeNull();
+        expect(focusSpy).toHaveBeenCalled();
+    });
 });
