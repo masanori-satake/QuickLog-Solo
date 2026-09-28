@@ -132,6 +132,7 @@ export default {
     'tooltip-copy-report': 'Copiar informe diario al portapapeles',
     'tooltip-copy-aggregation': 'Copia los resultados de la agregación de etiquetas al portapapeles',
     'tooltip-settings': 'Abrir ajustes',
+    'tooltip-pin-window': '常時最前面（ピン留め）を切り替えます',
     'tooltip-drag-handle': 'Arrastrar para reordenar',
     'tooltip-delete-category': 'Eliminar esta categoría',
     'tooltip-delete-history': 'この履歴を削除します',
