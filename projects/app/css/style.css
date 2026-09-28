@@ -2269,7 +2269,7 @@ body.pip-active {
     box-sizing: border-box;
     background-color: var(--md-sys-color-surface-container-lowest);
     color: var(--md-sys-color-on-surface);
-    overflow: hidden;
+    overflow: hidden auto;
 }
 
 #pip-placeholder {
