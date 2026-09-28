@@ -1,5 +1,14 @@
 import {
-    escapeHtml, escapeCsv, escapeTsv, parseCsvLine, isValidCategoryName, isValidColor, generateDuplicateName, generateUUID, floorToMinute
+    escapeHtml,
+    escapeCsv,
+    escapeTsv,
+    parseCsvLine,
+    isValidCategoryName,
+    isValidColor,
+    generateDuplicateName,
+    generateUUID,
+    floorToMinute,
+    sanitizeRenderSpec,
 } from '../shared/js/utils.js';
 
 describe('Utils Module', () => {
@@ -191,7 +200,7 @@ describe('Utils Module', () => {
     describe('Property 1: Escape 関数の型ガード恒等性 (Deterministic)', () => {
         test('escape functions return non-string inputs unchanged', () => {
             const inputs = [123, 4.56, true, false, null, undefined, { a: 1 }, [1, 2, 3]];
-            inputs.forEach(val => {
+            inputs.forEach((val) => {
                 expect(escapeHtml(val)).toEqual(val);
                 expect(escapeCsv(val)).toEqual(val);
                 expect(escapeTsv(val)).toEqual(val);
@@ -202,10 +211,19 @@ describe('Utils Module', () => {
     describe('Property 2: 無効なカテゴリ名の拒否 (Deterministic)', () => {
         test('isValidCategoryName returns false for invalid inputs', () => {
             const inputs = [
-                '', '   ', 'a'.repeat(51), '__IDLE__', '__UNKNOWN__', '__PAGE_BREAK__', '__PAGE_BREAK__123',
-                123, null, undefined, { a: 1 }
+                '',
+                '   ',
+                'a'.repeat(51),
+                '__IDLE__',
+                '__UNKNOWN__',
+                '__PAGE_BREAK__',
+                '__PAGE_BREAK__123',
+                123,
+                null,
+                undefined,
+                { a: 1 },
             ];
-            inputs.forEach(val => {
+            inputs.forEach((val) => {
                 expect(isValidCategoryName(val)).toBe(false);
             });
         });
@@ -216,12 +234,12 @@ describe('Utils Module', () => {
             const inputs = [
                 ['a', 'b', 'c'],
                 ['hello', 'world', '  spaces  '],
-                ['quotes "here"', 'commas, here', 'both "quotes", and commas, here']
+                ['quotes "here"', 'commas, here', 'both "quotes", and commas, here'],
             ];
-            inputs.forEach(arr => {
-                const line = arr.map(s => escapeCsv(s)).join(',');
+            inputs.forEach((arr) => {
+                const line = arr.map((s) => escapeCsv(s)).join(',');
                 const parsed = parseCsvLine(line);
-                const expected = arr.map(s => s.trim());
+                const expected = arr.map((s) => s.trim());
                 expect(parsed).toEqual(expected);
             });
         });
@@ -232,10 +250,10 @@ describe('Utils Module', () => {
             const testCases = [
                 { baseName: 'Task', suffixes: [1, 2, 5], expected: 'Task (6)' },
                 { baseName: 'Work', suffixes: [], expected: 'Work (1)' },
-                { baseName: 'Research', suffixes: [10], expected: 'Research (11)' }
+                { baseName: 'Research', suffixes: [10], expected: 'Research (11)' },
             ];
             testCases.forEach(({ baseName, suffixes, expected }) => {
-                const existing = suffixes.map(n => `${baseName} (${n})`);
+                const existing = suffixes.map((n) => `${baseName} (${n})`);
                 const next = generateDuplicateName(baseName, existing);
                 expect(next).toBe(expected);
             });
@@ -245,7 +263,7 @@ describe('Utils Module', () => {
     describe('Property 5: floorToMinute の分境界プロパティ (Deterministic)', () => {
         test('floorToMinute(ms) is a multiple of 60000 and floorToMinute(ms) <= ms', () => {
             const inputs = [0, 1, 59999, 60000, 60001, 120000, 179999, 10000000, NaN, Infinity, -Infinity, 'invalid'];
-            inputs.forEach(ms => {
+            inputs.forEach((ms) => {
                 const floored = floorToMinute(ms);
                 expect(floored % 60000).toBe(0);
                 if (typeof ms === 'number' && Number.isFinite(ms)) {
@@ -255,6 +273,67 @@ describe('Utils Module', () => {
                     expect(floored).toBe(0);
                 }
             });
+        });
+    });
+
+    describe('sanitizeRenderSpec', () => {
+        test('sanitizes and clamps renderSpec parameters to safe bounds and defaults', () => {
+            const rawSpec = {
+                focusX: '99999',
+                focusY: NaN,
+                targetHeight: -100,
+                maxWidth: 10000,
+                scaleWithHeight: 'true',
+                invert: 'false',
+                overflowBehavior: 'invalid_mode',
+                brightness: 100,
+            };
+
+            const safeRenderSpec = sanitizeRenderSpec(rawSpec);
+
+            expect(safeRenderSpec.focusX).toBe(5000);
+            expect(safeRenderSpec.focusY).toBe(0);
+            expect(safeRenderSpec.targetHeight).toBe(10);
+            expect(safeRenderSpec.maxWidth).toBe(5000);
+            expect(safeRenderSpec.scaleWithHeight).toBe(true);
+            expect(safeRenderSpec.invert).toBe(false);
+            expect(safeRenderSpec.overflowBehavior).toBe('categoryColor');
+            expect(safeRenderSpec.brightness).toBe(3.0);
+        });
+
+        test('preserves defaults when null values are passed for numeric fields', () => {
+            const rawSpec = {
+                focusX: null,
+                focusY: null,
+                targetHeight: null,
+                maxWidth: null,
+                brightness: null,
+            };
+
+            const safeRenderSpec = sanitizeRenderSpec(rawSpec);
+
+            expect(safeRenderSpec.focusX).toBe(0);
+            expect(safeRenderSpec.focusY).toBe(0);
+            expect(safeRenderSpec.targetHeight).toBe(100);
+            expect(safeRenderSpec.maxWidth).toBe(2030);
+            expect(safeRenderSpec.brightness).toBe(1.0);
+        });
+
+        test('handles null/undefined gracefully', () => {
+            const safeNull = sanitizeRenderSpec(null);
+            expect(safeNull).toEqual({
+                focusX: 0,
+                focusY: 0,
+                targetHeight: 100,
+                maxWidth: 2030,
+                scaleWithHeight: false,
+                invert: false,
+                overflowBehavior: 'categoryColor',
+                brightness: 1.0,
+            });
+
+            const safeUndefined = sanitizeRenderSpec(undefined);
+            expect(safeUndefined).toEqual(safeNull);
         });
     });
 });

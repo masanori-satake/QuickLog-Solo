@@ -58,6 +58,7 @@ import {
     SYSTEM_CATEGORY_UNKNOWN,
     SYSTEM_CATEGORY_PAGE_BREAK,
     generateUUID,
+    sanitizeRenderSpec,
 } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { saveAnimationBlob, initAnimationDB } from '../shared/js/idb_storage.js';
@@ -3324,8 +3325,10 @@ async function importCustomAnimation(text) {
     }
     const blob = new Blob([ab], { type: mimeString });
 
+    const safeRenderSpec = sanitizeRenderSpec(payload.renderSpec);
+
     const safeConfig = config && typeof config === 'object' ? config : { exclusionStrategy: 'freedom' };
-    await saveAnimationBlob(finalId, blob, payload.renderSpec, safeConfig);
+    await saveAnimationBlob(finalId, blob, safeRenderSpec, safeConfig);
 
     // Resolve name duplicate by appending sequence numbering (1), (2), etc., reserving space for suffix within 100 chars
     const baseName = metadata.name.trim() || 'My Animation';
@@ -3350,7 +3353,7 @@ async function importCustomAnimation(text) {
         description: finalDesc,
         config: safeConfig,
         payload: {
-            renderSpec: payload.renderSpec,
+            renderSpec: safeRenderSpec,
         },
     };
 

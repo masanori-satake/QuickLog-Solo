@@ -204,3 +204,35 @@ export function floorToMinute(ms) {
     if (typeof ms !== 'number' || !Number.isFinite(ms)) return 0;
     return Math.floor(ms / 60000) * 60000;
 }
+
+/**
+ * Sanitizes and bounds custom animation renderSpec parameters to safe limits and defaults.
+ * @param {any} rawSpec
+ * @returns {Object} Safe renderSpec object
+ */
+export function sanitizeRenderSpec(rawSpec) {
+    const spec = rawSpec && typeof rawSpec === 'object' ? rawSpec : {};
+
+    const parseNum = (val, min, max, defaultVal) => {
+        if (val === null || val === undefined || val === '') return defaultVal;
+        const num = Number(val);
+        return Number.isFinite(num) ? Math.max(min, Math.min(max, num)) : defaultVal;
+    };
+
+    const parseBool = (val) => {
+        if (val === 'true') return true;
+        if (val === 'false') return false;
+        return Boolean(val);
+    };
+
+    return {
+        focusX: parseNum(spec.focusX, -5000, 5000, 0),
+        focusY: parseNum(spec.focusY, -5000, 5000, 0),
+        targetHeight: parseNum(spec.targetHeight, 10, 2000, 100),
+        maxWidth: parseNum(spec.maxWidth, 10, 5000, 2030),
+        scaleWithHeight: parseBool(spec.scaleWithHeight),
+        invert: parseBool(spec.invert),
+        overflowBehavior: spec.overflowBehavior === 'repeat' ? 'repeat' : 'categoryColor',
+        brightness: parseNum(spec.brightness, 0.1, 3.0, 1.0),
+    };
+}
