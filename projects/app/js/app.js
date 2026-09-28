@@ -241,12 +241,13 @@ const queryAll = (selector) => {
     const pipNodes = pipWindow ? Array.from(pipWindow.document.querySelectorAll(selector)) : [];
     return [...mainNodes, ...pipNodes];
 };
-const getBody = () => {
-    if (pipWindow) {
-        pipWindow.document.body.className = document.body.className;
-        return pipWindow.document.body;
+const getBody = () =>
+    pipWindow && pipWindow.document && pipWindow.document.body ? pipWindow.document.body : document.body;
+const applyToBodies = (fn) => {
+    fn(document.body);
+    if (pipWindow && pipWindow.document && pipWindow.document.body) {
+        fn(pipWindow.document.body);
     }
-    return document.body;
 };
 const createEl = (tag) => document.createElement(tag);
 
@@ -281,6 +282,7 @@ export async function openPinWindow() {
         });
 
         pipWindow.document.body.className = document.body.className;
+        pipWindow.document.body.style.cssText = document.body.style.cssText;
         pipWindow.document.body.appendChild(app);
 
         pipWindow.addEventListener('resize', () => {
@@ -309,10 +311,21 @@ export async function openPinWindow() {
         }
     } catch (err) {
         console.warn('QuickLog-Solo: Document Picture-in-Picture request failed:', err);
-        pipWindow = null;
+        const appContainer = getEl('app');
+        if (appContainer && appContainer.parentElement !== document.body) {
+            document.body.appendChild(appContainer);
+        }
+        if (pipWindow) {
+            try {
+                pipWindow.close();
+            } catch (closeErr) {
+                console.warn('QuickLog-Solo: Failed to close PiP window on error:', closeErr);
+            }
+            pipWindow = null;
+        }
         const btn = getEl('pin-window-btn');
         if (btn) btn.classList.remove('active');
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ALWAYS_ON_TOP, value: false });
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ALWAYS_ON_TOP, value: false }).catch(() => {});
     }
 }
 
@@ -704,17 +717,17 @@ async function updateTimer() {
 // --- UI Rendering ---
 
 function applyCategoryLayout(layout) {
-    const body = getBody();
     const select = getEl(ID_CATEGORY_LAYOUT_SELECT);
     if (select) select.value = layout;
 
-    body.classList.remove('category-layout-2x8', 'category-layout-2x4');
-    body.classList.add(`category-layout-${layout}`);
+    applyToBodies((body) => {
+        body.classList.remove('category-layout-2x8', 'category-layout-2x4');
+        body.classList.add(`category-layout-${layout}`);
+    });
     currentCategoryLayout = layout;
 }
 
 function applyTimerHeight(height) {
-    const body = getBody();
     const select = getEl(ID_TIMER_HEIGHT_SELECT);
     if (select) select.value = height;
 
@@ -727,10 +740,10 @@ function applyTimerHeight(height) {
         animationEngine.simulatedHeight = simulatedHeights[height] || 100;
     }
 
-    if (body.classList.contains(`timer-${height}`)) return;
-
-    body.classList.remove('timer-normal', 'timer-compact', 'timer-mini');
-    body.classList.add(`timer-${height}`);
+    applyToBodies((body) => {
+        body.classList.remove('timer-normal', 'timer-compact', 'timer-mini');
+        body.classList.add(`timer-${height}`);
+    });
 
     const factors = {
         normal: 1,
@@ -749,20 +762,23 @@ function applyTimerHeight(height) {
 }
 
 function applyTheme(theme) {
-    const body = getBody();
-    body.classList.remove('theme-light', 'theme-dark');
-    if (theme === THEME_SYSTEM) {
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        body.classList.add(isDark ? 'theme-dark' : 'theme-light');
-    } else {
-        body.classList.add(`theme-${theme}`);
-    }
+    applyToBodies((body) => {
+        body.classList.remove('theme-light', 'theme-dark');
+        if (theme === THEME_SYSTEM) {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            body.classList.add(isDark ? 'theme-dark' : 'theme-light');
+        } else {
+            body.classList.add(`theme-${theme}`);
+        }
+    });
     const select = getEl(ID_THEME_SELECT);
     if (select) select.value = theme;
 }
 
 function applyFont(fontValue) {
-    getBody().style.setProperty('--font-family', fontValue);
+    applyToBodies((body) => {
+        body.style.setProperty('--font-family', fontValue);
+    });
     const select = getEl(ID_FONT_SELECT);
     if (select) select.value = fontValue;
 
@@ -791,11 +807,13 @@ function applyFontWeight(weightValue) {
         heavy: '900',
     };
     const val = weights[weightValue] || '';
-    if (val) {
-        getBody().style.setProperty('--font-weight-custom', val);
-    } else {
-        getBody().style.removeProperty('--font-weight-custom');
-    }
+    applyToBodies((body) => {
+        if (val) {
+            body.style.setProperty('--font-weight-custom', val);
+        } else {
+            body.style.removeProperty('--font-weight-custom');
+        }
+    });
     const select = getEl(ID_FONT_WEIGHT_SELECT);
     if (select) select.value = weightValue;
 }
