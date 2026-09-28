@@ -23,6 +23,7 @@ export default {
     'tooltip-copy-report': '复制日报到剪贴板',
     'tooltip-copy-aggregation': '按标签汇总结果并复制到剪贴板',
     'tooltip-settings': '打开设置',
+    'tooltip-pin-window': '切换置顶 (固定窗口)',
     'tooltip-drag-handle': '拖动以排序',
     'tooltip-delete-category': '删除此分类',
     'tooltip-delete-history': '删除此历史记录',

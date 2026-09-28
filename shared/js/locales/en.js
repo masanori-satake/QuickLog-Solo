@@ -141,6 +141,7 @@ export default {
     'tooltip-copy-report': 'Copy daily report to clipboard',
     'tooltip-copy-aggregation': 'Copy tag aggregation results to clipboard',
     'tooltip-settings': 'Open settings',
+    'tooltip-pin-window': 'Toggle always on top (Pin window)',
     'tooltip-drag-handle': 'Drag to reorder',
     'tooltip-delete-category': 'Delete this category',
     'tooltip-delete-history': 'Delete this history',

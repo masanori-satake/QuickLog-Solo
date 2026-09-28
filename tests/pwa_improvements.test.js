@@ -74,6 +74,17 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(await secondTab.get(null)).toEqual({ first: 'new', third: 'other' });
     });
 
+    test('isPinWindowSupported checks documentPictureInPicture availability', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { isPinWindowSupported } = await import('../projects/app/js/app.js');
+
+        delete window.documentPictureInPicture;
+        expect(isPinWindowSupported()).toBe(false);
+
+        window.documentPictureInPicture = { requestWindow: jest.fn() };
+        expect(isPinWindowSupported()).toBe(true);
+    });
+
     test.each(['set', 'remove'])('%s reports failed storage writes to callbacks and Promise callers', async (operation) => {
         const { ensureStorageSyncFallback } = await import('../shared/js/session_sync.js');
         ensureStorageSyncFallback();

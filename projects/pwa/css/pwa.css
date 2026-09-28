@@ -125,7 +125,8 @@ main,
 
     #settings-toggle,
     #copy-report-btn,
-    #copy-aggregation-btn {
+    #copy-aggregation-btn,
+    #pin-window-btn {
         width: 32px;
         height: 32px;
         padding: 4px;

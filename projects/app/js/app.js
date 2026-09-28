@@ -23,6 +23,7 @@ import {
     SETTING_KEY_ANIMATION,
     SETTING_KEY_PAUSE_ANIMATION,
     SETTING_KEY_PAUSE_THEME,
+    SETTING_KEY_ALWAYS_ON_TOP,
     SETTING_KEY_LANGUAGE,
     SETTING_KEY_REPORT_SETTINGS,
     SETTING_KEY_TIMER_HEIGHT,
@@ -232,10 +233,114 @@ let reportSettings = {
     adjust: 'none',
 };
 
-const getEl = (id) => document.getElementById(id);
-const queryAll = (selector) => document.querySelectorAll(selector);
-const getBody = () => document.body;
+let pipWindow = null;
+
+const getEl = (id) => document.getElementById(id) || (pipWindow ? pipWindow.document.getElementById(id) : null);
+const queryAll = (selector) => {
+    const mainNodes = Array.from(document.querySelectorAll(selector));
+    const pipNodes = pipWindow ? Array.from(pipWindow.document.querySelectorAll(selector)) : [];
+    return [...mainNodes, ...pipNodes];
+};
+const getBody = () => {
+    if (pipWindow) {
+        pipWindow.document.body.className = document.body.className;
+        return pipWindow.document.body;
+    }
+    return document.body;
+};
 const createEl = (tag) => document.createElement(tag);
+
+export function isPinWindowSupported() {
+    return typeof window !== 'undefined' && 'documentPictureInPicture' in window && !!window.documentPictureInPicture;
+}
+
+export async function togglePinWindow() {
+    if (!isPinWindowSupported()) return;
+    if (pipWindow) {
+        closePinWindow();
+    } else {
+        await openPinWindow();
+    }
+}
+
+export async function openPinWindow() {
+    if (!isPinWindowSupported() || pipWindow) return;
+
+    try {
+        const app = getEl('app');
+        if (!app) return;
+
+        pipWindow = await window.documentPictureInPicture.requestWindow({
+            width: app.clientWidth || 360,
+            height: app.clientHeight || 600,
+        });
+
+        const stylesheets = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
+        stylesheets.forEach((stylesheet) => {
+            pipWindow.document.head.appendChild(stylesheet.cloneNode(true));
+        });
+
+        pipWindow.document.body.className = document.body.className;
+        pipWindow.document.body.appendChild(app);
+
+        pipWindow.addEventListener('resize', () => {
+            if (animationEngine) {
+                animationEngine.resize();
+                updateAnimationExclusionAreas();
+            }
+        });
+
+        pipWindow.addEventListener(
+            'pagehide',
+            () => {
+                onPipWindowClosed();
+            },
+            { once: true }
+        );
+
+        const btn = getEl('pin-window-btn');
+        if (btn) btn.classList.add('active');
+
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ALWAYS_ON_TOP, value: true });
+
+        if (animationEngine) {
+            animationEngine.resize();
+            updateAnimationExclusionAreas();
+        }
+    } catch (err) {
+        console.warn('QuickLog-Solo: Document Picture-in-Picture request failed:', err);
+        pipWindow = null;
+        const btn = getEl('pin-window-btn');
+        if (btn) btn.classList.remove('active');
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_ALWAYS_ON_TOP, value: false });
+    }
+}
+
+export function closePinWindow() {
+    if (pipWindow) {
+        pipWindow.close();
+    }
+}
+
+function onPipWindowClosed() {
+    if (!pipWindow) return;
+    const app = pipWindow.document.getElementById('app');
+    pipWindow = null;
+
+    if (app && app.parentElement !== document.body) {
+        document.body.appendChild(app);
+    }
+
+    const btn = getEl('pin-window-btn');
+    if (btn) btn.classList.remove('active');
+
+    dbPut(STORE_SETTINGS, { key: SETTING_KEY_ALWAYS_ON_TOP, value: false });
+
+    if (animationEngine) {
+        animationEngine.resize();
+        updateAnimationExclusionAreas();
+    }
+}
 
 export function isPWAMode() {
     return (
@@ -1086,6 +1191,21 @@ async function syncState() {
 
     // Backup UI sync
     updateBackupUI();
+
+    // Pin Window Button visibility & active state sync
+    const pinBtn = getEl('pin-window-btn');
+    if (pinBtn) {
+        if (isPinWindowSupported()) {
+            pinBtn.classList.remove('hidden');
+        } else {
+            pinBtn.classList.add('hidden');
+        }
+        if (pipWindow) {
+            pinBtn.classList.add('active');
+        } else {
+            pinBtn.classList.remove('active');
+        }
+    }
 
     // Session Sync UI sync
     const syncEnabled = !!state.sessionSync;
@@ -3213,6 +3333,7 @@ function setupEventListeners() {
         }
     });
     getEl(ID_END_BTN)?.addEventListener('click', endTask);
+    getEl('pin-window-btn')?.addEventListener('click', togglePinWindow);
     getEl(ID_COPY_REPORT_BTN)?.addEventListener('click', openReportModal);
     getEl(ID_COPY_AGGREGATION_BTN)?.addEventListener('click', openTagAggregationModal);
 

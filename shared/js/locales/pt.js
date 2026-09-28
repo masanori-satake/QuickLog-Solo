@@ -23,6 +23,7 @@ export default {
     'tooltip-copy-report': 'Copiar relatório diário para a área de transferência',
     'tooltip-copy-aggregation': 'Copiar resultados de agregação de tags para a área de transferência',
     'tooltip-settings': 'Abrir configurações',
+    'tooltip-pin-window': 'Alternar sempre visível (Fixar janela)',
     'tooltip-drag-handle': 'Arraste para reordenar',
     'tooltip-delete-category': 'Excluir esta categoria',
     'tooltip-delete-history': 'Excluir este histórico',
