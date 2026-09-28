@@ -141,6 +141,7 @@ export default {
     'tooltip-copy-report': '日報をクリップボードにコピーします',
     'tooltip-copy-aggregation': 'タグ毎の集計結果をクリップボードにコピーします',
     'tooltip-settings': '設定を開きます',
+    'tooltip-pin-window': '常時最前面（ピン留め）を切り替えます',
     'tooltip-drag-handle': 'ドラッグして順序を入れ替えます',
     'tooltip-delete-category': 'このカテゴリを削除します',
     'tooltip-delete-history': 'この履歴を削除します',

@@ -132,6 +132,7 @@ export function validateSettingsSchema(data) {
         'defaultAnimation',
         'pauseAnimation',
         'pauseTheme',
+        'alwaysOnTop',
         'language',
         'reportSettings',
         'businessDays',
@@ -157,6 +158,9 @@ export function validateSettingsSchema(data) {
                 break;
             case 'pauseTheme':
                 if (typeof val !== 'string' || val.length > 30 || !isValidColor(val)) return false;
+                break;
+            case 'alwaysOnTop':
+                if (typeof val !== 'boolean') return false;
                 break;
             case 'language':
                 if (!['auto', 'ja', 'en', 'de', 'es', 'fr', 'pt', 'ko', 'zh'].includes(val)) return false;

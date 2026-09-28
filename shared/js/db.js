@@ -35,6 +35,7 @@ export const SETTING_KEY_TIMER_HEIGHT = 'timerHeight';
 export const SETTING_KEY_CATEGORY_LAYOUT = 'categoryLayout';
 export const SETTING_KEY_PAUSE_ANIMATION = 'pauseAnimation';
 export const SETTING_KEY_PAUSE_THEME = 'pauseTheme';
+export const SETTING_KEY_ALWAYS_ON_TOP = 'alwaysOnTop';
 export const SETTING_KEY_BACKUP_CONFIG = 'backupConfig';
 export const SETTING_KEY_BACKUP_DIR_HANDLE = 'backupDirectoryHandle';
 export const SETTING_KEY_SESSION_SYNC = 'sessionSync';
@@ -505,6 +506,7 @@ export async function getCurrentAppState() {
     const categoryLayout = await dbGet(STORE_SETTINGS, SETTING_KEY_CATEGORY_LAYOUT);
     const pauseAnimation = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_ANIMATION);
     const pauseTheme = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_THEME);
+    const alwaysOnTop = await dbGet(STORE_SETTINGS, SETTING_KEY_ALWAYS_ON_TOP);
     const categories = await dbGetAll(STORE_CATEGORIES);
     const alarms = await dbGetAll(STORE_ALARMS);
 
@@ -535,6 +537,7 @@ export async function getCurrentAppState() {
         categoryLayout: categoryLayout ? categoryLayout.value : isPWA ? '2x4' : '2x8',
         pauseAnimation: pauseAnimation ? pauseAnimation.value : 'snoring_zzz',
         pauseTheme: pauseTheme ? pauseTheme.value : 'neutral',
+        alwaysOnTop: alwaysOnTop ? alwaysOnTop.value : false,
         sessionSync: (await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC))?.value || false,
         categories: categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
         alarms: alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0)),

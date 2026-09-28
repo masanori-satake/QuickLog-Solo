@@ -23,6 +23,7 @@ export default {
     'tooltip-copy-report': 'Tagesbericht in die Zwischenablage kopieren',
     'tooltip-copy-aggregation': 'Kopiert die Ergebnisse der Tag-Aggregation in die Zwischenablage',
     'tooltip-settings': 'Einstellungen öffnen',
+    'tooltip-pin-window': 'Immer im Vordergrund umschalten (Fenster anheften)',
     'tooltip-drag-handle': 'Ziehen zum Neuordnen',
     'tooltip-delete-category': 'Diese Kategorie löschen',
     'tooltip-delete-history': 'Diesen Verlauf löschen',
