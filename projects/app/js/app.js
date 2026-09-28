@@ -3283,21 +3283,40 @@ async function importCustomAnimation(text) {
         throw new Error('Invalid JSON', { cause: err });
     }
 
-    if (data.format !== 'quicklog-animation-package') {
+    if (!data || typeof data !== 'object' || data.format !== 'quicklog-animation-package') {
         throw new Error('Invalid format');
     }
 
     const { id, metadata, config, payload } = data;
-    if (!metadata || !metadata.name || !payload || !payload.imageData || !payload.renderSpec) {
+    if (
+        !metadata ||
+        typeof metadata !== 'object' ||
+        !metadata.name ||
+        typeof metadata.name !== 'string' ||
+        !payload ||
+        typeof payload !== 'object' ||
+        !payload.imageData ||
+        typeof payload.imageData !== 'string' ||
+        !payload.renderSpec ||
+        typeof payload.renderSpec !== 'object'
+    ) {
         throw new Error('Missing fields');
     }
 
     const custom_animation_metadata_map = await getCustomAnimationMetadataMap();
 
-    const finalId = !id || custom_animation_metadata_map[id] ? generateUUID() : id;
+    // Security: Validate id format against RFC 4122 UUID pattern (versions 1-8, variant 8/9/a/b) to prevent key pollution/injection
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const isValidId = id && typeof id === 'string' && uuidPattern.test(id);
+    const finalId = isValidId && !custom_animation_metadata_map[id] ? id : generateUUID();
 
-    const byteString = atob(payload.imageData.split(',')[1]);
-    const mimeString = payload.imageData.split(',')[0].split(':')[1].split(';')[0];
+    // Security: Validate data URL structure before decoding
+    if (!payload.imageData.startsWith('data:') || !payload.imageData.includes(',')) {
+        throw new Error('Invalid image data format');
+    }
+
+    const byteString = atob(payload.imageData.split(',')[1] || '');
+    const mimeString = payload.imageData.split(',')[0].split(':')[1]?.split(';')[0] || 'image/gif';
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
     for (let i = 0; i < byteString.length; i++) {
@@ -3305,25 +3324,31 @@ async function importCustomAnimation(text) {
     }
     const blob = new Blob([ab], { type: mimeString });
 
-    await saveAnimationBlob(finalId, blob, payload.renderSpec, config || { exclusionStrategy: 'freedom' });
+    const safeConfig = config && typeof config === 'object' ? config : { exclusionStrategy: 'freedom' };
+    await saveAnimationBlob(finalId, blob, payload.renderSpec, safeConfig);
 
-    // Resolve name duplicate by appending sequence numbering (1), (2), etc.
-    let finalName = metadata.name || 'My Animation';
+    // Resolve name duplicate by appending sequence numbering (1), (2), etc., reserving space for suffix within 100 chars
+    const baseName = metadata.name.trim() || 'My Animation';
+    let finalName = baseName.slice(0, 100);
+    const finalDesc = typeof metadata.description === 'string' ? metadata.description.trim().slice(0, 500) : '';
+
     const existingNames = new Set(Object.values(custom_animation_metadata_map).map((item) => item.name));
     if (existingNames.has(finalName)) {
         let suffix = 1;
-        let candidateName = `${finalName} (${suffix})`;
+        let suffixStr = ` (${suffix})`;
+        let candidateName = `${baseName.slice(0, 100 - suffixStr.length)}${suffixStr}`;
         while (existingNames.has(candidateName)) {
             suffix++;
-            candidateName = `${finalName} (${suffix})`;
+            suffixStr = ` (${suffix})`;
+            candidateName = `${baseName.slice(0, 100 - suffixStr.length)}${suffixStr}`;
         }
         finalName = candidateName;
     }
 
     custom_animation_metadata_map[finalId] = {
         name: finalName,
-        description: metadata.description || '',
-        config: config || { exclusionStrategy: 'freedom' },
+        description: finalDesc,
+        config: safeConfig,
         payload: {
             renderSpec: payload.renderSpec,
         },
