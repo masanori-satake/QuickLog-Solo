@@ -519,7 +519,7 @@ export default {
     'maker-select-prompt': '커스텀 애니메이션을 추가해주십시오',
     'about-pwa-section-title': 'PWA 버전 QuickLog-Solo(β)',
     'about-pwa-section-desc':
-        '스마트폰 등의 카메라로 QR 코드를 읽어들여 PWA 버전의 기동이나 설정 이어받기를 진행할 수 있습니다.',
+        'スマホ等のカメラでQRコードを読み取ってPWA版の起動や、引き継ぎコードを使った設定同期を行えます。',
     'about-pwa-url-qr-label': '1. PWA 기동 URL',
     'about-pwa-general-qr-label': '2. 설정 전반 및 알람',
     'about-pwa-categories-qr-label': '3. 업무 카테고리',
@@ -531,7 +531,10 @@ export default {
     'about-pwa-qr-too-large-sub': 'QR 표시 불가',
     'about-pwa-import-title': 'QuickLog-Solo 설정 가져오기 (β)',
     'about-pwa-import-desc':
-        'Chrome 확장 기능 버전에서 표시된 설정용 QR 코드를 읽어들여 카테고리나 알람 설정을 반영합니다.',
+        'Chrome拡張機能版で表示された6桁の設定引き継ぎコードを入力して、カテゴリやアラーム設定を反映します。',
+    'about-pwa-pin-accordion-label': '設定引き継ぎ用コードを表示',
+    'btn-pwa-sync-pin': '設定引き継ぎコードを入力する',
+    'pin-sync-modal-title': '設定引き継ぎコードの入力',
     'btn-pwa-scan-qr': 'QR 코드를 읽어들이기',
     'qr-scan-modal-title': 'QR 코드 스캔',
     'qr-scan-status-scanning': '카메라에 QR 코드를 가져다 대 주십시오',
