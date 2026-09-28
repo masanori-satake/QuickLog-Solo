@@ -523,10 +523,11 @@ export default {
     'maker-error-name-empty': '名前を入力してください',
     'maker-error-name-duplicate': '同じ名前のカスタムアニメーションが存在します。違う名前を入力してください。',
     'maker-select-prompt': 'カスタムアニメーションを追加してください',
+    'setting-pwa-support': 'PWAサポート',
     'about-pwa-section-title': 'PWA版QuickLog-Solo(β)',
     'about-pwa-section-desc':
         'スマホ等のカメラでQRコードを読み取ってPWA版の起動や、引き継ぎコードを使った設定同期を行えます。',
-    'about-pwa-url-qr-label': '1. PWA起動URL',
+    'about-pwa-url-qr-label': 'PWA起動URL',
     'about-pwa-general-qr-label': '2. 設定全般・アラーム',
     'about-pwa-categories-qr-label': '3. 業務カテゴリ',
     'about-pwa-settings-qr-label': '2. 設定エクスポート',
