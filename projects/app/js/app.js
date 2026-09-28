@@ -288,6 +288,15 @@ export async function openPinWindow() {
         pipWindow.document.body.style.cssText = document.body.style.cssText;
         pipWindow.document.body.appendChild(app);
 
+        const currentFactor =
+            document.body.style.getPropertyValue('--timer-height-factor') ||
+            document.documentElement.style.getPropertyValue('--timer-height-factor') ||
+            '1';
+        if (pipWindow.document.documentElement) {
+            pipWindow.document.documentElement.style.setProperty('--timer-height-factor', currentFactor);
+        }
+        pipWindow.document.body.style.setProperty('--timer-height-factor', currentFactor);
+
         showPipPlaceholder();
 
         pipWindow.addEventListener('resize', () => {
@@ -795,7 +804,7 @@ function applyCategoryLayout(layout) {
     currentCategoryLayout = layout;
 }
 
-function applyTimerHeight(height) {
+export function applyTimerHeight(height) {
     const select = getEl(ID_TIMER_HEIGHT_SELECT);
     if (select) select.value = height;
 
@@ -808,11 +817,6 @@ function applyTimerHeight(height) {
         animationEngine.simulatedHeight = simulatedHeights[height] || 100;
     }
 
-    applyToBodies((body) => {
-        body.classList.remove('timer-normal', 'timer-compact', 'timer-mini');
-        body.classList.add(`timer-${height}`);
-    });
-
     const factors = {
         normal: 1,
         compact: 2 / 3,
@@ -820,7 +824,16 @@ function applyTimerHeight(height) {
     };
     const factor = factors[height] || 1;
 
+    applyToBodies((body) => {
+        body.classList.remove('timer-normal', 'timer-compact', 'timer-mini');
+        body.classList.add(`timer-${height}`);
+        body.style.setProperty('--timer-height-factor', factor);
+    });
+
     document.documentElement.style.setProperty('--timer-height-factor', factor);
+    if (pipWindow && pipWindow.document && pipWindow.document.documentElement) {
+        pipWindow.document.documentElement.style.setProperty('--timer-height-factor', factor);
+    }
 
     // After height change, we need to update animation engine and exclusion areas
     if (animationEngine) {
