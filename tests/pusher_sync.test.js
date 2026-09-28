@@ -56,6 +56,29 @@ describe('pusher_sync.js', () => {
         expect(/^\d{6}$/.test(pin)).toBe(true);
     });
 
+    test('generate6DigitPin rejects out-of-range values to eliminate modulo bias', () => {
+        const mockGetRandomValues = jest.fn();
+        let callCount = 0;
+        mockGetRandomValues.mockImplementation((buf) => {
+            callCount++;
+            if (callCount === 1) {
+                buf[0] = 4294500000; // >= 4294000000 (disallowed due to modulo bias)
+            } else {
+                buf[0] = 12345678; // Valid
+            }
+            return buf;
+        });
+
+        const spy = jest.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(mockGetRandomValues);
+        try {
+            const pin = generate6DigitPin();
+            expect(mockGetRandomValues).toHaveBeenCalledTimes(2);
+            expect(pin).toBe('345678');
+        } finally {
+            spy.mockRestore();
+        }
+    });
+
     test('encryptPayload and decryptPayload round-trip with createdAt timestamp', async () => {
         const pin = '582914';
         const settingsData = {
