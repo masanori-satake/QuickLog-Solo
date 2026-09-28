@@ -3927,7 +3927,7 @@ let lastPWAAlarmCheckTime = 0;
 function claimPWAAlarmExecution(key) {
     if (typeof localStorage === 'undefined') return true;
     const storageKey = `ql_pwa_executed_alarm_${key}`;
-    const claimVal = `${Date.now()}_${Math.random()}`;
+    const claimVal = `${Date.now()}_${generateUUID()}`;
     const existing = localStorage.getItem(storageKey);
     if (existing) return false;
 
