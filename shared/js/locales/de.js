@@ -132,6 +132,7 @@ export default {
     'tooltip-copy-report': 'Tagesbericht in die Zwischenablage kopieren',
     'tooltip-copy-aggregation': 'Kopiert die Ergebnisse der Tag-Aggregation in die Zwischenablage',
     'tooltip-settings': 'Einstellungen öffnen',
+    'tooltip-pin-window': '常時最前面（ピン留め）を切り替えます',
     'tooltip-drag-handle': 'Ziehen zum Neuordnen',
     'tooltip-delete-category': 'Diese Kategorie löschen',
     'tooltip-delete-history': 'この履歴を削除します',
