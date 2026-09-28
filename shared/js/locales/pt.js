@@ -132,6 +132,7 @@ export default {
     'tooltip-copy-report': 'Copiar relatório diário para a área de transferência',
     'tooltip-copy-aggregation': 'Copiar resultados de agregação de tags para a área de transferência',
     'tooltip-settings': 'Abrir configurações',
+    'tooltip-pin-window': '常時最前面（ピン留め）を切り替えます',
     'tooltip-drag-handle': 'Arraste para reordenar',
     'tooltip-delete-category': 'Excluir esta categoria',
     'tooltip-delete-history': 'この履歴を削除します',
