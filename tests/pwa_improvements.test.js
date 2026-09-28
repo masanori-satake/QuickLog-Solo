@@ -104,6 +104,26 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(globalThis.chrome.runtime.lastError).toBeUndefined();
     });
 
+    test('applyTimerHeight sets --timer-height-factor on body and documentElement', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { applyTimerHeight } = await import('../projects/app/js/app.js');
+
+        applyTimerHeight('compact');
+        expect(document.body.classList.contains('timer-compact')).toBe(true);
+        expect(document.body.style.getPropertyValue('--timer-height-factor')).toBe('0.6666666666666666');
+        expect(document.documentElement.style.getPropertyValue('--timer-height-factor')).toBe('0.6666666666666666');
+
+        applyTimerHeight('mini');
+        expect(document.body.classList.contains('timer-mini')).toBe(true);
+        expect(document.body.style.getPropertyValue('--timer-height-factor')).toBe('0.5');
+        expect(document.documentElement.style.getPropertyValue('--timer-height-factor')).toBe('0.5');
+
+        applyTimerHeight('normal');
+        expect(document.body.classList.contains('timer-normal')).toBe(true);
+        expect(document.body.style.getPropertyValue('--timer-height-factor')).toBe('1');
+        expect(document.documentElement.style.getPropertyValue('--timer-height-factor')).toBe('1');
+    });
+
     test('showPipPlaceholder and hidePipPlaceholder manage placeholder UI and body class', async () => {
         jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
         const { showPipPlaceholder, hidePipPlaceholder } = await import('../projects/app/js/app.js');
@@ -128,13 +148,16 @@ describe('PWA Improvements & Session Sync Fallback', () => {
 
         const mockPipBody = document.createElement('body');
         const mockPipHead = document.createElement('head');
+        const mockPipDocEl = document.createElement('html');
         let pageHideListener = null;
 
         const mockPipWindow = {
             document: {
                 head: mockPipHead,
                 body: mockPipBody,
+                documentElement: mockPipDocEl,
                 getElementById: (id) => mockPipBody.querySelector(`#${id}`) || document.getElementById(id),
+                querySelectorAll: (sel) => mockPipBody.querySelectorAll(sel),
             },
             addEventListener: jest.fn((event, cb) => {
                 if (event === 'pagehide') {
@@ -157,6 +180,8 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(document.body.classList.contains('pip-active')).toBe(true);
         expect(document.getElementById('pip-placeholder')).not.toBeNull();
         expect(mockPipBody.querySelector('#app')).not.toBeNull();
+        expect(mockPipBody.style.getPropertyValue('--timer-height-factor')).toBe('1');
+        expect(mockPipDocEl.style.getPropertyValue('--timer-height-factor')).toBe('1');
 
         // Restore via button click
         const restoreBtn = document.getElementById('pip-restore-btn');
