@@ -132,6 +132,7 @@ export default {
     'tooltip-copy-report': 'Copier le rapport journalier dans le presse-papiers',
     'tooltip-copy-aggregation': "Copier les résultats de l'agrégation par tag dans le presse-papiers",
     'tooltip-settings': 'Ouvrir les paramètres',
+    'tooltip-pin-window': '常時最前面（ピン留め）を切り替えます',
     'tooltip-drag-handle': 'Faire glisser pour réordonner',
     'tooltip-delete-category': 'Supprimer cette catégorie',
     'tooltip-delete-history': 'この履歴を削除します',
