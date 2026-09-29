@@ -32,11 +32,13 @@ Context switching and complex time-tracking tools disrupt daily focus and introd
 ## 🔒 Privacy & Security
 Data security and user privacy are foundational principles of QuickLog-Solo:
 
-- **100% Local Execution (Default):** All task logs and user data remain stored locally in your browser's IndexedDB. When optional Device Sync is explicitly enabled, `chrome.storage.sync` synchronizes settings, categories, alarms, current task state, deletion info, and recent history (up to 50 records) across your Chrome-synced devices.
-- **Controlled External Communication:** Standard extension page CSP permits connections only to `https://*.pusher.com` and `wss://*.pusher.com`. In non-PWA views, opening the settings transfer accordion transmits end-to-end encrypted settings, categories, and alarms via Pusher for PWA sync.
-- **Pure Vanilla JS (Zero Dependencies):** Built without external runtime frameworks or third-party packages, eliminating supply chain vulnerabilities.
-- **Zero Data Collection:** No user telemetry, analytics, cookies, or tracking scripts are included or used.
-- **Continuous Security Auditing:** Automatically scanned and verified using Google OSV-Scanner and strict dependency policies.
+- **100% Local Execution (Default):** All task logs and user data remain stored strictly in your browser's local IndexedDB. No automatic data transmission or cloud storage is ever performed.
+- **Opt-in Communication Only (User-Initiated):**
+  - **Device Sync (Chrome Sync):** Only when explicitly enabled by the user, `chrome.storage.sync` synchronizes settings, categories, alarms, current task state, deletion info, and recent history (up to 50 records) across your Chrome-synced devices.
+  - **PWA Settings Transfer (Temporary Encrypted Relay):** Opening the settings transfer accordion in non-PWA views transmits end-to-end encrypted settings, categories, and alarms via Pusher (`https://*.pusher.com` and `wss://*.pusher.com`). The payload is encrypted on-device using AES-GCM 256-bit with a 3-minute expiration; no data is ever permanently stored on relay servers, and decryption by third parties or relays is technically impossible.
+- **Zero Data Collection & Zero Telemetry:** Absolutely no user telemetry, analytics (e.g., Google Analytics), cookies, or tracking scripts are included or used. Zero data is collected or harvested for any purpose.
+- **Pure Vanilla JS & Open Source Transparency:** Built without external runtime frameworks or third-party runtime dependencies. The entire codebase is fully open-source and transparently auditable by anyone.
+- **Continuous Security Auditing:** Automatically scanned and verified using Google OSV-Scanner and strict dependency policies in CI workflows.
 
 ## Chromebook & Offline Environment Friendly
 QuickLog-Solo is optimized for seamless performance across Windows, macOS, ChromeOS / Chromebooks, and air-gapped network environments.
@@ -94,10 +96,12 @@ To try the latest unreleased features:
 - **端末間同期 (Sync) [β版]:** オプションで端末間同期機能を有効にすると、ブラウザの同期機能（`chrome.storage.sync`）を利用して、設定、カテゴリ、アラーム、現在のタスク状態、削除情報、および直近50件の履歴データを同一アカウントの複数端末間でセキュアに同期します。同期オフ時はすべての作業ログがローカル（IndexedDB）のみに保持されます。
 - **ローカルファイルバックアップ:** 指定したローカルフォルダへのバックアップに対応。ブラウザのキャッシュクリア等による予期せぬデータ消失から記録を守ります（File System Access API を利用）。バックアップデータがあれば、他のブラウザへの移行もスムーズに行えます。
 - **徹底したプライバシーと透明性:**
-    - **完全ローカル（標準状態）:** 記録されたデータはすべてブラウザ内の IndexedDB に保存されます（バックアップを実行した際には、ローカルファイルシステムにも保存されます）。端末間同期機能を有効にした場合のみ、Chrome Sync 経由で一部設定および直近の履歴（最大50件）が同期対象となります。
-    - **限定された外部通信:** 拡張機能ページの CSP では `https://*.pusher.com` および `wss://*.pusher.com` への接続のみが許可されています。非 PWA 画面で設定引き継ぎ用 QR コードのアコーディオンを開いた際、端対端暗号化された設定・カテゴリ・アラームデータが Pusher 経由で PWA 同期用に送信されます。
-    - **ピュアで長寿命な設計:** 外部ライブラリを一切使用しない Vanilla JS 構成。OSS のライフサイクルやトレンドに左右されないため、10年後も変わらず使い続けられる長期的安心感を提供します。また、依存関係によるブラックボックスを排除し、技術者が安心して利用・検証できる透明性を確保しています。
-    - **OSS脆弱性・依存関係監査:** OSSの依存関係および脆弱性を継続的に監視するため、Googleの提供する **OSV-Scanner** による厳格な監査を全開発フローで実施しています。さらに、AI エージェント等による一時的なスクリプトの混入を防ぐため、ルートディレクトリの厳格なクリーンネス・ポリシーを CI で強制しています。
+    - **完全ローカル動作 (標準状態):** 記録された作業ログや設定データは、すべてお使いのブラウザ内（IndexedDB）のみに保存されます。外部サーバーへの自動送信やクラウド保存は一切行われません。
+    - **ユーザーが望んだ場合のみ行う限定的通信:**
+        - **端末間同期 (Chrome Sync):** ユーザーが明示的に「端末間同期」を有効にした場合のみ、Google Chrome の標準同期機能（`chrome.storage.sync`）経由で同一アカウントの端末間に一部設定や直近の履歴（最大50件）が同期されます。
+        - **PWAへの設定引き継ぎ (一時的な暗号化通信):** 非 PWA 画面で「設定引き継ぎ用コード」のアコーディオンを開いた際のみ、端末上でエンドツーエンド暗号化（AES-GCM 256-bit）されたデータが Pusher（`https://*.pusher.com`, `wss://*.pusher.com`）を中継して一時的に通信されます。暗号化データは3分間の有効期限付きで処理され、サーバー上に永続保存されることはありません。また、中継サーバーや第三者が復号することは技術的に不可能です。
+    - **データ収集・追跡目的の通信ゼロ (Zero Data Collection):** テレメトリ、アクセス解析（Google Analytics等）、広告トラッカーは一切含まれていません。ユーザーの行動情報や作業ログを収集・閲覧する目的の通信は存在せず、開発者や第三者がデータを蓄積・利用することは一切ありません。
+    - **オープンソースと長寿命設計:** 外部ランタイムライブラリを一切使用しない Pure Vanilla JS 構成。すべてのコードが公開されているため透明性が高く、誰でもデータ保護の仕組みを検証可能です。また、Google OSV-Scanner による脆弱性監査を CI で自動実施しています。
 
 #### Chromebook & オフライン環境への最適化
 ローカル完結・高速動作・安心のデータ保護を徹底追及した結果、Windows / macOS はもちろん、画面サイズの多様な Chromebook やネットワーク制限のある環境でも極めて快適に動作する高い親和性を備えています。
