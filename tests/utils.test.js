@@ -178,7 +178,7 @@ describe('Utils Module', () => {
             try {
                 delete globalThis.crypto;
                 const uuid = generateUUID();
-                expect(uuid).toMatch(/^uuid-\d+-[a-z0-9]+$/);
+                expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
             } finally {
                 globalThis.crypto = originalCrypto;
             }
