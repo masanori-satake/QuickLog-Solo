@@ -54,65 +54,69 @@ export function getLanguage() {
 }
 
 /**
+ * Helper to look up a key in a message dictionary.
+ * Placed at module scope to avoid closure allocation on every t() call.
+ */
+function lookupInDict(dict, key) {
+    if (dict && Object.prototype.hasOwnProperty.call(dict, key)) {
+        const val = dict[key];
+        if (typeof val === 'string' || Array.isArray(val)) {
+            return val;
+        }
+    }
+    return null;
+}
+
+/**
  * Translates a key into the current language.
  * @param {string} key
  * @param {Object} params - Key-value pairs for placeholders like {name}
- * @returns {string}
+ * @returns {string|Array}
  */
 export function t(key, params = {}) {
     if (typeof key !== 'string') return '';
-    const safeParams = params && typeof params === 'object' ? params : {};
-
-    let message;
-    const lookupInDict = (dict) => {
-        if (dict && Object.prototype.hasOwnProperty.call(dict, key)) {
-            const val = dict[key];
-            if (typeof val === 'string' || Array.isArray(val)) {
-                return val;
-            }
-        }
-        return null;
-    };
 
     const currentDict = messages[currentLanguage];
     const commonDict = messages['_common'];
     const enDict = messages['en'];
 
-    const foundInCurrent = lookupInDict(currentDict);
-    if (foundInCurrent !== null) {
-        message = foundInCurrent;
-    } else {
-        const foundInCommon = lookupInDict(commonDict);
-        if (foundInCommon !== null) {
-            message = foundInCommon;
-        } else {
-            const foundInEn = lookupInDict(enDict);
-            if (foundInEn !== null) {
-                message = foundInEn;
-            } else {
+    let message = lookupInDict(currentDict, key);
+    if (message === null) {
+        message = lookupInDict(commonDict, key);
+        if (message === null) {
+            message = lookupInDict(enDict, key);
+            if (message === null) {
                 message = key;
             }
         }
     }
 
+    // Fast path: if params is null/undefined/empty, skip Object.keys allocation and iteration
+    if (!params || typeof params !== 'object') return message;
+
+    const paramKeys = Object.keys(params);
+    if (paramKeys.length === 0) return message;
+
     if (Array.isArray(message)) {
         return message.map((item) => {
             if (typeof item !== 'string') return item;
             let itemStr = item;
-            Object.keys(safeParams).forEach((param) => {
-                const replacement = String(safeParams[param]);
+            for (let i = 0; i < paramKeys.length; i++) {
+                const param = paramKeys[i];
+                const replacement = String(params[param]);
                 itemStr = itemStr.split(`{${param}}`).join(replacement);
-            });
+            }
             return itemStr;
         });
     }
 
-    // Simple placeholder replacement
+    // Simple placeholder replacement with indexed loop to avoid callback overhead
     let msgStr = String(message);
-    Object.keys(safeParams).forEach((param) => {
-        const replacement = String(safeParams[param]);
+    for (let i = 0; i < paramKeys.length; i++) {
+        const param = paramKeys[i];
+        const replacement = String(params[param]);
         msgStr = msgStr.split(`{${param}}`).join(replacement);
-    });
+    }
 
     return msgStr;
 }

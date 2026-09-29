@@ -7,3 +7,7 @@
 ## 2026-03-31 - Regex Fast Path Overhead on Short Strings & Array Chaining in Loops
 **Learning:** In V8/JavaScript engines, evaluating regexes (e.g. `/^[\x00-\x7F]*$/`) on short strings (<10 chars) incurs setup overhead that is slower than a simple `charCodeAt` loop. Regex fast paths should check length threshold (`len > 10`) first. Additionally, multi-stage array transformations (`split(',').map().filter().Set()`) in hot aggregation loops cause excessive object allocations; single-pass `Set` iteration yields a ~35% speedup.
 **Action:** Use string length thresholds before executing regex fast paths, and prefer single-pass `for` loops over chained array helper allocations in high-frequency aggregation routines.
+
+## 2026-03-31 - Fast-Path and Closure Extraction in High-Frequency i18n Translation Utilities
+**Learning:** Defining helper function closures inside heavily used utility functions (such as `t()` translation calls executed on every DOM update, date header, and history log item) causes repeated function allocation overhead. Additionally, defaulting parameter objects (`params = {}`) and unconditionally running `Object.keys().forEach()` creates garbage collection pressure and array allocation on every call.
+**Action:** Extract internal lookup helper functions to module scope and short-circuit `t()` when `params` is empty to immediately return string/array translation results.
