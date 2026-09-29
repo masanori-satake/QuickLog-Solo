@@ -160,7 +160,7 @@
 
 ### 6.3. ドキュメント・アセット方針
 - **技術図解の画像化:** Mermaid 形式ではレンダリング結果が環境に依存したり、視覚的な一貫性が損なわれる可能性がある場合、静的な画像（`docs/images/` 配下）への差し替えを推奨します。これにより、オフライン環境や異なる Markdown ビューアでも安定した品質の図解を提供します。
-- **README バッジの優先順位:** ユーザー向け情報（Version -> License -> Privacy -> Manifest -> Web Store）を最優先とし、開発者/保守情報（Crowdin -> Audit -> pre-commit -> Test -> Deploy）を後続させることで、エンドユーザーへの配慮を視覚的に明示します。
+- **README バッジの優先順位:** ユーザー向け情報（Version -> License -> Privacy -> Manifest -> Web Store）を最優先とし、開発者/保守情報（Audit -> pre-commit -> Test -> Deploy）を後続させることで、エンドユーザーへの配慮を視覚的に明示します。
 
 ## 7. サブプロジェクト
 
