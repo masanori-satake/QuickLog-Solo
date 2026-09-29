@@ -184,19 +184,26 @@ export function generateReport(logs, options) {
  */
 function prepareReportItems(logs, options) {
     const { emoji, adjust } = options;
-    const filteredLogs = logs.filter(log => !log.isManualStop && !(log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK));
-    if (filteredLogs.length === 0) return [];
-
     const adjustMinutes = parseInt(adjust);
     const adjustIntervalMs = (adjustMinutes && !isNaN(adjustMinutes)) ? adjustMinutes * 60 * 1000 : 0;
 
-    let displayLogs = filteredLogs.map(log => ({
-        startTime: log.startTime,
-        endTime: log.endTime,
-        category: log.category === SYSTEM_CATEGORY_IDLE ? (options.idleText || t('idle-category-log')) :
-                  log.category === SYSTEM_CATEGORY_UNKNOWN ? t('category-unknown') : log.category,
-        memo: log.memo
-    }));
+    // Single-pass log filtering and display structure creation to avoid multi-stage array allocations
+    const displayLogs = [];
+    for (let i = 0; i < logs.length; i++) {
+        const log = logs[i];
+        if (log.isManualStop || (log.category || '').startsWith(SYSTEM_CATEGORY_PAGE_BREAK)) {
+            continue;
+        }
+        displayLogs.push({
+            startTime: log.startTime,
+            endTime: log.endTime,
+            category: log.category === SYSTEM_CATEGORY_IDLE ? (options.idleText || t('idle-category-log')) :
+                      log.category === SYSTEM_CATEGORY_UNKNOWN ? t('category-unknown') : log.category,
+            memo: log.memo
+        });
+    }
+
+    if (displayLogs.length === 0) return [];
 
     if (adjustIntervalMs > 0) {
         const allTimestamps = [];
@@ -344,17 +351,35 @@ function formatAsText(items, options, isTable) {
     const headerTime = options.headerTime || 'Time';
     const headerCategory = options.headerCategory || 'Category';
 
-    const maxTimeLen = Math.max(
-        endTime === 'show' ? 15 : 5,
-        isTable ? getVisualWidth(headerTime) : 5,
-        ...items.map(i => {
-            let len = getVisualWidth(i.start + (endTime === 'show' ? ` - ${i.end}` : ''));
-            if (duration === 'right' && i.durText) len += getVisualWidth(` (${i.durText})`);
-            return len;
-        }),
-        ...items.map(i => (duration === 'bottom' && i.durText) ? getVisualWidth(`(${i.durText})`) : 0)
-    );
-    const maxCatLen = Math.max(...items.map(i => getVisualWidth(i.category)), isTable ? getVisualWidth(headerCategory) : 8);
+    const isShowEndTime = endTime === 'show';
+    const isDurationRight = duration === 'right';
+    const isDurationBottom = duration === 'bottom';
+
+    // Single-pass column width calculation avoiding intermediate array allocations and spread operator stack overhead
+    let maxTimeLen = isShowEndTime ? 15 : 5;
+    if (isTable) {
+        const headerTimeWidth = getVisualWidth(headerTime);
+        if (headerTimeWidth > maxTimeLen) maxTimeLen = headerTimeWidth;
+    }
+
+    let maxCatLen = isTable ? Math.max(8, getVisualWidth(headerCategory)) : 8;
+
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        let timeLen = getVisualWidth(item.start + (isShowEndTime ? ` - ${item.end}` : ''));
+        if (isDurationRight && item.durText) {
+            timeLen += getVisualWidth(` (${item.durText})`);
+        }
+        if (timeLen > maxTimeLen) maxTimeLen = timeLen;
+
+        if (isDurationBottom && item.durText) {
+            const bottomLen = getVisualWidth(`(${item.durText})`);
+            if (bottomLen > maxTimeLen) maxTimeLen = bottomLen;
+        }
+
+        const catLen = getVisualWidth(item.category);
+        if (catLen > maxCatLen) maxCatLen = catLen;
+    }
 
     if (isTable) {
         const lineSep = '+' + '-'.repeat(maxTimeLen + 2) + '+' + '-'.repeat(maxCatLen + 2) + '+';
@@ -362,28 +387,32 @@ function formatAsText(items, options, isTable) {
         out += `| ${visualPadEnd(headerTime, maxTimeLen)} | ${visualPadEnd(headerCategory, maxCatLen)} |\n`;
         out += lineSep + '\n';
 
-        items.forEach(item => {
-            let timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
-            if (duration === 'right' && item.durText) timePart += ` (${item.durText})`;
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            let timePart = item.start + (isShowEndTime ? ` - ${item.end}` : '');
+            if (isDurationRight && item.durText) timePart += ` (${item.durText})`;
 
             out += `| ${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(item.category, maxCatLen)} |\n`;
-            if (duration === 'bottom' && item.durText) {
+            if (isDurationBottom && item.durText) {
                 out += `| ${visualPadEnd(`(${item.durText})`, maxTimeLen)} | ${visualPadEnd('', maxCatLen)} |\n`;
             }
             out += lineSep + '\n';
-        });
+        }
         return out.trim();
     } else {
-        return items.map(item => {
-            let timePart = item.start + (endTime === 'show' ? ` - ${item.end}` : '');
-            if (duration === 'right' && item.durText) timePart += ` (${item.durText})`;
+        const lines = new Array(items.length);
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            let timePart = item.start + (isShowEndTime ? ` - ${item.end}` : '');
+            if (isDurationRight && item.durText) timePart += ` (${item.durText})`;
 
             let line = `${visualPadEnd(timePart, maxTimeLen)} | ${visualPadEnd(item.category, maxCatLen)}`;
-            if (duration === 'bottom' && item.durText) {
+            if (isDurationBottom && item.durText) {
                 line += `\n${visualPadEnd(`(${item.durText})`, maxTimeLen)} | ${visualPadEnd('', maxCatLen)}`;
             }
-            return line;
-        }).join('\n');
+            lines[i] = line;
+        }
+        return lines.join('\n');
     }
 }
 
