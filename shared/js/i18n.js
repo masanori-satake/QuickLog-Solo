@@ -92,10 +92,14 @@ export function t(key, params = {}) {
     }
 
     // Fast path: if params is null/undefined/empty, skip Object.keys allocation and iteration
-    if (!params || typeof params !== 'object') return message;
+    if (!params || typeof params !== 'object') {
+        return Array.isArray(message) ? message.slice() : message;
+    }
 
     const paramKeys = Object.keys(params);
-    if (paramKeys.length === 0) return message;
+    if (paramKeys.length === 0) {
+        return Array.isArray(message) ? message.slice() : message;
+    }
 
     if (Array.isArray(message)) {
         return message.map((item) => {
