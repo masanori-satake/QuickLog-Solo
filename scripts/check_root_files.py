@@ -25,7 +25,6 @@ ALLOWED_ROOT_ITEMS = {
     "projects",
     "shared",
     "tests",
-    "crowdin.yml",
     "vite.config.js",
     "releases",
     "node_modules",
