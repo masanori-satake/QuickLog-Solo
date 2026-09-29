@@ -128,6 +128,30 @@ describe('pusher_sync.js', () => {
         expect(decrypted.settings).toEqual(settingsData);
     });
 
+    test('encryptPayload and decryptPayload throw error on invalid PIN/key or invalid structure', async () => {
+        const validData = { theme: 'light' };
+        const validPin = '123456';
+
+        // Invalid PIN/key on encrypt
+        await expect(encryptPayload(validData, null)).rejects.toThrow('Invalid PIN or secret key');
+        await expect(encryptPayload(validData, undefined)).rejects.toThrow('Invalid PIN or secret key');
+        await expect(encryptPayload(validData, {})).rejects.toThrow('Invalid PIN or secret key');
+
+        const encrypted = await encryptPayload(validData, validPin);
+
+        // Invalid PIN/key on decrypt
+        await expect(decryptPayload(encrypted, null)).rejects.toThrow('Invalid PIN or secret key');
+        await expect(decryptPayload(encrypted, undefined)).rejects.toThrow('Invalid PIN or secret key');
+        await expect(decryptPayload(encrypted, {})).rejects.toThrow('Invalid PIN or secret key');
+
+        // Invalid payload structures or non-string fields
+        await expect(decryptPayload(null, validPin)).rejects.toThrow('Invalid encrypted payload structure');
+        await expect(decryptPayload('string', validPin)).rejects.toThrow('Invalid encrypted payload structure');
+        await expect(decryptPayload({ data: 123, iv: encrypted.iv }, validPin)).rejects.toThrow('Invalid encrypted payload structure');
+        await expect(decryptPayload({ data: encrypted.data, iv: 456 }, validPin)).rejects.toThrow('Invalid encrypted payload structure');
+        await expect(decryptPayload({ data: encrypted.data, iv: encrypted.iv, salt: 789 }, validPin)).rejects.toThrow('Invalid encrypted payload structure');
+    });
+
     test('computeHmacSha256 generates correct signature matching RFC 4231 test vectors', async () => {
         // RFC 4231 Test Case 2:
         // Key = "Jefe" (4 bytes)

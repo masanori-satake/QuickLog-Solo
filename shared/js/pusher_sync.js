@@ -192,6 +192,9 @@ export function generateSecretKey() {
  * @returns {Promise<{salt: string, iv: string, data: string}>} Base64 salt, IV and encrypted data.
  */
 export async function encryptPayload(data, pinOrKey) {
+    if (pinOrKey === undefined || pinOrKey === null || (typeof pinOrKey !== 'string' && typeof pinOrKey !== 'number')) {
+        throw new Error('Invalid PIN or secret key');
+    }
     const cryptoObj = getCrypto();
     const payload = {
         createdAt: Date.now(),
@@ -237,8 +240,17 @@ export async function encryptPayload(data, pinOrKey) {
  * @returns {Promise<{createdAt: number, settings: any}>} Decrypted payload object with timestamp and settings.
  */
 export async function decryptPayload(encryptedObj, pinOrKey) {
-    if (!encryptedObj || !encryptedObj.data || !encryptedObj.iv) {
+    if (
+        !encryptedObj ||
+        typeof encryptedObj !== 'object' ||
+        typeof encryptedObj.data !== 'string' ||
+        typeof encryptedObj.iv !== 'string' ||
+        (encryptedObj.salt !== undefined && encryptedObj.salt !== null && typeof encryptedObj.salt !== 'string')
+    ) {
         throw new Error('Invalid encrypted payload structure');
+    }
+    if (pinOrKey === undefined || pinOrKey === null || (typeof pinOrKey !== 'string' && typeof pinOrKey !== 'number')) {
+        throw new Error('Invalid PIN or secret key');
     }
 
     const cryptoObj = getCrypto();
