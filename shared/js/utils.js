@@ -198,7 +198,9 @@ export function generateUUID() {
         }
         return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
     }
-    return 'uuid-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
+    return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
+        (c ^ ((Math.random() * 16) >> (c / 4))).toString(16)
+    );
 }
 
 /**
