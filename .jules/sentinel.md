@@ -24,3 +24,8 @@
 **Vulnerability:** `generate6DigitPin()` relied on `getCrypto()`, which returned `null` whenever `crypto.subtle` was undefined. In non-secure HTTP browsing contexts (where SubtleCrypto is omitted by browsers), this caused PIN generation to fall back to insecure `Math.random()`.
 **Learning:** WebCrypto `crypto.subtle` is restricted to secure origins (HTTPS/localhost), whereas `crypto.getRandomValues()` remains available in non-secure HTTP contexts. Requiring `.subtle` when only `.getRandomValues()` is needed unnecessarily downgrades CSPRNG security to PRNG.
 **Prevention:** Separate WebCrypto checks: query `crypto.getRandomValues()` directly on the `Crypto` instance (`globalThis.crypto || window.crypto || self.crypto || crypto`) without requiring `crypto.subtle` unless subtle operations (e.g., HMAC, key derivation) are actually needed.
+
+## 2026-05-25 - Guarding WebSocket Input Parsing Against Denial of Service (DoS)
+**Vulnerability:** Uncaught `JSON.parse` operations on raw WebSocket `event.data` and stringified `message.data` payloads in `fetchSettingsFromPusher()` caused listener exceptions, immediately closing the WebSocket connection upon receiving malformed or corrupted JSON frames.
+**Learning:** Network input parsed over WebSockets or event listeners must be individually wrapped in try-catch blocks and validated for type/structure before processing.
+**Prevention:** Wrap each parsing boundary (`JSON.parse(event.data)` and nested `JSON.parse(message.data)`) in isolated try-catch blocks to safely log and discard malformed frames without breaking active event loops or terminating long-lived WebSocket connections.

@@ -514,4 +514,65 @@ describe('pusher_sync.js', () => {
         const fetchedData = await fetchSettingsFromPusher(roomId, pin, config, 1000);
         expect(fetchedData.settings).toEqual(data2);
     });
+
+    test('fetchSettingsFromPusher gracefully handles malformed WebSocket JSON and event.data without breaking connection', async () => {
+        const config = {
+            appId: '100',
+            key: 'test_key',
+            secret: 'test_secret',
+            cluster: 'ap3',
+        };
+        const pin = '582914';
+        const roomId = 'sync-582914';
+        const validData = { settings: { theme: 'dark' } };
+        const encrypted = await encryptPayload(validData, pin);
+
+        class MockMalformedWebSocket {
+            constructor(url) {
+                this.url = url;
+                setTimeout(() => {
+                    if (this.onmessage) {
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'pusher:connection_established',
+                                data: '{}',
+                            }),
+                        });
+
+                        // Send completely invalid JSON string
+                        this.onmessage({ data: 'INVALID_JSON{{{[' });
+
+                        // Send primitive JSON values that pass JSON.parse but are not objects
+                        this.onmessage({ data: '12345' });
+                        this.onmessage({ data: 'true' });
+                        this.onmessage({ data: '"just a string"' });
+                        this.onmessage({ data: 'null' });
+
+                        // Send valid WebSocket JSON but malformed event.data string
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'sync-settings',
+                                data: 'CORRUPTED_JSON_STRING',
+                            }),
+                        });
+
+                        // Send valid WebSocket message after malformed messages
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'sync-settings',
+                                data: JSON.stringify({ payload: encrypted }),
+                            }),
+                        });
+                    }
+                }, 10);
+            }
+            send() {}
+            close() {}
+        }
+
+        globalThis.WebSocket = MockMalformedWebSocket;
+
+        const fetchedData = await fetchSettingsFromPusher(roomId, pin, config, 1000);
+        expect(fetchedData.settings).toEqual(validData);
+    });
 });
