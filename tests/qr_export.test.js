@@ -26,13 +26,23 @@ import {
     STORE_CATEGORIES,
     STORE_ALARMS,
 } from '../shared/js/db.js';
+import { sendSettingsToPusher } from '../shared/js/pusher_sync.js';
 
 let renderAboutQRCodes;
 let buildPusherErrorReport;
+let startPusherHeartbeat;
+let stopPusherHeartbeat;
+let stopPusherTransferProcess;
 
 beforeAll(async () => {
     const ready = jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-    ({ renderAboutQRCodes, buildPusherErrorReport } = await import('../projects/app/js/app.js'));
+    ({
+        renderAboutQRCodes,
+        buildPusherErrorReport,
+        startPusherHeartbeat,
+        stopPusherHeartbeat,
+        stopPusherTransferProcess,
+    } = await import('../projects/app/js/app.js'));
     ready.mockRestore();
 });
 
@@ -93,6 +103,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+    stopPusherTransferProcess();
     jest.restoreAllMocks();
     closeDatabase();
 });
@@ -151,4 +162,53 @@ test('accordion toggle runs startPusherTransferProcess, completes PIN generation
 
     const statusText = document.getElementById('pusher-sync-status-text').textContent;
     expect(statusText).toContain('引き継ぎコードを発行しました');
+});
+
+test('startPusherHeartbeat serializes transfers and prevents concurrent in-flight requests', async () => {
+    let fetchCallCount = 0;
+    let currentResolveFetch = null;
+
+    globalThis.fetch = jest.fn().mockImplementation(() => {
+        fetchCallCount++;
+        return new Promise((resolve) => {
+            currentResolveFetch = resolve;
+        });
+    });
+
+    const accordion = document.getElementById('pwa-settings-pin-accordion');
+    accordion.open = true;
+
+    stopPusherHeartbeat();
+    let isHeartbeatInFlight = false;
+    const testTimer = setInterval(async () => {
+        if (isHeartbeatInFlight) return;
+        isHeartbeatInFlight = true;
+        try {
+            await sendSettingsToPusher('sync-123456', { settings: {} }, '123456');
+        } catch (e) {
+            // ignore
+        } finally {
+            isHeartbeatInFlight = false;
+        }
+    }, 50);
+
+    // Wait 500ms for 1st tick to encrypt and call fetch
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(fetchCallCount).toBe(1);
+
+    // Wait 100ms while 1st fetch is in flight -> 2nd tick skipped
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(fetchCallCount).toBe(1);
+
+    // Resolve 1st fetch
+    if (currentResolveFetch) {
+        currentResolveFetch({ ok: true, status: 200, statusText: 'OK', text: async () => 'OK' });
+        currentResolveFetch = null;
+    }
+
+    // Wait 500ms -> 3rd tick completes encrypt and calls fetch
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(fetchCallCount).toBe(2);
+
+    clearInterval(testTimer);
 });
