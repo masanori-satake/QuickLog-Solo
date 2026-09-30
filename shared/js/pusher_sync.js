@@ -185,6 +185,20 @@ export function generateSecretKey() {
 }
 
 /**
+ * Generates a unique transfer ID for identifying a single transmission batch.
+ * @returns {string} Unique transfer ID string.
+ */
+export function generateTransferId() {
+    const cryptoObj = getCryptoObject();
+    if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
+        const arr = new Uint8Array(16);
+        cryptoObj.getRandomValues(arr);
+        return Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join('');
+    }
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+/**
  * Encrypts data using WebCrypto API (AES-GCM 256-bit) with PBKDF2 key derivation.
  * Adds `createdAt: Date.now()` timestamp to payload object before encryption.
  * @param {any} data - Object to encrypt.
@@ -372,6 +386,7 @@ export async function sendSettingsToPusher(
     const PUSHER_CHUNK_SIZE = 6000;
     const fullDataStr = encryptedPayload.data || '';
     const totalChunks = Math.ceil(fullDataStr.length / PUSHER_CHUNK_SIZE) || 1;
+    const transferId = generateTransferId();
 
     let lastResponse = null;
 
@@ -380,6 +395,7 @@ export async function sendSettingsToPusher(
         const eventDataObj = {
             chunkIndex: i,
             totalChunks,
+            transferId,
             payload: {
                 salt: encryptedPayload.salt,
                 iv: encryptedPayload.iv,
@@ -499,7 +515,8 @@ export function fetchSettingsFromPusher(
 
         let isResolved = false;
         let isProcessing = false;
-        const receivedChunks = {};
+        let currentTransferId = null;
+        let receivedChunks = {};
         let expectedTotalChunks = 1;
         let sharedSalt = null;
         let sharedIv = null;
@@ -526,7 +543,21 @@ export function fetchSettingsFromPusher(
                     const eventData = typeof message.data === 'string' ? JSON.parse(message.data) : message.data;
                     const chunkIndex = typeof eventData.chunkIndex === 'number' ? eventData.chunkIndex : 0;
                     const totalChunks = typeof eventData.totalChunks === 'number' ? eventData.totalChunks : 1;
+                    const transferId = eventData.transferId || null;
                     const payload = eventData.payload || eventData;
+
+                    // Boundary check for chunkIndex
+                    if (typeof chunkIndex !== 'number' || chunkIndex < 0 || chunkIndex >= totalChunks) {
+                        return;
+                    }
+
+                    // Clear receivedChunks buffer if a new transmission (transferId) is detected
+                    if (transferId && currentTransferId && transferId !== currentTransferId) {
+                        receivedChunks = {};
+                    }
+                    if (transferId) {
+                        currentTransferId = transferId;
+                    }
 
                     if (payload && payload.salt) sharedSalt = payload.salt;
                     if (payload && payload.iv) sharedIv = payload.iv;

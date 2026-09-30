@@ -349,6 +349,8 @@ describe('pusher_sync.js', () => {
             const parsedData = JSON.parse(parsedBody.data);
             expect(parsedData.totalChunks).toBeGreaterThan(1);
             expect(typeof parsedData.chunkIndex).toBe('number');
+            expect(typeof parsedData.transferId).toBe('string');
+            expect(parsedData.transferId.length).toBeGreaterThan(0);
             expect(parsedData.payload.data.length).toBeLessThanOrEqual(6000);
         }
     });
@@ -421,5 +423,95 @@ describe('pusher_sync.js', () => {
         expect(fetchedData.settings).toEqual(largeData);
         expect(statusLogs.some((s) => s.includes('データ受信中'))).toBe(true);
         expect(statusLogs[statusLogs.length - 1]).toBe('データ受信完了・復号中...');
+    });
+
+    test('fetchSettingsFromPusher ignores invalid chunkIndex and resets buffer on transferId change', async () => {
+        const config = {
+            appId: '100',
+            key: 'test_key',
+            secret: 'test_secret',
+            cluster: 'ap3',
+        };
+        const pin = '582914';
+        const roomId = 'sync-582914';
+
+        const data1 = { settings: { theme: 'light' } };
+        const data2 = { settings: { theme: 'dark' } };
+
+        const enc1 = await encryptPayload(data1, pin);
+        const enc2 = await encryptPayload(data2, pin);
+
+        class MockTransferIdWebSocket {
+            constructor(url) {
+                this.url = url;
+                setTimeout(() => {
+                    if (this.onmessage) {
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'pusher:connection_established',
+                                data: '{}',
+                            }),
+                        });
+
+                        // 1. Invalid chunkIndex (negative or out of bounds) -> should be ignored
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'sync-settings',
+                                data: JSON.stringify({
+                                    chunkIndex: -1,
+                                    totalChunks: 2,
+                                    transferId: 't1',
+                                    payload: { salt: enc1.salt, iv: enc1.iv, data: 'invalid' },
+                                }),
+                            }),
+                        });
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'sync-settings',
+                                data: JSON.stringify({
+                                    chunkIndex: 5,
+                                    totalChunks: 2,
+                                    transferId: 't1',
+                                    payload: { salt: enc1.salt, iv: enc1.iv, data: 'invalid' },
+                                }),
+                            }),
+                        });
+
+                        // 2. Partial transmission t1 (chunk 0)
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'sync-settings',
+                                data: JSON.stringify({
+                                    chunkIndex: 0,
+                                    totalChunks: 2,
+                                    transferId: 't1',
+                                    payload: { salt: enc1.salt, iv: enc1.iv, data: enc1.data.slice(0, 10) },
+                                }),
+                            }),
+                        });
+
+                        // 3. New transmission t2 (chunk 0 and 1 for enc2) -> should clear t1 buffer and complete t2
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'sync-settings',
+                                data: JSON.stringify({
+                                    chunkIndex: 0,
+                                    totalChunks: 1,
+                                    transferId: 't2',
+                                    payload: enc2,
+                                }),
+                            }),
+                        });
+                    }
+                }, 10);
+            }
+            send() {}
+            close() {}
+        }
+
+        globalThis.WebSocket = MockTransferIdWebSocket;
+
+        const fetchedData = await fetchSettingsFromPusher(roomId, pin, config, 1000);
+        expect(fetchedData.settings).toEqual(data2);
     });
 });
