@@ -515,7 +515,7 @@ export function fetchSettingsFromPusher(
 
         let isResolved = false;
         let isProcessing = false;
-        let receivedChunksByTransferId = {};
+        let receivedChunksByTransferId = Object.create(null);
 
         socket.onmessage = async (event) => {
             let message;
@@ -559,7 +559,19 @@ export function fetchSettingsFromPusher(
                     if (!eventData || typeof eventData !== 'object') return;
                     const chunkIndex = typeof eventData.chunkIndex === 'number' ? eventData.chunkIndex : 0;
                     const totalChunks = typeof eventData.totalChunks === 'number' ? eventData.totalChunks : 1;
-                    const transferId = eventData.transferId || 'default_transfer';
+                    const rawTransferId =
+                        typeof eventData.transferId === 'string' ? eventData.transferId : 'default_transfer';
+
+                    // Prototype pollution protection & format validation
+                    if (
+                        rawTransferId === '__proto__' ||
+                        rawTransferId === 'constructor' ||
+                        rawTransferId === 'prototype' ||
+                        !/^[a-zA-Z0-9_-]{1,64}$/.test(rawTransferId)
+                    ) {
+                        return;
+                    }
+                    const transferId = rawTransferId;
                     const payload = eventData.payload || eventData;
 
                     // Boundary check for chunkIndex
@@ -569,7 +581,7 @@ export function fetchSettingsFromPusher(
 
                     if (!receivedChunksByTransferId[transferId]) {
                         receivedChunksByTransferId[transferId] = {
-                            chunks: {},
+                            chunks: Object.create(null),
                             totalChunks,
                             salt: null,
                             iv: null,
