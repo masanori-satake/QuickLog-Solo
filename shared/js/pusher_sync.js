@@ -515,11 +515,7 @@ export function fetchSettingsFromPusher(
 
         let isResolved = false;
         let isProcessing = false;
-        let currentTransferId = null;
-        let receivedChunks = {};
-        let expectedTotalChunks = 1;
-        let sharedSalt = null;
-        let sharedIv = null;
+        let receivedChunksByTransferId = {};
 
         socket.onmessage = async (event) => {
             let message;
@@ -563,7 +559,7 @@ export function fetchSettingsFromPusher(
                     if (!eventData || typeof eventData !== 'object') return;
                     const chunkIndex = typeof eventData.chunkIndex === 'number' ? eventData.chunkIndex : 0;
                     const totalChunks = typeof eventData.totalChunks === 'number' ? eventData.totalChunks : 1;
-                    const transferId = eventData.transferId || null;
+                    const transferId = eventData.transferId || 'default_transfer';
                     const payload = eventData.payload || eventData;
 
                     // Boundary check for chunkIndex
@@ -571,23 +567,26 @@ export function fetchSettingsFromPusher(
                         return;
                     }
 
-                    // Clear receivedChunks buffer if a new transmission (transferId) is detected
-                    if (transferId && currentTransferId && transferId !== currentTransferId) {
-                        receivedChunks = {};
-                    }
-                    if (transferId) {
-                        currentTransferId = transferId;
+                    if (!receivedChunksByTransferId[transferId]) {
+                        receivedChunksByTransferId[transferId] = {
+                            chunks: {},
+                            totalChunks,
+                            salt: null,
+                            iv: null,
+                        };
                     }
 
-                    if (payload && payload.salt) sharedSalt = payload.salt;
-                    if (payload && payload.iv) sharedIv = payload.iv;
-                    expectedTotalChunks = totalChunks;
+                    const transferEntry = receivedChunksByTransferId[transferId];
+                    transferEntry.totalChunks = totalChunks;
+
+                    if (payload && payload.salt) transferEntry.salt = payload.salt;
+                    if (payload && payload.iv) transferEntry.iv = payload.iv;
 
                     if (payload && typeof payload.data === 'string') {
-                        receivedChunks[chunkIndex] = payload.data;
+                        transferEntry.chunks[chunkIndex] = payload.data;
                     }
 
-                    const receivedCount = Object.keys(receivedChunks).length;
+                    const receivedCount = Object.keys(transferEntry.chunks).length;
 
                     if (typeof onStatusChange === 'function') {
                         if (totalChunks > 1) {
@@ -597,31 +596,36 @@ export function fetchSettingsFromPusher(
                         }
                     }
 
-                    if (receivedCount >= expectedTotalChunks) {
+                    if (receivedCount >= transferEntry.totalChunks) {
                         isProcessing = true;
-                        clearTimeout(timeoutId);
 
                         if (typeof onStatusChange === 'function' && totalChunks > 1) {
                             onStatusChange('データ受信完了・復号中...');
                         }
 
                         let assembledData = '';
-                        for (let i = 0; i < expectedTotalChunks; i++) {
-                            assembledData += receivedChunks[i] || '';
+                        for (let i = 0; i < transferEntry.totalChunks; i++) {
+                            assembledData += transferEntry.chunks[i] || '';
                         }
 
                         const reassembledPayload = {
-                            salt: sharedSalt,
-                            iv: sharedIv,
+                            salt: transferEntry.salt,
+                            iv: transferEntry.iv,
                             data: assembledData,
                         };
 
-                        const decryptedPayload = await decryptPayload(reassembledPayload, pinOrKey);
-
-                        isResolved = true;
-                        isProcessing = false;
-                        socket.close();
-                        resolve(decryptedPayload);
+                        try {
+                            const decryptedPayload = await decryptPayload(reassembledPayload, pinOrKey);
+                            clearTimeout(timeoutId);
+                            isResolved = true;
+                            isProcessing = false;
+                            socket.close();
+                            resolve(decryptedPayload);
+                        } catch (decryptErr) {
+                            isProcessing = false;
+                            delete receivedChunksByTransferId[transferId];
+                            throw decryptErr;
+                        }
                     }
                 }
             } catch (err) {

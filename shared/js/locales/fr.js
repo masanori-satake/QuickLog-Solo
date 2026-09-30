@@ -582,4 +582,5 @@ export default {
     'pusher-error-offline': 'Votre PC est hors ligne (déconnecté d\'Internet). Veuillez vérifier votre connexion réseau et réessayer.',
     'pusher-error-network': 'Une erreur de communication ou un blocage par un logiciel de sécurité/proxy est survenu. Veuillez vérifier votre connexion Internet et vos paramètres de sécurité.',
     'pusher-error-timeout': 'La communication a expiré. Veuillez vérifier votre connexion et réessayer plus tard.',
+    'pusher-error-rate-limit': 'La limite de demandes de transmission (limite de débit/quota dépassé) est atteinte. Veuillez patienter un moment et réessayer.',
 };
