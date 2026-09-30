@@ -175,8 +175,6 @@ test('accordion toggle runs startPusherTransferProcess, completes PIN generation
     const eventData = JSON.parse(sentBody.data);
     expect(eventData.payload).toBeDefined();
 
-    // Verify that excluded keys (alwaysOnTop and pauseState) are not included in exported settings
-    const settingsRaw = await dbPut(STORE_SETTINGS, { key: 'dummy', value: 'check' }); // harmless db check
     expect(sentBody.channels[0]).toBe(`sync-${pinCode}`);
 });
 
