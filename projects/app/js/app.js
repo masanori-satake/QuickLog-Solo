@@ -2024,6 +2024,13 @@ export function resetPinSyncAttempts() {
     }
 }
 
+/**
+ * Fetches settings from Pusher using a PIN and imports them after timestamp validation.
+ * Accepts payloads up to three minutes old or one minute in the future for clock skew.
+ * Updates the PIN sync UI and counts failed attempts, stopping at the retry limit.
+ * @param {string} pinCode - Six-digit PIN used as the room identifier suffix and decryption key.
+ * @returns {Promise<void>} Resolves after the import succeeds or a failure is handled in the UI.
+ */
 async function handlePinSubmit(pinCode) {
     if (isPinSubmitting || pinFailedAttempts >= MAX_PIN_ATTEMPTS) return;
     isPinSubmitting = true;
