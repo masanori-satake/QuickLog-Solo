@@ -1746,6 +1746,8 @@ async function startPusherTransferProcess() {
         const settingsObj = {};
         const EXCLUDED_TRANSFER_SETTING_KEYS = new Set([
             SETTING_KEY_PWA_SUPPORT,
+            SETTING_KEY_ALWAYS_ON_TOP,
+            SETTING_KEY_PAUSE_STATE,
             'backupDirectoryHandle',
             'backupConfig',
             'clientId',
@@ -2072,7 +2074,7 @@ async function handlePinSubmit(pinCode) {
         setTimeout(async () => {
             closePinSyncModal();
             lastCategoryRenderData = null;
-            await syncState();
+            location.reload();
         }, 1200);
     } catch (err) {
         console.warn('PIN sync error:', err);
