@@ -1617,6 +1617,10 @@ export function stopPinCountdown() {
     }
 }
 
+export function getCurrentTransferGeneration() {
+    return currentTransferGeneration;
+}
+
 export function stopPusherTransferProcess() {
     currentTransferGeneration++;
     stopPusherHeartbeat();

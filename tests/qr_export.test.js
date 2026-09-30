@@ -33,6 +33,7 @@ let buildPusherErrorReport;
 let startPusherHeartbeat;
 let stopPusherHeartbeat;
 let stopPusherTransferProcess;
+let getCurrentTransferGeneration;
 
 beforeAll(async () => {
     const ready = jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
@@ -42,6 +43,7 @@ beforeAll(async () => {
         startPusherHeartbeat,
         stopPusherHeartbeat,
         stopPusherTransferProcess,
+        getCurrentTransferGeneration,
     } = await import('../projects/app/js/app.js'));
     ready.mockRestore();
 });
@@ -178,37 +180,26 @@ test('startPusherHeartbeat serializes transfers and prevents concurrent in-fligh
     const accordion = document.getElementById('pwa-settings-pin-accordion');
     accordion.open = true;
 
-    stopPusherHeartbeat();
-    let isHeartbeatInFlight = false;
-    const testTimer = setInterval(async () => {
-        if (isHeartbeatInFlight) return;
-        isHeartbeatInFlight = true;
-        try {
-            await sendSettingsToPusher('sync-123456', { settings: {} }, '123456');
-        } catch (e) {
-            // ignore
-        } finally {
-            isHeartbeatInFlight = false;
-        }
-    }, 50);
+    const gen = getCurrentTransferGeneration();
+    startPusherHeartbeat('sync-123456', { settings: {} }, '123456', gen);
 
-    // Wait 500ms for 1st tick to encrypt and call fetch
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // 1. Wait 3350ms (3000ms interval + 350ms PBKDF2 encryption) for 1st fetch call
+    await new Promise((resolve) => setTimeout(resolve, 3350));
     expect(fetchCallCount).toBe(1);
 
-    // Wait 100ms while 1st fetch is in flight -> 2nd tick skipped
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // 2. Wait 3000ms while 1st fetch is in flight -> 2nd tick skipped by in-flight guard
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     expect(fetchCallCount).toBe(1);
 
-    // Resolve 1st fetch
+    // 3. Resolve 1st fetch
     if (currentResolveFetch) {
         currentResolveFetch({ ok: true, status: 200, statusText: 'OK', text: async () => 'OK' });
         currentResolveFetch = null;
     }
 
-    // Wait 500ms -> 3rd tick completes encrypt and calls fetch
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // 4. Wait 3500ms for 3rd tick + encryption -> 2nd fetch issued
+    await new Promise((resolve) => setTimeout(resolve, 3500));
     expect(fetchCallCount).toBe(2);
 
-    clearInterval(testTimer);
-});
+    stopPusherTransferProcess();
+}, 15000);
