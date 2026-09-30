@@ -522,9 +522,15 @@ export function fetchSettingsFromPusher(
         let sharedIv = null;
 
         socket.onmessage = async (event) => {
+            let message;
             try {
-                const message = JSON.parse(event.data);
+                message = JSON.parse(event.data);
+            } catch (err) {
+                console.warn('QuickLog-Solo: Ignored malformed WebSocket message format:', err);
+                return;
+            }
 
+            try {
                 if (message.event === 'pusher:connection_established') {
                     if (typeof onStatusChange === 'function') {
                         onStatusChange('データ待機中...');
@@ -540,7 +546,19 @@ export function fetchSettingsFromPusher(
                 if (message.event === 'sync-settings') {
                     if (isResolved || isProcessing) return;
 
-                    const eventData = typeof message.data === 'string' ? JSON.parse(message.data) : message.data;
+                    let eventData;
+                    if (typeof message.data === 'string') {
+                        try {
+                            eventData = JSON.parse(message.data);
+                        } catch (err) {
+                            console.warn('QuickLog-Solo: Ignored malformed event.data string:', err);
+                            return;
+                        }
+                    } else {
+                        eventData = message.data;
+                    }
+
+                    if (!eventData || typeof eventData !== 'object') return;
                     const chunkIndex = typeof eventData.chunkIndex === 'number' ? eventData.chunkIndex : 0;
                     const totalChunks = typeof eventData.totalChunks === 'number' ? eventData.totalChunks : 1;
                     const transferId = eventData.transferId || null;
