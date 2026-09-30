@@ -304,6 +304,29 @@ export async function decryptPayload(encryptedObj, pinOrKey) {
     return parsed;
 }
 
+export const PIN_EXPIRATION_MS = 180000;
+export const MAX_FUTURE_SKEW_MS = 60000;
+
+/**
+ * Validates creation timestamp of received PIN settings sync payload.
+ * Enforces numeric validation, 3-min TTL age limit, and 1-min future clock skew limit.
+ * @param {number} createdAt - Payload creation timestamp.
+ * @param {number} [now=Date.now()] - Current timestamp.
+ * @returns {boolean} True if valid.
+ * @throws {Error} Throws Error('EXPIRED') if invalid, non-finite, or expired.
+ */
+export function validatePinSyncTimestamp(createdAt, now = Date.now()) {
+    if (
+        typeof createdAt !== 'number' ||
+        !Number.isFinite(createdAt) ||
+        now - createdAt > PIN_EXPIRATION_MS ||
+        createdAt - now > MAX_FUTURE_SKEW_MS
+    ) {
+        throw new Error('EXPIRED');
+    }
+    return true;
+}
+
 /**
  * Validates whether Pusher configuration has been injected.
  * @param {Object} [config=PUSHER_CONFIG] - Pusher configuration object.

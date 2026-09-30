@@ -41,6 +41,7 @@ import {
     encryptPayload,
     sendSettingsToPusher,
     fetchSettingsFromPusher,
+    validatePinSyncTimestamp,
 } from '../shared/js/pusher_sync.js';
 import {
     formatDuration,
@@ -2024,13 +2025,6 @@ export function resetPinSyncAttempts() {
     }
 }
 
-/**
- * Fetches settings from Pusher using a PIN and imports them after timestamp validation.
- * Accepts payloads up to three minutes old or one minute in the future for clock skew.
- * Updates the PIN sync UI and counts failed attempts, stopping at the retry limit.
- * @param {string} pinCode - Six-digit PIN used as the room identifier suffix and decryption key.
- * @returns {Promise<void>} Resolves after the import succeeds or a failure is handled in the UI.
- */
 async function handlePinSubmit(pinCode) {
     if (isPinSubmitting || pinFailedAttempts >= MAX_PIN_ATTEMPTS) return;
     isPinSubmitting = true;
@@ -2058,19 +2052,7 @@ async function handlePinSubmit(pinCode) {
         });
 
         // 3-Minute Timestamp & Structure Validation (180,000 ms TTL, max 1-min future clock skew)
-        const PIN_EXPIRATION_MS = 180000;
-        const MAX_FUTURE_SKEW_MS = 60000;
-        const now = Date.now();
-        const createdAt = payload?.createdAt;
-
-        if (
-            typeof createdAt !== 'number' ||
-            !Number.isFinite(createdAt) ||
-            now - createdAt > PIN_EXPIRATION_MS ||
-            createdAt - now > MAX_FUTURE_SKEW_MS
-        ) {
-            throw new Error('EXPIRED');
-        }
+        validatePinSyncTimestamp(payload?.createdAt);
 
         updateStatus('設定を適用中...');
         await dbImportTransferredSettings(payload.settings);

@@ -31,6 +31,9 @@ import {
     sendSettingsToPusher,
     fetchSettingsFromPusher,
     validatePusherConfig,
+    validatePinSyncTimestamp,
+    PIN_EXPIRATION_MS,
+    MAX_FUTURE_SKEW_MS,
 } from '../shared/js/pusher_sync.js';
 import { dbImportTransferredSettings, dbImportQRSettings, dbGetAll, STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS, setDatabaseName } from '../shared/js/db.js';
 import { t } from '../shared/js/i18n.js';
@@ -194,29 +197,28 @@ describe('pusher_sync.js', () => {
         await expect(decryptPayload(fakeEncryptedObj, validPin)).rejects.toThrow('Invalid decrypted payload structure');
     });
 
-    test('PIN sync timestamp validation rejects future timestamps and expired payloads', () => {
-        const PIN_EXPIRATION_MS = 180000;
-        const MAX_FUTURE_SKEW_MS = 60000;
-
-        const validateTimestamp = (payload, now) => {
-            const createdAt = payload?.createdAt;
-            if (
-                typeof createdAt !== 'number' ||
-                !Number.isFinite(createdAt) ||
-                now - createdAt > PIN_EXPIRATION_MS ||
-                createdAt - now > MAX_FUTURE_SKEW_MS
-            ) {
-                throw new Error('EXPIRED');
-            }
-            return true;
-        };
-
+    test('validatePinSyncTimestamp validates recent timestamps and rejects expired, future, non-finite, or invalid timestamps', () => {
         const now = 1000000;
-        expect(validateTimestamp({ createdAt: now - 1000 }, now)).toBe(true);
-        expect(() => validateTimestamp({ createdAt: now - 200000 }, now)).toThrow('EXPIRED');
-        expect(() => validateTimestamp({ createdAt: now + 100000 }, now)).toThrow('EXPIRED');
-        expect(() => validateTimestamp({ createdAt: 'invalid' }, now)).toThrow('EXPIRED');
-        expect(() => validateTimestamp({}, now)).toThrow('EXPIRED');
+
+        // Valid recent timestamps
+        expect(validatePinSyncTimestamp(now - 1000, now)).toBe(true);
+        expect(validatePinSyncTimestamp(now - PIN_EXPIRATION_MS, now)).toBe(true);
+        expect(validatePinSyncTimestamp(now + MAX_FUTURE_SKEW_MS, now)).toBe(true);
+
+        // Expired timestamp (> 180,000ms old)
+        expect(() => validatePinSyncTimestamp(now - PIN_EXPIRATION_MS - 1, now)).toThrow('EXPIRED');
+
+        // Future-dated timestamp exceeding skew (> 60,000ms ahead)
+        expect(() => validatePinSyncTimestamp(now + MAX_FUTURE_SKEW_MS + 1, now)).toThrow('EXPIRED');
+
+        // Non-finite and invalid values
+        expect(() => validatePinSyncTimestamp(Number.NaN, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp(Infinity, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp(-Infinity, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp('1000000', now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp(null, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp(undefined, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp({}, now)).toThrow('EXPIRED');
     });
 
     test('computeHmacSha256 generates correct signature matching RFC 4231 test vectors', async () => {
