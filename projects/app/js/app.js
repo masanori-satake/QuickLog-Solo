@@ -238,10 +238,18 @@ let reportSettings = {
 
 let pipWindow = null;
 
-const getEl = (id) => document.getElementById(id) || (pipWindow ? pipWindow.document.getElementById(id) : null);
+const getEl = (id) =>
+    (typeof document !== 'undefined' ? document.getElementById(id) : null) ||
+    (pipWindow && pipWindow.document ? pipWindow.document.getElementById(id) : null);
 const queryAll = (selector) => {
-    const mainNodes = Array.from(document.querySelectorAll(selector));
-    const pipNodes = pipWindow ? Array.from(pipWindow.document.querySelectorAll(selector)) : [];
+    const mainNodes =
+        typeof document !== 'undefined' && document.querySelectorAll
+            ? Array.from(document.querySelectorAll(selector))
+            : [];
+    const pipNodes =
+        pipWindow && pipWindow.document && pipWindow.document.querySelectorAll
+            ? Array.from(pipWindow.document.querySelectorAll(selector))
+            : [];
     return [...mainNodes, ...pipNodes];
 };
 const getBody = () =>
@@ -1609,6 +1617,10 @@ export function stopPinCountdown() {
     }
 }
 
+export function getCurrentTransferGeneration() {
+    return currentTransferGeneration;
+}
+
 export function stopPusherTransferProcess() {
     currentTransferGeneration++;
     stopPusherHeartbeat();
@@ -1637,18 +1649,23 @@ export function stopPusherTransferProcess() {
 
 export function startPusherHeartbeat(roomId, settingsData, pinCode, generation) {
     stopPusherHeartbeat();
+    let isHeartbeatInFlight = false;
     pusherHeartbeatTimer = setInterval(async () => {
         if (generation !== currentTransferGeneration) {
             stopPusherHeartbeat();
             return;
         }
+        if (isHeartbeatInFlight) return;
         const accordion = getEl('pwa-settings-pin-accordion') || getEl('pwa-settings-qr-accordion');
         const settingsPopup = getEl(ID_SETTINGS_POPUP);
         if ((!accordion || accordion.open) && (!settingsPopup || !settingsPopup.classList.contains('hidden'))) {
+            isHeartbeatInFlight = true;
             try {
                 await sendSettingsToPusher(roomId, settingsData, pinCode, undefined);
             } catch (e) {
                 console.warn('Pusher heartbeat transfer warning:', e);
+            } finally {
+                isHeartbeatInFlight = false;
             }
         } else {
             stopPusherTransferProcess();
@@ -1698,8 +1715,16 @@ async function startPusherTransferProcess() {
 
         const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
         const settingsObj = {};
+        const EXCLUDED_TRANSFER_SETTING_KEYS = new Set([
+            SETTING_KEY_PWA_SUPPORT,
+            'backupDirectoryHandle',
+            'backupConfig',
+            'clientId',
+            'deletedSyncIds',
+            'lastPulledSyncTime',
+        ]);
         for (const item of allSettingsRaw) {
-            if (item && item.key && item.key !== SETTING_KEY_PWA_SUPPORT) {
+            if (item && item.key && !EXCLUDED_TRANSFER_SETTING_KEYS.has(item.key)) {
                 settingsObj[item.key] = item.value;
             }
         }

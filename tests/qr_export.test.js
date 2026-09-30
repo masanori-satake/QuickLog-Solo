@@ -26,13 +26,25 @@ import {
     STORE_CATEGORIES,
     STORE_ALARMS,
 } from '../shared/js/db.js';
+import { sendSettingsToPusher } from '../shared/js/pusher_sync.js';
 
 let renderAboutQRCodes;
 let buildPusherErrorReport;
+let startPusherHeartbeat;
+let stopPusherHeartbeat;
+let stopPusherTransferProcess;
+let getCurrentTransferGeneration;
 
 beforeAll(async () => {
     const ready = jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-    ({ renderAboutQRCodes, buildPusherErrorReport } = await import('../projects/app/js/app.js'));
+    ({
+        renderAboutQRCodes,
+        buildPusherErrorReport,
+        startPusherHeartbeat,
+        stopPusherHeartbeat,
+        stopPusherTransferProcess,
+        getCurrentTransferGeneration,
+    } = await import('../projects/app/js/app.js'));
     ready.mockRestore();
 });
 
@@ -93,6 +105,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+    stopPusherTransferProcess();
     jest.restoreAllMocks();
     closeDatabase();
 });
@@ -152,3 +165,41 @@ test('accordion toggle runs startPusherTransferProcess, completes PIN generation
     const statusText = document.getElementById('pusher-sync-status-text').textContent;
     expect(statusText).toContain('引き継ぎコードを発行しました');
 });
+
+test('startPusherHeartbeat serializes transfers and prevents concurrent in-flight requests', async () => {
+    let fetchCallCount = 0;
+    let currentResolveFetch = null;
+
+    globalThis.fetch = jest.fn().mockImplementation(() => {
+        fetchCallCount++;
+        return new Promise((resolve) => {
+            currentResolveFetch = resolve;
+        });
+    });
+
+    const accordion = document.getElementById('pwa-settings-pin-accordion');
+    accordion.open = true;
+
+    const gen = getCurrentTransferGeneration();
+    startPusherHeartbeat('sync-123456', { settings: {} }, '123456', gen);
+
+    // 1. Wait 3350ms (3000ms interval + 350ms PBKDF2 encryption) for 1st fetch call
+    await new Promise((resolve) => setTimeout(resolve, 3350));
+    expect(fetchCallCount).toBe(1);
+
+    // 2. Wait 3000ms while 1st fetch is in flight -> 2nd tick skipped by in-flight guard
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    expect(fetchCallCount).toBe(1);
+
+    // 3. Resolve 1st fetch
+    if (currentResolveFetch) {
+        currentResolveFetch({ ok: true, status: 200, statusText: 'OK', text: async () => 'OK' });
+        currentResolveFetch = null;
+    }
+
+    // 4. Wait 3500ms for 3rd tick + encryption -> 2nd fetch issued
+    await new Promise((resolve) => setTimeout(resolve, 3500));
+    expect(fetchCallCount).toBe(2);
+
+    stopPusherTransferProcess();
+}, 15000);
