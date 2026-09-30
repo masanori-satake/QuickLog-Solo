@@ -1698,8 +1698,16 @@ async function startPusherTransferProcess() {
 
         const allSettingsRaw = await dbGetAll(STORE_SETTINGS);
         const settingsObj = {};
+        const EXCLUDED_TRANSFER_SETTING_KEYS = new Set([
+            SETTING_KEY_PWA_SUPPORT,
+            'backupDirectoryHandle',
+            'backupConfig',
+            'clientId',
+            'deletedSyncIds',
+            'lastPulledSyncTime',
+        ]);
         for (const item of allSettingsRaw) {
-            if (item && item.key && item.key !== SETTING_KEY_PWA_SUPPORT) {
+            if (item && item.key && !EXCLUDED_TRANSFER_SETTING_KEYS.has(item.key)) {
                 settingsObj[item.key] = item.value;
             }
         }

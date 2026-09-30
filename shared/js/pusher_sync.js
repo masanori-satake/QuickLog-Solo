@@ -369,67 +369,94 @@ export async function sendSettingsToPusher(
     const path = `/apps/${config.appId}/events`;
     const url = `https://api-${config.cluster}.pusher.com${path}`;
 
-    const payloadDataStr = JSON.stringify({ payload: encryptedPayload });
-    const payloadSizeBytes = new TextEncoder().encode(payloadDataStr).length;
+    const PUSHER_CHUNK_SIZE = 6000;
+    const fullDataStr = encryptedPayload.data || '';
+    const totalChunks = Math.ceil(fullDataStr.length / PUSHER_CHUNK_SIZE) || 1;
 
-    if (payloadSizeBytes > PUSHER_MAX_PAYLOAD_BYTES) {
-        throw new Error(
-            `Payload size (${payloadSizeBytes} bytes) exceeds Pusher event limit (${PUSHER_MAX_PAYLOAD_BYTES} bytes)`
-        );
-    }
+    let lastResponse = null;
 
-    const bodyObj = {
-        name: 'sync-settings',
-        channels: [roomId],
-        data: payloadDataStr,
-    };
-    const bodyStr = JSON.stringify(bodyObj);
+    for (let i = 0; i < totalChunks; i++) {
+        const chunkData = fullDataStr.slice(i * PUSHER_CHUNK_SIZE, (i + 1) * PUSHER_CHUNK_SIZE);
+        const eventDataObj = {
+            chunkIndex: i,
+            totalChunks,
+            payload: {
+                salt: encryptedPayload.salt,
+                iv: encryptedPayload.iv,
+                data: chunkData,
+            },
+        };
 
-    let lastError = null;
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        const queryParams = await generatePusherQueryString('POST', path, bodyStr, config);
-        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        const timerId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+        const payloadDataStr = JSON.stringify(eventDataObj);
+        const payloadSizeBytes = new TextEncoder().encode(payloadDataStr).length;
 
-        try {
-            const fetchOptions = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: bodyStr,
-            };
-            if (controller) {
-                fetchOptions.signal = controller.signal;
+        if (payloadSizeBytes > PUSHER_MAX_PAYLOAD_BYTES) {
+            throw new Error(
+                `Payload size (${payloadSizeBytes} bytes) exceeds Pusher event limit (${PUSHER_MAX_PAYLOAD_BYTES} bytes)`
+            );
+        }
+
+        const bodyObj = {
+            name: 'sync-settings',
+            channels: [roomId],
+            data: payloadDataStr,
+        };
+        const bodyStr = JSON.stringify(bodyObj);
+
+        let lastError = null;
+        let chunkSuccess = false;
+
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            const queryParams = await generatePusherQueryString('POST', path, bodyStr, config);
+            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const timerId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+
+            try {
+                const fetchOptions = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: bodyStr,
+                };
+                if (controller) {
+                    fetchOptions.signal = controller.signal;
+                }
+
+                const response = await fetch(`${url}?${queryParams}`, fetchOptions);
+                if (timerId) clearTimeout(timerId);
+
+                if (!response.ok) {
+                    const responseText = await response.text().catch(() => '');
+                    throw new Error(
+                        `Pusher API error: ${response.status} ${response.statusText}${responseText ? ` - ${responseText}` : ''}`
+                    );
+                }
+
+                lastResponse = response;
+                chunkSuccess = true;
+                break;
+            } catch (err) {
+                if (timerId) clearTimeout(timerId);
+                const isAbort = err && (err.name === 'AbortError' || err.message?.includes('aborted'));
+                if (isAbort) {
+                    lastError = new Error(`Communication timed out (${timeoutMs / 1000}s)`);
+                } else {
+                    lastError = err;
+                }
+
+                if (attempt < maxRetries) {
+                    await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+                }
             }
+        }
 
-            const response = await fetch(`${url}?${queryParams}`, fetchOptions);
-            if (timerId) clearTimeout(timerId);
-
-            if (!response.ok) {
-                const responseText = await response.text().catch(() => '');
-                throw new Error(
-                    `Pusher API error: ${response.status} ${response.statusText}${responseText ? ` - ${responseText}` : ''}`
-                );
-            }
-
-            return response;
-        } catch (err) {
-            if (timerId) clearTimeout(timerId);
-            const isAbort = err && (err.name === 'AbortError' || err.message?.includes('aborted'));
-            if (isAbort) {
-                lastError = new Error(`Communication timed out (${timeoutMs / 1000}s)`);
-            } else {
-                lastError = err;
-            }
-
-            if (attempt < maxRetries) {
-                await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
-            }
+        if (!chunkSuccess && lastError) {
+            throw lastError;
         }
     }
 
-    throw lastError;
+    return lastResponse;
 }
 
 /**
@@ -471,6 +498,11 @@ export function fetchSettingsFromPusher(
         }, timeoutMs);
 
         let isResolved = false;
+        let isProcessing = false;
+        const receivedChunks = {};
+        let expectedTotalChunks = 1;
+        let sharedSalt = null;
+        let sharedIv = null;
 
         socket.onmessage = async (event) => {
             try {
@@ -489,20 +521,61 @@ export function fetchSettingsFromPusher(
                 }
 
                 if (message.event === 'sync-settings') {
-                    clearTimeout(timeoutId);
-                    if (typeof onStatusChange === 'function') {
-                        onStatusChange('データ受信完了・復号中...');
-                    }
-                    const eventData = typeof message.data === 'string' ? JSON.parse(message.data) : message.data;
-                    const encryptedPayload = eventData.payload;
-                    const decryptedPayload = await decryptPayload(encryptedPayload, pinOrKey);
+                    if (isResolved || isProcessing) return;
 
-                    isResolved = true;
-                    socket.close();
-                    resolve(decryptedPayload);
+                    const eventData = typeof message.data === 'string' ? JSON.parse(message.data) : message.data;
+                    const chunkIndex = typeof eventData.chunkIndex === 'number' ? eventData.chunkIndex : 0;
+                    const totalChunks = typeof eventData.totalChunks === 'number' ? eventData.totalChunks : 1;
+                    const payload = eventData.payload || eventData;
+
+                    if (payload && payload.salt) sharedSalt = payload.salt;
+                    if (payload && payload.iv) sharedIv = payload.iv;
+                    expectedTotalChunks = totalChunks;
+
+                    if (payload && typeof payload.data === 'string') {
+                        receivedChunks[chunkIndex] = payload.data;
+                    }
+
+                    const receivedCount = Object.keys(receivedChunks).length;
+
+                    if (typeof onStatusChange === 'function') {
+                        if (totalChunks > 1) {
+                            onStatusChange(`データ受信中 (${receivedCount}/${totalChunks})...`);
+                        } else {
+                            onStatusChange('データ受信完了・復号中...');
+                        }
+                    }
+
+                    if (receivedCount >= expectedTotalChunks) {
+                        isProcessing = true;
+                        clearTimeout(timeoutId);
+
+                        if (typeof onStatusChange === 'function' && totalChunks > 1) {
+                            onStatusChange('データ受信完了・復号中...');
+                        }
+
+                        let assembledData = '';
+                        for (let i = 0; i < expectedTotalChunks; i++) {
+                            assembledData += receivedChunks[i] || '';
+                        }
+
+                        const reassembledPayload = {
+                            salt: sharedSalt,
+                            iv: sharedIv,
+                            data: assembledData,
+                        };
+
+                        const decryptedPayload = await decryptPayload(reassembledPayload, pinOrKey);
+
+                        isResolved = true;
+                        isProcessing = false;
+                        socket.close();
+                        resolve(decryptedPayload);
+                    }
                 }
             } catch (err) {
                 if (!isResolved) {
+                    isProcessing = false;
                     clearTimeout(timeoutId);
                     if (socket) socket.close();
                     reject(err);
