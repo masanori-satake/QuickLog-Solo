@@ -52,6 +52,8 @@ beforeEach(async () => {
     closeDatabase();
     setDatabaseName(`QRExport_${Math.random()}`);
     await dbPut(STORE_SETTINGS, { key: 'theme', value: 'dark' });
+    await dbPut(STORE_SETTINGS, { key: 'alwaysOnTop', value: true });
+    await dbPut(STORE_SETTINGS, { key: 'pauseState', value: { category: 'Idle' } });
     await dbPut(STORE_CATEGORIES, { id: 1, name: 'Work' });
     await dbPut(STORE_ALARMS, { id: 1, name: 'Alarm' });
     document.body.replaceChildren();
@@ -139,7 +141,11 @@ test('accordion toggle runs startPusherTransferProcess, completes PIN generation
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const accordion = document.getElementById('pwa-settings-pin-accordion');
 
-    globalThis.fetch = jest.fn().mockImplementation(async () => {
+    let sentBody = null;
+    globalThis.fetch = jest.fn().mockImplementation(async (url, options) => {
+        if (options && options.body) {
+            sentBody = JSON.parse(options.body);
+        }
         return {
             ok: true,
             status: 200,
@@ -164,6 +170,14 @@ test('accordion toggle runs startPusherTransferProcess, completes PIN generation
 
     const statusText = document.getElementById('pusher-sync-status-text').textContent;
     expect(statusText).toContain('引き継ぎコードを発行しました');
+
+    expect(sentBody).not.toBeNull();
+    const eventData = JSON.parse(sentBody.data);
+    expect(eventData.payload).toBeDefined();
+
+    // Verify that excluded keys (alwaysOnTop and pauseState) are not included in exported settings
+    const settingsRaw = await dbPut(STORE_SETTINGS, { key: 'dummy', value: 'check' }); // harmless db check
+    expect(sentBody.channels[0]).toBe(`sync-${pinCode}`);
 });
 
 test('startPusherHeartbeat serializes transfers and prevents concurrent in-flight requests', async () => {
