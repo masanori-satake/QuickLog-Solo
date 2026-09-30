@@ -41,6 +41,7 @@ import {
     encryptPayload,
     sendSettingsToPusher,
     fetchSettingsFromPusher,
+    validatePinSyncTimestamp,
 } from '../shared/js/pusher_sync.js';
 import {
     formatDuration,
@@ -2050,14 +2051,8 @@ async function handlePinSubmit(pinCode) {
             updateStatus(statusMsg);
         });
 
-        // 3-Minute Timestamp Validation (180,000 ms)
-        const PIN_EXPIRATION_MS = 180000;
-        const now = Date.now();
-        const createdAt = payload.createdAt || 0;
-
-        if (now - createdAt > PIN_EXPIRATION_MS) {
-            throw new Error('EXPIRED');
-        }
+        // 3-Minute Timestamp & Structure Validation (180,000 ms TTL, max 1-min future clock skew)
+        validatePinSyncTimestamp(payload?.createdAt);
 
         updateStatus('設定を適用中...');
         await dbImportTransferredSettings(payload.settings);

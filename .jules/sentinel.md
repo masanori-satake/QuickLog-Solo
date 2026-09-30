@@ -29,3 +29,8 @@
 **Vulnerability:** Uncaught `JSON.parse` operations on raw WebSocket `event.data` and stringified `message.data` payloads in `fetchSettingsFromPusher()` caused listener exceptions, immediately closing the WebSocket connection upon receiving malformed or corrupted JSON frames.
 **Learning:** Network input parsed over WebSockets or event listeners must be individually wrapped in try-catch blocks and validated for type/structure before processing.
 **Prevention:** Wrap each parsing boundary (`JSON.parse(event.data)` and nested `JSON.parse(message.data)`) in isolated try-catch blocks to safely log and discard malformed frames without breaking active event loops or terminating long-lived WebSocket connections.
+
+## 2026-06-01 - Bypassing PIN TTL Expiration via Future-Dated Timestamps
+**Vulnerability:** In PIN settings synchronization, timestamp expiration checked only `now - createdAt > PIN_EXPIRATION_MS`. Replaying or crafting a payload with a future timestamp (`createdAt > now`) caused `now - createdAt` to be negative, bypassing the 3-minute TTL expiration check completely.
+**Learning:** Time-based expiration checks that only evaluate lower bounds (`now - t > maxAge`) are vulnerable to clock manipulation or future-dated timestamps if upper bounds (`t - now > maxClockSkew`) are omitted.
+**Prevention:** Always validate time boundaries bi-directionally by checking both TTL upper limits and maximum allowed future clock skew (`maxClockSkew`), alongside strict numeric type validation on timestamps.

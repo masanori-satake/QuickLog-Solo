@@ -31,6 +31,9 @@ import {
     sendSettingsToPusher,
     fetchSettingsFromPusher,
     validatePusherConfig,
+    validatePinSyncTimestamp,
+    PIN_EXPIRATION_MS,
+    MAX_FUTURE_SKEW_MS,
 } from '../shared/js/pusher_sync.js';
 import { dbImportTransferredSettings, dbImportQRSettings, dbGetAll, STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS, setDatabaseName } from '../shared/js/db.js';
 import { t } from '../shared/js/i18n.js';
@@ -154,6 +157,68 @@ describe('pusher_sync.js', () => {
         await expect(decryptPayload({ data: 123, iv: encrypted.iv }, validPin)).rejects.toThrow('Invalid encrypted payload structure');
         await expect(decryptPayload({ data: encrypted.data, iv: 456 }, validPin)).rejects.toThrow('Invalid encrypted payload structure');
         await expect(decryptPayload({ data: encrypted.data, iv: encrypted.iv, salt: 789 }, validPin)).rejects.toThrow('Invalid encrypted payload structure');
+    });
+
+    test('decryptPayload throws error if decrypted JSON is non-object', async () => {
+        const validPin = '123456';
+        const cryptoObj = globalThis.crypto;
+        const encoder = new TextEncoder();
+
+        const salt = new Uint8Array(16);
+        const iv = new Uint8Array(12);
+        const baseKey = await cryptoObj.subtle.importKey('raw', encoder.encode(validPin), 'PBKDF2', false, ['deriveKey']);
+        const key = await cryptoObj.subtle.deriveKey(
+            { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+            baseKey,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+        const primitiveEncrypted = await cryptoObj.subtle.encrypt(
+            { name: 'AES-GCM', iv },
+            key,
+            encoder.encode(JSON.stringify('just a string'))
+        );
+
+        let saltBinary = '';
+        for (let i = 0; i < salt.length; i++) saltBinary += String.fromCharCode(salt[i]);
+        let ivBinary = '';
+        for (let i = 0; i < iv.length; i++) ivBinary += String.fromCharCode(iv[i]);
+        let dataBinary = '';
+        const dataArr = new Uint8Array(primitiveEncrypted);
+        for (let i = 0; i < dataArr.length; i++) dataBinary += String.fromCharCode(dataArr[i]);
+
+        const fakeEncryptedObj = {
+            salt: btoa(saltBinary),
+            iv: btoa(ivBinary),
+            data: btoa(dataBinary),
+        };
+
+        await expect(decryptPayload(fakeEncryptedObj, validPin)).rejects.toThrow('Invalid decrypted payload structure');
+    });
+
+    test('validatePinSyncTimestamp validates recent timestamps and rejects expired, future, non-finite, or invalid timestamps', () => {
+        const now = 1000000;
+
+        // Valid recent timestamps
+        expect(validatePinSyncTimestamp(now - 1000, now)).toBe(true);
+        expect(validatePinSyncTimestamp(now - PIN_EXPIRATION_MS, now)).toBe(true);
+        expect(validatePinSyncTimestamp(now + MAX_FUTURE_SKEW_MS, now)).toBe(true);
+
+        // Expired timestamp (> 180,000ms old)
+        expect(() => validatePinSyncTimestamp(now - PIN_EXPIRATION_MS - 1, now)).toThrow('EXPIRED');
+
+        // Future-dated timestamp exceeding skew (> 60,000ms ahead)
+        expect(() => validatePinSyncTimestamp(now + MAX_FUTURE_SKEW_MS + 1, now)).toThrow('EXPIRED');
+
+        // Non-finite and invalid values
+        expect(() => validatePinSyncTimestamp(Number.NaN, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp(Infinity, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp(-Infinity, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp('1000000', now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp(null, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp(undefined, now)).toThrow('EXPIRED');
+        expect(() => validatePinSyncTimestamp({}, now)).toThrow('EXPIRED');
     });
 
     test('computeHmacSha256 generates correct signature matching RFC 4231 test vectors', async () => {
