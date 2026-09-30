@@ -297,7 +297,11 @@ export async function decryptPayload(encryptedObj, pinOrKey) {
     const decryptedBuf = await cryptoObj.subtle.decrypt({ name: 'AES-GCM', iv }, key, dataBytes);
     const decoder = new TextDecoder();
     const jsonStr = decoder.decode(decryptedBuf);
-    return JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr);
+    if (!parsed || typeof parsed !== 'object') {
+        throw new Error('Invalid decrypted payload structure');
+    }
+    return parsed;
 }
 
 /**

@@ -156,6 +156,69 @@ describe('pusher_sync.js', () => {
         await expect(decryptPayload({ data: encrypted.data, iv: encrypted.iv, salt: 789 }, validPin)).rejects.toThrow('Invalid encrypted payload structure');
     });
 
+    test('decryptPayload throws error if decrypted JSON is non-object', async () => {
+        const validPin = '123456';
+        const cryptoObj = globalThis.crypto;
+        const encoder = new TextEncoder();
+
+        const salt = new Uint8Array(16);
+        const iv = new Uint8Array(12);
+        const baseKey = await cryptoObj.subtle.importKey('raw', encoder.encode(validPin), 'PBKDF2', false, ['deriveKey']);
+        const key = await cryptoObj.subtle.deriveKey(
+            { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+            baseKey,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+        const primitiveEncrypted = await cryptoObj.subtle.encrypt(
+            { name: 'AES-GCM', iv },
+            key,
+            encoder.encode(JSON.stringify('just a string'))
+        );
+
+        let saltBinary = '';
+        for (let i = 0; i < salt.length; i++) saltBinary += String.fromCharCode(salt[i]);
+        let ivBinary = '';
+        for (let i = 0; i < iv.length; i++) ivBinary += String.fromCharCode(iv[i]);
+        let dataBinary = '';
+        const dataArr = new Uint8Array(primitiveEncrypted);
+        for (let i = 0; i < dataArr.length; i++) dataBinary += String.fromCharCode(dataArr[i]);
+
+        const fakeEncryptedObj = {
+            salt: btoa(saltBinary),
+            iv: btoa(ivBinary),
+            data: btoa(dataBinary),
+        };
+
+        await expect(decryptPayload(fakeEncryptedObj, validPin)).rejects.toThrow('Invalid decrypted payload structure');
+    });
+
+    test('PIN sync timestamp validation rejects future timestamps and expired payloads', () => {
+        const PIN_EXPIRATION_MS = 180000;
+        const MAX_FUTURE_SKEW_MS = 60000;
+
+        const validateTimestamp = (payload, now) => {
+            const createdAt = payload?.createdAt;
+            if (
+                typeof createdAt !== 'number' ||
+                !Number.isFinite(createdAt) ||
+                now - createdAt > PIN_EXPIRATION_MS ||
+                createdAt - now > MAX_FUTURE_SKEW_MS
+            ) {
+                throw new Error('EXPIRED');
+            }
+            return true;
+        };
+
+        const now = 1000000;
+        expect(validateTimestamp({ createdAt: now - 1000 }, now)).toBe(true);
+        expect(() => validateTimestamp({ createdAt: now - 200000 }, now)).toThrow('EXPIRED');
+        expect(() => validateTimestamp({ createdAt: now + 100000 }, now)).toThrow('EXPIRED');
+        expect(() => validateTimestamp({ createdAt: 'invalid' }, now)).toThrow('EXPIRED');
+        expect(() => validateTimestamp({}, now)).toThrow('EXPIRED');
+    });
+
     test('computeHmacSha256 generates correct signature matching RFC 4231 test vectors', async () => {
         // RFC 4231 Test Case 2:
         // Key = "Jefe" (4 bytes)

@@ -2050,12 +2050,18 @@ async function handlePinSubmit(pinCode) {
             updateStatus(statusMsg);
         });
 
-        // 3-Minute Timestamp Validation (180,000 ms)
+        // 3-Minute Timestamp & Structure Validation (180,000 ms TTL, max 1-min future clock skew)
         const PIN_EXPIRATION_MS = 180000;
+        const MAX_FUTURE_SKEW_MS = 60000;
         const now = Date.now();
-        const createdAt = payload.createdAt || 0;
+        const createdAt = payload?.createdAt;
 
-        if (now - createdAt > PIN_EXPIRATION_MS) {
+        if (
+            typeof createdAt !== 'number' ||
+            !Number.isFinite(createdAt) ||
+            now - createdAt > PIN_EXPIRATION_MS ||
+            createdAt - now > MAX_FUTURE_SKEW_MS
+        ) {
             throw new Error('EXPIRED');
         }
 
