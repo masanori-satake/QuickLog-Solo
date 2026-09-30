@@ -206,8 +206,8 @@ export async function dbImportCategories(items, importMode) {
     });
 }
 
-/** Saves a validated QR payload atomically, preserving all stores on failure. */
-export async function dbImportQRSettings({ settings, categories, alarms, partInfo }, { signal } = {}) {
+/** Saves a validated transferred settings payload atomically, preserving all stores on failure. */
+export async function dbImportTransferredSettings({ settings, categories, alarms, partInfo }, { signal } = {}) {
     await openDatabase();
     signal?.throwIfAborted();
     return new Promise((resolve, reject) => {
@@ -264,6 +264,8 @@ export async function dbImportQRSettings({ settings, categories, alarms, partInf
         }
     });
 }
+
+export const dbImportQRSettings = dbImportTransferredSettings;
 
 export async function dbGetByName(storeName, name) {
     await openDatabase();

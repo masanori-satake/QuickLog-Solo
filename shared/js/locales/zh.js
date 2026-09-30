@@ -553,4 +553,5 @@ export default {
     'pusher-error-offline': '您的电脑处于离线状态（网络已断开）。请检查网络连接后重试。',
     'pusher-error-network': '发生通信错误或被安全软件/代理拦截。请检查您的互联网连接和安全设置。',
     'pusher-error-timeout': '通信超时。请检查您的网络连接并稍后重试。',
+    'pusher-error-rate-limit': '已达到传输请求限制（速率限制/超出配额）。请稍后再试。',
 };

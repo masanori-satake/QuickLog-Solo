@@ -578,4 +578,5 @@ export default {
     'pusher-error-offline': 'Seu PC está offline (desconectado da Internet). Verifique sua conexão de rede e tente novamente.',
     'pusher-error-network': 'Ocorreu um erro de comunicação ou bloqueio por software de segurança/proxy. Verifique sua conexão com a Internet e as configurações de segurança.',
     'pusher-error-timeout': 'A comunicação expirou. Verifique sua conexão e tente novamente mais tarde.',
+    'pusher-error-rate-limit': 'O limite de solicitações de transmissão (limite de taxa/cota excedida) foi atingido. Aguarde um momento e tente novamente.',
 };

@@ -578,4 +578,5 @@ export default {
     'pusher-error-offline': 'Su PC está fuera de línea (sin conexión a Internet). Compruebe su conexión de red e inténtelo de nuevo.',
     'pusher-error-network': 'Se produjo un error de comunicación o un bloqueo por software de seguridad/proxy. Compruebe su conexión a Internet y la configuración de seguridad.',
     'pusher-error-timeout': 'La comunicación ha agotado el tiempo de espera. Compruebe su conexión e inténtelo de nuevo más tarde.',
+    'pusher-error-rate-limit': 'Se alcanzó el límite de solicitudes de transmisión (límite de frecuencia/cuota excedida). Espere un momento e inténtelo de nuevo.',
 };

@@ -19,6 +19,7 @@ if (typeof globalThis.TextEncoder === 'undefined') {
     globalThis.TextDecoder = TextDecoder;
 }
 
+import 'fake-indexeddb/auto';
 import {
     md5,
     generate6DigitPin,
@@ -31,6 +32,9 @@ import {
     fetchSettingsFromPusher,
     validatePusherConfig,
 } from '../shared/js/pusher_sync.js';
+import { dbImportTransferredSettings, dbImportQRSettings, dbGetAll, STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS, setDatabaseName } from '../shared/js/db.js';
+import { t } from '../shared/js/i18n.js';
+import { buildPusherErrorReport } from '../projects/app/js/app.js';
 
 describe('pusher_sync.js', () => {
     let originalFetch;
@@ -574,5 +578,44 @@ describe('pusher_sync.js', () => {
 
         const fetchedData = await fetchSettingsFromPusher(roomId, pin, config, 1000);
         expect(fetchedData.settings).toEqual(validData);
+    });
+
+    test('buildPusherErrorReport generates rate limit guidance for 429 and 402 errors', () => {
+        const steps = [
+            { name: '1. 6桁PINコード生成', status: 'success', detail: 'OK' },
+            { name: '2. 設定データ取得', status: 'success', detail: 'OK' },
+            { name: '3. データ暗号化', status: 'success', detail: 'OK' },
+            { name: '4. Pusher通信送信', status: 'failed', detail: 'Pusher API error: 429 Too Many Requests' },
+        ];
+        const err429 = new Error('Pusher API error: 429 Too Many Requests');
+        const report429 = buildPusherErrorReport(steps, err429);
+
+        expect(report429).toContain('Pusher API error: 429 Too Many Requests');
+        expect(report429).toContain(t('pusher-error-rate-limit'));
+
+        const err402 = new Error('Pusher API error: 402 Over Quota');
+        const report402 = buildPusherErrorReport(steps, err402);
+        expect(report402).toContain(t('pusher-error-rate-limit'));
+    });
+
+    test('dbImportTransferredSettings imports data into IDB and dbImportQRSettings is an alias', async () => {
+        setDatabaseName(`TestTransferredSyncDB_${Date.now()}`);
+        expect(dbImportQRSettings).toBe(dbImportTransferredSettings);
+
+        const testPayload = {
+            settings: { theme: 'dark', font: 'Inter' },
+            categories: [{ id: 101, name: 'テストカテゴリ', color: 'primary', order: 0 }],
+            alarms: [{ id: 201, time: '10:00', enabled: true }],
+        };
+
+        await dbImportTransferredSettings(testPayload);
+
+        const settings = await dbGetAll(STORE_SETTINGS);
+        const categories = await dbGetAll(STORE_CATEGORIES);
+        const alarms = await dbGetAll(STORE_ALARMS);
+
+        expect(settings.some((s) => s.key === 'theme' && s.value === 'dark')).toBe(true);
+        expect(categories.some((c) => c.name === 'テストカテゴリ')).toBe(true);
+        expect(alarms.some((a) => a.id === 201)).toBe(true);
     });
 });

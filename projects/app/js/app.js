@@ -9,7 +9,7 @@ import {
     dbAdd,
     dbDelete,
     dbClear,
-    dbImportQRSettings,
+    dbImportTransferredSettings,
     dbGetLogsByTimeRange,
     LOG_CLEANUP_THRESHOLD_MS,
     setDatabaseName,
@@ -1581,6 +1581,16 @@ export function buildPusherErrorReport(steps, err) {
     const errorTitle = t('pusher-error-title');
     if (isOffline && isSendingFailure) {
         userGuide = `\n\n**${errorTitle}**\n${t('pusher-error-offline')}`;
+    } else if (
+        rawErrMsg &&
+        (rawErrMsg.includes('429') ||
+            rawErrMsg.includes('402') ||
+            rawErrMsg.toLowerCase().includes('rate limit') ||
+            rawErrMsg.toLowerCase().includes('quota') ||
+            rawErrMsg.includes('Too Many Requests') ||
+            rawErrMsg.includes('Over Quota'))
+    ) {
+        userGuide = `\n\n**${errorTitle}**\n${t('pusher-error-rate-limit')}`;
     } else if (rawErrMsg && (rawErrMsg.includes('Failed to fetch') || rawErrMsg.includes('NetworkError'))) {
         userGuide = `\n\n**${errorTitle}**\n${t('pusher-error-network')}`;
     } else if (
@@ -1650,6 +1660,7 @@ export function stopPusherTransferProcess() {
 export function startPusherHeartbeat(roomId, settingsData, pinCode, generation) {
     stopPusherHeartbeat();
     let isHeartbeatInFlight = false;
+    let consecutiveFailures = 0;
     pusherHeartbeatTimer = setInterval(async () => {
         if (generation !== currentTransferGeneration) {
             stopPusherHeartbeat();
@@ -1662,8 +1673,25 @@ export function startPusherHeartbeat(roomId, settingsData, pinCode, generation) 
             isHeartbeatInFlight = true;
             try {
                 await sendSettingsToPusher(roomId, settingsData, pinCode, undefined);
+                if (generation !== currentTransferGeneration) {
+                    return;
+                }
+                consecutiveFailures = 0;
             } catch (e) {
+                if (generation !== currentTransferGeneration) {
+                    return;
+                }
                 console.warn('Pusher heartbeat transfer warning:', e);
+                consecutiveFailures++;
+                if (consecutiveFailures >= 3) {
+                    const statusTextEl = getEl('pusher-sync-status-text');
+                    if (statusTextEl) {
+                        statusTextEl.textContent =
+                            '通信エラーが発生したため定期送信を停止しました。コードを再発行してください。';
+                        statusTextEl.style.color = '#d32f2f';
+                    }
+                    stopPusherHeartbeat();
+                }
             } finally {
                 isHeartbeatInFlight = false;
             }
@@ -2032,7 +2060,7 @@ async function handlePinSubmit(pinCode) {
         }
 
         updateStatus('設定を適用中...');
-        await dbImportQRSettings(payload.settings);
+        await dbImportTransferredSettings(payload.settings);
         broadcastSync();
 
         showToast('設定の同期が完了しました');
@@ -2063,6 +2091,18 @@ async function handlePinSubmit(pinCode) {
             showToast(expMsg);
             if (statusTextEl) {
                 statusTextEl.textContent = expMsg;
+                statusTextEl.style.color = '#d32f2f';
+            }
+        } else if (
+            err.message &&
+            (err.message.includes('timeout') ||
+                err.message.includes('timed out') ||
+                err.message.includes('タイムアウト'))
+        ) {
+            const timeoutMsg = `エラー: 接続がタイムアウトしました。通信環境を確認のうえ再度お試しください（残り試行回数: ${remainingAttempts}回）`;
+            showToast('通信がタイムアウトしました');
+            if (statusTextEl) {
+                statusTextEl.textContent = timeoutMsg;
                 statusTextEl.style.color = '#d32f2f';
             }
         } else {
