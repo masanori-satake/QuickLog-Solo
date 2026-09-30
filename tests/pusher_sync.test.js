@@ -542,6 +542,12 @@ describe('pusher_sync.js', () => {
                         // Send completely invalid JSON string
                         this.onmessage({ data: 'INVALID_JSON{{{[' });
 
+                        // Send primitive JSON values that pass JSON.parse but are not objects
+                        this.onmessage({ data: '12345' });
+                        this.onmessage({ data: 'true' });
+                        this.onmessage({ data: '"just a string"' });
+                        this.onmessage({ data: 'null' });
+
                         // Send valid WebSocket JSON but malformed event.data string
                         this.onmessage({
                             data: JSON.stringify({

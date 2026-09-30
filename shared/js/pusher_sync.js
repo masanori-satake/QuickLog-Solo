@@ -530,6 +530,8 @@ export function fetchSettingsFromPusher(
                 return;
             }
 
+            if (!message || typeof message !== 'object') return;
+
             try {
                 if (message.event === 'pusher:connection_established') {
                     if (typeof onStatusChange === 'function') {
