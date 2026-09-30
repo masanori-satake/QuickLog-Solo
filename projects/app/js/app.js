@@ -1673,8 +1673,14 @@ export function startPusherHeartbeat(roomId, settingsData, pinCode, generation) 
             isHeartbeatInFlight = true;
             try {
                 await sendSettingsToPusher(roomId, settingsData, pinCode, undefined);
+                if (generation !== currentTransferGeneration) {
+                    return;
+                }
                 consecutiveFailures = 0;
             } catch (e) {
+                if (generation !== currentTransferGeneration) {
+                    return;
+                }
                 console.warn('Pusher heartbeat transfer warning:', e);
                 consecutiveFailures++;
                 if (consecutiveFailures >= 3) {
