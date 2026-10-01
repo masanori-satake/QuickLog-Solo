@@ -1,4 +1,5 @@
 import { PUSHER_CONFIG } from './pusher_config.js';
+import { generateUUID } from './utils.js';
 
 function getCryptoObject() {
     if (typeof globalThis !== 'undefined' && globalThis.crypto) {
@@ -169,11 +170,13 @@ export function generate6DigitPin() {
         return String(pinNum % 1000000).padStart(6, '0');
     }
 
-    let pin = '';
-    for (let i = 0; i < 6; i++) {
-        pin += Math.floor(Math.random() * 10).toString();
+    const uuidHex = generateUUID().replace(/-/g, '');
+    let pinNum = parseInt(uuidHex.slice(0, 8), 16);
+    const maxValid = 4294000000;
+    if (pinNum >= maxValid) {
+        pinNum = pinNum % maxValid;
     }
-    return pin;
+    return String(pinNum % 1000000).padStart(6, '0');
 }
 
 /**
@@ -195,7 +198,7 @@ export function generateTransferId() {
         cryptoObj.getRandomValues(arr);
         return Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join('');
     }
-    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return generateUUID().replace(/-/g, '');
 }
 
 /**

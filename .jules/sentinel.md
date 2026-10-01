@@ -34,3 +34,8 @@
 **Vulnerability:** In PIN settings synchronization, timestamp expiration checked only `now - createdAt > PIN_EXPIRATION_MS`. Replaying or crafting a payload with a future timestamp (`createdAt > now`) caused `now - createdAt` to be negative, bypassing the 3-minute TTL expiration check completely.
 **Learning:** Time-based expiration checks that only evaluate lower bounds (`now - t > maxAge`) are vulnerable to clock manipulation or future-dated timestamps if upper bounds (`t - now > maxClockSkew`) are omitted.
 **Prevention:** Always validate time boundaries bi-directionally by checking both TTL upper limits and maximum allowed future clock skew (`maxClockSkew`), alongside strict numeric type validation on timestamps.
+
+## 2026-06-05 - Eliminating Weak PRNG Fallbacks in Transfer IDs and PIN Generation
+**Vulnerability:** In environments where `crypto.getRandomValues()` was absent, `generateTransferId()` and `generate6DigitPin()` in `shared/js/pusher_sync.js` fell back to `Math.random()`, producing predictable session transfer tokens and PIN codes susceptible to brute force or enumeration.
+**Learning:** Fallback execution paths in cryptographic utility functions can silently downgrade security to `Math.random()` PRNG if CSPRNG UUID generators are not referenced across all fallback branches.
+**Prevention:** Always enforce CSPRNG-backed fallback generators (such as `generateUUID()`) across secondary utility functions and eliminate `Math.random()` in security-sensitive token generation routines.

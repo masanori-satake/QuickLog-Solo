@@ -137,7 +137,7 @@ export default class GenericGifAnimation extends AnimationBase {
                 }
 
                 const frameCount = track.frameCount;
-                if (typeof frameCount !== 'number' || frameCount <= 0) {
+                if (typeof frameCount !== 'number' || frameCount <= 0 || frameCount > 500) {
                     throw new Error(`Invalid frameCount: ${frameCount}`);
                 }
 
