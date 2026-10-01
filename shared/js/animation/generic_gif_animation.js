@@ -105,6 +105,10 @@ export default class GenericGifAnimation extends AnimationBase {
                 return;
             }
 
+            if (record.blob.size && record.blob.size > 5242880) {
+                throw new Error(`GIF size (${record.blob.size} bytes) exceeds 5MB limit`);
+            }
+
             this.renderSpec = record.renderSpec || {
                 focusX: 0,
                 focusY: 0,
@@ -136,8 +140,15 @@ export default class GenericGifAnimation extends AnimationBase {
                     throw new Error('ImageDecoder selectedTrack is null or undefined.');
                 }
 
+                if (
+                    (track.displayWidth && track.displayWidth > 2048) ||
+                    (track.displayHeight && track.displayHeight > 2048)
+                ) {
+                    throw new Error(`GIF dimensions (${track.displayWidth}x${track.displayHeight}) exceed 2048x2048 limit`);
+                }
+
                 const frameCount = track.frameCount;
-                if (typeof frameCount !== 'number' || frameCount <= 0) {
+                if (typeof frameCount !== 'number' || frameCount <= 0 || frameCount > 500) {
                     throw new Error(`Invalid frameCount: ${frameCount}`);
                 }
 

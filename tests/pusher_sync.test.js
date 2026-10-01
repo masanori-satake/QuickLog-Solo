@@ -24,6 +24,7 @@ import {
     md5,
     generate6DigitPin,
     generateSecretKey,
+    generateTransferId,
     encryptPayload,
     decryptPayload,
     computeHmacSha256,
@@ -83,6 +84,29 @@ describe('pusher_sync.js', () => {
             expect(pin).toBe('345678');
         } finally {
             spy.mockRestore();
+        }
+    });
+
+    test('generateTransferId and generate6DigitPin use generateUUID fallback when getRandomValues is unavailable', () => {
+        const originalGetRandomValues = globalThis.crypto.getRandomValues;
+        try {
+            delete globalThis.crypto.getRandomValues;
+        } catch {
+            globalThis.crypto.getRandomValues = undefined;
+        }
+
+        try {
+            const transferId = generateTransferId();
+            expect(typeof transferId).toBe('string');
+            expect(transferId.length).toBe(32);
+            expect(/^[0-9a-f]{32}$/.test(transferId)).toBe(true);
+
+            const pin = generate6DigitPin();
+            expect(typeof pin).toBe('string');
+            expect(pin.length).toBe(6);
+            expect(/^\d{6}$/.test(pin)).toBe(true);
+        } finally {
+            globalThis.crypto.getRandomValues = originalGetRandomValues;
         }
     });
 
