@@ -1339,8 +1339,42 @@ function debouncedSaveCurrentChanges() {
     }, 400);
 }
 
-// Parse GIF frames using Native ImageDecoder
+// Check the logical screen dimensions before the decoder can allocate frame buffers.
+function validateGifHeader(buffer) {
+    const bytes = new Uint8Array(buffer);
+    if (
+        bytes.length < 10 ||
+        bytes[0] !== 0x47 ||
+        bytes[1] !== 0x49 ||
+        bytes[2] !== 0x46 ||
+        bytes[3] !== 0x38 ||
+        (bytes[4] !== 0x37 && bytes[4] !== 0x39) ||
+        bytes[5] !== 0x61
+    ) {
+        throw new Error('Invalid GIF header.');
+    }
+    const width = bytes[6] | (bytes[7] << 8);
+    const height = bytes[8] | (bytes[9] << 8);
+    if (!width || !height || width > 2048 || height > 2048) {
+        throw new Error('GIF dimensions exceed 2048x2048 limit or are invalid.');
+    }
+}
+
+function validateGifFrame(frame) {
+    if (
+        frame.codedWidth > 2048 ||
+        frame.codedHeight > 2048 ||
+        frame.displayWidth > 2048 ||
+        frame.displayHeight > 2048
+    ) {
+        throw new Error('GIF dimensions exceed 2048x2048 limit.');
+    }
+}
+
+// Parse GIF frames using Native ImageDecoder. Keep the existing state on failure.
 async function parseGif(blob) {
+    let decoder;
+    const parsedFrames = [];
     try {
         if (blob.size && blob.size > 5242880) {
             throw new Error('GIF file size exceeds 5MB limit.');
@@ -1348,51 +1382,50 @@ async function parseGif(blob) {
 
         if (typeof ImageDecoder === 'undefined') {
             showAlert(state.getMsg('alert-invalid-qlanim') + ' (ImageDecoder API is not supported.)');
-            return;
+            return false;
         }
 
         const buffer = await blob.arrayBuffer();
-        const decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
+        validateGifHeader(buffer);
+        decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
 
         await decoder.tracks.ready;
         const track = decoder.tracks.selectedTrack;
         if (!track) throw new Error('Selected track is null.');
 
-        if ((track.displayWidth && track.displayWidth > 2048) || (track.displayHeight && track.displayHeight > 2048)) {
-            throw new Error('GIF dimensions exceed 2048x2048 limit.');
-        }
-
         const frameCount = track.frameCount;
         if (frameCount <= 0 || frameCount > 500) throw new Error('Invalid frame count (max 500 frames).');
 
         let accumulatedDuration = 0;
-        const parsedFrames = [];
-
+        let width;
+        let height;
         for (let i = 0; i < frameCount; i++) {
             const result = await decoder.decode({ frameIndex: i });
             const videoFrame = result.image;
-            const bitmap = await createImageBitmap(videoFrame);
-
-            if (i === 0) {
-                state.gifWidth = videoFrame.codedWidth;
-                state.gifHeight = videoFrame.codedHeight;
-                // If focusX and focusY are zero, default to center of the GIF
-                if (state.focusX === 0 && state.focusY === 0) {
-                    state.focusX = state.gifWidth / 2;
-                    state.focusY = state.gifHeight / 2;
+            try {
+                validateGifFrame(videoFrame);
+                const bitmap = await createImageBitmap(videoFrame);
+                if (i === 0) {
+                    width = videoFrame.codedWidth;
+                    height = videoFrame.codedHeight;
                 }
+                let duration = (videoFrame.duration || 100000) / 1000;
+                if (duration <= 0) duration = 100;
+                parsedFrames.push({ bitmap, duration });
+                accumulatedDuration += duration;
+            } finally {
+                videoFrame.close();
             }
-
-            videoFrame.close();
-
-            let duration = (videoFrame.duration || 100000) / 1000;
-            if (duration <= 0) duration = 100;
-
-            parsedFrames.push({ bitmap, duration });
-            accumulatedDuration += duration;
         }
 
+        state.gifFrames.forEach((frame) => frame.bitmap.close());
         state.gifFrames = parsedFrames;
+        state.gifWidth = width;
+        state.gifHeight = height;
+        if (state.focusX === 0 && state.focusY === 0) {
+            state.focusX = width / 2;
+            state.focusY = height / 2;
+        }
         state.totalDuration = accumulatedDuration;
 
         // Update info UI
@@ -1403,9 +1436,14 @@ async function parseGif(blob) {
 
         updateMonitor();
         triggerRedraw();
+        return true;
     } catch (err) {
+        parsedFrames.forEach((frame) => frame.bitmap.close());
         console.error('GIF Parsing failed:', err);
         showAlert(state.getMsg('alert-invalid-qlanim') + ' (' + err.message + ')');
+        return false;
+    } finally {
+        decoder?.close();
     }
 }
 
@@ -1786,7 +1824,7 @@ function setupEventListeners() {
 
     elements.gifFileInput.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
-        if (file) {
+        if (file && (await parseGif(file))) {
             const meta = state.selectedId ? state.customAnimations[state.selectedId] : null;
             state.gifFileName = meta && meta.name ? `${meta.name}.gif` : file.name;
             state.gifBlob = file;
@@ -1794,7 +1832,11 @@ function setupEventListeners() {
             elements.dropZone.style.pointerEvents = 'none';
             elements.rawPreviewContainer.setAttribute('tabindex', '0');
             resetAnimationSettings();
-            await parseGif(file);
+            state.focusX = state.gifWidth / 2;
+            state.focusY = state.gifHeight / 2;
+            elements.gifFileNameSpan.textContent = state.gifFileName;
+            updateMonitor();
+            triggerRedraw();
             await saveCurrentChanges();
         }
     });
@@ -1833,6 +1875,7 @@ function setupEventListeners() {
                     showAlert('Please drop a valid .gif image file!');
                     return;
                 }
+                if (!(await parseGif(file))) return;
                 elements.dropZone.style.opacity = '0';
                 elements.dropZone.style.pointerEvents = 'none';
                 const meta = state.selectedId ? state.customAnimations[state.selectedId] : null;
@@ -1840,7 +1883,11 @@ function setupEventListeners() {
                 state.gifBlob = file;
                 elements.rawPreviewContainer.setAttribute('tabindex', '0');
                 resetAnimationSettings();
-                await parseGif(file);
+                state.focusX = state.gifWidth / 2;
+                state.focusY = state.gifHeight / 2;
+                elements.gifFileNameSpan.textContent = state.gifFileName;
+                updateMonitor();
+                triggerRedraw();
                 await saveCurrentChanges();
             } else {
                 // If there's an existing gif, make sure the overlay goes back to hidden
@@ -1985,45 +2032,34 @@ function setupEventListeners() {
      * @returns {Promise<boolean>} True if valid, false otherwise.
      */
     async function validateGifBlob(blob) {
+        let decoder;
         try {
             if (blob.size && blob.size > 5242880) return false;
 
             const buffer = await blob.arrayBuffer();
-            const uint8Array = new Uint8Array(buffer);
+            validateGifHeader(buffer);
 
-            // 1. Signature check
-            if (uint8Array.length < 6) return false;
-            if (uint8Array[0] !== 0x47 || uint8Array[1] !== 0x49 || uint8Array[2] !== 0x46) {
-                return false;
-            }
-            if (uint8Array[3] !== 0x38) return false;
-            if (uint8Array[4] !== 0x37 && uint8Array[4] !== 0x39) return false;
-            if (uint8Array[5] !== 0x61) return false;
-
-            // 2. Decoder check using native ImageDecoder if available
+            // Decoder check using native ImageDecoder if available
             if (typeof ImageDecoder !== 'undefined') {
-                const decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
+                decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
                 await decoder.tracks.ready;
                 const track = decoder.tracks.selectedTrack;
                 if (!track || track.frameCount <= 0 || track.frameCount > 500) {
                     return false;
                 }
-                if (
-                    (track.displayWidth && track.displayWidth > 2048) ||
-                    (track.displayHeight && track.displayHeight > 2048)
-                ) {
-                    return false;
-                }
                 const result = await decoder.decode({ frameIndex: 0 });
-                if (result && result.image) {
+                if (!result || !result.image) return false;
+                try {
+                    validateGifFrame(result.image);
+                } finally {
                     result.image.close();
-                } else {
-                    return false;
                 }
             }
             return true;
         } catch {
             return false;
+        } finally {
+            decoder?.close();
         }
     }
 

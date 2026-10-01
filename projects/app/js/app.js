@@ -3563,7 +3563,13 @@ async function importCustomAnimation(text) {
         throw new Error('Invalid image data format');
     }
 
-    const byteString = atob(payload.imageData.split(',')[1] || '');
+    const base64 = (payload.imageData.split(',')[1] || '').replace(/[\t\n\f\r ]/g, '');
+    const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
+    const decodedSize = Math.floor(((base64.length - padding) * 3) / 4);
+    if (decodedSize > 5242880) {
+        throw new Error('GIF file size exceeds 5MB limit');
+    }
+    const byteString = atob(base64);
     const mimeString = payload.imageData.split(',')[0].split(':')[1]?.split(';')[0] || 'image/gif';
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
