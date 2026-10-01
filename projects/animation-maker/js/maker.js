@@ -1342,6 +1342,10 @@ function debouncedSaveCurrentChanges() {
 // Parse GIF frames using Native ImageDecoder
 async function parseGif(blob) {
     try {
+        if (blob.size && blob.size > 5242880) {
+            throw new Error('GIF file size exceeds 5MB limit.');
+        }
+
         if (typeof ImageDecoder === 'undefined') {
             showAlert(state.getMsg('alert-invalid-qlanim') + ' (ImageDecoder API is not supported.)');
             return;
@@ -1354,8 +1358,12 @@ async function parseGif(blob) {
         const track = decoder.tracks.selectedTrack;
         if (!track) throw new Error('Selected track is null.');
 
+        if ((track.displayWidth && track.displayWidth > 2048) || (track.displayHeight && track.displayHeight > 2048)) {
+            throw new Error('GIF dimensions exceed 2048x2048 limit.');
+        }
+
         const frameCount = track.frameCount;
-        if (frameCount <= 0) throw new Error('Invalid frame count.');
+        if (frameCount <= 0 || frameCount > 500) throw new Error('Invalid frame count (max 500 frames).');
 
         let accumulatedDuration = 0;
         const parsedFrames = [];
@@ -1978,6 +1986,8 @@ function setupEventListeners() {
      */
     async function validateGifBlob(blob) {
         try {
+            if (blob.size && blob.size > 5242880) return false;
+
             const buffer = await blob.arrayBuffer();
             const uint8Array = new Uint8Array(buffer);
 
@@ -1995,7 +2005,13 @@ function setupEventListeners() {
                 const decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
                 await decoder.tracks.ready;
                 const track = decoder.tracks.selectedTrack;
-                if (!track || track.frameCount <= 0) {
+                if (!track || track.frameCount <= 0 || track.frameCount > 500) {
+                    return false;
+                }
+                if (
+                    (track.displayWidth && track.displayWidth > 2048) ||
+                    (track.displayHeight && track.displayHeight > 2048)
+                ) {
                     return false;
                 }
                 const result = await decoder.decode({ frameIndex: 0 });

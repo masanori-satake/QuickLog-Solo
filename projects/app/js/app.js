@@ -3572,6 +3572,10 @@ async function importCustomAnimation(text) {
     }
     const blob = new Blob([ab], { type: mimeString });
 
+    if (blob.size > 5242880) {
+        throw new Error('GIF file size exceeds 5MB limit');
+    }
+
     const safeRenderSpec = sanitizeRenderSpec(payload.renderSpec);
 
     const safeConfig = config && typeof config === 'object' ? config : { exclusionStrategy: 'freedom' };
