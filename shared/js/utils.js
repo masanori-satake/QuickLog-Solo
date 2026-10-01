@@ -198,9 +198,12 @@ export function generateUUID() {
         }
         return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
     }
-    return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
-        (c ^ ((Math.random() * 16) >> (c / 4))).toString(16)
-    );
+    let d = typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now();
+    return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) => {
+        const r = (d + (c ^ 0)) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c ^ (r >> (c / 4))).toString(16);
+    });
 }
 
 /**
