@@ -292,4 +292,96 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(toggle.checked).toBe(true);
         expect(detailsContainer.classList.contains('hidden')).toBe(false);
     });
+
+    test('checkPWAAlarms executes pause action for active task when alarm time triggers today', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { checkPWAAlarms, setIsAppInitializedForTesting } = await import('../projects/app/js/app.js');
+        const { dbGet, dbPut, dbAdd, dbClear, STORE_SETTINGS, STORE_ALARMS, STORE_LOGS, STORE_CATEGORIES } = await import('../shared/js/db.js');
+        await dbClear(STORE_SETTINGS);
+        await dbClear(STORE_ALARMS);
+        await dbClear(STORE_LOGS);
+        await dbClear(STORE_CATEGORIES);
+        setIsAppInitializedForTesting(true);
+
+        // Create a work category and an active task
+        await dbAdd(STORE_CATEGORIES, { name: 'Development', color: 'primary' });
+        const now = Date.now();
+        const d = new Date(now);
+        const hoursStr = String(d.getHours()).padStart(2, '0');
+        const minsStr = String(d.getMinutes()).padStart(2, '0');
+        const alarmTime = `${hoursStr}:${minsStr}`;
+
+        const activeLog = {
+            category: 'Development',
+            startTime: now - 300000,
+            endTime: null,
+            color: 'primary',
+        };
+        await dbAdd(STORE_LOGS, activeLog);
+
+        // Add a matching alarm with action "pause"
+        await dbAdd(STORE_ALARMS, {
+            id: 101,
+            enabled: true,
+            time: alarmTime,
+            type: 'daily',
+            action: 'pause',
+            message: 'Pause Test',
+        });
+
+        await checkPWAAlarms();
+
+        // Verify pauseState setting was saved and task is paused
+        const pauseState = await dbGet(STORE_SETTINGS, 'pauseState');
+        expect(pauseState).toBeDefined();
+        expect(pauseState.value).toBeDefined();
+        expect(pauseState.value.isPaused).toBe(true);
+        expect(pauseState.value.resumableCategory).toBe('Development');
+    });
+
+    test('checkPWAAlarms skips alarm execution on non-business days for daily_business alarms', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { checkPWAAlarms, setIsAppInitializedForTesting } = await import('../projects/app/js/app.js');
+        const { dbGet, dbPut, dbAdd, dbClear, STORE_SETTINGS, STORE_ALARMS, STORE_LOGS, STORE_CATEGORIES } = await import('../shared/js/db.js');
+        await dbClear(STORE_SETTINGS);
+        await dbClear(STORE_ALARMS);
+        await dbClear(STORE_LOGS);
+        await dbClear(STORE_CATEGORIES);
+        setIsAppInitializedForTesting(true);
+
+        await dbAdd(STORE_CATEGORIES, { name: 'Work', color: 'primary' });
+        const now = Date.now();
+        const d = new Date(now);
+        const hoursStr = String(d.getHours()).padStart(2, '0');
+        const minsStr = String(d.getMinutes()).padStart(2, '0');
+        const alarmTime = `${hoursStr}:${minsStr}`;
+
+        const activeLog = {
+            category: 'Work',
+            startTime: now - 300000,
+            endTime: null,
+            color: 'primary',
+        };
+        await dbAdd(STORE_LOGS, activeLog);
+
+        // Configure businessDays to exclude current day of week
+        const currentDay = d.getDay();
+        const nonMatchingBusinessDays = [0, 1, 2, 3, 4, 5, 6].filter((day) => day !== currentDay);
+        await dbPut(STORE_SETTINGS, { key: 'businessDays', value: nonMatchingBusinessDays });
+
+        await dbAdd(STORE_ALARMS, {
+            id: 102,
+            enabled: true,
+            time: alarmTime,
+            type: 'daily_business',
+            action: 'pause',
+            message: 'Business Skip Test',
+        });
+
+        await checkPWAAlarms();
+
+        // Since current day is not in businessDays, alarm action must not execute
+        const pauseState = await dbGet(STORE_SETTINGS, 'pauseState');
+        expect(pauseState).toBeUndefined();
+    });
 });

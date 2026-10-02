@@ -441,6 +441,10 @@ function onPipWindowClosed() {
     }
 }
 
+export function setIsAppInitializedForTesting(val) {
+    isAppInitialized = val;
+}
+
 export function isPWAMode() {
     return (
         typeof window !== 'undefined' &&
@@ -4368,10 +4372,11 @@ function claimPWAAlarmExecution(key) {
     return readBack === claimVal;
 }
 
-async function checkPWAAlarms() {
+export async function checkPWAAlarms() {
     if (!isAppInitialized) return;
     try {
         const state = await getCurrentAppState();
+        activeTask = state.activeTask;
         const alarms = state.alarms || [];
         const businessDays = state.businessDays || [1, 2, 3, 4, 5];
         const now = Date.now();
@@ -4381,9 +4386,6 @@ async function checkPWAAlarms() {
         // Look back up to 2 minutes or since last check
         const checkWindowMs = lastPWAAlarmCheckTime > 0 ? Math.min(now - lastPWAAlarmCheckTime, 120000) : 60000;
         lastPWAAlarmCheckTime = now;
-
-        // Start search for next alarm 7 days prior to capture candidate schedules shifted by holiday/business day rules
-        const searchStartTime = now - 7 * 24 * 60 * 60 * 1000;
 
         for (const alarm of alarms) {
             if (!alarm.enabled || !alarm.time) continue;
@@ -4395,13 +4397,13 @@ async function checkPWAAlarms() {
 
             if (alarmTimeMs <= now && now - alarmTimeMs <= checkWindowMs) {
                 const key = `${alarm.id}_${dateKey}_${alarm.time}`;
-                if (!executedPWAAlarms.has(key) && claimPWAAlarmExecution(key)) {
-                    // Check if target scheduled time lands on today
-                    const targetTime = calculateNextAlarmTime(alarm, businessDays, searchStartTime);
-                    if (targetTime) {
-                        const targetD = new Date(targetTime);
-                        const targetDateKey = `${targetD.getFullYear()}-${targetD.getMonth() + 1}-${targetD.getDate()}`;
-                        if (targetDateKey === dateKey) {
+                // Evaluate next alarm timestamp relative to 1ms before today's scheduled alarm time
+                const targetTime = calculateNextAlarmTime(alarm, businessDays, alarmToday.getTime() - 1);
+                if (targetTime) {
+                    const targetD = new Date(targetTime);
+                    const targetDateKey = `${targetD.getFullYear()}-${targetD.getMonth() + 1}-${targetD.getDate()}`;
+                    if (targetDateKey === dateKey) {
+                        if (!executedPWAAlarms.has(key) && claimPWAAlarmExecution(key)) {
                             executedPWAAlarms.add(key);
 
                             const runAlarmAction = async () => {
