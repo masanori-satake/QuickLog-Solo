@@ -5,6 +5,16 @@
 import { jest } from '@jest/globals';
 
 describe('PWA Improvements & Session Sync Fallback', () => {
+    const originalDescriptors = [
+        [navigator, 'clipboard'],
+        [document, 'execCommand'],
+        [window, 'documentPictureInPicture'],
+    ].map(([object, property]) => ({
+        object,
+        property,
+        descriptor: Object.getOwnPropertyDescriptor(object, property),
+    }));
+
     beforeEach(() => {
         localStorage.clear();
         delete globalThis.window.IS_PWA;
@@ -22,6 +32,13 @@ describe('PWA Improvements & Session Sync Fallback', () => {
 
     afterEach(() => {
         jest.restoreAllMocks();
+        for (const { object, property, descriptor } of originalDescriptors) {
+            if (descriptor) {
+                Object.defineProperty(object, property, descriptor);
+            } else {
+                delete object[property];
+            }
+        }
     });
 
     test('isPWAMode returns true when window.IS_PWA is true', async () => {
@@ -340,6 +357,51 @@ describe('PWA Improvements & Session Sync Fallback', () => {
 
         const result = await copyToClipboard('fail text');
         expect(result).toBe(false);
+    });
+
+    test.each([
+        ['success', true, true],
+        ['failure', false, false],
+        ['exception', new Error('Copy failed'), false],
+    ])('copyToClipboard cleans up and restores focus after execCommand %s', async (_, outcome, expected) => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+        const { copyToClipboard } = await import('../projects/app/js/app.js');
+        Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+        const previouslyFocusedElement = document.getElementById('advanced-editor-link');
+        previouslyFocusedElement.focus();
+        const focusSpy = jest.spyOn(previouslyFocusedElement, 'focus');
+        let selectedElement;
+        document.execCommand = jest.fn(() => {
+            selectedElement = document.activeElement;
+            if (outcome instanceof Error) throw outcome;
+            return outcome;
+        });
+
+        expect(await copyToClipboard('fallback text')).toBe(expected);
+        expect(document.execCommand).toHaveBeenCalledWith('copy');
+        expect(selectedElement.tagName).toBe('TEXTAREA');
+        expect(selectedElement.value).toBe('fallback text');
+        expect(document.querySelector('textarea')).toBeNull();
+        expect(document.activeElement).toBe(previouslyFocusedElement);
+        expect(focusSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('copyToClipboard does not restore focus to an element removed during copying', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { copyToClipboard } = await import('../projects/app/js/app.js');
+        Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+        const previouslyFocusedElement = document.getElementById('advanced-editor-link');
+        previouslyFocusedElement.focus();
+        const focusSpy = jest.spyOn(previouslyFocusedElement, 'focus');
+        document.execCommand = jest.fn(() => {
+            previouslyFocusedElement.remove();
+            return true;
+        });
+
+        expect(await copyToClipboard('fallback text')).toBe(true);
+        expect(document.querySelector('textarea')).toBeNull();
+        expect(focusSpy).not.toHaveBeenCalled();
     });
 
     test('copyToClipboard uses pipWindow navigator when pipWindow is open', async () => {
