@@ -710,8 +710,12 @@ export function calculateNextAlarmTime(alarm, businessDays, nowTs = Date.now()) 
         let current = new Date(nowTs);
         current.setHours(hours, minutes, 0, 0);
 
-        // Try next 400 days
-        for (let i = 0; i < 400; i++) {
+        // A past weekly candidate can still execute today after shifting up to 7 days forward.
+        const lookbackDays = alarm.type === 'weekly' && alarm.holidayAdjustment === 'next_business_day' ? 7 : 0;
+        current.setDate(current.getDate() - lookbackDays);
+
+        // Include adjusted past candidates, then try the next 400 days.
+        for (let i = -lookbackDays; i < 400; i++) {
             let matchesType = false;
             if (alarm.type === 'daily') {
                 matchesType = true;

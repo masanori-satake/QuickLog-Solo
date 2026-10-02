@@ -293,7 +293,12 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(detailsContainer.classList.contains('hidden')).toBe(false);
     });
 
-    test('checkPWAAlarms executes pause action for active task when alarm time triggers today', async () => {
+    test.each([
+        { id: 101, type: 'daily' },
+        { id: 103, type: 'weekly', daysOfWeek: [0], holidayAdjustment: 'next_business_day' },
+    ])('checkPWAAlarms executes $type pause action on its execution date', async (schedule) => {
+        // Monday at the alarm time, including Sunday's next_business_day adjustment.
+        jest.spyOn(Date, 'now').mockReturnValue(new Date(2024, 4, 20, 9).getTime());
         jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
         const { checkPWAAlarms, setIsAppInitializedForTesting } = await import('../projects/app/js/app.js');
         const { dbGet, dbPut, dbAdd, dbClear, STORE_SETTINGS, STORE_ALARMS, STORE_LOGS, STORE_CATEGORIES } = await import('../shared/js/db.js');
@@ -321,10 +326,9 @@ describe('PWA Improvements & Session Sync Fallback', () => {
 
         // Add a matching alarm with action "pause"
         await dbAdd(STORE_ALARMS, {
-            id: 101,
+            ...schedule,
             enabled: true,
             time: alarmTime,
-            type: 'daily',
             action: 'pause',
             message: 'Pause Test',
         });
