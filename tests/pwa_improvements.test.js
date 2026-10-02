@@ -292,4 +292,53 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(toggle.checked).toBe(true);
         expect(detailsContainer.classList.contains('hidden')).toBe(false);
     });
+
+    test('copyToClipboard uses navigator.clipboard.writeText when available and succeeds', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { copyToClipboard } = await import('../projects/app/js/app.js');
+
+        const writeTextSpy = jest.fn().mockResolvedValue(undefined);
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText: writeTextSpy },
+            configurable: true,
+        });
+
+        const result = await copyToClipboard('7:39');
+        expect(result).toBe(true);
+        expect(writeTextSpy).toHaveBeenCalledWith('7:39');
+    });
+
+    test('copyToClipboard falls back to execCommand when writeText rejects', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { copyToClipboard } = await import('../projects/app/js/app.js');
+
+        const writeTextSpy = jest.fn().mockRejectedValue(new DOMException('Document is not focused', 'NotAllowedError'));
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText: writeTextSpy },
+            configurable: true,
+        });
+
+        document.execCommand = jest.fn().mockReturnValue(true);
+
+        const result = await copyToClipboard('移動 7:39');
+        expect(result).toBe(true);
+        expect(writeTextSpy).toHaveBeenCalledWith('移動 7:39');
+        expect(document.execCommand).toHaveBeenCalledWith('copy');
+    });
+
+    test('copyToClipboard returns false when both writeText and execCommand fail', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { copyToClipboard } = await import('../projects/app/js/app.js');
+
+        const writeTextSpy = jest.fn().mockRejectedValue(new Error('Failed'));
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText: writeTextSpy },
+            configurable: true,
+        });
+
+        document.execCommand = jest.fn().mockReturnValue(false);
+
+        const result = await copyToClipboard('fail text');
+        expect(result).toBe(false);
+    });
 });
