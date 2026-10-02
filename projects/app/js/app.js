@@ -450,6 +450,57 @@ export function isPWAMode() {
     );
 }
 
+/**
+ * Copies plain text to the clipboard with fallbacks for Document Picture-in-Picture window context.
+ * @param {string} text
+ * @returns {Promise<boolean>} True if write succeeded, false otherwise.
+ */
+export async function copyToClipboard(text) {
+    const activeWin = pipWindow && !pipWindow.closed ? pipWindow : window;
+    const activeDoc = activeWin.document || document;
+
+    // 1. Try modern Clipboard API on active window navigator or global navigator
+    const targetNav = activeWin.navigator?.clipboard ? activeWin.navigator : navigator;
+    if (targetNav && targetNav.clipboard && targetNav.clipboard.writeText) {
+        try {
+            await targetNav.clipboard.writeText(text);
+            return true;
+        } catch (err) {
+            console.warn('Clipboard writeText failed, trying execCommand fallback:', err);
+        }
+    }
+
+    // 2. Fallback using execCommand('copy') in active document
+    try {
+        const previouslyFocusedElement = activeDoc.activeElement;
+        const textarea = activeDoc.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '-9999px';
+        textarea.style.opacity = '0';
+        try {
+            activeDoc.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+
+            const successful = activeDoc.execCommand('copy');
+            if (successful) {
+                return true;
+            }
+        } finally {
+            textarea.remove();
+            if (previouslyFocusedElement && activeDoc.contains(previouslyFocusedElement)) {
+                previouslyFocusedElement.focus();
+            }
+        }
+    } catch (fallbackErr) {
+        console.error('execCommand copy failed:', fallbackErr);
+    }
+
+    return false;
+}
+
 const FONTS = [
     {
         name: 'Roboto / Noto Sans JP',
@@ -1799,11 +1850,10 @@ async function startPusherTransferProcess() {
         if (copyPinBtn) {
             copyPinBtn.disabled = false;
             copyPinBtn.onclick = async () => {
-                try {
-                    await navigator.clipboard.writeText(pinCode);
+                const success = await copyToClipboard(pinCode);
+                if (success) {
                     showToast(t('toast-copied') || 'コピーしました！');
-                } catch (copyErr) {
-                    console.error('Failed to copy PIN code:', copyErr);
+                } else {
                     showToast(t('alert-error') || 'コピーに失敗しました');
                 }
             };
@@ -1870,11 +1920,10 @@ async function startPusherTransferProcess() {
 
             if (copyErrorBtn) {
                 copyErrorBtn.onclick = async () => {
-                    try {
-                        await navigator.clipboard.writeText(reportText);
+                    const success = await copyToClipboard(reportText);
+                    if (success) {
                         showToast(t('toast-copied') || 'コピーしました！');
-                    } catch (copyErr) {
-                        console.error('Failed to copy error report:', copyErr);
+                    } else {
                         showToast(t('alert-error') || 'コピーに失敗しました');
                     }
                 };
@@ -2671,10 +2720,14 @@ async function updateTagAggregationUI() {
         copyBtn.className = 'tag-copy-btn material-symbols-outlined';
         copyBtn.textContent = 'content_paste';
         copyBtn.title = t('btn-copy');
-        copyBtn.onclick = () => {
+        copyBtn.onclick = async () => {
             const text = durCell.textContent;
-            navigator.clipboard.writeText(text);
-            showToast(t('toast-copied'));
+            const success = await copyToClipboard(text);
+            if (success) {
+                showToast(t('toast-copied'));
+            } else {
+                showToast(t('alert-error') || 'コピーに失敗しました');
+            }
         };
         copyCell.appendChild(copyBtn);
         row.appendChild(copyCell);
@@ -3879,23 +3932,40 @@ function setupEventListeners() {
 
     getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', async () => {
         const text = getEl(ID_REPORT_PREVIEW).textContent;
+        let success;
         if (reportSettings.format === 'html') {
-            const htmlType = 'text/html';
-            const plainType = 'text/plain';
-            const blobHtml = new Blob([text], { type: htmlType });
-            const blobPlain = new Blob([text], { type: plainType });
-            const data = [
-                new ClipboardItem({
-                    [htmlType]: blobHtml,
-                    [plainType]: blobPlain,
-                }),
-            ];
-            await navigator.clipboard.write(data);
+            try {
+                const htmlType = 'text/html';
+                const plainType = 'text/plain';
+                const blobHtml = new Blob([text], { type: htmlType });
+                const blobPlain = new Blob([text], { type: plainType });
+                const data = [
+                    new ClipboardItem({
+                        [htmlType]: blobHtml,
+                        [plainType]: blobPlain,
+                    }),
+                ];
+                const activeWin = pipWindow && !pipWindow.closed ? pipWindow : window;
+                const targetNav = activeWin.navigator?.clipboard ? activeWin.navigator : navigator;
+                if (targetNav && targetNav.clipboard && targetNav.clipboard.write) {
+                    await targetNav.clipboard.write(data);
+                    success = true;
+                } else {
+                    success = await copyToClipboard(text);
+                }
+            } catch (err) {
+                console.warn('ClipboardItem write failed, trying text fallback:', err);
+                success = await copyToClipboard(text);
+            }
         } else {
-            await navigator.clipboard.writeText(text);
+            success = await copyToClipboard(text);
         }
 
-        showToast(t('toast-copied'));
+        if (success) {
+            showToast(t('toast-copied'));
+        } else {
+            showToast(t('alert-error') || 'コピーに失敗しました');
+        }
     });
 
     // Tabs
