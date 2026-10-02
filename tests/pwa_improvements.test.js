@@ -341,4 +341,36 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         const result = await copyToClipboard('fail text');
         expect(result).toBe(false);
     });
+
+    test.each([
+        ['success', true, false],
+        ['failure', false, false],
+        ['exception', undefined, false],
+        ['detached original element', true, true],
+    ])('copyToClipboard cleans up and restores attached focus after %s', async (_, result, removeOriginal) => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { copyToClipboard } = await import('../projects/app/js/app.js');
+        Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        const originalElement = document.getElementById('advanced-editor-link');
+        originalElement.focus();
+        const focusSpy = jest.spyOn(originalElement, 'focus');
+        let textarea;
+        document.execCommand = jest.fn(() => {
+            textarea = document.activeElement;
+            expect(textarea.tagName).toBe('TEXTAREA');
+            expect(textarea.value).toBe('copy text');
+            if (removeOriginal) originalElement.remove();
+            if (result === undefined) throw new Error('Copy failed');
+            return result;
+        });
+
+        expect(await copyToClipboard('copy text')).toBe(result === true);
+        expect(document.execCommand).toHaveBeenCalledWith('copy');
+        expect(textarea.isConnected).toBe(false);
+        expect(document.querySelector('textarea')).toBeNull();
+        expect(focusSpy).toHaveBeenCalledTimes(removeOriginal ? 0 : 1);
+        if (!removeOriginal) expect(document.activeElement).toBe(originalElement);
+    });
 });

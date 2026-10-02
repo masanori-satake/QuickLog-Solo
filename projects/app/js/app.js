@@ -478,14 +478,20 @@ export async function copyToClipboard(text) {
         textarea.style.left = '-9999px';
         textarea.style.top = '-9999px';
         textarea.style.opacity = '0';
-        activeDoc.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
+        const previousActiveElement = activeDoc.activeElement;
+        try {
+            activeDoc.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
 
-        const successful = activeDoc.execCommand('copy');
-        activeDoc.body.removeChild(textarea);
-        if (successful) {
-            return true;
+            if (activeDoc.execCommand('copy')) {
+                return true;
+            }
+        } finally {
+            textarea.remove();
+            if (previousActiveElement && activeDoc.contains(previousActiveElement)) {
+                previousActiveElement.focus();
+            }
         }
     } catch (fallbackErr) {
         console.error('execCommand copy failed:', fallbackErr);
