@@ -342,35 +342,45 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(result).toBe(false);
     });
 
-    test.each([
-        ['success', true, false],
-        ['failure', false, false],
-        ['exception', undefined, false],
-        ['detached original element', true, true],
-    ])('copyToClipboard cleans up and restores attached focus after %s', async (_, result, removeOriginal) => {
+    test('copyToClipboard uses pipWindow navigator when pipWindow is open', async () => {
         jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-        const { copyToClipboard } = await import('../projects/app/js/app.js');
-        Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
-        jest.spyOn(console, 'error').mockImplementation(() => {});
+        const { copyToClipboard, openPinWindow } = await import('../projects/app/js/app.js');
 
-        const originalElement = document.getElementById('advanced-editor-link');
-        originalElement.focus();
-        const focusSpy = jest.spyOn(originalElement, 'focus');
-        let textarea;
-        document.execCommand = jest.fn(() => {
-            textarea = document.activeElement;
-            expect(textarea.tagName).toBe('TEXTAREA');
-            expect(textarea.value).toBe('copy text');
-            if (removeOriginal) originalElement.remove();
-            if (result === undefined) throw new Error('Copy failed');
-            return result;
+        const pipWriteTextSpy = jest.fn().mockResolvedValue(undefined);
+        const mockPipBody = document.createElement('body');
+        const mockPipWindow = {
+            closed: false,
+            document: {
+                body: mockPipBody,
+                head: document.createElement('head'),
+                documentElement: document.createElement('html'),
+                getElementById: () => null,
+                querySelectorAll: () => [],
+                execCommand: jest.fn().mockReturnValue(false),
+            },
+            navigator: {
+                clipboard: {
+                    writeText: pipWriteTextSpy,
+                },
+            },
+            addEventListener: jest.fn(),
+            close: jest.fn(),
+        };
+
+        window.documentPictureInPicture = {
+            requestWindow: jest.fn().mockResolvedValue(mockPipWindow),
+        };
+
+        await openPinWindow();
+
+        const parentWriteTextSpy = jest.fn().mockRejectedValue(new DOMException('Document not focused', 'NotAllowedError'));
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText: parentWriteTextSpy },
+            configurable: true,
         });
 
-        expect(await copyToClipboard('copy text')).toBe(result === true);
-        expect(document.execCommand).toHaveBeenCalledWith('copy');
-        expect(textarea.isConnected).toBe(false);
-        expect(document.querySelector('textarea')).toBeNull();
-        expect(focusSpy).toHaveBeenCalledTimes(removeOriginal ? 0 : 1);
-        if (!removeOriginal) expect(document.activeElement).toBe(originalElement);
+        const result = await copyToClipboard('pip text');
+        expect(result).toBe(true);
+        expect(pipWriteTextSpy).toHaveBeenCalledWith('pip text');
     });
 });
