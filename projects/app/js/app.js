@@ -2675,10 +2675,15 @@ async function updateTagAggregationUI() {
         copyBtn.className = 'tag-copy-btn material-symbols-outlined';
         copyBtn.textContent = 'content_paste';
         copyBtn.title = t('btn-copy');
-        copyBtn.onclick = () => {
-            const text = durCell.textContent;
-            navigator.clipboard.writeText(text);
-            showToast(t('toast-copied'));
+        copyBtn.onclick = async () => {
+            try {
+                const text = durCell.textContent;
+                await navigator.clipboard.writeText(text);
+                showToast(t('toast-copied'));
+            } catch (copyErr) {
+                console.error('Failed to copy tag duration:', copyErr);
+                showToast(t('alert-error'));
+            }
         };
         copyCell.appendChild(copyBtn);
         row.appendChild(copyCell);
@@ -3882,24 +3887,29 @@ function setupEventListeners() {
     });
 
     getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', async () => {
-        const text = getEl(ID_REPORT_PREVIEW).textContent;
-        if (reportSettings.format === 'html') {
-            const htmlType = 'text/html';
-            const plainType = 'text/plain';
-            const blobHtml = new Blob([text], { type: htmlType });
-            const blobPlain = new Blob([text], { type: plainType });
-            const data = [
-                new ClipboardItem({
-                    [htmlType]: blobHtml,
-                    [plainType]: blobPlain,
-                }),
-            ];
-            await navigator.clipboard.write(data);
-        } else {
-            await navigator.clipboard.writeText(text);
-        }
+        try {
+            const text = getEl(ID_REPORT_PREVIEW).textContent;
+            if (reportSettings.format === 'html') {
+                const htmlType = 'text/html';
+                const plainType = 'text/plain';
+                const blobHtml = new Blob([text], { type: htmlType });
+                const blobPlain = new Blob([text], { type: plainType });
+                const data = [
+                    new ClipboardItem({
+                        [htmlType]: blobHtml,
+                        [plainType]: blobPlain,
+                    }),
+                ];
+                await navigator.clipboard.write(data);
+            } else {
+                await navigator.clipboard.writeText(text);
+            }
 
-        showToast(t('toast-copied'));
+            showToast(t('toast-copied'));
+        } catch (copyErr) {
+            console.error('Failed to copy report:', copyErr);
+            showToast(t('alert-error'));
+        }
     });
 
     // Tabs
