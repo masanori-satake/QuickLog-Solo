@@ -1,6 +1,6 @@
 {
   "name": "quicklog-solo",
-  "version": "1.43.6",
+  "version": "1.43.7",
   "description": "「1秒で記録、1秒で集計、1秒で安心」をコンセプトにした、ミニマリスト向けサイドパネル作業メモツールです。",
   "main": "projects/app/js/app.js",
   "directories": {
@@ -31,6 +31,9 @@
     "url": "https://github.com/masanori-satake/QuickLog-Solo/issues"
   },
   "homepage": "https://github.com/masanori-satake/QuickLog-Solo#readme",
+  "overrides": {
+    "braces": "npm:picomatch@^2.3.1"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.2.0",

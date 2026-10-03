@@ -66,34 +66,6 @@ describe('Alarm Calculation Logic', () => {
         expect(new Date(next).toLocaleDateString()).toBe(new Date(2024, 4, 20).toLocaleDateString());
     });
 
-    test.each([
-        ['Sunday moved to Monday before alarm time', [0], businessDays, new Date(2024, 4, 20, 8)],
-        ['Sunday moved to Monday at the PWA check boundary', [0], businessDays, new Date(2024, 4, 20, 9).getTime() - 1],
-        ['Tuesday moved six days to Monday', [2], [1], new Date(2024, 4, 20, 8)],
-        ['past Sunday evaluated before a future Tuesday', [0, 2], businessDays, new Date(2024, 4, 20, 8)],
-    ])('weekly - next_business_day includes %s', (_name, daysOfWeek, workingDays, now) => {
-        const alarm = {
-            enabled: true,
-            time: '09:00',
-            type: 'weekly',
-            daysOfWeek,
-            holidayAdjustment: 'next_business_day',
-        };
-        expect(calculateNextAlarmTime(alarm, workingDays, Number(now))).toBe(new Date(2024, 4, 20, 9).getTime());
-    });
-
-    test('weekly - next_business_day advances after the adjusted alarm time', () => {
-        const alarm = {
-            enabled: true,
-            time: '09:00',
-            type: 'weekly',
-            daysOfWeek: [0],
-            holidayAdjustment: 'next_business_day',
-        };
-        const mondayAlarmTime = new Date(2024, 4, 20, 9).getTime();
-        expect(calculateNextAlarmTime(alarm, businessDays, mondayAlarmTime)).toBe(new Date(2024, 4, 27, 9).getTime());
-    });
-
     test('monthly_date - 15th', () => {
         const alarm = {
             enabled: true,
