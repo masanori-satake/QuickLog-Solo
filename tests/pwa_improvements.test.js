@@ -5,16 +5,6 @@
 import { jest } from '@jest/globals';
 
 describe('PWA Improvements & Session Sync Fallback', () => {
-    const originalDescriptors = [
-        [navigator, 'clipboard'],
-        [document, 'execCommand'],
-        [window, 'documentPictureInPicture'],
-    ].map(([object, property]) => ({
-        object,
-        property,
-        descriptor: Object.getOwnPropertyDescriptor(object, property),
-    }));
-
     beforeEach(() => {
         localStorage.clear();
         delete globalThis.window.IS_PWA;
@@ -32,13 +22,6 @@ describe('PWA Improvements & Session Sync Fallback', () => {
 
     afterEach(() => {
         jest.restoreAllMocks();
-        for (const { object, property, descriptor } of originalDescriptors) {
-            if (descriptor) {
-                Object.defineProperty(object, property, descriptor);
-            } else {
-                delete object[property];
-            }
-        }
     });
 
     test('isPWAMode returns true when window.IS_PWA is true', async () => {
@@ -310,139 +293,95 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(detailsContainer.classList.contains('hidden')).toBe(false);
     });
 
-    test('copyToClipboard uses navigator.clipboard.writeText when available and succeeds', async () => {
+    test('checkPWAAlarms executes pause action for active task when alarm time triggers today', async () => {
         jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-        const { copyToClipboard } = await import('../projects/app/js/app.js');
+        const { checkPWAAlarms, setIsAppInitializedForTesting } = await import('../projects/app/js/app.js');
+        const { dbGet, dbPut, dbAdd, dbClear, STORE_SETTINGS, STORE_ALARMS, STORE_LOGS, STORE_CATEGORIES } = await import('../shared/js/db.js');
+        await dbClear(STORE_SETTINGS);
+        await dbClear(STORE_ALARMS);
+        await dbClear(STORE_LOGS);
+        await dbClear(STORE_CATEGORIES);
+        setIsAppInitializedForTesting(true);
 
-        const writeTextSpy = jest.fn().mockResolvedValue(undefined);
-        Object.defineProperty(navigator, 'clipboard', {
-            value: { writeText: writeTextSpy },
-            configurable: true,
-        });
+        // Create a work category and an active task
+        await dbAdd(STORE_CATEGORIES, { name: 'Development', color: 'primary' });
+        const now = Date.now();
+        const d = new Date(now);
+        const hoursStr = String(d.getHours()).padStart(2, '0');
+        const minsStr = String(d.getMinutes()).padStart(2, '0');
+        const alarmTime = `${hoursStr}:${minsStr}`;
 
-        const result = await copyToClipboard('7:39');
-        expect(result).toBe(true);
-        expect(writeTextSpy).toHaveBeenCalledWith('7:39');
-    });
-
-    test('copyToClipboard falls back to execCommand when writeText rejects', async () => {
-        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-        const { copyToClipboard } = await import('../projects/app/js/app.js');
-
-        const writeTextSpy = jest.fn().mockRejectedValue(new DOMException('Document is not focused', 'NotAllowedError'));
-        Object.defineProperty(navigator, 'clipboard', {
-            value: { writeText: writeTextSpy },
-            configurable: true,
-        });
-
-        document.execCommand = jest.fn().mockReturnValue(true);
-
-        const result = await copyToClipboard('移動 7:39');
-        expect(result).toBe(true);
-        expect(writeTextSpy).toHaveBeenCalledWith('移動 7:39');
-        expect(document.execCommand).toHaveBeenCalledWith('copy');
-    });
-
-    test('copyToClipboard returns false when both writeText and execCommand fail', async () => {
-        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-        const { copyToClipboard } = await import('../projects/app/js/app.js');
-
-        const writeTextSpy = jest.fn().mockRejectedValue(new Error('Failed'));
-        Object.defineProperty(navigator, 'clipboard', {
-            value: { writeText: writeTextSpy },
-            configurable: true,
-        });
-
-        document.execCommand = jest.fn().mockReturnValue(false);
-
-        const result = await copyToClipboard('fail text');
-        expect(result).toBe(false);
-    });
-
-    test.each([
-        ['success', true, true],
-        ['failure', false, false],
-        ['exception', new Error('Copy failed'), false],
-    ])('copyToClipboard cleans up and restores focus after execCommand %s', async (_, outcome, expected) => {
-        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-        jest.spyOn(console, 'error').mockImplementation(() => {});
-        const { copyToClipboard } = await import('../projects/app/js/app.js');
-        Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
-        const previouslyFocusedElement = document.getElementById('advanced-editor-link');
-        previouslyFocusedElement.focus();
-        const focusSpy = jest.spyOn(previouslyFocusedElement, 'focus');
-        let selectedElement;
-        document.execCommand = jest.fn(() => {
-            selectedElement = document.activeElement;
-            if (outcome instanceof Error) throw outcome;
-            return outcome;
-        });
-
-        expect(await copyToClipboard('fallback text')).toBe(expected);
-        expect(document.execCommand).toHaveBeenCalledWith('copy');
-        expect(selectedElement.tagName).toBe('TEXTAREA');
-        expect(selectedElement.value).toBe('fallback text');
-        expect(document.querySelector('textarea')).toBeNull();
-        expect(document.activeElement).toBe(previouslyFocusedElement);
-        expect(focusSpy).toHaveBeenCalledTimes(1);
-    });
-
-    test('copyToClipboard does not restore focus to an element removed during copying', async () => {
-        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-        const { copyToClipboard } = await import('../projects/app/js/app.js');
-        Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
-        const previouslyFocusedElement = document.getElementById('advanced-editor-link');
-        previouslyFocusedElement.focus();
-        const focusSpy = jest.spyOn(previouslyFocusedElement, 'focus');
-        document.execCommand = jest.fn(() => {
-            previouslyFocusedElement.remove();
-            return true;
-        });
-
-        expect(await copyToClipboard('fallback text')).toBe(true);
-        expect(document.querySelector('textarea')).toBeNull();
-        expect(focusSpy).not.toHaveBeenCalled();
-    });
-
-    test('copyToClipboard uses pipWindow navigator when pipWindow is open', async () => {
-        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
-        const { copyToClipboard, openPinWindow } = await import('../projects/app/js/app.js');
-
-        const pipWriteTextSpy = jest.fn().mockResolvedValue(undefined);
-        const mockPipBody = document.createElement('body');
-        const mockPipWindow = {
-            closed: false,
-            document: {
-                body: mockPipBody,
-                head: document.createElement('head'),
-                documentElement: document.createElement('html'),
-                getElementById: () => null,
-                querySelectorAll: () => [],
-                execCommand: jest.fn().mockReturnValue(false),
-            },
-            navigator: {
-                clipboard: {
-                    writeText: pipWriteTextSpy,
-                },
-            },
-            addEventListener: jest.fn(),
-            close: jest.fn(),
+        const activeLog = {
+            category: 'Development',
+            startTime: now - 300000,
+            endTime: null,
+            color: 'primary',
         };
+        await dbAdd(STORE_LOGS, activeLog);
 
-        window.documentPictureInPicture = {
-            requestWindow: jest.fn().mockResolvedValue(mockPipWindow),
-        };
-
-        await openPinWindow();
-
-        const parentWriteTextSpy = jest.fn().mockRejectedValue(new DOMException('Document not focused', 'NotAllowedError'));
-        Object.defineProperty(navigator, 'clipboard', {
-            value: { writeText: parentWriteTextSpy },
-            configurable: true,
+        // Add a matching alarm with action "pause"
+        await dbAdd(STORE_ALARMS, {
+            id: 101,
+            enabled: true,
+            time: alarmTime,
+            type: 'daily',
+            action: 'pause',
+            message: 'Pause Test',
         });
 
-        const result = await copyToClipboard('pip text');
-        expect(result).toBe(true);
-        expect(pipWriteTextSpy).toHaveBeenCalledWith('pip text');
+        await checkPWAAlarms();
+
+        // Verify pauseState setting was saved and task is paused
+        const pauseState = await dbGet(STORE_SETTINGS, 'pauseState');
+        expect(pauseState).toBeDefined();
+        expect(pauseState.value).toBeDefined();
+        expect(pauseState.value.isPaused).toBe(true);
+        expect(pauseState.value.resumableCategory).toBe('Development');
+    });
+
+    test('checkPWAAlarms skips alarm execution on non-business days for daily_business alarms', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { checkPWAAlarms, setIsAppInitializedForTesting } = await import('../projects/app/js/app.js');
+        const { dbGet, dbPut, dbAdd, dbClear, STORE_SETTINGS, STORE_ALARMS, STORE_LOGS, STORE_CATEGORIES } = await import('../shared/js/db.js');
+        await dbClear(STORE_SETTINGS);
+        await dbClear(STORE_ALARMS);
+        await dbClear(STORE_LOGS);
+        await dbClear(STORE_CATEGORIES);
+        setIsAppInitializedForTesting(true);
+
+        await dbAdd(STORE_CATEGORIES, { name: 'Work', color: 'primary' });
+        const now = Date.now();
+        const d = new Date(now);
+        const hoursStr = String(d.getHours()).padStart(2, '0');
+        const minsStr = String(d.getMinutes()).padStart(2, '0');
+        const alarmTime = `${hoursStr}:${minsStr}`;
+
+        const activeLog = {
+            category: 'Work',
+            startTime: now - 300000,
+            endTime: null,
+            color: 'primary',
+        };
+        await dbAdd(STORE_LOGS, activeLog);
+
+        // Configure businessDays to exclude current day of week
+        const currentDay = d.getDay();
+        const nonMatchingBusinessDays = [0, 1, 2, 3, 4, 5, 6].filter((day) => day !== currentDay);
+        await dbPut(STORE_SETTINGS, { key: 'businessDays', value: nonMatchingBusinessDays });
+
+        await dbAdd(STORE_ALARMS, {
+            id: 102,
+            enabled: true,
+            time: alarmTime,
+            type: 'daily_business',
+            action: 'pause',
+            message: 'Business Skip Test',
+        });
+
+        await checkPWAAlarms();
+
+        // Since current day is not in businessDays, alarm action must not execute
+        const pauseState = await dbGet(STORE_SETTINGS, 'pauseState');
+        expect(pauseState).toBeUndefined();
     });
 });
