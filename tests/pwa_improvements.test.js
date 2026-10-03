@@ -5,6 +5,16 @@
 import { jest } from '@jest/globals';
 
 describe('PWA Improvements & Session Sync Fallback', () => {
+    const originalDescriptors = [
+        [navigator, 'clipboard'],
+        [document, 'execCommand'],
+        [window, 'documentPictureInPicture'],
+    ].map(([object, property]) => ({
+        object,
+        property,
+        descriptor: Object.getOwnPropertyDescriptor(object, property),
+    }));
+
     beforeEach(() => {
         localStorage.clear();
         delete globalThis.window.IS_PWA;
@@ -22,6 +32,13 @@ describe('PWA Improvements & Session Sync Fallback', () => {
 
     afterEach(() => {
         jest.restoreAllMocks();
+        for (const { object, property, descriptor } of originalDescriptors) {
+            if (descriptor) {
+                Object.defineProperty(object, property, descriptor);
+            } else {
+                delete object[property];
+            }
+        }
     });
 
     test('isPWAMode returns true when window.IS_PWA is true', async () => {
