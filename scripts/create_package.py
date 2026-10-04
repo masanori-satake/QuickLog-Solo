@@ -32,7 +32,11 @@ def create_zip(zip_filepath, temp_dir):
             if os.path.normpath(path).endswith('assets'):
                 if 'icon.svg' in names: ignored.append('icon.svg')
                 if 'guide' in names: ignored.append('guide')
-                if 'badges' in names: ignored.append('badges')
+
+            if os.path.normpath(path).endswith(os.path.join('assets', 'badges')):
+                for name in names:
+                    if name != 'solo':
+                        ignored.append(name)
 
             if os.path.normpath(path).endswith(os.path.join('js', 'animation')):
                 for name in names:
