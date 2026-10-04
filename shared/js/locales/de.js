@@ -50,7 +50,13 @@ export default {
     'tab-maintenance': 'Wartung',
     'tab-backup': 'Sicherung',
     'tab-alarms': 'Alarme',
+    'tab-solo': 'Solo',
     'tab-about': 'Über',
+
+    // Solo Tab
+    'solo-category-productivity': 'Produktivität',
+    'solo-category-collaboration': 'Meeting- & Unterrichtsunterstützung',
+    'solo-category-developer': 'Für Entwickler',
 
     // Alarms Tab
     'business-days': 'Arbeitstage',
@@ -576,10 +582,15 @@ export default {
     'qr-scan-all-completed': 'Alle QR-Codes erfolgreich gescannt!',
     'qr-scan-fetching-pusher': 'Einstellungen von Pusher werden abgerufen...',
     'qr-scan-pusher-success': 'Einstellungen erfolgreich geladen!',
-    'qr-scan-pusher-timeout': 'Empfangs-Zeitüberschreitung: Bitte lassen Sie den Absender-QR-Code geöffnet und scannen Sie erneut.',
+    'qr-scan-pusher-timeout':
+        'Empfangs-Zeitüberschreitung: Bitte lassen Sie den Absender-QR-Code geöffnet und scannen Sie erneut.',
     'pusher-error-title': '[Ursache & Fehlerbehebung]',
-    'pusher-error-offline': 'Ihr PC ist offline (Internetverbindung getrennt). Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut.',
-    'pusher-error-network': 'Ein Übertragungsfehler oder eine Blockierung durch Sicherheitssoftware/Proxy ist aufgetreten. Bitte überprüfen Sie Ihre Internetverbindung und Sicherheitseinstellungen.',
-    'pusher-error-timeout': 'Die Verbindung hat das Zeitlimit überschritten. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es später erneut.',
-    'pusher-error-rate-limit': 'Übertragungsanfrage-Limit (Ratenlimit/Kontingent überschritten) erreicht. Bitte warten Sie einen Moment und versuchen Sie es erneut.',
+    'pusher-error-offline':
+        'Ihr PC ist offline (Internetverbindung getrennt). Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut.',
+    'pusher-error-network':
+        'Ein Übertragungsfehler oder eine Blockierung durch Sicherheitssoftware/Proxy ist aufgetreten. Bitte überprüfen Sie Ihre Internetverbindung und Sicherheitseinstellungen.',
+    'pusher-error-timeout':
+        'Die Verbindung hat das Zeitlimit überschritten. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es später erneut.',
+    'pusher-error-rate-limit':
+        'Übertragungsanfrage-Limit (Ratenlimit/Kontingent überschritten) erreicht. Bitte warten Sie einen Moment und versuchen Sie es erneut.',
 };

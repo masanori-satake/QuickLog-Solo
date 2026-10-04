@@ -50,7 +50,13 @@ export default {
     'tab-maintenance': 'Maintenance',
     'tab-backup': 'Sauvegarde',
     'tab-alarms': 'Alarmes',
+    'tab-solo': 'Solo',
     'tab-about': 'À propos',
+
+    // Solo Tab
+    'solo-category-productivity': 'Productivité',
+    'solo-category-collaboration': 'Support de réunion et de cours',
+    'solo-category-developer': 'Pour les développeurs',
 
     // Alarms Tab
     'business-days': 'Jours ouvrables',
@@ -577,10 +583,14 @@ export default {
     'qr-scan-all-completed': 'Tous les QR codes ont été numérisés avec succès !',
     'qr-scan-fetching-pusher': 'Récupération des paramètres depuis Pusher...',
     'qr-scan-pusher-success': 'Paramètres chargés avec succès !',
-    'qr-scan-pusher-timeout': "Délai d'attente dépassé : Veuillez garder le QR code de l'émetteur ouvert et numériser à nouveau.",
+    'qr-scan-pusher-timeout':
+        "Délai d'attente dépassé : Veuillez garder le QR code de l'émetteur ouvert et numériser à nouveau.",
     'pusher-error-title': '[Cause et dépannage]',
-    'pusher-error-offline': 'Votre PC est hors ligne (déconnecté d\'Internet). Veuillez vérifier votre connexion réseau et réessayer.',
-    'pusher-error-network': 'Une erreur de communication ou un blocage par un logiciel de sécurité/proxy est survenu. Veuillez vérifier votre connexion Internet et vos paramètres de sécurité.',
+    'pusher-error-offline':
+        "Votre PC est hors ligne (déconnecté d'Internet). Veuillez vérifier votre connexion réseau et réessayer.",
+    'pusher-error-network':
+        'Une erreur de communication ou un blocage par un logiciel de sécurité/proxy est survenu. Veuillez vérifier votre connexion Internet et vos paramètres de sécurité.',
     'pusher-error-timeout': 'La communication a expiré. Veuillez vérifier votre connexion et réessayer plus tard.',
-    'pusher-error-rate-limit': 'La limite de demandes de transmission (limite de débit/quota dépassé) est atteinte. Veuillez patienter un moment et réessayer.',
+    'pusher-error-rate-limit':
+        'La limite de demandes de transmission (limite de débit/quota dépassé) est atteinte. Veuillez patienter un moment et réessayer.',
 };

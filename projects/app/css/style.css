@@ -2259,6 +2259,62 @@ body.theme-dark #alarms-tab #business-days-container .filter-chip[disabled] {
     font-size: 11px;
 }
 
+/* Solo Tab Promotion Styles */
+#solo-tab {
+    padding: 8px 4px 16px;
+}
+
+.solo-category-group {
+    margin-bottom: 28px;
+}
+
+.solo-category-group:last-child {
+    margin-bottom: 12px;
+}
+
+.solo-category-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: left;
+    margin-bottom: 10px;
+    color: var(--md-sys-color-primary);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    padding-bottom: 4px;
+}
+
+.solo-badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+.solo-badges-container a {
+    display: inline-flex;
+    text-decoration: none;
+    border-radius: 4px;
+    outline-offset: 2px;
+}
+
+.solo-badge-img {
+    height: 28px;
+    width: auto;
+    display: block;
+    border-radius: 4px;
+    transition: transform 0.15s ease-in-out, opacity 0.15s ease-in-out;
+}
+
+.solo-badges-container a:hover .solo-badge-img {
+    transform: translateY(-1px) scale(1.03);
+    opacity: 0.92;
+}
+
+.solo-badges-container a:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+}
+
 /* Document Picture-in-Picture Placeholder */
 body.pip-active {
     display: flex;

@@ -50,7 +50,13 @@ export default {
     'tab-maintenance': '유지 관리',
     'tab-backup': '백업',
     'tab-alarms': '알람',
+    'tab-solo': 'Solo',
     'tab-about': '정보',
+
+    // Solo Tab
+    'solo-category-productivity': '작업 효율화',
+    'solo-category-collaboration': '회의/수업 지원',
+    'solo-category-developer': '개발자용',
 
     // Alarms Tab
     'business-days': '영업일',
@@ -532,7 +538,8 @@ export default {
     'maker-select-prompt': '커스텀 애니메이션을 추가해 주세요',
     'setting-pwa-support': 'PWA Support',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
-    'about-pwa-section-desc': 'QR 코드를 스캔하여 PWA 버전을 실행하고 이전 코드를 입력하여 설정을 동기화할 수 있습니다.',
+    'about-pwa-section-desc':
+        'QR 코드를 스캔하여 PWA 버전을 실행하고 이전 코드를 입력하여 설정을 동기화할 수 있습니다.',
     'about-pwa-url-qr-label': 'PWA 실행 URL',
     'about-pwa-general-qr-label': '2. 일반 및 알람',
     'about-pwa-categories-qr-label': '3. 업무 카테고리',
@@ -543,7 +550,8 @@ export default {
     'about-pwa-qr-too-large-title': '데이터 초과',
     'about-pwa-qr-too-large-sub': 'QR 표시 불가',
     'about-pwa-import-title': 'QuickLog-Solo 설정 가져오기 (β)',
-    'about-pwa-import-desc': 'Chrome 확장 프로그램에 표시된 6자리 이전 코드를 입력하여 카테고리 및 알람 설정을 적용합니다.',
+    'about-pwa-import-desc':
+        'Chrome 확장 프로그램에 표시된 6자리 이전 코드를 입력하여 카테고리 및 알람 설정을 적용합니다.',
     'about-pwa-pin-accordion-label': '설정 이전용 코드 표시',
     'btn-pwa-sync-pin': '설정 이전 코드 입력하기',
     'pin-sync-modal-title': '설정 이전 코드 입력',
@@ -565,7 +573,8 @@ export default {
     'qr-scan-pusher-timeout': '수신 시간 초과: 보낸 사람의 QR 코드 화면을 켜둔 채 다시 스캔해 주세요.',
     'pusher-error-title': '[원인 및 문제 해결]',
     'pusher-error-offline': 'PC가 오프라인 상태(인터넷 연결 끊김)입니다. 네트워크 연결을 확인하고 다시 시도해 주세요.',
-    'pusher-error-network': '통신 오류 또는 보안 소프트웨어/프록시로 인한 차단이 발생했습니다. 인터넷 연결 및 보안 설정을 확인해 주세요.',
+    'pusher-error-network':
+        '통신 오류 또는 보안 소프트웨어/프록시로 인한 차단이 발생했습니다. 인터넷 연결 및 보안 설정을 확인해 주세요.',
     'pusher-error-timeout': '통신 시간이 초과되었습니다. 네트워크 상태를 확인한 후 잠시 후 다시 시도해 주세요.',
     'pusher-error-rate-limit': '전송 요청 제한(전송률 제한/할당량 초과)에 도달했습니다. 잠시 후 다시 시도해 주세요.',
 };
