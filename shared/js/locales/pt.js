@@ -50,7 +50,13 @@ export default {
     'tab-maintenance': 'Manutenção',
     'tab-backup': 'Backup',
     'tab-alarms': 'Alarmes',
+    'tab-solo': 'Solo',
     'tab-about': 'Sobre',
+
+    // Solo Tab
+    'solo-category-productivity': 'Produtividade',
+    'solo-category-collaboration': 'Suporte a reuniões e aulas',
+    'solo-category-developer': 'Para desenvolvedores',
 
     // Alarms Tab
     'business-days': 'Dias úteis',
@@ -575,8 +581,11 @@ export default {
     'qr-scan-pusher-success': 'Configurações carregadas com sucesso!',
     'qr-scan-pusher-timeout': 'Tempo de recepção esgotado: Mantenha o código QR de origem aberto e escaneie novamente.',
     'pusher-error-title': '[Causa e Resolução de Problemas]',
-    'pusher-error-offline': 'Seu PC está offline (desconectado da Internet). Verifique sua conexão de rede e tente novamente.',
-    'pusher-error-network': 'Ocorreu um erro de comunicação ou bloqueio por software de segurança/proxy. Verifique sua conexão com a Internet e as configurações de segurança.',
+    'pusher-error-offline':
+        'Seu PC está offline (desconectado da Internet). Verifique sua conexão de rede e tente novamente.',
+    'pusher-error-network':
+        'Ocorreu um erro de comunicação ou bloqueio por software de segurança/proxy. Verifique sua conexão com a Internet e as configurações de segurança.',
     'pusher-error-timeout': 'A comunicação expirou. Verifique sua conexão e tente novamente mais tarde.',
-    'pusher-error-rate-limit': 'O limite de solicitações de transmissão (limite de taxa/cota excedida) foi atingido. Aguarde um momento e tente novamente.',
+    'pusher-error-rate-limit':
+        'O limite de solicitações de transmissão (limite de taxa/cota excedida) foi atingido. Aguarde um momento e tente novamente.',
 };

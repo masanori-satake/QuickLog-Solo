@@ -50,7 +50,13 @@ export default {
     'tab-maintenance': 'Mantenimiento',
     'tab-backup': 'Respaldo',
     'tab-alarms': 'Alarmas',
+    'tab-solo': 'Solo',
     'tab-about': 'Acerca de',
+
+    // Solo Tab
+    'solo-category-productivity': 'Productividad',
+    'solo-category-collaboration': 'Soporte para reuniones y clases',
+    'solo-category-developer': 'Para desarrolladores',
 
     // Alarms Tab
     'business-days': 'Días laborables',
@@ -575,8 +581,12 @@ export default {
     'qr-scan-pusher-success': '¡Configuración cargada con éxito!',
     'qr-scan-pusher-timeout': 'Tiempo de espera agotado: Mantenga abierto el código QR de origen y escanee de nuevo.',
     'pusher-error-title': '[Causa y solución de problemas]',
-    'pusher-error-offline': 'Su PC está fuera de línea (sin conexión a Internet). Compruebe su conexión de red e inténtelo de nuevo.',
-    'pusher-error-network': 'Se produjo un error de comunicación o un bloqueo por software de seguridad/proxy. Compruebe su conexión a Internet y la configuración de seguridad.',
-    'pusher-error-timeout': 'La comunicación ha agotado el tiempo de espera. Compruebe su conexión e inténtelo de nuevo más tarde.',
-    'pusher-error-rate-limit': 'Se alcanzó el límite de solicitudes de transmisión (límite de frecuencia/cuota excedida). Espere un momento e inténtelo de nuevo.',
+    'pusher-error-offline':
+        'Su PC está fuera de línea (sin conexión a Internet). Compruebe su conexión de red e inténtelo de nuevo.',
+    'pusher-error-network':
+        'Se produjo un error de comunicación o un bloqueo por software de seguridad/proxy. Compruebe su conexión a Internet y la configuración de seguridad.',
+    'pusher-error-timeout':
+        'La comunicación ha agotado el tiempo de espera. Compruebe su conexión e inténtelo de nuevo más tarde.',
+    'pusher-error-rate-limit':
+        'Se alcanzó el límite de solicitudes de transmisión (límite de frecuencia/cuota excedida). Espere un momento e inténtelo de nuevo.',
 };

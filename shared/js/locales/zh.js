@@ -50,7 +50,13 @@ export default {
     'tab-maintenance': '维护',
     'tab-backup': '备份',
     'tab-alarms': '闹钟',
+    'tab-solo': 'Solo',
     'tab-about': '关于',
+
+    // Solo Tab
+    'solo-category-productivity': '工作效率',
+    'solo-category-collaboration': '会议/课堂支持',
+    'solo-category-developer': '开发者工具',
 
     // Alarms Tab
     'business-days': '工作日',

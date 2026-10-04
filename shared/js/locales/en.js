@@ -24,7 +24,13 @@ export default {
     'tab-maintenance': 'Maintenance',
     'tab-backup': 'Backup',
     'tab-alarms': 'Alarms',
+    'tab-solo': 'Solo',
     'tab-about': 'About',
+
+    // Solo Tab
+    'solo-category-productivity': 'Productivity',
+    'solo-category-collaboration': 'Meeting & Classroom Support',
+    'solo-category-developer': 'For Developers',
 
     // Alarms Tab
     'business-days': 'Business Days',
@@ -556,8 +562,7 @@ export default {
     'maker-select-prompt': 'Please add a custom animation',
     'setting-pwa-support': 'PWA Support',
     'about-pwa-section-title': 'PWA QuickLog-Solo (β)',
-    'about-pwa-section-desc':
-        'Scan the QR code to launch the PWA version or sync settings using the transfer code.',
+    'about-pwa-section-desc': 'Scan the QR code to launch the PWA version or sync settings using the transfer code.',
     'about-pwa-url-qr-label': 'PWA Launch URL',
     'about-pwa-general-qr-label': '2. General & Alarms',
     'about-pwa-categories-qr-label': '3. Categories',
@@ -591,8 +596,11 @@ export default {
     'qr-scan-pusher-success': 'Settings loaded successfully!',
     'qr-scan-pusher-timeout': 'Receive timed out: Please keep the sender QR code open and scan again.',
     'pusher-error-title': '[Cause & Troubleshooting]',
-    'pusher-error-offline': 'Your PC is offline (disconnected from internet). Please check your network connection and try again.',
-    'pusher-error-network': 'A communication error or blocking by security software/proxy occurred. Please check your internet connection and security settings.',
+    'pusher-error-offline':
+        'Your PC is offline (disconnected from internet). Please check your network connection and try again.',
+    'pusher-error-network':
+        'A communication error or blocking by security software/proxy occurred. Please check your internet connection and security settings.',
     'pusher-error-timeout': 'The communication timed out. Please check your connection and try again later.',
-    'pusher-error-rate-limit': 'Transmission request limit (rate limit/quota exceeded) reached. Please wait a moment and try again.',
+    'pusher-error-rate-limit':
+        'Transmission request limit (rate limit/quota exceeded) reached. Please wait a moment and try again.',
 };

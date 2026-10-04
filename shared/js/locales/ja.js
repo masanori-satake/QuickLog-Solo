@@ -24,7 +24,13 @@ export default {
     'tab-maintenance': 'メンテナンス',
     'tab-backup': 'バックアップ',
     'tab-alarms': 'アラーム',
+    'tab-solo': 'Solo',
     'tab-about': 'About',
+
+    // Solo Tab
+    'solo-category-productivity': '作業効率化',
+    'solo-category-collaboration': '会議/授業支援',
+    'solo-category-developer': '開発者向け',
 
     // Alarms Tab
     'business-days': '稼働曜日',
@@ -554,7 +560,8 @@ export default {
     'maker-select-prompt': 'カスタムアニメーションを追加してください',
     'setting-pwa-support': 'PWAサポート',
     'about-pwa-section-title': 'PWA版QuickLog-Solo(β)',
-    'about-pwa-section-desc': 'スマホ等のカメラでQRコードを読み取ってPWA版の起動や、引き継ぎコードを使った設定同期を行えます。',
+    'about-pwa-section-desc':
+        'スマホ等のカメラでQRコードを読み取ってPWA版の起動や、引き継ぎコードを使った設定同期を行えます。',
     'about-pwa-url-qr-label': 'PWA起動URL',
     'about-pwa-general-qr-label': '2. 設定全般・アラーム',
     'about-pwa-categories-qr-label': '3. 業務カテゴリ',
@@ -565,7 +572,8 @@ export default {
     'about-pwa-qr-too-large-title': 'データ超過',
     'about-pwa-qr-too-large-sub': 'QR表示不可',
     'about-pwa-import-title': 'QuickLog-Solo設定のインポート(β)',
-    'about-pwa-import-desc': 'Chrome拡張機能版で表示された6桁の設定引き継ぎコードを入力して、カテゴリやアラーム設定を反映します。',
+    'about-pwa-import-desc':
+        'Chrome拡張機能版で表示された6桁の設定引き継ぎコードを入力して、カテゴリやアラーム設定を反映します。',
     'about-pwa-pin-accordion-label': '設定引き継ぎ用コードを表示',
     'btn-pwa-sync-pin': '設定引き継ぎコードを入力する',
     'pin-sync-modal-title': '設定引き継ぎコードの入力',
@@ -586,8 +594,11 @@ export default {
     'qr-scan-pusher-success': '設定データの読み取りが完了しました！',
     'qr-scan-pusher-timeout': '受信タイムアウト：送信側のQRコードを表示したまま、再度読み取ってください。',
     'pusher-error-title': '【原因と対処方法】',
-    'pusher-error-offline': 'PCがオフライン状態（インターネット切断）です。ネットワーク接続を確認して再試行してください。',
-    'pusher-error-network': '通信エラーまたはセキュリティソフト・プロキシ等による遮断が発生しました。インターネット接続およびセキュリティ設定を確認してください。',
+    'pusher-error-offline':
+        'PCがオフライン状態（インターネット切断）です。ネットワーク接続を確認して再試行してください。',
+    'pusher-error-network':
+        '通信エラーまたはセキュリティソフト・プロキシ等による遮断が発生しました。インターネット接続およびセキュリティ設定を確認してください。',
     'pusher-error-timeout': '通信がタイムアウトしました。回線状況を確認のうえ、時間をおいて再試行してください。',
-    'pusher-error-rate-limit': '送信リクエストの制限（レート制限・クォータ上限）に達しました。しばらく時間を置いてから再度お試しください。',
+    'pusher-error-rate-limit':
+        '送信リクエストの制限（レート制限・クォータ上限）に達しました。しばらく時間を置いてから再度お試しください。',
 };
