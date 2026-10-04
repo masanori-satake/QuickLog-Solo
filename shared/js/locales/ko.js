@@ -56,7 +56,7 @@ export default {
     // Solo Tab
     'solo-category-productivity': '작업 효율화',
     'solo-category-collaboration': '회의/수업 지원',
-    'solo-category-developer': '개발자用',
+    'solo-category-developer': '개발자용',
 
     // Alarms Tab
     'business-days': '영업일',
