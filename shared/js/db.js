@@ -779,6 +779,9 @@ async function migrateCategoriesWithMissingOrder() {
  * for users who haven't explicitly customized them.
  */
 async function migratePauseAnimationAndThemeDefaults() {
+    const migrationKey = 'migration_pause_defaults_halloween_jack';
+    if (await dbGet(STORE_SETTINGS, migrationKey)) return;
+
     const pauseAnim = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_ANIMATION);
     if (!pauseAnim || pauseAnim.value === 'snoring_zzz') {
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_ANIMATION, value: 'halloween_jack' });
@@ -788,6 +791,8 @@ async function migratePauseAnimationAndThemeDefaults() {
     if (!pauseTheme || pauseTheme.value === 'neutral') {
         await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_THEME, value: 'retro-nixie' });
     }
+
+    await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
 }
 
 /**
