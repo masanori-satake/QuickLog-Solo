@@ -17,7 +17,7 @@ export default class HalloweenJack extends AnimationBase {
             es: "Halloween",
             fr: "Halloween",
             pt: "Halloween",
-            ko: "할로ウィン",
+            ko: "할로윈",
             zh: "万圣节"
         },
         description: {
@@ -53,9 +53,9 @@ export default class HalloweenJack extends AnimationBase {
         if (!this.width || !this.height) return;
 
         this.bats = [
-            { x: this.width * 0.75, y: this.height * 0.35, speedX: 0.4, speedY: 0.2, phase: 0, size: 1.0 },
-            { x: this.width * 0.85, y: this.height * 0.55, speedX: -0.3, speedY: 0.25, phase: Math.PI * 0.6, size: 0.8 },
-            { x: this.width * 0.68, y: this.height * 0.65, speedX: 0.35, speedY: -0.15, phase: Math.PI * 1.2, size: 0.9 }
+            { speedX: 1.2, speedY: 0.8, phase: 0, size: 1.0 },
+            { speedX: -0.9, speedY: 1.1, phase: Math.PI * 0.6, size: 0.8 },
+            { speedX: 1.1, speedY: -0.7, phase: Math.PI * 1.2, size: 0.9 }
         ];
     }
 
@@ -177,32 +177,31 @@ export default class HalloweenJack extends AnimationBase {
         }
 
         const minX = this.width * 0.55;
-        const maxX = this.width - 15 * scale;
+        const maxX = Math.max(minX + 10, this.width - 15 * scale);
         const minY = 10 * scale;
-        const maxY = this.height - 10 * scale;
+        const maxY = Math.max(minY + 10, this.height - 10 * scale);
+
+        const rangeX = maxX - minX;
+        const rangeY = maxY - minY;
 
         for (const bat of this.bats) {
-            // Flight movement
-            bat.x += bat.speedX;
-            bat.y += bat.speedY + Math.sin(elapsedMs * 0.005 + bat.phase) * 0.3;
+            // Deterministic flight position derived directly from elapsedMs
+            const angleX = elapsedMs * 0.001 * bat.speedX + bat.phase;
+            const angleY = elapsedMs * 0.0012 * bat.speedY + bat.phase * 1.5;
 
-            // Boundary wrapping / bouncing on right half
-            if (bat.x < minX || bat.x > maxX) {
-                bat.speedX *= -1;
-                bat.x = Math.max(minX, Math.min(maxX, bat.x));
-            }
-            if (bat.y < minY || bat.y > maxY) {
-                bat.speedY *= -1;
-                bat.y = Math.max(minY, Math.min(maxY, bat.y));
-            }
+            const batX = minX + (Math.sin(angleX) * 0.5 + 0.5) * rangeX;
+            const batY = minY + (Math.sin(angleY) * 0.5 + 0.5) * rangeY;
+
+            // Velocity direction for horizontal flipping
+            const dirX = Math.cos(angleX) * bat.speedX;
 
             // Wing flap animation cycle (faster flapping speed)
             const flapAngle = Math.sin(elapsedMs * 0.02 + bat.phase) * 0.6; // -0.6 to +0.6 rad
 
             ctx.save();
-            ctx.translate(bat.x, bat.y);
+            ctx.translate(batX, batY);
             ctx.scale(bat.size * scale, bat.size * scale);
-            if (bat.speedX < 0) {
+            if (dirX < 0) {
                 ctx.scale(-1, 1); // Flip horizontally depending on flight direction
             }
 
