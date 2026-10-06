@@ -491,6 +491,7 @@ export async function initDB(isLite = false) {
         await migrateLogsWithSyncId();
         await migrateLogsWithUpdatedAt();
         await migrateCategoriesWithMissingOrder();
+        await migratePauseAnimationAndThemeDefaults();
         await cleanupOldLogs();
     }
 
@@ -539,8 +540,8 @@ export async function getCurrentAppState() {
         businessDays: businessDays ? businessDays.value : [1, 2, 3, 4, 5],
         timerHeight: timerHeight ? timerHeight.value : isPWA ? 'mini' : 'normal',
         categoryLayout: categoryLayout ? categoryLayout.value : isPWA ? '2x4' : '2x8',
-        pauseAnimation: pauseAnimation ? pauseAnimation.value : 'snoring_zzz',
-        pauseTheme: pauseTheme ? pauseTheme.value : 'neutral',
+        pauseAnimation: pauseAnimation ? pauseAnimation.value : 'halloween_jack',
+        pauseTheme: pauseTheme ? pauseTheme.value : 'retro-nixie',
         alwaysOnTop: alwaysOnTop ? alwaysOnTop.value : false,
         pwaSupport: pwaSupport ? pwaSupport.value : false,
         sessionSync: (await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC))?.value || false,
@@ -771,6 +772,22 @@ async function migrateCategoriesWithMissingOrder() {
     }
 
     await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
+}
+
+/**
+ * Migrates standby animation and theme defaults from legacy snoring_zzz/neutral to halloween_jack/retro-nixie
+ * for users who haven't explicitly customized them.
+ */
+async function migratePauseAnimationAndThemeDefaults() {
+    const pauseAnim = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_ANIMATION);
+    if (!pauseAnim || pauseAnim.value === 'snoring_zzz') {
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_ANIMATION, value: 'halloween_jack' });
+    }
+
+    const pauseTheme = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_THEME);
+    if (!pauseTheme || pauseTheme.value === 'neutral') {
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_THEME, value: 'retro-nixie' });
+    }
 }
 
 /**

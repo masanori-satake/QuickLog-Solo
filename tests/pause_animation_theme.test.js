@@ -40,8 +40,8 @@ describe('Pause Animation and Theme Settings Validation', () => {
             kind: SCHEMA_KIND_SETTINGS,
             version: SCHEMA_VERSION_2_0,
             entries: [
-                { key: 'pauseAnimation', value: 'digital_rain' },
-                { key: 'pauseTheme', value: 'neutral' },
+                { key: 'pauseAnimation', value: 'halloween_jack' },
+                { key: 'pauseTheme', value: 'retro-nixie' },
                 { key: 'pauseTheme', value: 'teal' },
             ],
         };

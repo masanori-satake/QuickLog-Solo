@@ -208,8 +208,8 @@ let currentCategoryPage = 0;
 let currentCategoryLayout = '2x8';
 /** @type {string} Current background animation ID. */
 let currentAnimationType = 'digital_rain';
-let currentPauseAnimation = 'snoring_zzz';
-let currentPauseTheme = 'neutral';
+let currentPauseAnimation = 'halloween_jack';
+let currentPauseTheme = 'retro-nixie';
 /** @type {string|null} JSON string of the last rendered category state for change detection. */
 let lastCategoryRenderData = null;
 /** @type {string|null} JSON string of the last rendered logs state for change detection. */
@@ -1365,8 +1365,8 @@ async function syncState() {
     applyCategoryLayout(state.categoryLayout || (isPWA ? '2x4' : '2x8'));
     applyFontWeight(state.fontWeight || 'normal');
 
-    currentPauseAnimation = state.pauseAnimation || 'snoring_zzz';
-    currentPauseTheme = state.pauseTheme || 'neutral';
+    currentPauseAnimation = state.pauseAnimation || 'halloween_jack';
+    currentPauseTheme = state.pauseTheme || 'retro-nixie';
 
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';
