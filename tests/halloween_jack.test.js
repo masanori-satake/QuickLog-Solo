@@ -46,7 +46,8 @@ describe('HalloweenJack Animation Module', () => {
         animation.setup(200, 100);
         expect(() => animation.draw(mockCtx, { elapsedMs: 1000 })).not.toThrow();
         expect(mockCtx.beginPath).toHaveBeenCalled();
-        expect(mockCtx.ellipse).toHaveBeenCalled();
+        // Outer body ellipse and 3 bats = 4 ellipse calls (no inner segment ribs)
+        expect(mockCtx.ellipse).toHaveBeenCalledTimes(4);
     });
 
     test('draw handles zero or negative dimensions gracefully', () => {

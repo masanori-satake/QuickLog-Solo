@@ -72,10 +72,10 @@ export default class HalloweenJack extends AnimationBase {
         ctx.strokeStyle = '#ffffff';
 
         // --- 1. Draw Jack-o'-lantern on the Left Center ---
-        const pumpkinX = Math.max(35 * scale, width * 0.18);
+        const pumpkinX = Math.max(28 * scale, width * 0.13);
         const pumpkinY = height * 0.52;
-        const radiusX = 18 * scale;
-        const radiusY = 14 * scale;
+        const radiusX = 22 * scale;
+        const radiusY = 17 * scale;
 
         this.drawJackOLantern(ctx, pumpkinX, pumpkinY, radiusX, radiusY, elapsedMs, scale);
 
@@ -87,7 +87,7 @@ export default class HalloweenJack extends AnimationBase {
         ctx.save();
 
         // Pumpkin Stem
-        ctx.lineWidth = Math.max(1, 2 * scale);
+        ctx.lineWidth = Math.max(1.5, 2 * scale);
         ctx.beginPath();
         ctx.moveTo(cx, cy - ry + 1 * scale);
         ctx.quadraticCurveTo(cx + 3 * scale, cy - ry - 6 * scale, cx + 5 * scale, cy - ry - 7 * scale);
@@ -98,26 +98,16 @@ export default class HalloweenJack extends AnimationBase {
         ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Pumpkin Segment Ribs (inner curves for 3D pumpkin texture)
-        ctx.globalAlpha = 0.4;
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx * 0.65, ry, 0, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx * 0.3, ry, 0, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.globalAlpha = 1.0;
-
-        // Candle Flame Flickering inside (Flicker effect using sine waves and noise simulation)
+        // Candle Flame Flickering inside (Flicker effect using sine waves)
         const flickerTime = elapsedMs * 0.008;
-        const flickerAlpha = 0.6 + 0.4 * Math.sin(flickerTime) * Math.cos(flickerTime * 1.73);
+        const flickerAlpha = 0.85 + 0.15 * Math.sin(flickerTime);
         const flameOffset = Math.sin(flickerTime * 2.5) * 1.2 * scale;
 
         // Carved Eye L (Triangle)
-        const eyeW = 4 * scale;
-        const eyeH = 4 * scale;
-        const leftEyeX = cx - rx * 0.4;
-        const eyeY = cy - ry * 0.2;
+        const eyeW = 5 * scale;
+        const eyeH = 5 * scale;
+        const leftEyeX = cx - rx * 0.42;
+        const eyeY = cy - ry * 0.22;
 
         ctx.globalAlpha = flickerAlpha;
         ctx.beginPath();
@@ -128,7 +118,7 @@ export default class HalloweenJack extends AnimationBase {
         ctx.fill();
 
         // Carved Eye R (Triangle)
-        const rightEyeX = cx + rx * 0.4;
+        const rightEyeX = cx + rx * 0.42;
         ctx.beginPath();
         ctx.moveTo(rightEyeX - eyeW / 2, eyeY + eyeH / 2);
         ctx.lineTo(rightEyeX + eyeW / 2, eyeY + eyeH / 2);
@@ -138,8 +128,8 @@ export default class HalloweenJack extends AnimationBase {
 
         // Carved Nose (Small inverted triangle)
         const noseY = cy + 0.5 * scale;
-        const noseW = 2.5 * scale;
-        const noseH = 2.5 * scale;
+        const noseW = 3 * scale;
+        const noseH = 3 * scale;
         ctx.beginPath();
         ctx.moveTo(cx, noseY + noseH / 2);
         ctx.lineTo(cx - noseW / 2, noseY - noseH / 2);
@@ -148,17 +138,17 @@ export default class HalloweenJack extends AnimationBase {
         ctx.fill();
 
         // Carved Toothy Mouth
-        const mouthY = cy + ry * 0.35;
+        const mouthY = cy + ry * 0.38;
         const mouthW = rx * 1.1;
 
         ctx.beginPath();
         ctx.moveTo(cx - mouthW / 2, mouthY);
         // Jagged teeth curve
-        ctx.lineTo(cx - mouthW * 0.3, mouthY + 3 * scale + flameOffset * 0.3);
+        ctx.lineTo(cx - mouthW * 0.3, mouthY + 3.5 * scale + flameOffset * 0.2);
         ctx.lineTo(cx - mouthW * 0.2, mouthY + 1 * scale);
-        ctx.lineTo(cx, mouthY + 4 * scale);
+        ctx.lineTo(cx, mouthY + 4.5 * scale);
         ctx.lineTo(cx + mouthW * 0.2, mouthY + 1 * scale);
-        ctx.lineTo(cx + mouthW * 0.3, mouthY + 3 * scale + flameOffset * 0.3);
+        ctx.lineTo(cx + mouthW * 0.3, mouthY + 3.5 * scale + flameOffset * 0.2);
         ctx.lineTo(cx + mouthW / 2, mouthY);
         ctx.lineTo(cx + mouthW * 0.3, mouthY - 1 * scale);
         ctx.lineTo(cx + mouthW * 0.15, mouthY + 1 * scale);
