@@ -1,9 +1,9 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
     dbGetByName, getCurrentAppState, dbGetActiveTask, dbAddMultiple, dbClear, setDatabaseName, DB_NAME as ACTUAL_DB_NAME,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_PAUSE_ANIMATION, SETTING_KEY_PAUSE_THEME
 } from '../shared/js/db.js';
-import { SYSTEM_CATEGORY_IDLE } from '../shared/js/utils.js';
+import { SYSTEM_CATEGORY_IDLE, getSeasonalPauseDefaults } from '../shared/js/utils.js';
 import { t } from '../shared/js/i18n.js';
 import { SCHEMA_KIND_CATEGORY, SCHEMA_VERSION_1_0, SCHEMA_TYPE_CATEGORY, SCHEMA_TYPE_PAGE_BREAK } from '../shared/js/schema.js';
 
@@ -99,6 +99,47 @@ describe('DB Module', () => {
         const nameJA = '💻 開発・プログラミング';
         const nameEN = '💻 Development/Coding';
         expect(categories.find(c => c.name === nameJA || c.name === nameEN)).toBeDefined();
+    });
+
+    test.each([
+        ['snoring_zzz', 'neutral'],
+        ['halloween_jack', 'retro-nixie'],
+        ['snow_fall', 'cyan'],
+        ['custom_animation', 'outline'],
+    ])('initDB preserves saved standby settings %s / %s across restarts', async (pauseAnimation, pauseTheme) => {
+        await openDatabase();
+        const animation = { key: SETTING_KEY_PAUSE_ANIMATION, value: pauseAnimation };
+        const theme = { key: SETTING_KEY_PAUSE_THEME, value: pauseTheme };
+        await dbPut(STORE_SETTINGS, animation);
+        await dbPut(STORE_SETTINGS, theme);
+
+        for (let restart = 0; restart < 2; restart++) {
+            closeDatabase();
+            const state = await initDB();
+            expect(state.pauseAnimation).toBe(pauseAnimation);
+            expect(state.pauseTheme).toBe(pauseTheme);
+            expect(await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_ANIMATION)).toEqual(animation);
+            expect(await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_THEME)).toEqual(theme);
+        }
+    });
+
+    test.each([
+        [SETTING_KEY_PAUSE_ANIMATION, 'halloween_jack', 'pauseAnimation'],
+        [SETTING_KEY_PAUSE_THEME, 'neutral', 'pauseTheme'],
+        [null, null, null],
+    ])('initDB uses seasonal defaults only for missing settings (%s saved)', async (key, value, property) => {
+        await openDatabase();
+        if (key) await dbPut(STORE_SETTINGS, { key, value });
+        closeDatabase();
+
+        const state = await initDB();
+        const expected = getSeasonalPauseDefaults();
+        if (property) expected[property] = value;
+        expect(state.pauseAnimation).toBe(expected.pauseAnimation);
+        expect(state.pauseTheme).toBe(expected.pauseTheme);
+        for (const setting of [SETTING_KEY_PAUSE_ANIMATION, SETTING_KEY_PAUSE_THEME]) {
+            if (setting !== key) expect(await dbGet(STORE_SETTINGS, setting)).toBeUndefined();
+        }
     });
 
     test('initDB handles multiple active tasks by closing orphaned ones', async () => {

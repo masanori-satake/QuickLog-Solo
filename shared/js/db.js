@@ -491,7 +491,6 @@ export async function initDB(isLite = false) {
         await migrateLogsWithSyncId();
         await migrateLogsWithUpdatedAt();
         await migrateCategoriesWithMissingOrder();
-        await migratePauseAnimationAndThemeDefaults();
         await cleanupOldLogs();
     }
 
@@ -771,28 +770,6 @@ async function migrateCategoriesWithMissingOrder() {
                 store.put(cat);
             }
         });
-    }
-
-    await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
-}
-
-/**
- * Migrates standby animation and theme defaults from legacy fixed values.
- * Removes uncustomized legacy default entries once so that dynamic seasonal defaults apply.
- */
-async function migratePauseAnimationAndThemeDefaults() {
-    const migrationKey = 'migration_seasonal_pause_defaults_v1_46_1';
-    const alreadyMigrated = await dbGet(STORE_SETTINGS, migrationKey);
-    if (alreadyMigrated) return;
-
-    const pauseAnim = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_ANIMATION);
-    if (pauseAnim && (pauseAnim.value === 'snoring_zzz' || pauseAnim.value === 'halloween_jack')) {
-        await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_ANIMATION);
-    }
-
-    const pauseTheme = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_THEME);
-    if (pauseTheme && (pauseTheme.value === 'neutral' || pauseTheme.value === 'retro-nixie')) {
-        await dbDelete(STORE_SETTINGS, SETTING_KEY_PAUSE_THEME);
     }
 
     await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
