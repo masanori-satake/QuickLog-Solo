@@ -497,6 +497,11 @@ export async function initDB(isLite = false) {
     return await getCurrentAppState();
 }
 
+/**
+ * Reads settings, ordered categories and alarms, and the paused or active task from IndexedDB.
+ * Uses seasonal standby defaults only for missing settings, without saving those defaults.
+ * @returns {Promise<Object>} The current application state with defaults applied.
+ */
 export async function getCurrentAppState() {
     const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);

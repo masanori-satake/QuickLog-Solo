@@ -1299,6 +1299,11 @@ function initAnimationEngine() {
     }
 }
 
+/**
+ * Refreshes in-memory state and the UI from the database after app initialization.
+ * Applies settings and animations, using seasonal standby defaults as fallbacks.
+ * @returns {Promise<void>} Resolves after the UI refresh, or immediately if initialization is incomplete.
+ */
 async function syncState() {
     if (!isAppInitialized) return;
     const state = await getCurrentAppState();
