@@ -23,7 +23,7 @@ export default class SnowFall extends AnimationBase {
             en: "A peaceful snow scene featuring distant small snowflakes and detailed foreground crystal snowflakes falling gently.",
             ja: "遠くの小さめの雪と、ドット表示でも映える複数の雪の結晶が少しずつ速度を違えてゆっくりとフワフワ降るアニメーションです。",
             de: "Eine friedliche Schneeszene mit kleinen Schneeflocken im Hintergrund und detaillierten Kristall-Schneeflocken im Vordergrund.",
-            es: "Una pacífica escena de nieve con pequeñas copas de nieve lejanas y detallados cristales en primer plano.",
+            es: "Una pacífica escena de nieve con pequeños copos de nieve lejanos y detallados cristales en primer plano.",
             fr: "Une scène de neige paisible avec de petits flocons lointains et des cristaux détaillés au premier plan.",
             pt: "Uma cena de neve tranquila com pequenos flocos ao fundo e cristais detalhados em primeiro plano.",
             ko: "고요한 눈 내리는 풍경으로, 멀리 작은 눈송이와 가까이 다채로운 눈 결정체가 부드럽게 떨어집니다.",
@@ -164,12 +164,14 @@ export default class SnowFall extends AnimationBase {
         if (elapsedMs < this.lastElapsedMs) {
             this.setup(width, height);
         }
+        // Preserve the original 60fps fall speed when frames are skipped.
+        const frameScale = (elapsedMs - this.lastElapsedMs) / (1000 / 60);
         this.lastElapsedMs = elapsedMs;
 
         // 1. Render Background Small Snowflakes (Distant layer)
         // 1. 遠くの小雪描画 (フワフワと落ちる小さなドット)
         for (const flake of this.backgroundFlakes) {
-            flake.y += flake.speedY;
+            flake.y += flake.speedY * frameScale;
 
             // Wrap around top when falling off bottom
             if (flake.y > height + 5) {
@@ -193,7 +195,7 @@ export default class SnowFall extends AnimationBase {
         // 2. Render Foreground Snowflake Crystals (Near layer)
         // 2. 近くの大きな雪の結晶描画 (パターン表示と並行移動回避)
         for (const crystal of this.foregroundCrystals) {
-            crystal.y += crystal.speedY;
+            crystal.y += crystal.speedY * frameScale;
 
             // Wrap around top with new random pattern when falling off bottom
             if (crystal.y > height + 20) {

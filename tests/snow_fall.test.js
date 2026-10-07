@@ -59,6 +59,40 @@ describe('SnowFall Animation Module', () => {
         });
     });
 
+    test('preserves fall distance over the same elapsed time when frames are skipped', () => {
+        anim.setup(300, 150);
+        [...anim.backgroundFlakes, ...anim.foregroundCrystals].forEach(particle => {
+            particle.y = 0;
+        });
+        const skippedFrames = new SnowFall();
+        skippedFrames.setup(300, 150);
+        skippedFrames.backgroundFlakes = anim.backgroundFlakes.map(flake => ({ ...flake }));
+        skippedFrames.foregroundCrystals = anim.foregroundCrystals.map(crystal => ({ ...crystal }));
+
+        for (let frame = 0; frame <= 60; frame++) {
+            anim.draw(null, { elapsedMs: frame * (1000 / 60) });
+        }
+        skippedFrames.draw(null, { elapsedMs: 1000 });
+
+        for (const layer of ['backgroundFlakes', 'foregroundCrystals']) {
+            anim[layer].forEach((particle, index) => {
+                expect(particle.y).toBeCloseTo(particle.speedY * 60);
+                expect(skippedFrames[layer][index].y).toBeCloseTo(particle.y);
+            });
+        }
+    });
+
+    test('does not fall when elapsed time is unchanged', () => {
+        anim.setup(300, 150);
+        anim.draw(null, { elapsedMs: 100 });
+        const particles = [...anim.backgroundFlakes, ...anim.foregroundCrystals];
+        const positions = particles.map(particle => particle.y);
+
+        anim.draw(null, { elapsedMs: 100 });
+
+        expect(particles.map(particle => particle.y)).toEqual(positions);
+    });
+
     test('handles time rewinding / reset cleanly', () => {
         anim.setup(300, 150);
         anim.draw(null, { elapsedMs: 5000 });
