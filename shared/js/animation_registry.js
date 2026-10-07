@@ -37,6 +37,7 @@ import RpgGrid from './animation/rpg_grid.js';
 import SandClock from './animation/sand_clock.js';
 import Smoke from './animation/smoke.js';
 import SnoringZzz from './animation/snoring_zzz.js';
+import SnowFall from './animation/snow_fall.js';
 import Spectrum from './animation/spectrum.js';
 import SpotlightEvasion from './animation/spotlight_evasion.js';
 import Suminagashi from './animation/suminagashi.js';
@@ -84,6 +85,7 @@ export const animations = [
     { id: 'sand_clock', class: SandClock, metadata: SandClock.metadata },
     { id: 'smoke', class: Smoke, metadata: Smoke.metadata },
     { id: 'snoring_zzz', class: SnoringZzz, metadata: SnoringZzz.metadata },
+    { id: 'snow_fall', class: SnowFall, metadata: SnowFall.metadata },
     { id: 'spectrum', class: Spectrum, metadata: Spectrum.metadata },
     { id: 'spotlight_evasion', class: SpotlightEvasion, metadata: SpotlightEvasion.metadata, devOnly: true },
     { id: 'suminagashi', class: Suminagashi, metadata: Suminagashi.metadata, devOnly: true },
