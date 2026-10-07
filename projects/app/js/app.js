@@ -62,6 +62,7 @@ import {
     SYSTEM_CATEGORY_PAGE_BREAK,
     generateUUID,
     sanitizeRenderSpec,
+    getSeasonalPauseDefaults,
 } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { saveAnimationBlob, initAnimationDB } from '../shared/js/idb_storage.js';
@@ -207,9 +208,10 @@ let currentCategoryPage = 0;
 /** @type {string} Current category layout ('2x8' or '2x4'). */
 let currentCategoryLayout = '2x8';
 /** @type {string} Current background animation ID. */
+const initialSeasonalDefaults = getSeasonalPauseDefaults();
 let currentAnimationType = 'digital_rain';
-let currentPauseAnimation = 'halloween_jack';
-let currentPauseTheme = 'retro-nixie';
+let currentPauseAnimation = initialSeasonalDefaults.pauseAnimation;
+let currentPauseTheme = initialSeasonalDefaults.pauseTheme;
 /** @type {string|null} JSON string of the last rendered category state for change detection. */
 let lastCategoryRenderData = null;
 /** @type {string|null} JSON string of the last rendered logs state for change detection. */
@@ -1297,6 +1299,11 @@ function initAnimationEngine() {
     }
 }
 
+/**
+ * Refreshes in-memory state and the UI from the database after app initialization.
+ * Applies settings and animations, using seasonal standby defaults as fallbacks.
+ * @returns {Promise<void>} Resolves after the UI refresh, or immediately if initialization is incomplete.
+ */
 async function syncState() {
     if (!isAppInitialized) return;
     const state = await getCurrentAppState();
@@ -1365,8 +1372,9 @@ async function syncState() {
     applyCategoryLayout(state.categoryLayout || (isPWA ? '2x4' : '2x8'));
     applyFontWeight(state.fontWeight || 'normal');
 
-    currentPauseAnimation = state.pauseAnimation || 'halloween_jack';
-    currentPauseTheme = state.pauseTheme || 'retro-nixie';
+    const seasonal = getSeasonalPauseDefaults();
+    currentPauseAnimation = state.pauseAnimation || seasonal.pauseAnimation;
+    currentPauseTheme = state.pauseTheme || seasonal.pauseTheme;
 
     const langSelect = getEl(ID_LANGUAGE_SELECT);
     if (langSelect) langSelect.value = state.language || 'auto';

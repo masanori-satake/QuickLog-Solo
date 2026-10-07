@@ -255,3 +255,25 @@ export function sanitizeRenderSpec(rawSpec) {
         brightness: parseNum(spec.brightness, 0.1, 3.0, 1.0),
     };
 }
+
+/**
+ * Returns default pause animation and pause theme depending on current date (season).
+ * - October (month index 9): 'halloween_jack', 'retro-nixie'
+ * - November to January (month index 10, 11, 0): 'snow_fall', 'cyan'
+ * - Other periods (February to September): 'snoring_zzz', 'outline'
+ *
+ * @param {Date} [date=new Date()]
+ * @returns {{ pauseAnimation: string, pauseTheme: string }}
+ */
+export function getSeasonalPauseDefaults(date = new Date()) {
+    const d = date instanceof Date && !isNaN(date.getTime()) ? date : new Date();
+    const month = d.getMonth(); // 0 = Jan, 9 = Oct, 10 = Nov, 11 = Dec
+
+    if (month === 9) {
+        return { pauseAnimation: 'halloween_jack', pauseTheme: 'retro-nixie' };
+    } else if (month === 10 || month === 11 || month === 0) {
+        return { pauseAnimation: 'snow_fall', pauseTheme: 'cyan' };
+    } else {
+        return { pauseAnimation: 'snoring_zzz', pauseTheme: 'outline' };
+    }
+}

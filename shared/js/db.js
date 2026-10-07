@@ -1,4 +1,4 @@
-import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, DEFAULT_ALARM_MESSAGE_STOP, generateUUID } from './utils.js';
+import { SYSTEM_CATEGORY_IDLE, SYSTEM_CATEGORY_UNKNOWN, SYSTEM_CATEGORY_PAGE_BREAK, DEFAULT_ALARM_MESSAGE_STOP, generateUUID, getSeasonalPauseDefaults } from './utils.js';
 import { t, setLanguage } from './i18n.js';
 import { validateCategorySchema, SCHEMA_TYPE_PAGE_BREAK } from './schema.js';
 
@@ -491,13 +491,17 @@ export async function initDB(isLite = false) {
         await migrateLogsWithSyncId();
         await migrateLogsWithUpdatedAt();
         await migrateCategoriesWithMissingOrder();
-        await migratePauseAnimationAndThemeDefaults();
         await cleanupOldLogs();
     }
 
     return await getCurrentAppState();
 }
 
+/**
+ * Reads settings, ordered categories and alarms, and the paused or active task from IndexedDB.
+ * Uses seasonal standby defaults only for missing settings, without saving those defaults.
+ * @returns {Promise<Object>} The current application state with defaults applied.
+ */
 export async function getCurrentAppState() {
     const theme = await dbGet(STORE_SETTINGS, SETTING_KEY_THEME);
     const font = await dbGet(STORE_SETTINGS, SETTING_KEY_FONT);
@@ -530,6 +534,8 @@ export async function getCurrentAppState() {
             (window.location && new URLSearchParams(window.location.search).has('pwa')) ||
             (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
 
+    const seasonal = getSeasonalPauseDefaults();
+
     return {
         theme: theme ? theme.value : null,
         font: font ? font.value : null,
@@ -540,8 +546,8 @@ export async function getCurrentAppState() {
         businessDays: businessDays ? businessDays.value : [1, 2, 3, 4, 5],
         timerHeight: timerHeight ? timerHeight.value : isPWA ? 'mini' : 'normal',
         categoryLayout: categoryLayout ? categoryLayout.value : isPWA ? '2x4' : '2x8',
-        pauseAnimation: pauseAnimation ? pauseAnimation.value : 'halloween_jack',
-        pauseTheme: pauseTheme ? pauseTheme.value : 'retro-nixie',
+        pauseAnimation: pauseAnimation ? pauseAnimation.value : seasonal.pauseAnimation,
+        pauseTheme: pauseTheme ? pauseTheme.value : seasonal.pauseTheme,
         alwaysOnTop: alwaysOnTop ? alwaysOnTop.value : false,
         pwaSupport: pwaSupport ? pwaSupport.value : false,
         sessionSync: (await dbGet(STORE_SETTINGS, SETTING_KEY_SESSION_SYNC))?.value || false,
@@ -772,22 +778,6 @@ async function migrateCategoriesWithMissingOrder() {
     }
 
     await dbPut(STORE_SETTINGS, { key: migrationKey, value: true });
-}
-
-/**
- * Migrates standby animation and theme defaults from legacy snoring_zzz/neutral to halloween_jack/retro-nixie
- * for users who haven't explicitly customized them.
- */
-async function migratePauseAnimationAndThemeDefaults() {
-    const pauseAnim = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_ANIMATION);
-    if (!pauseAnim || pauseAnim.value === 'snoring_zzz') {
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_ANIMATION, value: 'halloween_jack' });
-    }
-
-    const pauseTheme = await dbGet(STORE_SETTINGS, SETTING_KEY_PAUSE_THEME);
-    if (!pauseTheme || pauseTheme.value === 'neutral') {
-        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_PAUSE_THEME, value: 'retro-nixie' });
-    }
 }
 
 /**
