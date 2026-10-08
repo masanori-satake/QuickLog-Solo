@@ -194,7 +194,8 @@ export default class SnoringZzz extends AnimationBase {
             activeElements.push(elem);
 
             // Get pattern grid
-            const pattern = SnoringZzz.PATTERNS[elem.type] || SnoringZzz.PATTERNS['z'];
+            const patterns = this.constructor.PATTERNS || SnoringZzz.PATTERNS;
+            const pattern = patterns[elem.type] || patterns['z'];
             const gridH = pattern.length;
             const gridW = pattern[0].length;
             const originX = (gridW * CELL_SIZE) / 2;

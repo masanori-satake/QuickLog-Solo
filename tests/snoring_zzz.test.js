@@ -75,4 +75,16 @@ describe('SnoringZzz Animation Module', () => {
         expect(SnoringZzz.PATTERNS['bubble']).toBeDefined();
         expect(SnoringZzz.PATTERNS['star']).toBeDefined();
     });
+
+    test('executes setup and draw without error when subclassed as CustomAnimation in Studio environment', () => {
+        class CustomAnimation extends SnoringZzz {}
+        CustomAnimation.PATTERNS = SnoringZzz.PATTERNS;
+
+        const customAnim = new CustomAnimation();
+        customAnim.setup(200, 100);
+        const sprites = customAnim.draw(null, { elapsedMs: 500 });
+
+        expect(Array.isArray(sprites)).toBe(true);
+        expect(sprites.length).toBeGreaterThan(0);
+    });
 });

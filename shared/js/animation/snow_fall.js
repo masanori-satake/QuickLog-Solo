@@ -133,7 +133,8 @@ export default class SnowFall extends AnimationBase {
         const x = minX + Math.random() * zoneWidth;
 
         // Randomly choose pattern (0..3)
-        const patternIndex = Math.floor(Math.random() * SnowFall.CRYSTAL_PATTERNS.length);
+        const patterns = this.constructor.CRYSTAL_PATTERNS || SnowFall.CRYSTAL_PATTERNS;
+        const patternIndex = Math.floor(Math.random() * patterns.length);
 
         return {
             x,
@@ -198,10 +199,11 @@ export default class SnowFall extends AnimationBase {
             crystal.y += crystal.speedY * frameScale;
 
             // Wrap around top with new random pattern when falling off bottom
+            const patterns = this.constructor.CRYSTAL_PATTERNS || SnowFall.CRYSTAL_PATTERNS;
             if (crystal.y > height + 20) {
                 crystal.y = -20;
                 crystal.x = Math.random() * width;
-                crystal.patternIndex = Math.floor(Math.random() * SnowFall.CRYSTAL_PATTERNS.length);
+                crystal.patternIndex = Math.floor(Math.random() * patterns.length);
                 crystal.speedY = 0.2 + Math.random() * 0.35; // New slightly varied speed
             }
 
@@ -209,7 +211,7 @@ export default class SnowFall extends AnimationBase {
             const currentX = crystal.x + sway;
             const currentY = crystal.y;
 
-            const pattern = SnowFall.CRYSTAL_PATTERNS[crystal.patternIndex] || SnowFall.CRYSTAL_PATTERNS[0];
+            const pattern = patterns[crystal.patternIndex] || patterns[0];
             const gridH = pattern.length;
             const gridW = pattern[0].length;
             const originX = (gridW * CELL_SIZE) / 2;
