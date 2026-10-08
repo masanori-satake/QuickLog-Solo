@@ -117,4 +117,16 @@ describe('SnowFall Animation Module', () => {
             expect(Array.isArray(pattern[0])).toBe(true);
         });
     });
+
+    test('executes setup and draw without error when subclassed as CustomAnimation in Studio environment', () => {
+        class CustomAnimation extends SnowFall {}
+        CustomAnimation.CRYSTAL_PATTERNS = SnowFall.CRYSTAL_PATTERNS;
+
+        const customAnim = new CustomAnimation();
+        customAnim.setup(300, 150);
+        const sprites = customAnim.draw(null, { elapsedMs: 1000 });
+
+        expect(Array.isArray(sprites)).toBe(true);
+        expect(sprites.length).toBeGreaterThan(0);
+    });
 });
