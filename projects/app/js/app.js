@@ -291,7 +291,7 @@ export async function copyToClipboard(text, isHtml = false) {
                 ];
                 await navigator.clipboard.write(data);
                 return true;
-            } else if (typeof navigator.clipboard.writeText === 'function') {
+            } else if (!isHtml && typeof navigator.clipboard.writeText === 'function') {
                 await navigator.clipboard.writeText(textToCopy);
                 return true;
             }
@@ -314,15 +314,30 @@ export async function copyToClipboard(text, isHtml = false) {
         textArea.style.opacity = '0';
         textArea.setAttribute('readonly', '');
 
-        activeBody.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        textArea.setSelectionRange(0, textArea.value.length);
+        const previousActiveElement = targetDoc.activeElement;
+        let htmlCopied = false;
+        const onCopy = (event) => {
+            if (!event.clipboardData) return;
+            event.clipboardData.setData('text/html', textToCopy);
+            event.clipboardData.setData('text/plain', textToCopy);
+            event.preventDefault();
+            htmlCopied = true;
+        };
 
-        const successful = targetDoc.execCommand('copy');
-        activeBody.removeChild(textArea);
+        try {
+            activeBody.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            textArea.setSelectionRange(0, textArea.value.length);
+            if (isHtml) targetDoc.addEventListener('copy', onCopy);
 
-        return Boolean(successful);
+            const successful = targetDoc.execCommand('copy');
+            return Boolean(successful && (!isHtml || htmlCopied));
+        } finally {
+            if (isHtml) targetDoc.removeEventListener('copy', onCopy);
+            if (textArea.parentNode === activeBody) activeBody.removeChild(textArea);
+            previousActiveElement?.focus();
+        }
     } catch (fallbackErr) {
         console.error('execCommand fallback failed:', fallbackErr);
         return false;
