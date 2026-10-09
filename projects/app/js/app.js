@@ -265,6 +265,70 @@ const applyToBodies = (fn) => {
 };
 const createEl = (tag) => document.createElement(tag);
 
+/**
+ * Copies text or HTML to the clipboard safely with fallback to execCommand.
+ * @param {string} text
+ * @param {boolean} [isHtml=false]
+ * @returns {Promise<boolean>}
+ */
+export async function copyToClipboard(text, isHtml = false) {
+    const textToCopy = typeof text === 'string' ? text : String(text ?? '');
+    if (!textToCopy && textToCopy !== '') return false;
+
+    // 1. Try Clipboard API if available and secure context
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        try {
+            if (isHtml && typeof ClipboardItem !== 'undefined' && typeof navigator.clipboard.write === 'function') {
+                const htmlType = 'text/html';
+                const plainType = 'text/plain';
+                const blobHtml = new Blob([textToCopy], { type: htmlType });
+                const blobPlain = new Blob([textToCopy], { type: plainType });
+                const data = [
+                    new ClipboardItem({
+                        [htmlType]: blobHtml,
+                        [plainType]: blobPlain,
+                    }),
+                ];
+                await navigator.clipboard.write(data);
+                return true;
+            } else if (typeof navigator.clipboard.writeText === 'function') {
+                await navigator.clipboard.writeText(textToCopy);
+                return true;
+            }
+        } catch (err) {
+            console.warn('navigator.clipboard failed, attempting execCommand fallback:', err);
+        }
+    }
+
+    // 2. Fallback: execCommand('copy') on a temporary element in the active document
+    try {
+        const targetDoc = (typeof getBody === 'function' && getBody() ? getBody().ownerDocument : null) || document;
+        const activeBody = (typeof getBody === 'function' && getBody()) || targetDoc.body;
+        if (!activeBody) return false;
+
+        const textArea = targetDoc.createElement('textarea');
+        textArea.value = textToCopy;
+        textArea.style.position = 'fixed';
+        textArea.style.top = '-9999px';
+        textArea.style.left = '-9999px';
+        textArea.style.opacity = '0';
+        textArea.setAttribute('readonly', '');
+
+        activeBody.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, textArea.value.length);
+
+        const successful = targetDoc.execCommand('copy');
+        activeBody.removeChild(textArea);
+
+        return Boolean(successful);
+    } catch (fallbackErr) {
+        console.error('execCommand fallback failed:', fallbackErr);
+        return false;
+    }
+}
+
 export function isPinWindowSupported() {
     return typeof window !== 'undefined' && 'documentPictureInPicture' in window && !!window.documentPictureInPicture;
 }
@@ -1811,11 +1875,11 @@ async function startPusherTransferProcess() {
         if (copyPinBtn) {
             copyPinBtn.disabled = false;
             copyPinBtn.onclick = async () => {
-                try {
-                    await navigator.clipboard.writeText(pinCode);
+                const success = await copyToClipboard(pinCode);
+                if (success) {
                     showToast(t('toast-copied') || 'コピーしました！');
-                } catch (copyErr) {
-                    console.error('Failed to copy PIN code:', copyErr);
+                } else {
+                    console.error('Failed to copy PIN code');
                     showToast(t('alert-error') || 'コピーに失敗しました');
                 }
             };
@@ -1882,11 +1946,11 @@ async function startPusherTransferProcess() {
 
             if (copyErrorBtn) {
                 copyErrorBtn.onclick = async () => {
-                    try {
-                        await navigator.clipboard.writeText(reportText);
+                    const success = await copyToClipboard(reportText);
+                    if (success) {
                         showToast(t('toast-copied') || 'コピーしました！');
-                    } catch (copyErr) {
-                        console.error('Failed to copy error report:', copyErr);
+                    } else {
+                        console.error('Failed to copy error report');
                         showToast(t('alert-error') || 'コピーに失敗しました');
                     }
                 };
@@ -2683,10 +2747,15 @@ async function updateTagAggregationUI() {
         copyBtn.className = 'tag-copy-btn material-symbols-outlined';
         copyBtn.textContent = 'content_paste';
         copyBtn.title = t('btn-copy');
-        copyBtn.onclick = () => {
+        copyBtn.onclick = async () => {
             const text = durCell.textContent;
-            navigator.clipboard.writeText(text);
-            showToast(t('toast-copied'));
+            const success = await copyToClipboard(text);
+            if (success) {
+                showToast(t('toast-copied'));
+            } else {
+                console.error('Failed to copy tag aggregation text');
+                showToast(t('alert-error') || 'コピーに失敗しました');
+            }
         };
         copyCell.appendChild(copyBtn);
         row.appendChild(copyCell);
@@ -3891,23 +3960,14 @@ function setupEventListeners() {
 
     getEl(ID_REPORT_COPY_CONFIRM_BTN)?.addEventListener('click', async () => {
         const text = getEl(ID_REPORT_PREVIEW).textContent;
-        if (reportSettings.format === 'html') {
-            const htmlType = 'text/html';
-            const plainType = 'text/plain';
-            const blobHtml = new Blob([text], { type: htmlType });
-            const blobPlain = new Blob([text], { type: plainType });
-            const data = [
-                new ClipboardItem({
-                    [htmlType]: blobHtml,
-                    [plainType]: blobPlain,
-                }),
-            ];
-            await navigator.clipboard.write(data);
+        const isHtml = reportSettings.format === 'html';
+        const success = await copyToClipboard(text, isHtml);
+        if (success) {
+            showToast(t('toast-copied'));
         } else {
-            await navigator.clipboard.writeText(text);
+            console.error('Failed to copy daily report');
+            showToast(t('alert-error') || 'コピーに失敗しました');
         }
-
-        showToast(t('toast-copied'));
     });
 
     // Tabs
@@ -4564,18 +4624,22 @@ async function initApp() {
         }, 100);
     };
 
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            delayedSync();
-        }
-    });
-    window.addEventListener('focus', delayedSync);
-    window.addEventListener('online', delayedSync);
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'ql_pwa_session_sync' || e.key?.startsWith('ql_pwa_session_sync:')) {
-            delayedSync();
-        }
-    });
+    if (typeof document !== 'undefined') {
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                delayedSync();
+            }
+        });
+    }
+    if (typeof window !== 'undefined') {
+        window.addEventListener('focus', delayedSync);
+        window.addEventListener('online', delayedSync);
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'ql_pwa_session_sync' || e.key?.startsWith('ql_pwa_session_sync:')) {
+                delayedSync();
+            }
+        });
+    }
 
     // Deep Sleep / Wake detection: Monitor for significant time jumps
     let lastTick = Date.now();
