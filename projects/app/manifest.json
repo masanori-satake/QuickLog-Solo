@@ -2,7 +2,8 @@
   "manifest_version": 3,
   "default_locale": "en",
   "name": "__MSG_extensionName__",
-  "version": "1.47.3",
+  "short_name": "__MSG_extensionShortName__",
+  "version": "1.47.4",
   "description": "__MSG_extensionDescription__",
   "permissions": [
     "tabs",
