@@ -280,7 +280,8 @@ export class AnimationEngine {
     stop() {
         this.isDrawPending = false;
         if (this.requestId) {
-            cancelAnimationFrame(this.requestId);
+            const animWindow = this.canvas?.ownerDocument?.defaultView || window;
+            animWindow.cancelAnimationFrame(this.requestId);
             this.requestId = null;
         }
         if (this.worker) {
@@ -298,7 +299,8 @@ export class AnimationEngine {
     animate() {
         if (!this.worker || !this.initialized) return;
         this.draw();
-        this.requestId = requestAnimationFrame(() => this.animate());
+        const animWindow = this.canvas?.ownerDocument?.defaultView || window;
+        this.requestId = animWindow.requestAnimationFrame(() => this.animate());
     }
 
     draw() {
