@@ -422,6 +422,7 @@ export async function openPinWindow() {
         if (animationEngine) {
             animationEngine.resize();
             updateAnimationExclusionAreas();
+            animationEngine.restartAnimationLoop();
             const animWin = animationEngine.canvas?.ownerDocument?.defaultView || window;
             animWin.requestAnimationFrame(() => {
                 if (animationEngine) {
@@ -536,6 +537,7 @@ function onPipWindowClosed() {
     if (animationEngine) {
         animationEngine.resize();
         updateAnimationExclusionAreas();
+        animationEngine.restartAnimationLoop();
     }
 }
 

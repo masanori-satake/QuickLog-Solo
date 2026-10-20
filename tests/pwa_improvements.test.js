@@ -211,11 +211,11 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(focusSpy).toHaveBeenCalled();
     });
 
-    test('AnimationEngine animate and stop target canvas ownerDocument defaultView', async () => {
+    test.each([0, 123])('AnimationEngine cancels frame %i in its registering window after adoption', async (requestId) => {
         const { AnimationEngine } = await import('../shared/js/animations.js');
 
         const mockPipWin = {
-            requestAnimationFrame: jest.fn().mockReturnValue(123),
+            requestAnimationFrame: jest.fn().mockReturnValue(requestId),
             cancelAnimationFrame: jest.fn(),
         };
 
@@ -238,8 +238,93 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         engine.animate();
         expect(mockPipWin.requestAnimationFrame).toHaveBeenCalled();
 
+        const cancelMainFrame = jest.spyOn(window, 'cancelAnimationFrame');
+        mockCanvas.ownerDocument = document;
         engine.stop();
-        expect(mockPipWin.cancelAnimationFrame).toHaveBeenCalledWith(123);
+        expect(mockPipWin.cancelAnimationFrame).toHaveBeenCalledWith(requestId);
+        expect(cancelMainFrame).not.toHaveBeenCalled();
+        expect(engine.requestId).toBeNull();
+        expect(engine.requestWindow).toBeNull();
+    });
+
+    test('AnimationEngine keeps drawing through repeated document moves without restarting its worker', async () => {
+        const { AnimationEngine } = await import('../shared/js/animations.js');
+        const iframe = document.createElement('iframe');
+        document.body.appendChild(iframe);
+        const pipWin = iframe.contentWindow;
+        const queues = new Map();
+        for (const target of [window, pipWin]) {
+            const queue = new Map();
+            queues.set(target, queue);
+            let nextId = 0;
+            jest.spyOn(target, 'requestAnimationFrame').mockImplementation((callback) => {
+                const id = nextId++;
+                queue.set(id, callback);
+                return id;
+            });
+            jest.spyOn(target, 'cancelAnimationFrame').mockImplementation((id) => queue.delete(id));
+        }
+
+        const parent = document.createElement('div');
+        const canvas = document.createElement('canvas');
+        parent.appendChild(canvas);
+        document.body.appendChild(parent);
+        jest.spyOn(parent, 'getBoundingClientRect').mockReturnValue({ width: 100, height: 100 });
+        jest.spyOn(canvas, 'getContext').mockReturnValue({ clearRect: jest.fn() });
+        const engine = new AnimationEngine(canvas);
+        const worker = { postMessage: jest.fn(), terminate: jest.fn() };
+        engine.worker = worker;
+        engine.initialized = true;
+        engine.animate();
+
+        let previous = window;
+        for (const target of [pipWin, window, pipWin, window]) {
+            const previousId = engine.requestId;
+            target.document.body.appendChild(parent);
+            engine.restartAnimationLoop();
+            expect(previous.cancelAnimationFrame).toHaveBeenLastCalledWith(previousId);
+            expect(queues.get(previous).size).toBe(0);
+            expect(queues.get(target).size).toBe(1);
+
+            engine._handleWorkerMessage({ data: { type: 'drawResponse', payload: { dots: [] } } });
+            const frameId = engine.requestId;
+            const callback = queues.get(target).get(frameId);
+            queues.get(target).delete(frameId);
+            const drawCount = worker.postMessage.mock.calls.filter(([message]) => message.type === 'draw').length;
+            callback();
+            expect(worker.postMessage.mock.calls.filter(([message]) => message.type === 'draw')).toHaveLength(
+                drawCount + 1
+            );
+            expect(queues.get(target).size).toBe(1);
+            expect(engine.requestWindow).toBe(target);
+            expect(engine.worker).toBe(worker);
+            expect(worker.terminate).not.toHaveBeenCalled();
+            previous = target;
+        }
+
+        engine.stop();
+        expect(queues.get(window).size).toBe(0);
+        expect(queues.get(pipWin).size).toBe(0);
+        iframe.remove();
+    });
+
+    test('AnimationEngine waits for worker initialization when moved before startup completes', async () => {
+        const { AnimationEngine } = await import('../shared/js/animations.js');
+        const canvas = document.createElement('canvas');
+        jest.spyOn(canvas, 'getContext').mockReturnValue({ clearRect: jest.fn() });
+        const requestFrame = jest.spyOn(window, 'requestAnimationFrame').mockReturnValue(123);
+        const engine = new AnimationEngine(canvas);
+        engine.worker = { postMessage: jest.fn(), terminate: jest.fn() };
+
+        engine.restartAnimationLoop();
+        expect(requestFrame).not.toHaveBeenCalled();
+        expect(engine.requestId).toBeNull();
+
+        engine._handleWorkerMessage({ data: { type: 'initialized' } });
+        expect(requestFrame).toHaveBeenCalledTimes(1);
+        engine.stop();
+        engine.restartAnimationLoop();
+        expect(requestFrame).toHaveBeenCalledTimes(1);
     });
 
     test('setupPinSync attaches keyboard navigation, input type, and paste events to PIN inputs', async () => {
