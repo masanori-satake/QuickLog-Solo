@@ -85,24 +85,29 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(isPinWindowSupported()).toBe(true);
     });
 
-    test.each(['set', 'remove'])('%s reports failed storage writes to callbacks and Promise callers', async (operation) => {
-        const { ensureStorageSyncFallback } = await import('../shared/js/session_sync.js');
-        ensureStorageSyncFallback();
-        const error = new DOMException('Storage is full', 'QuotaExceededError');
-        jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-            throw error;
-        });
-        jest.spyOn(console, 'error').mockImplementation(() => {});
-        let callbackError;
-        const argument = operation === 'set' ? { key: 'value' } : 'key';
+    test.each(['set', 'remove'])(
+        '%s reports failed storage writes to callbacks and Promise callers',
+        async (operation) => {
+            const { ensureStorageSyncFallback } = await import('../shared/js/session_sync.js');
+            ensureStorageSyncFallback();
+            const error = new DOMException('Storage is full', 'QuotaExceededError');
+            jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+                throw error;
+            });
+            jest.spyOn(console, 'error').mockImplementation(() => {});
+            let callbackError;
+            const argument = operation === 'set' ? { key: 'value' } : 'key';
 
-        await expect(globalThis.chrome.storage.sync[operation](argument, () => {
-            callbackError = globalThis.chrome.runtime.lastError;
-        })).rejects.toBe(error);
+            await expect(
+                globalThis.chrome.storage.sync[operation](argument, () => {
+                    callbackError = globalThis.chrome.runtime.lastError;
+                })
+            ).rejects.toBe(error);
 
-        expect(callbackError).toBe(error);
-        expect(globalThis.chrome.runtime.lastError).toBeUndefined();
-    });
+            expect(callbackError).toBe(error);
+            expect(globalThis.chrome.runtime.lastError).toBeUndefined();
+        }
+    );
 
     test('applyTimerHeight sets --timer-height-factor on body and documentElement', async () => {
         jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
@@ -142,9 +147,14 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(document.getElementById('pip-placeholder')).toBeNull();
     });
 
-    test('openPinWindow creates placeholder and onPipWindowClosed cleans up and returns focus', async () => {
+    test('openPinWindow creates placeholder, clones stylesheet absolute URLs, and onPipWindowClosed cleans up and returns focus', async () => {
         jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
         const { openPinWindow, isPinWindowSupported } = await import('../projects/app/js/app.js');
+
+        const testLink = document.createElement('link');
+        testLink.rel = 'stylesheet';
+        testLink.href = '../app/css/style.css';
+        document.head.appendChild(testLink);
 
         const mockPipBody = document.createElement('body');
         const mockPipHead = document.createElement('head');
@@ -158,6 +168,7 @@ describe('PWA Improvements & Session Sync Fallback', () => {
                 documentElement: mockPipDocEl,
                 getElementById: (id) => mockPipBody.querySelector(`#${id}`) || document.getElementById(id),
                 querySelectorAll: (sel) => mockPipBody.querySelectorAll(sel),
+                createElement: (tag) => document.createElement(tag),
             },
             addEventListener: jest.fn((event, cb) => {
                 if (event === 'pagehide') {
@@ -183,6 +194,10 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(mockPipBody.style.getPropertyValue('--timer-height-factor')).toBe('1');
         expect(mockPipDocEl.style.getPropertyValue('--timer-height-factor')).toBe('1');
 
+        const clonedLink = mockPipHead.querySelector('link');
+        expect(clonedLink).not.toBeNull();
+        expect(clonedLink.href).toBe(testLink.href);
+
         // Restore via button click
         const restoreBtn = document.getElementById('pip-restore-btn');
         expect(restoreBtn).not.toBeNull();
@@ -194,6 +209,122 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(document.getElementById('pip-placeholder')).toBeNull();
         expect(document.getElementById('app')).not.toBeNull();
         expect(focusSpy).toHaveBeenCalled();
+    });
+
+    test.each([0, 123])('AnimationEngine cancels frame %i in its registering window after adoption', async (requestId) => {
+        const { AnimationEngine } = await import('../shared/js/animations.js');
+
+        const mockPipWin = {
+            requestAnimationFrame: jest.fn().mockReturnValue(requestId),
+            cancelAnimationFrame: jest.fn(),
+        };
+
+        const mockDoc = {
+            defaultView: mockPipWin,
+        };
+
+        const mockCanvas = {
+            ownerDocument: mockDoc,
+            getContext: jest.fn().mockReturnValue({ clearRect: jest.fn() }),
+            addEventListener: jest.fn(),
+            getBoundingClientRect: jest.fn().mockReturnValue({ width: 100, height: 100 }),
+            parentElement: { getBoundingClientRect: jest.fn().mockReturnValue({ width: 100, height: 100 }) },
+        };
+
+        const engine = new AnimationEngine(mockCanvas);
+        engine.worker = { postMessage: jest.fn(), terminate: jest.fn() };
+        engine.initialized = true;
+
+        engine.animate();
+        expect(mockPipWin.requestAnimationFrame).toHaveBeenCalled();
+
+        const cancelMainFrame = jest.spyOn(window, 'cancelAnimationFrame');
+        mockCanvas.ownerDocument = document;
+        engine.stop();
+        expect(mockPipWin.cancelAnimationFrame).toHaveBeenCalledWith(requestId);
+        expect(cancelMainFrame).not.toHaveBeenCalled();
+        expect(engine.requestId).toBeNull();
+        expect(engine.requestWindow).toBeNull();
+    });
+
+    test('AnimationEngine keeps drawing through repeated document moves without restarting its worker', async () => {
+        const { AnimationEngine } = await import('../shared/js/animations.js');
+        const iframe = document.createElement('iframe');
+        document.body.appendChild(iframe);
+        const pipWin = iframe.contentWindow;
+        const queues = new Map();
+        for (const target of [window, pipWin]) {
+            const queue = new Map();
+            queues.set(target, queue);
+            let nextId = 0;
+            jest.spyOn(target, 'requestAnimationFrame').mockImplementation((callback) => {
+                const id = nextId++;
+                queue.set(id, callback);
+                return id;
+            });
+            jest.spyOn(target, 'cancelAnimationFrame').mockImplementation((id) => queue.delete(id));
+        }
+
+        const parent = document.createElement('div');
+        const canvas = document.createElement('canvas');
+        parent.appendChild(canvas);
+        document.body.appendChild(parent);
+        jest.spyOn(parent, 'getBoundingClientRect').mockReturnValue({ width: 100, height: 100 });
+        jest.spyOn(canvas, 'getContext').mockReturnValue({ clearRect: jest.fn() });
+        const engine = new AnimationEngine(canvas);
+        const worker = { postMessage: jest.fn(), terminate: jest.fn() };
+        engine.worker = worker;
+        engine.initialized = true;
+        engine.animate();
+
+        let previous = window;
+        for (const target of [pipWin, window, pipWin, window]) {
+            const previousId = engine.requestId;
+            target.document.body.appendChild(parent);
+            engine.restartAnimationLoop();
+            expect(previous.cancelAnimationFrame).toHaveBeenLastCalledWith(previousId);
+            expect(queues.get(previous).size).toBe(0);
+            expect(queues.get(target).size).toBe(1);
+
+            engine._handleWorkerMessage({ data: { type: 'drawResponse', payload: { dots: [] } } });
+            const frameId = engine.requestId;
+            const callback = queues.get(target).get(frameId);
+            queues.get(target).delete(frameId);
+            const drawCount = worker.postMessage.mock.calls.filter(([message]) => message.type === 'draw').length;
+            callback();
+            expect(worker.postMessage.mock.calls.filter(([message]) => message.type === 'draw')).toHaveLength(
+                drawCount + 1
+            );
+            expect(queues.get(target).size).toBe(1);
+            expect(engine.requestWindow).toBe(target);
+            expect(engine.worker).toBe(worker);
+            expect(worker.terminate).not.toHaveBeenCalled();
+            previous = target;
+        }
+
+        engine.stop();
+        expect(queues.get(window).size).toBe(0);
+        expect(queues.get(pipWin).size).toBe(0);
+        iframe.remove();
+    });
+
+    test('AnimationEngine waits for worker initialization when moved before startup completes', async () => {
+        const { AnimationEngine } = await import('../shared/js/animations.js');
+        const canvas = document.createElement('canvas');
+        jest.spyOn(canvas, 'getContext').mockReturnValue({ clearRect: jest.fn() });
+        const requestFrame = jest.spyOn(window, 'requestAnimationFrame').mockReturnValue(123);
+        const engine = new AnimationEngine(canvas);
+        engine.worker = { postMessage: jest.fn(), terminate: jest.fn() };
+
+        engine.restartAnimationLoop();
+        expect(requestFrame).not.toHaveBeenCalled();
+        expect(engine.requestId).toBeNull();
+
+        engine._handleWorkerMessage({ data: { type: 'initialized' } });
+        expect(requestFrame).toHaveBeenCalledTimes(1);
+        engine.stop();
+        engine.restartAnimationLoop();
+        expect(requestFrame).toHaveBeenCalledTimes(1);
     });
 
     test('setupPinSync attaches keyboard navigation, input type, and paste events to PIN inputs', async () => {
@@ -296,7 +427,8 @@ describe('PWA Improvements & Session Sync Fallback', () => {
     test('checkPWAAlarms executes pause action for active task when alarm time triggers today', async () => {
         jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
         const { checkPWAAlarms, setIsAppInitializedForTesting } = await import('../projects/app/js/app.js');
-        const { dbGet, dbPut, dbAdd, dbClear, STORE_SETTINGS, STORE_ALARMS, STORE_LOGS, STORE_CATEGORIES } = await import('../shared/js/db.js');
+        const { dbGet, dbPut, dbAdd, dbClear, STORE_SETTINGS, STORE_ALARMS, STORE_LOGS, STORE_CATEGORIES } =
+            await import('../shared/js/db.js');
         await dbClear(STORE_SETTINGS);
         await dbClear(STORE_ALARMS);
         await dbClear(STORE_LOGS);
@@ -342,7 +474,8 @@ describe('PWA Improvements & Session Sync Fallback', () => {
     test('checkPWAAlarms skips alarm execution on non-business days for daily_business alarms', async () => {
         jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
         const { checkPWAAlarms, setIsAppInitializedForTesting } = await import('../projects/app/js/app.js');
-        const { dbGet, dbPut, dbAdd, dbClear, STORE_SETTINGS, STORE_ALARMS, STORE_LOGS, STORE_CATEGORIES } = await import('../shared/js/db.js');
+        const { dbGet, dbPut, dbAdd, dbClear, STORE_SETTINGS, STORE_ALARMS, STORE_LOGS, STORE_CATEGORIES } =
+            await import('../shared/js/db.js');
         await dbClear(STORE_SETTINGS);
         await dbClear(STORE_ALARMS);
         await dbClear(STORE_LOGS);

@@ -16,6 +16,7 @@ export class AnimationEngine {
         this.startTime = 0;
         this.color = '#1976d2';
         this.requestId = null;
+        this.requestWindow = null;
         this.registry = new Map();
         this.cycleMs = 120000; // 2 minutes cycle
         this.exclusionAreas = [];
@@ -279,10 +280,11 @@ export class AnimationEngine {
 
     stop() {
         this.isDrawPending = false;
-        if (this.requestId) {
-            cancelAnimationFrame(this.requestId);
+        if (this.requestId !== null) {
+            this.requestWindow.cancelAnimationFrame(this.requestId);
             this.requestId = null;
         }
+        this.requestWindow = null;
         if (this.worker) {
             this.worker.terminate();
             this.worker = null;
@@ -295,10 +297,21 @@ export class AnimationEngine {
         }
     }
 
+    restartAnimationLoop() {
+        if (this.requestId !== null) {
+            this.requestWindow.cancelAnimationFrame(this.requestId);
+            this.requestId = null;
+        }
+        this.requestWindow = null;
+        this.animate();
+    }
+
     animate() {
         if (!this.worker || !this.initialized) return;
         this.draw();
-        this.requestId = requestAnimationFrame(() => this.animate());
+        const animWindow = this.canvas?.ownerDocument?.defaultView || window;
+        this.requestWindow = animWindow;
+        this.requestId = animWindow.requestAnimationFrame(() => this.animate());
     }
 
     draw() {

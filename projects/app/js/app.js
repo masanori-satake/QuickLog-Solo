@@ -371,7 +371,17 @@ export async function openPinWindow() {
 
         const stylesheets = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
         stylesheets.forEach((stylesheet) => {
-            pipWindow.document.head.appendChild(stylesheet.cloneNode(true));
+            if (stylesheet.tagName && stylesheet.tagName.toLowerCase() === 'link' && stylesheet.href) {
+                const newLink =
+                    typeof pipWindow.document.createElement === 'function'
+                        ? pipWindow.document.createElement('link')
+                        : document.createElement('link');
+                newLink.rel = 'stylesheet';
+                newLink.href = stylesheet.href;
+                pipWindow.document.head.appendChild(newLink);
+            } else {
+                pipWindow.document.head.appendChild(stylesheet.cloneNode(true));
+            }
         });
 
         pipWindow.document.body.className = document.body.className;
@@ -412,6 +422,14 @@ export async function openPinWindow() {
         if (animationEngine) {
             animationEngine.resize();
             updateAnimationExclusionAreas();
+            animationEngine.restartAnimationLoop();
+            const animWin = animationEngine.canvas?.ownerDocument?.defaultView || window;
+            animWin.requestAnimationFrame(() => {
+                if (animationEngine) {
+                    animationEngine.resize();
+                    updateAnimationExclusionAreas();
+                }
+            });
         }
     } catch (err) {
         console.warn('QuickLog-Solo: Document Picture-in-Picture request failed:', err);
@@ -519,6 +537,7 @@ function onPipWindowClosed() {
     if (animationEngine) {
         animationEngine.resize();
         updateAnimationExclusionAreas();
+        animationEngine.restartAnimationLoop();
     }
 }
 
@@ -1343,7 +1362,7 @@ function handleSyncMessage(data) {
             renderCategoryList();
         }
         // Only sync if visible to reduce CPU load as requested
-        if (document.visibilityState === 'visible') {
+        if (document.visibilityState === 'visible' || pipWindow) {
             syncState();
         }
     }
@@ -1369,7 +1388,7 @@ function initAnimationEngine() {
 
         // Robustness: Handle transition-based side panel opening
         const observer = new ResizeObserver(() => {
-            if (animationEngine && document.visibilityState === 'visible') {
+            if (animationEngine && (document.visibilityState === 'visible' || pipWindow)) {
                 animationEngine.resize();
                 updateAnimationExclusionAreas();
             }
@@ -4616,7 +4635,7 @@ async function initApp() {
         if (syncTimeout) clearTimeout(syncTimeout);
         // Delay sync slightly to allow local interactions (like clicks) to take precedence
         syncTimeout = setTimeout(async () => {
-            if (document.visibilityState === 'visible') {
+            if (document.visibilityState === 'visible' || pipWindow) {
                 // Concurrency control: Wait for ongoing sync to complete to prevent race conditions
                 if (delayedSync.activePromise) {
                     await delayedSync.activePromise.catch(() => {});
@@ -4641,7 +4660,7 @@ async function initApp() {
 
     if (typeof document !== 'undefined') {
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
+            if (document.visibilityState === 'visible' || pipWindow) {
                 delayedSync();
             }
         });
