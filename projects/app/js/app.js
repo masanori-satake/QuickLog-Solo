@@ -408,10 +408,10 @@ export async function openPinWindow() {
             }
         });
 
-        pipWindow.addEventListener('click', (event) => {
+        pipWindow.addEventListener('click', async (event) => {
             if (typeof window.onclick === 'function') {
                 try {
-                    window.onclick(event);
+                    await window.onclick(event);
                 } catch (e) {
                     console.warn('QuickLog-Solo: Error handling click in PiP window:', e);
                 }

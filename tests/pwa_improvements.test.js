@@ -256,8 +256,24 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         // Test PiP click forwarding
         window.onclick = jest.fn();
         const fakeEvent = { target: document.createElement('div') };
-        clickHandler(fakeEvent);
+        const forwardedClick = clickHandler(fakeEvent);
         expect(window.onclick).toHaveBeenCalledWith(fakeEvent);
+        await forwardedClick;
+
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        const clickError = new Error('Click handler failed');
+        window.onclick = jest.fn(() => {
+            throw clickError;
+        });
+        await clickHandler(fakeEvent);
+        expect(warnSpy).toHaveBeenLastCalledWith('QuickLog-Solo: Error handling click in PiP window:', clickError);
+
+        warnSpy.mockClear();
+        window.onclick = jest.fn().mockRejectedValue(clickError);
+        await clickHandler(fakeEvent);
+        expect(warnSpy).toHaveBeenCalledTimes(1);
+        expect(warnSpy).toHaveBeenCalledWith('QuickLog-Solo: Error handling click in PiP window:', clickError);
+        window.onclick = null;
 
         // Test safe close with window.focus error
         closePinWindow();
