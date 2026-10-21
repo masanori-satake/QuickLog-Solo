@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quicklog-pwa-v1.47.6';
+const CACHE_NAME = 'quicklog-pwa-v1.47.7';
 
 const STATIC_ASSETS = [
     './',
