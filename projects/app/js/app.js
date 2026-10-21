@@ -240,6 +240,7 @@ let reportSettings = {
 };
 
 let pipWindow = null;
+let savedAppContainer = null;
 
 const getEl = (id) =>
     (typeof document !== 'undefined' ? document.getElementById(id) : null) ||
@@ -363,6 +364,7 @@ export async function openPinWindow() {
     try {
         const app = getEl('app');
         if (!app) return;
+        savedAppContainer = app;
 
         pipWindow = await window.documentPictureInPicture.requestWindow({
             width: app.clientWidth || 360,
@@ -406,6 +408,16 @@ export async function openPinWindow() {
             }
         });
 
+        pipWindow.addEventListener('click', (event) => {
+            if (typeof window.onclick === 'function') {
+                try {
+                    window.onclick(event);
+                } catch (e) {
+                    console.warn('QuickLog-Solo: Error handling click in PiP window:', e);
+                }
+            }
+        });
+
         pipWindow.addEventListener(
             'pagehide',
             () => {
@@ -434,7 +446,7 @@ export async function openPinWindow() {
     } catch (err) {
         console.warn('QuickLog-Solo: Document Picture-in-Picture request failed:', err);
         hidePipPlaceholder();
-        const appContainer = getEl('app');
+        const appContainer = savedAppContainer || getEl('app') || document.getElementById('app');
         if (appContainer && appContainer.parentElement !== document.body) {
             document.body.appendChild(appContainer);
         }
@@ -454,7 +466,13 @@ export async function openPinWindow() {
 
 export function closePinWindow() {
     if (pipWindow) {
-        pipWindow.close();
+        const win = pipWindow;
+        onPipWindowClosed();
+        try {
+            win.close();
+        } catch (err) {
+            console.warn('QuickLog-Solo: Failed to close PiP window:', err);
+        }
     }
 }
 
@@ -514,10 +532,20 @@ export function hidePipPlaceholder() {
 
 function onPipWindowClosed() {
     if (!pipWindow) return;
-    const app = pipWindow.document.getElementById('app');
+    const win = pipWindow;
     pipWindow = null;
 
     hidePipPlaceholder();
+
+    let app = null;
+    try {
+        app = win.document ? win.document.getElementById('app') : null;
+    } catch {
+        // window/document might be closed or inaccessible
+    }
+    if (!app) {
+        app = savedAppContainer || document.getElementById('app');
+    }
 
     if (app && app.parentElement !== document.body) {
         document.body.appendChild(app);
@@ -532,7 +560,7 @@ function onPipWindowClosed() {
     const btn = getEl('pin-window-btn');
     if (btn) btn.classList.remove('active');
 
-    dbPut(STORE_SETTINGS, { key: SETTING_KEY_ALWAYS_ON_TOP, value: false });
+    dbPut(STORE_SETTINGS, { key: SETTING_KEY_ALWAYS_ON_TOP, value: false }).catch(() => {});
 
     if (animationEngine) {
         animationEngine.resize();
@@ -3898,9 +3926,10 @@ function setupEventListeners() {
     });
 
     window.onclick = async (event) => {
+        if (!event || !event.target) return;
         let closedSettings = false;
         Object.values(popups).forEach((p) => {
-            if (event.target === p) {
+            if (p && event.target === p) {
                 if (p === popups.settings) closedSettings = true;
                 p.classList.add('hidden');
             }
@@ -3913,14 +3942,17 @@ function setupEventListeners() {
             await syncState();
         }
         // Close custom dropdowns when clicking outside
-        if (!event.target.closest('.custom-color-dropdown')) {
-            queryAll('.color-dropdown-menu').forEach((m) => m.classList.add('hidden'));
-        }
-        if (!event.target.closest('#report-date-display-box')) {
-            getEl(ID_REPORT_CALENDAR_CONTAINER)?.classList.add('hidden');
-        }
-        if (!event.target.closest('#tag-aggregation-date-display-box')) {
-            getEl(ID_TAG_AGGREGATION_CALENDAR_CONTAINER)?.classList.add('hidden');
+        const targetEl = event.target.closest ? event.target : event.target.parentElement || null;
+        if (targetEl && typeof targetEl.closest === 'function') {
+            if (!targetEl.closest('.custom-color-dropdown')) {
+                queryAll('.color-dropdown-menu').forEach((m) => m.classList.add('hidden'));
+            }
+            if (!targetEl.closest('#report-date-display-box')) {
+                getEl(ID_REPORT_CALENDAR_CONTAINER)?.classList.add('hidden');
+            }
+            if (!targetEl.closest('#tag-aggregation-date-display-box')) {
+                getEl(ID_TAG_AGGREGATION_CALENDAR_CONTAINER)?.classList.add('hidden');
+            }
         }
     };
 
