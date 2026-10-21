@@ -211,41 +211,114 @@ describe('PWA Improvements & Session Sync Fallback', () => {
         expect(focusSpy).toHaveBeenCalled();
     });
 
-    test.each([0, 123])('AnimationEngine cancels frame %i in its registering window after adoption', async (requestId) => {
-        const { AnimationEngine } = await import('../shared/js/animations.js');
+    test('openPinWindow error fallback restores #app to document.body and handles window.focus throwing error cleanly', async () => {
+        jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+        const { openPinWindow, closePinWindow } = await import('../projects/app/js/app.js');
 
-        const mockPipWin = {
-            requestAnimationFrame: jest.fn().mockReturnValue(requestId),
-            cancelAnimationFrame: jest.fn(),
+        const appEl = document.getElementById('app');
+        const focusSpy = jest.spyOn(window, 'focus').mockImplementation(() => {
+            throw new Error('Focus restricted');
+        });
+
+        let clickHandler = null;
+        let pageHideListener = null;
+
+        const mockPipBody = document.createElement('body');
+        const mockPipHead = document.createElement('head');
+        const mockPipDocEl = document.createElement('html');
+
+        const mockPipWindow = {
+            document: {
+                head: mockPipHead,
+                body: mockPipBody,
+                documentElement: mockPipDocEl,
+                getElementById: (id) => mockPipBody.querySelector(`#${id}`) || document.getElementById(id),
+                querySelectorAll: (sel) => mockPipBody.querySelectorAll(sel),
+                createElement: (tag) => document.createElement(tag),
+            },
+            addEventListener: jest.fn((event, cb) => {
+                if (event === 'click') clickHandler = cb;
+                if (event === 'pagehide') pageHideListener = cb;
+            }),
+            close: jest.fn(() => {
+                if (pageHideListener) pageHideListener();
+            }),
         };
 
-        const mockDoc = {
-            defaultView: mockPipWin,
+        window.documentPictureInPicture = {
+            requestWindow: jest.fn().mockResolvedValue(mockPipWindow),
         };
 
-        const mockCanvas = {
-            ownerDocument: mockDoc,
-            getContext: jest.fn().mockReturnValue({ clearRect: jest.fn() }),
-            addEventListener: jest.fn(),
-            getBoundingClientRect: jest.fn().mockReturnValue({ width: 100, height: 100 }),
-            parentElement: { getBoundingClientRect: jest.fn().mockReturnValue({ width: 100, height: 100 }) },
-        };
+        await openPinWindow();
+        expect(mockPipBody.querySelector('#app')).not.toBeNull();
+        expect(typeof clickHandler).toBe('function');
 
-        const engine = new AnimationEngine(mockCanvas);
-        engine.worker = { postMessage: jest.fn(), terminate: jest.fn() };
-        engine.initialized = true;
+        // Test PiP click forwarding
+        window.onclick = jest.fn();
+        const fakeEvent = { target: document.createElement('div') };
+        const forwardedClick = clickHandler(fakeEvent);
+        expect(window.onclick).toHaveBeenCalledWith(fakeEvent);
+        await forwardedClick;
 
-        engine.animate();
-        expect(mockPipWin.requestAnimationFrame).toHaveBeenCalled();
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        const clickError = new Error('Click handler failed');
+        window.onclick = jest.fn(() => {
+            throw clickError;
+        });
+        await clickHandler(fakeEvent);
+        expect(warnSpy).toHaveBeenLastCalledWith('QuickLog-Solo: Error handling click in PiP window:', clickError);
 
-        const cancelMainFrame = jest.spyOn(window, 'cancelAnimationFrame');
-        mockCanvas.ownerDocument = document;
-        engine.stop();
-        expect(mockPipWin.cancelAnimationFrame).toHaveBeenCalledWith(requestId);
-        expect(cancelMainFrame).not.toHaveBeenCalled();
-        expect(engine.requestId).toBeNull();
-        expect(engine.requestWindow).toBeNull();
+        warnSpy.mockClear();
+        window.onclick = jest.fn().mockRejectedValue(clickError);
+        await clickHandler(fakeEvent);
+        expect(warnSpy).toHaveBeenCalledTimes(1);
+        expect(warnSpy).toHaveBeenCalledWith('QuickLog-Solo: Error handling click in PiP window:', clickError);
+        window.onclick = null;
+
+        // Test safe close with window.focus error
+        closePinWindow();
+        expect(document.body.contains(appEl)).toBe(true);
+        expect(focusSpy).toHaveBeenCalled();
     });
+
+    test.each([0, 123])(
+        'AnimationEngine cancels frame %i in its registering window after adoption',
+        async (requestId) => {
+            const { AnimationEngine } = await import('../shared/js/animations.js');
+
+            const mockPipWin = {
+                requestAnimationFrame: jest.fn().mockReturnValue(requestId),
+                cancelAnimationFrame: jest.fn(),
+            };
+
+            const mockDoc = {
+                defaultView: mockPipWin,
+            };
+
+            const mockCanvas = {
+                ownerDocument: mockDoc,
+                getContext: jest.fn().mockReturnValue({ clearRect: jest.fn() }),
+                addEventListener: jest.fn(),
+                getBoundingClientRect: jest.fn().mockReturnValue({ width: 100, height: 100 }),
+                parentElement: { getBoundingClientRect: jest.fn().mockReturnValue({ width: 100, height: 100 }) },
+            };
+
+            const engine = new AnimationEngine(mockCanvas);
+            engine.worker = { postMessage: jest.fn(), terminate: jest.fn() };
+            engine.initialized = true;
+
+            engine.animate();
+            expect(mockPipWin.requestAnimationFrame).toHaveBeenCalled();
+
+            const cancelMainFrame = jest.spyOn(window, 'cancelAnimationFrame');
+            mockCanvas.ownerDocument = document;
+            engine.stop();
+            expect(mockPipWin.cancelAnimationFrame).toHaveBeenCalledWith(requestId);
+            expect(cancelMainFrame).not.toHaveBeenCalled();
+            expect(engine.requestId).toBeNull();
+            expect(engine.requestWindow).toBeNull();
+        }
+    );
 
     test('AnimationEngine keeps drawing through repeated document moves without restarting its worker', async () => {
         const { AnimationEngine } = await import('../shared/js/animations.js');
