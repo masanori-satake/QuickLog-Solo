@@ -644,7 +644,7 @@ async function startTask(categoryName, resumableCategory = null) {
         const color = cat ? cat.color : null;
         const tags = cat ? cat.tags || '' : '';
         activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
-        await updateUI();
+        updateUI();
         broadcastSync();
     } catch (err) {
         console.error('QuickLog-Solo: Failed to start task:', err);
@@ -656,7 +656,7 @@ async function pauseTask() {
     try {
         if (syncTimeout) clearTimeout(syncTimeout);
         activeTask = await pauseTaskLogic(activeTask);
-        await updateUI();
+        updateUI();
         broadcastSync();
     } catch (err) {
         console.error('QuickLog-Solo: Failed to pause task:', err);
@@ -672,6 +672,7 @@ async function stopTask(customEndTime = null) {
     } catch (err) {
         console.error('QuickLog-Solo: Failed to stop task:', err);
         showToast(t('alert-error') || 'Operation failed');
+        throw err;
     }
 }
 
@@ -4450,11 +4451,15 @@ function setupEventListeners() {
     // Maintenance helpers
     async function performMaintenanceAction(confirmMessage, action) {
         if (await showConfirm(confirmMessage)) {
-            if (activeTask) {
-                await stopTask();
-                updateUI();
+            try {
+                if (activeTask) {
+                    await stopTask();
+                    updateUI();
+                }
+                await action();
+            } catch (err) {
+                console.error('QuickLog-Solo: Maintenance action aborted:', err);
             }
-            await action();
         }
     }
 
