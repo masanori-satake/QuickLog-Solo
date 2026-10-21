@@ -646,9 +646,11 @@ async function startTask(categoryName, resumableCategory = null) {
         activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
         updateUI();
         broadcastSync();
+        return true;
     } catch (err) {
         console.error('QuickLog-Solo: Failed to start task:', err);
         showToast(t('alert-error') || 'Operation failed');
+        return false;
     }
 }
 
@@ -658,9 +660,11 @@ async function pauseTask() {
         activeTask = await pauseTaskLogic(activeTask);
         updateUI();
         broadcastSync();
+        return true;
     } catch (err) {
         console.error('QuickLog-Solo: Failed to pause task:', err);
         showToast(t('alert-error') || 'Operation failed');
+        return false;
     }
 }
 
@@ -4575,30 +4579,30 @@ export async function checkPWAAlarms() {
                                     }
                                 } else if (alarm.action === 'pause') {
                                     if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
-                                        await pauseTask();
-                                        actionExecuted = true;
+                                        actionExecuted = await pauseTask();
                                     }
                                 } else if (alarm.action === 'start' && alarm.actionCategory) {
-                                    await startTask(alarm.actionCategory);
-                                    actionExecuted = true;
+                                    actionExecuted = await startTask(alarm.actionCategory);
                                 }
 
                                 if (actionExecuted) {
                                     await updateUI();
                                 }
+                                return actionExecuted;
                             };
 
                             const msg = alarm.message || alarm.name || t('title');
 
+                            let actionExecuted = false;
                             if (alarm.requireConfirmation) {
-                                showConfirm(`${alarm.time} ${msg}`).then((confirmed) => {
-                                    if (confirmed) {
-                                        runAlarmAction();
-                                    }
-                                });
+                                if (await showConfirm(`${alarm.time} ${msg}`)) {
+                                    actionExecuted = await runAlarmAction();
+                                }
                             } else {
-                                await runAlarmAction();
+                                actionExecuted = await runAlarmAction();
                             }
+
+                            if (!actionExecuted) continue;
 
                             // Notification
                             if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
