@@ -736,4 +736,72 @@ describe('pusher_sync.js', () => {
         expect(alarms).toHaveLength(1);
         expect(alarms[0].time).toBe('18:00');
     });
+
+    test('end-to-end PIN sync payload encryption, decryption, unwrapping, and IDB import for categories', async () => {
+        setDatabaseName(`TestE2EPinSyncImportDB_${Date.now()}`);
+
+        const pin = '654321';
+        const settingsData = {
+            settings: { theme: 'dark', language: 'ja', timerHeight: 'mini' },
+            categories: [
+                { name: '引き継ぎカテゴリA', color: 'primary', order: 0, tags: 'タグA' },
+                { name: '引き継ぎカテゴリB', color: 'secondary', order: 1, tags: 'タグB' },
+            ],
+            alarms: [{ id: 501, time: '09:00', enabled: true, message: '朝礼' }],
+        };
+
+        // 1. Sender encrypts settingsData ({ settings, categories, alarms })
+        const encrypted = await encryptPayload(settingsData, pin);
+
+        // 2. Receiver decrypts encrypted payload
+        const decryptedEnvelope = await decryptPayload(encrypted, pin);
+        expect(decryptedEnvelope).toHaveProperty('createdAt');
+        expect(decryptedEnvelope).toHaveProperty('settings');
+
+        // 3. Unwrap DataPayload (payload.settings || payload) as done in handlePinSubmit in app.js
+        const dataPayload = decryptedEnvelope.settings || decryptedEnvelope;
+
+        // 4. Import dataPayload into IDB
+        await dbImportTransferredSettings(dataPayload);
+
+        const importedSettings = await dbGetAll(STORE_SETTINGS);
+        const importedCategories = await dbGetAll(STORE_CATEGORIES);
+        const importedAlarms = await dbGetAll(STORE_ALARMS);
+
+        expect(importedSettings.some((s) => s.key === 'theme' && s.value === 'dark')).toBe(true);
+        expect(importedSettings.some((s) => s.key === 'timerHeight' && s.value === 'mini')).toBe(true);
+        expect(importedCategories).toHaveLength(2);
+        expect(importedCategories.map((c) => c.name)).toEqual(['引き継ぎカテゴリA', '引き継ぎカテゴリB']);
+        expect(importedAlarms).toHaveLength(1);
+        expect(importedAlarms[0].message).toBe('朝礼');
+    });
+
+    test('dbImportTransferredSettings defensively unwraps nested envelope object if passed directly', async () => {
+        setDatabaseName(`TestDefensiveUnwrapDB_${Date.now()}`);
+
+        const pin = '987654';
+        const settingsData = {
+            settings: { theme: 'system', font: 'Inter' },
+            categories: [
+                { name: '防衛テストカテゴリ', color: 'teal', order: 0 },
+            ],
+            alarms: [{ id: 601, time: '17:00', enabled: true }],
+        };
+
+        const encrypted = await encryptPayload(settingsData, pin);
+        const decryptedEnvelope = await decryptPayload(encrypted, pin);
+
+        // Pass envelope directly { createdAt, settings: { settings, categories, alarms } }
+        await dbImportTransferredSettings(decryptedEnvelope);
+
+        const importedSettings = await dbGetAll(STORE_SETTINGS);
+        const importedCategories = await dbGetAll(STORE_CATEGORIES);
+        const importedAlarms = await dbGetAll(STORE_ALARMS);
+
+        expect(importedSettings.some((s) => s.key === 'font' && s.value === 'Inter')).toBe(true);
+        expect(importedCategories).toHaveLength(1);
+        expect(importedCategories[0].name).toBe('防衛テストカテゴリ');
+        expect(importedAlarms).toHaveLength(1);
+        expect(importedAlarms[0].id).toBe(601);
+    });
 });

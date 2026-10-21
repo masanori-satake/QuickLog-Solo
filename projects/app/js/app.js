@@ -2216,7 +2216,8 @@ async function handlePinSubmit(pinCode) {
         validatePinSyncTimestamp(payload?.createdAt);
 
         updateStatus('設定を適用中...');
-        await dbImportTransferredSettings(payload);
+        const dataPayload = payload?.settings || payload;
+        await dbImportTransferredSettings(dataPayload);
         broadcastSync();
 
         showToast('設定の同期が完了しました');
