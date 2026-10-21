@@ -38,7 +38,7 @@ import {
 } from '../shared/js/pusher_sync.js';
 import { dbImportTransferredSettings, dbImportQRSettings, dbGetAll, STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS, setDatabaseName } from '../shared/js/db.js';
 import { t } from '../shared/js/i18n.js';
-import { buildPusherErrorReport } from '../projects/app/js/app.js';
+import { buildPusherErrorReport, setupPinSync } from '../projects/app/js/app.js';
 
 describe('pusher_sync.js', () => {
     let originalFetch;
@@ -753,16 +753,58 @@ describe('pusher_sync.js', () => {
         // 1. Sender encrypts settingsData ({ settings, categories, alarms })
         const encrypted = await encryptPayload(settingsData, pin);
 
-        // 2. Receiver decrypts encrypted payload
-        const decryptedEnvelope = await decryptPayload(encrypted, pin);
-        expect(decryptedEnvelope).toHaveProperty('createdAt');
-        expect(decryptedEnvelope).toHaveProperty('settings');
+        // 2. Mock WebSocket response for fetchSettingsFromPusher
+        class MockSyncWebSocket {
+            constructor(url) {
+                this.url = url;
+                setTimeout(() => {
+                    if (this.onmessage) {
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'pusher:connection_established',
+                                data: '{}',
+                            }),
+                        });
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'sync-settings',
+                                data: JSON.stringify({ payload: encrypted }),
+                            }),
+                        });
+                    }
+                }, 10);
+            }
+            send() {}
+            close() {}
+        }
+        globalThis.WebSocket = MockSyncWebSocket;
 
-        // 3. Unwrap DataPayload (payload.settings || payload) as done in handlePinSubmit in app.js
-        const dataPayload = decryptedEnvelope.settings || decryptedEnvelope;
+        // Mock DOM elements for setupPinSync & handlePinSubmit
+        document.body.innerHTML = `
+            <div id="pin-inputs-container">
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+            </div>
+            <div id="pin-attempts-count">3</div>
+            <div id="pin-sync-status-text"></div>
+            <button id="pin-reset-attempts-btn" class="hidden"></button>
+            <div id="pin-sync-modal" class="hidden"></div>
+        `;
 
-        // 4. Import dataPayload into IDB
-        await dbImportTransferredSettings(dataPayload);
+        setupPinSync();
+
+        // Simulate pasting PIN code into the inputs, triggering handlePinSubmit
+        const firstInput = document.querySelector('.pin-digit-input');
+        const pasteEvent = new Event('paste', { bubbles: true, cancelable: true });
+        pasteEvent.clipboardData = { getData: () => pin };
+        firstInput.dispatchEvent(pasteEvent);
+
+        // Wait for async handlePinSubmit processing to finish
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         const importedSettings = await dbGetAll(STORE_SETTINGS);
         const importedCategories = await dbGetAll(STORE_CATEGORIES);
