@@ -38,7 +38,7 @@ import {
 } from '../shared/js/pusher_sync.js';
 import { dbImportTransferredSettings, dbImportQRSettings, dbGetAll, STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS, setDatabaseName } from '../shared/js/db.js';
 import { t } from '../shared/js/i18n.js';
-import { buildPusherErrorReport } from '../projects/app/js/app.js';
+import { buildPusherErrorReport, setupPinSync } from '../projects/app/js/app.js';
 
 describe('pusher_sync.js', () => {
     let originalFetch;
@@ -735,5 +735,124 @@ describe('pusher_sync.js', () => {
         expect(categories.map((c) => c.name)).toEqual(['新業務カテゴリ1', '新業務カテゴリ2']);
         expect(alarms).toHaveLength(1);
         expect(alarms[0].time).toBe('18:00');
+    });
+
+    test('end-to-end PIN sync payload encryption, decryption, unwrapping, and IDB import for categories', async () => {
+        setDatabaseName(`TestE2EPinSyncImportDB_${Date.now()}`);
+
+        const pin = '654321';
+        const settingsData = {
+            settings: { theme: 'dark', language: 'ja', timerHeight: 'mini' },
+            categories: [
+                { name: '引き継ぎカテゴリA', color: 'primary', order: 0, tags: 'タグA' },
+                { name: '引き継ぎカテゴリB', color: 'secondary', order: 1, tags: 'タグB' },
+            ],
+            alarms: [{ id: 501, time: '09:00', enabled: true, message: '朝礼' }],
+        };
+
+        // 1. Sender encrypts settingsData ({ settings, categories, alarms })
+        const encrypted = await encryptPayload(settingsData, pin);
+
+        // 2. Mock WebSocket response for fetchSettingsFromPusher
+        class MockSyncWebSocket {
+            constructor(url) {
+                this.url = url;
+                setTimeout(() => {
+                    if (this.onmessage) {
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'pusher:connection_established',
+                                data: '{}',
+                            }),
+                        });
+                        this.onmessage({
+                            data: JSON.stringify({
+                                event: 'sync-settings',
+                                data: JSON.stringify({ payload: encrypted }),
+                            }),
+                        });
+                    }
+                }, 10);
+            }
+            send() {}
+            close() {}
+        }
+        globalThis.WebSocket = MockSyncWebSocket;
+
+        // Mock DOM elements for setupPinSync & handlePinSubmit
+        document.body.innerHTML = `
+            <div id="pin-inputs-container">
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+                <input class="pin-digit-input" />
+            </div>
+            <div id="pin-attempts-count">3</div>
+            <div id="pin-sync-status-text"></div>
+            <button id="pin-reset-attempts-btn" class="hidden"></button>
+            <div id="pin-sync-modal" class="hidden"></div>
+        `;
+
+        setupPinSync();
+
+        // Simulate pasting PIN code into the inputs, triggering handlePinSubmit
+        const firstInput = document.querySelector('.pin-digit-input');
+        const pasteEvent = new Event('paste', { bubbles: true, cancelable: true });
+        pasteEvent.clipboardData = { getData: () => pin };
+        firstInput.dispatchEvent(pasteEvent);
+
+        // Wait for async handlePinSubmit processing to finish by checking for imported category name
+        const waitForImportedCategory = async (targetCategoryName = '引き継ぎカテゴリA', timeoutMs = 2000) => {
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeoutMs) {
+                const categories = await dbGetAll(STORE_CATEGORIES);
+                if (categories.some((c) => c.name === targetCategoryName)) return categories;
+                await new Promise((resolve) => setTimeout(resolve, 20));
+            }
+            throw new Error(`Timeout waiting for category "${targetCategoryName}" in STORE_CATEGORIES`);
+        };
+        await waitForImportedCategory('引き継ぎカテゴリA');
+
+        const importedSettings = await dbGetAll(STORE_SETTINGS);
+        const importedCategories = await dbGetAll(STORE_CATEGORIES);
+        const importedAlarms = await dbGetAll(STORE_ALARMS);
+
+        expect(importedSettings.some((s) => s.key === 'theme' && s.value === 'dark')).toBe(true);
+        expect(importedSettings.some((s) => s.key === 'timerHeight' && s.value === 'mini')).toBe(true);
+        expect(importedCategories).toHaveLength(2);
+        expect(importedCategories.map((c) => c.name)).toEqual(['引き継ぎカテゴリA', '引き継ぎカテゴリB']);
+        expect(importedAlarms).toHaveLength(1);
+        expect(importedAlarms[0].message).toBe('朝礼');
+    });
+
+    test('dbImportTransferredSettings defensively unwraps nested envelope object if passed directly', async () => {
+        setDatabaseName(`TestDefensiveUnwrapDB_${Date.now()}`);
+
+        const pin = '987654';
+        const settingsData = {
+            settings: { theme: 'system', font: 'Inter' },
+            categories: [
+                { name: '防衛テストカテゴリ', color: 'teal', order: 0 },
+            ],
+            alarms: [{ id: 601, time: '17:00', enabled: true }],
+        };
+
+        const encrypted = await encryptPayload(settingsData, pin);
+        const decryptedEnvelope = await decryptPayload(encrypted, pin);
+
+        // Pass envelope directly { createdAt, settings: { settings, categories, alarms } }
+        await dbImportTransferredSettings(decryptedEnvelope);
+
+        const importedSettings = await dbGetAll(STORE_SETTINGS);
+        const importedCategories = await dbGetAll(STORE_CATEGORIES);
+        const importedAlarms = await dbGetAll(STORE_ALARMS);
+
+        expect(importedSettings.some((s) => s.key === 'font' && s.value === 'Inter')).toBe(true);
+        expect(importedCategories).toHaveLength(1);
+        expect(importedCategories[0].name).toBe('防衛テストカテゴリ');
+        expect(importedAlarms).toHaveLength(1);
+        expect(importedAlarms[0].id).toBe(601);
     });
 });

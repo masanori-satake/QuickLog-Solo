@@ -206,10 +206,30 @@ export async function dbImportCategories(items, importMode) {
     });
 }
 
-/** Saves a validated transferred settings payload atomically, preserving all stores on failure. */
-export async function dbImportTransferredSettings({ settings, categories, alarms, partInfo }, { signal } = {}) {
+/**
+ * Saves a validated transferred settings data payload atomically, preserving all stores on failure.
+ * @param {Object} dataPayload - Data payload containing { settings, categories, alarms, partInfo }.
+ * @param {Object} [options]
+ * @param {AbortSignal} [options.signal]
+ */
+export async function dbImportTransferredSettings(dataPayload = {}, { signal } = {}) {
     await openDatabase();
     signal?.throwIfAborted();
+
+    // Unwrap DataPayload if an envelope object { createdAt, settings: DataPayload } was passed defensively
+    const payload =
+        dataPayload &&
+        typeof dataPayload === 'object' &&
+        dataPayload.settings &&
+        typeof dataPayload.settings === 'object' &&
+        (Array.isArray(dataPayload.settings.categories) ||
+            Array.isArray(dataPayload.settings.alarms) ||
+            (dataPayload.settings.settings && typeof dataPayload.settings.settings === 'object'))
+            ? dataPayload.settings
+            : dataPayload;
+
+    const { settings, categories, alarms, partInfo } = payload || {};
+
     return new Promise((resolve, reject) => {
         const tx = db.transaction([STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS], 'readwrite');
         const abortImport = () => {
