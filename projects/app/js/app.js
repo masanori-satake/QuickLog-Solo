@@ -644,7 +644,7 @@ async function startTask(categoryName, resumableCategory = null) {
         const color = cat ? cat.color : null;
         const tags = cat ? cat.tags || '' : '';
         activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
-        updateUI();
+        await updateUI();
         broadcastSync();
     } catch (err) {
         console.error('QuickLog-Solo: Failed to start task:', err);
@@ -656,7 +656,7 @@ async function pauseTask() {
     try {
         if (syncTimeout) clearTimeout(syncTimeout);
         activeTask = await pauseTaskLogic(activeTask);
-        updateUI();
+        await updateUI();
         broadcastSync();
     } catch (err) {
         console.error('QuickLog-Solo: Failed to pause task:', err);
