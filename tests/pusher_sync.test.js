@@ -803,8 +803,17 @@ describe('pusher_sync.js', () => {
         pasteEvent.clipboardData = { getData: () => pin };
         firstInput.dispatchEvent(pasteEvent);
 
-        // Wait for async handlePinSubmit processing to finish
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        // Wait for async handlePinSubmit processing to finish by checking for imported category name
+        const waitForImportedCategory = async (targetCategoryName = '引き継ぎカテゴリA', timeoutMs = 2000) => {
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeoutMs) {
+                const categories = await dbGetAll(STORE_CATEGORIES);
+                if (categories.some((c) => c.name === targetCategoryName)) return categories;
+                await new Promise((resolve) => setTimeout(resolve, 20));
+            }
+            throw new Error(`Timeout waiting for category "${targetCategoryName}" in STORE_CATEGORIES`);
+        };
+        await waitForImportedCategory('引き継ぎカテゴリA');
 
         const importedSettings = await dbGetAll(STORE_SETTINGS);
         const importedCategories = await dbGetAll(STORE_CATEGORIES);
