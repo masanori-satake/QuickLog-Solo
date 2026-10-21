@@ -707,4 +707,33 @@ describe('pusher_sync.js', () => {
         expect(categories.some((c) => c.name === 'テストカテゴリ')).toBe(true);
         expect(alarms.some((a) => a.id === 201)).toBe(true);
     });
+
+    test('dbImportTransferredSettings correctly imports full payload structure received from PIN sync', async () => {
+        setDatabaseName(`TestFullPayloadPinSyncDB_${Date.now()}`);
+
+        const decryptedPayload = {
+            settings: { theme: 'light', font: 'Roboto', language: 'ja' },
+            categories: [
+                { name: '新業務カテゴリ1', color: 'secondary', order: 0 },
+                { name: '新業務カテゴリ2', color: 'tertiary', order: 1 },
+            ],
+            alarms: [
+                { id: 301, time: '18:00', enabled: true, action: 'stop' },
+            ],
+            createdAt: Date.now(),
+        };
+
+        await dbImportTransferredSettings(decryptedPayload);
+
+        const settings = await dbGetAll(STORE_SETTINGS);
+        const categories = await dbGetAll(STORE_CATEGORIES);
+        const alarms = await dbGetAll(STORE_ALARMS);
+
+        expect(settings.some((s) => s.key === 'theme' && s.value === 'light')).toBe(true);
+        expect(settings.some((s) => s.key === 'font' && s.value === 'Roboto')).toBe(true);
+        expect(categories).toHaveLength(2);
+        expect(categories.map((c) => c.name)).toEqual(['新業務カテゴリ1', '新業務カテゴリ2']);
+        expect(alarms).toHaveLength(1);
+        expect(alarms[0].time).toBe('18:00');
+    });
 });
