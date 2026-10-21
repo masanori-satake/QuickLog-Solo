@@ -638,33 +638,54 @@ const FONTS = [
 // --- Task Control ---
 
 async function startTask(categoryName, resumableCategory = null) {
-    if (syncTimeout) clearTimeout(syncTimeout);
-    const cat = await dbGetByName(STORE_CATEGORIES, categoryName);
-    const color = cat ? cat.color : null;
-    const tags = cat ? cat.tags || '' : '';
-    activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
-    updateUI();
-    broadcastSync();
+    try {
+        if (syncTimeout) clearTimeout(syncTimeout);
+        const cat = await dbGetByName(STORE_CATEGORIES, categoryName);
+        const color = cat ? cat.color : null;
+        const tags = cat ? cat.tags || '' : '';
+        activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
+        updateUI();
+        broadcastSync();
+    } catch (err) {
+        console.error('QuickLog-Solo: Failed to start task:', err);
+        showToast(t('alert-error') || 'Operation failed');
+    }
 }
 
 async function pauseTask() {
-    if (syncTimeout) clearTimeout(syncTimeout);
-    activeTask = await pauseTaskLogic(activeTask);
-    updateUI();
-    broadcastSync();
+    try {
+        if (syncTimeout) clearTimeout(syncTimeout);
+        activeTask = await pauseTaskLogic(activeTask);
+        updateUI();
+        broadcastSync();
+    } catch (err) {
+        console.error('QuickLog-Solo: Failed to pause task:', err);
+        showToast(t('alert-error') || 'Operation failed');
+    }
 }
 
 async function stopTask(customEndTime = null) {
-    if (syncTimeout) clearTimeout(syncTimeout);
-    activeTask = await stopTaskLogic(activeTask, true, customEndTime);
-    broadcastSync();
+    try {
+        if (syncTimeout) clearTimeout(syncTimeout);
+        activeTask = await stopTaskLogic(activeTask, true, customEndTime);
+        broadcastSync();
+    } catch (err) {
+        console.error('QuickLog-Solo: Failed to stop task:', err);
+        showToast(t('alert-error') || 'Operation failed');
+        throw err;
+    }
 }
 
 async function endTask() {
     if (!activeTask) return;
-    if (await showConfirm(t('confirm-end-task'))) {
-        await stopTask();
-        updateUI();
+    try {
+        if (await showConfirm(t('confirm-end-task'))) {
+            await stopTask();
+            updateUI();
+        }
+    } catch (err) {
+        console.error('QuickLog-Solo: Failed to end task:', err);
+        showToast(t('alert-error') || 'Operation failed');
     }
 }
 
@@ -2195,7 +2216,7 @@ async function handlePinSubmit(pinCode) {
         validatePinSyncTimestamp(payload?.createdAt);
 
         updateStatus('設定を適用中...');
-        await dbImportTransferredSettings(payload.settings);
+        await dbImportTransferredSettings(payload);
         broadcastSync();
 
         showToast('設定の同期が完了しました');
@@ -2204,8 +2225,9 @@ async function handlePinSubmit(pinCode) {
             statusTextEl.style.color = '#2e7d32';
         }
 
-        if (payload.settings?.settings?.language) {
-            setLanguage(payload.settings.settings.language);
+        const transferredLang = payload.settings?.language || payload.settings?.settings?.language;
+        if (transferredLang) {
+            setLanguage(transferredLang);
             applyLanguage();
         }
 
@@ -4429,11 +4451,15 @@ function setupEventListeners() {
     // Maintenance helpers
     async function performMaintenanceAction(confirmMessage, action) {
         if (await showConfirm(confirmMessage)) {
-            if (activeTask) {
-                await stopTask();
-                updateUI();
+            try {
+                if (activeTask) {
+                    await stopTask();
+                    updateUI();
+                }
+                await action();
+            } catch (err) {
+                console.error('QuickLog-Solo: Maintenance action aborted:', err);
             }
-            await action();
         }
     }
 
@@ -4540,53 +4566,57 @@ export async function checkPWAAlarms() {
                         if (!executedPWAAlarms.has(key) && claimPWAAlarmExecution(key)) {
                             executedPWAAlarms.add(key);
 
-                            const runAlarmAction = async () => {
-                                let actionExecuted = false;
-                                if (alarm.action === 'stop') {
-                                    if (activeTask) {
-                                        await stopTask();
+                            try {
+                                const runAlarmAction = async () => {
+                                    let actionExecuted = false;
+                                    if (alarm.action === 'stop') {
+                                        if (activeTask) {
+                                            await stopTask();
+                                            actionExecuted = true;
+                                        }
+                                    } else if (alarm.action === 'pause') {
+                                        if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
+                                            await pauseTask();
+                                            actionExecuted = true;
+                                        }
+                                    } else if (alarm.action === 'start' && alarm.actionCategory) {
+                                        await startTask(alarm.actionCategory);
                                         actionExecuted = true;
                                     }
-                                } else if (alarm.action === 'pause') {
-                                    if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
-                                        await pauseTask();
-                                        actionExecuted = true;
+
+                                    if (actionExecuted) {
+                                        await updateUI();
                                     }
-                                } else if (alarm.action === 'start' && alarm.actionCategory) {
-                                    await startTask(alarm.actionCategory);
-                                    actionExecuted = true;
-                                }
+                                };
 
-                                if (actionExecuted) {
-                                    await updateUI();
-                                }
-                            };
+                                const msg = alarm.message || alarm.name || t('title');
 
-                            const msg = alarm.message || alarm.name || t('title');
-
-                            if (alarm.requireConfirmation) {
-                                showConfirm(`${alarm.time} ${msg}`).then((confirmed) => {
+                                if (alarm.requireConfirmation) {
+                                    const confirmed = await showConfirm(`${alarm.time} ${msg}`);
                                     if (confirmed) {
-                                        runAlarmAction();
+                                        await runAlarmAction();
                                     }
-                                });
-                            } else {
-                                await runAlarmAction();
-                            }
-
-                            // Notification
-                            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                                try {
-                                    new Notification(t('title') || 'QuickLog-Solo', {
-                                        body: msg,
-                                        icon: 'shared/assets/icon128.png',
-                                    });
-                                } catch (err) {
-                                    console.warn('PWA Notification failed:', err);
+                                } else {
+                                    await runAlarmAction();
                                 }
-                            }
 
-                            showToast(`${alarm.time} ${msg}`);
+                                // Notification
+                                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                                    try {
+                                        new Notification(t('title') || 'QuickLog-Solo', {
+                                            body: msg,
+                                            icon: 'shared/assets/icon128.png',
+                                        });
+                                    } catch (err) {
+                                        console.warn('PWA Notification failed:', err);
+                                    }
+                                }
+
+                                showToast(`${alarm.time} ${msg}`);
+                            } catch (alarmErr) {
+                                console.error('QuickLog-Solo: Failed to execute PWA alarm:', alarmErr);
+                                continue;
+                            }
                         }
                     }
                 }
