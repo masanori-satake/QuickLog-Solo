@@ -646,11 +646,9 @@ async function startTask(categoryName, resumableCategory = null) {
         activeTask = await startTaskLogic(categoryName, activeTask, resumableCategory, color, tags);
         updateUI();
         broadcastSync();
-        return true;
     } catch (err) {
         console.error('QuickLog-Solo: Failed to start task:', err);
         showToast(t('alert-error') || 'Operation failed');
-        return false;
     }
 }
 
@@ -660,11 +658,9 @@ async function pauseTask() {
         activeTask = await pauseTaskLogic(activeTask);
         updateUI();
         broadcastSync();
-        return true;
     } catch (err) {
         console.error('QuickLog-Solo: Failed to pause task:', err);
         showToast(t('alert-error') || 'Operation failed');
-        return false;
     }
 }
 
@@ -4570,53 +4566,57 @@ export async function checkPWAAlarms() {
                         if (!executedPWAAlarms.has(key) && claimPWAAlarmExecution(key)) {
                             executedPWAAlarms.add(key);
 
-                            const runAlarmAction = async () => {
-                                let actionExecuted = false;
-                                if (alarm.action === 'stop') {
-                                    if (activeTask) {
-                                        await stopTask();
+                            try {
+                                const runAlarmAction = async () => {
+                                    let actionExecuted = false;
+                                    if (alarm.action === 'stop') {
+                                        if (activeTask) {
+                                            await stopTask();
+                                            actionExecuted = true;
+                                        }
+                                    } else if (alarm.action === 'pause') {
+                                        if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
+                                            await pauseTask();
+                                            actionExecuted = true;
+                                        }
+                                    } else if (alarm.action === 'start' && alarm.actionCategory) {
+                                        await startTask(alarm.actionCategory);
                                         actionExecuted = true;
                                     }
-                                } else if (alarm.action === 'pause') {
-                                    if (activeTask && activeTask.category !== SYSTEM_CATEGORY_IDLE) {
-                                        actionExecuted = await pauseTask();
+
+                                    if (actionExecuted) {
+                                        await updateUI();
                                     }
-                                } else if (alarm.action === 'start' && alarm.actionCategory) {
-                                    actionExecuted = await startTask(alarm.actionCategory);
+                                };
+
+                                const msg = alarm.message || alarm.name || t('title');
+
+                                if (alarm.requireConfirmation) {
+                                    const confirmed = await showConfirm(`${alarm.time} ${msg}`);
+                                    if (confirmed) {
+                                        await runAlarmAction();
+                                    }
+                                } else {
+                                    await runAlarmAction();
                                 }
 
-                                if (actionExecuted) {
-                                    await updateUI();
+                                // Notification
+                                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                                    try {
+                                        new Notification(t('title') || 'QuickLog-Solo', {
+                                            body: msg,
+                                            icon: 'shared/assets/icon128.png',
+                                        });
+                                    } catch (err) {
+                                        console.warn('PWA Notification failed:', err);
+                                    }
                                 }
-                                return actionExecuted;
-                            };
 
-                            const msg = alarm.message || alarm.name || t('title');
-
-                            let actionExecuted = false;
-                            if (alarm.requireConfirmation) {
-                                if (await showConfirm(`${alarm.time} ${msg}`)) {
-                                    actionExecuted = await runAlarmAction();
-                                }
-                            } else {
-                                actionExecuted = await runAlarmAction();
+                                showToast(`${alarm.time} ${msg}`);
+                            } catch (alarmErr) {
+                                console.error('QuickLog-Solo: Failed to execute PWA alarm:', alarmErr);
+                                continue;
                             }
-
-                            if (!actionExecuted) continue;
-
-                            // Notification
-                            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                                try {
-                                    new Notification(t('title') || 'QuickLog-Solo', {
-                                        body: msg,
-                                        icon: 'shared/assets/icon128.png',
-                                    });
-                                } catch (err) {
-                                    console.warn('PWA Notification failed:', err);
-                                }
-                            }
-
-                            showToast(`${alarm.time} ${msg}`);
                         }
                     }
                 }
