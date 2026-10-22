@@ -59,18 +59,6 @@ const DB_OPEN_TIMEOUT_MS = 5000;
  * Exported for testing purposes only.
  */
 export function openDatabase() {
-    if (db) {
-        try {
-            // Check if connection is closed or closing
-            if (db._closed || db._closePending) {
-                db = null;
-                dbPromise = null;
-            }
-        } catch {
-            db = null;
-            dbPromise = null;
-        }
-    }
     if (dbPromise) return dbPromise;
     if (db) return Promise.resolve(db);
 
@@ -114,19 +102,24 @@ export function openDatabase() {
         };
         request.onsuccess = (event) => {
             clearTimeout(timeoutId);
-            db = event.target.result;
-            db.onversionchange = () => {
-                db.close();
-                db = null;
-                dbPromise = null;
+            const connection = event.target.result;
+            db = connection;
+            connection.onversionchange = () => {
+                connection.close();
+                if (db === connection) {
+                    db = null;
+                    dbPromise = null;
+                }
                 console.warn('Database version changed or deletion requested. Closing connection.');
             };
-            db.onclose = () => {
-                db = null;
-                dbPromise = null;
-                console.warn('Database connection closed unexpectedly. Resetting connection handle.');
+            connection.onclose = () => {
+                if (db === connection) {
+                    db = null;
+                    dbPromise = null;
+                    console.warn('Database connection closed unexpectedly. Resetting connection handle.');
+                }
             };
-            resolve(db);
+            resolve(connection);
         };
         request.onerror = (event) => {
             clearTimeout(timeoutId);
@@ -508,11 +501,10 @@ export async function dbGetActiveTask() {
  * Exported for testing purposes only.
  */
 export function closeDatabase() {
-    if (db) {
-        db.close();
-        db = null;
-    }
+    const connection = db;
+    db = null;
     dbPromise = null;
+    if (connection) connection.close();
 }
 
 /**
