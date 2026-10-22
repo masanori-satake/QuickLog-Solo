@@ -59,6 +59,18 @@ const DB_OPEN_TIMEOUT_MS = 5000;
  * Exported for testing purposes only.
  */
 export function openDatabase() {
+    if (db) {
+        try {
+            // Check if connection is closed or closing
+            if (db._closed || db._closePending) {
+                db = null;
+                dbPromise = null;
+            }
+        } catch {
+            db = null;
+            dbPromise = null;
+        }
+    }
     if (dbPromise) return dbPromise;
     if (db) return Promise.resolve(db);
 
@@ -109,6 +121,11 @@ export function openDatabase() {
                 dbPromise = null;
                 console.warn('Database version changed or deletion requested. Closing connection.');
             };
+            db.onclose = () => {
+                db = null;
+                dbPromise = null;
+                console.warn('Database connection closed unexpectedly. Resetting connection handle.');
+            };
             resolve(db);
         };
         request.onerror = (event) => {
@@ -123,10 +140,35 @@ export function openDatabase() {
     return dbPromise;
 }
 
-export async function dbGet(storeName, key) {
+/**
+ * Creates an IndexedDB transaction with automatic connection recovery if the DB connection was closed.
+ * @param {string|string[]} storeNames
+ * @param {IDBTransactionMode} mode
+ * @returns {Promise<IDBTransaction>}
+ */
+export async function getTransaction(storeNames, mode) {
     await openDatabase();
+    try {
+        return db.transaction(storeNames, mode);
+    } catch (err) {
+        if (
+            err &&
+            (err.name === 'InvalidStateError' ||
+                (err.message && (err.message.includes('closed') || err.message.includes('closing'))))
+        ) {
+            console.warn('QuickLog-Solo: DB connection closed or closing. Resetting and re-opening connection...', err);
+            db = null;
+            dbPromise = null;
+            await openDatabase();
+            return db.transaction(storeNames, mode);
+        }
+        throw err;
+    }
+}
+
+export async function dbGet(storeName, key) {
+    const tx = await getTransaction(storeName, 'readonly');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.get(key);
         request.onsuccess = () => resolve(request.result);
@@ -137,9 +179,8 @@ export async function dbGet(storeName, key) {
 export async function dbAddMultiple(storeName, items) {
     if (typeof storeName !== 'string') return;
     if (!Array.isArray(items) || items.length === 0) return;
-    await openDatabase();
+    const tx = await getTransaction(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
 
         tx.oncomplete = () => resolve();
@@ -158,9 +199,8 @@ export async function dbAddMultiple(storeName, items) {
  */
 export async function dbImportCategories(items, importMode) {
     if (!Array.isArray(items)) return;
-    await openDatabase();
+    const tx = await getTransaction([STORE_CATEGORIES], 'readwrite');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction([STORE_CATEGORIES], 'readwrite');
         const store = tx.objectStore(STORE_CATEGORIES);
 
         tx.oncomplete = () => resolve();
@@ -213,7 +253,6 @@ export async function dbImportCategories(items, importMode) {
  * @param {AbortSignal} [options.signal]
  */
 export async function dbImportTransferredSettings(dataPayload = {}, { signal } = {}) {
-    await openDatabase();
     signal?.throwIfAborted();
 
     // Unwrap DataPayload if an envelope object { createdAt, settings: DataPayload } was passed defensively
@@ -230,8 +269,8 @@ export async function dbImportTransferredSettings(dataPayload = {}, { signal } =
 
     const { settings, categories, alarms, partInfo } = payload || {};
 
+    const tx = await getTransaction([STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS], 'readwrite');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction([STORE_SETTINGS, STORE_CATEGORIES, STORE_ALARMS], 'readwrite');
         const abortImport = () => {
             try {
                 tx.abort();
@@ -288,9 +327,8 @@ export async function dbImportTransferredSettings(dataPayload = {}, { signal } =
 export const dbImportQRSettings = dbImportTransferredSettings;
 
 export async function dbGetByName(storeName, name) {
-    await openDatabase();
+    const tx = await getTransaction(storeName, 'readonly');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const index = store.index('name');
         const request = index.get(name);
@@ -303,9 +341,8 @@ export async function dbGetByName(storeName, name) {
  * Clears all data from the specified object store.
  */
 export async function dbClear(storeName) {
-    await openDatabase();
+    const tx = await getTransaction(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.clear();
         request.onsuccess = () => resolve();
@@ -314,9 +351,8 @@ export async function dbClear(storeName) {
 }
 
 export async function dbGetAll(storeName) {
-    await openDatabase();
+    const tx = await getTransaction(storeName, 'readonly');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.getAll();
         request.onsuccess = () => resolve(request.result);
@@ -325,9 +361,8 @@ export async function dbGetAll(storeName) {
 }
 
 export async function dbPut(storeName, value) {
-    await openDatabase();
+    const tx = await getTransaction(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.put(value);
         request.onsuccess = () => resolve(request.result);
@@ -336,9 +371,8 @@ export async function dbPut(storeName, value) {
 }
 
 export async function dbAdd(storeName, value) {
-    await openDatabase();
+    const tx = await getTransaction(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.add(value);
         request.onsuccess = () => resolve(request.result);
@@ -347,9 +381,8 @@ export async function dbAdd(storeName, value) {
 }
 
 export async function dbDelete(storeName, key) {
-    await openDatabase();
+    const tx = await getTransaction(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
         const request = store.delete(key);
         request.onsuccess = () => resolve();
@@ -363,9 +396,8 @@ export async function dbDelete(storeName, key) {
  * @returns {Promise<Object[]>}
  */
 export async function dbGetManualStopsAt(ts) {
-    await openDatabase();
+    const tx = await getTransaction(STORE_LOGS, 'readonly');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_LOGS, 'readonly');
         const store = tx.objectStore(STORE_LOGS);
         const index = store.index('startTime');
         const request = index.getAll(IDBKeyRange.only(ts));
@@ -384,9 +416,8 @@ export async function dbGetManualStopsAt(ts) {
  * @returns {Promise<Object[]>}
  */
 export async function dbGetLogsByTimeRange(startMs, endMs) {
-    await openDatabase();
+    const tx = await getTransaction(STORE_LOGS, 'readonly');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_LOGS, 'readonly');
         const store = tx.objectStore(STORE_LOGS);
         const index = store.index('startTime');
 
@@ -417,9 +448,8 @@ export async function dbGetLogsByTimeRange(startMs, endMs) {
  */
 export async function dbGetLogsByCategory(categoryName) {
     if (typeof categoryName !== 'string') return [];
-    await openDatabase();
+    const tx = await getTransaction(STORE_LOGS, 'readonly');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_LOGS, 'readonly');
         const store = tx.objectStore(STORE_LOGS);
         const index = store.index('category');
         const request = index.getAll(IDBKeyRange.only(categoryName));
@@ -432,9 +462,8 @@ export async function dbGetLogsByCategory(categoryName) {
  * Returns the count of records in the specified object store.
  */
 export async function dbCount(storeName) {
-    await openDatabase();
+    const tx = await getTransaction(storeName, 'readonly');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
         const request = store.count();
         request.onsuccess = () => resolve(request.result);
@@ -447,9 +476,8 @@ export async function dbCount(storeName) {
  * @returns {Promise<Object|null>}
  */
 export async function dbGetActiveTask() {
-    await openDatabase();
+    const tx = await getTransaction(STORE_LOGS, 'readonly');
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_LOGS, 'readonly');
         const store = tx.objectStore(STORE_LOGS);
         // Open cursor in reverse order (newest ID first)
         const request = store.openCursor(null, 'prev');

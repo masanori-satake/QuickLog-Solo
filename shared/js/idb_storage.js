@@ -16,6 +16,17 @@ let dbOpenGeneration = 0;
  * @returns {Promise<IDBDatabase>}
  */
 export function initAnimationDB() {
+    if (dbInstance) {
+        try {
+            if (dbInstance._closed || dbInstance._closePending) {
+                dbInstance = null;
+                dbPromise = null;
+            }
+        } catch {
+            dbInstance = null;
+            dbPromise = null;
+        }
+    }
     if (dbPromise) return dbPromise;
     if (dbInstance) return Promise.resolve(dbInstance);
 
@@ -41,6 +52,10 @@ export function initAnimationDB() {
                 return;
             }
             dbInstance = event.target.result;
+            dbInstance.onclose = () => {
+                dbInstance = null;
+                dbPromise = null;
+            };
             resolve(dbInstance);
         };
 
@@ -115,6 +130,17 @@ let draftDbOpenGeneration = 0;
  * @returns {Promise<IDBDatabase>} The draft animation database connection.
  */
 export function initAnimationDraftDB() {
+    if (draftDbInstance) {
+        try {
+            if (draftDbInstance._closed || draftDbInstance._closePending) {
+                draftDbInstance = null;
+                draftDbPromise = null;
+            }
+        } catch {
+            draftDbInstance = null;
+            draftDbPromise = null;
+        }
+    }
     if (draftDbPromise) return draftDbPromise;
     if (draftDbInstance) return Promise.resolve(draftDbInstance);
 
@@ -140,6 +166,10 @@ export function initAnimationDraftDB() {
                 return;
             }
             draftDbInstance = event.target.result;
+            draftDbInstance.onclose = () => {
+                draftDbInstance = null;
+                draftDbPromise = null;
+            };
             resolve(draftDbInstance);
         };
 

@@ -387,6 +387,40 @@ describe('DB Module', () => {
         });
     });
 
+    describe('IndexedDB Connection Recovery and Auto-reconnect', () => {
+        test('openDatabase auto-reopens connection when existing db is closed', async () => {
+            const db1 = await openDatabase();
+            expect(db1).toBeDefined();
+
+            // Simulate closed connection
+            db1.close();
+
+            const db2 = await openDatabase();
+            expect(db2).toBeDefined();
+            // Verify new connection is active
+            const log = { category: 'ReconnectTest', startTime: Date.now() };
+            const id = await dbAdd(STORE_LOGS, log);
+            expect(id).toBe(1);
+        });
+
+        test('db operations automatically recover from InvalidStateError when connection closes', async () => {
+            const db = await openDatabase();
+            await dbPut(STORE_SETTINGS, { key: 'testKey', value: 'initial' });
+
+            // Force close connection to trigger InvalidStateError on transaction
+            db.close();
+
+            // Next call to dbGet should auto-reconnect and succeed
+            const val = await dbGet(STORE_SETTINGS, 'testKey');
+            expect(val).toEqual({ key: 'testKey', value: 'initial' });
+
+            // dbPut should also work after auto-reconnection
+            await dbPut(STORE_SETTINGS, { key: 'testKey', value: 'updated' });
+            const val2 = await dbGet(STORE_SETTINGS, 'testKey');
+            expect(val2.value).toBe('updated');
+        });
+    });
+
     // =============================================================================
     // Property-Based Tests (Deterministic)
     // =============================================================================
