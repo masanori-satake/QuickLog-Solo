@@ -37,6 +37,9 @@ global.BroadcastChannel = jest.fn().mockImplementation(() => ({
 
 // Mock modules
 jest.unstable_mockModule('../shared/js/db.js', () => ({
+    getTransaction: jest.fn().mockResolvedValue({
+        objectStore: () => ({ clear: jest.fn(), add: jest.fn(), put: jest.fn(), delete: jest.fn() })
+    }),
     getCurrentAppState: jest.fn().mockResolvedValue({ alarms: [], activeTask: null }),
     dbGetByName: jest.fn(),
     dbGetAll: jest.fn(),

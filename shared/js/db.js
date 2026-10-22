@@ -44,6 +44,7 @@ export const SETTING_KEY_LAST_PULLED_SYNC_TIME = 'lastPulledSyncTime';
 export const SETTING_KEY_CLIENT_ID = 'clientId';
 export const SETTING_KEY_DELETED_SYNC_IDS = 'deletedSyncIds';
 export const SETTING_KEY_GLOBAL_CLEAR_TIME = 'globalClearTime';
+export const SETTING_KEY_INITIAL_SETUP_COMPLETED = 'initialSetupCompleted';
 
 export const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
@@ -516,11 +517,33 @@ export function closeDatabase() {
 }
 
 /**
+ * Requests persistent storage from the browser to prevent IndexedDB eviction.
+ * @returns {Promise<boolean>} Resolves to true if persistent storage is granted or already persisted.
+ */
+export async function requestStoragePersistence() {
+    if (typeof navigator !== 'undefined' && navigator.storage && typeof navigator.storage.persist === 'function') {
+        try {
+            const isPersisted = typeof navigator.storage.persisted === 'function' ? await navigator.storage.persisted() : false;
+            if (isPersisted) return true;
+            const granted = await navigator.storage.persist();
+            if (granted) {
+                console.log('QuickLog-Solo: Storage persistence granted.');
+            }
+            return Boolean(granted);
+        } catch (e) {
+            console.warn('QuickLog-Solo: Failed to request storage persistence:', e);
+        }
+    }
+    return false;
+}
+
+/**
  * Initializes the database.
  * @param {boolean} isLite - If true, skips heavy maintenance tasks like log cleanup and dummy data generation.
  */
 export async function initDB(isLite = false) {
     await openDatabase();
+    requestStoragePersistence().catch(() => {});
 
     // Ensure Client ID exists
     let clientIdSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID);
@@ -651,6 +674,14 @@ async function setupInitialData(languageSetting) {
     }));
 
     let existingCategories = await dbGetAll(STORE_CATEGORIES);
+    const initialSetupSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_INITIAL_SETUP_COMPLETED);
+    let isInitialSetupCompleted = initialSetupSetting ? Boolean(initialSetupSetting.value) : false;
+
+    if (existingCategories.length > 0) {
+        isInitialSetupCompleted = true;
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_INITIAL_SETUP_COMPLETED, value: true });
+    }
+
     if (existingCategories.length === 0) {
         for (let i = 0; i < initialCategories.length; i++) {
             const cat = initialCategories[i];
@@ -692,9 +723,8 @@ async function setupInitialData(languageSetting) {
             orphanedTasks.push(orphaned);
         }
         if (orphanedTasks.length > 0) {
+            const tx = await getTransaction(STORE_LOGS, 'readwrite');
             await new Promise((resolve, reject) => {
-                if (!db) { reject(new Error('DB not initialized')); return; }
-                const tx = db.transaction(STORE_LOGS, 'readwrite');
                 const store = tx.objectStore(STORE_LOGS);
                 tx.oncomplete = () => resolve();
                 tx.onerror = (e) => reject(e.target.error);
@@ -746,9 +776,14 @@ async function setupInitialData(languageSetting) {
         }
     }
 
-    // Generate dummy history if no logs exist
-    if ((await dbGetAll(STORE_LOGS)).length === 0) {
-        await generateDummyHistory();
+    // Generate dummy history only on true brand-new clean setup
+    if (!isInitialSetupCompleted) {
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_INITIAL_SETUP_COMPLETED, value: true });
+        if ((await dbGetAll(STORE_LOGS)).length === 0) {
+            await generateDummyHistory();
+        } else {
+            await migrateLogsWithMissingData();
+        }
     } else {
         await migrateLogsWithMissingData();
     }
@@ -777,9 +812,8 @@ async function migrateLogsWithSyncId() {
 
     if (logsToUpdate.length > 0) {
         console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing syncId.`);
+        const tx = await getTransaction(STORE_LOGS, 'readwrite');
         await new Promise((resolve, reject) => {
-            if (!db) { reject(new Error('DB not initialized')); return; }
-            const tx = db.transaction(STORE_LOGS, 'readwrite');
             const store = tx.objectStore(STORE_LOGS);
             tx.oncomplete = () => resolve();
             tx.onerror = (e) => reject(e.target.error);
@@ -813,9 +847,8 @@ async function migrateCategoriesWithMissingOrder() {
 
     if (categoriesToUpdate.length > 0) {
         console.log(`QuickLog-Solo: Migrating ${categoriesToUpdate.length} categories with missing order.`);
+        const tx = await getTransaction(STORE_CATEGORIES, 'readwrite');
         await new Promise((resolve, reject) => {
-            if (!db) { reject(new Error('DB not initialized')); return; }
-            const tx = db.transaction(STORE_CATEGORIES, 'readwrite');
             const store = tx.objectStore(STORE_CATEGORIES);
             tx.oncomplete = () => resolve();
             tx.onerror = (e) => reject(e.target.error);
@@ -849,9 +882,8 @@ async function migrateLogsWithUpdatedAt() {
 
     if (logsToUpdate.length > 0) {
         console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing updatedAt.`);
+        const tx = await getTransaction(STORE_LOGS, 'readwrite');
         await new Promise((resolve, reject) => {
-            if (!db) { reject(new Error('DB not initialized')); return; }
-            const tx = db.transaction(STORE_LOGS, 'readwrite');
             const store = tx.objectStore(STORE_LOGS);
             tx.oncomplete = () => resolve();
             tx.onerror = (e) => reject(e.target.error);
@@ -896,9 +928,8 @@ async function migrateLogsWithMissingData() {
 
     if (logsToUpdate.length > 0) {
         console.log(`QuickLog-Solo: Migrating ${logsToUpdate.length} logs with missing tags or colors.`);
+        const tx = await getTransaction(STORE_LOGS, 'readwrite');
         await new Promise((resolve, reject) => {
-            if (!db) { reject(new Error('DB not initialized')); return; }
-            const tx = db.transaction(STORE_LOGS, 'readwrite');
             const store = tx.objectStore(STORE_LOGS);
             tx.oncomplete = () => resolve();
             tx.onerror = (e) => reject(e.target.error);
@@ -1029,9 +1060,8 @@ async function cleanupOldLogs() {
 
     if (logsToDelete.length === 0) return;
 
+    const tx = await getTransaction(STORE_LOGS, 'readwrite');
     return new Promise((resolve, reject) => {
-        if (!db) { reject(new Error('DB not initialized')); return; }
-        const tx = db.transaction(STORE_LOGS, 'readwrite');
         const store = tx.objectStore(STORE_LOGS);
 
         tx.oncomplete = () => {

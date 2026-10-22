@@ -1,6 +1,9 @@
 import { jest } from '@jest/globals';
 
 jest.unstable_mockModule('../shared/js/db.js', () => ({
+    getTransaction: jest.fn().mockResolvedValue({
+        objectStore: () => ({ clear: jest.fn(), add: jest.fn(), put: jest.fn(), delete: jest.fn() })
+    }),
     dbGet: jest.fn(),
     dbPut: jest.fn(),
     dbGetAll: jest.fn(),

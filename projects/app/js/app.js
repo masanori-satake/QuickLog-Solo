@@ -1,5 +1,6 @@
 import {
     initDB,
+    closeDatabase,
     getCurrentAppState,
     dbGet,
     dbGetByName,
@@ -4672,7 +4673,19 @@ async function initApp() {
     }
 
     try {
-        await initDB();
+        let appState;
+        try {
+            appState = await initDB();
+        } catch (initErr) {
+            console.warn('QuickLog-Solo: Initial initDB failed. Resetting DB handle and retrying once...', initErr);
+            try {
+                closeDatabase();
+            } catch {
+                // Ignore close errors
+            }
+            await new Promise((res) => setTimeout(res, 300));
+            appState = await initDB();
+        }
 
         // Set up animation sync progress callback (non-blocking UI update)
         setAnimSyncProgressCallback((completed, total) => {
@@ -4712,7 +4725,41 @@ async function initApp() {
         }
     } catch (e) {
         console.error('Failed to initialize application:', e);
-        alert(`${t('alert-init-error')}\n\nDetails: ${e.message || e}`);
+        const appContainer = getEl('app') || getBody();
+        if (appContainer) {
+            const errorMsg = e && e.message ? e.message : String(e);
+            const banner = document.createElement('div');
+            banner.className = 'init-error-banner';
+            banner.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:var(--md-sys-color-surface, #121212);color:var(--md-sys-color-on-surface, #ffffff);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;box-sizing:border-box;';
+
+            const icon = document.createElement('span');
+            icon.className = 'material-symbols-outlined';
+            icon.style.cssText = 'font-size:48px;color:var(--md-sys-color-error, #ff5449);margin-bottom:16px;';
+            icon.textContent = 'warning';
+
+            const title = document.createElement('h3');
+            title.style.cssText = 'margin:0 0 12px 0;font-size:18px;';
+            title.textContent = t('alert-init-error') || 'アプリの初期化に失敗しました。';
+
+            const detail = document.createElement('p');
+            detail.style.cssText = 'margin:0 0 24px 0;font-size:13px;opacity:0.8;max-width:320px;word-break:break-word;';
+            detail.textContent = errorMsg;
+
+            const reloadBtn = document.createElement('button');
+            reloadBtn.className = 'm3-btn primary-btn';
+            reloadBtn.style.cssText = 'padding:10px 24px;font-size:14px;cursor:pointer;';
+            reloadBtn.textContent = '再読み込み';
+            reloadBtn.onclick = () => window.location.reload();
+
+            banner.appendChild(icon);
+            banner.appendChild(title);
+            banner.appendChild(detail);
+            banner.appendChild(reloadBtn);
+
+            const existingBanner = document.querySelector('.init-error-banner');
+            if (existingBanner) existingBanner.remove();
+            appContainer.appendChild(banner);
+        }
     }
 
     console.log('QuickLog-Solo Initialized');
