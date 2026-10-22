@@ -4673,9 +4673,8 @@ async function initApp() {
     }
 
     try {
-        let appState;
         try {
-            appState = await initDB();
+            await initDB();
         } catch (initErr) {
             console.warn('QuickLog-Solo: Initial initDB failed. Resetting DB handle and retrying once...', initErr);
             try {
@@ -4684,7 +4683,7 @@ async function initApp() {
                 // Ignore close errors
             }
             await new Promise((res) => setTimeout(res, 300));
-            appState = await initDB();
+            await initDB();
         }
 
         // Set up animation sync progress callback (non-blocking UI update)
@@ -4730,7 +4729,8 @@ async function initApp() {
             const errorMsg = e && e.message ? e.message : String(e);
             const banner = document.createElement('div');
             banner.className = 'init-error-banner';
-            banner.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:var(--md-sys-color-surface, #121212);color:var(--md-sys-color-on-surface, #ffffff);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;box-sizing:border-box;';
+            banner.style.cssText =
+                'position:fixed;top:0;left:0;right:0;bottom:0;background:var(--md-sys-color-surface, #121212);color:var(--md-sys-color-on-surface, #ffffff);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;box-sizing:border-box;';
 
             const icon = document.createElement('span');
             icon.className = 'material-symbols-outlined';
@@ -4742,7 +4742,8 @@ async function initApp() {
             title.textContent = t('alert-init-error') || 'アプリの初期化に失敗しました。';
 
             const detail = document.createElement('p');
-            detail.style.cssText = 'margin:0 0 24px 0;font-size:13px;opacity:0.8;max-width:320px;word-break:break-word;';
+            detail.style.cssText =
+                'margin:0 0 24px 0;font-size:13px;opacity:0.8;max-width:320px;word-break:break-word;';
             detail.textContent = errorMsg;
 
             const reloadBtn = document.createElement('button');
