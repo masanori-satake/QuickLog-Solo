@@ -495,6 +495,14 @@ export function closeDatabase() {
 export async function initDB(isLite = false) {
     await openDatabase();
 
+    // Check all stores before initialization writes the client ID or default data.
+    const isNewInstallation = !isLite && (await Promise.all([
+        dbCount(STORE_SETTINGS),
+        dbCount(STORE_CATEGORIES),
+        dbCount(STORE_ALARMS),
+        dbCount(STORE_LOGS),
+    ])).every(count => count === 0);
+
     // Ensure Client ID exists
     let clientIdSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID);
     if (!clientIdSetting) {
@@ -508,7 +516,7 @@ export async function initDB(isLite = false) {
     if (isLite) {
         setLanguage(lang);
     } else {
-        await setupInitialData(lang);
+        await setupInitialData(lang, isNewInstallation);
         await migrateLogsWithSyncId();
         await migrateLogsWithUpdatedAt();
         await migrateCategoriesWithMissingOrder();
@@ -578,7 +586,7 @@ export async function getCurrentAppState() {
     };
 }
 
-async function setupInitialData(languageSetting) {
+async function setupInitialData(languageSetting, isNewInstallation) {
     setLanguage(languageSetting);
 
 
@@ -722,9 +730,9 @@ async function setupInitialData(languageSetting) {
     const initialSetupSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_INITIAL_SETUP_COMPLETED);
     const hasInitialSetupRun = !!(initialSetupSetting && initialSetupSetting.value);
 
-    // Generate dummy history strictly on a brand-new clean installation (no initial setup recorded, no categories, no alarms)
+    // Use the pre-initialization state so existing installations never receive dummy history.
     if (!hasInitialSetupRun) {
-        if (existingCategories.length === 0 && existingAlarms.length === 0 && (await dbGetAll(STORE_LOGS)).length === 0) {
+        if (isNewInstallation) {
             await generateDummyHistory();
         } else {
             await migrateLogsWithMissingData();
