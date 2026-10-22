@@ -2579,38 +2579,48 @@ async function updateUI() {
 // --- Action Logic ---
 
 async function openReportModal() {
-    reportSelectedDate = new Date();
-    reportSelectedDate.setHours(0, 0, 0, 0);
+    try {
+        reportSelectedDate = new Date();
+        reportSelectedDate.setHours(0, 0, 0, 0);
 
-    const logs = await dbGetLogsByTimeRange(Date.now() - LOG_CLEANUP_THRESHOLD_MS);
-    reportLogDates = new Set(logs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
+        const logs = await dbGetLogsByTimeRange(Date.now() - LOG_CLEANUP_THRESHOLD_MS);
+        reportLogDates = new Set(logs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
 
-    const state = await getCurrentAppState();
-    if (state.reportSettings) {
-        reportSettings = state.reportSettings;
-        getEl(ID_REPORT_FORMAT_SELECT).value = reportSettings.format;
-        getEl(ID_REPORT_EMOJI_SELECT).value = reportSettings.emoji;
-        getEl(ID_REPORT_ENDTIME_SELECT).value = reportSettings.endTime;
-        updateDurationSelectOptions(reportSettings.format);
-        getEl(ID_REPORT_DURATION_SELECT).value = reportSettings.duration;
-        getEl(ID_REPORT_ADJUST_SELECT).value = reportSettings.adjust || 'none';
-    } else {
-        updateDurationSelectOptions(getEl(ID_REPORT_FORMAT_SELECT).value);
+        const state = await getCurrentAppState();
+        if (state.reportSettings) {
+            reportSettings = state.reportSettings;
+            getEl(ID_REPORT_FORMAT_SELECT).value = reportSettings.format;
+            getEl(ID_REPORT_EMOJI_SELECT).value = reportSettings.emoji;
+            getEl(ID_REPORT_ENDTIME_SELECT).value = reportSettings.endTime;
+            updateDurationSelectOptions(reportSettings.format);
+            getEl(ID_REPORT_DURATION_SELECT).value = reportSettings.duration;
+            getEl(ID_REPORT_ADJUST_SELECT).value = reportSettings.adjust || 'none';
+        } else {
+            updateDurationSelectOptions(getEl(ID_REPORT_FORMAT_SELECT).value);
+        }
+
+        updateReportUI();
+        getEl(ID_REPORT_MODAL)?.classList.remove('hidden');
+    } catch (err) {
+        console.error('QuickLog-Solo: Failed to open report modal:', err);
+        showToast(t('alert-error') || 'Operation failed');
     }
-
-    updateReportUI();
-    getEl(ID_REPORT_MODAL).classList.remove('hidden');
 }
 
 async function openTagAggregationModal() {
-    tagAggregationSelectedDate = new Date();
-    tagAggregationSelectedDate.setHours(0, 0, 0, 0);
+    try {
+        tagAggregationSelectedDate = new Date();
+        tagAggregationSelectedDate.setHours(0, 0, 0, 0);
 
-    const logs = await dbGetLogsByTimeRange(Date.now() - LOG_CLEANUP_THRESHOLD_MS);
-    reportLogDates = new Set(logs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
+        const logs = await dbGetLogsByTimeRange(Date.now() - LOG_CLEANUP_THRESHOLD_MS);
+        reportLogDates = new Set(logs.map((l) => new Date(l.startTime).setHours(0, 0, 0, 0)));
 
-    await updateTagAggregationUI();
-    getEl(ID_TAG_AGGREGATION_MODAL).classList.remove('hidden');
+        await updateTagAggregationUI();
+        getEl(ID_TAG_AGGREGATION_MODAL)?.classList.remove('hidden');
+    } catch (err) {
+        console.error('QuickLog-Solo: Failed to open tag aggregation modal:', err);
+        showToast(t('alert-error') || 'Operation failed');
+    }
 }
 
 function updateDurationSelectOptions(format) {
@@ -3100,7 +3110,12 @@ async function renderBusinessDays() {
     const container = getEl(ID_BUSINESS_DAYS_CONTAINER);
     if (!container) return;
 
-    const state = await getCurrentAppState();
+    let state = {};
+    try {
+        state = await getCurrentAppState();
+    } catch (err) {
+        console.error('QuickLog-Solo: Failed to load state for business days:', err);
+    }
     const businessDays = state.businessDays || [1, 2, 3, 4, 5];
 
     container.replaceChildren();
@@ -3201,7 +3216,12 @@ async function renderAlarmList() {
         }
     }
 
-    const alarms = await dbGetAll(STORE_ALARMS);
+    let alarms = [];
+    try {
+        alarms = await dbGetAll(STORE_ALARMS);
+    } catch (err) {
+        console.error('QuickLog-Solo: Failed to get alarms:', err);
+    }
     alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0));
 
     const activeEl = document.activeElement;
@@ -3509,7 +3529,12 @@ async function renderCategoryList() {
 
     const list = getEl(ID_CATEGORY_EDITOR_LIST);
     if (!list) return;
-    let categories = await dbGetAll(STORE_CATEGORIES);
+    let categories = [];
+    try {
+        categories = await dbGetAll(STORE_CATEGORIES);
+    } catch (err) {
+        console.error('QuickLog-Solo: Failed to get categories:', err);
+    }
     categories = categories
         .filter((c) => c.name !== SYSTEM_CATEGORY_IDLE)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
