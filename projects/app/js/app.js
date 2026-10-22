@@ -3110,11 +3110,12 @@ async function renderBusinessDays() {
     const container = getEl(ID_BUSINESS_DAYS_CONTAINER);
     if (!container) return;
 
-    let state = {};
+    let state;
     try {
         state = await getCurrentAppState();
     } catch (err) {
         console.error('QuickLog-Solo: Failed to load state for business days:', err);
+        return;
     }
     const businessDays = state.businessDays || [1, 2, 3, 4, 5];
 
@@ -3216,11 +3217,12 @@ async function renderAlarmList() {
         }
     }
 
-    let alarms = [];
+    let alarms;
     try {
         alarms = await dbGetAll(STORE_ALARMS);
     } catch (err) {
         console.error('QuickLog-Solo: Failed to get alarms:', err);
+        return;
     }
     alarms.sort((a, b) => (a.order ?? a.id ?? 0) - (b.order ?? b.id ?? 0));
 
@@ -3529,11 +3531,12 @@ async function renderCategoryList() {
 
     const list = getEl(ID_CATEGORY_EDITOR_LIST);
     if (!list) return;
-    let categories = [];
+    let categories;
     try {
         categories = await dbGetAll(STORE_CATEGORIES);
     } catch (err) {
         console.error('QuickLog-Solo: Failed to get categories:', err);
+        return;
     }
     categories = categories
         .filter((c) => c.name !== SYSTEM_CATEGORY_IDLE)
