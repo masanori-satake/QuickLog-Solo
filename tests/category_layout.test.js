@@ -45,7 +45,10 @@ describe('Category Layout Setting and Logic', () => {
             order: i,
         }));
 
-        function splitCategoriesIntoPages(allCategories, itemsPerPage = 16) {
+        let currentCategoryLayout = '2x4';
+
+        function splitCategoriesIntoPages(allCategories, itemsPerPage) {
+            const limit = itemsPerPage || (currentCategoryLayout === '2x4' ? 8 : 16);
             allCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
             const pages = [[]];
@@ -57,7 +60,7 @@ describe('Category Layout Setting and Logic', () => {
                         currentPageIdx++;
                     }
                 } else {
-                    if (pages[currentPageIdx].length >= itemsPerPage) {
+                    if (pages[currentPageIdx].length >= limit) {
                         pages.push([]);
                         currentPageIdx++;
                     }
@@ -70,7 +73,7 @@ describe('Category Layout Setting and Logic', () => {
             return pages;
         }
 
-        // Test 2x8 layout (16 items/page)
+        // Test 2x8 layout (16 items/page) when currentCategoryLayout was previously '2x4'
         const pages2x8 = splitCategoriesIntoPages(dummyCategories, 16);
         expect(pages2x8.length).toBe(2);
         expect(pages2x8[0].length).toBe(16);
@@ -82,6 +85,15 @@ describe('Category Layout Setting and Logic', () => {
         expect(pages2x4[0].length).toBe(8);
         expect(pages2x4[1].length).toBe(8);
         expect(pages2x4[2].length).toBe(4);
+
+        // Test with 8 categories when switching layout from '2x4' to '2x8'
+        const eightCategories = dummyCategories.slice(0, 8);
+        // Under 2x4 layout (8 items/page)
+        expect(splitCategoriesIntoPages(eightCategories, 8).length).toBe(1);
+        // When layout changes to '2x8' (itemsPerPage = 16), even if currentCategoryLayout variable is '2x4' initially
+        currentCategoryLayout = '2x8';
+        expect(splitCategoriesIntoPages(eightCategories, 16).length).toBe(1);
+        expect(splitCategoriesIntoPages(eightCategories, 16)[0].length).toBe(8);
     });
 
     test('category section touch flick event handler logic', () => {

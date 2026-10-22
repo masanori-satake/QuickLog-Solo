@@ -1112,7 +1112,7 @@ function applyAnimation(animationType, categoryAnimation = 'default', color = 'p
     }
 }
 
-function splitCategoriesIntoPages(allCategories, itemsPerPage = ITEMS_PER_PAGE) {
+function splitCategoriesIntoPages(allCategories, itemsPerPage) {
     const limit = itemsPerPage || (currentCategoryLayout === '2x4' ? 8 : ITEMS_PER_PAGE);
     allCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
 
