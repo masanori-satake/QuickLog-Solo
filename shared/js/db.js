@@ -44,6 +44,7 @@ export const SETTING_KEY_LAST_PULLED_SYNC_TIME = 'lastPulledSyncTime';
 export const SETTING_KEY_CLIENT_ID = 'clientId';
 export const SETTING_KEY_DELETED_SYNC_IDS = 'deletedSyncIds';
 export const SETTING_KEY_GLOBAL_CLEAR_TIME = 'globalClearTime';
+export const SETTING_KEY_INITIAL_SETUP_COMPLETED = 'initialSetupCompleted';
 
 export const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
@@ -718,11 +719,21 @@ async function setupInitialData(languageSetting) {
         }
     }
 
-    // Generate dummy history if no logs exist
-    if ((await dbGetAll(STORE_LOGS)).length === 0) {
-        await generateDummyHistory();
+    const initialSetupSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_INITIAL_SETUP_COMPLETED);
+    const hasInitialSetupRun = !!(initialSetupSetting && initialSetupSetting.value);
+
+    // Generate dummy history strictly on a brand-new clean installation (no initial setup recorded, no categories, no alarms)
+    if (!hasInitialSetupRun) {
+        if (existingCategories.length === 0 && existingAlarms.length === 0 && (await dbGetAll(STORE_LOGS)).length === 0) {
+            await generateDummyHistory();
+        } else {
+            await migrateLogsWithMissingData();
+        }
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_INITIAL_SETUP_COMPLETED, value: true });
     } else {
-        await migrateLogsWithMissingData();
+        if ((await dbGetAll(STORE_LOGS)).length > 0) {
+            await migrateLogsWithMissingData();
+        }
     }
 }
 

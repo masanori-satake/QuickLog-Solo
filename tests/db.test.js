@@ -1,7 +1,8 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
     dbGetByName, getCurrentAppState, dbGetActiveTask, dbAddMultiple, dbClear, setDatabaseName, DB_NAME as ACTUAL_DB_NAME,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_PAUSE_ANIMATION, SETTING_KEY_PAUSE_THEME
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_PAUSE_ANIMATION, SETTING_KEY_PAUSE_THEME,
+    SETTING_KEY_INITIAL_SETUP_COMPLETED
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE, getSeasonalPauseDefaults } from '../shared/js/utils.js';
 import { t } from '../shared/js/i18n.js';
@@ -307,6 +308,27 @@ describe('DB Module', () => {
         // Should only contain Recent task (and maybe dummy history if it was empty, but Recent makes it non-empty)
         expect(logs.find(l => l.category === 'Old')).toBeUndefined();
         expect(logs.find(l => l.category === 'Recent')).toBeDefined();
+    });
+
+    test('initDB sets SETTING_KEY_INITIAL_SETUP_COMPLETED and prevents dummy history when logs are cleared on existing installation', async () => {
+        // Initial setup
+        await initDB();
+        const initialSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_INITIAL_SETUP_COMPLETED);
+        expect(initialSetting).toBeDefined();
+        expect(initialSetting.value).toBe(true);
+
+        // Clear logs to simulate cleanupOldLogs purging all logs older than 40 days
+        await dbClear(STORE_LOGS);
+        expect(await dbCount(STORE_LOGS)).toBe(0);
+
+        closeDatabase();
+
+        // Re-initialize DB
+        await initDB();
+
+        // Ensure dummy history was NOT re-generated
+        const logsAfterReInit = await dbGetAll(STORE_LOGS);
+        expect(logsAfterReInit.length).toBe(0);
     });
 
     test('dbClear removes all items from a store', async () => {
