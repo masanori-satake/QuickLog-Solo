@@ -5,6 +5,7 @@ import {
     dbDelete,
     dbClear,
     openDatabase,
+    getTransaction,
     getCurrentAppState,
     STORE_LOGS,
     STORE_CATEGORIES,
@@ -378,8 +379,8 @@ async function applyRemoteSettings(data) {
     if (data[SYNC_KEYS.CATEGORIES]) {
         const remoteCats = data[SYNC_KEYS.CATEGORIES];
         if (Array.isArray(remoteCats)) {
+            const t = await getTransaction(STORE_CATEGORIES, 'readwrite');
             await new Promise((res, rej) => {
-                const t = db.transaction(STORE_CATEGORIES, 'readwrite');
                 const s = t.objectStore(STORE_CATEGORIES);
                 s.clear();
                 remoteCats.forEach((c) => {
@@ -397,8 +398,8 @@ async function applyRemoteSettings(data) {
     if (data[SYNC_KEYS.ALARMS]) {
         const remoteAlarms = data[SYNC_KEYS.ALARMS];
         if (Array.isArray(remoteAlarms)) {
+            const t = await getTransaction(STORE_ALARMS, 'readwrite');
             await new Promise((res, rej) => {
-                const t = db.transaction(STORE_ALARMS, 'readwrite');
                 const s = t.objectStore(STORE_ALARMS);
                 s.clear();
                 remoteAlarms.forEach((a) => s.add(a));
@@ -694,9 +695,8 @@ export async function mergeLogs(remoteLogs, overwrite = false, remoteDeletedIds 
     // Fill gaps only when merging, not when overwriting from cloud
     const reconstructed = reconstructTimeline(combined, !overwrite);
 
-    const db = await openDatabase();
+    const t = await getTransaction(STORE_LOGS, 'readwrite');
     await new Promise((res, rej) => {
-        const t = db.transaction(STORE_LOGS, 'readwrite');
         const s = t.objectStore(STORE_LOGS);
 
         const reconstructedIds = new Set();

@@ -1,7 +1,9 @@
+import { jest } from '@jest/globals';
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
     dbGetByName, getCurrentAppState, dbGetActiveTask, dbAddMultiple, dbClear, setDatabaseName, DB_NAME as ACTUAL_DB_NAME,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_PAUSE_ANIMATION, SETTING_KEY_PAUSE_THEME
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_PAUSE_ANIMATION, SETTING_KEY_PAUSE_THEME, SETTING_KEY_INITIAL_SETUP_COMPLETED,
+    requestStoragePersistence
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE, getSeasonalPauseDefaults } from '../shared/js/utils.js';
 import { t } from '../shared/js/i18n.js';
@@ -294,6 +296,24 @@ describe('DB Module', () => {
         expect(logs.length).toBe(0); // cleanupOldLogs and dummy data generation also skipped
     });
 
+    test('initDB does not generate dummy history on an existing installation when logs are cleared', async () => {
+        await initDB();
+
+        // Clear all logs (simulating log retention cleanup or manual clear)
+        await dbClear(STORE_LOGS);
+        expect(await dbGetAll(STORE_LOGS)).toHaveLength(0);
+
+        // Re-run initDB (simulating app restart on existing installation)
+        await initDB();
+
+        // Verify that dummy history is NOT re-generated
+        const logsAfterRestart = await dbGetAll(STORE_LOGS);
+        expect(logsAfterRestart).toHaveLength(0);
+
+        const initialSetupFlag = await dbGet(STORE_SETTINGS, SETTING_KEY_INITIAL_SETUP_COMPLETED);
+        expect(initialSetupFlag.value).toBe(true);
+    });
+
     test('initDB cleans up old logs', async () => {
         await openDatabase();
         const oldTime = Date.now() - (41 * 24 * 60 * 60 * 1000); // 41 days ago
@@ -418,6 +438,77 @@ describe('DB Module', () => {
             await dbPut(STORE_SETTINGS, { key: 'testKey', value: 'updated' });
             const val2 = await dbGet(STORE_SETTINGS, 'testKey');
             expect(val2.value).toBe('updated');
+        });
+
+        test('cleanupOldLogs and migrations auto-recover when DB connection was closed', async () => {
+            const db = await openDatabase();
+            const oldTime = Date.now() - (41 * 24 * 60 * 60 * 1000);
+            await dbAdd(STORE_LOGS, { category: 'OldLog', startTime: oldTime, endTime: oldTime + 1000 });
+
+            // Force close connection
+            db.close();
+
+            // initDB should run setupInitialData and cleanupOldLogs without throwing InvalidStateError
+            const state = await initDB();
+            expect(state).toBeDefined();
+
+            const logs = await dbGetAll(STORE_LOGS);
+            expect(logs.find(l => l.category === 'OldLog')).toBeUndefined();
+        });
+    });
+
+    describe('requestStoragePersistence', () => {
+        const originalStorage = navigator.storage;
+
+        afterEach(() => {
+            Object.defineProperty(navigator, 'storage', {
+                value: originalStorage,
+                configurable: true,
+                writable: true
+            });
+        });
+
+        test('returns false gracefully when navigator.storage is missing', async () => {
+            Object.defineProperty(navigator, 'storage', {
+                value: undefined,
+                configurable: true,
+                writable: true
+            });
+
+            const res = await requestStoragePersistence();
+            expect(res).toBe(false);
+        });
+
+        test('calls navigator.storage.persist and returns true when granted', async () => {
+            const mockPersist = jest.fn().mockResolvedValue(true);
+            const mockPersisted = jest.fn().mockResolvedValue(false);
+
+            Object.defineProperty(navigator, 'storage', {
+                value: { persist: mockPersist, persisted: mockPersisted },
+                configurable: true,
+                writable: true
+            });
+
+            const res = await requestStoragePersistence();
+            expect(res).toBe(true);
+            expect(mockPersisted).toHaveBeenCalled();
+            expect(mockPersist).toHaveBeenCalled();
+        });
+
+        test('returns true directly if already persisted without calling persist', async () => {
+            const mockPersist = jest.fn().mockResolvedValue(true);
+            const mockPersisted = jest.fn().mockResolvedValue(true);
+
+            Object.defineProperty(navigator, 'storage', {
+                value: { persist: mockPersist, persisted: mockPersisted },
+                configurable: true,
+                writable: true
+            });
+
+            const res = await requestStoragePersistence();
+            expect(res).toBe(true);
+            expect(mockPersisted).toHaveBeenCalled();
+            expect(mockPersist).not.toHaveBeenCalled();
         });
     });
 
