@@ -44,6 +44,7 @@ export const SETTING_KEY_LAST_PULLED_SYNC_TIME = 'lastPulledSyncTime';
 export const SETTING_KEY_CLIENT_ID = 'clientId';
 export const SETTING_KEY_DELETED_SYNC_IDS = 'deletedSyncIds';
 export const SETTING_KEY_GLOBAL_CLEAR_TIME = 'globalClearTime';
+export const SETTING_KEY_INITIAL_SETUP_COMPLETED = 'initialSetupCompleted';
 
 export const LOG_CLEANUP_THRESHOLD_MS = 40 * 24 * 60 * 60 * 1000;
 const ORPHANED_TASK_MIN_DURATION_MS = 1000;
@@ -494,6 +495,14 @@ export function closeDatabase() {
 export async function initDB(isLite = false) {
     await openDatabase();
 
+    // Check all stores before initialization writes the client ID or default data.
+    const isNewInstallation = !isLite && (await Promise.all([
+        dbCount(STORE_SETTINGS),
+        dbCount(STORE_CATEGORIES),
+        dbCount(STORE_ALARMS),
+        dbCount(STORE_LOGS),
+    ])).every(count => count === 0);
+
     // Ensure Client ID exists
     let clientIdSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID);
     if (!clientIdSetting) {
@@ -507,7 +516,7 @@ export async function initDB(isLite = false) {
     if (isLite) {
         setLanguage(lang);
     } else {
-        await setupInitialData(lang);
+        await setupInitialData(lang, isNewInstallation);
         await migrateLogsWithSyncId();
         await migrateLogsWithUpdatedAt();
         await migrateCategoriesWithMissingOrder();
@@ -577,7 +586,7 @@ export async function getCurrentAppState() {
     };
 }
 
-async function setupInitialData(languageSetting) {
+async function setupInitialData(languageSetting, isNewInstallation) {
     setLanguage(languageSetting);
 
 
@@ -718,11 +727,21 @@ async function setupInitialData(languageSetting) {
         }
     }
 
-    // Generate dummy history if no logs exist
-    if ((await dbGetAll(STORE_LOGS)).length === 0) {
-        await generateDummyHistory();
+    const initialSetupSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_INITIAL_SETUP_COMPLETED);
+    const hasInitialSetupRun = !!(initialSetupSetting && initialSetupSetting.value);
+
+    // Use the pre-initialization state so existing installations never receive dummy history.
+    if (!hasInitialSetupRun) {
+        if (isNewInstallation) {
+            await generateDummyHistory();
+        } else {
+            await migrateLogsWithMissingData();
+        }
+        await dbPut(STORE_SETTINGS, { key: SETTING_KEY_INITIAL_SETUP_COMPLETED, value: true });
     } else {
-        await migrateLogsWithMissingData();
+        if ((await dbGetAll(STORE_LOGS)).length > 0) {
+            await migrateLogsWithMissingData();
+        }
     }
 }
 
