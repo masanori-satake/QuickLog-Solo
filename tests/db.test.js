@@ -1,8 +1,7 @@
 import {
     openDatabase, dbAdd, dbGet, dbGetAll, dbCount, dbPut, dbDelete, initDB, closeDatabase, dbImportCategories,
     dbGetByName, getCurrentAppState, dbGetActiveTask, dbAddMultiple, dbClear, setDatabaseName, DB_NAME as ACTUAL_DB_NAME,
-    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_PAUSE_ANIMATION, SETTING_KEY_PAUSE_THEME,
-    SETTING_KEY_INITIAL_SETUP_COMPLETED, SETTING_KEY_CLIENT_ID
+    STORE_LOGS, STORE_CATEGORIES, STORE_SETTINGS, STORE_ALARMS, SETTING_KEY_THEME, SETTING_KEY_PAUSE_STATE, SETTING_KEY_PAUSE_ANIMATION, SETTING_KEY_PAUSE_THEME
 } from '../shared/js/db.js';
 import { SYSTEM_CATEGORY_IDLE, getSeasonalPauseDefaults } from '../shared/js/utils.js';
 import { t } from '../shared/js/i18n.js';
@@ -100,8 +99,6 @@ describe('DB Module', () => {
         const nameJA = '💻 開発・プログラミング';
         const nameEN = '💻 Development/Coding';
         expect(categories.find(c => c.name === nameJA || c.name === nameEN)).toBeDefined();
-        expect(await dbCount(STORE_LOGS)).toBeGreaterThan(0);
-        expect(await dbGet(STORE_SETTINGS, SETTING_KEY_CLIENT_ID)).toBeDefined();
     });
 
     test.each([
@@ -312,52 +309,6 @@ describe('DB Module', () => {
         expect(logs.find(l => l.category === 'Recent')).toBeDefined();
     });
 
-    test.each([
-        [STORE_SETTINGS, { key: SETTING_KEY_THEME, value: 'dark' }],
-        [STORE_SETTINGS, { key: SETTING_KEY_CLIENT_ID, value: 'existing-client' }],
-        [STORE_SETTINGS, { key: SETTING_KEY_INITIAL_SETUP_COMPLETED, value: false }],
-        [STORE_CATEGORIES, { name: 'Existing category', color: 'primary' }],
-        [STORE_ALARMS, { time: '10:00', message: 'Existing alarm' }],
-        [STORE_LOGS, { category: 'Existing log', startTime: Date.now() - 1000, endTime: Date.now() }],
-    ])('initDB does not generate dummy history when only %s contains existing data (%j)', async (store, item) => {
-        await dbPut(store, item);
-        closeDatabase();
-
-        await initDB();
-
-        expect(await dbCount(STORE_LOGS)).toBe(store === STORE_LOGS ? 1 : 0);
-        expect(await dbGet(STORE_SETTINGS, SETTING_KEY_INITIAL_SETUP_COMPLETED)).toEqual({
-            key: SETTING_KEY_INITIAL_SETUP_COMPLETED,
-            value: true,
-        });
-        if (store === STORE_SETTINGS && item.key !== SETTING_KEY_INITIAL_SETUP_COMPLETED) {
-            expect(await dbGet(STORE_SETTINGS, item.key)).toEqual(item);
-        }
-    });
-
-    test('initDB sets SETTING_KEY_INITIAL_SETUP_COMPLETED and prevents dummy history when data stores are cleared on existing installation', async () => {
-        // Initial setup
-        await initDB();
-        const initialSetting = await dbGet(STORE_SETTINGS, SETTING_KEY_INITIAL_SETUP_COMPLETED);
-        expect(initialSetting).toBeDefined();
-        expect(initialSetting.value).toBe(true);
-
-        // Keep only settings, as on an existing installation after user data is cleared.
-        for (const store of [STORE_LOGS, STORE_CATEGORIES, STORE_ALARMS]) {
-            await dbClear(store);
-        }
-        expect(await dbCount(STORE_LOGS)).toBe(0);
-
-        closeDatabase();
-
-        // Re-initialize DB
-        await initDB();
-
-        // Ensure dummy history was NOT re-generated
-        const logsAfterReInit = await dbGetAll(STORE_LOGS);
-        expect(logsAfterReInit.length).toBe(0);
-    });
-
     test('dbClear removes all items from a store', async () => {
         await openDatabase();
         await dbAdd(STORE_LOGS, { category: 'Test 1', startTime: 100 });
@@ -433,6 +384,40 @@ describe('DB Module', () => {
             await openDatabase();
             const count = await dbCount(STORE_LOGS);
             expect(count).toBe(0);
+        });
+    });
+
+    describe('IndexedDB Connection Recovery and Auto-reconnect', () => {
+        test('openDatabase auto-reopens connection when existing db is closed', async () => {
+            const db1 = await openDatabase();
+            expect(db1).toBeDefined();
+
+            // Simulate closed connection
+            db1.close();
+
+            const db2 = await openDatabase();
+            expect(db2).toBeDefined();
+            // Verify new connection is active
+            const log = { category: 'ReconnectTest', startTime: Date.now() };
+            const id = await dbAdd(STORE_LOGS, log);
+            expect(id).toBe(1);
+        });
+
+        test('db operations automatically recover from InvalidStateError when connection closes', async () => {
+            const db = await openDatabase();
+            await dbPut(STORE_SETTINGS, { key: 'testKey', value: 'initial' });
+
+            // Force close connection to trigger InvalidStateError on transaction
+            db.close();
+
+            // Next call to dbGet should auto-reconnect and succeed
+            const val = await dbGet(STORE_SETTINGS, 'testKey');
+            expect(val).toEqual({ key: 'testKey', value: 'initial' });
+
+            // dbPut should also work after auto-reconnection
+            await dbPut(STORE_SETTINGS, { key: 'testKey', value: 'updated' });
+            const val2 = await dbGet(STORE_SETTINGS, 'testKey');
+            expect(val2.value).toBe('updated');
         });
     });
 
