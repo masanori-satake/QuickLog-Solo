@@ -5,6 +5,7 @@ test.describe('QL-Animation Maker Improvements', () => {
     // 1. Load QL-Animation Maker directly in Japanese
     await page.goto('/projects/animation-maker/index.html?lang=ja&theme=dark');
     await page.waitForSelector('#maker-app');
+    await page.waitForSelector('body.app-initialized');
 
     // 2. Verify Title does not contain (Beta) or (β版)
     const titleText = await page.locator('.header-left h1').textContent();
@@ -131,6 +132,7 @@ test.describe('QL-Animation Maker Improvements', () => {
   test('should verify filename renaming to custom animation name when selecting a GIF in Maker', async ({ page }) => {
     await page.goto('/projects/animation-maker/index.html?lang=ja&theme=dark');
     await page.waitForSelector('#maker-app');
+    await page.waitForSelector('body.app-initialized');
 
     // Add custom animation
     await page.click('#add-anim-btn');

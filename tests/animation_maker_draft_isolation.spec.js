@@ -56,9 +56,11 @@ test.describe('QL-Animation Maker Draft Isolation and Apply Workflow', () => {
         // 1. Load QL-Animation Maker
         await page.goto('/projects/animation-maker/index.html?lang=en&theme=dark');
         await page.waitForSelector('#maker-app');
+        await page.waitForSelector('body.app-initialized');
 
         // 2. Add a new custom animation
         await page.click('#add-anim-btn');
+        await page.waitForSelector('#m3-dialog-modal:not(.hidden)');
         await page.fill('#m3-dialog-input', 'Draft Test Animation');
         await page.click('#m3-dialog-ok-btn');
 

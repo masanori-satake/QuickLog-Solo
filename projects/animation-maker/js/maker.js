@@ -299,6 +299,7 @@ async function init() {
     await loadAnimationsList();
     setupAnimationLoop();
     updateBoundaryLines();
+    document.body.classList.add('app-initialized');
 }
 
 function setupTheme() {
