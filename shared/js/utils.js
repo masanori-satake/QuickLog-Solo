@@ -96,6 +96,18 @@ export function parseCsvLine(line) {
 }
 
 /**
+ * Normalizes a category name by trimming leading/trailing whitespace
+ * (including full-width and other Unicode spaces) and collapsing multiple
+ * consecutive whitespace characters into a single half-width space.
+ * @param {string} name
+ * @returns {string}
+ */
+export function normalizeCategoryName(name) {
+    if (typeof name !== 'string') return '';
+    return name.trim().replace(/\s+/g, ' ');
+}
+
+/**
  * Validates category name.
  * @param {string} name
  * @returns {boolean}
@@ -104,10 +116,12 @@ export function isValidCategoryName(name) {
     if (typeof name !== 'string') return false;
     const trimmed = name.trim();
     if (trimmed.length === 0 || trimmed.length > 50) return false;
+    const normalized = normalizeCategoryName(name);
+    if (normalized.length === 0 || normalized.length > 50) return false;
     if (
-        trimmed === SYSTEM_CATEGORY_IDLE ||
-        trimmed === SYSTEM_CATEGORY_UNKNOWN ||
-        trimmed.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
+        normalized === SYSTEM_CATEGORY_IDLE ||
+        normalized === SYSTEM_CATEGORY_UNKNOWN ||
+        normalized.startsWith(SYSTEM_CATEGORY_PAGE_BREAK)
     )
         return false;
     return true;

@@ -64,6 +64,8 @@ import {
     generateUUID,
     sanitizeRenderSpec,
     getSeasonalPauseDefaults,
+    normalizeCategoryName,
+    isValidCategoryName,
 } from '../shared/js/utils.js';
 import { AnimationEngine } from '../shared/js/animations.js';
 import { saveAnimationBlob, initAnimationDB } from '../shared/js/idb_storage.js';
@@ -574,6 +576,14 @@ export function setIsAppInitializedForTesting(val) {
     isAppInitialized = val;
 }
 
+/**
+ * Exposes openHistoryEditModal for unit testing.
+ * @param {object} log
+ */
+export async function openHistoryEditModalForTesting(log) {
+    return openHistoryEditModal(log);
+}
+
 export function isPWAMode() {
     return (
         typeof window !== 'undefined' &&
@@ -764,6 +774,8 @@ async function openHistoryEditModal(log) {
 
     const categoryItem = getEl('history-edit-category-item');
     const memoItem = getEl('history-edit-memo-item');
+    const addCategoryItem = getEl('history-edit-add-category-item');
+    const addCategoryCheckbox = getEl('history-edit-add-category-checkbox');
 
     if (!modal || !timeInput) return;
 
@@ -824,9 +836,35 @@ async function openHistoryEditModal(log) {
         });
 
         memoInput.value = log.memo || '';
+
+        // Add category checkbox UI control (disabled in PWA mode or when non-task)
+        if (isPWAMode()) {
+            addCategoryItem?.classList.add('hidden');
+        } else {
+            addCategoryItem?.classList.remove('hidden');
+        }
+
+        if (addCategoryCheckbox) {
+            addCategoryCheckbox.checked = false;
+            const updateCheckboxState = () => {
+                const normName = normalizeCategoryName(memoInput.value);
+                const isValid = isValidCategoryName(normName);
+                addCategoryCheckbox.disabled = !isValid;
+                if (!isValid) {
+                    addCategoryCheckbox.checked = false;
+                }
+            };
+            memoInput.oninput = updateCheckboxState;
+            updateCheckboxState();
+        }
     } else {
         categoryItem?.classList.add('hidden');
         memoItem?.classList.add('hidden');
+        addCategoryItem?.classList.add('hidden');
+        if (addCategoryCheckbox) {
+            addCategoryCheckbox.checked = false;
+            addCategoryCheckbox.disabled = true;
+        }
     }
 
     const validate = () => {
@@ -881,20 +919,87 @@ async function openHistoryEditModal(log) {
     applyBtn.onclick = async () => {
         if (!validate()) return;
 
+        applyBtn.disabled = true;
+        try {
+            await handleApply();
+        } finally {
+            applyBtn.disabled = false;
+        }
+    };
+
+    const handleApply = async () => {
         const [h, m] = timeInput.value.split(':').map(Number);
         const newTime = new Date(log.startTime);
         newTime.setHours(h, m, 0, 0);
         const newTs = newTime.getTime();
 
         if (isTask) {
-            const newCategoryName = categorySelect.value;
-            if (newCategoryName !== log.category) {
-                const cat = await dbGetByName(STORE_CATEGORIES, newCategoryName);
-                log.category = newCategoryName;
-                log.color = cat ? cat.color : log.color;
-                log.tags = cat ? cat.tags || '' : log.tags;
+            const selectedCategoryName = categorySelect.value;
+            const shouldAddCategory = !isPWAMode() && addCategoryCheckbox && addCategoryCheckbox.checked;
+
+            if (shouldAddCategory) {
+                const normalizedMemo = normalizeCategoryName(memoInput.value);
+                if (isValidCategoryName(normalizedMemo)) {
+                    const allCategories = await dbGetAll(STORE_CATEGORIES);
+                    const existingCat = allCategories.find((c) => c.name === normalizedMemo);
+                    const selectedCat = await dbGetByName(STORE_CATEGORIES, selectedCategoryName);
+
+                    const baseTags = selectedCat?.tags ?? (selectedCategoryName === log.category ? log.tags || '' : '');
+                    const baseColor =
+                        selectedCat?.color ??
+                        (selectedCategoryName === log.category ? log.color || 'primary' : 'primary');
+                    const baseAnimation = selectedCat?.animation ?? 'default';
+
+                    if (existingCat) {
+                        const confirmMsg = t('confirm-overwrite-category', { name: normalizedMemo });
+                        const confirmed = await showConfirm(confirmMsg);
+                        if (!confirmed) {
+                            // User cancelled overwriting: return to history edit modal without closing
+                            return;
+                        }
+                        // Overwrite existing category's settings (tags, animation, theme color) without changing its order
+                        existingCat.tags = baseTags;
+                        existingCat.color = baseColor;
+                        existingCat.animation = baseAnimation;
+                        await dbPut(STORE_CATEGORIES, existingCat);
+                    } else {
+                        // Create brand-new category placed at the end of all categories
+                        const maxOrder = allCategories.reduce((max, c) => Math.max(max, c.order ?? 0), -1);
+                        const newCat = {
+                            name: normalizedMemo,
+                            color: baseColor,
+                            tags: baseTags,
+                            animation: baseAnimation,
+                            order: maxOrder + 1,
+                        };
+                        await dbAdd(STORE_CATEGORIES, newCat);
+                    }
+
+                    // For the log: assign the new category and clear the memo field
+                    log.category = normalizedMemo;
+                    log.color = baseColor;
+                    log.tags = baseTags;
+                    log.memo = undefined;
+                } else {
+                    // Fallback to standard update if memo name is not valid
+                    if (selectedCategoryName !== log.category) {
+                        const cat = await dbGetByName(STORE_CATEGORIES, selectedCategoryName);
+                        log.category = selectedCategoryName;
+                        log.color = cat ? cat.color : log.color;
+                        log.tags = cat ? cat.tags || '' : log.tags;
+                    }
+                    log.memo = memoInput.value.trim() || undefined;
+                }
+            } else {
+                if (selectedCategoryName !== log.category) {
+                    const cat = await dbGetByName(STORE_CATEGORIES, selectedCategoryName);
+                    log.category = selectedCategoryName;
+                    log.color = cat ? cat.color : log.color;
+                    log.tags = cat ? cat.tags || '' : log.tags;
+                }
+                log.memo = memoInput.value.trim() || undefined;
             }
-            log.memo = memoInput.value.trim() || undefined;
+
             log.updatedAt = Date.now();
             await dbPut(STORE_LOGS, log);
         }

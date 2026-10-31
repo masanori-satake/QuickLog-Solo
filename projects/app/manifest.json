@@ -3,7 +3,7 @@
   "default_locale": "en",
   "name": "__MSG_extensionName__",
   "short_name": "__MSG_extensionShortName__",
-  "version": "1.47.15",
+  "version": "1.48.0",
   "description": "__MSG_extensionDescription__",
   "permissions": [
     "tabs",
