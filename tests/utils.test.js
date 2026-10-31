@@ -3,6 +3,7 @@ import {
     escapeCsv,
     escapeTsv,
     parseCsvLine,
+    normalizeCategoryName,
     isValidCategoryName,
     isValidColor,
     generateDuplicateName,
@@ -81,19 +82,36 @@ describe('Utils Module', () => {
         });
     });
 
+    describe('normalizeCategoryName', () => {
+        test('normalizes leading/trailing and inner whitespace correctly', () => {
+            expect(normalizeCategoryName('   Category   ')).toBe('Category');
+            expect(normalizeCategoryName('　　全角スペース　　')).toBe('全角スペース');
+            expect(normalizeCategoryName('Part A   Part B')).toBe('Part A Part B');
+            expect(normalizeCategoryName('Part　A　　Part　B')).toBe('Part A Part B');
+            expect(normalizeCategoryName('   ')).toBe('');
+            expect(normalizeCategoryName('　　')).toBe('');
+            expect(normalizeCategoryName(null)).toBe('');
+            expect(normalizeCategoryName(undefined)).toBe('');
+            expect(normalizeCategoryName(123)).toBe('');
+        });
+    });
+
     describe('isValidCategoryName', () => {
         test('validates correctly', () => {
             expect(isValidCategoryName('Work')).toBe(true);
             expect(isValidCategoryName('  ')).toBe(false);
+            expect(isValidCategoryName('　　')).toBe(false);
             expect(isValidCategoryName('')).toBe(false);
             expect(isValidCategoryName('a'.repeat(51))).toBe(false);
             expect(isValidCategoryName('__IDLE__')).toBe(false);
             expect(isValidCategoryName('__PAGE_BREAK__')).toBe(false);
             expect(isValidCategoryName('__PAGE_BREAK___123')).toBe(false);
+            expect(isValidCategoryName('__UNKNOWN__')).toBe(false);
             expect(isValidCategoryName(123)).toBe(false);
             expect(isValidCategoryName(null)).toBe(false);
             expect(isValidCategoryName(undefined)).toBe(false);
             expect(isValidCategoryName({})).toBe(false);
+            expect(isValidCategoryName('  　Valid Name　  ')).toBe(true);
         });
     });
 

@@ -2519,6 +2519,35 @@ body.pip-active {
     background-color: var(--md-sys-color-surface-container-low);
 }
 
+.history-edit-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--md-sys-color-on-surface);
+    user-select: none;
+    width: fit-content;
+}
+
+.history-edit-checkbox-label.disabled,
+.history-edit-checkbox-label:has(input:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.history-edit-checkbox-label input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.history-edit-checkbox-label input:disabled {
+    cursor: not-allowed;
+}
+
 #delete-initialize-section .checkbox-item {
     display: inline-flex;
     align-items: center;
