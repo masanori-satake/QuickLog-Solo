@@ -27,7 +27,8 @@ export function escapeHtml(str) {
 }
 
 /**
- * Escapes a string for TSV field.
+ * Escapes a string for TSV field and mitigates CSV/Formula Injection.
+ * Prefixes formula triggers (=, +, -, @, \t, \r) with a single quote to prevent execution in spreadsheets.
  * Quotes the field if it contains tabs, quotes, or newlines.
  * Escapes double quotes by doubling them.
  * @param {string} str
@@ -35,14 +36,20 @@ export function escapeHtml(str) {
  */
 export function escapeTsv(str) {
     if (typeof str !== 'string') return str;
-    if (str.includes('\t') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-        return '"' + str.replace(/"/g, '""') + '"';
+    // Security: Mitigate Formula Injection in spreadsheet software
+    let s = str;
+    if (/^[=+\-@\t\r]/.test(s)) {
+        s = "'" + s;
     }
-    return str;
+    if (s.includes('\t') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
 }
 
 /**
- * Escapes a string for CSV field.
+ * Escapes a string for CSV field and mitigates CSV/Formula Injection.
+ * Prefixes formula triggers (=, +, -, @, \t, \r) with a single quote to prevent execution in spreadsheets.
  * Quotes the field if it contains commas, quotes, or newlines.
  * Escapes double quotes by doubling them.
  * @param {string} str
@@ -50,10 +57,15 @@ export function escapeTsv(str) {
  */
 export function escapeCsv(str) {
     if (typeof str !== 'string') return str;
-    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-        return '"' + str.replace(/"/g, '""') + '"';
+    // Security: Mitigate Formula Injection in spreadsheet software
+    let s = str;
+    if (/^[=+\-@\t\r]/.test(s)) {
+        s = "'" + s;
     }
-    return str;
+    if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
 }
 
 /**

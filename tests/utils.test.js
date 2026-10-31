@@ -44,6 +44,15 @@ describe('Utils Module', () => {
             expect(escapeCsv(undefined)).toBe(undefined);
             expect(escapeCsv({ a: 1 })).toEqual({ a: 1 });
         });
+        test('mitigates CSV formula injection triggers', () => {
+            expect(escapeCsv('=1+1')).toBe("'=1+1");
+            expect(escapeCsv('+cmd|')).toBe("'+cmd|");
+            expect(escapeCsv('-calc')).toBe("'-calc");
+            expect(escapeCsv('@SUM(A1)')).toBe("'@SUM(A1)");
+            expect(escapeCsv('\tcmd')).toBe("'\tcmd");
+            expect(escapeCsv('\rcmd')).toBe('"\'\rcmd"');
+            expect(escapeCsv('=SUM(A1,B1)')).toBe('"\'=SUM(A1,B1)"');
+        });
     });
 
     describe('escapeTsv', () => {
@@ -67,6 +76,15 @@ describe('Utils Module', () => {
             expect(escapeTsv(null)).toBe(null);
             expect(escapeTsv(undefined)).toBe(undefined);
             expect(escapeTsv({ a: 1 })).toEqual({ a: 1 });
+        });
+        test('mitigates TSV formula injection triggers', () => {
+            expect(escapeTsv('=1+1')).toBe("'=1+1");
+            expect(escapeTsv('+cmd|')).toBe("'+cmd|");
+            expect(escapeTsv('-calc')).toBe("'-calc");
+            expect(escapeTsv('@SUM(A1)')).toBe("'@SUM(A1)");
+            expect(escapeTsv('\tcmd')).toBe('"\'\tcmd"');
+            expect(escapeTsv('\rcmd')).toBe('"\'\rcmd"');
+            expect(escapeTsv('=SUM(A1\tB1)')).toBe('"\'=SUM(A1\tB1)"');
         });
     });
 
