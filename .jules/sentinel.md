@@ -39,3 +39,8 @@
 **Vulnerability:** In environments where `crypto.getRandomValues()` was absent, `generateTransferId()` and `generate6DigitPin()` in `shared/js/pusher_sync.js` fell back to `Math.random()`, producing predictable session transfer tokens and PIN codes susceptible to brute force or enumeration.
 **Learning:** Fallback execution paths in cryptographic utility functions can silently downgrade security to `Math.random()` PRNG if CSPRNG UUID generators are not referenced across all fallback branches.
 **Prevention:** Always enforce CSPRNG-backed fallback generators (such as `generateUUID()`) across secondary utility functions and eliminate `Math.random()` in security-sensitive token generation routines.
+
+## 2026-10-31 - Mitigating CSV/TSV Formula Injection (CSV Injection)
+**Vulnerability:** In `escapeCsv` and `escapeTsv`, user-controlled field values (such as task category names) starting with formula triggers (`=`, `+`, `-`, `@`, `\t`, `\r`) were exported without prefix sanitization, allowing spreadsheet software (Excel, LibreOffice) to execute them as formulas when opening the generated report.
+**Learning:** Traditional CSV escaping routines only focus on syntax delimiter characters (commas, quotes, newlines) and omit formula execution semantics enforced by client spreadsheet applications.
+**Prevention:** Prefix formula trigger characters (`/^[=+\-@\t\r]/`) with a single quote `'` in both CSV and TSV escaping functions prior to standard quoting and delimiter handling.
