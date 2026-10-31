@@ -114,6 +114,8 @@ export function normalizeCategoryName(name) {
  */
 export function isValidCategoryName(name) {
     if (typeof name !== 'string') return false;
+    const trimmed = name.trim();
+    if (trimmed.length === 0 || trimmed.length > 50) return false;
     const normalized = normalizeCategoryName(name);
     if (normalized.length === 0 || normalized.length > 50) return false;
     if (

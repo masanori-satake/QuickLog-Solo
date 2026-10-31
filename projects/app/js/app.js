@@ -919,6 +919,15 @@ async function openHistoryEditModal(log) {
     applyBtn.onclick = async () => {
         if (!validate()) return;
 
+        applyBtn.disabled = true;
+        try {
+            await handleApply();
+        } finally {
+            applyBtn.disabled = false;
+        }
+    };
+
+    const handleApply = async () => {
         const [h, m] = timeInput.value.split(':').map(Number);
         const newTime = new Date(log.startTime);
         newTime.setHours(h, m, 0, 0);
