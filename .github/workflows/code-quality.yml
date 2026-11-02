@@ -17,6 +17,8 @@ on:
       - 'package-lock.json'
       - 'eslint.config.js'
       - '.stylelintrc.json'
+  # PR コメント（/ai-fix・/ai-bump）による push 後に CI を再実行するため
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
