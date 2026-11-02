@@ -14,6 +14,8 @@ on:
       - 'package-lock.json'
   schedule:
     - cron: '0 0 * * 0'
+  # PR コメント（/ai-fix・/ai-bump）による push 後に CI を再実行するため
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
