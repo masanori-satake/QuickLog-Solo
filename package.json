@@ -17,6 +17,7 @@
     "build:vite": "vite build",
     "package": "npm run build && rm -f extension.zip && cd dist && zip -r ../extension.zip .",
     "version:bump": "python3 scripts/bump_version.py",
+    "update-version": "python3 scripts/update_version.py",
     "update-guide-images": "node scripts/update_guide_images.js"
   },
   "repository": {
