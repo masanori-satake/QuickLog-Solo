@@ -14,10 +14,10 @@
 
 # <img src="shared/assets/icon.svg" alt="" width="32" style="vertical-align: middle; margin-right: 8px;"> QuickLog-Solo - 1-Sec Local Task Logger & Time Tracker
 
-> **Log in 1 second, summarize in 1 second.** A minimalist, privacy-first side-panel task logger and time tracker designed for maximum productivity without compromising data security.
+> **Log in 1 second, summarize in 1 second.** A minimalist, privacy-first side-panel task logger and time tracker.
 
 ## Overview
-Context switching and complex time-tracking tools disrupt daily focus and introduce unnecessary friction. **QuickLog-Solo** solves this by delivering an ultra-fast, lightweight Chrome extension that stays right in your browser side panel. Track tasks in a single click, boost your daily productivity, and keep your activity records 100% private with local-first storage.
+**QuickLog-Solo** is an ultra-fast, lightweight Chrome extension that lives in your browser side panel. Track tasks in a single click, boost daily productivity, and keep all activity records 100% private with local-first storage.
 
 ## Key Features
 - **⚡ 1-Sec Task Logger & Time Tracker (`time-tracker`, `task-logger`):** Click any category to start logging instantly. Previous tasks are automatically closed and transitioned seamlessly so you can focus on work.
