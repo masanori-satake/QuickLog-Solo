@@ -6,7 +6,7 @@
     "message": "QuickLog"
   },
   "extensionDescription": {
-    "message": "Log tasks & notes in 1 second from your browser. 100% local storage with zero data tracking. Fast, lightweight, and privacy-first."
+    "message": "Log tasks in 1 sec in the side panel. Local time tracker & work log for daily reports - copy reports as CSV/TSV, no tracking."
   },
   "actionTitle": {
     "message": "Open QuickLog-Solo"
