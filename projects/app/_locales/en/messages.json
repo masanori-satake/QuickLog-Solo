@@ -6,7 +6,7 @@
     "message": "QuickLog"
   },
   "extensionDescription": {
-    "message": "Log tasks in 1 sec in the side panel. Local time tracker & work log for daily reports - CSV export, no tracking, works offline."
+    "message": "Log tasks in 1 sec in the side panel. Local time tracker & work log for daily reports - copy reports as CSV/TSV, no tracking."
   },
   "actionTitle": {
     "message": "Open QuickLog-Solo"
