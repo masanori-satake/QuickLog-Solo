@@ -1,0 +1,33 @@
+name: 'ストア提出 (Store Release)'
+
+on:
+  workflow_dispatch:
+    inputs:
+      stores:
+        description: '提出先ストア'
+        required: true
+        type: choice
+        options:
+          - chrome
+          - both
+          - edge
+        # パイロット初回は Chrome のみで実走するため chrome を既定にする（Edge 初回提出は 2026-11-21 に公開済み）
+        default: 'chrome'
+
+# 提出の直列化は base 側（ストア別ジョブの concurrency）で行うため、
+# 呼び出し側に concurrency は置かない（実行中の提出をキャンセルしない）。
+
+jobs:
+  store-release:
+    name: '共通ストア提出実行 (Execute Base Store Release)'
+    uses: masanori-satake/common-workflows/.github/workflows/base-release-chrome.yml@v1
+    permissions:
+      contents: read
+    secrets: inherit
+    with:
+      stores: ${{ inputs.stores }}
+      # QuickLog-Solo の Chrome Web Store アイテム ID
+      chrome_item_id: 'kllhfalcincleolgoepnailfjendigdh'
+      # Microsoft Edge Add-ons の製品 ID（初回提出・公開済み）
+      edge_product_id: 'd73d6929-3d41-4d7c-863f-f73c5ee2fcd1'
+      # 提出 ZIP は npm run build が生成する releases/*.zip を使用する（release.yml と同一物）
