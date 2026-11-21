@@ -1,4 +1,4 @@
-# DRAFT — Chrome Web Store 疎通テスト用ワークフロー（読み取り専用）
+# Chrome Web Store 疎通テスト用ワークフロー（読み取り専用）
 # 置き場所: QuickLog-Solo リポジトリの .github/workflows/chrome-webstore-connectivity-test.yml
 # 実行: GitHub の Actions タブから workflow_dispatch で手動実行する（自動実行なし）
 # 目的: Phase 0 で登録したサービスアカウントで Chrome Web Store API v2 の
@@ -11,6 +11,11 @@
 #     をグループ投稿者として登録済み
 #   - 鍵（JSON）を QuickLog-Solo の GitHub Secrets「CHROME_WEBSTORE_SA_KEY_JSON」に登録済み
 #   - 発行者 ID / アイテム ID は公開情報（開発者ダッシュボードの URL に出る識別子）
+# 追加の前提（2026-11-21 の疎通テストで判明し、対応済み）:
+#   - IAM Service Account Credentials API を有効化済み
+#   - サービスアカウント自身に「サービス アカウント トークン作成者」
+#     （roles/iam.serviceAccountTokenCreator）を直接付与済み
+#     （auth アクションが鍵からアクセストークンを発行するのに必要）
 # 根拠: Chrome Web Store API ガイド（developer.chrome.com/docs/webstore/using-api）
 #   - fetchStatus は GET https://chromewebstore.googleapis.com/v2/publishers/{PUBLISHER_ID}/items/{EXTENSION_ID}:fetchStatus
 #   - 読み取り専用リクエストは https://www.googleapis.com/auth/chromewebstore.readonly スコープで可
@@ -18,6 +23,8 @@
 # 認証: google-github-actions/auth@v2 にサービスアカウントの鍵 JSON を渡し、
 #       chromewebstore.readonly スコープのアクセストークンを発行させる。
 #       トークンはログに出さない（curl には環境変数経由で渡し、応答 JSON のみ表示する）。
+# 診断: curl は -f を付けず、HTTP ステータスと応答本文を常に出力する
+#       （エラー時に理由がログへ残るように。2026-11-21 改訂）。
 name: Chrome Web Store 疎通テスト
 
 on:
@@ -45,9 +52,13 @@ jobs:
           PUBLISHER_ID: 6ee46d3f-8a1c-4ef2-99c9-29c0b366b9fa
           ITEM_ID: kllhfalcincleolgoepnailfjendigdh
         run: |
-          set -euo pipefail
-          curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-            "https://chromewebstore.googleapis.com/v2/publishers/${PUBLISHER_ID}/items/${ITEM_ID}:fetchStatus" \
-            | tee fetch-status.json
+          set -uo pipefail
+          HTTP_CODE=$(curl -sS -o fetch-status.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            "https://chromewebstore.googleapis.com/v2/publishers/${PUBLISHER_ID}/items/${ITEM_ID}:fetchStatus")
+          echo "HTTP status: ${HTTP_CODE}"
           echo "--- fetchStatus response ---"
-          jq . fetch-status.json
+          cat fetch-status.json
+          echo
+          jq . fetch-status.json || true
+          test "${HTTP_CODE}" = "200"
