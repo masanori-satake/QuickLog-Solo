@@ -1,0 +1,53 @@
+# DRAFT — Chrome Web Store 疎通テスト用ワークフロー（読み取り専用）
+# 置き場所: QuickLog-Solo リポジトリの .github/workflows/chrome-webstore-connectivity-test.yml
+# 実行: GitHub の Actions タブから workflow_dispatch で手動実行する（自動実行なし）
+# 目的: Phase 0 で登録したサービスアカウントで Chrome Web Store API v2 の
+#       fetchStatus（読み取り専用）が呼べるかだけを確かめる。
+#       アップロード・審査提出は一切しない。成功すれば共通ワークフロー実装と
+#       Partner Center（Edge）登録へ進める。
+# 前提（2026-11-20 夜に完了済み）:
+#   - Chrome Web Store API を gemini-notebook-api-2026 で有効化済み
+#   - サービスアカウント chrome-webstore-publisher@gemini-notebook-api-2026.iam.gserviceaccount.com
+#     をグループ投稿者として登録済み
+#   - 鍵（JSON）を QuickLog-Solo の GitHub Secrets「CHROME_WEBSTORE_SA_KEY_JSON」に登録済み
+#   - 発行者 ID / アイテム ID は公開情報（開発者ダッシュボードの URL に出る識別子）
+# 根拠: Chrome Web Store API ガイド（developer.chrome.com/docs/webstore/using-api）
+#   - fetchStatus は GET https://chromewebstore.googleapis.com/v2/publishers/{PUBLISHER_ID}/items/{EXTENSION_ID}:fetchStatus
+#   - 読み取り専用リクエストは https://www.googleapis.com/auth/chromewebstore.readonly スコープで可
+#   - V2 はサービスアカウントを受け付ける
+# 認証: google-github-actions/auth@v2 にサービスアカウントの鍵 JSON を渡し、
+#       chromewebstore.readonly スコープのアクセストークンを発行させる。
+#       トークンはログに出さない（curl には環境変数経由で渡し、応答 JSON のみ表示する）。
+name: Chrome Web Store 疎通テスト
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fetch-status:
+    name: fetchStatus で QuickLog-Solo の状態を読む
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.CHROME_WEBSTORE_SA_KEY_JSON }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/chromewebstore.readonly
+
+      - name: Call fetchStatus (read-only)
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          PUBLISHER_ID: 6ee46d3f-8a1c-4ef2-99c9-29c0b366b9fa
+          ITEM_ID: kllhfalcincleolgoepnailfjendigdh
+        run: |
+          set -euo pipefail
+          curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            "https://chromewebstore.googleapis.com/v2/publishers/${PUBLISHER_ID}/items/${ITEM_ID}:fetchStatus" \
+            | tee fetch-status.json
+          echo "--- fetchStatus response ---"
+          jq . fetch-status.json
