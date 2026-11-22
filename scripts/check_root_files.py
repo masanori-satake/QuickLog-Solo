@@ -35,6 +35,7 @@ ALLOWED_ROOT_ITEMS = {
     ".jules",
     ".prettierignore",
     ".markdownlintignore",
+    ".markdownlint.json",
 }
 
 def check_root_directory():
