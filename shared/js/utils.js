@@ -285,8 +285,13 @@ export function sanitizeRenderSpec(rawSpec) {
 /**
  * Returns default pause animation and pause theme depending on current date (season).
  * - October (month index 9): 'halloween_jack', 'retro-nixie'
- * - November to January (month index 10, 11, 0): 'snow_fall', 'cyan'
+ * - November and January (month index 10, 0): 'snow_fall', 'cyan'
+ * - December (month index 11): 'christmas_sleigh', 'orange'
  * - Other periods (February to September): 'snoring_zzz', 'outline'
+ *
+ * December has its own Christmas default instead of sharing the winter
+ * snowfall: the sleigh crossing was chosen as the provisional December
+ * standard, and 'christmas_trees' remains available as an alternative.
  *
  * @param {Date} [date=new Date()]
  * @returns {{ pauseAnimation: string, pauseTheme: string }}
@@ -297,7 +302,9 @@ export function getSeasonalPauseDefaults(date = new Date()) {
 
     if (month === 9) {
         return { pauseAnimation: 'halloween_jack', pauseTheme: 'retro-nixie' };
-    } else if (month === 10 || month === 11 || month === 0) {
+    } else if (month === 11) {
+        return { pauseAnimation: 'christmas_sleigh', pauseTheme: 'orange' };
+    } else if (month === 10 || month === 0) {
         return { pauseAnimation: 'snow_fall', pauseTheme: 'cyan' };
     } else {
         return { pauseAnimation: 'snoring_zzz', pauseTheme: 'outline' };

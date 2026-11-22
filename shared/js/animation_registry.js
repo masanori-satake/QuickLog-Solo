@@ -4,6 +4,8 @@
 import AuraCharge from './animation/aura_charge.js';
 import CarDrive from './animation/car_drive.js';
 import Cats from './animation/cats.js';
+import ChristmasSleigh from './animation/christmas_sleigh.js';
+import ChristmasTrees from './animation/christmas_trees.js';
 import Clock from './animation/clock.js';
 import CoffeeDrip from './animation/coffee_drip.js';
 import ContourLines from './animation/contour_lines.js';
@@ -52,6 +54,8 @@ export const animations = [
     { id: 'aura_charge', class: AuraCharge, metadata: AuraCharge.metadata, devOnly: true },
     { id: 'car_drive', class: CarDrive, metadata: CarDrive.metadata },
     { id: 'cats', class: Cats, metadata: Cats.metadata },
+    { id: 'christmas_sleigh', class: ChristmasSleigh, metadata: ChristmasSleigh.metadata },
+    { id: 'christmas_trees', class: ChristmasTrees, metadata: ChristmasTrees.metadata },
     { id: 'clock', class: Clock, metadata: Clock.metadata },
     { id: 'coffee_drip', class: CoffeeDrip, metadata: CoffeeDrip.metadata },
     { id: 'contour_lines', class: ContourLines, metadata: ContourLines.metadata },

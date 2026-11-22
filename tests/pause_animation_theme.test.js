@@ -82,22 +82,36 @@ describe('Seasonal Standby Animation and Theme Defaults', () => {
         });
     });
 
-    test('returns snow_fall and cyan from November through January', () => {
+    test('returns snow_fall and cyan in November and January', () => {
         const novDate = new Date(2025, 10, 15); // Nov 15
-        const decDate = new Date(2025, 11, 25); // Dec 25
         const janDate = new Date(2026, 0, 31); // Jan 31
 
         expect(getSeasonalPauseDefaults(novDate)).toEqual({
             pauseAnimation: 'snow_fall',
             pauseTheme: 'cyan',
         });
-        expect(getSeasonalPauseDefaults(decDate)).toEqual({
-            pauseAnimation: 'snow_fall',
-            pauseTheme: 'cyan',
-        });
         expect(getSeasonalPauseDefaults(janDate)).toEqual({
             pauseAnimation: 'snow_fall',
             pauseTheme: 'cyan',
+        });
+    });
+
+    test('returns christmas_sleigh and orange in December', () => {
+        const decStart = new Date(2025, 11, 1); // Dec 1
+        const decDate = new Date(2025, 11, 25); // Dec 25
+        const decEnd = new Date(2025, 11, 31); // Dec 31
+
+        expect(getSeasonalPauseDefaults(decStart)).toEqual({
+            pauseAnimation: 'christmas_sleigh',
+            pauseTheme: 'orange',
+        });
+        expect(getSeasonalPauseDefaults(decDate)).toEqual({
+            pauseAnimation: 'christmas_sleigh',
+            pauseTheme: 'orange',
+        });
+        expect(getSeasonalPauseDefaults(decEnd)).toEqual({
+            pauseAnimation: 'christmas_sleigh',
+            pauseTheme: 'orange',
         });
     });
 
