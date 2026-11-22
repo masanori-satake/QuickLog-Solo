@@ -24,13 +24,14 @@ export default {
     'tab-maintenance': 'メンテナンス',
     'tab-backup': 'バックアップ',
     'tab-alarms': 'アラーム',
-    'tab-solo': 'Solo',
+    'tab-solo': 'Solo/Duo',
     'tab-about': 'About',
 
     // Solo Tab
     'solo-category-productivity': '作業効率化',
     'solo-category-collaboration': '会議/授業支援',
     'solo-category-developer': '開発者向け',
+    'solo-category-editor': 'エディタ拡張',
 
     // Alarms Tab
     'business-days': '稼働曜日',

@@ -50,13 +50,14 @@ export default {
     'tab-maintenance': '유지 관리',
     'tab-backup': '백업',
     'tab-alarms': '알람',
-    'tab-solo': 'Solo',
+    'tab-solo': 'Solo/Duo',
     'tab-about': '정보',
 
     // Solo Tab
     'solo-category-productivity': '작업 효율화',
     'solo-category-collaboration': '회의/수업 지원',
     'solo-category-developer': '개발자용',
+    'solo-category-editor': '편집기 확장',
 
     // Alarms Tab
     'business-days': '영업일',

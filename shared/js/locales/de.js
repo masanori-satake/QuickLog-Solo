@@ -50,13 +50,14 @@ export default {
     'tab-maintenance': 'Wartung',
     'tab-backup': 'Sicherung',
     'tab-alarms': 'Alarme',
-    'tab-solo': 'Solo',
+    'tab-solo': 'Solo/Duo',
     'tab-about': 'Über',
 
     // Solo Tab
     'solo-category-productivity': 'Produktivität',
     'solo-category-collaboration': 'Meeting- & Unterrichtsunterstützung',
     'solo-category-developer': 'Für Entwickler',
+    'solo-category-editor': 'Editor-Erweiterungen',
 
     // Alarms Tab
     'business-days': 'Arbeitstage',

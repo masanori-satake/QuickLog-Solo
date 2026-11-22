@@ -24,13 +24,14 @@ export default {
     'tab-maintenance': 'Maintenance',
     'tab-backup': 'Backup',
     'tab-alarms': 'Alarms',
-    'tab-solo': 'Solo',
+    'tab-solo': 'Solo/Duo',
     'tab-about': 'About',
 
     // Solo Tab
     'solo-category-productivity': 'Productivity',
     'solo-category-collaboration': 'Meeting & Classroom Support',
     'solo-category-developer': 'For Developers',
+    'solo-category-editor': 'Editor Extensions',
 
     // Alarms Tab
     'business-days': 'Business Days',
