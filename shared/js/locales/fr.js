@@ -57,7 +57,7 @@ export default {
     'solo-category-productivity': 'Productivité',
     'solo-category-collaboration': 'Support de réunion et de cours',
     'solo-category-developer': 'Pour les développeurs',
-    'solo-category-editor': 'Extensions d'éditeur',
+    'solo-category-editor': "Extensions d'éditeur",
 
     // Alarms Tab
     'business-days': 'Jours ouvrables',
